@@ -15,20 +15,9 @@ interface KomunitasFilterProps {
   currentRw?: string;
 }
 
-const DAFTAR_RW_OPTIONS = [
-  "01",
-  "02",
-  "03",
-  "04",
-  "05",
-  "06",
-  "07",
-  "08",
-  "09",
-  "10",
-  "11",
-  "12",
-];
+const DAFTAR_RW_OPTIONS = Array.from({ length: 17 }, (_, i) =>
+  String(i + 1).padStart(2, "0")
+);
 
 export function KomunitasFilter({
   currentKecamatan = "semua",
