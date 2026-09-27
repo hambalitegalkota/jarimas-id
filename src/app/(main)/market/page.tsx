@@ -30,7 +30,7 @@ export default async function MarketPage() {
   return (
     <div className="container mx-auto max-w-5xl px-4 py-6">
       <MarketClientView
-        initialProducts={products}
+        initialProducts={products || []}
         isSuperAdmin={isSuperAdmin}
       />
     </div>

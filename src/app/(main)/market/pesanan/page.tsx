@@ -12,7 +12,7 @@ export default async function PesananUserPage() {
 
   return (
     <div className="container mx-auto max-w-4xl px-4 py-6">
-      <PesananClientView initialPesanan={pesanan} />
+      <PesananClientView initialPesanan={pesanan || []} />
     </div>
   );
 }

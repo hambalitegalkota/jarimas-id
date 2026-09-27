@@ -30,13 +30,15 @@ interface MarketClientViewProps {
 }
 
 export function MarketClientView({
-  initialProducts,
+  initialProducts = [],
   isSuperAdmin = false,
 }: MarketClientViewProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedKategori, setSelectedKategori] = useState("Semua");
 
-  const filteredProducts = initialProducts.filter((p) => {
+  const safeProducts = Array.isArray(initialProducts) ? initialProducts : [];
+
+  const filteredProducts = safeProducts.filter((p) => {
     const matchesSearch =
       p.nama.toLowerCase().includes(searchQuery.toLowerCase()) ||
       p.deskripsi.toLowerCase().includes(searchQuery.toLowerCase());

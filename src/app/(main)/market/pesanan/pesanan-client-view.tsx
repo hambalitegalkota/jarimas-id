@@ -33,12 +33,16 @@ const STATUS_FILTERS: { label: string; value: string }[] = [
   { label: "Selesai", value: "selesai" },
 ];
 
-export function PesananClientView({ initialPesanan }: PesananClientViewProps) {
+export function PesananClientView({
+  initialPesanan = [],
+}: PesananClientViewProps) {
   const [activeFilter, setActiveFilter] = useState("semua");
   const [selectedPesananModal, setSelectedPesananModal] =
     useState<MarketPesanan | null>(null);
 
-  const filteredPesanan = initialPesanan.filter((item) => {
+  const safePesanan = Array.isArray(initialPesanan) ? initialPesanan : [];
+
+  const filteredPesanan = safePesanan.filter((item) => {
     if (activeFilter === "semua") return true;
     return item.status_pembayaran === activeFilter;
   });
