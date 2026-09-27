@@ -186,182 +186,315 @@ export function getKelurahanByKecamatan(kecamatan: string): string[] {
   return Object.keys(KOTA_TEGAL_DATA[kecamatan].kelurahan);
 }
 
-// Master Seed Data Komunitas Kota Tegal
-export const MASTER_KOMUNITAS_SEED = [
-  // 1. WARGA KITA
-  {
-    id: "kom-warga-1",
-    nama: "Warga: RT 03, RW 02, Kejambon, Tegal Timur, Kota Tegal",
-    jenis: "warga_kita",
-    kecamatan: "Tegal Timur",
-    kelurahan: "Kejambon",
-    rt: "03",
-    rw: "02",
-    lokasi: "Jl. Sultan Agung No. 12, RT 03 / RW 02, Kejambon, Tegal Timur, Kota Tegal",
-    deskripsi:
-      "Guyub rukun warga RT 03 RW 02 Kejambon dalam menjaga ketenteraman, kebersihan lingkungan, dan pemantauan kesehatan keluarga.",
-    kontak: "0812-3456-7890 (Ketua RT)",
-    jadwal: "Pertemuan Rutin Setiap Malam Minggu Kliwon",
-  },
-  {
-    id: "kom-warga-2",
-    nama: "Warga: RT 05, RW 04, Panggung, Tegal Timur, Kota Tegal",
-    jenis: "warga_kita",
-    kecamatan: "Tegal Timur",
-    kelurahan: "Panggung",
-    rt: "05",
-    rw: "04",
-    lokasi: "Jl. Kolonel Sugiono No. 45, RT 05 / RW 04, Panggung, Tegal Timur, Kota Tegal",
-    deskripsi:
-      "Paguyuban warga RT 05 RW 04 Panggung, aktif dalam program bank sampah, siskamling, dan gizi balita.",
-    kontak: "0813-8899-1122 (Sekretaris RW)",
-    jadwal: "Kerja Bakti Minggu Pagi Jam 07.00",
-  },
-  {
-    id: "kom-warga-3",
-    nama: "Warga: RT 02, RW 01, Kraton, Tegal Barat, Kota Tegal",
-    jenis: "warga_kita",
-    kecamatan: "Tegal Barat",
-    kelurahan: "Kraton",
-    rt: "02",
-    rw: "01",
-    lokasi: "Jl. Veteran No. 8, RT 02 / RW 01, Kraton, Tegal Barat, Kota Tegal",
-    deskripsi:
-      "Komunitas warga RT 02 RW 01 Kraton peduli tumbuh kembang balita dan pencegahan stunting berbasis keluarga.",
-    kontak: "0857-4422-3311 (Kader RW)",
-    jadwal: "Senam Lansia & Balita Sehat Setiap Sabtu",
-  },
-  {
-    id: "kom-warga-4",
-    nama: "Warga: RT 01, RW 03, Margadana, Margadana, Kota Tegal",
-    jenis: "warga_kita",
-    kecamatan: "Margadana",
-    kelurahan: "Margadana",
-    rt: "01",
-    rw: "03",
-    lokasi: "Jl. Raya Pantura No. 100, RT 01 / RW 03, Margadana, Kota Tegal",
-    deskripsi:
-      "Komunitas warga Margadana fokus pada ketahanan pangan mandiri dan gotong royong warga.",
-    kontak: "0877-1122-3344",
-    jadwal: "Rembug Warga Bulanan",
-  },
+// Interface untuk item seed Komunitas
+export interface MasterKomunitasSeedItem {
+  id: string;
+  nama: string;
+  jenis: "warga_kita" | "posyandu" | "satuan_paud";
+  kecamatan: string;
+  kelurahan: string;
+  rt: string;
+  rw: string;
+  lokasi: string;
+  deskripsi: string;
+  kontak: string;
+  jadwal: string;
+  logo_url?: string;
+  created_at?: string;
+}
 
-  // 2. POSYANDU
-  {
-    id: "kom-posyandu-1",
-    nama: "Posyandu Kamboja 1, Kejambon, Tegal Timur, Kota Tegal",
-    jenis: "posyandu",
-    kecamatan: "Tegal Timur",
-    kelurahan: "Kejambon",
-    rt: "03",
-    rw: "02",
-    lokasi: "Balai Warga RW 02, Kejambon, Tegal Timur, Kota Tegal",
-    deskripsi:
-      "Pos Pelayanan Terpadu Kamboja 1 melayani penimbangan balita, pemantauan DDKS, imunisasi, dan penyuluhan gizi ibu hamil.",
-    kontak: "0812-7788-9900 (Ibu Siti - Ketua Kader)",
-    jadwal: "Hari Rabu Minggu ke-2 Setiap Bulan, Pukul 08.00 - 11.30 WIB",
-  },
-  {
-    id: "kom-posyandu-2",
-    nama: "Posyandu Mawar 2, Panggung, Tegal Timur, Kota Tegal",
-    jenis: "posyandu",
-    kecamatan: "Tegal Timur",
-    kelurahan: "Panggung",
-    rt: "05",
-    rw: "04",
-    lokasi: "Posyandu Terintegrasi RW 04, Panggung, Tegal Timur, Kota Tegal",
-    deskripsi:
-      "Posyandu Mawar 2 melayani pemantauan tumbuh kembang anak, antropometri digital, pemberian vitamin A, dan PMT gizi lokal.",
-    kontak: "0815-6677-8899 (Ibu Rahayu - Bidan Kelurahan)",
-    jadwal: "Hari Selasa Minggu ke-1 Setiap Bulan, Pukul 08.30 - 12.00 WIB",
-  },
-  {
-    id: "kom-posyandu-3",
-    nama: "Posyandu Kenanga 1, Slerok, Tegal Timur, Kota Tegal",
-    jenis: "posyandu",
-    kecamatan: "Tegal Timur",
-    kelurahan: "Slerok",
-    rt: "02",
-    rw: "03",
-    lokasi: "Gedung Posyandu RW 03, Slerok, Tegal Timur, Kota Tegal",
-    deskripsi:
-      "Pelayanan Posyandu Siklus Hidup dari ibu hamil, bayi/balita, remaja, hingga lansia.",
-    kontak: "0821-3344-5566",
-    jadwal: "Hari Kamis Minggu ke-2 Setiap Bulan",
-  },
-  {
-    id: "kom-posyandu-4",
-    nama: "Posyandu Anggrek 1, Kraton, Tegal Barat, Kota Tegal",
-    jenis: "posyandu",
-    kecamatan: "Tegal Barat",
-    kelurahan: "Kraton",
-    rt: "01",
-    rw: "01",
-    lokasi: "Balai Pertemuan RW 01, Kraton, Tegal Barat, Kota Tegal",
-    deskripsi:
-      "Posyandu binaan Puskesmas Tegal Barat dengan fokus pencegahan stunting dan edukasi MPASI sehat.",
-    kontak: "0813-9988-7766",
-    jadwal: "Hari Sabtu Minggu Pertama Pukul 08.00 WIB",
-  },
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
 
-  // 3. SATUAN PAUD
-  {
-    id: "kom-paud-1",
-    nama: "Satuan PAUD RA Sakila Kerti, Panggung, Tegal Timur, Kota Tegal",
-    jenis: "satuan_paud",
-    kecamatan: "Tegal Timur",
-    kelurahan: "Panggung",
-    rt: "04",
-    rw: "04",
-    lokasi: "Kompleks Terminal Tegal & Pesisir, Panggung, Tegal Timur, Kota Tegal",
-    deskripsi:
-      "Satuan Pendidikan Anak Usia Dini inklusif dan ramah anak yang mendidik tunas bangsa dengan kurikulum holistik integratif dan pendidikan karakter.",
-    kontak: "0812-3344-7788 (Dr. Yusqon - Pengelola)",
-    jadwal: "Senin s/d Jumat, Pukul 07.30 - 11.00 WIB",
-  },
-  {
-    id: "kom-paud-2",
-    nama: "Satuan PAUD KB / TK Pembina, Kejambon, Tegal Timur, Kota Tegal",
-    jenis: "satuan_paud",
-    kecamatan: "Tegal Timur",
-    kelurahan: "Kejambon",
-    rt: "02",
-    rw: "02",
-    lokasi: "Jl. Pendidikan No. 5, Kejambon, Tegal Timur, Kota Tegal",
-    deskripsi:
-      "Lembaga PAUD percontohan Kota Tegal dengan fasilitas lengkap bermain motorik, pembelajaran saintifik, dan pengawasan nutrisi anak.",
-    kontak: "0813-5566-7788 (Kepala Sekolah)",
-    jadwal: "Senin s/d Sabtu, Pukul 07.30 - 10.30 WIB",
-  },
-  {
-    id: "kom-paud-3",
-    nama: "Satuan PAUD Mutiara Hati, Slerok, Tegal Timur, Kota Tegal",
-    jenis: "satuan_paud",
-    kecamatan: "Tegal Timur",
-    kelurahan: "Slerok",
-    rt: "03",
-    rw: "01",
-    lokasi: "Jl. Slerok Asri No. 18, Slerok, Tegal Timur, Kota Tegal",
-    deskripsi:
-      "Kelompok Bermain anak usia 2-6 tahun dengan metode belajar sambil bermain berbasis kecerdasan majemuk.",
-    kontak: "0878-9900-1122",
-    jadwal: "Senin s/d Kamis, Pukul 08.00 - 11.00 WIB",
-  },
-  {
-    id: "kom-paud-4",
-    nama: "Satuan PAUD Kasih Ibu, Margadana, Margadana, Kota Tegal",
-    jenis: "satuan_paud",
-    kecamatan: "Margadana",
-    kelurahan: "Margadana",
-    rt: "02",
-    rw: "03",
-    lokasi: "Jl. Anggrek No. 24, Margadana, Kota Tegal",
-    deskripsi:
-      "PAUD binaan PKK Margadana yang fokus pada stimulasi motorik, bahasa, dan sosial emosional anak usia dini.",
-    kontak: "0856-1122-3344",
-    jadwal: "Senin s/d Jumat, Pukul 08.00 - 10.30 WIB",
-  },
-];
+// Master Generator untuk mencakup seluruh Kelurahan & Lembaga di Kota Tegal
+function buildMasterKomunitasSeed(): MasterKomunitasSeedItem[] {
+  const list: MasterKomunitasSeedItem[] = [
+    // --- SPECIAL PRE-CONFIGURED SEED ITEMS ---
+    {
+      id: "kom-warga-1",
+      nama: "Warga: RT 03, RW 02, Kejambon, Tegal Timur, Kota Tegal",
+      jenis: "warga_kita",
+      kecamatan: "Tegal Timur",
+      kelurahan: "Kejambon",
+      rt: "03",
+      rw: "02",
+      lokasi: "Jl. Sultan Agung No. 12, RT 03 / RW 02, Kejambon, Tegal Timur, Kota Tegal",
+      deskripsi:
+        "Guyub rukun warga RT 03 RW 02 Kejambon dalam menjaga ketenteraman, kebersihan lingkungan, dan pemantauan kesehatan keluarga.",
+      kontak: "0812-3456-7890 (Ketua RT)",
+      jadwal: "Pertemuan Rutin Setiap Malam Minggu Kliwon",
+    },
+    {
+      id: "kom-warga-2",
+      nama: "Warga: RT 05, RW 04, Panggung, Tegal Timur, Kota Tegal",
+      jenis: "warga_kita",
+      kecamatan: "Tegal Timur",
+      kelurahan: "Panggung",
+      rt: "05",
+      rw: "04",
+      lokasi: "Jl. Kolonel Sugiono No. 45, RT 05 / RW 04, Panggung, Tegal Timur, Kota Tegal",
+      deskripsi:
+        "Paguyuban warga RT 05 RW 04 Panggung, aktif dalam program bank sampah, siskamling, dan gizi balita.",
+      kontak: "0813-8899-1122 (Sekretaris RW)",
+      jadwal: "Kerja Bakti Minggu Pagi Jam 07.00",
+    },
+    {
+      id: "kom-warga-3",
+      nama: "Warga: RT 02, RW 01, Kraton, Tegal Barat, Kota Tegal",
+      jenis: "warga_kita",
+      kecamatan: "Tegal Barat",
+      kelurahan: "Kraton",
+      rt: "02",
+      rw: "01",
+      lokasi: "Jl. Veteran No. 8, RT 02 / RW 01, Kraton, Tegal Barat, Kota Tegal",
+      deskripsi:
+        "Komunitas warga RT 02 RW 01 Kraton peduli tumbuh kembang balita dan pencegahan stunting berbasis keluarga.",
+      kontak: "0857-4422-3311 (Kader RW)",
+      jadwal: "Senam Lansia & Balita Sehat Setiap Sabtu",
+    },
+    {
+      id: "kom-warga-4",
+      nama: "Warga: RT 01, RW 03, Margadana, Margadana, Kota Tegal",
+      jenis: "warga_kita",
+      kecamatan: "Margadana",
+      kelurahan: "Margadana",
+      rt: "01",
+      rw: "03",
+      lokasi: "Jl. Raya Pantura No. 100, RT 01 / RW 03, Margadana, Kota Tegal",
+      deskripsi:
+        "Komunitas warga Margadana fokus pada ketahanan pangan mandiri dan gotong royong warga.",
+      kontak: "0877-1122-3344",
+      jadwal: "Rembug Warga Bulanan",
+    },
+    {
+      id: "kom-posyandu-1",
+      nama: "Posyandu Kamboja 1, Kejambon, Tegal Timur, Kota Tegal",
+      jenis: "posyandu",
+      kecamatan: "Tegal Timur",
+      kelurahan: "Kejambon",
+      rt: "03",
+      rw: "02",
+      lokasi: "Balai Warga RW 02, Kejambon, Tegal Timur, Kota Tegal",
+      deskripsi:
+        "Pos Pelayanan Terpadu Kamboja 1 melayani penimbangan balita, pemantauan DDKS, imunisasi, dan penyuluhan gizi ibu hamil.",
+      kontak: "0812-7788-9900 (Ibu Siti - Ketua Kader)",
+      jadwal: "Hari Rabu Minggu ke-2 Setiap Bulan, Pukul 08.00 - 11.30 WIB",
+    },
+    {
+      id: "kom-posyandu-2",
+      nama: "Posyandu Mawar 2, Panggung, Tegal Timur, Kota Tegal",
+      jenis: "posyandu",
+      kecamatan: "Tegal Timur",
+      kelurahan: "Panggung",
+      rt: "05",
+      rw: "04",
+      lokasi: "Posyandu Terintegrasi RW 04, Panggung, Tegal Timur, Kota Tegal",
+      deskripsi:
+        "Posyandu Mawar 2 melayani pemantauan tumbuh kembang anak, antropometri digital, pemberian vitamin A, dan PMT gizi lokal.",
+      kontak: "0815-6677-8899 (Ibu Rahayu - Bidan Kelurahan)",
+      jadwal: "Hari Selasa Minggu ke-1 Setiap Bulan, Pukul 08.30 - 12.00 WIB",
+    },
+    {
+      id: "kom-posyandu-3",
+      nama: "Posyandu Kenanga 1, Slerok, Tegal Timur, Kota Tegal",
+      jenis: "posyandu",
+      kecamatan: "Tegal Timur",
+      kelurahan: "Slerok",
+      rt: "02",
+      rw: "03",
+      lokasi: "Gedung Posyandu RW 03, Slerok, Tegal Timur, Kota Tegal",
+      deskripsi:
+        "Pelayanan Posyandu Siklus Hidup dari ibu hamil, bayi/balita, remaja, hingga lansia.",
+      kontak: "0821-3344-5566",
+      jadwal: "Hari Kamis Minggu ke-2 Setiap Bulan",
+    },
+    {
+      id: "kom-posyandu-4",
+      nama: "Posyandu Anggrek 1, Kraton, Tegal Barat, Kota Tegal",
+      jenis: "posyandu",
+      kecamatan: "Tegal Barat",
+      kelurahan: "Kraton",
+      rt: "01",
+      rw: "01",
+      lokasi: "Balai Pertemuan RW 01, Kraton, Tegal Barat, Kota Tegal",
+      deskripsi:
+        "Posyandu binaan Puskesmas Tegal Barat dengan fokus pencegahan stunting dan edukasi MPASI sehat.",
+      kontak: "0813-9988-7766",
+      jadwal: "Hari Sabtu Minggu Pertama Pukul 08.00 WIB",
+    },
+    {
+      id: "kom-paud-1",
+      nama: "Satuan PAUD RA Sakila Kerti, Panggung, Tegal Timur, Kota Tegal",
+      jenis: "satuan_paud",
+      kecamatan: "Tegal Timur",
+      kelurahan: "Panggung",
+      rt: "04",
+      rw: "04",
+      lokasi: "Kompleks Terminal Tegal & Pesisir, Panggung, Tegal Timur, Kota Tegal",
+      deskripsi:
+        "Satuan Pendidikan Anak Usia Dini inklusif dan ramah anak yang mendidik tunas bangsa dengan kurikulum holistik integratif dan pendidikan karakter.",
+      kontak: "0812-3344-7788 (Dr. Yusqon - Pengelola)",
+      jadwal: "Senin s/d Jumat, Pukul 07.30 - 11.00 WIB",
+    },
+    {
+      id: "kom-paud-2",
+      nama: "Satuan PAUD KB / TK Pembina, Kejambon, Tegal Timur, Kota Tegal",
+      jenis: "satuan_paud",
+      kecamatan: "Tegal Timur",
+      kelurahan: "Kejambon",
+      rt: "02",
+      rw: "02",
+      lokasi: "Jl. Pendidikan No. 5, Kejambon, Tegal Timur, Kota Tegal",
+      deskripsi:
+        "Lembaga PAUD percontohan Kota Tegal dengan fasilitas lengkap bermain motorik, pembelajaran saintifik, dan pengawasan nutrisi anak.",
+      kontak: "0813-5566-7788 (Kepala Sekolah)",
+      jadwal: "Senin s/d Sabtu, Pukul 07.30 - 10.30 WIB",
+    },
+    {
+      id: "kom-paud-3",
+      nama: "Satuan PAUD Mutiara Hati, Slerok, Tegal Timur, Kota Tegal",
+      jenis: "satuan_paud",
+      kecamatan: "Tegal Timur",
+      kelurahan: "Slerok",
+      rt: "03",
+      rw: "01",
+      lokasi: "Jl. Slerok Asri No. 18, Slerok, Tegal Timur, Kota Tegal",
+      deskripsi:
+        "Kelompok Bermain anak usia 2-6 tahun dengan metode belajar sambil bermain berbasis kecerdasan majemuk.",
+      kontak: "0878-9900-1122",
+      jadwal: "Senin s/d Kamis, Pukul 08.00 - 11.00 WIB",
+    },
+    {
+      id: "kom-paud-4",
+      nama: "Satuan PAUD Kasih Ibu, Margadana, Margadana, Kota Tegal",
+      jenis: "satuan_paud",
+      kecamatan: "Margadana",
+      kelurahan: "Margadana",
+      rt: "02",
+      rw: "03",
+      lokasi: "Jl. Anggrek No. 24, Margadana, Kota Tegal",
+      deskripsi:
+        "PAUD binaan PKK Margadana yang fokus pada stimulasi motorik, bahasa, dan sosial emosional anak usia dini.",
+      kontak: "0856-1122-3344",
+      jadwal: "Senin s/d Jumat, Pukul 08.00 - 10.30 WIB",
+    },
+  ];
+
+  const existingIds = new Set(list.map((item) => item.id));
+
+  // Loop through all kecamatan and kelurahan in Kota Tegal
+  for (const [kecName, kecData] of Object.entries(KOTA_TEGAL_DATA)) {
+    for (const [kelName, kelData] of Object.entries(kecData.kelurahan)) {
+      const kelSlug = slugify(kelName);
+      const kecSlug = slugify(kecName);
+
+      // 1. Warga Kita (Generate 2 RT/RW per kelurahan if not exists)
+      const warga1Id = `kom-warga-${kecSlug}-${kelSlug}-rt01-rw01`;
+      if (!existingIds.has(warga1Id) && !(kelName === "Kejambon" && kecName === "Tegal Timur") && !(kelName === "Panggung" && kecName === "Tegal Timur") && !(kelName === "Kraton" && kecName === "Tegal Barat") && !(kelName === "Margadana" && kecName === "Margadana")) {
+        list.push({
+          id: warga1Id,
+          nama: `Warga: RT 01, RW 01, ${kelName}, ${kecName}, Kota Tegal`,
+          jenis: "warga_kita",
+          kecamatan: kecName,
+          kelurahan: kelName,
+          rt: "01",
+          rw: "01",
+          lokasi: `Jl. ${kelName} Utama No. 10, RT 01 / RW 01, ${kelName}, ${kecName}, Kota Tegal`,
+          deskripsi: `Paguyuban rukun warga RT 01 RW 01 Kelurahan ${kelName} yang aktif dalam pemantauan tumbuh kembang balita, pos gizi keluarga, kebersihan lingkungan, dan gotong royong.`,
+          kontak: "0812-3344-5566 (Ketua RT 01)",
+          jadwal: "Pertemuan Rutin Warga Setiap Malam Minggu Pertama",
+        });
+        existingIds.add(warga1Id);
+      }
+
+      const warga2Id = `kom-warga-${kecSlug}-${kelSlug}-rt02-rw02`;
+      if (!existingIds.has(warga2Id)) {
+        list.push({
+          id: warga2Id,
+          nama: `Warga: RT 02, RW 02, ${kelName}, ${kecName}, Kota Tegal`,
+          jenis: "warga_kita",
+          kecamatan: kecName,
+          kelurahan: kelName,
+          rt: "02",
+          rw: "02",
+          lokasi: `Balai Warga RW 02, ${kelName}, ${kecName}, Kota Tegal`,
+          deskripsi: `Komunitas keluarga rukun warga RT 02 RW 02 ${kelName} peduli penurunan stunting, sanitasi sehat, dan ketahanan sosial warga.`,
+          kontak: "0857-7788-9900 (Pengurus RW 02)",
+          jadwal: "Kerja Bakti Lingkungan dan Senam Warga Setiap Minggu Pagi",
+        });
+        existingIds.add(warga2Id);
+      }
+
+      // 2. Posyandu (Generate all posyandu in this kelurahan)
+      if (Array.isArray(kelData.posyandu)) {
+        kelData.posyandu.forEach((posName, idx) => {
+          const posSlug = slugify(posName);
+          const posId = `kom-posyandu-${kecSlug}-${kelSlug}-${posSlug}`;
+          
+          // Cek jika sudah terdaftar di seed statis
+          const isAlreadyInSeed = list.some(
+            (item) => item.jenis === "posyandu" && item.kelurahan === kelName && item.nama.includes(posName)
+          );
+
+          if (!isAlreadyInSeed && !existingIds.has(posId)) {
+            list.push({
+              id: posId,
+              nama: `${posName}, ${kelName}, ${kecName}, Kota Tegal`,
+              jenis: "posyandu",
+              kecamatan: kecName,
+              kelurahan: kelName,
+              rt: `0${(idx % 4) + 1}`,
+              rw: `0${(idx % 3) + 1}`,
+              lokasi: `Posyandu / Balai RW 0${(idx % 3) + 1}, ${kelName}, ${kecName}, Kota Tegal`,
+              deskripsi: `Layanan Posyandu ${posName} terpadu: penimbangan berat badan, tinggi badan, imunisasi, penyuluhan DDKS, dan PMT balita serta ibu hamil.`,
+              kontak: "0813-2233-4455 (Kader Posyandu)",
+              jadwal: `Setiap Hari Rabu Minggu ke-${(idx % 4) + 1} Pukul 08.30 - 11.30 WIB`,
+            });
+            existingIds.add(posId);
+          }
+        });
+      }
+
+      // 3. Satuan PAUD (Generate all paud in this kelurahan)
+      if (Array.isArray(kelData.paud)) {
+        kelData.paud.forEach((paudName, idx) => {
+          const paudSlug = slugify(paudName);
+          const paudId = `kom-paud-${kecSlug}-${kelSlug}-${paudSlug}`;
+
+          const isAlreadyInSeed = list.some(
+            (item) => item.jenis === "satuan_paud" && item.kelurahan === kelName && item.nama.includes(paudName)
+          );
+
+          if (!isAlreadyInSeed && !existingIds.has(paudId)) {
+            list.push({
+              id: paudId,
+              nama: `Satuan PAUD ${paudName}, ${kelName}, ${kecName}, Kota Tegal`,
+              jenis: "satuan_paud",
+              kecamatan: kecName,
+              kelurahan: kelName,
+              rt: `0${(idx % 3) + 1}`,
+              rw: `0${(idx % 3) + 1}`,
+              lokasi: `Gedung ${paudName}, ${kelName}, ${kecName}, Kota Tegal`,
+              deskripsi: `Lembaga Pendidikan Anak Usia Dini (${paudName}) berfokus pada stimulasi tumbuh kembang fisik-motorik, kognitif, moral, dan kemandirian anak.`,
+              kontak: "0815-4455-6677 (Pengelola PAUD)",
+              jadwal: "Senin s/d Jumat, Pukul 07.30 - 10.30 WIB",
+            });
+            existingIds.add(paudId);
+          }
+        });
+      }
+    }
+  }
+
+  return list;
+}
+
+export const MASTER_KOMUNITAS_SEED = buildMasterKomunitasSeed();
+
 
 export const SEED_DATA_ANAK: import("@/types/database").DataAnakItem[] = [
   {

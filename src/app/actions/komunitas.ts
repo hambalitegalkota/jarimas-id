@@ -96,8 +96,8 @@ export async function getKomunitasList(
 
     let rawList = dbData || [];
 
-    // Jika database masih kosong, gunakan master seed data Kota Tegal
-    if (rawList.length === 0 && !dbError) {
+    // Jika database masih kosong atau ada error tabel, gunakan master seed data Kota Tegal
+    if (dbError || rawList.length === 0) {
       rawList = MASTER_KOMUNITAS_SEED.filter((item) => {
         if (params.jenis && params.jenis !== "semua" && item.jenis !== params.jenis) {
           return false;
@@ -105,14 +105,14 @@ export async function getKomunitasList(
         if (
           params.kecamatan &&
           params.kecamatan !== "semua" &&
-          item.kecamatan !== params.kecamatan
+          item.kecamatan.toLowerCase() !== params.kecamatan.toLowerCase()
         ) {
           return false;
         }
         if (
           params.kelurahan &&
           params.kelurahan !== "semua" &&
-          item.kelurahan !== params.kelurahan
+          item.kelurahan.toLowerCase() !== params.kelurahan.toLowerCase()
         ) {
           return false;
         }
@@ -155,7 +155,14 @@ export async function getKomunitasList(
         if (
           params.kecamatan &&
           params.kecamatan !== "semua" &&
-          item.kecamatan !== params.kecamatan
+          item.kecamatan.toLowerCase() !== params.kecamatan.toLowerCase()
+        ) {
+          return false;
+        }
+        if (
+          params.kelurahan &&
+          params.kelurahan !== "semua" &&
+          item.kelurahan.toLowerCase() !== params.kelurahan.toLowerCase()
         ) {
           return false;
         }
