@@ -16,6 +16,7 @@ interface KomunitasPageProps {
     tab?: string;
     kecamatan?: string;
     kelurahan?: string;
+    rw?: string;
   }>;
 }
 
@@ -26,12 +27,20 @@ export default async function KomunitasPage({
   const currentTab = (resolvedParams.tab as JenisKomunitas) || "warga_kita";
   const currentKecamatan = resolvedParams.kecamatan || "semua";
   const currentKelurahan = resolvedParams.kelurahan || "semua";
+  const currentRw = resolvedParams.rw || "semua";
 
   const { data: listKomunitas, currentUserId } = await getKomunitasList({
     jenis: currentTab,
     kecamatan: currentKecamatan,
     kelurahan: currentKelurahan,
+    rw: currentRw,
   });
+
+  const querySuffix = `${
+    currentKecamatan !== "semua" ? `&kecamatan=${currentKecamatan}` : ""
+  }${currentKelurahan !== "semua" ? `&kelurahan=${currentKelurahan}` : ""}${
+    currentRw !== "semua" ? `&rw=${currentRw}` : ""
+  }`;
 
   return (
     <div className="flex flex-col flex-1 px-4 py-5 gap-5">
@@ -48,9 +57,7 @@ export default async function KomunitasPage({
       {/* 3 Tab Kategori Utama (Warga Kita, Posyandu, Satuan PAUD) */}
       <div className="flex rounded-2xl bg-muted/70 p-1 border border-border/80">
         <Link
-          href={`/komunitas?tab=warga_kita${
-            currentKecamatan !== "semua" ? `&kecamatan=${currentKecamatan}` : ""
-          }${currentKelurahan !== "semua" ? `&kelurahan=${currentKelurahan}` : ""}`}
+          href={`/komunitas?tab=warga_kita${querySuffix}`}
           className={`flex flex-1 min-h-[44px] items-center justify-center gap-1.5 rounded-xl text-xs font-bold transition-all ${
             currentTab === "warga_kita"
               ? "bg-card text-primary shadow-sm ring-1 ring-black/5"
@@ -62,9 +69,7 @@ export default async function KomunitasPage({
         </Link>
 
         <Link
-          href={`/komunitas?tab=posyandu${
-            currentKecamatan !== "semua" ? `&kecamatan=${currentKecamatan}` : ""
-          }${currentKelurahan !== "semua" ? `&kelurahan=${currentKelurahan}` : ""}`}
+          href={`/komunitas?tab=posyandu${querySuffix}`}
           className={`flex flex-1 min-h-[44px] items-center justify-center gap-1.5 rounded-xl text-xs font-bold transition-all ${
             currentTab === "posyandu"
               ? "bg-card text-accent shadow-sm ring-1 ring-black/5"
@@ -76,9 +81,7 @@ export default async function KomunitasPage({
         </Link>
 
         <Link
-          href={`/komunitas?tab=satuan_paud${
-            currentKecamatan !== "semua" ? `&kecamatan=${currentKecamatan}` : ""
-          }${currentKelurahan !== "semua" ? `&kelurahan=${currentKelurahan}` : ""}`}
+          href={`/komunitas?tab=satuan_paud${querySuffix}`}
           className={`flex flex-1 min-h-[44px] items-center justify-center gap-1.5 rounded-xl text-xs font-bold transition-all ${
             currentTab === "satuan_paud"
               ? "bg-card text-amber-600 shadow-sm ring-1 ring-black/5"
@@ -95,6 +98,7 @@ export default async function KomunitasPage({
         <KomunitasFilter
           currentKecamatan={currentKecamatan}
           currentKelurahan={currentKelurahan}
+          currentRw={currentRw}
         />
       </Suspense>
 

@@ -14,6 +14,7 @@ interface GetKomunitasListParams {
   jenis?: JenisKomunitas | "semua";
   kecamatan?: string;
   kelurahan?: string;
+  rw?: string;
 }
 
 /**
@@ -54,6 +55,10 @@ export async function getKomunitasList(
     }
     if (params.kelurahan && params.kelurahan !== "semua") {
       query = query.eq("kelurahan", params.kelurahan);
+    }
+    if (params.rw && params.rw !== "semua") {
+      const cleanRw = params.rw.replace(/\D/g, "").padStart(2, "0");
+      query = query.eq("rw", cleanRw);
     }
 
     const { data: dbData, error: dbError } = await query;
@@ -116,6 +121,13 @@ export async function getKomunitasList(
         ) {
           return false;
         }
+        if (params.rw && params.rw !== "semua") {
+          const cleanParamRw = params.rw.replace(/\D/g, "").padStart(2, "0");
+          const itemRw = (item.rw || "").replace(/\D/g, "").padStart(2, "0");
+          if (cleanParamRw && itemRw && cleanParamRw !== itemRw) {
+            return false;
+          }
+        }
         return true;
       });
     }
@@ -165,6 +177,13 @@ export async function getKomunitasList(
           item.kelurahan.toLowerCase() !== params.kelurahan.toLowerCase()
         ) {
           return false;
+        }
+        if (params.rw && params.rw !== "semua") {
+          const cleanParamRw = params.rw.replace(/\D/g, "").padStart(2, "0");
+          const itemRw = (item.rw || "").replace(/\D/g, "").padStart(2, "0");
+          if (cleanParamRw && itemRw && cleanParamRw !== itemRw) {
+            return false;
+          }
         }
         return true;
       }

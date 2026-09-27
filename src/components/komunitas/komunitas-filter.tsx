@@ -12,11 +12,28 @@ import { cn } from "@/lib/utils";
 interface KomunitasFilterProps {
   currentKecamatan?: string;
   currentKelurahan?: string;
+  currentRw?: string;
 }
+
+const DAFTAR_RW_OPTIONS = [
+  "01",
+  "02",
+  "03",
+  "04",
+  "05",
+  "06",
+  "07",
+  "08",
+  "09",
+  "10",
+  "11",
+  "12",
+];
 
 export function KomunitasFilter({
   currentKecamatan = "semua",
   currentKelurahan = "semua",
+  currentRw = "semua",
 }: KomunitasFilterProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -35,9 +52,11 @@ export function KomunitasFilter({
     if (val === "semua") {
       params.delete("kecamatan");
       params.delete("kelurahan");
+      params.delete("rw");
     } else {
       params.set("kecamatan", val);
       params.delete("kelurahan"); // Reset kelurahan when kecamatan changes
+      params.delete("rw"); // Reset rw when kecamatan changes
     }
 
     startTransition(() => {
@@ -52,8 +71,25 @@ export function KomunitasFilter({
 
     if (val === "semua") {
       params.delete("kelurahan");
+      params.delete("rw");
     } else {
       params.set("kelurahan", val);
+    }
+
+    startTransition(() => {
+      const qs = params.toString();
+      router.push(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+    });
+  };
+
+  const handleRwChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const val = e.target.value;
+    const params = new URLSearchParams(searchParams.toString());
+
+    if (val === "semua") {
+      params.delete("rw");
+    } else {
+      params.set("rw", val);
     }
 
     startTransition(() => {
@@ -66,6 +102,7 @@ export function KomunitasFilter({
     const params = new URLSearchParams(searchParams.toString());
     params.delete("kecamatan");
     params.delete("kelurahan");
+    params.delete("rw");
 
     startTransition(() => {
       const qs = params.toString();
@@ -75,7 +112,8 @@ export function KomunitasFilter({
 
   const hasFilter =
     (currentKecamatan && currentKecamatan !== "semua") ||
-    (currentKelurahan && currentKelurahan !== "semua");
+    (currentKelurahan && currentKelurahan !== "semua") ||
+    (currentRw && currentRw !== "semua");
 
   return (
     <div className="rounded-3xl border border-border bg-card p-4 shadow-sm space-y-3">
@@ -96,7 +134,7 @@ export function KomunitasFilter({
         )}
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
         {/* Dropdown Kecamatan */}
         <div className="space-y-1">
           <label className="text-[11px] font-semibold text-muted-foreground">
@@ -149,6 +187,29 @@ export function KomunitasFilter({
               {availableKelurahan.map((kel) => (
                 <option key={kel} value={kel}>
                   Kel. {kel}
+                </option>
+              ))}
+            </select>
+            <MapPin className="pointer-events-none absolute right-3 top-3.5 h-4 w-4 text-muted-foreground" />
+          </div>
+        </div>
+
+        {/* Dropdown Rukun Warga (RW) */}
+        <div className="space-y-1">
+          <label className="text-[11px] font-semibold text-muted-foreground">
+            Rukun Warga (RW)
+          </label>
+          <div className="relative">
+            <select
+              value={currentRw}
+              onChange={handleRwChange}
+              disabled={isPending}
+              className="w-full min-h-[44px] rounded-2xl border border-input bg-background px-3.5 pr-8 text-xs font-semibold text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none"
+            >
+              <option value="semua">Semua RW</option>
+              {DAFTAR_RW_OPTIONS.map((rwNum) => (
+                <option key={rwNum} value={rwNum}>
+                  RW {rwNum}
                 </option>
               ))}
             </select>
