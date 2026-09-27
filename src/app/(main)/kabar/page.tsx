@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { HeartHandshake } from "lucide-react";
+import { Sparkles, MessageSquarePlus, HeartHandshake } from "lucide-react";
 import { getKabarFeed } from "@/app/actions/kabar";
 import { createClient } from "@/utils/supabase/server";
 import { KabarCard } from "@/components/kabar/kabar-card";
@@ -7,14 +7,14 @@ import { KabarFilter } from "@/components/kabar/kabar-filter";
 import { CreateKabarModal } from "@/components/kabar/create-kabar-modal";
 import type { SortingKabar, VisibilitasKabar } from "@/types/database";
 
-interface HomePageProps {
+interface KabarPageProps {
   searchParams: Promise<{
     sort?: string;
     visibility?: string;
   }>;
 }
 
-export default async function HomePage({ searchParams }: HomePageProps) {
+export default async function KabarPage({ searchParams }: KabarPageProps) {
   const resolvedParams = await searchParams;
   const currentSort = (resolvedParams.sort as SortingKabar) || "terbaru";
   const currentVisibility =
@@ -52,10 +52,10 @@ export default async function HomePage({ searchParams }: HomePageProps) {
           </div>
           <div>
             <h1 className="text-xl font-bold tracking-tight text-foreground">
-              Kabar Jarimas
+              Kabar Warga
             </h1>
             <p className="text-xs text-muted-foreground">
-              Feed informasi &amp; interaksi warga mobile-first
+              Ruang berbagi info &amp; parenting warga JARIMAS-ID
             </p>
           </div>
         </div>
@@ -74,14 +74,14 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         {feedItems.length === 0 ? (
           <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-border bg-card/60 p-8 text-center space-y-3">
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
-              <HeartHandshake className="h-6 w-6" />
+              <MessageSquarePlus className="h-6 w-6" />
             </div>
             <div className="space-y-1">
               <h3 className="text-sm font-bold text-foreground">
-                Belum Ada Kabar Warga
+                Belum Ada Kabar di Kategori Ini
               </h3>
               <p className="text-xs text-muted-foreground max-w-xs">
-                Mulai interaksi dengan membagikan kabar pertama Anda kepada sesama warga dan komunitas!
+                Jadilah yang pertama membagikan kabar, tips gizi, atau pengumuman seputar posyandu dan anak.
               </p>
             </div>
           </div>

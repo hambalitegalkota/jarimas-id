@@ -1,0 +1,248 @@
+export type UserRole = "Super Admin" | "Pengurus" | "Kader" | "Anggota";
+export type MembershipStatus = "pending" | "approved" | "rejected";
+export type VisibilitasKabar = "publik" | "teman" | "komunitas";
+export type SortingKabar = "terbaru" | "terpopuler";
+export type JenisKomunitas = "warga_kita" | "posyandu" | "satuan_paud";
+
+export interface Profile {
+  id: string;
+  nama_lengkap: string;
+  email: string;
+  is_super_admin: boolean;
+  avatar_url?: string | null;
+  nomor_hp?: string | null;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface Komunitas {
+  id: string;
+  nama: string;
+  jenis: JenisKomunitas | string;
+  kecamatan?: string;
+  kelurahan?: string;
+  rt?: string | null;
+  rw?: string | null;
+  lokasi: string;
+  deskripsi?: string | null;
+  logo_url?: string | null;
+  kontak?: string | null;
+  jadwal?: string | null;
+  created_at?: string;
+}
+
+export interface AnggotaKomunitas {
+  id: string;
+  user_id: string;
+  komunitas_id: string;
+  peran: string;
+  status: MembershipStatus;
+  approved_by?: string | null;
+  created_at: string;
+  updated_at?: string;
+  komunitas?: Komunitas | null;
+}
+
+export interface AnggotaKomunitasDetail {
+  id: string;
+  user_id: string;
+  komunitas_id: string;
+  peran: string;
+  status: MembershipStatus;
+  created_at: string;
+  profiles?: {
+    id?: string;
+    nama_lengkap?: string;
+    email?: string;
+    avatar_url?: string | null;
+  } | null;
+}
+
+export interface KomunitasWithMembership extends Komunitas {
+  jumlah_anggota: number;
+  currentUserMembership?: {
+    id: string;
+    status: MembershipStatus;
+    peran: string;
+  } | null;
+}
+
+export interface DdksRecord {
+  id: string;
+  data_anak_id: string;
+  berat_badan: number;
+  tinggi_badan: number;
+  panjang_badan?: number | null;
+  lingkar_kepala: number;
+  catatan?: string | null;
+  recorded_by?: string;
+  created_at: string;
+  profiles?: {
+    nama_lengkap?: string;
+  } | null;
+}
+
+export interface DataAnakItem {
+  id: string;
+  nama_lengkap: string;
+  tanggal_lahir: string;
+  jenis_kelamin: "L" | "P" | "Laki-laki" | "Perempuan" | string;
+  nama_orangtua: string;
+  nomor_hp: string;
+  tinggal_bersama: string;
+  jarak_rumah_km: number;
+  is_sekolah: boolean;
+  nama_sekolah?: string | null;
+  alasan_sekolah?: string | null;
+  komunitas_id: string;
+  komunitas_nama?: string;
+  status_approval: "pending" | "approved" | "rejected";
+  validated_by?: string | null;
+  validated_at?: string | null;
+  created_by?: string;
+  created_at: string;
+  updated_at?: string;
+  latest_ddks?: DdksRecord | null;
+  ddks_history?: DdksRecord[];
+}
+
+export interface PendingApprovalItem {
+  id: string;
+  user_id: string;
+  komunitas_id: string;
+  peran: string;
+  status: MembershipStatus;
+  created_at: string;
+  profiles?: {
+    id?: string;
+    nama_lengkap?: string;
+    email?: string;
+    avatar_url?: string | null;
+  } | null;
+  komunitas?: {
+    id?: string;
+    nama?: string;
+    jenis?: string;
+    lokasi?: string;
+  } | null;
+}
+
+export interface ReaksiKabar {
+  id: string;
+  kabar_id: string;
+  user_id: string;
+  tipe_reaksi: string; // '❤️' | '👍' | '🙏' | '😊'
+  created_at?: string;
+}
+
+export interface KomentarKabar {
+  id: string;
+  kabar_id: string;
+  user_id: string;
+  konten: string;
+  created_at: string;
+  profiles?: {
+    id?: string;
+    nama_lengkap?: string;
+    avatar_url?: string | null;
+  } | null;
+}
+
+export interface KabarItem {
+  id: string;
+  user_id: string;
+  konten: string;
+  visibilitas: VisibilitasKabar;
+  komunitas_id?: string | null;
+  created_at: string;
+  updated_at?: string;
+  profiles?: {
+    id?: string;
+    nama_lengkap?: string;
+    avatar_url?: string | null;
+    is_super_admin?: boolean;
+  } | null;
+  komunitas?: {
+    id?: string;
+    nama?: string;
+  } | null;
+  jumlah_reaksi: number;
+  jumlah_komentar: number;
+  reaksi_counts: Record<string, number>;
+  user_reaction?: string | null;
+  komentar_list: KomentarKabar[];
+}
+
+export interface AuthActionState {
+  success?: boolean;
+  message?: string;
+  errors?: Record<string, string[]>;
+}
+
+export interface AdminActionState {
+  success: boolean;
+  message: string;
+  data?: PendingApprovalItem[];
+}
+
+export type KategoriMarket =
+  | "Kesehatan & Gizi"
+  | "Alat Posyandu"
+  | "Edukasi PAUD"
+  | "Merchandise & Seragam"
+  | "Buku & Modul";
+
+export type StatusPesanan =
+  | "pending"
+  | "diproses"
+  | "dikirim"
+  | "selesai"
+  | "dibatalkan";
+
+export type MetodePembayaran =
+  | "qris"
+  | "transfer_bca"
+  | "transfer_mandiri"
+  | "transfer_bri";
+
+export interface MarketProduk {
+  id: string;
+  nama: string;
+  deskripsi: string;
+  kategori: KategoriMarket | string;
+  harga: number;
+  stok: number;
+  gambar_url: string;
+  is_active: boolean;
+  berat_gram?: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface MarketPesanan {
+  id: string;
+  user_id: string;
+  produk_id: string;
+  jumlah: number;
+  total_harga: number;
+  status_pembayaran: StatusPesanan;
+  metode_pembayaran: MetodePembayaran | string;
+  nama_penerima: string;
+  nomor_hp: string;
+  alamat_lengkap: string;
+  kecamatan: string;
+  kelurahan: string;
+  catatan?: string | null;
+  nomor_resi?: string | null;
+  bukti_bayar_url?: string | null;
+  created_at: string;
+  updated_at?: string;
+  produk?: MarketProduk | null;
+  profiles?: {
+    id?: string;
+    nama_lengkap?: string;
+    email?: string;
+    nomor_hp?: string | null;
+  } | null;
+}
+
