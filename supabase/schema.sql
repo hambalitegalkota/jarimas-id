@@ -33,6 +33,14 @@ BEGIN
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'profiles' AND column_name = 'avatar_url') THEN
     ALTER TABLE public.profiles ADD COLUMN avatar_url TEXT;
   END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'profiles' AND column_name = 'nama_lengkap') THEN
+    ALTER TABLE public.profiles ADD COLUMN nama_lengkap TEXT NOT NULL DEFAULT '';
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'profiles' AND column_name = 'email') THEN
+    ALTER TABLE public.profiles ADD COLUMN email TEXT;
+  END IF;
 END $$;
 
 -- Trigger otomatis sinkronisasi dari auth.users ke profiles
@@ -91,7 +99,7 @@ BEGIN
     ALTER TABLE public.komunitas ADD COLUMN jenis TEXT;
   END IF;
 
-  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'nama_komunitas' AND column_name = 'nama_komunitas') THEN
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'komunitas' AND column_name = 'nama_komunitas') THEN
     ALTER TABLE public.komunitas ADD COLUMN nama_komunitas TEXT;
   END IF;
 
@@ -138,9 +146,7 @@ BEGIN
   -- Jika jenis_komunitas bertipe ENUM (komunitas_type_enum), ubah ke TEXT agar tidak ada error type mismatch
   BEGIN
     ALTER TABLE public.komunitas ALTER COLUMN jenis_komunitas TYPE TEXT USING jenis_komunitas::text;
-  EXCEPTION WHEN OTHERS THEN
-    NULL;
-  END;
+  EXCEPTION WHEN OTHERS THEN NULL; END;
 
   -- Sinkronkan data yang sudah ada dengan safe casting
   BEGIN
@@ -182,6 +188,18 @@ CREATE TABLE IF NOT EXISTS public.anggota_komunitas (
 
 DO $$
 BEGIN
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'anggota_komunitas' AND column_name = 'peran') THEN
+    ALTER TABLE public.anggota_komunitas ADD COLUMN peran TEXT NOT NULL DEFAULT 'anggota';
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'anggota_komunitas' AND column_name = 'status') THEN
+    ALTER TABLE public.anggota_komunitas ADD COLUMN status TEXT NOT NULL DEFAULT 'pending';
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'anggota_komunitas' AND column_name = 'approved_by') THEN
+    ALTER TABLE public.anggota_komunitas ADD COLUMN approved_by UUID REFERENCES public.profiles(id) ON DELETE SET NULL;
+  END IF;
+
   -- Konversi kolom peran/status bertipe ENUM ke TEXT jika ada di database lama
   BEGIN
     ALTER TABLE public.anggota_komunitas ALTER COLUMN peran TYPE TEXT USING peran::text;
@@ -211,6 +229,14 @@ CREATE TABLE IF NOT EXISTS public.kabar_jarimas (
 
 DO $$
 BEGIN
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'kabar_jarimas' AND column_name = 'visibilitas') THEN
+    ALTER TABLE public.kabar_jarimas ADD COLUMN visibilitas TEXT NOT NULL DEFAULT 'publik';
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'kabar_jarimas' AND column_name = 'komunitas_id') THEN
+    ALTER TABLE public.kabar_jarimas ADD COLUMN komunitas_id UUID REFERENCES public.komunitas(id) ON DELETE SET NULL;
+  END IF;
+
   BEGIN
     ALTER TABLE public.kabar_jarimas ALTER COLUMN visibilitas TYPE TEXT USING visibilitas::text;
   EXCEPTION WHEN OTHERS THEN NULL; END;
@@ -227,6 +253,13 @@ CREATE TABLE IF NOT EXISTS public.reaksi_kabar (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   UNIQUE (kabar_id, user_id)
 );
+
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'reaksi_kabar' AND column_name = 'tipe_reaksi') THEN
+    ALTER TABLE public.reaksi_kabar ADD COLUMN tipe_reaksi TEXT NOT NULL DEFAULT '❤️';
+  END IF;
+END $$;
 
 CREATE INDEX IF NOT EXISTS idx_reaksi_kabar ON public.reaksi_kabar(kabar_id);
 
@@ -270,6 +303,34 @@ BEGIN
     ALTER TABLE public.data_anak ADD COLUMN status_approval TEXT NOT NULL DEFAULT 'pending';
   END IF;
 
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'data_anak' AND column_name = 'tinggal_bersama') THEN
+    ALTER TABLE public.data_anak ADD COLUMN tinggal_bersama TEXT NOT NULL DEFAULT 'Orang Tua';
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'data_anak' AND column_name = 'jarak_rumah_km') THEN
+    ALTER TABLE public.data_anak ADD COLUMN jarak_rumah_km NUMERIC(5,2) NOT NULL DEFAULT 0;
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'data_anak' AND column_name = 'is_sekolah') THEN
+    ALTER TABLE public.data_anak ADD COLUMN is_sekolah BOOLEAN NOT NULL DEFAULT FALSE;
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'data_anak' AND column_name = 'nama_sekolah') THEN
+    ALTER TABLE public.data_anak ADD COLUMN nama_sekolah TEXT;
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'data_anak' AND column_name = 'alasan_sekolah') THEN
+    ALTER TABLE public.data_anak ADD COLUMN alasan_sekolah TEXT;
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'data_anak' AND column_name = 'validated_by') THEN
+    ALTER TABLE public.data_anak ADD COLUMN validated_by UUID REFERENCES public.profiles(id) ON DELETE SET NULL;
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'data_anak' AND column_name = 'validated_at') THEN
+    ALTER TABLE public.data_anak ADD COLUMN validated_at TIMESTAMPTZ;
+  END IF;
+
   BEGIN
     ALTER TABLE public.data_anak ALTER COLUMN status_approval TYPE TEXT USING status_approval::text;
   EXCEPTION WHEN OTHERS THEN NULL; END;
@@ -298,10 +359,21 @@ CREATE TABLE IF NOT EXISTS public.ddks_records (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'ddks_records' AND column_name = 'panjang_badan') THEN
+    ALTER TABLE public.ddks_records ADD COLUMN panjang_badan NUMERIC(5,2);
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'ddks_records' AND column_name = 'catatan') THEN
+    ALTER TABLE public.ddks_records ADD COLUMN catatan TEXT;
+  END IF;
+END $$;
+
 CREATE INDEX IF NOT EXISTS idx_ddks_anak ON public.ddks_records(data_anak_id);
 
 -- ==============================================================================
--- 7. TABEL MARKET PRODUK & PESANAN
+-- 7. TABEL MARKET PRODUK & PESANAN (DENGAN ADAPTIVE COLUMN MIGRATION)
 -- ==============================================================================
 CREATE TABLE IF NOT EXISTS public.market_produk (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -316,6 +388,41 @@ CREATE TABLE IF NOT EXISTS public.market_produk (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'market_produk' AND column_name = 'nama') THEN
+    ALTER TABLE public.market_produk ADD COLUMN nama TEXT NOT NULL DEFAULT 'Produk';
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'market_produk' AND column_name = 'deskripsi') THEN
+    ALTER TABLE public.market_produk ADD COLUMN deskripsi TEXT NOT NULL DEFAULT '';
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'market_produk' AND column_name = 'kategori') THEN
+    ALTER TABLE public.market_produk ADD COLUMN kategori TEXT NOT NULL DEFAULT 'Umum';
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'market_produk' AND column_name = 'harga') THEN
+    ALTER TABLE public.market_produk ADD COLUMN harga INTEGER NOT NULL DEFAULT 0;
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'market_produk' AND column_name = 'stok') THEN
+    ALTER TABLE public.market_produk ADD COLUMN stok INTEGER NOT NULL DEFAULT 0;
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'market_produk' AND column_name = 'gambar_url') THEN
+    ALTER TABLE public.market_produk ADD COLUMN gambar_url TEXT NOT NULL DEFAULT '';
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'market_produk' AND column_name = 'is_active') THEN
+    ALTER TABLE public.market_produk ADD COLUMN is_active BOOLEAN NOT NULL DEFAULT TRUE;
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'market_produk' AND column_name = 'berat_gram') THEN
+    ALTER TABLE public.market_produk ADD COLUMN berat_gram INTEGER;
+  END IF;
+END $$;
 
 CREATE INDEX IF NOT EXISTS idx_market_produk_kategori ON public.market_produk(kategori);
 CREATE INDEX IF NOT EXISTS idx_market_produk_active ON public.market_produk(is_active);
@@ -342,6 +449,22 @@ CREATE TABLE IF NOT EXISTS public.market_pesanan (
 
 DO $$
 BEGIN
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'market_pesanan' AND column_name = 'status_pembayaran') THEN
+    ALTER TABLE public.market_pesanan ADD COLUMN status_pembayaran TEXT NOT NULL DEFAULT 'pending';
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'market_pesanan' AND column_name = 'metode_pembayaran') THEN
+    ALTER TABLE public.market_pesanan ADD COLUMN metode_pembayaran TEXT NOT NULL DEFAULT 'qris';
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'market_pesanan' AND column_name = 'nomor_resi') THEN
+    ALTER TABLE public.market_pesanan ADD COLUMN nomor_resi TEXT;
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'market_pesanan' AND column_name = 'bukti_bayar_url') THEN
+    ALTER TABLE public.market_pesanan ADD COLUMN bukti_bayar_url TEXT;
+  END IF;
+
   BEGIN
     ALTER TABLE public.market_pesanan ALTER COLUMN status_pembayaran TYPE TEXT USING status_pembayaran::text;
   EXCEPTION WHEN OTHERS THEN NULL; END;
