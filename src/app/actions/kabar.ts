@@ -55,7 +55,6 @@ export async function getKabarFeed(
         profiles (
           id,
           nama_lengkap,
-          avatar_url,
           is_super_admin
         ),
         komunitas (
@@ -76,8 +75,7 @@ export async function getKabarFeed(
           created_at,
           profiles (
             id,
-            nama_lengkap,
-            avatar_url
+            nama_lengkap
           )
         )
       `);
