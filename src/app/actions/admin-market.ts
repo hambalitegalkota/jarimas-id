@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/utils/supabase/server";
-import { SEED_PESANAN, SEED_MARKET_PRODUK } from "@/lib/constants/tegal-data";
+import { MarketProdukSchema } from "@/lib/zod-schemas";
 import type {
   MarketProduk,
   MarketPesanan,
@@ -45,26 +45,41 @@ export async function upsertProduk(formData: FormData): Promise<{
       };
     }
 
-    const id = formData.get("id")?.toString()?.trim() || `prod-${Date.now()}`;
+    const rawId = formData.get("id")?.toString()?.trim();
     const nama = formData.get("nama")?.toString()?.trim() || "";
     const deskripsi = formData.get("deskripsi")?.toString()?.trim() || "";
-    const kategori = formData.get("kategori")?.toString()?.trim() || "Kesehatan & Gizi";
+    const kategori = (formData.get("kategori")?.toString()?.trim() || "Kesehatan & Gizi") as any;
     const harga = parseInt(formData.get("harga")?.toString() || "0", 10);
     const stok = parseInt(formData.get("stok")?.toString() || "0", 10);
     const gambarUrl =
       formData.get("gambarUrl")?.toString()?.trim() ||
       "https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?w=800&auto=format&fit=crop&q=80";
     const isActive = formData.get("isActive") !== "false";
+    const beratGram = formData.get("beratGram")
+      ? parseInt(formData.get("beratGram")!.toString(), 10)
+      : undefined;
 
-    if (!nama || harga <= 0) {
+    // Validasi Zod
+    const validation = MarketProdukSchema.safeParse({
+      id: rawId || undefined,
+      nama,
+      deskripsi,
+      kategori,
+      harga,
+      stok,
+      gambarUrl,
+      isActive,
+      beratGram,
+    });
+
+    if (!validation.success) {
       return {
         success: false,
-        message: "Nama produk dan harga yang valid wajib diisi.",
+        message: validation.error.issues[0]?.message || "Data produk tidak valid.",
       };
     }
 
-    const payload = {
-      id,
+    const payload: Record<string, any> = {
       nama,
       deskripsi,
       kategori,
@@ -75,32 +90,52 @@ export async function upsertProduk(formData: FormData): Promise<{
       updated_at: new Date().toISOString(),
     };
 
-    const { data, error } = await supabase
-      .from("market_produk")
-      .upsert(payload)
-      .select()
-      .single();
-
-    if (error) {
-      console.warn("Supabase upsert warning, using memory fallback:", error.message);
+    if (beratGram) {
+      payload.berat_gram = beratGram;
     }
 
+    let result;
+    if (rawId) {
+      payload.id = rawId;
+      result = await supabase
+        .from("market_produk")
+        .upsert(payload)
+        .select()
+        .single();
+    } else {
+      payload.created_at = new Date().toISOString();
+      result = await supabase
+        .from("market_produk")
+        .insert(payload)
+        .select()
+        .single();
+    }
+
+    if (result.error) {
+      return {
+        success: false,
+        message: "Gagal menyimpan produk: " + result.error.message,
+      };
+    }
+
+    const savedProduct = result.data as MarketProduk;
+
     revalidatePath("/market");
-    revalidatePath(`/market/${id}`);
+    if (savedProduct?.id) {
+      revalidatePath(`/market/${savedProduct.id}`);
+    }
     revalidatePath("/admin/market");
 
     return {
       success: true,
       message: "Produk berhasil disimpan ke katalog Jarimas Market!",
-      produk: (data as MarketProduk) || (payload as MarketProduk),
+      produk: savedProduct,
     };
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error upserting product:", error);
-    revalidatePath("/market");
-    revalidatePath("/admin/market");
     return {
-      success: true,
-      message: "Produk berhasil disimpan (Mode Demonstrasi).",
+      success: false,
+      message: error?.message || "Terjadi kesalahan saat menyimpan produk.",
     };
   }
 }
@@ -122,8 +157,9 @@ export async function getSemuaPesanan(): Promise<{
 
     if (authError || !user) {
       return {
-        success: true,
-        data: SEED_PESANAN,
+        success: false,
+        message: "Akses ditolak. Silakan login terlebih dahulu.",
+        data: [],
       };
     }
 
@@ -151,21 +187,23 @@ export async function getSemuaPesanan(): Promise<{
       `)
       .order("created_at", { ascending: false });
 
-    if (error || !data || data.length === 0) {
+    if (error) {
       return {
-        success: true,
-        data: SEED_PESANAN,
+        success: false,
+        message: "Gagal memuat daftar pesanan: " + error.message,
+        data: [],
       };
     }
 
     return {
       success: true,
-      data: data as MarketPesanan[],
+      data: (data || []) as MarketPesanan[],
     };
-  } catch {
+  } catch (err: any) {
     return {
-      success: true,
-      data: SEED_PESANAN,
+      success: false,
+      message: err.message || "Gagal memuat data pesanan.",
+      data: [],
     };
   }
 }
@@ -191,26 +229,43 @@ export async function updateStatusPesanan(
     if (authError || !user) {
       return {
         success: false,
-        message: "Akses ditolak. Silakan masuk sebagai Super Admin.",
+        message: "Akses ditolak.",
       };
     }
 
-    const updatePayload: Record<string, unknown> = {
+    // Verifikasi Super Admin
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("is_super_admin")
+      .eq("id", user.id)
+      .single();
+
+    if (!profile?.is_super_admin) {
+      return {
+        success: false,
+        message: "Akses ditolak: Hanya Super Admin yang berhak memperbarui pesanan.",
+      };
+    }
+
+    const updatePayload: Record<string, any> = {
       status_pembayaran: statusBaru,
       updated_at: new Date().toISOString(),
     };
 
-    if (nomorResi) {
-      updatePayload.nomor_resi = nomorResi;
+    if (nomorResi !== undefined) {
+      updatePayload.nomor_resi = nomorResi.trim() || null;
     }
 
-    const { error } = await supabase
+    const { error: updateError } = await supabase
       .from("market_pesanan")
       .update(updatePayload)
       .eq("id", pesananId);
 
-    if (error) {
-      console.warn("Supabase update error:", error.message);
+    if (updateError) {
+      return {
+        success: false,
+        message: "Gagal memperbarui status: " + updateError.message,
+      };
     }
 
     revalidatePath("/admin/pesanan");
@@ -218,15 +273,12 @@ export async function updateStatusPesanan(
 
     return {
       success: true,
-      message: `Status pesanan #${pesananId} berhasil diubah menjadi '${statusBaru}'.`,
+      message: `Status pesanan berhasil diperbarui menjadi "${statusBaru}".`,
     };
-  } catch (error) {
-    console.error("Error updating order status:", error);
-    revalidatePath("/admin/pesanan");
-    revalidatePath("/market/pesanan");
+  } catch (err: any) {
     return {
-      success: true,
-      message: `Status pesanan berhasil diperbarui menjadi '${statusBaru}' (Mode Demonstrasi).`,
+      success: false,
+      message: err.message || "Gagal memperbarui status transaksi.",
     };
   }
 }

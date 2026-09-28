@@ -3,14 +3,12 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/utils/supabase/server";
 import { DataAnakSchema, DdksSchema } from "@/lib/zod-schemas";
+import { toValidUUID } from "@/lib/utils";
 import type {
   DataAnakItem,
   DdksRecord,
   JenisKomunitas,
 } from "@/types/database";
-
-import { SEED_DATA_ANAK } from "@/lib/constants/tegal-data";
-import { toValidUUID } from "@/lib/utils";
 
 /**
  * Server Action: Menyimpan Data Anak Baru beserta Record DDKS Awal
@@ -136,31 +134,45 @@ export async function createDataAnak(formData: FormData): Promise<{
       .select("id")
       .single();
 
-    const newChildId = insertedChild?.id || `anak-${Date.now()}`;
-
-    if (insertChildError && insertChildError.code !== "42P01") {
-      console.warn("Insert data_anak warning:", insertChildError.message);
+    if (insertChildError || !insertedChild) {
+      return {
+        success: false,
+        message:
+          "Gagal menyimpan data anak ke database: " +
+          (insertChildError?.message || "Kesalahan tidak diketahui"),
+      };
     }
+
+    const newChildId = insertedChild.id;
 
     // Simpan DDKS awal jika diisi
     if (hasDdksInput) {
-      const ddksPayload = {
-        data_anak_id: newChildId,
-        berat_badan: parseFloat(beratBadanStr || "0"),
-        tinggi_badan: parseFloat(tinggiBadanStr || "0"),
-        panjang_badan: panjangBadanStr ? parseFloat(panjangBadanStr) : null,
-        lingkar_kepala: parseFloat(lingkarKepalaStr || "0"),
-        catatan: catatanDdks || "Pengukuran awal pendaftaran anak.",
-        recorded_by: user.id,
-        created_at: new Date().toISOString(),
-      };
+      const ddksValidation = DdksSchema.safeParse({
+        beratBadan: parseFloat(beratBadanStr),
+        tinggiBadan: parseFloat(tinggiBadanStr),
+        panjangBadan: panjangBadanStr ? parseFloat(panjangBadanStr) : null,
+        lingkarKepala: parseFloat(lingkarKepalaStr),
+      });
 
-      const { error: ddksError } = await supabase
-        .from("ddks_records")
-        .insert(ddksPayload);
+      if (ddksValidation.success) {
+        const ddksPayload = {
+          data_anak_id: newChildId,
+          berat_badan: parseFloat(beratBadanStr || "0"),
+          tinggi_badan: parseFloat(tinggiBadanStr || "0"),
+          panjang_badan: panjangBadanStr ? parseFloat(panjangBadanStr) : null,
+          lingkar_kepala: parseFloat(lingkarKepalaStr || "0"),
+          catatan: catatanDdks || "Pengukuran awal pendaftaran anak.",
+          recorded_by: user.id,
+          created_at: new Date().toISOString(),
+        };
 
-      if (ddksError && ddksError.code !== "42P01") {
-        console.warn("Insert ddks_records warning:", ddksError.message);
+        const { error: ddksError } = await supabase
+          .from("ddks_records")
+          .insert(ddksPayload);
+
+        if (ddksError) {
+          console.warn("Insert ddks_records warning:", ddksError.message);
+        }
       }
     }
 
@@ -251,7 +263,7 @@ export async function validateDataAnak(dataAnakId: string): Promise<{
       })
       .eq("id", dataAnakId);
 
-    if (updateError && updateError.code !== "42P01") {
+    if (updateError) {
       return {
         success: false,
         message: "Gagal memvalidasi data: " + updateError.message,
@@ -382,10 +394,12 @@ export async function addDdksRecord(formData: FormData): Promise<{
       .select("*")
       .single();
 
-    if (insertError && insertError.code !== "42P01") {
+    if (insertError || !insertedRecord) {
       return {
         success: false,
-        message: "Gagal menyimpan DDKS: " + insertError.message,
+        message:
+          "Gagal menyimpan DDKS: " +
+          (insertError?.message || "Kesalahan database"),
       };
     }
 
@@ -393,9 +407,8 @@ export async function addDdksRecord(formData: FormData): Promise<{
     return {
       success: true,
       message: "Catatan pengukuran DDKS berhasil disimpan!",
-      record: insertedRecord || {
-        id: "ddks-" + Date.now(),
-        ...payload,
+      record: {
+        ...insertedRecord,
         profiles: { nama_lengkap: profile?.nama_lengkap || "Kader Posyandu" },
       },
     };
@@ -415,6 +428,7 @@ export async function getDataAnakByKomunitas(komunitasId: string): Promise<{
   data: DataAnakItem[];
   canValidate: boolean;
   canEditDdks: boolean;
+  message?: string;
 }> {
   try {
     const supabase = await createClient();
@@ -498,15 +512,21 @@ export async function getDataAnakByKomunitas(komunitasId: string): Promise<{
       .eq("komunitas_id", toValidUUID(komunitasId))
       .order("created_at", { ascending: false });
 
-    if (childError || !dbChildren || dbChildren.length === 0) {
-      // Gunakan seed data yang relevan dengan komunitas atau master list
-      const seedList = SEED_DATA_ANAK.filter(
-        (a) => a.komunitas_id === komunitasId || a.komunitas_id === toValidUUID(komunitasId) || true
-      );
+    if (childError) {
+      console.warn("Query data_anak error:", childError.message);
+      return {
+        success: false,
+        message: "Gagal memuat data anak: " + childError.message,
+        data: [],
+        canValidate,
+        canEditDdks,
+      };
+    }
 
+    if (!dbChildren || dbChildren.length === 0) {
       return {
         success: true,
-        data: seedList,
+        data: [],
         canValidate,
         canEditDdks,
       };
@@ -551,8 +571,9 @@ export async function getDataAnakByKomunitas(komunitasId: string): Promise<{
   } catch (err: any) {
     console.error("Error getDataAnakByKomunitas:", err);
     return {
-      success: true,
-      data: SEED_DATA_ANAK,
+      success: false,
+      message: err.message || "Gagal memuat data anak.",
+      data: [],
       canValidate: false,
       canEditDdks: false,
     };

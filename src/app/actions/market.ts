@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/utils/supabase/server";
-import { SEED_MARKET_PRODUK, SEED_PESANAN } from "@/lib/constants/tegal-data";
+import { PesananSchema } from "@/lib/zod-schemas";
 import type { MarketProduk, MarketPesanan } from "@/types/database";
 
 /**
@@ -21,22 +21,25 @@ export async function getMarketProduk(): Promise<{
       .eq("is_active", true)
       .order("created_at", { ascending: false });
 
-    if (error || !data || data.length === 0) {
-      // Fallback ke data seed jika tabel Supabase belum ada atau kosong
+    if (error) {
+      console.warn("Query market_produk error:", error.message);
       return {
-        success: true,
-        data: SEED_MARKET_PRODUK,
+        success: false,
+        message: "Gagal memuat produk: " + error.message,
+        data: [],
       };
     }
 
     return {
       success: true,
-      data: data as MarketProduk[],
+      data: (data || []) as MarketProduk[],
     };
-  } catch {
+  } catch (err: any) {
+    console.error("Error getMarketProduk:", err);
     return {
-      success: true,
-      data: SEED_MARKET_PRODUK,
+      success: false,
+      message: err.message || "Gagal memuat produk.",
+      data: [],
     };
   }
 }
@@ -50,24 +53,26 @@ export async function getProdukDetail(productId: string): Promise<{
   message?: string;
 }> {
   try {
+    if (!productId) {
+      return {
+        success: false,
+        message: "ID Produk tidak valid.",
+        data: null,
+      };
+    }
+
     const supabase = await createClient();
     const { data, error } = await supabase
       .from("market_produk")
       .select("*")
       .eq("id", productId)
-      .single();
+      .maybeSingle();
 
     if (error || !data) {
-      const fallbackItem = SEED_MARKET_PRODUK.find((p) => p.id === productId);
-      if (fallbackItem) {
-        return {
-          success: true,
-          data: fallbackItem,
-        };
-      }
       return {
         success: false,
         message: "Produk tidak ditemukan.",
+        data: null,
       };
     }
 
@@ -75,12 +80,11 @@ export async function getProdukDetail(productId: string): Promise<{
       success: true,
       data: data as MarketProduk,
     };
-  } catch {
-    const fallbackItem = SEED_MARKET_PRODUK.find((p) => p.id === productId);
+  } catch (err: any) {
     return {
-      success: !!fallbackItem,
-      data: fallbackItem || null,
-      message: fallbackItem ? undefined : "Produk tidak ditemukan.",
+      success: false,
+      message: err.message || "Gagal memuat detail produk.",
+      data: null,
     };
   }
 }
@@ -107,67 +111,66 @@ export async function createPesanan(formData: FormData): Promise<{
       };
     }
 
-    const produkId = formData.get("produkId")?.toString();
+    const produkId = formData.get("produkId")?.toString() || "";
     const jumlah = parseInt(formData.get("jumlah")?.toString() || "1", 10);
-    const namaPenerima = formData.get("namaPenerima")?.toString()?.trim();
-    const nomorHp = formData.get("nomorHp")?.toString()?.trim();
-    const alamatLengkap = formData.get("alamatLengkap")?.toString()?.trim();
-    const kecamatan = formData.get("kecamatan")?.toString()?.trim();
-    const kelurahan = formData.get("kelurahan")?.toString()?.trim();
+    const namaPenerima = formData.get("namaPenerima")?.toString()?.trim() || "";
+    const nomorHp = formData.get("nomorHp")?.toString()?.trim() || "";
+    const alamatLengkap = formData.get("alamatLengkap")?.toString()?.trim() || "";
+    const kecamatan = formData.get("kecamatan")?.toString()?.trim() || "";
+    const kelurahan = formData.get("kelurahan")?.toString()?.trim() || "";
     const catatan = formData.get("catatan")?.toString()?.trim() || null;
     const metodePembayaran =
       formData.get("metodePembayaran")?.toString() || "qris";
 
-    if (
-      !produkId ||
-      !namaPenerima ||
-      !nomorHp ||
-      !alamatLengkap ||
-      !kecamatan ||
-      !kelurahan
-    ) {
+    // Validasi Zod
+    const validation = PesananSchema.safeParse({
+      produkId,
+      jumlah,
+      namaPenerima,
+      nomorHp,
+      alamatLengkap,
+      kecamatan,
+      kelurahan,
+      catatan,
+      metodePembayaran,
+    });
+
+    if (!validation.success) {
       return {
         success: false,
-        message: "Mohon lengkapi seluruh data pengiriman yang wajib diisi.",
+        message:
+          validation.error.issues[0]?.message ||
+          "Mohon lengkapi seluruh data pengiriman.",
       };
     }
 
-    // Ambil detail produk untuk kalkulasi harga & cek stok
-    let produk: MarketProduk | undefined;
-    const { data: dbProduk } = await supabase
+    // Ambil detail produk dari database untuk kalkulasi harga & verifikasi stok
+    const { data: dbProduk, error: fetchProdukError } = await supabase
       .from("market_produk")
       .select("*")
       .eq("id", produkId)
       .single();
 
-    if (dbProduk) {
-      produk = dbProduk as MarketProduk;
-    } else {
-      produk = SEED_MARKET_PRODUK.find((p) => p.id === produkId);
-    }
-
-    if (!produk) {
+    if (fetchProdukError || !dbProduk) {
       return {
         success: false,
-        message: "Produk yang dipesan tidak ditemukan.",
+        message: "Produk yang dipesan tidak ditemukan di katalog.",
       };
     }
 
-    if (produk.stok < jumlah) {
+    if (dbProduk.stok < jumlah) {
       return {
         success: false,
-        message: `Stok produk tidak mencukupi. Tersisa ${produk.stok} unit.`,
+        message: `Stok produk tidak mencukupi. Tersisa ${dbProduk.stok} unit.`,
       };
     }
 
-    const totalHarga = produk.harga * jumlah;
-    const newPesananId = `pesanan-${Date.now()}`;
+    const totalHarga = dbProduk.harga * jumlah;
 
-    // Coba simpan ke database
+    // Simpan pesanan ke database Supabase
     const { data: insertData, error: insertError } = await supabase
       .from("market_pesanan")
       .insert({
-        id: newPesananId,
         user_id: user.id,
         produk_id: produkId,
         jumlah,
@@ -180,33 +183,45 @@ export async function createPesanan(formData: FormData): Promise<{
         kecamatan,
         kelurahan,
         catatan,
+        created_at: new Date().toISOString(),
       })
-      .select()
+      .select("id")
       .single();
 
-    if (!insertError && insertData) {
-      // Kurangi stok secara atomik
-      await supabase
-        .from("market_produk")
-        .update({ stok: Math.max(0, produk.stok - jumlah) })
-        .eq("id", produkId);
+    if (insertError || !insertData) {
+      return {
+        success: false,
+        message:
+          "Gagal memproses pesanan: " +
+          (insertError?.message || "Kesalahan database"),
+      };
     }
 
+    // Kurangi stok produk
+    const sisaStok = Math.max(0, dbProduk.stok - jumlah);
+    await supabase
+      .from("market_produk")
+      .update({
+        stok: sisaStok,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", produkId);
+
     revalidatePath("/market");
+    revalidatePath(`/market/${produkId}`);
     revalidatePath("/market/pesanan");
     revalidatePath("/admin/pesanan");
 
     return {
       success: true,
-      message: "Pesanan berhasil dibuat! Silakan lakukan pembayaran.",
-      pesananId: insertData?.id || newPesananId,
+      message: "Pesanan berhasil dibuat! Silakan lanjutkan pembayaran.",
+      pesananId: insertData.id,
     };
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error creating pesanan:", error);
     return {
-      success: true, // Graceful fallback
-      message: "Pesanan berhasil diproses (Mode Demonstrasi).",
-      pesananId: `pesanan-${Date.now()}`,
+      success: false,
+      message: error?.message || "Terjadi kesalahan saat memproses pesanan.",
     };
   }
 }
@@ -229,7 +244,7 @@ export async function getPesananUser(): Promise<{
     if (authError || !user) {
       return {
         success: true,
-        data: SEED_PESANAN,
+        data: [],
       };
     }
 
@@ -243,21 +258,24 @@ export async function getPesananUser(): Promise<{
       .eq("user_id", user.id)
       .order("created_at", { ascending: false });
 
-    if (error || !data || data.length === 0) {
+    if (error) {
+      console.warn("Query pesanan user error:", error.message);
       return {
-        success: true,
-        data: SEED_PESANAN,
+        success: false,
+        message: "Gagal memuat riwayat pesanan: " + error.message,
+        data: [],
       };
     }
 
     return {
       success: true,
-      data: data as MarketPesanan[],
+      data: (data || []) as MarketPesanan[],
     };
-  } catch {
+  } catch (err: any) {
     return {
-      success: true,
-      data: SEED_PESANAN,
+      success: false,
+      message: err.message || "Gagal memuat riwayat pesanan.",
+      data: [],
     };
   }
 }

@@ -18,7 +18,6 @@ import {
 import { createClient } from "@/utils/supabase/server";
 import { logoutUser } from "@/app/actions/auth";
 import { ApprovalList } from "@/components/admin/approval-list";
-import { findOrGenerateKomunitasSeed } from "@/lib/constants/tegal-data";
 import { formatPeranDisplay } from "@/lib/utils";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Sun } from "lucide-react";
@@ -57,7 +56,7 @@ export default async function ProfilePage() {
   let userCommunities: any[] = [];
 
   if (isSuperAdmin) {
-    // Ambil daftar permohonan pending untuk Super Admin secara tangguh & reliabel
+    // Ambil daftar permohonan pending untuk Super Admin
     const { data: rawPending } = await supabase
       .from("anggota_komunitas")
       .select("id, user_id, komunitas_id, peran, status, created_at")
@@ -80,7 +79,7 @@ export default async function ProfilePage() {
         komIds.length > 0
           ? await supabase
               .from("komunitas")
-              .select("id, nama_komunitas, jenis_komunitas, kecamatan, kelurahan, rw, rt")
+              .select("id, nama, jenis, kecamatan, kelurahan, rw, rt, lokasi")
               .in("id", komIds)
           : { data: [] };
 
@@ -90,14 +89,11 @@ export default async function ProfilePage() {
       pendingApprovals = rawPending.map((row: any) => {
         const prof = profileMap.get(row.user_id);
         const kom = komMap.get(row.komunitas_id);
-        const seed = findOrGenerateKomunitasSeed(row.komunitas_id);
 
-        const namaKomunitas =
-          kom?.nama_komunitas || kom?.nama || seed?.nama || "Komunitas Tegal";
-        const jenisKomunitas =
-          kom?.jenis_komunitas || kom?.jenis || seed?.jenis || "posyandu";
+        const namaKomunitas = kom?.nama || "Komunitas Tegal";
+        const jenisKomunitas = kom?.jenis || "posyandu";
         const lokasiKomunitas =
-          seed?.lokasi ||
+          kom?.lokasi ||
           [kom?.kelurahan, kom?.kecamatan, "Kota Tegal"].filter(Boolean).join(", ") ||
           "Kota Tegal";
 
@@ -124,7 +120,7 @@ export default async function ProfilePage() {
       });
     }
   } else {
-    // Ambil komunitas yang diikuti pengguna biasa secara tangguh
+    // Ambil komunitas yang diikuti pengguna biasa
     const { data: rawUserCommunities } = await supabase
       .from("anggota_komunitas")
       .select("id, komunitas_id, peran, status, created_at")
@@ -139,7 +135,7 @@ export default async function ProfilePage() {
         komIds.length > 0
           ? await supabase
               .from("komunitas")
-              .select("id, nama_komunitas, jenis_komunitas, kecamatan, kelurahan, rw, rt")
+              .select("id, nama, jenis, kecamatan, kelurahan, rw, rt, lokasi, deskripsi")
               .in("id", komIds)
           : { data: [] };
 
@@ -147,14 +143,11 @@ export default async function ProfilePage() {
 
       userCommunities = rawUserCommunities.map((row: any) => {
         const kom = komMap.get(row.komunitas_id);
-        const seed = findOrGenerateKomunitasSeed(row.komunitas_id);
 
-        const namaKomunitas =
-          kom?.nama_komunitas || kom?.nama || seed?.nama || "Komunitas Tegal";
-        const jenisKomunitas =
-          kom?.jenis_komunitas || kom?.jenis || seed?.jenis || "posyandu";
+        const namaKomunitas = kom?.nama || "Komunitas Tegal";
+        const jenisKomunitas = kom?.jenis || "posyandu";
         const lokasiKomunitas =
-          seed?.lokasi ||
+          kom?.lokasi ||
           [kom?.kelurahan, kom?.kecamatan, "Kota Tegal"].filter(Boolean).join(", ") ||
           "Kota Tegal";
 
@@ -169,7 +162,7 @@ export default async function ProfilePage() {
             nama: namaKomunitas,
             jenis: jenisKomunitas,
             lokasi: lokasiKomunitas,
-            deskripsi: seed?.deskripsi || null,
+            deskripsi: kom?.deskripsi || null,
           },
         };
       });

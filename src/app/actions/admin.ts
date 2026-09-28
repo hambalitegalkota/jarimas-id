@@ -2,7 +2,6 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/utils/supabase/server";
-import { findOrGenerateKomunitasSeed } from "@/lib/constants/tegal-data";
 import { formatPeranDisplay } from "@/lib/utils";
 import type { PendingApprovalItem } from "@/types/database";
 
@@ -81,25 +80,22 @@ export async function getPendingApprovals(): Promise<{
       komIds.length > 0
         ? await supabase
             .from("komunitas")
-            .select("id, nama_komunitas, jenis_komunitas, kecamatan, kelurahan, rw, rt")
+            .select("id, nama, jenis, kecamatan, kelurahan, rw, rt, lokasi")
             .in("id", komIds)
         : { data: [] };
 
     const profileMap = new Map((profilesData || []).map((p: any) => [p.id, p]));
     const komMap = new Map((komData || []).map((k: any) => [k.id, k]));
 
-    // Normalisasi struktur data hasil resolusi
+    // Normalisasi struktur data
     const items: PendingApprovalItem[] = rawPending.map((row: any) => {
       const prof = profileMap.get(row.user_id);
       const kom = komMap.get(row.komunitas_id);
-      const seed = findOrGenerateKomunitasSeed(row.komunitas_id);
 
-      const namaKomunitas =
-        kom?.nama_komunitas || kom?.nama || seed?.nama || "Komunitas Tegal";
-      const jenisKomunitas =
-        kom?.jenis_komunitas || kom?.jenis || seed?.jenis || "posyandu";
+      const namaKomunitas = kom?.nama || "Komunitas Tegal";
+      const jenisKomunitas = kom?.jenis || "posyandu";
       const lokasiKomunitas =
-        seed?.lokasi ||
+        kom?.lokasi ||
         [kom?.kelurahan, kom?.kecamatan, "Kota Tegal"].filter(Boolean).join(", ") ||
         "Kota Tegal";
 
@@ -160,6 +156,7 @@ export async function approveMemberRole(anggotaId: string): Promise<{
       .update({
         status: "approved",
         approved_by: user.id,
+        updated_at: new Date().toISOString(),
       })
       .eq("id", anggotaId);
 
@@ -207,6 +204,7 @@ export async function rejectMemberRole(anggotaId: string): Promise<{
       .update({
         status: "rejected",
         approved_by: user.id,
+        updated_at: new Date().toISOString(),
       })
       .eq("id", anggotaId);
 

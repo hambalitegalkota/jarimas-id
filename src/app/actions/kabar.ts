@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/utils/supabase/server";
+import { KabarSchema, KomentarSchema } from "@/lib/zod-schemas";
 import type {
   KabarItem,
   KomentarKabar,
@@ -201,28 +202,25 @@ export async function createKabar(formData: FormData): Promise<{
       };
     }
 
-    const konten = formData.get("konten")?.toString()?.trim();
-    const visibilitas =
-      (formData.get("visibilitas")?.toString() as VisibilitasKabar) || "publik";
+    const konten = formData.get("konten")?.toString()?.trim() || "";
+    const visibilitas = (formData.get("visibilitas")?.toString() as any) || "publik";
 
-    if (!konten || konten.length === 0) {
+    const validation = KabarSchema.safeParse({
+      konten,
+      visibilitas,
+    });
+
+    if (!validation.success) {
       return {
         success: false,
-        message: "Konten kabar tidak boleh kosong.",
-      };
-    }
-
-    if (konten.length > 2000) {
-      return {
-        success: false,
-        message: "Konten kabar maksimal 2000 karakter.",
+        message: validation.error.issues[0]?.message || "Konten kabar tidak valid.",
       };
     }
 
     const { error: insertError } = await supabase.from("kabar_jarimas").insert({
       user_id: user.id,
-      konten: konten,
-      visibilitas: visibilitas,
+      konten,
+      visibilitas,
       created_at: new Date().toISOString(),
     });
 
@@ -380,18 +378,16 @@ export async function addKomentarKabar(
       };
     }
 
-    const trimmedText = komentarText?.trim();
-    if (!trimmedText || trimmedText.length === 0) {
-      return {
-        success: false,
-        message: "Komentar tidak boleh kosong.",
-      };
-    }
+    const trimmedText = komentarText?.trim() || "";
+    const validation = KomentarSchema.safeParse({
+      kabarId,
+      konten: trimmedText,
+    });
 
-    if (trimmedText.length > 500) {
+    if (!validation.success) {
       return {
         success: false,
-        message: "Komentar maksimal 500 karakter.",
+        message: validation.error.issues[0]?.message || "Komentar tidak valid.",
       };
     }
 
