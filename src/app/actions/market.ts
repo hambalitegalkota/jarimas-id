@@ -30,9 +30,18 @@ export async function getMarketProduk(): Promise<{
       };
     }
 
+    const mapped = (data || []).map((p: any) => ({
+      ...p,
+      nama: p.nama || p.nama_produk || "Produk",
+      deskripsi: p.deskripsi || p.deskripsi_produk || "",
+      kategori: p.kategori || p.kategori_produk || "Umum",
+      gambar_url: p.gambar_url || p.foto_url || "",
+      is_active: p.is_active !== undefined ? p.is_active : true,
+    }));
+
     return {
       success: true,
-      data: (data || []) as MarketProduk[],
+      data: mapped as MarketProduk[],
     };
   } catch (err: any) {
     console.error("Error getMarketProduk:", err);
@@ -76,9 +85,18 @@ export async function getProdukDetail(productId: string): Promise<{
       };
     }
 
+    const mapped = {
+      ...data,
+      nama: data.nama || data.nama_produk || "Produk",
+      deskripsi: data.deskripsi || data.deskripsi_produk || "",
+      kategori: data.kategori || data.kategori_produk || "Umum",
+      gambar_url: data.gambar_url || data.foto_url || "",
+      is_active: data.is_active !== undefined ? data.is_active : true,
+    };
+
     return {
       success: true,
-      data: data as MarketProduk,
+      data: mapped as MarketProduk,
     };
   } catch (err: any) {
     return {

@@ -81,6 +81,7 @@ export async function upsertProduk(formData: FormData): Promise<{
 
     const payload: Record<string, any> = {
       nama,
+      nama_produk: nama,
       deskripsi,
       kategori,
       harga,

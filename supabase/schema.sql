@@ -98,6 +98,14 @@ BEGIN
     ALTER TABLE public.komunitas ALTER COLUMN jenis_komunitas TYPE TEXT USING jenis_komunitas::text;
   EXCEPTION WHEN OTHERS THEN NULL; END;
 
+  BEGIN
+    ALTER TABLE public.komunitas ALTER COLUMN nama_komunitas DROP NOT NULL;
+  EXCEPTION WHEN OTHERS THEN NULL; END;
+
+  BEGIN
+    ALTER TABLE public.komunitas ALTER COLUMN nama DROP NOT NULL;
+  EXCEPTION WHEN OTHERS THEN NULL; END;
+
   -- Sinkronkan data yang sudah ada dengan safe casting
   BEGIN
     UPDATE public.komunitas SET nama = nama_komunitas WHERE (nama IS NULL OR nama = '') AND nama_komunitas IS NOT NULL;
@@ -318,11 +326,12 @@ END $$;
 CREATE INDEX IF NOT EXISTS idx_ddks_anak ON public.ddks_records(data_anak_id);
 
 -- ==============================================================================
--- 7. TABEL MARKET PRODUK & PESANAN
+-- 7. TABEL MARKET PRODUK & PESANAN (DENGAN DUAL COLUMN NAMA & NAMA_PRODUK)
 -- ==============================================================================
 CREATE TABLE IF NOT EXISTS public.market_produk (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  nama TEXT NOT NULL DEFAULT 'Produk',
+  nama TEXT,
+  nama_produk TEXT,
   deskripsi TEXT NOT NULL DEFAULT '',
   kategori TEXT NOT NULL DEFAULT 'Umum',
   harga INTEGER NOT NULL DEFAULT 0 CHECK (harga >= 0),
@@ -335,7 +344,8 @@ CREATE TABLE IF NOT EXISTS public.market_produk (
 );
 
 -- Pastikan SEMUA kolom market_produk tersedia
-ALTER TABLE public.market_produk ADD COLUMN IF NOT EXISTS nama TEXT NOT NULL DEFAULT 'Produk';
+ALTER TABLE public.market_produk ADD COLUMN IF NOT EXISTS nama TEXT;
+ALTER TABLE public.market_produk ADD COLUMN IF NOT EXISTS nama_produk TEXT;
 ALTER TABLE public.market_produk ADD COLUMN IF NOT EXISTS deskripsi TEXT NOT NULL DEFAULT '';
 ALTER TABLE public.market_produk ADD COLUMN IF NOT EXISTS kategori TEXT NOT NULL DEFAULT 'Umum';
 ALTER TABLE public.market_produk ADD COLUMN IF NOT EXISTS harga INTEGER NOT NULL DEFAULT 0;
@@ -346,6 +356,35 @@ ALTER TABLE public.market_produk ADD COLUMN IF NOT EXISTS berat_gram INTEGER DEF
 ALTER TABLE public.market_produk ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT now();
 ALTER TABLE public.market_produk ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT now();
 
+DO $$
+BEGIN
+  -- Lepas NOT NULL constraint pada nama_produk dan nama jika ada di database lama
+  BEGIN
+    ALTER TABLE public.market_produk ALTER COLUMN nama_produk DROP NOT NULL;
+  EXCEPTION WHEN OTHERS THEN NULL; END;
+
+  BEGIN
+    ALTER TABLE public.market_produk ALTER COLUMN nama DROP NOT NULL;
+  EXCEPTION WHEN OTHERS THEN NULL; END;
+
+  BEGIN
+    ALTER TABLE public.market_produk ALTER COLUMN deskripsi DROP NOT NULL;
+  EXCEPTION WHEN OTHERS THEN NULL; END;
+
+  BEGIN
+    ALTER TABLE public.market_produk ALTER COLUMN kategori DROP NOT NULL;
+  EXCEPTION WHEN OTHERS THEN NULL; END;
+
+  -- Sinkronkan data nama dan nama_produk
+  BEGIN
+    UPDATE public.market_produk SET nama = nama_produk WHERE (nama IS NULL OR nama = '') AND nama_produk IS NOT NULL;
+  EXCEPTION WHEN OTHERS THEN NULL; END;
+
+  BEGIN
+    UPDATE public.market_produk SET nama_produk = nama WHERE (nama_produk IS NULL OR nama_produk = '') AND nama IS NOT NULL;
+  EXCEPTION WHEN OTHERS THEN NULL; END;
+END $$;
+
 CREATE INDEX IF NOT EXISTS idx_market_produk_kategori ON public.market_produk(kategori);
 CREATE INDEX IF NOT EXISTS idx_market_produk_active ON public.market_produk(is_active);
 
@@ -354,7 +393,7 @@ CREATE TABLE IF NOT EXISTS public.market_pesanan (
   user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
   produk_id UUID NOT NULL REFERENCES public.market_produk(id) ON DELETE RESTRICT,
   jumlah INTEGER NOT NULL DEFAULT 1 CHECK (jumlah > 0),
-  total_harga INTEGER NOT NULL DEFAULT 0 CHECK (total_harga >= 0),
+  total_harga INTEGER NOT NULL CHECK (total_harga >= 0),
   status_pembayaran TEXT NOT NULL DEFAULT 'pending',
   metode_pembayaran TEXT NOT NULL DEFAULT 'qris',
   nama_penerima TEXT NOT NULL DEFAULT '',
@@ -562,10 +601,11 @@ CREATE POLICY "Super Admin dapat memperbarui status pesanan" ON public.market_pe
 );
 
 -- ==============================================================================
--- 9. SEED PRODUK KATALOG AWAL (IDEMPOTENT INSERT)
+-- 9. SEED PRODUK KATALOG AWAL (IDEMPOTENT INSERT DENGAN DUAL COLUMN SUPPORT)
 -- ==============================================================================
-INSERT INTO public.market_produk (nama, deskripsi, kategori, harga, stok, gambar_url, is_active, berat_gram)
+INSERT INTO public.market_produk (nama, nama_produk, deskripsi, kategori, harga, stok, gambar_url, is_active, berat_gram)
 SELECT 
+  'Paket Alat Permainan Edukatif (APE Kit) PAUD & Balita',
   'Paket Alat Permainan Edukatif (APE Kit) PAUD & Balita',
   'Paket mainan edukatif kayu bersertifikasi SNI untuk melatih motorik halus, pengenalan warna, bentuk geometri, dan stimulasi kognitif anak usia 1-6 tahun. Cocok untuk Posyandu dan Satuan PAUD.',
   'Edukasi PAUD',
@@ -574,10 +614,15 @@ SELECT
   'https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?w=800&auto=format&fit=crop&q=80',
   true,
   1200
-WHERE NOT EXISTS (SELECT 1 FROM public.market_produk WHERE nama = 'Paket Alat Permainan Edukatif (APE Kit) PAUD & Balita');
+WHERE NOT EXISTS (
+  SELECT 1 FROM public.market_produk 
+  WHERE nama = 'Paket Alat Permainan Edukatif (APE Kit) PAUD & Balita'
+     OR nama_produk = 'Paket Alat Permainan Edukatif (APE Kit) PAUD & Balita'
+);
 
-INSERT INTO public.market_produk (nama, deskripsi, kategori, harga, stok, gambar_url, is_active, berat_gram)
+INSERT INTO public.market_produk (nama, nama_produk, deskripsi, kategori, harga, stok, gambar_url, is_active, berat_gram)
 SELECT 
+  'Pita LiLA & Meteran Lingkar Kepala Standar Kemenkes',
   'Pita LiLA & Meteran Lingkar Kepala Standar Kemenkes',
   'Pita ukur Lingkar Lengan Atas (LiLA) dan meteran lingkar kepala anak dengan indikator warna deteksi dini risiko KEK (Kekurangan Energi Kronis) dan stunting.',
   'Alat Posyandu',
@@ -586,10 +631,15 @@ SELECT
   'https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?w=800&auto=format&fit=crop&q=80',
   true,
   150
-WHERE NOT EXISTS (SELECT 1 FROM public.market_produk WHERE nama = 'Pita LiLA & Meteran Lingkar Kepala Standar Kemenkes');
+WHERE NOT EXISTS (
+  SELECT 1 FROM public.market_produk 
+  WHERE nama = 'Pita LiLA & Meteran Lingkar Kepala Standar Kemenkes'
+     OR nama_produk = 'Pita LiLA & Meteran Lingkar Kepala Standar Kemenkes'
+);
 
-INSERT INTO public.market_produk (nama, deskripsi, kategori, harga, stok, gambar_url, is_active, berat_gram)
+INSERT INTO public.market_produk (nama, nama_produk, deskripsi, kategori, harga, stok, gambar_url, is_active, berat_gram)
 SELECT 
+  'Buku KIA (Kesehatan Ibu & Anak) Edisi Resmi Revisi Kota Tegal',
   'Buku KIA (Kesehatan Ibu & Anak) Edisi Resmi Revisi Kota Tegal',
   'Buku pedoman catatan kesehatan ibu hamil, nifas, bayi, dan balita lengkap dengan kurva KMS (Kartu Menuju Sehat) WHO terbaru dan grafik evaluasi imunisasi.',
   'Buku & Modul',
@@ -598,10 +648,15 @@ SELECT
   'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=800&auto=format&fit=crop&q=80',
   true,
   300
-WHERE NOT EXISTS (SELECT 1 FROM public.market_produk WHERE nama = 'Buku KIA (Kesehatan Ibu & Anak) Edisi Resmi Revisi Kota Tegal');
+WHERE NOT EXISTS (
+  SELECT 1 FROM public.market_produk 
+  WHERE nama = 'Buku KIA (Kesehatan Ibu & Anak) Edisi Resmi Revisi Kota Tegal'
+     OR nama_produk = 'Buku KIA (Kesehatan Ibu & Anak) Edisi Resmi Revisi Kota Tegal'
+);
 
-INSERT INTO public.market_produk (nama, deskripsi, kategori, harga, stok, gambar_url, is_active, berat_gram)
+INSERT INTO public.market_produk (nama, nama_produk, deskripsi, kategori, harga, stok, gambar_url, is_active, berat_gram)
 SELECT 
+  'Timbangan Digital Bayi & Balita Presisi Tinggi (Kapasitas 25kg)',
   'Timbangan Digital Bayi & Balita Presisi Tinggi (Kapasitas 25kg)',
   'Timbangan digital multifungsi dengan nampan ergonomis aman untuk bayi baru lahir hingga balita mandiri. Tingkat akurasi 5 gram, layar LCD backlight terang.',
   'Alat Posyandu',
@@ -610,10 +665,15 @@ SELECT
   'https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=800&auto=format&fit=crop&q=80',
   true,
   2500
-WHERE NOT EXISTS (SELECT 1 FROM public.market_produk WHERE nama = 'Timbangan Digital Bayi & Balita Presisi Tinggi (Kapasitas 25kg)');
+WHERE NOT EXISTS (
+  SELECT 1 FROM public.market_produk 
+  WHERE nama = 'Timbangan Digital Bayi & Balita Presisi Tinggi (Kapasitas 25kg)'
+     OR nama_produk = 'Timbangan Digital Bayi & Balita Presisi Tinggi (Kapasitas 25kg)'
+);
 
-INSERT INTO public.market_produk (nama, deskripsi, kategori, harga, stok, gambar_url, is_active, berat_gram)
+INSERT INTO public.market_produk (nama, nama_produk, deskripsi, kategori, harga, stok, gambar_url, is_active, berat_gram)
 SELECT 
+  'Kaos Polo Seragam Kader Jarimas (Bahan Katun Pique Premium)',
   'Kaos Polo Seragam Kader Jarimas (Bahan Katun Pique Premium)',
   'Seragam resmi Kader Posyandu dan Pengurus RT Jarimas-ID dengan bordir logo Jarimas presisi. Bahan adem, menyerap keringat, dan tahan luntur.',
   'Merchandise & Seragam',
@@ -622,10 +682,15 @@ SELECT
   'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800&auto=format&fit=crop&q=80',
   true,
   250
-WHERE NOT EXISTS (SELECT 1 FROM public.market_produk WHERE nama = 'Kaos Polo Seragam Kader Jarimas (Bahan Katun Pique Premium)');
+WHERE NOT EXISTS (
+  SELECT 1 FROM public.market_produk 
+  WHERE nama = 'Kaos Polo Seragam Kader Jarimas (Bahan Katun Pique Premium)'
+     OR nama_produk = 'Kaos Polo Seragam Kader Jarimas (Bahan Katun Pique Premium)'
+);
 
-INSERT INTO public.market_produk (nama, deskripsi, kategori, harga, stok, gambar_url, is_active, berat_gram)
+INSERT INTO public.market_produk (nama, nama_produk, deskripsi, kategori, harga, stok, gambar_url, is_active, berat_gram)
 SELECT 
+  'Paket Suplemen MPASI & Taburia Multivitamin Balita Sehat',
   'Paket Suplemen MPASI & Taburia Multivitamin Balita Sehat',
   'Paket mikronutrien tabur bubuk untuk memperkaya kandungan gizi makanan pendamping ASI balita usia 6-24 bulan, diperkaya zat besi, zink, dan 14 vitamin esensial.',
   'Kesehatan & Gizi',
@@ -634,4 +699,8 @@ SELECT
   'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=800&auto=format&fit=crop&q=80',
   true,
   200
-WHERE NOT EXISTS (SELECT 1 FROM public.market_produk WHERE nama = 'Paket Suplemen MPASI & Taburia Multivitamin Balita Sehat');
+WHERE NOT EXISTS (
+  SELECT 1 FROM public.market_produk 
+  WHERE nama = 'Paket Suplemen MPASI & Taburia Multivitamin Balita Sehat'
+     OR nama_produk = 'Paket Suplemen MPASI & Taburia Multivitamin Balita Sehat'
+);
