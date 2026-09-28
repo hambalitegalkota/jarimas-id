@@ -65,24 +65,24 @@ export default async function KomunitasDetailPage({
   );
 
   return (
-    <div className="flex flex-col flex-1 px-4 py-5 gap-5">
+    <div className="flex flex-col flex-1 px-4 py-8 sm:px-6 md:px-8 gap-6">
       {/* Back Navigation Bar */}
       <div className="flex items-center justify-between">
         <Link
           href="/komunitas"
-          className="inline-flex min-h-[44px] items-center gap-2 rounded-2xl bg-card border border-border px-3.5 py-2 text-xs font-bold text-foreground shadow-2xs transition-all active:scale-95 hover:bg-muted"
+          className="inline-flex h-9 items-center gap-2 rounded-md bg-zinc-900 border border-border px-3 text-xs font-mono text-foreground transition-all hover:bg-zinc-800"
         >
-          <ArrowLeft className="h-4 w-4" />
-          <span>Kembali ke Komunitas</span>
+          <ArrowLeft className="h-3.5 w-3.5" />
+          <span>KEMBALI KE KOMUNITAS</span>
         </Link>
 
         {isAdminOrKader && (
           <Link
             href={`/komunitas/${id}/anggota`}
-            className="inline-flex min-h-[44px] items-center gap-1.5 rounded-2xl bg-primary px-3.5 py-2 text-xs font-bold text-white shadow-md shadow-primary/20 transition-all active:scale-95 hover:brightness-105"
+            className="inline-flex h-9 items-center gap-1.5 rounded-md bg-foreground border border-zinc-700 px-3 text-xs font-mono font-bold text-background transition-all hover:bg-zinc-200"
           >
-            <Settings2 className="h-4 w-4" />
-            <span>Kelola Anggota</span>
+            <Settings2 className="h-3.5 w-3.5" />
+            <span>KELOLA ANGGOTA</span>
           </Link>
         )}
       </div>

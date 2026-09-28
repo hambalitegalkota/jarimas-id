@@ -37,54 +37,56 @@ export function KomunitasCard({
     const rw = komunitas.rw || "01";
     const kel = komunitas.kelurahan || "Kejambon";
     const kec = komunitas.kecamatan || "Tegal Timur";
-    formattedTitle = `Warga: RT ${rt}, RW ${rw}, ${kel}, ${kec}, Kota Tegal`;
+    formattedTitle = `Warga: RT ${rt}, RW ${rw}, ${kel}, ${kec}`;
   } else if (komunitas.jenis === "posyandu") {
     if (!formattedTitle.startsWith("Posyandu")) {
-      formattedTitle = `Posyandu ${komunitas.nama}, ${komunitas.kelurahan || ""}, ${komunitas.kecamatan || ""}, Kota Tegal`;
+      formattedTitle = `Posyandu ${komunitas.nama}`;
     }
   } else if (komunitas.jenis === "satuan_paud") {
-    if (!formattedTitle.startsWith("Satuan PAUD") && !formattedTitle.startsWith("PAUD") && !formattedTitle.startsWith("RA") && !formattedTitle.startsWith("TK") && !formattedTitle.startsWith("KB")) {
-      formattedTitle = `Satuan PAUD ${komunitas.nama}, ${komunitas.kelurahan || ""}, ${komunitas.kecamatan || ""}, Kota Tegal`;
+    if (
+      !formattedTitle.startsWith("Satuan PAUD") &&
+      !formattedTitle.startsWith("PAUD") &&
+      !formattedTitle.startsWith("RA") &&
+      !formattedTitle.startsWith("TK") &&
+      !formattedTitle.startsWith("KB")
+    ) {
+      formattedTitle = `Satuan PAUD ${komunitas.nama}`;
     }
   }
 
   return (
     <>
-      <div className="overflow-hidden rounded-3xl border border-border bg-card p-5 shadow-sm transition-all hover:shadow-md space-y-4">
+      <div className="rounded-lg border border-border bg-card p-5 space-y-4 transition-colors hover:border-zinc-700">
         {/* Header Title & Badge Tipe */}
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-3">
             <div
               className={cn(
-                "flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl font-bold shadow-xs",
+                "flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-border text-foreground font-mono",
                 komunitas.jenis === "warga_kita" &&
-                  "bg-emerald-500/10 text-primary",
+                  "bg-emerald-500/10 text-emerald-400 border-emerald-500/30",
                 komunitas.jenis === "posyandu" &&
-                  "bg-accent/10 text-accent",
+                  "bg-cyan-500/10 text-cyan-400 border-cyan-500/30",
                 komunitas.jenis === "satuan_paud" &&
-                  "bg-amber-500/10 text-amber-600"
+                  "bg-amber-500/10 text-amber-400 border-amber-500/30"
               )}
             >
-              {komunitas.jenis === "warga_kita" && <Users className="h-5 w-5" />}
-              {komunitas.jenis === "posyandu" && (
-                <Sparkles className="h-5 w-5" />
-              )}
-              {komunitas.jenis === "satuan_paud" && (
-                <Building2 className="h-5 w-5" />
-              )}
+              {komunitas.jenis === "warga_kita" && <Users className="h-4 w-4" />}
+              {komunitas.jenis === "posyandu" && <Sparkles className="h-4 w-4" />}
+              {komunitas.jenis === "satuan_paud" && <Building2 className="h-4 w-4" />}
             </div>
 
             <div className="space-y-1">
-              <h3 className="text-sm font-bold text-foreground leading-snug">
+              <h3 className="text-sm font-semibold text-foreground leading-snug tracking-tight">
                 {formattedTitle}
               </h3>
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <span className="flex items-center gap-1 font-medium text-foreground/80">
-                  <MapPin className="h-3 w-3 text-muted-foreground" />
+              <div className="flex items-center gap-2 text-xs text-muted-foreground font-mono">
+                <span className="flex items-center gap-1">
+                  <MapPin className="h-3 w-3" />
                   {komunitas.kelurahan}, {komunitas.kecamatan}
                 </span>
                 <span>•</span>
-                <span>{komunitas.jumlah_anggota} Anggota</span>
+                <span>{komunitas.jumlah_anggota} ANGGOTA</span>
               </div>
             </div>
           </div>
@@ -93,21 +95,21 @@ export function KomunitasCard({
           {membership && (
             <div className="shrink-0">
               {membership.status === "approved" && (
-                <span className="inline-flex items-center gap-1 rounded-xl bg-emerald-50 px-2.5 py-1 text-[11px] font-bold text-emerald-700 border border-emerald-200 dark:bg-emerald-950 dark:border-emerald-800 dark:text-emerald-300">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
-                  <span>{membership.peran}</span>
+                <span className="cyber-badge font-mono text-[10px]">
+                  <CheckCircle2 className="h-3 w-3" />
+                  <span>{membership.peran.toUpperCase()}</span>
                 </span>
               )}
               {membership.status === "pending" && (
-                <span className="inline-flex items-center gap-1 rounded-xl bg-amber-50 px-2.5 py-1 text-[11px] font-bold text-amber-700 border border-amber-200 dark:bg-amber-950 dark:border-amber-800 dark:text-amber-300">
-                  <Clock className="h-3.5 w-3.5 text-amber-500" />
-                  <span>Menunggu Verifikasi</span>
+                <span className="inline-flex items-center gap-1 rounded border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-[10px] font-mono text-amber-400">
+                  <Clock className="h-3 w-3" />
+                  <span>PENDING</span>
                 </span>
               )}
               {membership.status === "rejected" && (
-                <span className="inline-flex items-center gap-1 rounded-xl bg-red-50 px-2.5 py-1 text-[11px] font-bold text-red-700 border border-red-200 dark:bg-red-950 dark:border-red-800 dark:text-red-300">
-                  <XCircle className="h-3.5 w-3.5 text-destructive" />
-                  <span>Ditolak</span>
+                <span className="inline-flex items-center gap-1 rounded border border-destructive/30 bg-destructive/10 px-2 py-0.5 text-[10px] font-mono text-destructive">
+                  <XCircle className="h-3 w-3" />
+                  <span>DITOLAK</span>
                 </span>
               )}
             </div>
@@ -122,20 +124,20 @@ export function KomunitasCard({
         )}
 
         {komunitas.jadwal && (
-          <div className="flex items-center gap-1.5 rounded-xl bg-muted/50 px-3 py-2 text-[11px] text-muted-foreground border border-border/50">
-            <Calendar className="h-3.5 w-3.5 text-primary shrink-0" />
+          <div className="flex items-center gap-1.5 rounded border border-border/70 bg-background/40 px-2.5 py-1.5 text-[11px] text-muted-foreground font-mono">
+            <Calendar className="h-3 w-3 text-emerald-400 shrink-0" />
             <span className="truncate">{komunitas.jadwal}</span>
           </div>
         )}
 
         {/* Action Buttons Bar */}
-        <div className="flex items-center gap-2 pt-1 border-t border-border/60">
+        <div className="flex items-center gap-2 pt-2 border-t border-border">
           <Link
             href={`/komunitas/${komunitas.id}`}
-            className="flex flex-1 min-h-[44px] items-center justify-center gap-1.5 rounded-2xl bg-secondary px-4 py-2 text-xs font-bold text-secondary-foreground border border-secondary transition-all active:scale-95 hover:bg-secondary/80"
+            className="flex flex-1 h-9 items-center justify-center gap-1.5 rounded-md border border-border bg-card px-3 text-xs font-mono font-medium text-foreground transition-colors hover:bg-muted"
           >
-            <span>Lihat Detail</span>
-            <ArrowRight className="h-3.5 w-3.5" />
+            <span>Detail</span>
+            <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
           </Link>
 
           {!membership && (
@@ -147,21 +149,23 @@ export function KomunitasCard({
                 }
                 setIsJoinModalOpen(true);
               }}
-              className="flex flex-1 min-h-[44px] items-center justify-center gap-1.5 rounded-2xl bg-accent px-4 py-2 text-xs font-bold text-white shadow-md shadow-accent/20 transition-all active:scale-95 hover:brightness-110"
+              className="flex flex-1 h-9 items-center justify-center gap-1.5 rounded-md bg-foreground px-3 text-xs font-medium text-background transition-colors hover:bg-foreground/90 font-mono"
             >
               <UserPlus className="h-3.5 w-3.5" />
-              <span>Minta Bergabung</span>
+              <span>Gabung</span>
             </button>
           )}
         </div>
       </div>
 
-      {/* Modal Join */}
-      <JoinKomunitasModal
-        komunitas={komunitas}
-        isOpen={isJoinModalOpen}
-        onClose={() => setIsJoinModalOpen(false)}
-      />
+      {/* Pop Up Minta Bergabung Modal */}
+      {isJoinModalOpen && (
+        <JoinKomunitasModal
+          komunitas={komunitas}
+          isOpen={isJoinModalOpen}
+          onClose={() => setIsJoinModalOpen(false)}
+        />
+      )}
     </>
   );
 }

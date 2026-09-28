@@ -14,6 +14,7 @@ import {
   AlertTriangle,
   Loader2,
 } from "lucide-react";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { registerUser } from "@/app/actions/auth";
 import type { AuthActionState } from "@/types/database";
 
@@ -30,40 +31,42 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
 
   return (
-    <div className="flex min-h-[calc(100vh-5rem)] flex-col justify-center px-4 py-8 sm:px-6">
+    <div className="flex min-h-[calc(100vh-5rem)] flex-col justify-center px-4 py-12 sm:px-6">
       <div className="w-full max-w-md mx-auto space-y-6">
-        {/* Header Branding */}
-        <div className="text-center space-y-2">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-white shadow-lg shadow-primary/25">
-            <Sparkles className="h-7 w-7" />
+        {/* Header Branding & Theme Toggle */}
+        <div className="relative text-center space-y-2">
+          <div className="absolute right-0 top-0">
+            <ThemeToggle variant="compact" />
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+          <div className="flex justify-center">
+            <span className="cyber-badge">JARIMAS REGISTRATION</span>
+          </div>
+          <h1 className="text-3xl font-black tracking-tighter text-foreground">
             Buat Akun Baru
           </h1>
-          <p className="text-sm text-muted-foreground">
-            Bergabunglah dengan ekosistem parenting &amp; pemantauan tumbuh kembang{" "}
-            <span className="font-semibold text-primary">JARIMAS-ID</span>
+          <p className="text-xs text-muted-foreground">
+            Bergabunglah dengan ekosistem tumbuh kembang anak Kota Tegal
           </p>
         </div>
 
         {/* Success Alert */}
         {state.success ? (
-          <div className="rounded-2xl border border-emerald-200 bg-emerald-50/90 p-5 text-emerald-900 shadow-sm backdrop-blur-sm dark:border-emerald-900/50 dark:bg-emerald-950/50 dark:text-emerald-200 animate-in fade-in zoom-in-95">
+          <div className="rounded-lg border border-emerald-500/40 bg-emerald-500/10 p-6 text-emerald-600 dark:text-emerald-400 shadow-2xl animate-in fade-in zoom-in-95">
             <div className="flex items-start gap-3.5">
-              <CheckCircle2 className="h-6 w-6 text-primary shrink-0 mt-0.5" />
-              <div className="space-y-1.5">
-                <h3 className="font-semibold text-base">Pendaftaran Berhasil!</h3>
-                <p className="text-sm text-emerald-800 dark:text-emerald-300 leading-relaxed">
+              <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+              <div className="space-y-2">
+                <h3 className="font-bold text-sm font-mono uppercase">PENDAFTARAN BERHASIL</h3>
+                <p className="text-xs leading-relaxed text-foreground">
                   {state.message ||
                     "Pendaftaran berhasil! Silakan periksa email Anda untuk melakukan konfirmasi akun."}
                 </p>
-                <div className="pt-3">
+                <div className="pt-2">
                   <Link
                     href="/login"
-                    className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-primary/20 transition-transform active:scale-95 hover:brightness-105"
+                    className="inline-flex h-9 items-center justify-center gap-2 rounded-md bg-foreground px-4 text-xs font-mono font-bold uppercase tracking-wider text-background shadow-md transition-all hover:opacity-90 border border-border"
                   >
-                    Lanjut ke Halaman Masuk
-                    <ArrowRight className="h-4 w-4" />
+                    <span>LANJUT KE HALAMAN MASUK</span>
+                    <ArrowRight className="h-3.5 w-3.5" />
                   </Link>
                 </div>
               </div>
@@ -71,20 +74,20 @@ export default function RegisterPage() {
           </div>
         ) : (
           /* Form Card */
-          <div className="rounded-3xl border border-border bg-card p-6 shadow-xl shadow-black/5 dark:shadow-black/20">
+          <div className="rounded-lg border border-border bg-card p-6 md:p-8 shadow-2xl">
             {/* Prominent Error Banner */}
             {state.message && !state.success && (
               <div
                 role="alert"
-                className="mb-5 rounded-2xl border border-destructive/30 bg-destructive/10 p-4 text-destructive shadow-sm animate-in fade-in slide-in-from-top-2"
+                className="mb-5 rounded-md border border-destructive/40 bg-destructive/10 p-3.5 text-destructive animate-in fade-in slide-in-from-top-2"
               >
-                <div className="flex items-start gap-3">
-                  <AlertTriangle className="h-5 w-5 shrink-0 mt-0.5 text-destructive" />
-                  <div className="space-y-1 text-sm leading-relaxed">
-                    <p className="font-semibold text-destructive">
-                      Pendaftaran Belum Berhasil
+                <div className="flex items-start gap-2.5">
+                  <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-destructive" />
+                  <div className="space-y-1 text-xs font-mono leading-relaxed">
+                    <p className="font-bold uppercase">
+                      PENDAFTARAN BELUM BERHASIL
                     </p>
-                    <p className="text-xs sm:text-sm text-destructive/90">
+                    <p className="text-destructive/90">
                       {state.message}
                     </p>
                   </div>
@@ -97,13 +100,13 @@ export default function RegisterPage() {
               <div className="space-y-1.5">
                 <label
                   htmlFor="namaLengkap"
-                  className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+                  className="block text-[11px] font-mono font-medium uppercase tracking-wider text-muted-foreground"
                 >
-                  Nama Lengkap Sesuai Kartu Identitas
+                  Nama Lengkap Sesuai Identitas
                 </label>
                 <div className="relative">
-                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-muted-foreground">
-                    <User className="h-5 w-5" />
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">
+                    <User className="h-4 w-4" />
                   </div>
                   <input
                     id="namaLengkap"
@@ -112,11 +115,11 @@ export default function RegisterPage() {
                     required
                     autoComplete="name"
                     placeholder="Contoh: Siti Rahmawati"
-                    className="w-full min-h-[48px] rounded-xl border border-input bg-background/50 pl-11 pr-4 text-base text-foreground placeholder:text-muted-foreground/60 focus:border-primary focus:bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                    className="w-full h-10 rounded-md border border-input bg-background pl-9 pr-3 text-xs font-mono text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-hidden focus:ring-1 focus:ring-ring transition-all"
                   />
                 </div>
                 {state.errors?.namaLengkap && (
-                  <p className="text-xs text-destructive font-medium mt-1">
+                  <p className="text-[11px] font-mono text-destructive mt-1">
                     {state.errors.namaLengkap[0]}
                   </p>
                 )}
@@ -126,13 +129,13 @@ export default function RegisterPage() {
               <div className="space-y-1.5">
                 <label
                   htmlFor="email"
-                  className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+                  className="block text-[11px] font-mono font-medium uppercase tracking-wider text-muted-foreground"
                 >
                   Alamat Email
                 </label>
                 <div className="relative">
-                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-muted-foreground">
-                    <Mail className="h-5 w-5" />
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">
+                    <Mail className="h-4 w-4" />
                   </div>
                   <input
                     id="email"
@@ -141,11 +144,11 @@ export default function RegisterPage() {
                     required
                     autoComplete="email"
                     placeholder="nama@email.com"
-                    className="w-full min-h-[48px] rounded-xl border border-input bg-background/50 pl-11 pr-4 text-base text-foreground placeholder:text-muted-foreground/60 focus:border-primary focus:bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                    className="w-full h-10 rounded-md border border-input bg-background pl-9 pr-3 text-xs font-mono text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-hidden focus:ring-1 focus:ring-ring transition-all"
                   />
                 </div>
                 {state.errors?.email && (
-                  <p className="text-xs text-destructive font-medium mt-1">
+                  <p className="text-[11px] font-mono text-destructive mt-1">
                     {state.errors.email[0]}
                   </p>
                 )}
@@ -155,13 +158,13 @@ export default function RegisterPage() {
               <div className="space-y-1.5">
                 <label
                   htmlFor="password"
-                  className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+                  className="block text-[11px] font-mono font-medium uppercase tracking-wider text-muted-foreground"
                 >
                   Kata Sandi (Minimal 8 Karakter)
                 </label>
                 <div className="relative">
-                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-muted-foreground">
-                    <Lock className="h-5 w-5" />
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">
+                    <Lock className="h-4 w-4" />
                   </div>
                   <input
                     id="password"
@@ -171,7 +174,7 @@ export default function RegisterPage() {
                     minLength={8}
                     autoComplete="new-password"
                     placeholder="••••••••"
-                    className="w-full min-h-[48px] rounded-xl border border-input bg-background/50 pl-11 pr-12 text-base text-foreground placeholder:text-muted-foreground/60 focus:border-primary focus:bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                    className="w-full h-10 rounded-md border border-input bg-background pl-9 pr-10 text-xs font-mono text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-hidden focus:ring-1 focus:ring-ring transition-all"
                   />
                   <button
                     type="button"
@@ -181,17 +184,17 @@ export default function RegisterPage() {
                         ? "Sembunyikan kata sandi"
                         : "Tampilkan kata sandi"
                     }
-                    className="absolute inset-y-0 right-0 flex min-h-[48px] min-w-[48px] items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+                    className="absolute inset-y-0 right-0 flex h-10 w-10 items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
                   >
                     {showPassword ? (
-                      <EyeOff className="h-5 w-5" />
+                      <EyeOff className="h-4 w-4" />
                     ) : (
-                      <Eye className="h-5 w-5" />
+                      <Eye className="h-4 w-4" />
                     )}
                   </button>
                 </div>
                 {state.errors?.password && (
-                  <p className="text-xs text-destructive font-medium mt-1">
+                  <p className="text-[11px] font-mono text-destructive mt-1">
                     {state.errors.password[0]}
                   </p>
                 )}
@@ -202,17 +205,17 @@ export default function RegisterPage() {
                 <button
                   type="submit"
                   disabled={isPending}
-                  className="flex w-full min-h-[48px] items-center justify-center gap-2 rounded-2xl bg-accent px-5 py-3 text-base font-semibold text-white shadow-lg shadow-accent/25 transition-all active:scale-[0.98] hover:brightness-110 disabled:opacity-70 disabled:pointer-events-none"
+                  className="flex w-full h-10 items-center justify-center gap-2 rounded-md bg-foreground px-4 text-xs font-mono font-bold uppercase tracking-wider text-background shadow-md transition-all active:scale-[0.99] hover:opacity-90 disabled:opacity-40 disabled:pointer-events-none border border-border"
                 >
                   {isPending ? (
                     <>
-                      <Loader2 className="h-5 w-5 animate-spin" />
-                      <span>Memproses Pendaftaran...</span>
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      <span>MEMPROSES PENDAFTARAN...</span>
                     </>
                   ) : (
                     <>
-                      <span>Daftar Akun</span>
-                      <ArrowRight className="h-5 w-5" />
+                      <span>DAFTAR AKUN</span>
+                      <ArrowRight className="h-3.5 w-3.5" />
                     </>
                   )}
                 </button>
@@ -223,13 +226,13 @@ export default function RegisterPage() {
 
         {/* Footer Login Link */}
         <div className="text-center">
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs font-mono text-muted-foreground">
             Sudah memiliki akun?{" "}
             <Link
               href="/login"
-              className="font-semibold text-primary hover:underline underline-offset-4"
+              className="font-bold text-foreground hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors underline underline-offset-4"
             >
-              Masuk Sekarang
+              MASUK SEKARANG
             </Link>
           </p>
         </div>

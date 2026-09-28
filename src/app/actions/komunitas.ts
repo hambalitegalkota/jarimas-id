@@ -2,7 +2,21 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/utils/supabase/server";
-import { MASTER_KOMUNITAS_SEED } from "@/lib/constants/tegal-data";
+import {
+  MASTER_KOMUNITAS_SEED,
+  DAFTAR_RW_TEGAL,
+  DAFTAR_RT_TEGAL,
+  KOTA_TEGAL_DATA,
+  generateWargaKomunitasItem,
+  findOrGenerateKomunitasSeed,
+  type MasterKomunitasSeedItem,
+} from "@/lib/constants/tegal-data";
+import { SEED_POSYANDU_TEGAL } from "@/lib/constants/seed-posyandu-tegal";
+import {
+  toValidUUID,
+  normalizeRoleForDb,
+  formatPeranDisplay,
+} from "@/lib/utils";
 import type {
   KomunitasWithMembership,
   AnggotaKomunitasDetail,
@@ -10,24 +24,223 @@ import type {
   JenisKomunitas,
 } from "@/types/database";
 
-interface GetKomunitasListParams {
+export interface GetKomunitasListParams {
   jenis?: JenisKomunitas | "semua";
   kecamatan?: string;
   kelurahan?: string;
   rw?: string;
+  rt?: string;
+  searchQuery?: string;
+  page?: number;
+  limit?: number;
 }
 
-/**
- * Server Action: Mengambil daftar komunitas dengan filter & status keanggotaan pengguna
- */
-export async function getKomunitasList(
-  params: GetKomunitasListParams = {}
-): Promise<{
+export interface GetKomunitasListResult {
   success: boolean;
   message?: string;
   data: KomunitasWithMembership[];
   currentUserId?: string | null;
-}> {
+  pagination: {
+    page: number;
+    limit: number;
+    totalCount: number;
+    totalPages: number;
+    hasMore: boolean;
+  };
+}
+
+/**
+ * Helper: Resolve seed and dynamically generate RT items up to RT 17 per RW with text search
+ */
+function resolveSeedAndGeneratedKomunitas(
+  params: GetKomunitasListParams
+): MasterKomunitasSeedItem[] {
+  const isWarga =
+    !params.jenis || params.jenis === "semua" || params.jenis === "warga_kita";
+  const cleanRw =
+    params.rw && params.rw !== "semua"
+      ? params.rw.replace(/\D/g, "").padStart(2, "0")
+      : null;
+  const cleanRt =
+    params.rt && params.rt !== "semua"
+      ? params.rt.replace(/\D/g, "").padStart(2, "0")
+      : null;
+  const hasKelurahan = params.kelurahan && params.kelurahan !== "semua";
+  const hasKecamatan = params.kecamatan && params.kecamatan !== "semua";
+  const searchQ = params.searchQuery?.trim().toLowerCase() || "";
+
+  let candidateList: MasterKomunitasSeedItem[] = [];
+
+  // When filtering Warga Kita by RW / Kelurahan / Kecamatan, ensure all 17 RTs are available
+  if (isWarga && (cleanRw || hasKelurahan || hasKecamatan) && !searchQ) {
+    if (hasKelurahan) {
+      const kelName = params.kelurahan!;
+      let kecName = hasKecamatan ? params.kecamatan! : "Tegal Timur";
+      if (!hasKecamatan) {
+        for (const [k, d] of Object.entries(KOTA_TEGAL_DATA)) {
+          if (d.kelurahan[kelName]) {
+            kecName = k;
+            break;
+          }
+        }
+      }
+
+      if (cleanRw) {
+        // Specific RW chosen: return either single RT or all 17 RTs for this RW
+        if (cleanRt) {
+          const existing = MASTER_KOMUNITAS_SEED.find(
+            (k) =>
+              k.jenis === "warga_kita" &&
+              k.kelurahan.toLowerCase() === kelName.toLowerCase() &&
+              (k.rw || "").replace(/\D/g, "").padStart(2, "0") === cleanRw &&
+              (k.rt || "").replace(/\D/g, "").padStart(2, "0") === cleanRt
+          );
+          candidateList = [
+            existing ||
+              generateWargaKomunitasItem(kecName, kelName, cleanRw, cleanRt),
+          ];
+        } else {
+          // All 17 RTs for this RW
+          candidateList = DAFTAR_RT_TEGAL.map((rtNum) => {
+            const existing = MASTER_KOMUNITAS_SEED.find(
+              (k) =>
+                k.jenis === "warga_kita" &&
+                k.kelurahan.toLowerCase() === kelName.toLowerCase() &&
+                (k.rw || "").replace(/\D/g, "").padStart(2, "0") === cleanRw &&
+                (k.rt || "").replace(/\D/g, "").padStart(2, "0") === rtNum
+            );
+            return (
+              existing ||
+              generateWargaKomunitasItem(kecName, kelName, cleanRw, rtNum)
+            );
+          });
+        }
+      } else if (cleanRt) {
+        // Specific RT chosen with Semua RW: return RT {cleanRt} across RW 01 s/d RW 17
+        candidateList = DAFTAR_RW_TEGAL.map((rwNum) => {
+          const existing = MASTER_KOMUNITAS_SEED.find(
+            (k) =>
+              k.jenis === "warga_kita" &&
+              k.kelurahan.toLowerCase() === kelName.toLowerCase() &&
+              (k.rw || "").replace(/\D/g, "").padStart(2, "0") === rwNum &&
+              (k.rt || "").replace(/\D/g, "").padStart(2, "0") === cleanRt
+          );
+          return (
+            existing ||
+            generateWargaKomunitasItem(kecName, kelName, rwNum, cleanRt)
+          );
+        });
+      }
+    } else if (hasKecamatan && cleanRw) {
+      // Specific Kecamatan and specific RW
+      const kelList = Object.keys(
+        KOTA_TEGAL_DATA[params.kecamatan!]?.kelurahan || {}
+      );
+      const results: MasterKomunitasSeedItem[] = [];
+      for (const kel of kelList) {
+        if (cleanRt) {
+          results.push(
+            generateWargaKomunitasItem(
+              params.kecamatan!,
+              kel,
+              cleanRw,
+              cleanRt
+            )
+          );
+        } else {
+          for (const rtNum of DAFTAR_RT_TEGAL) {
+            results.push(
+              generateWargaKomunitasItem(
+                params.kecamatan!,
+                kel,
+                cleanRw,
+                rtNum
+              )
+            );
+          }
+        }
+      }
+      candidateList = results;
+    }
+  }
+
+  // Jika candidateList belum terisi (pencarian umum atau filter biasa), gunakan master seed
+  if (candidateList.length === 0) {
+    candidateList = MASTER_KOMUNITAS_SEED;
+  }
+
+  // Default seed filtering for general queries & text search
+  return candidateList.filter((item) => {
+    // 1. Filter Jenis
+    if (
+      params.jenis &&
+      params.jenis !== "semua" &&
+      item.jenis !== params.jenis
+    ) {
+      return false;
+    }
+
+    // 2. Filter Pencarian Teks (Search Query)
+    if (searchQ) {
+      const matchNama = (item.nama || "").toLowerCase().includes(searchQ);
+      const matchKel = (item.kelurahan || "").toLowerCase().includes(searchQ);
+      const matchKec = (item.kecamatan || "").toLowerCase().includes(searchQ);
+      const matchLok = (item.lokasi || "").toLowerCase().includes(searchQ);
+      const matchDesc = (item.deskripsi || "").toLowerCase().includes(searchQ);
+
+      if (!matchNama && !matchKel && !matchKec && !matchLok && !matchDesc) {
+        return false;
+      }
+    }
+
+    // 3. Filter Kecamatan
+    if (
+      params.kecamatan &&
+      params.kecamatan !== "semua" &&
+      item.kecamatan.toLowerCase() !== params.kecamatan.toLowerCase()
+    ) {
+      return false;
+    }
+
+    // 4. Filter Kelurahan
+    if (
+      params.kelurahan &&
+      params.kelurahan !== "semua" &&
+      item.kelurahan.toLowerCase() !== params.kelurahan.toLowerCase()
+    ) {
+      return false;
+    }
+
+    // 5. Filter RW
+    if (cleanRw) {
+      const itemRw = (item.rw || "").replace(/\D/g, "").padStart(2, "0");
+      if (cleanRw !== itemRw) {
+        return false;
+      }
+    }
+
+    // 6. Filter RT
+    if (cleanRt) {
+      const itemRt = (item.rt || "").replace(/\D/g, "").padStart(2, "0");
+      if (cleanRt !== itemRt) {
+        return false;
+      }
+    }
+
+    return true;
+  });
+}
+
+/**
+ * Server Action: Mengambil daftar komunitas dengan filter, pencarian, & paginasi
+ */
+export async function getKomunitasList(
+  params: GetKomunitasListParams = {}
+): Promise<GetKomunitasListResult> {
+  const page = Math.max(1, Number(params.page) || 1);
+  const limit = Math.min(100, Math.max(1, Number(params.limit) || 20));
+  const offset = (page - 1) * limit;
+
   try {
     const supabase = await createClient();
 
@@ -44,11 +257,16 @@ export async function getKomunitasList(
       // User tamu belum login
     }
 
-    // 2. Query data dari Supabase
-    let query = supabase.from("komunitas").select("*");
+    // 2. Query data dari Supabase dengan Count & Pagination
+    let query = supabase
+      .from("komunitas")
+      .select(
+        "id, nama_komunitas, jenis_komunitas, kecamatan, kelurahan, rw, rt, created_at",
+        { count: "exact" }
+      );
 
     if (params.jenis && params.jenis !== "semua") {
-      query = query.eq("jenis", params.jenis);
+      query = query.eq("jenis_komunitas", params.jenis);
     }
     if (params.kecamatan && params.kecamatan !== "semua") {
       query = query.eq("kecamatan", params.kecamatan);
@@ -60,8 +278,18 @@ export async function getKomunitasList(
       const cleanRw = params.rw.replace(/\D/g, "").padStart(2, "0");
       query = query.eq("rw", cleanRw);
     }
+    if (params.rt && params.rt !== "semua") {
+      const cleanRt = params.rt.replace(/\D/g, "").padStart(2, "0");
+      query = query.eq("rt", cleanRt);
+    }
+    if (params.searchQuery && params.searchQuery.trim()) {
+      const q = params.searchQuery.trim();
+      query = query.ilike("nama_komunitas", `%${q}%`);
+    }
 
-    const { data: dbData, error: dbError } = await query;
+    query = query.range(offset, offset + limit - 1);
+
+    const { data: dbData, count, error: dbError } = await query;
 
     // Ambil data membership user jika login
     let userMemberships: Record<
@@ -99,95 +327,80 @@ export async function getKomunitasList(
       });
     }
 
-    let rawList = dbData || [];
+    let rawList: any[] = dbData || [];
+    let totalCount = count || 0;
 
-    // Jika database masih kosong atau ada error tabel, gunakan master seed data Kota Tegal
+    // Jika database masih kosong atau ada error tabel, gunakan master seed data & dynamic RT generator
     if (dbError || rawList.length === 0) {
-      rawList = MASTER_KOMUNITAS_SEED.filter((item) => {
-        if (params.jenis && params.jenis !== "semua" && item.jenis !== params.jenis) {
-          return false;
-        }
-        if (
-          params.kecamatan &&
-          params.kecamatan !== "semua" &&
-          item.kecamatan.toLowerCase() !== params.kecamatan.toLowerCase()
-        ) {
-          return false;
-        }
-        if (
-          params.kelurahan &&
-          params.kelurahan !== "semua" &&
-          item.kelurahan.toLowerCase() !== params.kelurahan.toLowerCase()
-        ) {
-          return false;
-        }
-        if (params.rw && params.rw !== "semua") {
-          const cleanParamRw = params.rw.replace(/\D/g, "").padStart(2, "0");
-          const itemRw = (item.rw || "").replace(/\D/g, "").padStart(2, "0");
-          if (cleanParamRw && itemRw && cleanParamRw !== itemRw) {
-            return false;
-          }
-        }
-        return true;
-      });
+      const fullFallback = resolveSeedAndGeneratedKomunitas(params);
+      totalCount = fullFallback.length;
+      rawList = fullFallback.slice(offset, offset + limit);
     }
 
+    const totalPages = Math.max(1, Math.ceil(totalCount / limit));
+    const hasMore = page < totalPages;
+
     // 3. Gabungkan info keanggotaan dan jumlah anggota
-    const items: KomunitasWithMembership[] = rawList.map((k) => ({
-      id: k.id,
-      nama: k.nama,
-      jenis: k.jenis,
-      kecamatan: k.kecamatan,
-      kelurahan: k.kelurahan,
-      rt: k.rt,
-      rw: k.rw,
-      lokasi: k.lokasi,
-      deskripsi: k.deskripsi,
-      logo_url: k.logo_url,
-      kontak: k.kontak,
-      jadwal: k.jadwal,
-      created_at: k.created_at,
-      jumlah_anggota: countsMap[k.id] || (k.jenis === "posyandu" ? 12 : 24),
-      currentUserMembership: userMemberships[k.id] || null,
-    }));
+    const items: KomunitasWithMembership[] = rawList.map((k: any) => {
+      const seedItem = findOrGenerateKomunitasSeed(k.id);
+      const nama = k.nama_komunitas || k.nama || "Komunitas";
+      const jenis = k.jenis_komunitas || k.jenis || "posyandu";
+      const lokasi =
+        k.lokasi ||
+        seedItem?.lokasi ||
+        [k.kelurahan, k.kecamatan, "Kota Tegal"].filter(Boolean).join(", ");
+      const deskripsi =
+        k.deskripsi ||
+        seedItem?.deskripsi ||
+        `Layanan dan kegiatan ${nama} di ${lokasi}.`;
+
+      return {
+        id: k.id,
+        nama,
+        jenis,
+        kecamatan: k.kecamatan,
+        kelurahan: k.kelurahan,
+        rt: k.rt,
+        rw: k.rw,
+        lokasi,
+        deskripsi,
+        logo_url: k.logo_url || null,
+        kontak: k.kontak || seedItem?.kontak || null,
+        jadwal: k.jadwal || seedItem?.jadwal || null,
+        created_at: k.created_at,
+        jumlah_anggota:
+          countsMap[k.id] ||
+          countsMap[toValidUUID(k.id)] ||
+          (jenis === "posyandu" ? 12 : 24),
+        currentUserMembership:
+          userMemberships[k.id] ||
+          userMemberships[toValidUUID(k.id)] ||
+          null,
+      };
+    });
 
     return {
       success: true,
       data: items,
       currentUserId,
+      pagination: {
+        page,
+        limit,
+        totalCount,
+        totalPages,
+        hasMore,
+      },
     };
   } catch (err: any) {
     console.error("Error getKomunitasList:", err);
     // Fallback seed data saat offline atau error koneksi
-    const fallbackList: KomunitasWithMembership[] = MASTER_KOMUNITAS_SEED.filter(
-      (item) => {
-        if (params.jenis && params.jenis !== "semua" && item.jenis !== params.jenis) {
-          return false;
-        }
-        if (
-          params.kecamatan &&
-          params.kecamatan !== "semua" &&
-          item.kecamatan.toLowerCase() !== params.kecamatan.toLowerCase()
-        ) {
-          return false;
-        }
-        if (
-          params.kelurahan &&
-          params.kelurahan !== "semua" &&
-          item.kelurahan.toLowerCase() !== params.kelurahan.toLowerCase()
-        ) {
-          return false;
-        }
-        if (params.rw && params.rw !== "semua") {
-          const cleanParamRw = params.rw.replace(/\D/g, "").padStart(2, "0");
-          const itemRw = (item.rw || "").replace(/\D/g, "").padStart(2, "0");
-          if (cleanParamRw && itemRw && cleanParamRw !== itemRw) {
-            return false;
-          }
-        }
-        return true;
-      }
-    ).map((k) => ({
+    const fullFallback = resolveSeedAndGeneratedKomunitas(params);
+    const totalCount = fullFallback.length;
+    const paginatedList = fullFallback.slice(offset, offset + limit);
+    const totalPages = Math.max(1, Math.ceil(totalCount / limit));
+    const hasMore = page < totalPages;
+
+    const fallbackList: KomunitasWithMembership[] = paginatedList.map((k) => ({
       ...k,
       jumlah_anggota: k.jenis === "posyandu" ? 12 : 24,
       currentUserMembership: null,
@@ -197,8 +410,76 @@ export async function getKomunitasList(
       success: true,
       data: fallbackList,
       currentUserId: null,
+      pagination: {
+        page,
+        limit,
+        totalCount,
+        totalPages,
+        hasMore,
+      },
     };
   }
+}
+
+/**
+ * Helper: Upsert seluruh 230+ Posyandu Kota Tegal ke Supabase
+ */
+export async function seedPosyanduToSupabase(): Promise<{
+  success: boolean;
+  insertedCount: number;
+  message: string;
+}> {
+  try {
+    const supabase = await createClient();
+    const items = SEED_POSYANDU_TEGAL.map((p) => ({
+      id: toValidUUID(p.id),
+      nama_komunitas: p.nama,
+      jenis_komunitas: p.jenis,
+      kecamatan: p.kecamatan,
+      kelurahan: p.kelurahan,
+      rt: p.rt || null,
+      rw: p.rw || null,
+    }));
+
+    // Batch upsert per 50 items agar efisien
+    const chunkSize = 50;
+    let totalInserted = 0;
+
+    for (let i = 0; i < items.length; i += chunkSize) {
+      const chunk = items.slice(i, i + chunkSize);
+      const { error } = await supabase.from("komunitas").upsert(chunk, { onConflict: "id" });
+      if (error) {
+        throw error;
+      }
+      totalInserted += chunk.length;
+    }
+
+    return {
+      success: true,
+      insertedCount: totalInserted,
+      message: `Berhasil meng-upsert ${totalInserted} Posyandu se-Kota Tegal ke database Supabase.`,
+    };
+  } catch (err: any) {
+    console.error("Error seedPosyanduToSupabase:", err);
+    return {
+      success: false,
+      insertedCount: 0,
+      message: err.message || "Gagal menyemai data Posyandu ke Supabase.",
+    };
+  }
+}
+
+/**
+ * Server Action: Mengisi seluruh data Posyandu se-Kota Tegal ke Supabase
+ */
+export async function seedAllPosyanduTegalAction(): Promise<{
+  success: boolean;
+  insertedCount: number;
+  message: string;
+}> {
+  const res = await seedPosyanduToSupabase();
+  revalidatePath("/komunitas");
+  return res;
 }
 
 /**
@@ -224,7 +505,8 @@ export async function requestJoinKomunitas({
     if (authError || !user) {
       return {
         success: false,
-        message: "Silakan masuk terlebih dahulu untuk bergabung dengan komunitas.",
+        message:
+          "Silakan masuk terlebih dahulu untuk bergabung dengan komunitas.",
       };
     }
 
@@ -235,25 +517,35 @@ export async function requestJoinKomunitas({
       };
     }
 
+    const dbKomunitasId = toValidUUID(komunitasId);
+    const dbRole = normalizeRoleForDb(peran);
+
     // Pastikan komunitas terdaftar di database (upsert dari seed jika belum ada)
-    const seedItem = MASTER_KOMUNITAS_SEED.find((k) => k.id === komunitasId);
-    if (seedItem) {
-      await supabase.from("komunitas").upsert(
-        {
-          id: seedItem.id,
-          nama: seedItem.nama,
-          jenis: seedItem.jenis,
-          kecamatan: seedItem.kecamatan,
-          kelurahan: seedItem.kelurahan,
-          rt: seedItem.rt,
-          rw: seedItem.rw,
-          lokasi: seedItem.lokasi,
-          deskripsi: seedItem.deskripsi,
-          kontak: seedItem.kontak,
-          jadwal: seedItem.jadwal,
-        },
-        { onConflict: "id" }
-      );
+    const { data: existingKom } = await supabase
+      .from("komunitas")
+      .select("id")
+      .eq("id", dbKomunitasId)
+      .maybeSingle();
+
+    if (!existingKom) {
+      const seedItem =
+        findOrGenerateKomunitasSeed(komunitasId) ||
+        findOrGenerateKomunitasSeed(dbKomunitasId);
+
+      if (seedItem) {
+        await supabase.from("komunitas").upsert(
+          {
+            id: dbKomunitasId,
+            nama_komunitas: seedItem.nama,
+            jenis_komunitas: seedItem.jenis,
+            kecamatan: seedItem.kecamatan,
+            kelurahan: seedItem.kelurahan,
+            rt: seedItem.rt || null,
+            rw: seedItem.rw || null,
+          },
+          { onConflict: "id" }
+        );
+      }
     }
 
     // Cek apakah sudah terdaftar sebelumnya
@@ -261,14 +553,15 @@ export async function requestJoinKomunitas({
       .from("anggota_komunitas")
       .select("id, status, peran")
       .eq("user_id", user.id)
-      .eq("komunitas_id", komunitasId)
+      .eq("komunitas_id", dbKomunitasId)
       .maybeSingle();
 
     if (existingMember) {
+      const displayRole = formatPeranDisplay(existingMember.peran);
       if (existingMember.status === "approved") {
         return {
           success: false,
-          message: `Anda sudah menjadi anggota aktif sebagai ${existingMember.peran}.`,
+          message: `Anda sudah menjadi anggota aktif sebagai ${displayRole}.`,
         };
       }
       if (existingMember.status === "pending") {
@@ -279,25 +572,52 @@ export async function requestJoinKomunitas({
         };
       }
       // Jika status sebelumnya rejected, perbarui menjadi pending
-      await supabase
+      let { error: updateError } = await supabase
         .from("anggota_komunitas")
         .update({
-          peran: peran,
+          peran: dbRole,
           status: "pending",
-          updated_at: new Date().toISOString(),
         })
         .eq("id", existingMember.id);
+
+      if (updateError && updateError.message?.includes("enum")) {
+        const fallbackRes = await supabase
+          .from("anggota_komunitas")
+          .update({
+            peran: "anggota",
+            status: "pending",
+          })
+          .eq("id", existingMember.id);
+        updateError = fallbackRes.error;
+      }
+
+      if (updateError) {
+        throw updateError;
+      }
     } else {
-      // Buat pendaftaran baru
-      const { error: insertError } = await supabase
+      // Buat pendaftaran baru dengan dbRole yang dinormalisasi
+      let { error: insertError } = await supabase
         .from("anggota_komunitas")
         .insert({
           user_id: user.id,
-          komunitas_id: komunitasId,
-          peran: peran,
+          komunitas_id: dbKomunitasId,
+          peran: dbRole,
           status: "pending",
           created_at: new Date().toISOString(),
         });
+
+      if (insertError && insertError.message?.includes("enum")) {
+        const fallbackRes = await supabase
+          .from("anggota_komunitas")
+          .insert({
+            user_id: user.id,
+            komunitas_id: dbKomunitasId,
+            peran: "anggota",
+            status: "pending",
+            created_at: new Date().toISOString(),
+          });
+        insertError = fallbackRes.error;
+      }
 
       if (insertError) {
         throw insertError;
@@ -306,11 +626,13 @@ export async function requestJoinKomunitas({
 
     revalidatePath("/komunitas");
     revalidatePath(`/komunitas/${komunitasId}`);
+    revalidatePath(`/komunitas/${dbKomunitasId}`);
     revalidatePath("/profil");
+    revalidatePath("/admin");
 
     return {
       success: true,
-      message: `Permohonan bergabung sebagai ${peran} berhasil dikirim! Menunggu persetujuan Pengurus.`,
+      message: `Permohonan bergabung sebagai ${formatPeranDisplay(peran)} berhasil dikirim! Menunggu persetujuan Pengurus.`,
     };
   } catch (err: any) {
     console.error("Error requestJoinKomunitas:", err);
@@ -333,6 +655,7 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
 }> {
   try {
     const supabase = await createClient();
+    const dbKomunitasId = toValidUUID(komunitasId);
 
     let currentUserId: string | null = null;
     let isSuperAdmin = false;
@@ -354,15 +677,17 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
       // User tamu
     }
 
-    // Ambil data komunitas
+    // Ambil data komunitas menggunakan valid UUID
     let { data: komunitas } = await supabase
       .from("komunitas")
       .select("*")
-      .eq("id", komunitasId)
+      .eq("id", dbKomunitasId)
       .maybeSingle();
 
     if (!komunitas) {
-      komunitas = MASTER_KOMUNITAS_SEED.find((k) => k.id === komunitasId) || null;
+      komunitas =
+        findOrGenerateKomunitasSeed(komunitasId) ||
+        findOrGenerateKomunitasSeed(dbKomunitasId);
     }
 
     if (!komunitas) {
@@ -375,6 +700,25 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
       };
     }
 
+    const seed =
+      findOrGenerateKomunitasSeed(komunitasId) ||
+      findOrGenerateKomunitasSeed(dbKomunitasId);
+
+    const nama =
+      komunitas.nama_komunitas || komunitas.nama || seed?.nama || "Komunitas";
+    const jenis =
+      komunitas.jenis_komunitas || komunitas.jenis || seed?.jenis || "posyandu";
+    const lokasi =
+      komunitas.lokasi ||
+      seed?.lokasi ||
+      [komunitas.kelurahan, komunitas.kecamatan, "Kota Tegal"]
+        .filter(Boolean)
+        .join(", ");
+    const deskripsi =
+      komunitas.deskripsi ||
+      seed?.deskripsi ||
+      `Layanan dan kegiatan ${nama} di ${lokasi}.`;
+
     // Ambil status keanggotaan user saat ini
     let currentUserMembership = null;
     let isPengurusOrKader = false;
@@ -384,7 +728,7 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
         .from("anggota_komunitas")
         .select("id, status, peran")
         .eq("user_id", currentUserId)
-        .eq("komunitas_id", komunitasId)
+        .eq("komunitas_id", dbKomunitasId)
         .maybeSingle();
 
       if (member) {
@@ -409,12 +753,24 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
     const { count } = await supabase
       .from("anggota_komunitas")
       .select("*", { count: "exact", head: true })
-      .eq("komunitas_id", komunitasId)
+      .eq("komunitas_id", dbKomunitasId)
       .eq("status", "approved");
 
     const fullData: KomunitasWithMembership = {
-      ...komunitas,
-      jumlah_anggota: count || (komunitas.jenis === "posyandu" ? 12 : 24),
+      id: dbKomunitasId,
+      nama,
+      jenis,
+      kecamatan: komunitas.kecamatan || seed?.kecamatan,
+      kelurahan: komunitas.kelurahan || seed?.kelurahan,
+      rt: komunitas.rt || seed?.rt,
+      rw: komunitas.rw || seed?.rw,
+      lokasi,
+      deskripsi,
+      logo_url: komunitas.logo_url || null,
+      kontak: komunitas.kontak || seed?.kontak || null,
+      jadwal: komunitas.jadwal || seed?.jadwal || null,
+      created_at: komunitas.created_at,
+      jumlah_anggota: count || (jenis === "posyandu" ? 12 : 24),
       currentUserMembership,
     };
 
@@ -444,7 +800,7 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
 function generateSeedMembersForKomunitas(
   komunitasId: string
 ): AnggotaKomunitasDetail[] {
-  const seedKomunitas = MASTER_KOMUNITAS_SEED.find((k) => k.id === komunitasId);
+  const seedKomunitas = findOrGenerateKomunitasSeed(komunitasId);
   const jenis = seedKomunitas?.jenis || "warga_kita";
   const kelurahan = seedKomunitas?.kelurahan || "Kota Tegal";
 
@@ -626,42 +982,51 @@ export async function getAnggotaKomunitas(komunitasId: string): Promise<{
 }> {
   try {
     const supabase = await createClient();
+    const dbKomunitasId = toValidUUID(komunitasId);
 
-    const { data, error } = await supabase
+    const { data: rawMembers, error } = await supabase
       .from("anggota_komunitas")
-      .select(`
-        id,
-        user_id,
-        komunitas_id,
-        peran,
-        status,
-        created_at,
-        profiles (
-          id,
-          nama_lengkap,
-          email,
-          avatar_url
-        )
-      `)
-      .eq("komunitas_id", komunitasId)
+      .select("id, user_id, komunitas_id, peran, status, created_at")
+      .eq("komunitas_id", dbKomunitasId)
       .order("created_at", { ascending: false });
 
-    if (error || !data || data.length === 0) {
+    if (error || !rawMembers || rawMembers.length === 0) {
       return {
         success: true,
         data: generateSeedMembersForKomunitas(komunitasId),
       };
     }
 
-    const items: AnggotaKomunitasDetail[] = data.map((row: any) => ({
-      id: row.id,
-      user_id: row.user_id,
-      komunitas_id: row.komunitas_id,
-      peran: row.peran,
-      status: row.status,
-      created_at: row.created_at,
-      profiles: Array.isArray(row.profiles) ? row.profiles[0] : row.profiles,
-    }));
+    const userIds = [
+      ...new Set(rawMembers.map((m: any) => m.user_id).filter(Boolean)),
+    ];
+    const { data: profilesData } =
+      userIds.length > 0
+        ? await supabase
+            .from("profiles")
+            .select("id, nama_lengkap, email")
+            .in("id", userIds)
+        : { data: [] };
+
+    const profileMap = new Map((profilesData || []).map((p: any) => [p.id, p]));
+
+    const items: AnggotaKomunitasDetail[] = rawMembers.map((row: any) => {
+      const prof = profileMap.get(row.user_id);
+      return {
+        id: row.id,
+        user_id: row.user_id,
+        komunitas_id: row.komunitas_id,
+        peran: formatPeranDisplay(row.peran),
+        status: row.status,
+        created_at: row.created_at,
+        profiles: {
+          id: row.user_id,
+          nama_lengkap: prof?.nama_lengkap || "Pengguna JARIMAS",
+          email: prof?.email || "-",
+          avatar_url: null,
+        },
+      };
+    });
 
     return {
       success: true,
@@ -748,7 +1113,6 @@ export async function approveAnggotaByAdmin(anggotaId: string): Promise<{
       .update({
         status: "approved",
         approved_by: user.id,
-        updated_at: new Date().toISOString(),
       })
       .eq("id", anggotaId);
 
@@ -801,7 +1165,6 @@ export async function rejectAnggotaByAdmin(anggotaId: string): Promise<{
       .update({
         status: "rejected",
         approved_by: user.id,
-        updated_at: new Date().toISOString(),
       })
       .eq("id", anggotaId);
 

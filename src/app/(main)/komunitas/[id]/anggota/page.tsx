@@ -39,29 +39,30 @@ export default async function KelolaAnggotaPage({
   const { data: allMembers } = await getAnggotaKomunitas(id);
 
   return (
-    <div className="flex flex-col flex-1 px-4 py-5 gap-5">
+    <div className="flex flex-col flex-1 px-4 py-8 sm:px-6 md:px-8 gap-6">
       {/* Back Button */}
       <div className="flex items-center justify-between">
         <Link
           href={`/komunitas/${id}`}
-          className="inline-flex min-h-[44px] items-center gap-2 rounded-2xl bg-card border border-border px-3.5 py-2 text-xs font-bold text-foreground shadow-2xs transition-all active:scale-95 hover:bg-muted"
+          className="inline-flex h-9 items-center gap-2 rounded-md bg-zinc-900 border border-border px-3 text-xs font-mono text-foreground transition-all hover:bg-zinc-800"
         >
-          <ArrowLeft className="h-4 w-4" />
-          <span>Kembali ke Detail Komunitas</span>
+          <ArrowLeft className="h-3.5 w-3.5" />
+          <span>KEMBALI KE DETAIL KOMUNITAS</span>
         </Link>
       </div>
 
       {/* Header Info */}
-      <div className="flex items-center gap-3">
-        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary font-bold">
-          <UserCheck className="h-6 w-6" />
-        </div>
-        <div>
-          <h1 className="text-lg font-bold text-foreground leading-tight">
+      <div className="flex items-start justify-between gap-3 border-b border-border pb-5">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <span className="cyber-badge">MANAJEMEN ANGGOTA</span>
+            <span className="text-xs font-mono text-muted-foreground uppercase">{komunitas.nama}</span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground">
             Kelola Anggota Komunitas
           </h1>
-          <p className="text-xs text-muted-foreground line-clamp-1">
-            {komunitas.nama}
+          <p className="text-xs text-muted-foreground">
+            Verifikasi permohonan peran dan pantau status keanggotaan aktif.
           </p>
         </div>
       </div>

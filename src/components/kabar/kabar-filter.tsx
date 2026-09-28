@@ -39,51 +39,51 @@ export function KabarFilter({
   return (
     <div className="space-y-3">
       {/* 1. Sorting Tabs (Terbaru vs Terpopuler) */}
-      <div className="flex rounded-2xl bg-muted/70 p-1 border border-border/80">
+      <div className="flex rounded-md bg-muted/40 p-1 border border-border">
         <button
           onClick={() => updateFilters("sort", "terbaru")}
           disabled={isPending}
           className={cn(
-            "flex flex-1 min-h-[44px] items-center justify-center gap-1.5 rounded-xl text-xs font-bold transition-all active:scale-95",
+            "flex flex-1 h-8 items-center justify-center gap-1.5 rounded text-xs font-mono font-medium transition-colors",
             currentSort === "terbaru"
-              ? "bg-card text-primary shadow-sm ring-1 ring-black/5"
+              ? "bg-card text-foreground border border-border shadow-xs"
               : "text-muted-foreground hover:text-foreground"
           )}
         >
-          <Clock className="h-4 w-4" />
-          <span>Terbaru</span>
+          <Clock className="h-3.5 w-3.5 text-emerald-400" />
+          <span>TERBARU</span>
         </button>
 
         <button
           onClick={() => updateFilters("sort", "terpopuler")}
           disabled={isPending}
           className={cn(
-            "flex flex-1 min-h-[44px] items-center justify-center gap-1.5 rounded-xl text-xs font-bold transition-all active:scale-95",
+            "flex flex-1 h-8 items-center justify-center gap-1.5 rounded text-xs font-mono font-medium transition-colors",
             currentSort === "terpopuler"
-              ? "bg-card text-accent shadow-sm ring-1 ring-black/5"
+              ? "bg-card text-foreground border border-border shadow-xs"
               : "text-muted-foreground hover:text-foreground"
           )}
         >
-          <Flame className="h-4 w-4 text-accent" />
-          <span>Terpopuler</span>
+          <Flame className="h-3.5 w-3.5 text-amber-400" />
+          <span>TERPOPULER</span>
         </button>
       </div>
 
-      {/* 2. Visibility Horizontal Pills */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+      {/* 2. Visibility Horizontal Buttons */}
+      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar font-mono text-xs">
         {/* Semua */}
         <button
           onClick={() => updateFilters("visibility", "semua")}
           disabled={isPending}
           className={cn(
-            "inline-flex min-h-[40px] items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold whitespace-nowrap transition-all active:scale-95",
+            "inline-flex h-7 items-center gap-1.5 rounded-md px-2.5 text-xs whitespace-nowrap transition-colors",
             currentVisibility === "semua"
-              ? "bg-primary text-white shadow-xs"
-              : "bg-card border border-border text-muted-foreground hover:border-primary/40 hover:text-foreground"
+              ? "bg-foreground text-background font-semibold"
+              : "border border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground"
           )}
         >
-          <Globe className="h-3.5 w-3.5" />
-          <span>Semua Kabar</span>
+          <Globe className="h-3 w-3" />
+          <span>SEMUA</span>
         </button>
 
         {/* Publik */}
@@ -91,14 +91,14 @@ export function KabarFilter({
           onClick={() => updateFilters("visibility", "publik")}
           disabled={isPending}
           className={cn(
-            "inline-flex min-h-[40px] items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold whitespace-nowrap transition-all active:scale-95",
+            "inline-flex h-7 items-center gap-1.5 rounded-md px-2.5 text-xs whitespace-nowrap transition-colors",
             currentVisibility === "publik"
-              ? "bg-primary text-white shadow-xs"
-              : "bg-card border border-border text-muted-foreground hover:border-primary/40 hover:text-foreground"
+              ? "bg-foreground text-background font-semibold"
+              : "border border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground"
           )}
         >
-          <Globe className="h-3.5 w-3.5" />
-          <span>Publik</span>
+          <Globe className="h-3 w-3 text-emerald-400" />
+          <span>PUBLIK</span>
         </button>
 
         {/* Teman */}
@@ -106,14 +106,14 @@ export function KabarFilter({
           onClick={() => updateFilters("visibility", "teman")}
           disabled={isPending}
           className={cn(
-            "inline-flex min-h-[40px] items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold whitespace-nowrap transition-all active:scale-95",
+            "inline-flex h-7 items-center gap-1.5 rounded-md px-2.5 text-xs whitespace-nowrap transition-colors",
             currentVisibility === "teman"
-              ? "bg-primary text-white shadow-xs"
-              : "bg-card border border-border text-muted-foreground hover:border-primary/40 hover:text-foreground"
+              ? "bg-foreground text-background font-semibold"
+              : "border border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground"
           )}
         >
-          <Users className="h-3.5 w-3.5" />
-          <span>Hanya Teman</span>
+          <Users className="h-3 w-3 text-cyan-400" />
+          <span>TEMAN</span>
         </button>
 
         {/* Komunitas */}
@@ -121,14 +121,14 @@ export function KabarFilter({
           onClick={() => updateFilters("visibility", "komunitas")}
           disabled={isPending}
           className={cn(
-            "inline-flex min-h-[40px] items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold whitespace-nowrap transition-all active:scale-95",
+            "inline-flex h-7 items-center gap-1.5 rounded-md px-2.5 text-xs whitespace-nowrap transition-colors",
             currentVisibility === "komunitas"
-              ? "bg-primary text-white shadow-xs"
-              : "bg-card border border-border text-muted-foreground hover:border-primary/40 hover:text-foreground"
+              ? "bg-foreground text-background font-semibold"
+              : "border border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground"
           )}
         >
-          <Building2 className="h-3.5 w-3.5" />
-          <span>Komunitas Saya</span>
+          <Building2 className="h-3 w-3 text-amber-400" />
+          <span>KOMUNITAS</span>
         </button>
       </div>
     </div>

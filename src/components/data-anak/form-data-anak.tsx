@@ -136,44 +136,44 @@ export function FormDataAnak({
       {/* Toast Feedback */}
       {feedback && (
         <div
-          className={`flex items-start gap-2.5 rounded-2xl p-4 text-xs font-semibold shadow-sm animate-in fade-in ${
+          className={`flex items-start gap-2.5 rounded-md p-3.5 text-xs font-semibold animate-in fade-in ${
             feedback.type === "success"
-              ? "border border-emerald-200 bg-emerald-50 text-emerald-900 dark:border-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-200"
+              ? "border border-emerald-800 bg-emerald-950/40 text-emerald-300"
               : "border border-destructive/20 bg-destructive/10 text-destructive"
           }`}
         >
           {feedback.type === "success" ? (
-            <CheckCircle2 className="h-5 w-5 text-primary shrink-0" />
+            <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
           ) : (
-            <AlertCircle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+            <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
           )}
           <span>{feedback.message}</span>
         </div>
       )}
 
       {/* SECTION 1: IDENTITAS ANAK */}
-      <div className="space-y-4 rounded-3xl border border-border bg-card p-5 shadow-2xs">
-        <div className="flex items-center gap-2 border-b border-border/60 pb-3">
-          <Baby className="h-5 w-5 text-primary" />
-          <h3 className="text-sm font-bold text-foreground">
+      <div className="space-y-4 rounded-lg border border-border bg-card p-5">
+        <div className="flex items-center gap-2 border-b border-border pb-3">
+          <Baby className="h-4 w-4 text-foreground" />
+          <h3 className="text-xs font-bold font-mono uppercase tracking-wider text-foreground">
             1. Identitas Anak (0–7 Tahun)
           </h3>
         </div>
 
         {/* Nama Lengkap */}
         <div className="space-y-1.5">
-          <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          <label className="text-xs font-medium text-muted-foreground">
             Nama Lengkap Sesuai Akta Kelahiran *
           </label>
           <div className="relative">
-            <User className="pointer-events-none absolute left-3.5 top-3.5 h-4 w-4 text-muted-foreground" />
+            <User className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
             <input
               type="text"
               required
               value={namaLengkap}
               onChange={(e) => setNamaLengkap(e.target.value)}
               placeholder="Contoh: Muhammad Bilal Al-Ghifari"
-              className="w-full min-h-[48px] rounded-2xl border border-input bg-background/50 pl-10 pr-4 text-xs font-medium text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              className="w-full h-10 rounded-md border border-border bg-background pl-9 pr-3 text-xs font-normal text-foreground placeholder:text-muted-foreground focus:border-zinc-500 focus:outline-hidden"
             />
           </div>
         </div>
@@ -181,23 +181,23 @@ export function FormDataAnak({
         {/* Tanggal Lahir & Jenis Kelamin */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            <label className="text-xs font-medium text-muted-foreground">
               Tanggal Lahir *
             </label>
             <div className="relative">
-              <Calendar className="pointer-events-none absolute left-3.5 top-3.5 h-4 w-4 text-muted-foreground" />
+              <Calendar className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <input
                 type="date"
                 required
                 value={tanggalLahir}
                 onChange={(e) => setTanggalLahir(e.target.value)}
-                className="w-full min-h-[48px] rounded-2xl border border-input bg-background/50 pl-10 pr-4 text-xs font-medium text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                className="w-full h-10 rounded-md border border-border bg-background pl-9 pr-3 text-xs font-mono text-foreground focus:border-zinc-500 focus:outline-hidden"
               />
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            <label className="text-xs font-medium text-muted-foreground">
               Jenis Kelamin *
             </label>
             <div className="grid grid-cols-2 gap-2">
@@ -205,9 +205,9 @@ export function FormDataAnak({
                 type="button"
                 onClick={() => setJenisKelamin("L")}
                 className={cn(
-                  "flex min-h-[48px] items-center justify-center rounded-2xl border text-xs font-bold transition-all",
+                  "flex h-10 items-center justify-center rounded-md border text-xs font-bold transition-all cursor-pointer",
                   jenisKelamin === "L"
-                    ? "border-primary bg-primary/10 text-primary"
+                    ? "border-emerald-500 bg-emerald-950/20 text-emerald-400"
                     : "border-border text-muted-foreground hover:bg-muted"
                 )}
               >
@@ -217,9 +217,9 @@ export function FormDataAnak({
                 type="button"
                 onClick={() => setJenisKelamin("P")}
                 className={cn(
-                  "flex min-h-[48px] items-center justify-center rounded-2xl border text-xs font-bold transition-all",
+                  "flex h-10 items-center justify-center rounded-md border text-xs font-bold transition-all cursor-pointer",
                   jenisKelamin === "P"
-                    ? "border-accent bg-accent/10 text-accent"
+                    ? "border-cyan-500 bg-cyan-950/20 text-cyan-400"
                     : "border-border text-muted-foreground hover:bg-muted"
                 )}
               >
@@ -232,7 +232,7 @@ export function FormDataAnak({
         {/* Nama Orang Tua & Kontak HP */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            <label className="text-xs font-medium text-muted-foreground">
               Nama Orang Tua / Wali *
             </label>
             <input
@@ -240,24 +240,24 @@ export function FormDataAnak({
               required
               value={namaOrangtua}
               onChange={(e) => setNamaOrangtua(e.target.value)}
-              placeholder="Contoh: Hendrawan &amp; Maya"
-              className="w-full min-h-[48px] rounded-2xl border border-input bg-background/50 px-4 text-xs font-medium text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              placeholder="Contoh: Hendrawan & Maya"
+              className="w-full h-10 rounded-md border border-border bg-background px-3 text-xs font-normal text-foreground placeholder:text-muted-foreground focus:border-zinc-500 focus:outline-hidden"
             />
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            <label className="text-xs font-medium text-muted-foreground">
               Nomor HP / WhatsApp *
             </label>
             <div className="relative">
-              <Phone className="pointer-events-none absolute left-3.5 top-3.5 h-4 w-4 text-muted-foreground" />
+              <Phone className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <input
                 type="tel"
                 required
                 value={nomorHp}
                 onChange={(e) => setNomorHp(e.target.value)}
                 placeholder="081234567890"
-                className="w-full min-h-[48px] rounded-2xl border border-input bg-background/50 pl-10 pr-4 text-xs font-medium text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                className="w-full h-10 rounded-md border border-border bg-background pl-9 pr-3 text-xs font-mono text-foreground placeholder:text-muted-foreground focus:border-zinc-500 focus:outline-hidden"
               />
             </div>
           </div>
@@ -266,15 +266,15 @@ export function FormDataAnak({
         {/* Tinggal Bersama & Jarak Rumah */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            <label className="text-xs font-medium text-muted-foreground">
               Status Tinggal Bersama *
             </label>
             <div className="relative">
-              <Home className="pointer-events-none absolute left-3.5 top-3.5 h-4 w-4 text-muted-foreground" />
+              <Home className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <select
                 value={tinggalBersama}
                 onChange={(e) => setTinggalBersama(e.target.value)}
-                className="w-full min-h-[48px] rounded-2xl border border-input bg-background/50 pl-10 pr-8 text-xs font-medium text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none"
+                className="w-full h-10 rounded-md border border-border bg-background pl-9 pr-8 text-xs font-medium text-foreground focus:border-zinc-500 focus:outline-hidden appearance-none"
               >
                 <option value="Orang Tua">Orang Tua Kandung</option>
                 <option value="Kakek / Nenek">Kakek / Nenek</option>
@@ -285,11 +285,11 @@ export function FormDataAnak({
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            <label className="text-xs font-medium text-muted-foreground">
               Jarak Rumah ke Posyandu / PAUD (KM) *
             </label>
             <div className="relative">
-              <MapPin className="pointer-events-none absolute left-3.5 top-3.5 h-4 w-4 text-muted-foreground" />
+              <MapPin className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <input
                 type="number"
                 step="0.1"
@@ -298,7 +298,7 @@ export function FormDataAnak({
                 value={jarakRumahKm}
                 onChange={(e) => setJarakRumahKm(e.target.value)}
                 placeholder="0.5"
-                className="w-full min-h-[48px] rounded-2xl border border-input bg-background/50 pl-10 pr-4 text-xs font-medium text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                className="w-full h-10 rounded-md border border-border bg-background pl-9 pr-3 text-xs font-mono text-foreground focus:border-zinc-500 focus:outline-hidden"
               />
             </div>
           </div>
@@ -306,17 +306,17 @@ export function FormDataAnak({
       </div>
 
       {/* SECTION 2: STATUS & ALASAN SEKOLAH (LOGIKA DINAMIS LINTAS KOMUNITAS) */}
-      <div className="space-y-4 rounded-3xl border border-border bg-card p-5 shadow-2xs">
-        <div className="flex items-center gap-2 border-b border-border/60 pb-3">
-          <GraduationCap className="h-5 w-5 text-accent" />
-          <h3 className="text-sm font-bold text-foreground">
+      <div className="space-y-4 rounded-lg border border-border bg-card p-5">
+        <div className="flex items-center gap-2 border-b border-border pb-3">
+          <GraduationCap className="h-4 w-4 text-foreground" />
+          <h3 className="text-xs font-bold font-mono uppercase tracking-wider text-foreground">
             2. Status Pendidikan Anak
           </h3>
         </div>
 
         {/* Toggle Status Sekolah */}
         <div className="space-y-1.5">
-          <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          <label className="text-xs font-medium text-muted-foreground">
             Apakah Anak Sudah Bersekolah di PAUD / TK?
           </label>
           <div className="grid grid-cols-2 gap-2">
@@ -330,9 +330,9 @@ export function FormDataAnak({
                 setAlasanSekolah(ALASAN_SEKOLAH_PAUD[0]);
               }}
               className={cn(
-                "flex min-h-[48px] items-center justify-center rounded-2xl border text-xs font-bold transition-all",
+                "flex h-10 items-center justify-center rounded-md border text-xs font-bold transition-all cursor-pointer",
                 isSekolah
-                  ? "border-primary bg-primary/10 text-primary font-bold shadow-xs"
+                  ? "border-foreground bg-foreground text-background"
                   : "border-border text-muted-foreground hover:bg-muted"
               )}
             >
@@ -346,9 +346,9 @@ export function FormDataAnak({
                 setAlasanSekolah(ALASAN_BELUM_SEKOLAH[0]);
               }}
               className={cn(
-                "flex min-h-[48px] items-center justify-center rounded-2xl border text-xs font-bold transition-all",
+                "flex h-10 items-center justify-center rounded-md border text-xs font-bold transition-all cursor-pointer",
                 !isSekolah
-                  ? "border-amber-500 bg-amber-500/10 text-amber-700 dark:text-amber-300 font-bold shadow-xs"
+                  ? "border-amber-500 bg-amber-950/20 text-amber-400"
                   : "border-border text-muted-foreground hover:bg-muted"
               )}
             >
@@ -360,7 +360,7 @@ export function FormDataAnak({
         {/* Nama Sekolah (Jika Bersekolah) */}
         {isSekolah && (
           <div className="space-y-1.5 animate-in fade-in">
-            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            <label className="text-xs font-medium text-muted-foreground">
               Nama Satuan PAUD / TK *
             </label>
             <input
@@ -369,14 +369,14 @@ export function FormDataAnak({
               value={namaSekolah}
               onChange={(e) => setNamaSekolah(e.target.value)}
               placeholder="Contoh: RA Sakila Kerti Panggung"
-              className="w-full min-h-[48px] rounded-2xl border border-input bg-background/50 px-4 text-xs font-medium text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              className="w-full h-10 rounded-md border border-border bg-background px-3 text-xs font-normal text-foreground placeholder:text-muted-foreground focus:border-zinc-500 focus:outline-hidden"
             />
           </div>
         )}
 
         {/* Alasan Sekolah (Dropdown Dinamis) */}
         <div className="space-y-1.5">
-          <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          <label className="text-xs font-medium text-muted-foreground">
             {isSekolah
               ? "Alasan Mengikuti Pendidikan PAUD *"
               : "Alasan Belum Mengikuti PAUD *"}
@@ -384,7 +384,7 @@ export function FormDataAnak({
           <select
             value={alasanSekolah}
             onChange={(e) => setAlasanSekolah(e.target.value)}
-            className="w-full min-h-[48px] rounded-2xl border border-input bg-background/50 px-4 text-xs font-medium text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            className="w-full h-10 rounded-md border border-border bg-background px-3 text-xs font-medium text-foreground focus:border-zinc-500 focus:outline-hidden"
           >
             {(isSekolah ? ALASAN_SEKOLAH_PAUD : ALASAN_BELUM_SEKOLAH).map(
               (alasan) => (
@@ -398,23 +398,23 @@ export function FormDataAnak({
       </div>
 
       {/* SECTION 3: PENGUKURAN DDKS AWAL (OPSIONAL) */}
-      <div className="space-y-4 rounded-3xl border border-border bg-card p-5 shadow-2xs">
-        <div className="flex items-center gap-2 border-b border-border/60 pb-3">
-          <Activity className="h-5 w-5 text-emerald-600" />
-          <h3 className="text-sm font-bold text-foreground">
+      <div className="space-y-4 rounded-lg border border-border bg-card p-5">
+        <div className="flex items-center gap-2 border-b border-border pb-3">
+          <Activity className="h-4 w-4 text-emerald-400" />
+          <h3 className="text-xs font-bold font-mono uppercase tracking-wider text-foreground">
             3. Pengukuran DDKS &amp; Antropometri Awal (Opsional)
           </h3>
         </div>
 
-        <p className="text-[11px] text-muted-foreground leading-relaxed">
+        <p className="text-xs text-muted-foreground leading-relaxed">
           Masukkan hasil pengukuran terakhir jika anak baru saja ditimbang di Posyandu atau diperiksa Bidan.
         </p>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {/* Berat Badan */}
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
-              <Scale className="h-3.5 w-3.5 text-primary" />
+            <label className="text-[10px] font-mono uppercase text-muted-foreground flex items-center gap-1">
+              <Scale className="h-3 w-3 text-muted-foreground" />
               BB (KG)
             </label>
             <input
@@ -424,14 +424,14 @@ export function FormDataAnak({
               value={beratBadan}
               onChange={(e) => setBeratBadan(e.target.value)}
               placeholder="12.5"
-              className="w-full min-h-[48px] rounded-2xl border border-input bg-background/50 px-3.5 text-xs font-bold text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              className="w-full h-10 rounded-md border border-border bg-background px-3 text-xs font-mono font-bold text-foreground focus:border-zinc-500 focus:outline-hidden"
             />
           </div>
 
           {/* Tinggi Badan */}
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
-              <Ruler className="h-3.5 w-3.5 text-accent" />
+            <label className="text-[10px] font-mono uppercase text-muted-foreground flex items-center gap-1">
+              <Ruler className="h-3 w-3 text-muted-foreground" />
               TB (CM)
             </label>
             <input
@@ -441,14 +441,14 @@ export function FormDataAnak({
               value={tinggiBadan}
               onChange={(e) => setTinggiBadan(e.target.value)}
               placeholder="88.0"
-              className="w-full min-h-[48px] rounded-2xl border border-input bg-background/50 px-3.5 text-xs font-bold text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              className="w-full h-10 rounded-md border border-border bg-background px-3 text-xs font-mono font-bold text-foreground focus:border-zinc-500 focus:outline-hidden"
             />
           </div>
 
           {/* Panjang Badan */}
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
-              <Ruler className="h-3.5 w-3.5 text-blue-600" />
+            <label className="text-[10px] font-mono uppercase text-muted-foreground flex items-center gap-1">
+              <Ruler className="h-3 w-3 text-muted-foreground" />
               PB (CM)
             </label>
             <input
@@ -458,14 +458,14 @@ export function FormDataAnak({
               value={panjangBadan}
               onChange={(e) => setPanjangBadan(e.target.value)}
               placeholder="88.0"
-              className="w-full min-h-[48px] rounded-2xl border border-input bg-background/50 px-3.5 text-xs font-bold text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              className="w-full h-10 rounded-md border border-border bg-background px-3 text-xs font-mono font-bold text-foreground focus:border-zinc-500 focus:outline-hidden"
             />
           </div>
 
           {/* Lingkar Kepala */}
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
-              <Activity className="h-3.5 w-3.5 text-amber-600" />
+            <label className="text-[10px] font-mono uppercase text-muted-foreground flex items-center gap-1">
+              <Activity className="h-3 w-3 text-muted-foreground" />
               LK (CM)
             </label>
             <input
@@ -475,14 +475,14 @@ export function FormDataAnak({
               value={lingkarKepala}
               onChange={(e) => setLingkarKepala(e.target.value)}
               placeholder="47.0"
-              className="w-full min-h-[48px] rounded-2xl border border-input bg-background/50 px-3.5 text-xs font-bold text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              className="w-full h-10 rounded-md border border-border bg-background px-3 text-xs font-mono font-bold text-foreground focus:border-zinc-500 focus:outline-hidden"
             />
           </div>
         </div>
 
         {/* Catatan DDKS */}
         <div className="space-y-1.5">
-          <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          <label className="text-xs font-medium text-muted-foreground">
             Catatan Kesehatan / Perkembangan
           </label>
           <input
@@ -490,7 +490,7 @@ export function FormDataAnak({
             value={catatanDdks}
             onChange={(e) => setCatatanDdks(e.target.value)}
             placeholder="Contoh: Sudah bisa berjalan lancar, imunisasi campak lengkap."
-            className="w-full min-h-[48px] rounded-2xl border border-input bg-background/50 px-4 text-xs font-medium text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            className="w-full h-10 rounded-md border border-border bg-background px-3 text-xs text-foreground placeholder:text-muted-foreground focus:border-zinc-500 focus:outline-hidden"
           />
         </div>
       </div>
@@ -500,16 +500,16 @@ export function FormDataAnak({
         <button
           type="submit"
           disabled={isPending}
-          className="flex w-full min-h-[50px] items-center justify-center gap-2 rounded-2xl bg-accent px-5 py-3 text-sm font-bold text-white shadow-lg shadow-accent/25 transition-all active:scale-[0.98] hover:brightness-110 disabled:opacity-50"
+          className="flex w-full h-10 items-center justify-center gap-2 rounded-md bg-foreground px-5 text-xs font-bold text-background transition-all hover:bg-foreground/90 disabled:opacity-50 cursor-pointer"
         >
           {isPending ? (
             <>
-              <Loader2 className="h-5 w-5 animate-spin" />
+              <Loader2 className="h-4 w-4 animate-spin" />
               <span>Menyimpan Data Anak...</span>
             </>
           ) : (
             <>
-              <Send className="h-4 w-4" />
+              <Send className="h-3.5 w-3.5" />
               <span>Simpan &amp; Daftarkan Data Anak</span>
             </>
           )}

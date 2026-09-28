@@ -149,7 +149,7 @@ export function AdminMarketClient({ initialProducts }: AdminMarketClientProps) {
       {/* Header & Stats Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-black text-foreground">
+          <h1 className="text-xl sm:text-2xl font-black tracking-tight text-foreground">
             Manajemen Produk Jarimas Market
           </h1>
           <p className="text-xs text-muted-foreground">
@@ -159,7 +159,7 @@ export function AdminMarketClient({ initialProducts }: AdminMarketClientProps) {
 
         <button
           onClick={handleOpenAddModal}
-          className="inline-flex h-11 items-center gap-2 rounded-2xl bg-primary px-4 text-xs font-bold text-primary-foreground shadow-md transition-all hover:bg-primary/90 active:scale-95"
+          className="inline-flex h-9 items-center gap-2 rounded-md bg-foreground px-4 text-xs font-bold text-background transition-all hover:bg-foreground/90 cursor-pointer"
         >
           <Plus className="h-4 w-4" />
           <span>+ Tambah Produk Baru</span>
@@ -168,43 +168,43 @@ export function AdminMarketClient({ initialProducts }: AdminMarketClientProps) {
 
       {/* Metric Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-3xl border border-border bg-card p-5 shadow-xs flex items-center gap-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-            <Package className="h-6 w-6" />
+        <div className="rounded-lg border border-border bg-card p-4 flex items-center gap-3.5">
+          <div className="flex h-10 w-10 items-center justify-center rounded-md bg-muted text-foreground">
+            <Package className="h-5 w-5" />
           </div>
           <div>
-            <span className="text-xs font-medium text-muted-foreground block">
+            <span className="text-[10px] font-mono uppercase text-muted-foreground block">
               Total Jenis Produk
             </span>
-            <span className="text-2xl font-black text-foreground">
+            <span className="text-xl font-mono font-bold text-foreground">
               {products.length}
             </span>
           </div>
         </div>
 
-        <div className="rounded-3xl border border-border bg-card p-5 shadow-xs flex items-center gap-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-accent/10 text-accent">
-            <ShoppingBag className="h-6 w-6" />
+        <div className="rounded-lg border border-border bg-card p-4 flex items-center gap-3.5">
+          <div className="flex h-10 w-10 items-center justify-center rounded-md bg-muted text-foreground">
+            <ShoppingBag className="h-5 w-5" />
           </div>
           <div>
-            <span className="text-xs font-medium text-muted-foreground block">
+            <span className="text-[10px] font-mono uppercase text-muted-foreground block">
               Total Stok Tersedia
             </span>
-            <span className="text-2xl font-black text-foreground">
-              {totalStok} unit
+            <span className="text-xl font-mono font-bold text-foreground">
+              {totalStok} UNIT
             </span>
           </div>
         </div>
 
-        <div className="rounded-3xl border border-border bg-card p-5 shadow-xs flex items-center gap-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-600">
-            <Sparkles className="h-6 w-6" />
+        <div className="rounded-lg border border-border bg-card p-4 flex items-center gap-3.5">
+          <div className="flex h-10 w-10 items-center justify-center rounded-md bg-emerald-950/40 border border-emerald-800 text-emerald-400">
+            <Sparkles className="h-5 w-5" />
           </div>
           <div>
-            <span className="text-xs font-medium text-muted-foreground block">
+            <span className="text-[10px] font-mono uppercase text-muted-foreground block">
               Estimasi Nilai Stok
             </span>
-            <span className="text-lg font-black text-primary">
+            <span className="text-lg font-mono font-bold text-emerald-400">
               {formatRupiah(totalValue)}
             </span>
           </div>
@@ -216,7 +216,7 @@ export function AdminMarketClient({ initialProducts }: AdminMarketClientProps) {
         {products.map((prod) => (
           <div
             key={prod.id}
-            className="overflow-hidden rounded-3xl border border-border bg-card shadow-xs transition-all hover:shadow-md flex flex-col justify-between"
+            className="overflow-hidden rounded-lg border border-border bg-card flex flex-col justify-between"
           >
             <div>
               {/* Gambar & Kategori */}
@@ -230,47 +230,47 @@ export function AdminMarketClient({ initialProducts }: AdminMarketClientProps) {
                   fill
                   className="object-cover"
                 />
-                <div className="absolute top-3 left-3 rounded-full bg-card/90 px-2.5 py-0.5 text-[11px] font-bold text-foreground backdrop-blur-md">
+                <div className="absolute top-2.5 left-2.5 rounded-md bg-black/80 px-2 py-0.5 text-[10px] font-mono font-semibold text-zinc-300 border border-zinc-700 backdrop-blur-xs">
                   {prod.kategori}
                 </div>
-                <div className="absolute top-3 right-3">
+                <div className="absolute top-2.5 right-2.5">
                   {prod.stok <= 0 ? (
-                    <span className="rounded-full bg-destructive px-2 py-0.5 text-[10px] font-bold text-destructive-foreground">
-                      Habis
+                    <span className="rounded-md bg-destructive/90 px-2 py-0.5 text-[10px] font-mono font-bold text-destructive-foreground">
+                      OUT OF STOCK
                     </span>
                   ) : (
-                    <span className="rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-primary-foreground">
-                      Stok: {prod.stok}
+                    <span className="rounded-md bg-emerald-950/90 border border-emerald-800 px-2 py-0.5 text-[10px] font-mono font-bold text-emerald-300">
+                      STOK: {prod.stok}
                     </span>
                   )}
                 </div>
               </div>
 
               {/* Konten */}
-              <div className="p-4 space-y-2">
-                <h3 className="line-clamp-2 text-sm font-bold text-foreground">
+              <div className="p-4 space-y-1.5">
+                <h3 className="line-clamp-2 text-xs font-bold text-foreground">
                   {prod.nama}
                 </h3>
-                <p className="line-clamp-2 text-xs text-muted-foreground">
+                <p className="line-clamp-2 text-xs text-muted-foreground leading-relaxed">
                   {prod.deskripsi}
                 </p>
-                <div className="text-base font-black text-primary pt-1">
+                <div className="text-sm font-black text-foreground font-mono pt-1">
                   {formatRupiah(prod.harga)}
                 </div>
               </div>
             </div>
 
             {/* Aksi Edit */}
-            <div className="border-t border-border p-4 bg-muted/20 flex items-center justify-between">
-              <span className="text-[11px] font-medium text-muted-foreground">
-                ID: #{prod.id}
+            <div className="border-t border-border p-3 bg-muted/20 flex items-center justify-between">
+              <span className="text-[11px] font-mono text-muted-foreground">
+                ID: #{prod.id.slice(0, 8)}
               </span>
               <button
                 onClick={() => handleOpenEditModal(prod)}
-                className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-border bg-card px-3 text-xs font-bold text-foreground hover:bg-muted active:scale-95"
+                className="inline-flex h-8 items-center gap-1.5 rounded-md border border-border bg-card px-2.5 text-xs font-medium text-foreground hover:bg-muted cursor-pointer"
               >
-                <Edit className="h-3.5 w-3.5 text-primary" />
-                <span>Edit Produk</span>
+                <Edit className="h-3 w-3" />
+                <span>Edit</span>
               </button>
             </div>
           </div>
@@ -281,24 +281,24 @@ export function AdminMarketClient({ initialProducts }: AdminMarketClientProps) {
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
           <div
-            className="fixed inset-0 bg-black/60 backdrop-blur-xs"
+            className="fixed inset-0 bg-black/80 backdrop-blur-xs"
             onClick={() => setIsModalOpen(false)}
           />
 
-          <div className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-3xl border border-border bg-card p-6 shadow-2xl z-10 space-y-4 animate-in zoom-in-95 duration-200">
+          <div className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-lg border border-border bg-card p-6 shadow-2xl z-10 space-y-4 animate-in zoom-in-95 duration-200">
             {/* Modal Header */}
             <div className="flex items-center justify-between border-b border-border pb-3">
               <div className="flex items-center gap-2">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                  <Package className="h-5 w-5" />
+                <div className="flex h-8 w-8 items-center justify-center rounded-md bg-muted text-foreground">
+                  <Package className="h-4 w-4" />
                 </div>
-                <h2 className="text-base font-black text-foreground">
-                  {editingProduct ? "Edit Produk Market" : "Tambah Produk Baru"}
+                <h2 className="text-sm font-bold text-foreground font-mono">
+                  {editingProduct ? "[EDIT PRODUK]" : "[TAMBAH PRODUK BARU]"}
                 </h2>
               </div>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-muted-foreground hover:bg-muted/80"
+                className="flex h-7 w-7 items-center justify-center rounded-md bg-muted text-muted-foreground hover:text-foreground cursor-pointer"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -308,7 +308,7 @@ export function AdminMarketClient({ initialProducts }: AdminMarketClientProps) {
             <form onSubmit={handleFormSubmit} className="space-y-4">
               {/* Nama Produk */}
               <div className="space-y-1">
-                <label className="text-xs font-bold text-foreground">
+                <label className="text-xs font-medium text-muted-foreground">
                   Nama Produk *
                 </label>
                 <input
@@ -317,19 +317,19 @@ export function AdminMarketClient({ initialProducts }: AdminMarketClientProps) {
                   placeholder="Contoh: Paket Alat Permainan Edukatif (APE Kit)"
                   value={nama}
                   onChange={(e) => setNama(e.target.value)}
-                  className="h-11 w-full rounded-2xl border border-border bg-background px-3.5 text-xs font-medium text-foreground focus:border-primary focus:outline-hidden"
+                  className="h-9 w-full rounded-md border border-border bg-background px-3 text-xs font-normal text-foreground placeholder:text-muted-foreground focus:border-zinc-500 focus:outline-hidden"
                 />
               </div>
 
               {/* Kategori */}
               <div className="space-y-1">
-                <label className="text-xs font-bold text-foreground">
+                <label className="text-xs font-medium text-muted-foreground">
                   Kategori *
                 </label>
                 <select
                   value={kategori}
                   onChange={(e) => setKategori(e.target.value as KategoriMarket)}
-                  className="h-11 w-full rounded-2xl border border-border bg-background px-3.5 text-xs font-medium text-foreground focus:border-primary focus:outline-hidden"
+                  className="h-9 w-full rounded-md border border-border bg-background px-3 text-xs font-medium text-foreground focus:border-zinc-500 focus:outline-hidden"
                 >
                   {KATEGORI_OPTIONS.map((kat) => (
                     <option key={kat} value={kat}>
@@ -342,7 +342,7 @@ export function AdminMarketClient({ initialProducts }: AdminMarketClientProps) {
               {/* Harga & Stok Grid */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-foreground">
+                  <label className="text-xs font-mono uppercase text-muted-foreground">
                     Harga Satuan (Rp) *
                   </label>
                   <input
@@ -352,12 +352,12 @@ export function AdminMarketClient({ initialProducts }: AdminMarketClientProps) {
                     placeholder="Contoh: 145000"
                     value={harga}
                     onChange={(e) => setHarga(e.target.value)}
-                    className="h-11 w-full rounded-2xl border border-border bg-background px-3.5 text-xs font-medium text-foreground focus:border-primary focus:outline-hidden"
+                    className="h-9 w-full rounded-md border border-border bg-background px-3 text-xs font-mono text-foreground focus:border-zinc-500 focus:outline-hidden"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-foreground">
+                  <label className="text-xs font-mono uppercase text-muted-foreground">
                     Jumlah Stok *
                   </label>
                   <input
@@ -367,14 +367,14 @@ export function AdminMarketClient({ initialProducts }: AdminMarketClientProps) {
                     placeholder="Contoh: 25"
                     value={stok}
                     onChange={(e) => setStok(e.target.value)}
-                    className="h-11 w-full rounded-2xl border border-border bg-background px-3.5 text-xs font-medium text-foreground focus:border-primary focus:outline-hidden"
+                    className="h-9 w-full rounded-md border border-border bg-background px-3 text-xs font-mono text-foreground focus:border-zinc-500 focus:outline-hidden"
                   />
                 </div>
               </div>
 
               {/* URL Gambar */}
               <div className="space-y-1">
-                <label className="text-xs font-bold text-foreground">
+                <label className="text-xs font-medium text-muted-foreground">
                   URL Foto Produk *
                 </label>
                 <input
@@ -383,13 +383,13 @@ export function AdminMarketClient({ initialProducts }: AdminMarketClientProps) {
                   placeholder="https://images.unsplash.com/..."
                   value={gambarUrl}
                   onChange={(e) => setGambarUrl(e.target.value)}
-                  className="h-11 w-full rounded-2xl border border-border bg-background px-3.5 text-xs font-medium text-foreground focus:border-primary focus:outline-hidden"
+                  className="h-9 w-full rounded-md border border-border bg-background px-3 text-xs font-mono text-foreground placeholder:text-muted-foreground focus:border-zinc-500 focus:outline-hidden"
                 />
               </div>
 
               {/* Deskripsi */}
               <div className="space-y-1">
-                <label className="text-xs font-bold text-foreground">
+                <label className="text-xs font-medium text-muted-foreground">
                   Deskripsi Lengkap *
                 </label>
                 <textarea
@@ -398,7 +398,7 @@ export function AdminMarketClient({ initialProducts }: AdminMarketClientProps) {
                   placeholder="Jelaskan spesifikasi, fungsi, sertifikasi, dan manfaat produk..."
                   value={deskripsi}
                   onChange={(e) => setDeskripsi(e.target.value)}
-                  className="w-full rounded-2xl border border-border bg-background p-3 text-xs font-medium text-foreground focus:border-primary focus:outline-hidden"
+                  className="w-full rounded-md border border-border bg-background p-3 text-xs font-normal text-foreground placeholder:text-muted-foreground focus:border-zinc-500 focus:outline-hidden"
                 />
               </div>
 
@@ -409,11 +409,11 @@ export function AdminMarketClient({ initialProducts }: AdminMarketClientProps) {
                   id="isActiveToggle"
                   checked={isActive}
                   onChange={(e) => setIsActive(e.target.checked)}
-                  className="h-4 w-4 rounded border-border"
+                  className="h-4 w-4 rounded border-border accent-emerald-500 cursor-pointer"
                 />
                 <label
                   htmlFor="isActiveToggle"
-                  className="text-xs font-bold text-foreground cursor-pointer"
+                  className="text-xs font-medium text-foreground cursor-pointer"
                 >
                   Tampilkan produk di katalog publik Jarimas Market
                 </label>
@@ -422,9 +422,9 @@ export function AdminMarketClient({ initialProducts }: AdminMarketClientProps) {
               {/* Feedback */}
               {feedback && (
                 <div
-                  className={`flex items-start gap-2 rounded-2xl p-3 text-xs ${
+                  className={`flex items-start gap-2 rounded-md p-3 text-xs ${
                     feedback.type === "success"
-                      ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
+                      ? "bg-emerald-950/40 text-emerald-300 border border-emerald-800"
                       : "bg-destructive/10 text-destructive border border-destructive/20"
                   }`}
                 >
@@ -442,23 +442,23 @@ export function AdminMarketClient({ initialProducts }: AdminMarketClientProps) {
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="inline-flex h-11 items-center rounded-2xl border border-border bg-card px-4 text-xs font-bold text-foreground hover:bg-muted"
+                  className="inline-flex h-9 items-center rounded-md border border-border bg-card px-3 text-xs font-medium text-foreground hover:bg-muted cursor-pointer"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
                   disabled={isPending}
-                  className="inline-flex h-11 items-center gap-2 rounded-2xl bg-primary px-5 text-xs font-bold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+                  className="inline-flex h-9 items-center gap-2 rounded-md bg-foreground px-4 text-xs font-bold text-background hover:bg-foreground/90 disabled:opacity-50 cursor-pointer"
                 >
                   {isPending ? (
                     <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
                       <span>Menyimpan...</span>
                     </>
                   ) : (
                     <>
-                      <Save className="h-4 w-4" />
+                      <Save className="h-3.5 w-3.5" />
                       <span>Simpan Produk</span>
                     </>
                   )}

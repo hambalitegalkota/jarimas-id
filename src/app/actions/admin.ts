@@ -2,6 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/utils/supabase/server";
+import { findOrGenerateKomunitasSeed } from "@/lib/constants/tegal-data";
+import { formatPeranDisplay } from "@/lib/utils";
 import type { PendingApprovalItem } from "@/types/database";
 
 /**
@@ -42,28 +44,9 @@ export async function getPendingApprovals(): Promise<{
   try {
     const { supabase } = await verifySuperAdmin();
 
-    const { data, error } = await supabase
+    const { data: rawPending, error } = await supabase
       .from("anggota_komunitas")
-      .select(`
-        id,
-        user_id,
-        komunitas_id,
-        peran,
-        status,
-        created_at,
-        profiles (
-          id,
-          nama_lengkap,
-          email,
-          avatar_url
-        ),
-        komunitas (
-          id,
-          nama,
-          jenis,
-          lokasi
-        )
-      `)
+      .select("id, user_id, komunitas_id, peran, status, created_at")
       .eq("status", "pending")
       .order("created_at", { ascending: false });
 
@@ -76,17 +59,71 @@ export async function getPendingApprovals(): Promise<{
       };
     }
 
-    // Normalisasi struktur data hasil join
-    const items: PendingApprovalItem[] = (data || []).map((row: any) => ({
-      id: row.id,
-      user_id: row.user_id,
-      komunitas_id: row.komunitas_id,
-      peran: row.peran || "Anggota",
-      status: row.status,
-      created_at: row.created_at,
-      profiles: Array.isArray(row.profiles) ? row.profiles[0] : row.profiles,
-      komunitas: Array.isArray(row.komunitas) ? row.komunitas[0] : row.komunitas,
-    }));
+    if (!rawPending || rawPending.length === 0) {
+      return {
+        success: true,
+        data: [],
+      };
+    }
+
+    const userIds = [...new Set(rawPending.map((r: any) => r.user_id).filter(Boolean))];
+    const komIds = [...new Set(rawPending.map((r: any) => r.komunitas_id).filter(Boolean))];
+
+    const { data: profilesData } =
+      userIds.length > 0
+        ? await supabase
+            .from("profiles")
+            .select("id, nama_lengkap, email")
+            .in("id", userIds)
+        : { data: [] };
+
+    const { data: komData } =
+      komIds.length > 0
+        ? await supabase
+            .from("komunitas")
+            .select("id, nama_komunitas, jenis_komunitas, kecamatan, kelurahan, rw, rt")
+            .in("id", komIds)
+        : { data: [] };
+
+    const profileMap = new Map((profilesData || []).map((p: any) => [p.id, p]));
+    const komMap = new Map((komData || []).map((k: any) => [k.id, k]));
+
+    // Normalisasi struktur data hasil resolusi
+    const items: PendingApprovalItem[] = rawPending.map((row: any) => {
+      const prof = profileMap.get(row.user_id);
+      const kom = komMap.get(row.komunitas_id);
+      const seed = findOrGenerateKomunitasSeed(row.komunitas_id);
+
+      const namaKomunitas =
+        kom?.nama_komunitas || kom?.nama || seed?.nama || "Komunitas Tegal";
+      const jenisKomunitas =
+        kom?.jenis_komunitas || kom?.jenis || seed?.jenis || "posyandu";
+      const lokasiKomunitas =
+        seed?.lokasi ||
+        [kom?.kelurahan, kom?.kecamatan, "Kota Tegal"].filter(Boolean).join(", ") ||
+        "Kota Tegal";
+
+      return {
+        id: row.id,
+        user_id: row.user_id,
+        komunitas_id: row.komunitas_id,
+        peran: formatPeranDisplay(row.peran),
+        status: row.status,
+        created_at: row.created_at,
+        profiles: {
+          id: row.user_id,
+          nama_lengkap: prof?.nama_lengkap || "Pengguna JARIMAS",
+          email: prof?.email || "-",
+          avatar_url: null,
+        },
+        komunitas: {
+          id: row.komunitas_id,
+          nama: namaKomunitas,
+          jenis: jenisKomunitas,
+          lokasi: lokasiKomunitas,
+        },
+      };
+    });
 
     return {
       success: true,
@@ -123,7 +160,6 @@ export async function approveMemberRole(anggotaId: string): Promise<{
       .update({
         status: "approved",
         approved_by: user.id,
-        updated_at: new Date().toISOString(),
       })
       .eq("id", anggotaId);
 
@@ -135,6 +171,8 @@ export async function approveMemberRole(anggotaId: string): Promise<{
     }
 
     revalidatePath("/profil");
+    revalidatePath("/komunitas");
+    revalidatePath("/admin");
     return {
       success: true,
       message: "Permohonan peran anggota berhasil disetujui.",
@@ -169,7 +207,6 @@ export async function rejectMemberRole(anggotaId: string): Promise<{
       .update({
         status: "rejected",
         approved_by: user.id,
-        updated_at: new Date().toISOString(),
       })
       .eq("id", anggotaId);
 
@@ -181,6 +218,8 @@ export async function rejectMemberRole(anggotaId: string): Promise<{
     }
 
     revalidatePath("/profil");
+    revalidatePath("/komunitas");
+    revalidatePath("/admin");
     return {
       success: true,
       message: "Permohonan peran anggota telah ditolak.",

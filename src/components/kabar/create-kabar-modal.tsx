@@ -64,9 +64,9 @@ export function CreateKabarModal({ currentUserId }: CreateKabarModalProps) {
           setIsOpen(true);
         }}
         aria-label="Buat Kabar Baru"
-        className="fixed bottom-20 right-4 z-40 flex min-h-[52px] items-center gap-2 rounded-full bg-gradient-to-r from-accent to-orange-600 px-5 py-3 text-sm font-bold text-white shadow-xl shadow-accent/30 transition-transform active:scale-95 hover:brightness-110 sm:right-6"
+        className="fixed bottom-20 right-4 z-40 flex h-11 items-center gap-2 rounded-md bg-foreground px-4 text-xs font-mono font-semibold uppercase tracking-wider text-background shadow-lg transition-all active:scale-95 hover:bg-zinc-200 sm:right-6 sm:bottom-22 border border-zinc-700"
       >
-        <Plus className="h-5 w-5 stroke-[2.5px]" />
+        <Plus className="h-4 w-4 stroke-[2.5px]" />
         <span>Bagikan Kabar</span>
       </button>
 
@@ -75,41 +75,41 @@ export function CreateKabarModal({ currentUserId }: CreateKabarModalProps) {
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200">
           {/* Overlay */}
           <div
-            className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity"
+            className="fixed inset-0 bg-black/80 backdrop-blur-xs transition-opacity"
             onClick={() => !isPending && setIsOpen(false)}
           />
 
           {/* Modal Container */}
-          <div className="relative w-full max-w-lg rounded-t-3xl sm:rounded-3xl border border-border bg-card p-6 shadow-2xl z-10 animate-in slide-in-from-bottom-5 sm:zoom-in-95 duration-200">
+          <div className="relative w-full max-w-lg rounded-t-lg sm:rounded-lg border border-border bg-card p-6 shadow-2xl z-10 animate-in slide-in-from-bottom-5 sm:zoom-in-95 duration-200">
             {/* Modal Header */}
-            <div className="flex items-center justify-between pb-3 border-b border-border/60">
-              <div className="flex items-center gap-2">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                  <Sparkles className="h-5 w-5" />
+            <div className="flex items-center justify-between pb-4 border-b border-border">
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-8 w-8 items-center justify-center rounded-md border border-border bg-muted text-foreground">
+                  <Sparkles className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-foreground">
-                    Bagikan Kabar Baru
+                  <h3 className="text-sm font-bold tracking-tight text-foreground">
+                    BAGIKAN KABAR
                   </h3>
                   <p className="text-xs text-muted-foreground">
-                    Sampaikan info atau update ke sesama warga
+                    Sampaikan informasi atau catatan publik ke sesama warga
                   </p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => !isPending && setIsOpen(false)}
-                className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
+                className="flex h-7 w-7 items-center justify-center rounded-md border border-border text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
               >
-                <X className="h-5 w-5" />
+                <X className="h-4 w-4" />
               </button>
             </div>
 
             {/* Error Message */}
             {errorMessage && (
-              <div className="mt-3 flex items-start gap-2 rounded-xl border border-destructive/20 bg-destructive/10 p-3 text-xs text-destructive">
+              <div className="mt-4 flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-xs text-destructive">
                 <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
-                <span>{errorMessage}</span>
+                <span className="font-mono">{errorMessage}</span>
               </div>
             )}
 
@@ -120,20 +120,20 @@ export function CreateKabarModal({ currentUserId }: CreateKabarModalProps) {
                 <textarea
                   value={konten}
                   onChange={(e) => setKonten(e.target.value)}
-                  placeholder="Apa kabar atau informasi yang ingin Anda bagikan hari ini?..."
+                  placeholder="Tulis kabar, pengumuman posyandu, atau informasi warga di sini..."
                   rows={4}
                   required
                   maxLength={2000}
-                  className="w-full rounded-2xl border border-input bg-background/50 p-4 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
+                  className="w-full rounded-md border border-input bg-background p-3.5 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-ring focus:outline-hidden focus:ring-1 focus:ring-ring resize-none font-sans"
                 />
-                <div className="flex justify-end text-[11px] text-muted-foreground">
-                  <span>{konten.length}/2000 karakter</span>
+                <div className="flex justify-end text-[10px] font-mono text-muted-foreground">
+                  <span>{konten.length}/2000 KARAKTER</span>
                 </div>
               </div>
 
               {/* Visibilitas Selector */}
               <div className="space-y-2">
-                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                <label className="text-[11px] font-mono font-medium uppercase tracking-wider text-muted-foreground block">
                   Visibilitas Postingan
                 </label>
                 <div className="grid grid-cols-3 gap-2">
@@ -141,42 +141,42 @@ export function CreateKabarModal({ currentUserId }: CreateKabarModalProps) {
                     type="button"
                     onClick={() => setVisibilitas("publik")}
                     className={cn(
-                      "flex min-h-[44px] flex-col items-center justify-center gap-1 rounded-xl border p-2 text-xs font-semibold transition-all",
+                      "flex min-h-[40px] flex-col items-center justify-center gap-1 rounded-md border p-2 text-xs font-mono transition-all",
                       visibilitas === "publik"
-                        ? "border-primary bg-primary/10 text-primary font-bold shadow-2xs"
-                        : "border-border text-muted-foreground hover:bg-muted"
+                        ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-semibold"
+                        : "border-border text-muted-foreground hover:bg-muted hover:text-foreground"
                     )}
                   >
-                    <Globe className="h-4 w-4" />
-                    <span>Publik</span>
+                    <Globe className="h-3.5 w-3.5" />
+                    <span>PUBLIK</span>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => setVisibilitas("teman")}
                     className={cn(
-                      "flex min-h-[44px] flex-col items-center justify-center gap-1 rounded-xl border p-2 text-xs font-semibold transition-all",
+                      "flex min-h-[40px] flex-col items-center justify-center gap-1 rounded-md border p-2 text-xs font-mono transition-all",
                       visibilitas === "teman"
-                        ? "border-primary bg-primary/10 text-primary font-bold shadow-2xs"
-                        : "border-border text-muted-foreground hover:bg-muted"
+                        ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-semibold"
+                        : "border-border text-muted-foreground hover:bg-muted hover:text-foreground"
                     )}
                   >
-                    <Users className="h-4 w-4" />
-                    <span>Teman</span>
+                    <Users className="h-3.5 w-3.5" />
+                    <span>TEMAN</span>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => setVisibilitas("komunitas")}
                     className={cn(
-                      "flex min-h-[44px] flex-col items-center justify-center gap-1 rounded-xl border p-2 text-xs font-semibold transition-all",
+                      "flex min-h-[40px] flex-col items-center justify-center gap-1 rounded-md border p-2 text-xs font-mono transition-all",
                       visibilitas === "komunitas"
-                        ? "border-primary bg-primary/10 text-primary font-bold shadow-2xs"
-                        : "border-border text-muted-foreground hover:bg-muted"
+                        ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-semibold"
+                        : "border-border text-muted-foreground hover:bg-muted hover:text-foreground"
                     )}
                   >
-                    <Building2 className="h-4 w-4" />
-                    <span>Komunitas</span>
+                    <Building2 className="h-3.5 w-3.5" />
+                    <span>KOMUNITAS</span>
                   </button>
                 </div>
               </div>
@@ -186,17 +186,17 @@ export function CreateKabarModal({ currentUserId }: CreateKabarModalProps) {
                 <button
                   type="submit"
                   disabled={!konten.trim() || isPending}
-                  className="flex w-full min-h-[48px] items-center justify-center gap-2 rounded-2xl bg-primary px-5 py-3 text-sm font-bold text-white shadow-lg shadow-primary/25 transition-all active:scale-[0.98] hover:brightness-105 disabled:opacity-50"
+                  className="flex w-full min-h-[44px] items-center justify-center gap-2 rounded-md bg-foreground px-5 py-2.5 text-xs font-mono font-bold uppercase tracking-wider text-background shadow-md transition-all active:scale-[0.99] hover:bg-zinc-200 disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   {isPending ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      <span>Mempublikasikan...</span>
+                      <span>MEMPROSES...</span>
                     </>
                   ) : (
                     <>
-                      <Send className="h-4 w-4" />
-                      <span>Terbitkan Kabar</span>
+                      <Send className="h-3.5 w-3.5" />
+                      <span>TERBITKAN KABAR</span>
                     </>
                   )}
                 </button>

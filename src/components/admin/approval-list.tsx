@@ -2,13 +2,13 @@
 
 import { useState, useTransition } from "react";
 import {
-  CheckCircle,
-  XCircle,
+  Check,
+  X,
   Clock,
   User,
   Building2,
   MapPin,
-  ShieldAlert,
+  Shield,
   Loader2,
   AlertCircle,
   CheckCircle2,
@@ -38,7 +38,7 @@ export function ApprovalList({ initialApprovals }: ApprovalListProps) {
         setApprovals((prev) => prev.filter((item) => item.id !== id));
         setFeedback({
           type: "success",
-          message: `Permohonan peran untuk ${name} berhasil disetujui!`,
+          message: `Permohonan peran untuk ${name} berhasil disetujui.`,
         });
       } else {
         setFeedback({
@@ -76,51 +76,51 @@ export function ApprovalList({ initialApprovals }: ApprovalListProps) {
       {/* Feedback Toast Banner */}
       {feedback && (
         <div
-          className={`flex items-center gap-3 rounded-2xl p-4 text-sm font-medium shadow-sm transition-all animate-in fade-in slide-in-from-top-2 ${
+          className={`flex items-center gap-3 rounded-md border p-3 text-xs font-medium transition-all ${
             feedback.type === "success"
-              ? "border border-emerald-200 bg-emerald-50 text-emerald-900 dark:border-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-200"
-              : "border border-destructive/20 bg-destructive/10 text-destructive"
+              ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-400 font-mono"
+              : "border-destructive/40 bg-destructive/10 text-destructive font-mono"
           }`}
         >
           {feedback.type === "success" ? (
-            <CheckCircle2 className="h-5 w-5 shrink-0 text-primary" />
+            <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-400" />
           ) : (
-            <AlertCircle className="h-5 w-5 shrink-0 text-destructive" />
+            <AlertCircle className="h-4 w-4 shrink-0 text-destructive" />
           )}
           <span className="flex-1">{feedback.message}</span>
           <button
             onClick={() => setFeedback(null)}
-            className="text-xs font-semibold underline opacity-70 hover:opacity-100"
+            className="text-xs font-mono underline opacity-70 hover:opacity-100"
           >
-            Tutup
+            [Tutup]
           </button>
         </div>
       )}
 
       {/* Header Section */}
-      <div className="flex items-center justify-between px-1">
+      <div className="flex items-center justify-between px-0.5">
         <div className="flex items-center gap-2">
-          <Clock className="h-5 w-5 text-amber-500" />
-          <h2 className="text-base font-bold text-foreground">
+          <Clock className="h-4 w-4 text-emerald-400" />
+          <h3 className="text-sm font-semibold text-foreground tracking-tight">
             Permohonan Peran Komunitas
-          </h2>
+          </h3>
         </div>
-        <span className="inline-flex items-center justify-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-bold text-amber-800 dark:bg-amber-950 dark:text-amber-300">
-          {approvals.length} Menunggu
+        <span className="cyber-badge font-mono text-[11px]">
+          {approvals.length} PENDING
         </span>
       </div>
 
       {/* List / Empty State */}
       {approvals.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-border bg-card/50 p-8 text-center">
-          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-muted text-muted-foreground mb-3">
-            <CheckCircle className="h-7 w-7 text-primary" />
+        <div className="flex flex-col items-center justify-center rounded-lg border border-border bg-card/60 p-8 text-center">
+          <div className="flex h-10 w-10 items-center justify-center rounded-md border border-border bg-muted/40 text-muted-foreground mb-3">
+            <Check className="h-5 w-5 text-emerald-400" />
           </div>
-          <h3 className="font-semibold text-foreground text-sm">
+          <h4 className="font-semibold text-foreground text-sm">
             Semua Permohonan Selesai
-          </h3>
-          <p className="text-xs text-muted-foreground mt-1 max-w-xs">
-            Saat ini tidak ada permohonan peran pengurus atau kader yang berstatus pending.
+          </h4>
+          <p className="text-xs text-muted-foreground mt-1 max-w-xs font-mono">
+            Tidak ada permohonan peran pengurus atau kader yang pending.
           </p>
         </div>
       ) : (
@@ -130,62 +130,62 @@ export function ApprovalList({ initialApprovals }: ApprovalListProps) {
             const userEmail = item.profiles?.email || "-";
             const komunitasNama = item.komunitas?.nama || "Komunitas Umum";
             const komunitasJenis = item.komunitas?.jenis || "Posyandu";
-            const komunitasLokasi = item.komunitas?.lokasi || "Indonesia";
+            const komunitasLokasi = item.komunitas?.lokasi || "Kota Tegal";
             const isProcessing = loadingId === item.id && isPending;
 
             return (
               <div
                 key={item.id}
-                className="overflow-hidden rounded-2xl border border-border bg-card p-4 shadow-sm transition-all hover:shadow-md dark:shadow-none"
+                className="rounded-lg border border-border bg-card p-4 transition-colors hover:border-zinc-700"
               >
                 {/* Header User & Role */}
                 <div className="flex items-start justify-between gap-2 mb-3">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary font-bold">
-                      <User className="h-5 w-5" />
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border bg-muted/50 text-foreground font-mono text-xs">
+                      <User className="h-4 w-4 text-muted-foreground" />
                     </div>
                     <div>
-                      <h4 className="font-bold text-sm text-foreground leading-snug">
+                      <h4 className="font-medium text-sm text-foreground leading-snug">
                         {userName}
                       </h4>
-                      <p className="text-xs text-muted-foreground">{userEmail}</p>
+                      <p className="text-xs text-muted-foreground font-mono">{userEmail}</p>
                     </div>
                   </div>
-                  <span className="inline-flex items-center gap-1 rounded-lg bg-amber-500/10 px-2.5 py-1 text-xs font-semibold text-amber-700 dark:text-amber-400 border border-amber-500/20 shrink-0">
-                    <ShieldAlert className="h-3.5 w-3.5" />
+                  <span className="inline-flex items-center gap-1 rounded border border-border bg-muted/50 px-2 py-0.5 text-[11px] font-mono font-medium text-foreground shrink-0">
+                    <Shield className="h-3 w-3 text-emerald-400" />
                     {item.peran}
                   </span>
                 </div>
 
-                {/* Komunitas Info Card */}
-                <div className="rounded-xl bg-muted/50 p-3 text-xs space-y-1.5 mb-4 border border-border/50">
+                {/* Komunitas Info Box */}
+                <div className="rounded border border-border/80 bg-background/50 p-2.5 text-xs space-y-1 mb-3 font-mono">
                   <div className="flex items-center gap-2 text-foreground font-medium">
-                    <Building2 className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                    <span>
+                    <Building2 className="h-3 w-3 text-muted-foreground shrink-0" />
+                    <span className="truncate">
                       {komunitasNama}{" "}
                       <span className="text-muted-foreground font-normal">
                         ({komunitasJenis})
                       </span>
                     </span>
                   </div>
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <MapPin className="h-3.5 w-3.5 shrink-0" />
-                    <span>{komunitasLokasi}</span>
+                  <div className="flex items-center gap-2 text-muted-foreground text-[11px]">
+                    <MapPin className="h-3 w-3 shrink-0" />
+                    <span className="truncate">{komunitasLokasi}</span>
                   </div>
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex items-center gap-2.5 pt-1">
+                <div className="flex items-center gap-2 pt-1">
                   <button
                     onClick={() => handleApprove(item.id, userName)}
                     disabled={isProcessing}
-                    className="flex flex-1 min-h-[48px] items-center justify-center gap-1.5 rounded-xl bg-primary px-3 py-2 text-xs font-semibold text-white shadow-sm shadow-primary/20 transition-all active:scale-95 hover:brightness-105 disabled:opacity-50"
+                    className="flex flex-1 h-9 items-center justify-center gap-1.5 rounded-md bg-foreground px-3 py-1.5 text-xs font-semibold text-background transition-colors hover:bg-foreground/90 disabled:opacity-50"
                   >
                     {isProcessing ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
                     ) : (
                       <>
-                        <CheckCircle className="h-4 w-4" />
+                        <Check className="h-3.5 w-3.5" />
                         <span>Setujui</span>
                       </>
                     )}
@@ -194,13 +194,13 @@ export function ApprovalList({ initialApprovals }: ApprovalListProps) {
                   <button
                     onClick={() => handleReject(item.id, userName)}
                     disabled={isProcessing}
-                    className="flex flex-1 min-h-[48px] items-center justify-center gap-1.5 rounded-xl border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs font-semibold text-destructive transition-all active:scale-95 hover:bg-destructive/20 disabled:opacity-50"
+                    className="flex flex-1 h-9 items-center justify-center gap-1.5 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-1.5 text-xs font-medium text-destructive transition-colors hover:bg-destructive/20 disabled:opacity-50 font-mono"
                   >
                     {isProcessing ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
                     ) : (
                       <>
-                        <XCircle className="h-4 w-4" />
+                        <X className="h-3.5 w-3.5" />
                         <span>Tolak</span>
                       </>
                     )}
@@ -214,3 +214,5 @@ export function ApprovalList({ initialApprovals }: ApprovalListProps) {
     </div>
   );
 }
+
+export default ApprovalList;

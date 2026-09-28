@@ -5,6 +5,7 @@ import { createClient } from "@/utils/supabase/server";
 import { KabarCard } from "@/components/kabar/kabar-card";
 import { KabarFilter } from "@/components/kabar/kabar-filter";
 import { CreateKabarModal } from "@/components/kabar/create-kabar-modal";
+import { ThemeToggle } from "@/components/theme-toggle";
 import type { SortingKabar, VisibilitasKabar } from "@/types/database";
 
 interface KabarPageProps {
@@ -43,26 +44,33 @@ export default async function KabarPage({ searchParams }: KabarPageProps) {
   }
 
   return (
-    <div className="flex flex-col flex-1 px-4 py-5 gap-5">
-      {/* Header Banner */}
-      <header className="flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary text-white font-bold shadow-md shadow-primary/20">
-            <HeartHandshake className="h-5 w-5" />
+    <div className="flex flex-col flex-1 px-4 py-8 sm:px-6 md:px-8 gap-8">
+      {/* Header Banner - Superlist & Resend Style */}
+      <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-border pb-6">
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-2">
+            <span className="cyber-badge">FEED</span>
+            <span className="text-xs font-mono text-muted-foreground">KOTA TEGAL</span>
           </div>
-          <div>
-            <h1 className="text-xl font-bold tracking-tight text-foreground">
-              Kabar Warga
-            </h1>
-            <p className="text-xs text-muted-foreground">
-              Ruang berbagi info &amp; parenting warga JARIMAS-ID
-            </p>
+          <h1 className="text-3xl sm:text-4xl font-black tracking-tighter text-foreground">
+            Kabar Warga
+          </h1>
+          <p className="text-xs sm:text-sm text-muted-foreground max-w-md">
+            Ruang berbagi informasi, edukasi gizi, dan pengumuman kegiatan posyandu.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <ThemeToggle variant="compact" />
+          <div className="flex items-center gap-2 font-mono text-xs text-muted-foreground">
+            <span className="inline-block h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span>LIVE</span>
           </div>
         </div>
       </header>
 
       {/* Filter & Sorting Controls */}
-      <Suspense fallback={<div className="h-20 animate-pulse bg-muted rounded-2xl" />}>
+      <Suspense fallback={<div className="h-16 animate-pulse bg-zinc-900 rounded-md border border-border" />}>
         <KabarFilter
           currentSort={currentSort}
           currentVisibility={currentVisibility}
@@ -70,17 +78,17 @@ export default async function KabarPage({ searchParams }: KabarPageProps) {
       </Suspense>
 
       {/* Feed Stream */}
-      <main className="space-y-4 pb-12">
+      <main className="space-y-4 pb-16">
         {feedItems.length === 0 ? (
-          <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-border bg-card/60 p-8 text-center space-y-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
-              <MessageSquarePlus className="h-6 w-6" />
+          <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border bg-card p-12 text-center space-y-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-md border border-border bg-zinc-900 text-muted-foreground">
+              <MessageSquarePlus className="h-6 w-6 stroke-[1.5px]" />
             </div>
-            <div className="space-y-1">
-              <h3 className="text-sm font-bold text-foreground">
-                Belum Ada Kabar di Kategori Ini
+            <div className="space-y-1.5 max-w-sm">
+              <h3 className="text-sm font-bold tracking-tight text-foreground font-mono">
+                BELUM ADA KABAR DI KATEGORI INI
               </h3>
-              <p className="text-xs text-muted-foreground max-w-xs">
+              <p className="text-xs text-muted-foreground leading-relaxed">
                 Jadilah yang pertama membagikan kabar, tips gizi, atau pengumuman seputar posyandu dan anak.
               </p>
             </div>

@@ -51,66 +51,63 @@ export function PesananClientView({
     switch (status) {
       case "pending":
         return (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 px-3 py-1 text-xs font-bold text-amber-700">
-            <Clock className="h-3.5 w-3.5" /> Menunggu Pembayaran
+          <span className="inline-flex items-center gap-1.5 rounded-md bg-amber-500/10 border border-amber-500/30 px-2.5 py-1 text-[11px] font-mono font-bold text-amber-400">
+            <Clock className="h-3 w-3" /> MENUNGGU PEMBAYARAN
           </span>
         );
       case "diproses":
         return (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-500/10 px-3 py-1 text-xs font-bold text-blue-700">
-            <Package className="h-3.5 w-3.5" /> Sedang Dipersiapkan
+          <span className="inline-flex items-center gap-1.5 rounded-md bg-cyan-500/10 border border-cyan-500/30 px-2.5 py-1 text-[11px] font-mono font-bold text-cyan-400">
+            <Package className="h-3 w-3" /> DIPROSES
           </span>
         );
       case "dikirim":
         return (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-500/10 px-3 py-1 text-xs font-bold text-purple-700">
-            <Truck className="h-3.5 w-3.5" /> Dalam Pengiriman
+          <span className="inline-flex items-center gap-1.5 rounded-md bg-purple-500/10 border border-purple-500/30 px-2.5 py-1 text-[11px] font-mono font-bold text-purple-400">
+            <Truck className="h-3 w-3" /> DALAM PENGIRIMAN
           </span>
         );
       case "selesai":
         return (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-bold text-emerald-700">
-            <CheckCircle2 className="h-3.5 w-3.5" /> Pesanan Selesai
+          <span className="inline-flex items-center gap-1.5 rounded-md bg-emerald-500/10 border border-emerald-500/30 px-2.5 py-1 text-[11px] font-mono font-bold text-emerald-400">
+            <CheckCircle2 className="h-3 w-3" /> SELESAI
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-xs font-bold text-muted-foreground">
-            {status}
+          <span className="inline-flex items-center gap-1.5 rounded-md bg-muted border border-border px-2.5 py-1 text-[11px] font-mono font-bold text-muted-foreground">
+            {status.toUpperCase()}
           </span>
         );
     }
   };
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col flex-1 px-4 py-8 sm:px-6 md:px-8 gap-8">
       {/* Header Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <Link
-            href="/market"
-            className="inline-flex h-11 items-center gap-2 rounded-2xl bg-card border border-border px-4 text-xs font-bold text-foreground transition-all hover:bg-muted active:scale-95"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            <span>Katalog Market</span>
-          </Link>
-          <div>
-            <h1 className="text-xl sm:text-2xl font-black text-foreground">
-              Pesanan Saya
-            </h1>
-            <p className="text-xs text-muted-foreground">
-              Pantau status pengadaan dan instruksi pembayaran
-            </p>
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-border pb-6">
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-2">
+            <span className="cyber-badge">TRANSAKSI MARKET</span>
+            <span className="text-xs font-mono text-muted-foreground">KOTA TEGAL</span>
           </div>
+          <h1 className="text-3xl sm:text-4xl font-black tracking-tighter text-foreground">
+            Pesanan Saya
+          </h1>
+          <p className="text-xs sm:text-sm text-muted-foreground max-w-md">
+            Pantau status pengadaan resmi dan instruksi pembayaran.
+          </p>
         </div>
 
-        <Link
-          href="/market"
-          className="inline-flex h-11 items-center gap-2 rounded-2xl bg-primary px-4 text-xs font-bold text-primary-foreground shadow-xs hover:bg-primary/90"
-        >
-          <ShoppingBag className="h-4 w-4" />
-          <span>Belanja Produk Lain</span>
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/market"
+            className="inline-flex h-9 items-center gap-2 rounded-md bg-muted border border-border px-3 text-xs font-mono text-foreground hover:bg-muted/80 transition-colors"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            <span>KATALOG MARKET</span>
+          </Link>
+        </div>
       </div>
 
       {/* Filter Status Tabs */}
@@ -120,52 +117,52 @@ export function PesananClientView({
             key={f.value}
             onClick={() => setActiveFilter(f.value)}
             className={cn(
-              "inline-flex shrink-0 items-center rounded-2xl px-4 py-2 text-xs font-bold transition-all shadow-xs",
+              "inline-flex shrink-0 items-center rounded-md px-3 py-1.5 text-xs font-mono transition-all",
               activeFilter === f.value
-                ? "bg-primary text-primary-foreground scale-102 shadow-sm"
-                : "bg-card border border-border text-foreground hover:bg-muted"
+                ? "bg-foreground text-background font-semibold"
+                : "bg-card border border-border text-muted-foreground hover:bg-muted hover:text-foreground"
             )}
           >
-            {f.label}
+            {f.label.toUpperCase()}
           </button>
         ))}
       </div>
 
       {/* List Pesanan */}
       {filteredPesanan.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-border bg-card p-12 text-center space-y-3">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted">
-            <ClipboardList className="h-8 w-8 text-muted-foreground" />
+        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border bg-card p-12 text-center space-y-4">
+          <div className="flex h-12 w-12 items-center justify-center rounded-md border border-border bg-muted text-muted-foreground">
+            <ClipboardList className="h-6 w-6 stroke-[1.5px]" />
           </div>
-          <div className="space-y-1">
-            <h3 className="text-base font-bold text-foreground">
-              Belum Ada Pesanan
+          <div className="space-y-1.5 max-w-sm">
+            <h3 className="text-sm font-bold tracking-tight text-foreground font-mono">
+              BELUM ADA PESANAN
             </h3>
-            <p className="text-xs text-muted-foreground max-w-sm">
+            <p className="text-xs text-muted-foreground leading-relaxed">
               Anda belum memiliki transaksi pesanan pada kategori status ini.
             </p>
           </div>
           <Link
             href="/market"
-            className="inline-flex h-10 items-center rounded-xl bg-primary px-4 text-xs font-bold text-primary-foreground hover:bg-primary/90"
+            className="inline-flex h-8 items-center rounded-md bg-foreground border border-zinc-700 px-3 text-xs font-mono font-bold uppercase tracking-wider text-background hover:bg-zinc-200"
           >
-            Mulai Belanja di Jarimas Market
+            MULAI BELANJA
           </Link>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-4 pb-16">
           {filteredPesanan.map((pesanan) => {
             const prod = pesanan.produk;
             return (
               <div
                 key={pesanan.id}
-                className="overflow-hidden rounded-3xl border border-border bg-card p-5 sm:p-6 shadow-xs transition-all hover:shadow-md space-y-4"
+                className="overflow-hidden rounded-lg border border-border bg-card p-5 space-y-4 transition-colors hover:border-zinc-700"
               >
                 {/* Header Card: ID & Status */}
                 <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-3">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-extrabold text-foreground">
-                      #{pesanan.id}
+                  <div className="flex items-center gap-2 font-mono">
+                    <span className="text-xs font-bold text-foreground">
+                      #{pesanan.id.slice(0, 8)}
                     </span>
                     <span className="text-xs text-muted-foreground">
                       •{" "}
@@ -188,7 +185,7 @@ export function PesananClientView({
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                   {/* Item Produk */}
                   <div className="flex items-center gap-3 sm:col-span-2">
-                    <div className="relative h-18 w-18 shrink-0 overflow-hidden rounded-2xl border border-border bg-muted">
+                    <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-md border border-border bg-muted">
                       {prod?.gambar_url && (
                         <Image
                           src={prod.gambar_url}
@@ -202,13 +199,13 @@ export function PesananClientView({
                       <h4 className="line-clamp-2 text-sm font-bold text-foreground">
                         {prod?.nama || "Produk Jarimas Market"}
                       </h4>
-                      <p className="text-xs text-muted-foreground">
-                        {pesanan.jumlah} unit x {formatRupiah(prod?.harga || 0)}
+                      <p className="text-xs font-mono text-muted-foreground">
+                        {pesanan.jumlah} UNIT x {formatRupiah(prod?.harga || 0)}
                       </p>
                       {pesanan.nomor_resi && (
-                        <div className="inline-flex items-center gap-1 text-[11px] font-bold text-primary">
-                          <Truck className="h-3.5 w-3.5" />
-                          <span>No. Resi: {pesanan.nomor_resi}</span>
+                        <div className="inline-flex items-center gap-1 text-[11px] font-mono text-emerald-600 dark:text-emerald-400">
+                          <Truck className="h-3 w-3" />
+                          <span>RESI: {pesanan.nomor_resi}</span>
                         </div>
                       )}
                     </div>
@@ -217,29 +214,29 @@ export function PesananClientView({
                   {/* Total & Tombol Aksi */}
                   <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between border-t sm:border-t-0 sm:border-l border-border pt-3 sm:pt-0 sm:pl-4">
                     <div className="text-left sm:text-right">
-                      <span className="text-[11px] text-muted-foreground block">
-                        Total Tagihan
+                      <span className="text-[10px] font-mono text-muted-foreground block">
+                        TOTAL TAGIHAN
                       </span>
-                      <span className="text-base font-black text-primary">
+                      <span className="text-base font-bold font-mono text-foreground">
                         {formatRupiah(pesanan.total_harga)}
                       </span>
                     </div>
 
                     <button
                       onClick={() => setSelectedPesananModal(pesanan)}
-                      className="inline-flex h-10 items-center gap-1.5 rounded-xl border border-border bg-background px-3.5 text-xs font-bold text-foreground hover:bg-muted active:scale-95"
+                      className="inline-flex h-8 items-center gap-1.5 rounded-md border border-border bg-muted px-3 text-xs font-mono text-foreground hover:bg-muted/80 active:scale-95 transition-colors"
                     >
-                      <Info className="h-4 w-4 text-primary" />
-                      <span>Detail & Bayar</span>
+                      <Info className="h-3.5 w-3.5 text-muted-foreground" />
+                      <span>RINCIAN</span>
                     </button>
                   </div>
                 </div>
 
                 {/* Alamat Pengiriman Singkat */}
-                <div className="flex items-center gap-1.5 rounded-2xl bg-muted/40 px-3.5 py-2 text-xs text-muted-foreground">
-                  <MapPin className="h-3.5 w-3.5 shrink-0 text-primary" />
+                <div className="flex items-center gap-1.5 rounded-md bg-muted/60 border border-border px-3 py-2 text-xs text-muted-foreground font-mono">
+                  <MapPin className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                   <span className="line-clamp-1">
-                    Penerima: <strong>{pesanan.nama_penerima}</strong> ({pesanan.nomor_hp}) — {pesanan.alamat_lengkap}, {pesanan.kelurahan}, {pesanan.kecamatan}
+                    PENERIMA: <strong className="text-foreground">{pesanan.nama_penerima}</strong> ({pesanan.nomor_hp}) — {pesanan.alamat_lengkap}, {pesanan.kelurahan}, {pesanan.kecamatan}
                   </span>
                 </div>
               </div>
@@ -252,24 +249,24 @@ export function PesananClientView({
       {selectedPesananModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
           <div
-            className="fixed inset-0 bg-black/60 backdrop-blur-xs"
+            className="fixed inset-0 bg-black/80 backdrop-blur-xs"
             onClick={() => setSelectedPesananModal(null)}
           />
 
-          <div className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-3xl border border-border bg-card p-6 shadow-2xl z-10 space-y-5 animate-in zoom-in-95 duration-200">
+          <div className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-lg border border-border bg-card p-6 shadow-2xl z-10 space-y-5 animate-in zoom-in-95 duration-200">
             {/* Header Modal */}
             <div className="flex items-center justify-between border-b border-border pb-3">
               <div>
-                <h3 className="text-base font-black text-foreground">
-                  Rincian Pesanan #{selectedPesananModal.id}
+                <h3 className="text-sm font-bold tracking-tight text-foreground font-mono">
+                  RINCIAN PESANAN #{selectedPesananModal.id.slice(0, 8)}
                 </h3>
-                <p className="text-xs text-muted-foreground">
-                  Status: {selectedPesananModal.status_pembayaran.toUpperCase()}
+                <p className="text-xs font-mono text-muted-foreground">
+                  STATUS: {selectedPesananModal.status_pembayaran.toUpperCase()}
                 </p>
               </div>
               <button
                 onClick={() => setSelectedPesananModal(null)}
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-muted text-muted-foreground hover:bg-muted/80"
+                className="flex h-7 w-7 items-center justify-center rounded-md border border-border text-muted-foreground hover:bg-muted hover:text-foreground"
               >
                 ✕
               </button>
@@ -277,31 +274,31 @@ export function PesananClientView({
 
             {/* Instruksi Pembayaran jika Pending */}
             {selectedPesananModal.status_pembayaran === "pending" && (
-              <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-amber-900 space-y-3">
-                <div className="flex items-center gap-2 font-bold text-xs">
-                  <Clock className="h-4 w-4 text-amber-600" />
-                  <span>Selesaikan Pembayaran Anda</span>
+              <div className="rounded-md border border-amber-500/30 bg-amber-500/10 p-4 space-y-3">
+                <div className="flex items-center gap-2 font-mono text-xs font-bold text-amber-500 dark:text-amber-400">
+                  <Clock className="h-4 w-4 text-amber-500 dark:text-amber-400" />
+                  <span>SELESAIKAN PEMBAYARAN</span>
                 </div>
 
                 {selectedPesananModal.metode_pembayaran === "qris" ? (
-                  <div className="flex flex-col items-center justify-center space-y-2 rounded-xl bg-white p-4 text-center">
-                    <QrCode className="h-32 w-32 text-slate-800" />
-                    <p className="text-[11px] font-bold text-slate-700">
-                      Scan QRIS Resmi JARIMAS KOTA TEGAL
+                  <div className="flex flex-col items-center justify-center space-y-2 rounded-md bg-background border border-border p-4 text-center">
+                    <QrCode className="h-32 w-32 text-foreground" />
+                    <p className="text-[11px] font-mono font-bold text-foreground">
+                      QRIS RESMI JARIMAS KOTA TEGAL
                     </p>
-                    <p className="text-[10px] text-slate-500">
-                      Mendukung BCA Mobile, Mandiri Livin, GoPay, OVO, Dana, ShopeePay.
+                    <p className="text-[10px] text-muted-foreground font-mono">
+                      BCA Mobile, Mandiri Livin, GoPay, OVO, Dana, ShopeePay.
                     </p>
                   </div>
                 ) : (
-                  <div className="rounded-xl bg-white p-3.5 space-y-2 text-xs">
-                    <div className="flex items-center gap-2 font-bold text-foreground">
-                      <Building2 className="h-4 w-4 text-primary" />
-                      <span>Rekening Transfer:</span>
+                  <div className="rounded-md bg-background border border-border p-3.5 space-y-2 text-xs font-mono">
+                    <div className="flex items-center gap-2 text-foreground font-bold">
+                      <Building2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                      <span>REKENING TRANSFER:</span>
                     </div>
                     {selectedPesananModal.metode_pembayaran === "transfer_bca" && (
                       <div>
-                        <div className="text-base font-extrabold text-primary">
+                        <div className="text-base font-bold font-mono text-foreground">
                           138-092-8172
                         </div>
                         <div className="text-[11px] text-muted-foreground">
@@ -311,7 +308,7 @@ export function PesananClientView({
                     )}
                     {selectedPesananModal.metode_pembayaran === "transfer_mandiri" && (
                       <div>
-                        <div className="text-base font-extrabold text-primary">
+                        <div className="text-base font-bold font-mono text-foreground">
                           139-00-2918273-1
                         </div>
                         <div className="text-[11px] text-muted-foreground">
@@ -321,7 +318,7 @@ export function PesananClientView({
                     )}
                     {selectedPesananModal.metode_pembayaran === "transfer_bri" && (
                       <div>
-                        <div className="text-base font-extrabold text-primary">
+                        <div className="text-base font-bold font-mono text-foreground">
                           0102-01-092837-50-1
                         </div>
                         <div className="text-[11px] text-muted-foreground">
@@ -332,9 +329,9 @@ export function PesananClientView({
                   </div>
                 )}
 
-                <div className="flex items-center justify-between border-t border-amber-200 pt-2 text-xs font-bold">
-                  <span>Nominal yang Harus Dibayar:</span>
-                  <span className="text-base text-primary">
+                <div className="flex items-center justify-between border-t border-amber-500/20 pt-2 text-xs font-mono font-bold">
+                  <span className="text-muted-foreground">NOMINAL TOTAL:</span>
+                  <span className="text-base text-foreground">
                     {formatRupiah(selectedPesananModal.total_harga)}
                   </span>
                 </div>
@@ -343,21 +340,21 @@ export function PesananClientView({
 
             {/* Info Lengkap Pengiriman */}
             <div className="space-y-2 text-xs">
-              <h4 className="font-bold text-foreground uppercase tracking-wider text-[11px] text-muted-foreground">
-                Detail Penerima & Alamat
+              <h4 className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
+                Detail Penerima &amp; Alamat
               </h4>
-              <div className="rounded-2xl border border-border bg-background p-3.5 space-y-1">
+              <div className="rounded-md border border-border bg-background p-3.5 space-y-1 font-mono">
                 <div className="font-bold text-foreground">
                   {selectedPesananModal.nama_penerima} ({selectedPesananModal.nomor_hp})
                 </div>
-                <div className="text-muted-foreground">
+                <div className="text-muted-foreground text-xs">
                   {selectedPesananModal.alamat_lengkap}
                 </div>
-                <div className="text-muted-foreground">
+                <div className="text-muted-foreground text-xs">
                   Kel. {selectedPesananModal.kelurahan}, Kec. {selectedPesananModal.kecamatan}, Kota Tegal
                 </div>
                 {selectedPesananModal.catatan && (
-                  <div className="text-primary pt-1 text-[11px]">
+                  <div className="text-emerald-600 dark:text-emerald-400 pt-1 text-[11px]">
                     Catatan: &quot;{selectedPesananModal.catatan}&quot;
                   </div>
                 )}
@@ -366,9 +363,9 @@ export function PesananClientView({
 
             <button
               onClick={() => setSelectedPesananModal(null)}
-              className="flex h-11 w-full items-center justify-center rounded-2xl bg-primary text-xs font-bold text-primary-foreground hover:bg-primary/90"
+              className="flex h-9 w-full items-center justify-center rounded-md bg-foreground border border-zinc-700 text-xs font-mono font-bold uppercase tracking-wider text-background hover:bg-zinc-200"
             >
-              Tutup Rincian
+              TUTUP RINCIAN
             </button>
           </div>
         </div>

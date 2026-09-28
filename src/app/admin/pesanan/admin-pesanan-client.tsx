@@ -105,32 +105,32 @@ export function AdminPesananClient({
     switch (status) {
       case "pending":
         return (
-          <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-3 py-1 text-xs font-bold text-amber-700">
-            <Clock className="h-3.5 w-3.5" /> Menunggu Pembayaran
+          <span className="inline-flex items-center gap-1 rounded-md border border-amber-800/60 bg-amber-950/30 px-2.5 py-0.5 text-[10px] font-mono font-bold text-amber-400">
+            <Clock className="h-3 w-3" /> PENDING PAYMENT
           </span>
         );
       case "diproses":
         return (
-          <span className="inline-flex items-center gap-1 rounded-full bg-blue-500/15 px-3 py-1 text-xs font-bold text-blue-700">
-            <Package className="h-3.5 w-3.5" /> Sedang Diproses
+          <span className="inline-flex items-center gap-1 rounded-md border border-blue-800/60 bg-blue-950/30 px-2.5 py-0.5 text-[10px] font-mono font-bold text-blue-400">
+            <Package className="h-3 w-3" /> PROCESSING
           </span>
         );
       case "dikirim":
         return (
-          <span className="inline-flex items-center gap-1 rounded-full bg-purple-500/15 px-3 py-1 text-xs font-bold text-purple-700">
-            <Truck className="h-3.5 w-3.5" /> Dalam Pengiriman
+          <span className="inline-flex items-center gap-1 rounded-md border border-cyan-800/60 bg-cyan-950/30 px-2.5 py-0.5 text-[10px] font-mono font-bold text-cyan-400">
+            <Truck className="h-3 w-3" /> IN TRANSIT
           </span>
         );
       case "selesai":
         return (
-          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-bold text-emerald-700">
-            <CheckCircle2 className="h-3.5 w-3.5" /> Selesai
+          <span className="inline-flex items-center gap-1 rounded-md border border-emerald-800/60 bg-emerald-950/30 px-2.5 py-0.5 text-[10px] font-mono font-bold text-emerald-400">
+            <CheckCircle2 className="h-3 w-3" /> COMPLETED
           </span>
         );
       case "dibatalkan":
         return (
-          <span className="inline-flex items-center gap-1 rounded-full bg-destructive/15 px-3 py-1 text-xs font-bold text-destructive">
-            <XCircle className="h-3.5 w-3.5" /> Dibatalkan
+          <span className="inline-flex items-center gap-1 rounded-md border border-destructive/40 bg-destructive/10 px-2.5 py-0.5 text-[10px] font-mono font-bold text-destructive">
+            <XCircle className="h-3 w-3" /> CANCELLED
           </span>
         );
       default:
@@ -142,8 +142,8 @@ export function AdminPesananClient({
     <div className="space-y-6">
       {/* Header & Deskripsi */}
       <div className="space-y-1">
-        <h1 className="text-xl sm:text-2xl font-black text-foreground">
-          Kelola Transaksi & Pengiriman
+        <h1 className="text-xl sm:text-2xl font-black tracking-tight text-foreground">
+          Kelola Transaksi &amp; Pengiriman
         </h1>
         <p className="text-xs text-muted-foreground">
           Konfirmasi pembayaran QRIS/Transfer Bank, kelola nomor resi, dan pantau pengiriman se-Kota Tegal
@@ -153,16 +153,16 @@ export function AdminPesananClient({
       {/* Global Feedback */}
       {feedback && (
         <div
-          className={`flex items-start gap-2 rounded-2xl p-4 text-xs font-medium animate-in fade-in duration-200 ${
+          className={`flex items-start gap-2 rounded-md p-3 text-xs font-medium animate-in fade-in duration-200 ${
             feedback.type === "success"
-              ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
+              ? "bg-emerald-950/40 text-emerald-300 border border-emerald-800"
               : "bg-destructive/10 text-destructive border border-destructive/20"
           }`}
         >
           {feedback.type === "success" ? (
-            <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5" />
+            <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5 text-emerald-400" />
           ) : (
-            <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+            <AlertCircle className="h-4 w-4 shrink-0 mt-0.5 text-destructive" />
           )}
           <span>{feedback.message}</span>
         </div>
@@ -175,10 +175,10 @@ export function AdminPesananClient({
             key={tab.value}
             onClick={() => setActiveTab(tab.value)}
             className={cn(
-              "inline-flex shrink-0 items-center rounded-2xl px-4 py-2 text-xs font-bold transition-all shadow-xs",
+              "inline-flex shrink-0 items-center rounded-md px-3 py-1.5 text-xs font-mono font-medium transition-all cursor-pointer",
               activeTab === tab.value
-                ? "bg-accent text-accent-foreground scale-102 shadow-sm"
-                : "bg-card border border-border text-foreground hover:bg-muted"
+                ? "bg-foreground text-background font-bold"
+                : "bg-card border border-border text-muted-foreground hover:text-foreground hover:bg-muted"
             )}
           >
             {tab.label}
@@ -188,12 +188,12 @@ export function AdminPesananClient({
 
       {/* List Pesanan Masuk */}
       {filteredList.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-border bg-card p-12 text-center space-y-3">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted">
-            <ClipboardList className="h-8 w-8 text-muted-foreground" />
+        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border bg-card p-12 text-center space-y-3">
+          <div className="flex h-12 w-12 items-center justify-center rounded-md bg-muted text-muted-foreground">
+            <ClipboardList className="h-6 w-6" />
           </div>
           <div className="space-y-1">
-            <h3 className="text-base font-bold text-foreground">
+            <h3 className="text-sm font-bold text-foreground">
               Tidak Ada Transaksi
             </h3>
             <p className="text-xs text-muted-foreground max-w-sm">
@@ -208,15 +208,15 @@ export function AdminPesananClient({
             return (
               <div
                 key={pesanan.id}
-                className="overflow-hidden rounded-3xl border border-border bg-card p-5 sm:p-6 shadow-xs transition-all hover:shadow-md space-y-4"
+                className="overflow-hidden rounded-lg border border-border bg-card p-5 space-y-4"
               >
                 {/* Header Transaksi */}
                 <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-3">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-black text-foreground">
+                    <span className="text-xs font-mono font-bold text-foreground">
                       #{pesanan.id}
                     </span>
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-xs font-mono text-muted-foreground">
                       • {new Date(pesanan.created_at).toLocaleDateString("id-ID", {
                         day: "numeric",
                         month: "short",
@@ -225,7 +225,7 @@ export function AdminPesananClient({
                         minute: "2-digit",
                       })}
                     </span>
-                    <span className="rounded-md bg-muted px-2 py-0.5 text-[10px] font-extrabold uppercase">
+                    <span className="rounded-md border border-border bg-muted px-2 py-0.5 text-[10px] font-mono font-semibold uppercase">
                       {pesanan.metode_pembayaran.replace("_", " ")}
                     </span>
                   </div>
@@ -236,7 +236,7 @@ export function AdminPesananClient({
                 <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
                   {/* Produk Detail */}
                   <div className="flex items-start gap-3 lg:col-span-2">
-                    <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-2xl border border-border bg-muted">
+                    <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-md border border-border bg-muted">
                       {prod?.gambar_url && (
                         <Image
                           src={prod.gambar_url}
@@ -247,18 +247,18 @@ export function AdminPesananClient({
                       )}
                     </div>
                     <div className="space-y-1 min-w-0">
-                      <h4 className="line-clamp-2 text-sm font-bold text-foreground">
+                      <h4 className="line-clamp-2 text-xs font-bold text-foreground">
                         {prod?.nama || "Produk Jarimas Market"}
                       </h4>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-[11px] text-muted-foreground font-mono">
                         {pesanan.jumlah} unit x {formatRupiah(prod?.harga || 0)}
                       </p>
-                      <div className="text-sm font-black text-primary">
+                      <div className="text-sm font-bold text-foreground font-mono">
                         Total: {formatRupiah(pesanan.total_harga)}
                       </div>
                       {pesanan.nomor_resi && (
-                        <div className="inline-flex items-center gap-1 text-xs font-bold text-purple-700">
-                          <Truck className="h-3.5 w-3.5" />
+                        <div className="inline-flex items-center gap-1 text-[11px] font-mono text-cyan-400">
+                          <Truck className="h-3 w-3" />
                           <span>Resi: {pesanan.nomor_resi}</span>
                         </div>
                       )}
@@ -266,23 +266,23 @@ export function AdminPesananClient({
                   </div>
 
                   {/* Penerima & Alamat */}
-                  <div className="rounded-2xl bg-muted/40 p-3.5 space-y-1 text-xs">
-                    <div className="font-bold text-foreground flex items-center gap-1">
-                      <User className="h-3.5 w-3.5 text-primary" />
+                  <div className="rounded-md bg-background border border-border p-3 space-y-1 text-xs">
+                    <div className="font-bold text-foreground flex items-center gap-1.5">
+                      <User className="h-3.5 w-3.5 text-muted-foreground" />
                       <span>{pesanan.nama_penerima}</span>
                     </div>
-                    <div className="text-muted-foreground flex items-center gap-1">
-                      <Phone className="h-3.5 w-3.5 text-primary" />
+                    <div className="text-muted-foreground font-mono flex items-center gap-1.5">
+                      <Phone className="h-3.5 w-3.5 text-muted-foreground" />
                       <span>{pesanan.nomor_hp}</span>
                     </div>
-                    <div className="text-muted-foreground flex items-start gap-1 pt-1">
-                      <MapPin className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
-                      <span className="line-clamp-2">
+                    <div className="text-muted-foreground flex items-start gap-1.5 pt-0.5">
+                      <MapPin className="h-3.5 w-3.5 text-muted-foreground shrink-0 mt-0.5" />
+                      <span className="line-clamp-2 leading-relaxed">
                         {pesanan.alamat_lengkap}, {pesanan.kelurahan}, {pesanan.kecamatan}
                       </span>
                     </div>
                     {pesanan.catatan && (
-                      <div className="text-accent text-[11px] pt-1">
+                      <div className="text-zinc-400 text-[11px] pt-1 italic">
                         Catatan: &quot;{pesanan.catatan}&quot;
                       </div>
                     )}
@@ -298,9 +298,9 @@ export function AdminPesananClient({
                           handleUpdateStatus(pesanan.id, "dibatalkan")
                         }
                         disabled={isPending}
-                        className="inline-flex h-10 items-center gap-1.5 rounded-xl border border-border bg-card px-3 text-xs font-bold text-destructive hover:bg-muted"
+                        className="inline-flex h-8 items-center gap-1.5 rounded-md border border-destructive/40 bg-destructive/10 px-3 text-xs font-medium text-destructive hover:bg-destructive/20 cursor-pointer"
                       >
-                        <XCircle className="h-4 w-4" />
+                        <XCircle className="h-3.5 w-3.5" />
                         <span>Batalkan Pesanan</span>
                       </button>
 
@@ -309,10 +309,10 @@ export function AdminPesananClient({
                           handleUpdateStatus(pesanan.id, "diproses")
                         }
                         disabled={isPending}
-                        className="inline-flex h-10 items-center gap-1.5 rounded-xl bg-primary px-4 text-xs font-bold text-primary-foreground hover:bg-primary/90 shadow-xs"
+                        className="inline-flex h-8 items-center gap-1.5 rounded-md bg-foreground px-3 text-xs font-bold text-background hover:bg-foreground/90 cursor-pointer"
                       >
-                        <CheckCircle2 className="h-4 w-4" />
-                        <span>Konfirmasi Pembayaran Diterima</span>
+                        <CheckCircle2 className="h-3.5 w-3.5" />
+                        <span>Konfirmasi Bayar</span>
                       </button>
                     </>
                   )}
@@ -324,10 +324,10 @@ export function AdminPesananClient({
                         setNomorResiInput(`JRM-TG${Date.now().toString().slice(-6)}`);
                       }}
                       disabled={isPending}
-                      className="inline-flex h-10 items-center gap-1.5 rounded-xl bg-purple-600 px-4 text-xs font-bold text-white hover:bg-purple-700 shadow-xs"
+                      className="inline-flex h-8 items-center gap-1.5 rounded-md bg-cyan-950/60 border border-cyan-700 px-3 text-xs font-bold text-cyan-300 hover:bg-cyan-900 cursor-pointer"
                     >
-                      <Truck className="h-4 w-4" />
-                      <span>Input Resi & Kirim Barang</span>
+                      <Truck className="h-3.5 w-3.5" />
+                      <span>Input Resi &amp; Kirim</span>
                     </button>
                   )}
 
@@ -337,16 +337,16 @@ export function AdminPesananClient({
                         handleUpdateStatus(pesanan.id, "selesai")
                       }
                       disabled={isPending}
-                      className="inline-flex h-10 items-center gap-1.5 rounded-xl bg-emerald-600 px-4 text-xs font-bold text-white hover:bg-emerald-700 shadow-xs"
+                      className="inline-flex h-8 items-center gap-1.5 rounded-md bg-emerald-950/60 border border-emerald-700 px-3 text-xs font-bold text-emerald-300 hover:bg-emerald-900 cursor-pointer"
                     >
-                      <CheckCircle2 className="h-4 w-4" />
+                      <CheckCircle2 className="h-3.5 w-3.5" />
                       <span>Tandai Selesai Diterima</span>
                     </button>
                   )}
 
                   {pesanan.status_pembayaran === "selesai" && (
-                    <span className="text-xs font-bold text-emerald-600">
-                      ✓ Transaksi Telah Selesai
+                    <span className="text-xs font-mono font-bold text-emerald-400">
+                      ✓ TRANSAKSI SELESAI
                     </span>
                   )}
                 </div>
@@ -360,23 +360,23 @@ export function AdminPesananClient({
       {selectedPesananForResi && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
           <div
-            className="fixed inset-0 bg-black/60 backdrop-blur-xs"
+            className="fixed inset-0 bg-black/80 backdrop-blur-xs"
             onClick={() => setSelectedPesananForResi(null)}
           />
 
-          <div className="relative w-full max-w-md rounded-3xl border border-border bg-card p-6 shadow-2xl z-10 space-y-4 animate-in zoom-in-95 duration-200">
+          <div className="relative w-full max-w-md rounded-lg border border-border bg-card p-6 shadow-2xl z-10 space-y-4 animate-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between border-b border-border pb-3">
               <div className="flex items-center gap-2">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-500/10 text-purple-600">
-                  <Truck className="h-5 w-5" />
+                <div className="flex h-8 w-8 items-center justify-center rounded-md bg-muted text-foreground">
+                  <Truck className="h-4 w-4" />
                 </div>
-                <h3 className="text-base font-black text-foreground">
-                  Input Resi Pengiriman
+                <h3 className="text-sm font-mono font-bold text-foreground">
+                  [INPUT RESI PENGIRIMAN]
                 </h3>
               </div>
               <button
                 onClick={() => setSelectedPesananForResi(null)}
-                className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-muted-foreground"
+                className="flex h-7 w-7 items-center justify-center rounded-md bg-muted text-muted-foreground hover:text-foreground cursor-pointer"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -388,7 +388,7 @@ export function AdminPesananClient({
               </p>
 
               <div className="space-y-1">
-                <label className="text-xs font-bold text-foreground">
+                <label className="text-xs font-medium text-muted-foreground">
                   Nomor Resi / Bukti Antar *
                 </label>
                 <input
@@ -397,7 +397,7 @@ export function AdminPesananClient({
                   placeholder="Contoh: JRM-TG019283"
                   value={nomorResiInput}
                   onChange={(e) => setNomorResiInput(e.target.value)}
-                  className="h-11 w-full rounded-2xl border border-border bg-background px-3.5 text-xs font-bold text-foreground focus:border-purple-600 focus:outline-hidden"
+                  className="h-9 w-full rounded-md border border-border bg-background px-3 text-xs font-mono font-bold text-foreground focus:border-zinc-500 focus:outline-hidden"
                 />
               </div>
 
@@ -405,7 +405,7 @@ export function AdminPesananClient({
                 <button
                   type="button"
                   onClick={() => setSelectedPesananForResi(null)}
-                  className="inline-flex h-11 items-center rounded-2xl border border-border bg-card px-4 text-xs font-bold text-foreground hover:bg-muted"
+                  className="inline-flex h-9 items-center rounded-md border border-border bg-card px-3 text-xs font-medium text-foreground hover:bg-muted cursor-pointer"
                 >
                   Batal
                 </button>
@@ -419,16 +419,16 @@ export function AdminPesananClient({
                       nomorResiInput
                     )
                   }
-                  className="inline-flex h-11 items-center gap-2 rounded-2xl bg-purple-600 px-5 text-xs font-bold text-white hover:bg-purple-700 disabled:opacity-50"
+                  className="inline-flex h-9 items-center gap-2 rounded-md bg-foreground px-4 text-xs font-bold text-background hover:bg-foreground/90 disabled:opacity-50 cursor-pointer"
                 >
                   {isPending ? (
                     <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
                       <span>Mengirim...</span>
                     </>
                   ) : (
                     <>
-                      <Send className="h-4 w-4" />
+                      <Send className="h-3.5 w-3.5" />
                       <span>Kirim Sekarang</span>
                     </>
                   )}

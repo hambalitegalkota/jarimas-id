@@ -10,6 +10,7 @@ import type {
 } from "@/types/database";
 
 import { SEED_DATA_ANAK } from "@/lib/constants/tegal-data";
+import { toValidUUID } from "@/lib/utils";
 
 /**
  * Server Action: Menyimpan Data Anak Baru beserta Record DDKS Awal
@@ -123,7 +124,7 @@ export async function createDataAnak(formData: FormData): Promise<{
       is_sekolah: isSekolah,
       nama_sekolah: namaSekolah,
       alasan_sekolah: alasanSekolah,
-      komunitas_id: komunitasId,
+      komunitas_id: toValidUUID(komunitasId),
       status_approval: "pending",
       created_by: user.id,
       created_at: new Date().toISOString(),
@@ -214,20 +215,19 @@ export async function validateDataAnak(dataAnakId: string): Promise<{
     if (!isSuperAdmin) {
       const { data: memberships } = await supabase
         .from("anggota_komunitas")
-        .select("peran, status, komunitas (jenis)")
+        .select("peran, status")
         .eq("user_id", user.id)
         .eq("status", "approved");
 
       const isAuthorizedValidator = (memberships || []).some((m: any) => {
         const role = (m.peran || "").toLowerCase();
-        const jenis = m.komunitas?.jenis || "";
         return (
           role.includes("kader") ||
           role.includes("pengurus") ||
           role.includes("nakes") ||
           role.includes("medis") ||
-          jenis === "posyandu" ||
-          jenis === "warga_kita"
+          role.includes("bidan") ||
+          role.includes("admin")
         );
       });
 
@@ -341,7 +341,7 @@ export async function addDdksRecord(formData: FormData): Promise<{
     if (!isSuperAdmin) {
       const { data: memberships } = await supabase
         .from("anggota_komunitas")
-        .select("peran, status, komunitas (jenis)")
+        .select("peran, status")
         .eq("user_id", user.id)
         .eq("status", "approved");
 
@@ -436,11 +436,12 @@ export async function getDataAnakByKomunitas(komunitasId: string): Promise<{
 
         const isSuperAdmin = profile?.is_super_admin === true;
 
+        const dbKomunitasId = toValidUUID(komunitasId);
         const { data: member } = await supabase
           .from("anggota_komunitas")
           .select("peran, status")
           .eq("user_id", user.id)
-          .eq("komunitas_id", komunitasId)
+          .eq("komunitas_id", dbKomunitasId)
           .eq("status", "approved")
           .maybeSingle();
 
@@ -494,13 +495,13 @@ export async function getDataAnakByKomunitas(komunitasId: string): Promise<{
           profiles (nama_lengkap)
         )
       `)
-      .eq("komunitas_id", komunitasId)
+      .eq("komunitas_id", toValidUUID(komunitasId))
       .order("created_at", { ascending: false });
 
     if (childError || !dbChildren || dbChildren.length === 0) {
       // Gunakan seed data yang relevan dengan komunitas atau master list
       const seedList = SEED_DATA_ANAK.filter(
-        (a) => a.komunitas_id === komunitasId || true
+        (a) => a.komunitas_id === komunitasId || a.komunitas_id === toValidUUID(komunitasId) || true
       );
 
       return {

@@ -60,30 +60,30 @@ export function DetailProdukClient({ produk }: DetailProdukClientProps) {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col flex-1 px-4 py-8 sm:px-6 md:px-8 gap-6">
       {/* Back Navigation Bar */}
       <div className="flex items-center justify-between">
         <Link
           href="/market"
-          className="inline-flex h-11 items-center gap-2 rounded-2xl bg-card border border-border px-4 text-xs font-bold text-foreground transition-all hover:bg-muted active:scale-95"
+          className="inline-flex h-9 items-center gap-2 rounded-md bg-zinc-900 border border-border px-3 text-xs font-mono text-foreground transition-all hover:bg-zinc-800"
         >
-          <ArrowLeft className="h-4 w-4" />
-          <span>Kembali ke Katalog</span>
+          <ArrowLeft className="h-3.5 w-3.5" />
+          <span>KEMBALI KE KATALOG</span>
         </Link>
 
         <button
           onClick={handleShare}
-          className="inline-flex h-11 items-center gap-2 rounded-2xl bg-card border border-border px-4 text-xs font-bold text-foreground transition-all hover:bg-muted active:scale-95"
+          className="inline-flex h-9 items-center gap-2 rounded-md bg-zinc-900 border border-border px-3 text-xs font-mono text-foreground transition-all hover:bg-zinc-800"
         >
-          <Share2 className="h-4 w-4" />
-          <span>{isCopied ? "Link Tersalin!" : "Bagikan"}</span>
+          <Share2 className="h-3.5 w-3.5" />
+          <span>{isCopied ? "LINK TERSALIN!" : "BAGIKAN"}</span>
         </button>
       </div>
 
       {/* Main Grid: Gambar & Info Produk */}
-      <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 pb-16">
         {/* Gambar Produk */}
-        <div className="relative aspect-square w-full overflow-hidden rounded-3xl border border-border bg-card shadow-sm">
+        <div className="relative aspect-square w-full overflow-hidden rounded-lg border border-border bg-zinc-950">
           <Image
             src={
               produk.gambar_url ||
@@ -96,64 +96,63 @@ export function DetailProdukClient({ produk }: DetailProdukClientProps) {
             className="object-cover"
           />
 
-          <div className="absolute top-4 left-4 flex items-center gap-1.5 rounded-full bg-card/90 px-3 py-1 text-xs font-semibold text-foreground backdrop-blur-md shadow-xs">
-            <Tag className="h-3 w-3 text-primary" />
-            <span>{produk.kategori}</span>
+          <div className="absolute top-3 left-3 flex items-center gap-1.5 rounded-md bg-black/80 border border-zinc-800 px-2.5 py-1 text-[11px] font-mono text-zinc-300 backdrop-blur-xs">
+            <Tag className="h-3 w-3 text-emerald-400" />
+            <span>{produk.kategori.toUpperCase()}</span>
           </div>
 
-          <div className="absolute top-4 right-4">
+          <div className="absolute top-3 right-3">
             {isOutOfStock ? (
-              <span className="inline-flex items-center gap-1 rounded-full bg-destructive/90 px-3 py-1 text-xs font-bold text-destructive-foreground backdrop-blur-xs">
-                Stok Habis
+              <span className="inline-flex items-center gap-1 rounded-md bg-destructive/90 px-2.5 py-1 text-[10px] font-mono font-bold text-destructive-foreground backdrop-blur-xs">
+                HABIS
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1 rounded-full bg-primary/90 px-3 py-1 text-xs font-semibold text-primary-foreground backdrop-blur-xs">
-                <CheckCircle2 className="h-3 w-3" /> Tersedia {produk.stok} unit
+              <span className="inline-flex items-center gap-1 rounded-md bg-emerald-500/20 border border-emerald-500/40 px-2.5 py-1 text-[10px] font-mono font-bold text-emerald-400 backdrop-blur-xs">
+                <CheckCircle2 className="h-3 w-3" /> STOK: {produk.stok} UNIT
               </span>
             )}
           </div>
         </div>
 
         {/* Informasi Detail & Pemesanan */}
-        <div className="flex flex-col justify-between space-y-6 rounded-3xl border border-border bg-card p-6 shadow-sm">
+        <div className="flex flex-col justify-between space-y-6 rounded-lg border border-border bg-card p-6 md:p-8">
           <div className="space-y-4">
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <span className="inline-flex items-center gap-1 rounded-md bg-primary/10 px-2.5 py-0.5 text-xs font-bold text-primary">
-                  <Sparkles className="h-3 w-3" /> Resmi Jarimas Kota Tegal
-                </span>
+                <span className="cyber-badge">PENGADAAN RESMI</span>
+                <span className="text-xs font-mono text-muted-foreground">KOTA TEGAL</span>
               </div>
-              <h1 className="text-xl sm:text-2xl font-black text-foreground">
+              <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground">
                 {produk.nama}
               </h1>
             </div>
 
             {/* Harga */}
-            <div className="rounded-2xl bg-muted/40 p-4">
-              <span className="text-xs font-medium text-muted-foreground block">
-                Harga Resmi Satuan
+            <div className="rounded-md bg-zinc-950 border border-border p-4">
+              <span className="text-[10px] font-mono uppercase text-muted-foreground block">
+                HARGA RESMI SATUAN
               </span>
-              <div className="text-2xl sm:text-3xl font-black text-primary">
+              <div className="text-2xl sm:text-3xl font-bold font-mono text-foreground">
                 {formatRupiah(produk.harga)}
               </div>
             </div>
 
             {/* Deskripsi */}
-            <div className="space-y-2">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            <div className="space-y-1.5">
+              <h3 className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground font-bold">
                 Deskripsi Produk
               </h3>
-              <p className="text-xs sm:text-sm leading-relaxed text-foreground/90 whitespace-pre-line">
+              <p className="text-xs sm:text-sm leading-relaxed text-zinc-300 whitespace-pre-line">
                 {produk.deskripsi}
               </p>
             </div>
 
             {/* Spesifikasi Tambahan */}
             {produk.berat_gram && (
-              <div className="flex items-center gap-2 text-xs text-muted-foreground pt-2">
-                <Scale className="h-4 w-4 text-primary" />
+              <div className="flex items-center gap-2 text-xs font-mono text-muted-foreground pt-1">
+                <Scale className="h-3.5 w-3.5 text-muted-foreground" />
                 <span>
-                  Estimasi Berat Pengiriman: <strong>{produk.berat_gram} gram</strong>
+                  ESTIMASI BERAT: <strong className="text-foreground">{produk.berat_gram} GRAM</strong>
                 </span>
               </div>
             )}
@@ -163,36 +162,36 @@ export function DetailProdukClient({ produk }: DetailProdukClientProps) {
           <div className="space-y-4 border-t border-border pt-4">
             {/* Kuantitas Selector */}
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-foreground">
-                Jumlah Pesanan:
+              <span className="text-xs font-mono font-bold text-foreground">
+                JUMLAH PESANAN:
               </span>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2.5">
                 <button
                   onClick={handleDecrease}
                   disabled={jumlah <= 1 || isOutOfStock}
-                  className="flex h-11 w-11 items-center justify-center rounded-2xl border border-border bg-card font-bold text-foreground shadow-xs transition-all hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="flex h-8 w-8 items-center justify-center rounded-md border border-border bg-zinc-900 font-mono font-bold text-foreground transition-all hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed"
                 >
-                  <Minus className="h-4 w-4" />
+                  <Minus className="h-3.5 w-3.5" />
                 </button>
-                <span className="w-8 text-center text-base font-extrabold text-foreground">
+                <span className="w-8 text-center text-sm font-mono font-bold text-foreground">
                   {jumlah}
                 </span>
                 <button
                   onClick={handleIncrease}
                   disabled={jumlah >= produk.stok || isOutOfStock}
-                  className="flex h-11 w-11 items-center justify-center rounded-2xl border border-border bg-card font-bold text-foreground shadow-xs transition-all hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="flex h-8 w-8 items-center justify-center rounded-md border border-border bg-zinc-900 font-mono font-bold text-foreground transition-all hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed"
                 >
-                  <Plus className="h-4 w-4" />
+                  <Plus className="h-3.5 w-3.5" />
                 </button>
               </div>
             </div>
 
             {/* Total Perhitungan */}
-            <div className="flex items-center justify-between rounded-2xl bg-primary/5 p-4 border border-primary/20">
-              <span className="text-xs font-bold text-foreground">
-                Total Estimasi:
+            <div className="flex items-center justify-between rounded-md bg-zinc-950 p-3.5 border border-border font-mono">
+              <span className="text-xs text-muted-foreground">
+                TOTAL ESTIMASI:
               </span>
-              <span className="text-xl font-black text-primary">
+              <span className="text-lg font-bold text-foreground">
                 {formatRupiah(totalHarga)}
               </span>
             </div>
@@ -201,25 +200,25 @@ export function DetailProdukClient({ produk }: DetailProdukClientProps) {
             <button
               onClick={handleCheckout}
               disabled={isOutOfStock}
-              className="flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-primary px-6 text-sm font-bold text-primary-foreground shadow-md transition-all hover:bg-primary/90 active:scale-98 disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed"
+              className="flex h-10 w-full items-center justify-center gap-2 rounded-md bg-foreground border border-zinc-700 px-5 text-xs font-mono font-bold uppercase tracking-wider text-background shadow-md transition-all hover:bg-zinc-200 disabled:bg-zinc-900 disabled:border-border disabled:text-muted-foreground disabled:cursor-not-allowed"
             >
-              <ShoppingBag className="h-5 w-5" />
+              <ShoppingBag className="h-4 w-4" />
               <span>
                 {isOutOfStock
-                  ? "Stok Produk Sedang Habis"
-                  : "Beli Sekarang & Isi Alamat"}
+                  ? "STOK SEDANG HABIS"
+                  : "BELI SEKARANG & ISI ALAMAT"}
               </span>
             </button>
 
             {/* Info Keamanan & Garansi */}
-            <div className="grid grid-cols-2 gap-2 text-center pt-2">
-              <div className="flex items-center justify-center gap-1.5 text-[11px] font-medium text-muted-foreground">
-                <ShieldCheck className="h-4 w-4 text-primary" />
-                <span>Terverifikasi Jarimas</span>
+            <div className="grid grid-cols-2 gap-2 text-center pt-1 font-mono text-[10px] text-muted-foreground">
+              <div className="flex items-center justify-center gap-1.5 p-1.5 rounded-md bg-zinc-950 border border-border/60">
+                <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
+                <span>TERSTANDAR</span>
               </div>
-              <div className="flex items-center justify-center gap-1.5 text-[11px] font-medium text-muted-foreground">
-                <Truck className="h-4 w-4 text-primary" />
-                <span>Kurir Siap Antar</span>
+              <div className="flex items-center justify-center gap-1.5 p-1.5 rounded-md bg-zinc-950 border border-border/60">
+                <Truck className="h-3.5 w-3.5 text-cyan-400" />
+                <span>KIRIM KOTA TEGAL</span>
               </div>
             </div>
           </div>

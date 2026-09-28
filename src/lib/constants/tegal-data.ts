@@ -1,3 +1,6 @@
+import { SEED_POSYANDU_TEGAL } from "./seed-posyandu-tegal";
+import { toValidUUID } from "@/lib/utils";
+
 export interface KelurahanData {
   nama: string;
   posyandu: string[];
@@ -179,6 +182,14 @@ export const KOTA_TEGAL_DATA: Record<string, KecamatanData> = {
 
 export const DAFTAR_KECAMATAN_TEGAL = Object.keys(KOTA_TEGAL_DATA);
 
+export const DAFTAR_RW_TEGAL = Array.from({ length: 17 }, (_, i) =>
+  String(i + 1).padStart(2, "0")
+);
+
+export const DAFTAR_RT_TEGAL = Array.from({ length: 17 }, (_, i) =>
+  String(i + 1).padStart(2, "0")
+);
+
 export function getKelurahanByKecamatan(kecamatan: string): string[] {
   if (!kecamatan || !KOTA_TEGAL_DATA[kecamatan]) {
     return [];
@@ -203,11 +214,38 @@ export interface MasterKomunitasSeedItem {
   created_at?: string;
 }
 
-function slugify(text: string): string {
+export function slugify(text: string): string {
   return text
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)/g, "");
+}
+
+export function generateWargaKomunitasItem(
+  kecamatan: string,
+  kelurahan: string,
+  rw: string,
+  rt: string
+): MasterKomunitasSeedItem {
+  const cleanRw = (rw || "01").replace(/\D/g, "").padStart(2, "0");
+  const cleanRt = (rt || "01").replace(/\D/g, "").padStart(2, "0");
+  const kecSlug = slugify(kecamatan || "tegal");
+  const kelSlug = slugify(kelurahan || "tegal");
+  const id = `kom-warga-${kecSlug}-${kelSlug}-rw${cleanRw}-rt${cleanRt}`;
+
+  return {
+    id,
+    nama: `Warga: RT ${cleanRt}, RW ${cleanRw}, ${kelurahan}, ${kecamatan}, Kota Tegal`,
+    jenis: "warga_kita",
+    kecamatan,
+    kelurahan,
+    rt: cleanRt,
+    rw: cleanRw,
+    lokasi: `Balai Pertemuan / Jl. ${kelurahan} No. ${cleanRt}, RT ${cleanRt} / RW ${cleanRw}, ${kelurahan}, ${kecamatan}, Kota Tegal`,
+    deskripsi: `Paguyuban rukun warga RT ${cleanRt} RW ${cleanRw} Kelurahan ${kelurahan} yang aktif dalam pemantauan tumbuh kembang balita, pos gizi keluarga, kebersihan lingkungan, dan gotong royong warga.`,
+    kontak: `0812-3456-7890 (Pengurus RT ${cleanRt} / RW ${cleanRw})`,
+    jadwal: "Pertemuan Rutin Warga Setiap Malam Minggu Pertama",
+  };
 }
 
 // Master Generator untuk mencakup seluruh Kelurahan & Lembaga di Kota Tegal
@@ -490,10 +528,66 @@ function buildMasterKomunitasSeed(): MasterKomunitasSeedItem[] {
     }
   }
 
+  // Masukkan seluruh 230+ Posyandu resmi se-Kota Tegal
+  if (Array.isArray(SEED_POSYANDU_TEGAL)) {
+    for (const pos of SEED_POSYANDU_TEGAL) {
+      if (!existingIds.has(pos.id)) {
+        list.push(pos);
+        existingIds.add(pos.id);
+      }
+    }
+  }
+
   return list;
 }
 
 export const MASTER_KOMUNITAS_SEED = buildMasterKomunitasSeed();
+
+export function findOrGenerateKomunitasSeed(
+  komunitasId: string
+): MasterKomunitasSeedItem | null {
+  if (!komunitasId) return null;
+
+  const targetUuid = toValidUUID(komunitasId);
+  const directMatch = MASTER_KOMUNITAS_SEED.find(
+    (k) => k.id === komunitasId || toValidUUID(k.id) === targetUuid || toValidUUID(k.id) === komunitasId
+  );
+  if (directMatch) return directMatch;
+
+  if (komunitasId.startsWith("kom-warga-")) {
+    const match = komunitasId.match(/^kom-warga-(.+?)-(?:rw|rt)(\d+)-(?:rw|rt)(\d+)$/);
+    if (match) {
+      const geoSlug = match[1];
+      const val1 = match[2];
+      const val2 = match[3];
+
+      let rw = val1;
+      let rt = val2;
+      if (komunitasId.includes(`rt${val1}`)) {
+        rt = val1;
+        rw = val2;
+      }
+
+      for (const [kecName, kecData] of Object.entries(KOTA_TEGAL_DATA)) {
+        const kecSlug = slugify(kecName);
+        for (const kelName of Object.keys(kecData.kelurahan)) {
+          const kelSlug = slugify(kelName);
+          if (
+            geoSlug === `${kecSlug}-${kelSlug}` ||
+            geoSlug === `${kelSlug}` ||
+            geoSlug.includes(kelSlug)
+          ) {
+            return generateWargaKomunitasItem(kecName, kelName, rw, rt);
+          }
+        }
+      }
+
+      return generateWargaKomunitasItem("Kota Tegal", "Kota Tegal", rw, rt);
+    }
+  }
+
+  return null;
+}
 
 
 export const SEED_DATA_ANAK: import("@/types/database").DataAnakItem[] = [
