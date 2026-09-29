@@ -136,6 +136,7 @@ export const KabarSchema = z.object({
     message: "Pilih visibilitas postingan yang valid",
   }),
   komunitas_id: z.string().uuid("ID Komunitas tidak valid").optional().nullable(),
+  komentar_dinonaktifkan: z.boolean().optional(),
 });
 
 export type KabarInput = z.infer<typeof KabarSchema>;
@@ -150,6 +151,8 @@ export const KomentarSchema = z.object({
     .trim()
     .min(1, "Komentar tidak boleh kosong")
     .max(500, "Komentar maksimal 500 karakter"),
+  visibilitas: z.enum(["publik", "pembuat_kabar"]).default("publik"),
+  parentId: z.string().uuid("ID Parent Komentar tidak valid").optional().nullable(),
 });
 
 export type KomentarInput = z.infer<typeof KomentarSchema>;

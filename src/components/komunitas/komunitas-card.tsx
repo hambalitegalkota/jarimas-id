@@ -33,11 +33,21 @@ export function KomunitasCard({
   // Format Nama Komunitas sesuai tipe
   let formattedTitle = komunitas.nama;
   if (komunitas.jenis === "warga_kita") {
-    const rt = komunitas.rt || "01";
-    const rw = komunitas.rw || "01";
-    const kel = komunitas.kelurahan || "Kejambon";
-    const kec = komunitas.kecamatan || "Tegal Timur";
-    formattedTitle = `Warga: RT ${rt}, RW ${rw}, ${kel}, ${kec}`;
+    if (!formattedTitle.startsWith("Warga")) {
+      const rt = komunitas.rt;
+      const rw = komunitas.rw;
+      const kel = komunitas.kelurahan;
+      const kec = komunitas.kecamatan || "Kota Tegal";
+      if (rt && rw && kel) {
+        formattedTitle = `Warga RT: ${rt}, RW: ${rw}, Kelurahan: ${kel}, Kecamatan: ${kec}`;
+      } else if (rw && kel) {
+        formattedTitle = `Warga RW: ${rw}, Kelurahan: ${kel}, Kecamatan: ${kec}`;
+      } else if (kel) {
+        formattedTitle = `Warga Kelurahan: ${kel}, Kecamatan: ${kec}`;
+      } else {
+        formattedTitle = `Warga Kecamatan: ${kec}`;
+      }
+    }
   } else if (komunitas.jenis === "posyandu") {
     if (!formattedTitle.startsWith("Posyandu")) {
       formattedTitle = `Posyandu ${komunitas.nama}`;
@@ -48,9 +58,15 @@ export function KomunitasCard({
       !formattedTitle.startsWith("PAUD") &&
       !formattedTitle.startsWith("RA") &&
       !formattedTitle.startsWith("TK") &&
-      !formattedTitle.startsWith("KB")
+      !formattedTitle.startsWith("KB") &&
+      !formattedTitle.startsWith("SKB") &&
+      !formattedTitle.startsWith("UPTD") &&
+      !formattedTitle.startsWith("SPNF") &&
+      !formattedTitle.startsWith("PKBM") &&
+      !formattedTitle.startsWith("SPS") &&
+      !formattedTitle.startsWith("TPA")
     ) {
-      formattedTitle = `Satuan PAUD ${komunitas.nama}`;
+      formattedTitle = `PAUD & Kesetaraan ${komunitas.nama}`;
     }
   }
 
@@ -132,28 +148,61 @@ export function KomunitasCard({
 
         {/* Action Buttons Bar */}
         <div className="flex items-center gap-2 pt-2 border-t border-border">
-          <Link
-            href={`/komunitas/${komunitas.id}`}
-            className="flex flex-1 h-9 items-center justify-center gap-1.5 rounded-md border border-border bg-card px-3 text-xs font-mono font-medium text-foreground transition-colors hover:bg-muted"
-          >
-            <span>Detail</span>
-            <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
-          </Link>
+          {komunitas.jenis === "warga_kita" ? (
+            membership?.status === "approved" ? (
+              <Link
+                href={`/komunitas/${komunitas.id}`}
+                className="group flex flex-1 h-9 items-center justify-center gap-2 rounded-md bg-emerald-600 px-3 text-xs font-mono font-semibold text-white transition-all hover:bg-emerald-500 shadow-xs"
+              >
+                <span>Lihat Komunitas</span>
+                <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
+              </Link>
+            ) : (
+              <Link
+                href={`/komunitas/${komunitas.id}`}
+                className="group flex flex-1 h-9 items-center justify-center gap-2 rounded-md bg-emerald-600 px-3 text-xs font-mono font-bold text-white transition-all hover:bg-emerald-500 shadow-xs"
+              >
+                <UserPlus className="h-3.5 w-3.5" />
+                <span>Bergabung</span>
+                <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
+              </Link>
+            )
+          ) : (
+            <>
+              {membership?.status === "approved" ? (
+                <Link
+                  href={`/komunitas/${komunitas.id}`}
+                  className="group flex flex-1 h-9 items-center justify-center gap-2 rounded-md bg-foreground px-3 text-xs font-mono font-semibold text-background transition-all hover:bg-foreground/90 shadow-xs"
+                >
+                  <span>Lihat Komunitas</span>
+                  <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
+                </Link>
+              ) : (
+                <Link
+                  href={`/komunitas/${komunitas.id}`}
+                  className="flex flex-1 h-9 items-center justify-center gap-1.5 rounded-md border border-border bg-card px-3 text-xs font-mono font-medium text-foreground transition-colors hover:bg-muted"
+                >
+                  <span>Detail</span>
+                  <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
+                </Link>
+              )}
 
-          {!membership && (
-            <button
-              onClick={() => {
-                if (!currentUserId) {
-                  window.location.href = "/login";
-                  return;
-                }
-                setIsJoinModalOpen(true);
-              }}
-              className="flex flex-1 h-9 items-center justify-center gap-1.5 rounded-md bg-foreground px-3 text-xs font-medium text-background transition-colors hover:bg-foreground/90 font-mono"
-            >
-              <UserPlus className="h-3.5 w-3.5" />
-              <span>Gabung</span>
-            </button>
+              {!membership && (
+                <button
+                  onClick={() => {
+                    if (!currentUserId) {
+                      window.location.href = "/login";
+                      return;
+                    }
+                    setIsJoinModalOpen(true);
+                  }}
+                  className="flex flex-1 h-9 items-center justify-center gap-1.5 rounded-md bg-foreground px-3 text-xs font-medium text-background transition-colors hover:bg-foreground/90 font-mono"
+                >
+                  <UserPlus className="h-3.5 w-3.5" />
+                  <span>Gabung</span>
+                </button>
+              )}
+            </>
           )}
         </div>
       </div>

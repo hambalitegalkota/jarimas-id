@@ -37,7 +37,12 @@ export function KelolaAnggotaClientView({
   } | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  const pendingMembers = members.filter((m) => m.status === "pending");
+  const pendingMembers = members.filter(
+    (m) =>
+      m.status === "pending" ||
+      (Boolean(m.peran_diajukan) &&
+        m.peran_diajukan?.toLowerCase() !== m.peran.toLowerCase())
+  );
   const approvedMembers = members.filter((m) => m.status === "approved");
 
   const handleApprove = (id: string, name: string) => {
@@ -48,11 +53,20 @@ export function KelolaAnggotaClientView({
       const res = await approveAnggotaByAdmin(id);
       if (res.success) {
         setMembers((prev) =>
-          prev.map((m) => (m.id === id ? { ...m, status: "approved" } : m))
+          prev.map((m) =>
+            m.id === id
+              ? {
+                  ...m,
+                  status: "approved",
+                  peran: m.peran_diajukan || m.peran,
+                  peran_diajukan: null,
+                }
+              : m
+          )
         );
         setFeedback({
           type: "success",
-          message: `Permohonan pendaftaran ${name} berhasil disetujui!`,
+          message: `Permohonan pendaftaran / verifikasi peran ${name} berhasil disetujui!`,
         });
       } else {
         setFeedback({
@@ -184,9 +198,16 @@ export function KelolaAnggotaClientView({
                         <p className="text-xs font-mono text-muted-foreground">{email}</p>
                       </div>
                     </div>
-                    <span className="rounded-md bg-amber-500/10 px-2.5 py-1 text-xs font-mono text-amber-600 dark:text-amber-400 border border-amber-500/30">
-                      PERAN: {member.peran.toUpperCase()}
-                    </span>
+                    <div className="flex flex-col items-end gap-1">
+                      <span className="rounded-md bg-amber-500/10 px-2.5 py-1 text-xs font-mono text-amber-600 dark:text-amber-400 border border-amber-500/30">
+                        DIAJUKAN: {(member.peran_diajukan || member.peran).toUpperCase()}
+                      </span>
+                      {member.peran_diajukan && (
+                        <span className="text-[10px] font-mono text-muted-foreground">
+                          Saat ini: {member.peran}
+                        </span>
+                      )}
+                    </div>
                   </div>
 
                   {/* Actions */}

@@ -11,10 +11,12 @@ import {
   Loader2,
   Sparkles,
   AlertCircle,
+  MessageSquareOff,
 } from "lucide-react";
 import { createKabar } from "@/app/actions/kabar";
 import type { VisibilitasKabar } from "@/types/database";
 import { cn } from "@/lib/utils";
+import { LoginPromptModal } from "@/components/kabar/login-prompt-modal";
 
 interface CreateKabarModalProps {
   currentUserId?: string | null;
@@ -22,8 +24,10 @@ interface CreateKabarModalProps {
 
 export function CreateKabarModal({ currentUserId }: CreateKabarModalProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const [konten, setKonten] = useState("");
   const [visibilitas, setVisibilitas] = useState<VisibilitasKabar>("publik");
+  const [komentarDinonaktifkan, setKomentarDinonaktifkan] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -39,12 +43,17 @@ export function CreateKabarModal({ currentUserId }: CreateKabarModalProps) {
     const formData = new FormData();
     formData.append("konten", konten);
     formData.append("visibilitas", visibilitas);
+    formData.append(
+      "komentar_dinonaktifkan",
+      komentarDinonaktifkan ? "true" : "false"
+    );
 
     startTransition(async () => {
       const res = await createKabar(formData);
       if (res.success) {
         setKonten("");
         setVisibilitas("publik");
+        setKomentarDinonaktifkan(false);
         setIsOpen(false);
       } else {
         setErrorMessage(res.message);
@@ -58,7 +67,7 @@ export function CreateKabarModal({ currentUserId }: CreateKabarModalProps) {
       <button
         onClick={() => {
           if (!currentUserId) {
-            window.location.href = "/login";
+            setShowAuthModal(true);
             return;
           }
           setIsOpen(true);
@@ -69,6 +78,14 @@ export function CreateKabarModal({ currentUserId }: CreateKabarModalProps) {
         <Plus className="h-4 w-4 stroke-[2.5px]" />
         <span>Bagikan Kabar</span>
       </button>
+
+      {/* Login Prompt Modal for Guests */}
+      <LoginPromptModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        title="Silakan Masuk ke Akun"
+        description="Silahkan login untuk membagikan kabar baru, memberikan reaksi, dan komentar."
+      />
 
       {/* Modal Dialog Backdrop & Sheet */}
       {isOpen && (
@@ -181,6 +198,31 @@ export function CreateKabarModal({ currentUserId }: CreateKabarModalProps) {
                 </div>
               </div>
 
+              {/* Opsi Nonaktifkan Komentar */}
+              <div className="flex items-center justify-between rounded-md border border-border bg-muted/20 p-3">
+                <div className="flex items-start gap-2.5 pr-2">
+                  <MessageSquareOff className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+                  <div className="space-y-0.5">
+                    <label
+                      htmlFor="disable-comments-toggle"
+                      className="text-xs font-semibold text-foreground cursor-pointer block"
+                    >
+                      Nonaktifkan Komentar
+                    </label>
+                    <p className="text-[11px] text-muted-foreground leading-tight">
+                      Orang lain tidak akan dapat mengirim komentar pada postingan ini
+                    </p>
+                  </div>
+                </div>
+                <input
+                  id="disable-comments-toggle"
+                  type="checkbox"
+                  checked={komentarDinonaktifkan}
+                  onChange={(e) => setKomentarDinonaktifkan(e.target.checked)}
+                  className="h-4 w-4 rounded border-border accent-emerald-500 cursor-pointer"
+                />
+              </div>
+
               {/* Submit Button */}
               <div className="pt-2">
                 <button
@@ -208,3 +250,4 @@ export function CreateKabarModal({ currentUserId }: CreateKabarModalProps) {
     </>
   );
 }
+

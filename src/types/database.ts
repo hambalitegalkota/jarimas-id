@@ -48,6 +48,9 @@ export interface AnggotaKomunitasDetail {
   user_id: string;
   komunitas_id: string;
   peran: string;
+  peran_diajukan?: string | null;
+  berdomisili?: boolean;
+  kk_terdaftar?: boolean;
   status: MembershipStatus;
   created_at: string;
   profiles?: {
@@ -58,13 +61,65 @@ export interface AnggotaKomunitasDetail {
   } | null;
 }
 
+export interface HierarchyAdminTierInfo {
+  level: "rt" | "rw" | "kelurahan" | "kecamatan";
+  levelLabel: string;
+  title: string;
+  komunitasId: string;
+  komunitasNama: string;
+  adminName: string | null;
+  hasAdmin: boolean;
+  canApply: boolean;
+  userStatusAtTier?: {
+    status: MembershipStatus;
+    peran: string;
+    peran_diajukan?: string | null;
+  } | null;
+}
+
+export interface WargaHierarchyAdmins {
+  rt?: HierarchyAdminTierInfo | null;
+  rw?: HierarchyAdminTierInfo | null;
+  kelurahan?: HierarchyAdminTierInfo | null;
+  kecamatan?: HierarchyAdminTierInfo | null;
+}
+
 export interface KomunitasWithMembership extends Komunitas {
   jumlah_anggota: number;
+  hasAdmin?: boolean;
   currentUserMembership?: {
     id: string;
     status: MembershipStatus;
     peran: string;
+    peran_diajukan?: string | null;
+    berdomisili?: boolean;
+    kk_terdaftar?: boolean;
   } | null;
+  hierarchyAdmins?: WargaHierarchyAdmins | null;
+  hierarchyAdminList?: HierarchyAdminTierInfo[];
+}
+
+export interface UserJoinedKomunitas {
+  id: string;
+  membershipId: string;
+  nama: string;
+  jenis: JenisKomunitas | string;
+  kecamatan?: string | null;
+  kelurahan?: string | null;
+  rt?: string | null;
+  rw?: string | null;
+  lokasi?: string | null;
+  deskripsi?: string | null;
+  logo_url?: string | null;
+  kontak?: string | null;
+  jadwal?: string | null;
+  status: MembershipStatus;
+  peran: string;
+  peran_diajukan?: string | null;
+  berdomisili?: boolean;
+  kk_terdaftar?: boolean;
+  joinedAt: string;
+  jumlah_anggota: number;
 }
 
 export interface DdksRecord {
@@ -111,12 +166,19 @@ export interface PendingApprovalItem {
   user_id: string;
   komunitas_id: string;
   peran: string;
+  peran_diajukan?: string | null;
   status: MembershipStatus;
   created_at: string;
+  tierLevel?: "RT" | "RW" | "Kelurahan" | "Kecamatan" | "Posyandu" | "Satuan PAUD" | "Umum";
+  targetApproverTitle?: string;
+  berdomisili?: boolean;
+  kk_terdaftar?: boolean;
+  canApprove?: boolean;
   profiles?: {
     id?: string;
     nama_lengkap?: string;
     email?: string;
+    nomor_hp?: string | null;
     avatar_url?: string | null;
   } | null;
   komunitas?: {
@@ -124,6 +186,10 @@ export interface PendingApprovalItem {
     nama?: string;
     jenis?: string;
     lokasi?: string;
+    kecamatan?: string | null;
+    kelurahan?: string | null;
+    rw?: string | null;
+    rt?: string | null;
   } | null;
 }
 
@@ -135,11 +201,15 @@ export interface ReaksiKabar {
   created_at?: string;
 }
 
+export type VisibilitasKomentar = "publik" | "pembuat_kabar";
+
 export interface KomentarKabar {
   id: string;
   kabar_id: string;
   user_id: string;
   konten: string;
+  visibilitas?: VisibilitasKomentar | string;
+  parent_id?: string | null;
   created_at: string;
   profiles?: {
     id?: string;
@@ -153,6 +223,7 @@ export interface KabarItem {
   user_id: string;
   konten: string;
   visibilitas: VisibilitasKabar;
+  komentar_dinonaktifkan?: boolean;
   komunitas_id?: string | null;
   created_at: string;
   updated_at?: string;

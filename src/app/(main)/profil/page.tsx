@@ -17,10 +17,13 @@ import {
 } from "lucide-react";
 import { createClient } from "@/utils/supabase/server";
 import { logoutUser } from "@/app/actions/auth";
+import { getPendingApprovals } from "@/app/actions/admin";
 import { ApprovalList } from "@/components/admin/approval-list";
+import { DatabaseSeedTools } from "@/components/admin/database-seed-tools";
+import { KecamatanMonitoringAccordion } from "@/components/admin/kecamatan-monitoring-accordion";
 import { formatPeranDisplay } from "@/lib/utils";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { Sun } from "lucide-react";
+import { Sun, UserCheck } from "lucide-react";
 import type { PendingApprovalItem, AnggotaKomunitas } from "@/types/database";
 
 export default async function ProfilePage() {
@@ -51,122 +54,62 @@ export default async function ProfilePage() {
     "Pengguna JARIMAS";
   const userEmail = profile?.email || user.email || "-";
 
-  // 3. Ambil data spesifik berdasarkan peran
-  let pendingApprovals: PendingApprovalItem[] = [];
+  // 3. Ambil data permohonan pending & komunitas user
+  const [pendingApprovalsResult, userJoinedResult] = await Promise.all([
+    getPendingApprovals(),
+    supabase
+      .from("anggota_komunitas")
+      .select("id, komunitas_id, peran, peran_diajukan, status, created_at")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false }),
+  ]);
+
+  const pendingApprovals: PendingApprovalItem[] = pendingApprovalsResult.data || [];
+  const allHierarchyPendingApprovals: PendingApprovalItem[] =
+    pendingApprovalsResult.allHierarchyItems || [];
+  const rawUserCommunities = userJoinedResult.data || [];
   let userCommunities: any[] = [];
 
-  if (isSuperAdmin) {
-    // Ambil daftar permohonan pending untuk Super Admin
-    const { data: rawPending } = await supabase
-      .from("anggota_komunitas")
-      .select("id, user_id, komunitas_id, peran, status, created_at")
-      .eq("status", "pending")
-      .order("created_at", { ascending: false });
+  if (rawUserCommunities.length > 0) {
+    const komIds = [
+      ...new Set(rawUserCommunities.map((r: any) => r.komunitas_id).filter(Boolean)),
+    ];
+    const { data: komData } =
+      komIds.length > 0
+        ? await supabase
+          .from("komunitas")
+          .select("id, nama, jenis, kecamatan, kelurahan, rw, rt, lokasi, deskripsi")
+          .in("id", komIds)
+        : { data: [] };
 
-    if (rawPending && rawPending.length > 0) {
-      const userIds = [...new Set(rawPending.map((r: any) => r.user_id).filter(Boolean))];
-      const komIds = [...new Set(rawPending.map((r: any) => r.komunitas_id).filter(Boolean))];
+    const komMap = new Map((komData || []).map((k: any) => [k.id, k]));
 
-      const { data: profilesData } =
-        userIds.length > 0
-          ? await supabase
-              .from("profiles")
-              .select("id, nama_lengkap, email")
-              .in("id", userIds)
-          : { data: [] };
+    userCommunities = rawUserCommunities.map((row: any) => {
+      const kom = komMap.get(row.komunitas_id);
 
-      const { data: komData } =
-        komIds.length > 0
-          ? await supabase
-              .from("komunitas")
-              .select("id, nama, jenis, kecamatan, kelurahan, rw, rt, lokasi")
-              .in("id", komIds)
-          : { data: [] };
+      const namaKomunitas = kom?.nama || "Komunitas Tegal";
+      const jenisKomunitas = kom?.jenis || "posyandu";
+      const lokasiKomunitas =
+        kom?.lokasi ||
+        [kom?.kelurahan, kom?.kecamatan, "Kota Tegal"].filter(Boolean).join(", ") ||
+        "Kota Tegal";
 
-      const profileMap = new Map((profilesData || []).map((p: any) => [p.id, p]));
-      const komMap = new Map((komData || []).map((k: any) => [k.id, k]));
-
-      pendingApprovals = rawPending.map((row: any) => {
-        const prof = profileMap.get(row.user_id);
-        const kom = komMap.get(row.komunitas_id);
-
-        const namaKomunitas = kom?.nama || "Komunitas Tegal";
-        const jenisKomunitas = kom?.jenis || "posyandu";
-        const lokasiKomunitas =
-          kom?.lokasi ||
-          [kom?.kelurahan, kom?.kecamatan, "Kota Tegal"].filter(Boolean).join(", ") ||
-          "Kota Tegal";
-
-        return {
-          id: row.id,
-          user_id: row.user_id,
-          komunitas_id: row.komunitas_id,
-          peran: formatPeranDisplay(row.peran),
-          status: row.status,
-          created_at: row.created_at,
-          profiles: {
-            id: row.user_id,
-            nama_lengkap: prof?.nama_lengkap || "Pengguna JARIMAS",
-            email: prof?.email || "-",
-            avatar_url: null,
-          },
-          komunitas: {
-            id: row.komunitas_id,
-            nama: namaKomunitas,
-            jenis: jenisKomunitas,
-            lokasi: lokasiKomunitas,
-          },
-        };
-      });
-    }
-  } else {
-    // Ambil komunitas yang diikuti pengguna biasa
-    const { data: rawUserCommunities } = await supabase
-      .from("anggota_komunitas")
-      .select("id, komunitas_id, peran, status, created_at")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false });
-
-    if (rawUserCommunities && rawUserCommunities.length > 0) {
-      const komIds = [
-        ...new Set(rawUserCommunities.map((r: any) => r.komunitas_id).filter(Boolean)),
-      ];
-      const { data: komData } =
-        komIds.length > 0
-          ? await supabase
-              .from("komunitas")
-              .select("id, nama, jenis, kecamatan, kelurahan, rw, rt, lokasi, deskripsi")
-              .in("id", komIds)
-          : { data: [] };
-
-      const komMap = new Map((komData || []).map((k: any) => [k.id, k]));
-
-      userCommunities = rawUserCommunities.map((row: any) => {
-        const kom = komMap.get(row.komunitas_id);
-
-        const namaKomunitas = kom?.nama || "Komunitas Tegal";
-        const jenisKomunitas = kom?.jenis || "posyandu";
-        const lokasiKomunitas =
-          kom?.lokasi ||
-          [kom?.kelurahan, kom?.kecamatan, "Kota Tegal"].filter(Boolean).join(", ") ||
-          "Kota Tegal";
-
-        return {
-          id: row.id,
-          komunitas_id: row.komunitas_id,
-          peran: formatPeranDisplay(row.peran),
-          status: row.status,
-          created_at: row.created_at,
-          komunitas: {
-            id: row.komunitas_id,
-            nama: namaKomunitas,
-            jenis: jenisKomunitas,
-            lokasi: lokasiKomunitas,
-            deskripsi: kom?.deskripsi || null,
-          },
-        };
-      });
-    }
+      return {
+        id: row.id,
+        komunitas_id: row.komunitas_id,
+        peran: formatPeranDisplay(row.peran),
+        peran_diajukan: row.peran_diajukan || null,
+        status: row.status,
+        created_at: row.created_at,
+        komunitas: {
+          id: row.komunitas_id,
+          nama: namaKomunitas,
+          jenis: jenisKomunitas,
+          lokasi: lokasiKomunitas,
+          deskripsi: kom?.deskripsi || null,
+        },
+      };
+    });
   }
 
   return (
@@ -249,10 +192,10 @@ export default async function ProfilePage() {
         <ThemeToggle />
       </section>
 
-      {/* Main Content Area: Super Admin vs Regular User */}
-      {isSuperAdmin ? (
-        /* SUPER ADMIN VIEW: Approval Dashboard */
-        <section className="space-y-4">
+      {/* Main Content Area: Super Admin / Community Admin / Regular User */}
+      {isSuperAdmin && (
+        /* SUPER ADMIN VIEW: Approval Dashboard & Seeding Tools */
+        <section className="space-y-6">
           <div className="flex items-center gap-2 px-0.5">
             <Sparkles className="h-4 w-4 text-emerald-400" />
             <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground font-mono">
@@ -260,19 +203,52 @@ export default async function ProfilePage() {
             </h2>
           </div>
 
-          {/* Super Admin Approval List Component */}
-          <ApprovalList initialApprovals={pendingApprovals} />
-        </section>
-      ) : (
-        /* REGULAR USER VIEW: Komunitas Saya */
-        <section className="space-y-4">
-          <div className="flex items-center justify-between px-0.5">
-            <div className="flex items-center gap-2">
-              <Building2 className="h-4 w-4 text-emerald-400" />
-              <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground font-mono">
-                Komunitas &amp; Posyandu Saya
-              </h2>
+          {/* Database Seed Tools for Posyandu & Warga Kota Tegal */}
+          <DatabaseSeedTools />
+
+          {/* Persetujuan Langsung Super Admin (Hanya Permohonan Admin Kecamatan & Layanan Kota) */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between px-0.5">
+              <div className="flex items-center gap-2">
+                <UserCheck className="h-4 w-4 text-amber-400" />
+                <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-foreground">
+                  Persetujuan Langsung Super Admin (Admin Kecamatan &amp; Layanan Kota)
+                </h3>
+              </div>
+              <span className="text-[10px] font-mono text-muted-foreground">
+                {pendingApprovals.length} PERMOHONAN
+              </span>
             </div>
+            <ApprovalList initialApprovals={pendingApprovals} isSuperAdmin={true} />
+          </div>
+
+          {/* Monitoring Seluruh Permohonan Wilayah Berjenjang (Accordion per Kecamatan) */}
+          <KecamatanMonitoringAccordion initialItems={allHierarchyPendingApprovals} />
+        </section>
+      )}
+
+      {!isSuperAdmin && pendingApprovals.length > 0 && (
+        /* COMMUNITY ADMIN VIEW: Tiered Approval List */
+        <section className="space-y-4">
+          <div className="flex items-center gap-2 px-0.5">
+            <UserCheck className="h-4 w-4 text-emerald-400" />
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground font-mono">
+              Persetujuan Peran &amp; Admin Komunitas
+            </h2>
+          </div>
+          <ApprovalList initialApprovals={pendingApprovals} isSuperAdmin={false} />
+        </section>
+      )}
+
+      {/* VIEW: Komunitas Saya */}
+      <section className="space-y-4">
+        <div className="flex items-center justify-between px-0.5">
+          <div className="flex items-center gap-2">
+            <Building2 className="h-4 w-4 text-emerald-400" />
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground font-mono">
+              Komunitas &amp; Saya
+            </h2>
+          </div>
             <span className="text-xs font-mono text-muted-foreground">
               {userCommunities.length} TERDAFTAR
             </span>
@@ -371,7 +347,6 @@ export default async function ProfilePage() {
             </div>
           )}
         </section>
-      )}
-    </div>
-  );
-}
+      </div>
+    );
+  }

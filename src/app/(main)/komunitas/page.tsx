@@ -9,9 +9,13 @@ import {
   ChevronRight,
   Compass,
 } from "lucide-react";
-import { getKomunitasList } from "@/app/actions/komunitas";
+import {
+  getKomunitasList,
+  getUserJoinedKomunitas,
+} from "@/app/actions/komunitas";
 import { KomunitasFilter } from "@/components/komunitas/komunitas-filter";
 import { KomunitasCard } from "@/components/komunitas/komunitas-card";
+import { KomunitasSayaSection } from "@/components/komunitas/komunitas-saya-section";
 import { ThemeToggle } from "@/components/theme-toggle";
 import type { JenisKomunitas } from "@/types/database";
 
@@ -40,16 +44,22 @@ export default async function KomunitasPage({
   const currentPage = Math.max(1, Number(resolvedParams.page) || 1);
   const pageSize = 20;
 
-  const { data: listKomunitas, currentUserId, pagination } = await getKomunitasList({
-    jenis: currentTab,
-    kecamatan: currentKecamatan,
-    kelurahan: currentKelurahan,
-    rw: currentRw,
-    rt: currentRt,
-    searchQuery: currentSearch,
-    page: currentPage,
-    limit: pageSize,
-  });
+  const [komunitasResult, userJoinedResult] = await Promise.all([
+    getKomunitasList({
+      jenis: currentTab,
+      kecamatan: currentKecamatan,
+      kelurahan: currentKelurahan,
+      rw: currentRw,
+      rt: currentRt,
+      searchQuery: currentSearch,
+      page: currentPage,
+      limit: pageSize,
+    }),
+    getUserJoinedKomunitas(),
+  ]);
+
+  const { data: listKomunitas, currentUserId, pagination } = komunitasResult;
+  const userJoinedList = userJoinedResult.data || [];
 
   // Helper untuk membuat URL dengan parameter yang konsisten
   const createPageUrl = (targetPage: number) => {
@@ -96,7 +106,7 @@ export default async function KomunitasPage({
             Eksplorasi Komunitas
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground">
-            Akses 210+ Posyandu, Satuan PAUD, dan RT/RW se-Kota Tegal dalam satu jaringan terpadu.
+            Akses 230+ Posyandu, PAUD &amp; Kesetaraan (TK, KB, RA, PKBM, SKB), dan RT/RW se-Kota Tegal dalam satu jaringan terpadu.
           </p>
         </div>
 
@@ -105,7 +115,13 @@ export default async function KomunitasPage({
         </div>
       </header>
 
-      {/* 3 Tab Kategori Utama (Posyandu, Warga Kita, Satuan PAUD) */}
+      {/* Komunitas yang Telah Diikuti oleh Pengguna */}
+      <KomunitasSayaSection
+        userJoinedList={userJoinedList}
+        currentUserId={currentUserId}
+      />
+
+      {/* 3 Tab Kategori Utama (Posyandu, Warga Kita, PAUD & Kesetaraan) */}
       <div className="flex rounded-md bg-muted/40 p-1 border border-border">
         <Link
           href={createTabUrl("posyandu")}
@@ -140,7 +156,7 @@ export default async function KomunitasPage({
           }`}
         >
           <Building2 className="h-3.5 w-3.5 text-amber-400" />
-          <span>SATUAN_PAUD</span>
+          <span>PAUD_KESETARAAN</span>
         </Link>
       </div>
 

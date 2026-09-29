@@ -147,7 +147,10 @@ CREATE TABLE IF NOT EXISTS public.anggota_komunitas (
 ALTER TABLE public.anggota_komunitas ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE;
 ALTER TABLE public.anggota_komunitas ADD COLUMN IF NOT EXISTS komunitas_id UUID REFERENCES public.komunitas(id) ON DELETE CASCADE;
 ALTER TABLE public.anggota_komunitas ADD COLUMN IF NOT EXISTS peran TEXT NOT NULL DEFAULT 'anggota';
+ALTER TABLE public.anggota_komunitas ADD COLUMN IF NOT EXISTS peran_diajukan TEXT;
 ALTER TABLE public.anggota_komunitas ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'pending';
+ALTER TABLE public.anggota_komunitas ADD COLUMN IF NOT EXISTS berdomisili BOOLEAN DEFAULT TRUE;
+ALTER TABLE public.anggota_komunitas ADD COLUMN IF NOT EXISTS kk_terdaftar BOOLEAN DEFAULT TRUE;
 ALTER TABLE public.anggota_komunitas ADD COLUMN IF NOT EXISTS approved_by UUID REFERENCES public.profiles(id) ON DELETE SET NULL;
 ALTER TABLE public.anggota_komunitas ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT now();
 ALTER TABLE public.anggota_komunitas ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT now();
@@ -185,6 +188,7 @@ ALTER TABLE public.kabar_jarimas ADD COLUMN IF NOT EXISTS user_id UUID REFERENCE
 ALTER TABLE public.kabar_jarimas ADD COLUMN IF NOT EXISTS konten TEXT NOT NULL DEFAULT '';
 ALTER TABLE public.kabar_jarimas ADD COLUMN IF NOT EXISTS visibilitas TEXT NOT NULL DEFAULT 'publik';
 ALTER TABLE public.kabar_jarimas ADD COLUMN IF NOT EXISTS komunitas_id UUID REFERENCES public.komunitas(id) ON DELETE SET NULL;
+ALTER TABLE public.kabar_jarimas ADD COLUMN IF NOT EXISTS komentar_dinonaktifkan BOOLEAN NOT NULL DEFAULT FALSE;
 ALTER TABLE public.kabar_jarimas ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT now();
 ALTER TABLE public.kabar_jarimas ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT now();
 
@@ -218,16 +222,50 @@ CREATE TABLE IF NOT EXISTS public.komentar_kabar (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   kabar_id UUID NOT NULL REFERENCES public.kabar_jarimas(id) ON DELETE CASCADE,
   user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
-  konten TEXT NOT NULL DEFAULT '',
+  parent_id UUID REFERENCES public.komentar_kabar(id) ON DELETE CASCADE,
+  konten TEXT,
+  komentar TEXT,
+  visibilitas TEXT NOT NULL DEFAULT 'publik',
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 ALTER TABLE public.komentar_kabar ADD COLUMN IF NOT EXISTS kabar_id UUID REFERENCES public.kabar_jarimas(id) ON DELETE CASCADE;
 ALTER TABLE public.komentar_kabar ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE;
-ALTER TABLE public.komentar_kabar ADD COLUMN IF NOT EXISTS konten TEXT NOT NULL DEFAULT '';
+ALTER TABLE public.komentar_kabar ADD COLUMN IF NOT EXISTS parent_id UUID REFERENCES public.komentar_kabar(id) ON DELETE CASCADE;
+ALTER TABLE public.komentar_kabar ADD COLUMN IF NOT EXISTS konten TEXT;
+ALTER TABLE public.komentar_kabar ADD COLUMN IF NOT EXISTS komentar TEXT;
+ALTER TABLE public.komentar_kabar ADD COLUMN IF NOT EXISTS visibilitas TEXT NOT NULL DEFAULT 'publik';
 ALTER TABLE public.komentar_kabar ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT now();
 
+DO $$
+BEGIN
+  -- Lepas NOT NULL jika ada pada komentar atau konten
+  BEGIN
+    ALTER TABLE public.komentar_kabar ALTER COLUMN komentar DROP NOT NULL;
+  EXCEPTION WHEN OTHERS THEN NULL; END;
+
+  BEGIN
+    ALTER TABLE public.komentar_kabar ALTER COLUMN konten DROP NOT NULL;
+  EXCEPTION WHEN OTHERS THEN NULL; END;
+
+  -- Pastikan visibilitas terisi default 'publik'
+  BEGIN
+    UPDATE public.komentar_kabar SET visibilitas = 'publik' WHERE visibilitas IS NULL OR visibilitas = '';
+  EXCEPTION WHEN OTHERS THEN NULL; END;
+
+  -- Sinkronkan data komentar dan konten
+  BEGIN
+    UPDATE public.komentar_kabar SET konten = komentar WHERE (konten IS NULL OR konten = '') AND komentar IS NOT NULL;
+  EXCEPTION WHEN OTHERS THEN NULL; END;
+
+  BEGIN
+    UPDATE public.komentar_kabar SET komentar = konten WHERE (komentar IS NULL OR komentar = '') AND konten IS NOT NULL;
+  EXCEPTION WHEN OTHERS THEN NULL; END;
+END $$;
+
 CREATE INDEX IF NOT EXISTS idx_komentar_kabar ON public.komentar_kabar(kabar_id);
+CREATE INDEX IF NOT EXISTS idx_komentar_visibilitas ON public.komentar_kabar(visibilitas);
+CREATE INDEX IF NOT EXISTS idx_komentar_parent ON public.komentar_kabar(parent_id);
 
 -- ==============================================================================
 -- 6. TABEL DATA ANAK & DDKS RECORDS
@@ -468,6 +506,15 @@ CREATE POLICY "Pengguna dapat menyisipkan profil sendiri" ON public.profiles FOR
 DROP POLICY IF EXISTS "Komunitas dapat dibaca publik" ON public.komunitas;
 CREATE POLICY "Komunitas dapat dibaca publik" ON public.komunitas FOR SELECT USING (true);
 
+DROP POLICY IF EXISTS "Pengguna terautentikasi dapat membuat komunitas" ON public.komunitas;
+CREATE POLICY "Pengguna terautentikasi dapat membuat komunitas" ON public.komunitas FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
+
+DROP POLICY IF EXISTS "Pengguna terautentikasi dapat memperbarui komunitas" ON public.komunitas;
+CREATE POLICY "Pengguna terautentikasi dapat memperbarui komunitas" ON public.komunitas FOR UPDATE USING (
+  auth.uid() IS NOT NULL OR
+  EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND is_super_admin = true)
+);
+
 DROP POLICY IF EXISTS "Super Admin dapat mengelola komunitas" ON public.komunitas;
 CREATE POLICY "Super Admin dapat mengelola komunitas" ON public.komunitas FOR ALL USING (
   EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND is_super_admin = true)
@@ -510,6 +557,13 @@ CREATE POLICY "Kabar dapat dibaca publik" ON public.kabar_jarimas FOR SELECT USI
 DROP POLICY IF EXISTS "Pengguna terautentikasi dapat membuat kabar" ON public.kabar_jarimas;
 CREATE POLICY "Pengguna terautentikasi dapat membuat kabar" ON public.kabar_jarimas FOR INSERT WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Pemilik atau Admin dapat memperbarui kabar" ON public.kabar_jarimas;
+DROP POLICY IF EXISTS "Pemilik atau Admin dapat mengupdate kabar" ON public.kabar_jarimas;
+CREATE POLICY "Pemilik atau Admin dapat memperbarui kabar" ON public.kabar_jarimas FOR UPDATE USING (
+  auth.uid() = user_id OR
+  EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND is_super_admin = true)
+);
+
 DROP POLICY IF EXISTS "Pemilik atau Admin dapat menghapus kabar" ON public.kabar_jarimas;
 CREATE POLICY "Pemilik atau Admin dapat menghapus kabar" ON public.kabar_jarimas FOR DELETE USING (
   auth.uid() = user_id OR
@@ -529,6 +583,30 @@ CREATE POLICY "Komentar dapat dibaca publik" ON public.komentar_kabar FOR SELECT
 
 DROP POLICY IF EXISTS "Pengguna terautentikasi dapat membuat komentar" ON public.komentar_kabar;
 CREATE POLICY "Pengguna terautentikasi dapat membuat komentar" ON public.komentar_kabar FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Pembuat komentar, pemilik kabar, atau Admin dapat menghapus komentar" ON public.komentar_kabar;
+DROP POLICY IF EXISTS "Pemilik komentar atau Admin dapat menghapus komentar" ON public.komentar_kabar;
+DROP POLICY IF EXISTS "Users can delete own comments" ON public.komentar_kabar;
+DROP POLICY IF EXISTS "Komentar delete policy" ON public.komentar_kabar;
+CREATE POLICY "Pembuat komentar, pemilik kabar, atau Admin dapat menghapus komentar" ON public.komentar_kabar FOR DELETE USING (
+  -- 1. Pengguna yang menulis komentar tersebut
+  auth.uid() = user_id OR
+  -- 2. Pemilik postingan kabar tempat komentar tersebut berada
+  EXISTS (
+    SELECT 1 FROM public.kabar_jarimas kj
+    WHERE kj.id = komentar_kabar.kabar_id AND kj.user_id = auth.uid()
+  ) OR
+  -- 3. Pembuat komentar induk jika yang dihapus adalah balasan dari komentarnya
+  EXISTS (
+    SELECT 1 FROM public.komentar_kabar pk
+    WHERE pk.id = komentar_kabar.parent_id AND pk.user_id = auth.uid()
+  ) OR
+  -- 4. Super Admin
+  EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.id = auth.uid() AND p.is_super_admin = true
+  )
+);
 
 -- 8.7 Data Anak Policies (dengan safe ::text cast)
 DROP POLICY IF EXISTS "Data anak dapat dibaca publik/anggota" ON public.data_anak;

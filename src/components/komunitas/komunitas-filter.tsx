@@ -231,6 +231,12 @@ export function KomunitasFilter({
         )}
       </div>
 
+      {searchParams.get("tab") === "warga_kita" && (
+        <div className="rounded border border-emerald-500/20 bg-emerald-500/5 px-3 py-2 text-xs font-mono text-emerald-400 flex items-center justify-between gap-2">
+          <span>💡 Tip: Cukup bergabung di 1 Komunitas RT, Anda otomatis terhubung ke RW, Kelurahan, &amp; Kecamatan terkait.</span>
+        </div>
+      )}
+
       {/* 3. Dropdowns Filter Wilayah */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
         {/* Dropdown Kecamatan */}
