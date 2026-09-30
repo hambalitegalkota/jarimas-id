@@ -146,6 +146,22 @@ export function KomunitasCard({
           </div>
         )}
 
+        {/* Status Admin Komunitas */}
+        {komunitas.hasAdmin && komunitas.adminName ? (
+          <div className="flex items-center gap-2 rounded-md bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1.5 text-xs text-emerald-400 font-mono">
+            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
+            <span className="truncate">
+              Admin: <strong className="text-foreground font-semibold">{komunitas.adminName}</strong>
+              {komunitas.adminRole ? ` (${komunitas.adminRole})` : ""}
+            </span>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2 rounded-md bg-amber-500/10 border border-amber-500/20 px-2.5 py-1.5 text-xs text-amber-400/90 font-mono">
+            <Clock className="h-3.5 w-3.5 text-amber-400 shrink-0" />
+            <span>Belum Memiliki Admin / Pengurus</span>
+          </div>
+        )}
+
         {/* Action Buttons Bar */}
         <div className="flex items-center gap-2 pt-2 border-t border-border">
           {komunitas.jenis === "warga_kita" ? (

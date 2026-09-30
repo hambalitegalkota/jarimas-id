@@ -358,14 +358,15 @@ export function AdminPesananClient({
 
       {/* Modal Input Nomor Resi */}
       {selectedPesananForResi && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-in fade-in duration-200">
           <div
             className="fixed inset-0 bg-black/80 backdrop-blur-xs"
             onClick={() => setSelectedPesananForResi(null)}
           />
 
-          <div className="relative w-full max-w-md rounded-lg border border-border bg-card p-6 shadow-2xl z-10 space-y-4 animate-in zoom-in-95 duration-200">
-            <div className="flex items-center justify-between border-b border-border pb-3">
+          <div className="relative w-full max-w-md max-h-[calc(100dvh-2rem)] flex flex-col rounded-xl border border-border bg-card shadow-2xl z-10 animate-in zoom-in-95 duration-200 overflow-hidden my-auto">
+            {/* Header */}
+            <div className="flex items-center justify-between p-5 pb-3 border-b border-border shrink-0 bg-card">
               <div className="flex items-center gap-2">
                 <div className="flex h-8 w-8 items-center justify-center rounded-md bg-muted text-foreground">
                   <Truck className="h-4 w-4" />
@@ -382,7 +383,8 @@ export function AdminPesananClient({
               </button>
             </div>
 
-            <div className="space-y-3">
+            {/* Body */}
+            <div className="p-5 overflow-y-auto flex-1 space-y-4">
               <p className="text-xs text-muted-foreground">
                 Masukkan nomor resi ekspedisi/kurir internal Jarimas untuk pesanan <strong>#{selectedPesananForResi.id}</strong> ({selectedPesananForResi.nama_penerima}).
               </p>

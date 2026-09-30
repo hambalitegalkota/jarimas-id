@@ -246,107 +246,107 @@ export default async function ProfilePage() {
           <div className="flex items-center gap-2">
             <Building2 className="h-4 w-4 text-emerald-400" />
             <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground font-mono">
-              Komunitas &amp; Saya
+              Komunitas Saya
             </h2>
           </div>
-            <span className="text-xs font-mono text-muted-foreground">
-              {userCommunities.length} TERDAFTAR
-            </span>
-          </div>
+          <span className="text-xs font-mono text-muted-foreground">
+            {userCommunities.length} TERDAFTAR
+          </span>
+        </div>
 
-          {/* List Komunitas yang Diikuti */}
-          {userCommunities.length === 0 ? (
-            <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border bg-card/40 p-8 text-center space-y-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-md border border-border bg-muted/30 text-muted-foreground">
-                <Compass className="h-5 w-5 text-emerald-400" />
-              </div>
-              <div className="space-y-1">
-                <h3 className="text-sm font-medium text-foreground">
-                  Belum Bergabung dengan Komunitas
-                </h3>
-                <p className="text-xs text-muted-foreground max-w-xs font-mono">
-                  Bergabunglah dengan Posyandu atau Komunitas setempat untuk memantau tumbuh kembang anak.
-                </p>
-              </div>
-              <Link
-                href="/komunitas"
-                className="inline-flex h-9 items-center gap-2 rounded-md bg-foreground px-4 text-xs font-medium text-background transition-colors hover:bg-foreground/90 font-mono"
-              >
-                <span>Jelajahi Komunitas</span>
-                <ArrowRight className="h-3.5 w-3.5" />
-              </Link>
+        {/* List Komunitas yang Diikuti */}
+        {userCommunities.length === 0 ? (
+          <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border bg-card/40 p-8 text-center space-y-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-md border border-border bg-muted/30 text-muted-foreground">
+              <Compass className="h-5 w-5 text-emerald-400" />
             </div>
-          ) : (
-            <div className="space-y-3">
-              {userCommunities.map((item) => {
-                const kom = item.komunitas || {};
-                const status = item.status as "pending" | "approved" | "rejected";
+            <div className="space-y-1">
+              <h3 className="text-sm font-medium text-foreground">
+                Belum Bergabung dengan Komunitas
+              </h3>
+              <p className="text-xs text-muted-foreground max-w-xs font-mono">
+                Bergabunglah dengan Posyandu atau Komunitas setempat untuk memantau tumbuh kembang anak.
+              </p>
+            </div>
+            <Link
+              href="/komunitas"
+              className="inline-flex h-9 items-center gap-2 rounded-md bg-foreground px-4 text-xs font-medium text-background transition-colors hover:bg-foreground/90 font-mono"
+            >
+              <span>Jelajahi Komunitas</span>
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {userCommunities.map((item) => {
+              const kom = item.komunitas || {};
+              const status = item.status as "pending" | "approved" | "rejected";
 
-                return (
-                  <div
-                    key={item.id}
-                    className="rounded-lg border border-border bg-card p-4 space-y-3 transition-colors hover:border-zinc-700"
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="space-y-1">
-                        <h4 className="font-semibold text-sm text-foreground">
-                          {kom.nama || "Komunitas"}
-                        </h4>
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground font-mono">
-                          <span className="font-medium text-foreground">
-                            {kom.jenis || "Posyandu"}
-                          </span>
-                          <span>•</span>
-                          <span className="flex items-center gap-1">
-                            <MapPin className="h-3 w-3" />
-                            {kom.lokasi || "Kota Tegal"}
-                          </span>
-                        </div>
+              return (
+                <div
+                  key={item.id}
+                  className="rounded-lg border border-border bg-card p-4 space-y-3 transition-colors hover:border-zinc-700"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="space-y-1">
+                      <h4 className="font-semibold text-sm text-foreground">
+                        {kom.nama || "Komunitas"}
+                      </h4>
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground font-mono">
+                        <span className="font-medium text-foreground">
+                          {kom.jenis || "Posyandu"}
+                        </span>
+                        <span>•</span>
+                        <span className="flex items-center gap-1">
+                          <MapPin className="h-3 w-3" />
+                          {kom.lokasi || "Kota Tegal"}
+                        </span>
                       </div>
-
-                      {/* Status Badge */}
-                      {status === "approved" && (
-                        <span className="cyber-badge font-mono text-[11px]">
-                          <CheckCircle2 className="h-3 w-3" />
-                          AKTIF ({item.peran})
-                        </span>
-                      )}
-                      {status === "pending" && (
-                        <span className="inline-flex items-center gap-1 rounded border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-[11px] font-mono text-amber-400">
-                          <Clock className="h-3 w-3" />
-                          PENDING ({item.peran})
-                        </span>
-                      )}
-                      {status === "rejected" && (
-                        <span className="inline-flex items-center gap-1 rounded border border-destructive/30 bg-destructive/10 px-2 py-0.5 text-[11px] font-mono text-destructive">
-                          <XCircle className="h-3 w-3" />
-                          DITOLAK
-                        </span>
-                      )}
                     </div>
 
-                    {kom.deskripsi && (
-                      <p className="text-xs text-muted-foreground line-clamp-2">
-                        {kom.deskripsi}
-                      </p>
+                    {/* Status Badge */}
+                    {status === "approved" && (
+                      <span className="cyber-badge font-mono text-[11px]">
+                        <CheckCircle2 className="h-3 w-3" />
+                        AKTIF ({item.peran})
+                      </span>
+                    )}
+                    {status === "pending" && (
+                      <span className="inline-flex items-center gap-1 rounded border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-[11px] font-mono text-amber-400">
+                        <Clock className="h-3 w-3" />
+                        PENDING ({item.peran})
+                      </span>
+                    )}
+                    {status === "rejected" && (
+                      <span className="inline-flex items-center gap-1 rounded border border-destructive/30 bg-destructive/10 px-2 py-0.5 text-[11px] font-mono text-destructive">
+                        <XCircle className="h-3 w-3" />
+                        DITOLAK
+                      </span>
                     )}
                   </div>
-                );
-              })}
 
-              {/* Action Button: Explore More Communities */}
-              <div className="pt-2">
-                <Link
-                  href="/komunitas"
-                  className="flex w-full h-10 items-center justify-center gap-2 rounded-md border border-border bg-card px-4 text-xs font-mono font-medium text-foreground transition-colors hover:bg-muted"
-                >
-                  <Compass className="h-4 w-4 text-emerald-400" />
-                  <span>Jelajahi Komunitas Lainnya</span>
-                </Link>
-              </div>
+                  {kom.deskripsi && (
+                    <p className="text-xs text-muted-foreground line-clamp-2">
+                      {kom.deskripsi}
+                    </p>
+                  )}
+                </div>
+              );
+            })}
+
+            {/* Action Button: Explore More Communities */}
+            <div className="pt-2">
+              <Link
+                href="/komunitas"
+                className="flex w-full h-10 items-center justify-center gap-2 rounded-md border border-border bg-card px-4 text-xs font-mono font-medium text-foreground transition-colors hover:bg-muted"
+              >
+                <Compass className="h-4 w-4 text-emerald-400" />
+                <span>Jelajahi Komunitas Lainnya</span>
+              </Link>
             </div>
-          )}
-        </section>
-      </div>
-    );
-  }
+          </div>
+        )}
+      </section>
+    </div>
+  );
+}

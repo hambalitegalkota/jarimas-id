@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import { approveMemberRole, rejectMemberRole } from "@/app/actions/admin";
 import type { PendingApprovalItem } from "@/types/database";
-import { cn } from "@/lib/utils";
+import { cn, isRoleAdmin } from "@/lib/utils";
 
 interface ApprovalListProps {
   initialApprovals: PendingApprovalItem[];
@@ -89,11 +89,7 @@ export function ApprovalList({
   const filteredApprovals = approvals.filter((item) => {
     if (activeTier === "semua") return true;
 
-    const roleLower = (item.peran_diajukan || item.peran || "").toLowerCase();
-    const isAdmin =
-      roleLower.includes("pengurus") ||
-      roleLower.includes("admin") ||
-      roleLower.includes("ketua");
+    const isAdmin = isRoleAdmin(item.peran_diajukan || item.peran);
     const jenis = item.komunitas?.jenis || "posyandu";
 
     if (activeTier === "admin_rt") {
@@ -123,31 +119,31 @@ export function ApprovalList({
     admin_rt: approvals.filter(
       (i) =>
         i.komunitas?.jenis === "warga_kita" &&
-        (i.peran_diajukan || i.peran).toLowerCase().includes("pengurus") &&
+        isRoleAdmin(i.peran_diajukan || i.peran) &&
         i.tierLevel === "RT"
     ).length,
     admin_rw: approvals.filter(
       (i) =>
         i.komunitas?.jenis === "warga_kita" &&
-        (i.peran_diajukan || i.peran).toLowerCase().includes("pengurus") &&
+        isRoleAdmin(i.peran_diajukan || i.peran) &&
         i.tierLevel === "RW"
     ).length,
     admin_kel: approvals.filter(
       (i) =>
         i.komunitas?.jenis === "warga_kita" &&
-        (i.peran_diajukan || i.peran).toLowerCase().includes("pengurus") &&
+        isRoleAdmin(i.peran_diajukan || i.peran) &&
         i.tierLevel === "Kelurahan"
     ).length,
     admin_kec: approvals.filter(
       (i) =>
         i.komunitas?.jenis === "warga_kita" &&
-        (i.peran_diajukan || i.peran).toLowerCase().includes("pengurus") &&
+        isRoleAdmin(i.peran_diajukan || i.peran) &&
         i.tierLevel === "Kecamatan"
     ).length,
     warga: approvals.filter(
       (i) =>
         i.komunitas?.jenis === "warga_kita" &&
-        !(i.peran_diajukan || i.peran).toLowerCase().includes("pengurus")
+        !isRoleAdmin(i.peran_diajukan || i.peran)
     ).length,
     posyandu_paud: approvals.filter(
       (i) =>

@@ -527,21 +527,113 @@ CREATE POLICY "Anggota komunitas dapat dibaca oleh semua pengguna" ON public.ang
 DROP POLICY IF EXISTS "Pengguna dapat mendaftar ke komunitas" ON public.anggota_komunitas;
 CREATE POLICY "Pengguna dapat mendaftar ke komunitas" ON public.anggota_komunitas FOR INSERT WITH CHECK (auth.uid() = user_id);
 
-DROP POLICY IF EXISTS "Pengguna/Admin dapat mengelola keanggotaan" ON public.anggota_komunitas;
-CREATE POLICY "Pengguna/Admin dapat mengelola keanggotaan" ON public.anggota_komunitas FOR UPDATE USING (
-  auth.uid() = user_id OR
-  EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND is_super_admin = true) OR
-  EXISTS (
-    SELECT 1 FROM public.anggota_komunitas ak 
-    WHERE ak.komunitas_id = anggota_komunitas.komunitas_id 
-      AND ak.user_id = auth.uid() 
-      AND ak.status::text = 'approved' 
+-- Helper function: Cek wewenang hierarkis admin komunitas
+CREATE OR REPLACE FUNCTION public.check_user_can_manage_community(
+  p_user_id UUID,
+  p_target_komunitas_id UUID
+)
+RETURNS BOOLEAN
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  v_is_super BOOLEAN;
+  v_target_jenis TEXT;
+  v_target_kec TEXT;
+  v_target_kel TEXT;
+  v_target_rw TEXT;
+  v_target_rt TEXT;
+BEGIN
+  IF p_user_id IS NULL OR p_target_komunitas_id IS NULL THEN
+    RETURN false;
+  END IF;
+
+  SELECT is_super_admin INTO v_is_super FROM public.profiles WHERE id = p_user_id;
+  IF v_is_super = true THEN
+    RETURN true;
+  END IF;
+
+  IF EXISTS (
+    SELECT 1 FROM public.anggota_komunitas ak
+    WHERE ak.komunitas_id = p_target_komunitas_id
+      AND ak.user_id = p_user_id
+      AND ak.status::text = 'approved'
       AND (
         ak.peran::text ILIKE '%pengurus%' OR 
         ak.peran::text ILIKE '%kader%' OR 
-        ak.peran::text ILIKE '%admin%'
+        ak.peran::text ILIKE '%admin%' OR
+        ak.peran::text ILIKE '%ketua%' OR
+        ak.peran::text ILIKE '%pengelola%'
       )
-  )
+  ) THEN
+    RETURN true;
+  END IF;
+
+  SELECT jenis, kecamatan, kelurahan, rw, rt
+  INTO v_target_jenis, v_target_kec, v_target_kel, v_target_rw, v_target_rt
+  FROM public.komunitas
+  WHERE id = p_target_komunitas_id;
+
+  IF v_target_jenis IS NULL OR v_target_jenis != 'warga_kita' THEN
+    RETURN false;
+  END IF;
+
+  -- Admin Kecamatan
+  IF EXISTS (
+    SELECT 1 FROM public.anggota_komunitas ak
+    JOIN public.komunitas k ON k.id = ak.komunitas_id
+    WHERE ak.user_id = p_user_id
+      AND ak.status::text = 'approved'
+      AND (ak.peran::text ILIKE '%pengurus%' OR ak.peran::text ILIKE '%admin%')
+      AND k.jenis = 'warga_kita'
+      AND LOWER(TRIM(k.kecamatan)) = LOWER(TRIM(v_target_kec))
+      AND (k.kelurahan IS NULL OR k.kelurahan = '' OR LOWER(TRIM(k.kelurahan)) = 'semua kelurahan')
+      AND (k.rw IS NULL OR k.rw = '' OR k.rw = '00')
+      AND (k.rt IS NULL OR k.rt = '' OR k.rt = '00')
+  ) THEN
+    RETURN true;
+  END IF;
+
+  -- Admin Kelurahan
+  IF EXISTS (
+    SELECT 1 FROM public.anggota_komunitas ak
+    JOIN public.komunitas k ON k.id = ak.komunitas_id
+    WHERE ak.user_id = p_user_id
+      AND ak.status::text = 'approved'
+      AND (ak.peran::text ILIKE '%pengurus%' OR ak.peran::text ILIKE '%admin%')
+      AND k.jenis = 'warga_kita'
+      AND LOWER(TRIM(k.kecamatan)) = LOWER(TRIM(v_target_kec))
+      AND LOWER(TRIM(k.kelurahan)) = LOWER(TRIM(v_target_kel))
+      AND (k.rw IS NULL OR k.rw = '' OR k.rw = '00')
+      AND (k.rt IS NULL OR k.rt = '' OR k.rt = '00')
+  ) THEN
+    RETURN true;
+  END IF;
+
+  -- Admin RW
+  IF EXISTS (
+    SELECT 1 FROM public.anggota_komunitas ak
+    JOIN public.komunitas k ON k.id = ak.komunitas_id
+    WHERE ak.user_id = p_user_id
+      AND ak.status::text = 'approved'
+      AND (ak.peran::text ILIKE '%pengurus%' OR ak.peran::text ILIKE '%admin%')
+      AND k.jenis = 'warga_kita'
+      AND LOWER(TRIM(k.kecamatan)) = LOWER(TRIM(v_target_kec))
+      AND LOWER(TRIM(k.kelurahan)) = LOWER(TRIM(v_target_kel))
+      AND REGEXP_REPLACE(k.rw, '[^0-9]', '', 'g') = REGEXP_REPLACE(v_target_rw, '[^0-9]', '', 'g')
+      AND (k.rt IS NULL OR k.rt = '' OR k.rt = '00')
+  ) THEN
+    RETURN true;
+  END IF;
+
+  RETURN false;
+END;
+$$;
+
+DROP POLICY IF EXISTS "Pengguna/Admin dapat mengelola keanggotaan" ON public.anggota_komunitas;
+CREATE POLICY "Pengguna/Admin dapat mengelola keanggotaan" ON public.anggota_komunitas FOR UPDATE USING (
+  auth.uid() = user_id OR
+  public.check_user_can_manage_community(auth.uid(), anggota_komunitas.komunitas_id)
 );
 
 DROP POLICY IF EXISTS "Pengguna dapat menghapus keanggotaan sendiri" ON public.anggota_komunitas;

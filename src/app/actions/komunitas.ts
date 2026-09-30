@@ -19,12 +19,16 @@ import {
   toValidUUID,
   normalizeRoleForDb,
   formatPeranDisplay,
+  isRoleAdmin,
 } from "@/lib/utils";
 import {
   approveMemberRole,
   rejectMemberRole,
 } from "@/app/actions/admin";
-import { computeTierAndApprover } from "@/lib/admin-helpers";
+import {
+  computeTierAndApprover,
+  extractKomunitasMetadata,
+} from "@/lib/admin-helpers";
 import type {
   KomunitasWithMembership,
   AnggotaKomunitasDetail,
@@ -119,18 +123,43 @@ export async function getKomunitasList(
       }
     }
 
-    // 3. Ambil hitungan anggota per komunitas
-    const { data: memberCounts } = await supabase
+    // 3. Ambil data anggota yang disetujui (untuk hitungan anggota & deteksi admin komunitas)
+    const { data: approvedMembersData } = await supabase
       .from("anggota_komunitas")
-      .select("komunitas_id")
+      .select("id, komunitas_id, user_id, peran, status")
       .eq("status", "approved");
 
     const countsMap: Record<string, number> = {};
-    if (memberCounts) {
-      memberCounts.forEach((m) => {
+    const adminMembersMap: Record<string, any[]> = {};
+    const adminUserIds = new Set<string>();
+
+    if (approvedMembersData) {
+      approvedMembersData.forEach((m) => {
         countsMap[m.komunitas_id] = (countsMap[m.komunitas_id] || 0) + 1;
+        if (isRoleAdmin(m.peran)) {
+          if (!adminMembersMap[m.komunitas_id]) {
+            adminMembersMap[m.komunitas_id] = [];
+          }
+          adminMembersMap[m.komunitas_id].push(m);
+          if (m.user_id) {
+            adminUserIds.add(m.user_id);
+          }
+        }
       });
     }
+
+    // Ambil profile nama admin secara aman
+    const { data: adminProfilesData } =
+      adminUserIds.size > 0
+        ? await supabase
+            .from("profiles")
+            .select("id, nama_lengkap, email")
+            .in("id", Array.from(adminUserIds))
+        : { data: [] };
+
+    const adminProfileMap = new Map(
+      (adminProfilesData || []).map((p: any) => [p.id, p])
+    );
 
     // 4. Khusus jenis "warga_kita": gunakan generator hierarki dinamis Kota Tegal
     if (params.jenis === "warga_kita") {
@@ -188,12 +217,68 @@ export async function getKomunitasList(
         }
       }
 
+      // Ambil data komunitas warga yang tersimpan di DB untuk pencocokan relasi admin
+      const { data: dbWargaKomunitas } = await supabase
+        .from("komunitas")
+        .select("id, nama, jenis, kecamatan, kelurahan, rw, rt")
+        .eq("jenis", "warga_kita");
+
+      const normalizeStr = (str?: string | null) =>
+        (str || "")
+          .toLowerCase()
+          .replace(/kota\s+tegal/gi, "")
+          .replace(/^kecamatan\s+/i, "")
+          .replace(/^kec\.\s*/i, "")
+          .replace(/^kelurahan\s+/i, "")
+          .replace(/^kel\.\s*/i, "")
+          .trim();
+
+      const cleanNum = (str?: string | null) =>
+        str ? str.replace(/\D/g, "").padStart(2, "0") : "";
+
       const items: KomunitasWithMembership[] = pagedWarga.map((item) => {
         const validId = toValidUUID(item.id);
         const membership =
           userMemberships[validId] ||
           userMemberships[item.id] ||
           null;
+
+        const targetKec = normalizeStr(item.kecamatan);
+        const targetKel = normalizeStr(item.kelurahan);
+        const targetRw = cleanNum(item.rw);
+        const targetRt = cleanNum(item.rt);
+
+        const matchingDbKoms = (dbWargaKomunitas || []).filter((k) => {
+          const kKec = normalizeStr(k.kecamatan);
+          const kKel = normalizeStr(k.kelurahan);
+          const kRw = cleanNum(k.rw);
+          const kRt = cleanNum(k.rt);
+
+          if (targetRt) {
+            return kKec === targetKec && kKel === targetKel && kRw === targetRw && kRt === targetRt;
+          }
+          if (targetRw) {
+            return kKec === targetKec && kKel === targetKel && kRw === targetRw && (!kRt || kRt === "00");
+          }
+          if (targetKel && targetKel !== "semua kelurahan") {
+            return kKec === targetKec && kKel === targetKel && (!kRw || kRw === "00") && (!kRt || kRt === "00");
+          }
+          return kKec === targetKec && (!kKel || kKel === "semua kelurahan") && (!kRw || kRw === "00") && (!kRt || kRt === "00");
+        });
+
+        const candidateIds = [item.id, validId, ...matchingDbKoms.map((k) => k.id)];
+        let adminFound: any = null;
+        for (const cid of candidateIds) {
+          if (adminMembersMap[cid] && adminMembersMap[cid].length > 0) {
+            adminFound = adminMembersMap[cid][0];
+            break;
+          }
+        }
+
+        const hasAdmin = Boolean(adminFound);
+        const adminName = adminFound
+          ? adminProfileMap.get(adminFound.user_id)?.nama_lengkap || "Pengurus Terdaftar"
+          : null;
 
         return {
           id: validId,
@@ -211,6 +296,9 @@ export async function getKomunitasList(
           created_at: item.created_at || new Date().toISOString(),
           jumlah_anggota: countsMap[validId] || countsMap[item.id] || 0,
           currentUserMembership: membership,
+          hasAdmin,
+          adminName,
+          adminRole: adminFound ? formatPeranDisplay(adminFound.peran) : null,
         };
       });
 
@@ -291,6 +379,12 @@ export async function getKomunitasList(
       const deskripsi =
         k.deskripsi || `Layanan dan kegiatan ${nama} di ${lokasi}.`;
 
+      const adminFound = adminMembersMap[k.id]?.[0] || null;
+      const hasAdmin = Boolean(adminFound);
+      const adminName = adminFound
+        ? adminProfileMap.get(adminFound.user_id)?.nama_lengkap || "Pengurus Terdaftar"
+        : null;
+
       return {
         id: k.id,
         nama,
@@ -307,6 +401,9 @@ export async function getKomunitasList(
         created_at: k.created_at,
         jumlah_anggota: countsMap[k.id] || 0,
         currentUserMembership: userMemberships[k.id] || null,
+        hasAdmin,
+        adminName,
+        adminRole: adminFound ? formatPeranDisplay(adminFound.peran) : null,
       };
     });
 
@@ -407,6 +504,36 @@ export async function getUserJoinedKomunitas(): Promise<{
       countsMap[m.komunitas_id] = (countsMap[m.komunitas_id] || 0) + 1;
     });
 
+    // Ambil info admin yang disetujui untuk komunitas-komunitas yang diikuti
+    const { data: allApprovedAdmins } = await supabase
+      .from("anggota_komunitas")
+      .select("komunitas_id, user_id, peran, status")
+      .in("komunitas_id", komunitasIds)
+      .eq("status", "approved");
+
+    const adminMap: Record<string, any> = {};
+    const joinedAdminUserIds = new Set<string>();
+    (allApprovedAdmins || []).forEach((m) => {
+      if (isRoleAdmin(m.peran)) {
+        if (!adminMap[m.komunitas_id]) {
+          adminMap[m.komunitas_id] = m;
+          if (m.user_id) joinedAdminUserIds.add(m.user_id);
+        }
+      }
+    });
+
+    const { data: joinedAdminProfiles } =
+      joinedAdminUserIds.size > 0
+        ? await supabase
+            .from("profiles")
+            .select("id, nama_lengkap")
+            .in("id", Array.from(joinedAdminUserIds))
+        : { data: [] };
+
+    const joinedProfileMap = new Map(
+      (joinedAdminProfiles || []).map((p: any) => [p.id, p])
+    );
+
     const komunitasMap = new Map(dbKomunitas.map((k) => [k.id, k]));
 
     const result: UserJoinedKomunitas[] = memberships
@@ -421,6 +548,12 @@ export async function getUserJoinedKomunitas(): Promise<{
           [k.kelurahan, k.kecamatan, "Kota Tegal"].filter(Boolean).join(", ");
         const deskripsi =
           k.deskripsi || `Layanan dan kegiatan ${nama} di ${lokasi}.`;
+
+        const adminFound = adminMap[k.id];
+        const hasAdmin = Boolean(adminFound);
+        const adminName = adminFound
+          ? joinedProfileMap.get(adminFound.user_id)?.nama_lengkap || "Pengurus Terdaftar"
+          : null;
 
         return {
           id: k.id,
@@ -441,6 +574,9 @@ export async function getUserJoinedKomunitas(): Promise<{
           peran_diajukan: m.peran_diajukan || null,
           berdomisili: m.berdomisili ?? undefined,
           kk_terdaftar: m.kk_terdaftar ?? undefined,
+          hasAdmin,
+          adminName,
+          adminRole: adminFound ? formatPeranDisplay(adminFound.peran) : null,
           joinedAt: m.created_at,
           jumlah_anggota: countsMap[k.id] || 0,
         };
@@ -558,67 +694,67 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
     const deskripsi =
       komunitas.deskripsi || `Layanan dan kegiatan ${nama} di ${lokasi}.`;
 
-    // Ambil status keanggotaan user saat ini
-    let currentUserMembership = null;
-    let isPengurusOrKader = false;
+    // 1. Ambil seluruh komunitas dari database
+    const { data: dbAllKomunitas } = await supabase
+      .from("komunitas")
+      .select("id, nama, jenis, kecamatan, kelurahan, rw, rt, lokasi, deskripsi");
 
-    if (currentUserId) {
-      const { data: member } = await supabase
-        .from("anggota_komunitas")
-        .select("id, status, peran, peran_diajukan, berdomisili, kk_terdaftar")
-        .eq("user_id", currentUserId)
-        .eq("komunitas_id", dbKomunitasId)
-        .maybeSingle();
+    const dbKomMap = new Map((dbAllKomunitas || []).map((k) => [k.id, k]));
 
-      if (member) {
-        currentUserMembership = {
-          id: member.id,
-          status: member.status as MembershipStatus,
-          peran: member.peran,
-          peran_diajukan: member.peran_diajukan || null,
-          berdomisili: member.berdomisili ?? undefined,
-          kk_terdaftar: member.kk_terdaftar ?? undefined,
-        };
-        const roleLower = (member.peran || "").toLowerCase();
-        if (
-          member.status === "approved" &&
-          (roleLower.includes("pengurus") ||
-            roleLower.includes("kader") ||
-            roleLower.includes("admin") ||
-            roleLower.includes("ketua"))
-        ) {
-          isPengurusOrKader = true;
-        }
-      }
-    }
-
-    // Cek apakah komunitas sudah memiliki Admin/Pengurus aktif
-    const { data: approvedMembersForAdminCheck } = await supabase
+    // 2. Ambil seluruh anggota berstatus approved dari database
+    const { data: allApprovedMembers } = await supabase
       .from("anggota_komunitas")
-      .select("id, peran, status")
-      .eq("komunitas_id", dbKomunitasId)
+      .select("id, komunitas_id, user_id, peran, status")
       .eq("status", "approved");
 
-    const hasAdmin = (approvedMembersForAdminCheck || []).some((m) => {
-      const p = (m.peran || "").toLowerCase();
-      return (
-        p.includes("admin") ||
-        p.includes("pengurus") ||
-        p.includes("kader") ||
-        p.includes("ketua")
-      );
-    });
+    const approvedAdmins = (allApprovedMembers || []).filter((m) =>
+      isRoleAdmin(m.peran)
+    );
 
-    // Hitung jumlah anggota yang disetujui
+    // Ambil profiles untuk seluruh admin
+    const adminUserIds = [
+      ...new Set(approvedAdmins.map((ca) => ca.user_id).filter(Boolean)),
+    ];
+
+    const { data: chainProfiles } =
+      adminUserIds.length > 0
+        ? await supabase
+            .from("profiles")
+            .select("id, nama_lengkap, email")
+            .in("id", adminUserIds)
+        : { data: [] };
+
+    const chainProfileMap = new Map(
+      (chainProfiles || []).map((p: any) => [p.id, p])
+    );
+
+    // 3. Ambil seluruh keanggotaan user saat ini jika login
+    let userMembershipsMap: Record<string, any> = {};
+    let userMembershipsList: any[] = [];
+    if (currentUserId) {
+      const { data: userMemberships } = await supabase
+        .from("anggota_komunitas")
+        .select("id, komunitas_id, peran, peran_diajukan, status, berdomisili, kk_terdaftar")
+        .eq("user_id", currentUserId);
+
+      userMembershipsList = userMemberships || [];
+      (userMemberships || []).forEach((um) => {
+        userMembershipsMap[um.komunitas_id] = um;
+      });
+    }
+
+    // 4. Hitung jumlah anggota yang disetujui
     const { count } = await supabase
       .from("anggota_komunitas")
       .select("*", { count: "exact", head: true })
       .eq("komunitas_id", dbKomunitasId)
       .eq("status", "approved");
 
-    // Jika jenis === "warga_kita", hitung informasi admin berjenjang (RT, RW, Kelurahan, Kecamatan)
+    // 5. Hitung informasi admin berjenjang (RT, RW, Kelurahan, Kecamatan)
     let hierarchyAdmins: WargaHierarchyAdmins | null = null;
     let hierarchyAdminList: HierarchyAdminTierInfo[] = [];
+
+    const pageMeta = extractKomunitasMetadata(komunitas);
 
     if (jenis === "warga_kita") {
       const chain = getWargaHierarchyChain({
@@ -628,123 +764,135 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
         rt: komunitas.rt || "",
       });
 
-      const chainIds = chain.map((c) => toValidUUID(c.id));
-
-      // Ambil seluruh komunitas warga yang ada di database untuk kecamatan terkait
-      const { data: dbChainKomunitas } = await supabase
-        .from("komunitas")
-        .select("id, nama, jenis, kecamatan, kelurahan, rw, rt")
-        .eq("jenis", "warga_kita")
-        .ilike("kecamatan", `%${komunitas.kecamatan || "Tegal"}%`);
-
-      const allKomIds = [
-        ...new Set([
-          ...chainIds,
-          ...(dbChainKomunitas || []).map((k) => k.id),
-        ]),
-      ];
-
-      // Ambil seluruh admin yang telah disetujui pada tingkatan komunitas ini
-      const { data: chainAdmins } = await supabase
-        .from("anggota_komunitas")
-        .select("komunitas_id, peran, status, user_id, profiles(id, nama_lengkap, email)")
-        .in("komunitas_id", allKomIds)
-        .eq("status", "approved");
-
-      // Ambil status keanggotaan user saat ini di seluruh tingkatan rantai
-      let userMembershipsAtChain: Record<string, any> = {};
-      if (currentUserId) {
-        const { data: userMemberships } = await supabase
-          .from("anggota_komunitas")
-          .select("komunitas_id, peran, peran_diajukan, status")
-          .eq("user_id", currentUserId)
-          .in("komunitas_id", allKomIds);
-
-        (userMemberships || []).forEach((um) => {
-          userMembershipsAtChain[um.komunitas_id] = um;
-        });
-      }
-
       hierarchyAdmins = {};
-      const normalizeStr = (str?: string | null) =>
-        (str || "")
-          .toLowerCase()
-          .replace(/^kecamatan\s+/i, "")
-          .replace(/^kelurahan\s+/i, "")
-          .trim();
 
       chain.forEach((item) => {
         const dbItemId = toValidUUID(item.id);
-
-        // Cari seluruh ID komunitas yang cocok di database untuk tingkatan hierarki ini
-        const matchingDbKoms = (dbChainKomunitas || []).filter((k) => {
-          const kKec = normalizeStr(k.kecamatan);
-          const kKel = normalizeStr(k.kelurahan);
-          const kRw = (k.rw || "").replace(/\D/g, "");
-          const kRt = (k.rt || "").replace(/\D/g, "");
-
-          const targetKec = normalizeStr(item.kecamatan);
-          const targetKel = normalizeStr(item.kelurahan);
-          const targetRw = (item.rw || "").replace(/\D/g, "");
-          const targetRt = (item.rt || "").replace(/\D/g, "");
-
-          if (item.rt) {
-            return kKec === targetKec && kKel === targetKel && kRw === targetRw && kRt === targetRt;
-          }
-          if (item.rw) {
-            return kKec === targetKec && kKel === targetKel && kRw === targetRw && (!kRt || kRt === "00" || kRt === "");
-          }
-          if (item.kelurahan && item.kelurahan !== "Semua Kelurahan") {
-            return kKec === targetKec && kKel === targetKel && (!kRw || kRw === "00" || kRw === "") && (!kRt || kRt === "00" || kRt === "");
-          }
-          return kKec === targetKec && (!kKel || kKel === "semua kelurahan" || kKel === "") && (!kRw || kRw === "00" || kRw === "") && (!kRt || kRt === "00" || kRt === "");
-        });
-
-        const tierAllKomIds = new Set([
-          dbItemId,
-          ...matchingDbKoms.map((k) => k.id),
-        ]);
-
-        const adminFound = (chainAdmins || []).find((ca) => {
-          if (!tierAllKomIds.has(ca.komunitas_id)) {
-            return false;
-          }
-          const p = (ca.peran || "").toLowerCase();
-          return (
-            p.includes("admin") ||
-            p.includes("pengurus") ||
-            p.includes("kader") ||
-            p.includes("ketua")
-          );
-        });
+        const tierMeta = extractKomunitasMetadata(item);
 
         let level: "rt" | "rw" | "kelurahan" | "kecamatan" = "kecamatan";
         let levelLabel = "Kecamatan";
-        let title = `Admin Kecamatan ${item.kecamatan || "Kota Tegal"}`;
+        let title = `Admin Kecamatan ${tierMeta.rawKec || "Kota Tegal"}`;
 
-        if (item.rt) {
+        if (tierMeta.hasRt) {
           level = "rt";
           levelLabel = "RT";
-          title = `Admin RT ${item.rt}`;
-        } else if (item.rw) {
+          title = `Admin RT ${tierMeta.rt}`;
+        } else if (tierMeta.hasRw) {
           level = "rw";
           levelLabel = "RW";
-          title = `Admin RW ${item.rw}`;
-        } else if (item.kelurahan && item.kelurahan !== "Semua Kelurahan") {
+          title = `Admin RW ${tierMeta.rw}`;
+        } else if (tierMeta.hasKel) {
           level = "kelurahan";
           levelLabel = "Kelurahan";
-          title = `Admin Kelurahan ${item.kelurahan}`;
+          title = `Admin Kelurahan ${tierMeta.rawKel}`;
         }
 
+        // Cari ID komunitas yang cocok untuk tier ini
+        const matchingDbKomIds = (dbAllKomunitas || [])
+          .filter((k) => {
+            const kMeta = extractKomunitasMetadata(k);
+            if (tierMeta.hasRt) {
+              return (
+                kMeta.kec === tierMeta.kec &&
+                kMeta.kel === tierMeta.kel &&
+                kMeta.rw === tierMeta.rw &&
+                kMeta.rt === tierMeta.rt
+              );
+            }
+            if (tierMeta.hasRw) {
+              return (
+                kMeta.kec === tierMeta.kec &&
+                kMeta.kel === tierMeta.kel &&
+                kMeta.rw === tierMeta.rw &&
+                !kMeta.hasRt
+              );
+            }
+            if (tierMeta.hasKel) {
+              return (
+                kMeta.kec === tierMeta.kec &&
+                kMeta.kel === tierMeta.kel &&
+                !kMeta.hasRw &&
+                !kMeta.hasRt
+              );
+            }
+            return (
+              kMeta.kec === tierMeta.kec &&
+              !kMeta.hasKel &&
+              !kMeta.hasRw &&
+              !kMeta.hasRt
+            );
+          })
+          .map((k) => k.id);
+
+        const tierAllKomIds = new Set([
+          item.id,
+          dbItemId,
+          toValidUUID(item.id),
+          ...matchingDbKomIds,
+        ]);
+
+        // Temukan admin yang menjabat di tier ini
+        const adminFound = approvedAdmins.find((ca) => {
+          // 1. Direct ID match
+          if (
+            tierAllKomIds.has(ca.komunitas_id) ||
+            tierAllKomIds.has(toValidUUID(ca.komunitas_id))
+          ) {
+            return true;
+          }
+
+          // 2. Geographic metadata match dari ca.komunitas_id
+          const caKom =
+            dbKomMap.get(ca.komunitas_id) ||
+            findOrGenerateKomunitasSeed(ca.komunitas_id);
+          const caMeta = extractKomunitasMetadata(caKom || { id: ca.komunitas_id });
+
+          if (tierMeta.hasRt) {
+            return (
+              caMeta.kec === tierMeta.kec &&
+              caMeta.kel === tierMeta.kel &&
+              caMeta.rw === tierMeta.rw &&
+              caMeta.rt === tierMeta.rt
+            );
+          }
+          if (tierMeta.hasRw) {
+            return (
+              caMeta.kec === tierMeta.kec &&
+              caMeta.kel === tierMeta.kel &&
+              caMeta.rw === tierMeta.rw &&
+              !caMeta.hasRt
+            );
+          }
+          if (tierMeta.hasKel) {
+            return (
+              caMeta.kec === tierMeta.kec &&
+              caMeta.kel === tierMeta.kel &&
+              !caMeta.hasRw &&
+              !caMeta.hasRt
+            );
+          }
+          return (
+            caMeta.kec === tierMeta.kec &&
+            !caMeta.hasKel &&
+            !caMeta.hasRw &&
+            !caMeta.hasRt
+          );
+        });
+
         const hasAdminTier = Boolean(adminFound);
-        const adminName =
-          (adminFound?.profiles as any)?.nama_lengkap ||
+        const adminProf = adminFound
+          ? chainProfileMap.get(adminFound.user_id)
+          : null;
+        const adminNameTier =
+          adminProf?.nama_lengkap ||
+          adminProf?.email ||
           (adminFound ? `Admin ${levelLabel} Terdaftar` : null);
 
         let userAtTier = null;
         for (const tid of tierAllKomIds) {
-          if (userMembershipsAtChain[tid]) {
-            userAtTier = userMembershipsAtChain[tid];
+          if (userMembershipsMap[tid]) {
+            userAtTier = userMembershipsMap[tid];
             break;
           }
         }
@@ -755,7 +903,7 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
           title,
           komunitasId: item.id,
           komunitasNama: item.nama,
-          adminName,
+          adminName: adminNameTier,
           hasAdmin: hasAdminTier,
           canApply: !hasAdminTier,
           userStatusAtTier: userAtTier
@@ -774,6 +922,148 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
       });
     }
 
+    // 6. Cek apakah komunitas ini memiliki admin langsung / sesuai tingkatannya
+    const directAdmin = (approvedAdmins || []).find((ca) => {
+      if (ca.komunitas_id === dbKomunitasId || ca.komunitas_id === komunitasId) {
+        return true;
+      }
+      const caKom = dbKomMap.get(ca.komunitas_id) || findOrGenerateKomunitasSeed(ca.komunitas_id);
+      const caMeta = extractKomunitasMetadata(caKom || { id: ca.komunitas_id });
+      if (pageMeta.hasRt) {
+        return (
+          caMeta.kec === pageMeta.kec &&
+          caMeta.kel === pageMeta.kel &&
+          caMeta.rw === pageMeta.rw &&
+          caMeta.rt === pageMeta.rt
+        );
+      }
+      if (pageMeta.hasRw) {
+        return (
+          caMeta.kec === pageMeta.kec &&
+          caMeta.kel === pageMeta.kel &&
+          caMeta.rw === pageMeta.rw &&
+          !caMeta.hasRt
+        );
+      }
+      if (pageMeta.hasKel) {
+        return (
+          caMeta.kec === pageMeta.kec &&
+          caMeta.kel === pageMeta.kel &&
+          !caMeta.hasRw &&
+          !caMeta.hasRt
+        );
+      }
+      return (
+        caMeta.kec === pageMeta.kec &&
+        !caMeta.hasKel &&
+        !caMeta.hasRw &&
+        !caMeta.hasRt
+      );
+    });
+
+    let hasAdmin = Boolean(directAdmin);
+    let adminName: string | null = null;
+    let adminRole: string | null = null;
+
+    if (directAdmin?.user_id) {
+      const prof = chainProfileMap.get(directAdmin.user_id);
+      adminName = prof?.nama_lengkap || "Pengurus Terdaftar";
+      adminRole = formatPeranDisplay(directAdmin.peran);
+    } else if (hierarchyAdmins) {
+      if (pageMeta.hasRt && hierarchyAdmins.rt?.hasAdmin) {
+        hasAdmin = true;
+        adminName = hierarchyAdmins.rt.adminName;
+        adminRole = "Admin RT";
+      } else if (pageMeta.hasRw && hierarchyAdmins.rw?.hasAdmin) {
+        hasAdmin = true;
+        adminName = hierarchyAdmins.rw.adminName;
+        adminRole = "Admin RW";
+      } else if (pageMeta.hasKel && hierarchyAdmins.kelurahan?.hasAdmin) {
+        hasAdmin = true;
+        adminName = hierarchyAdmins.kelurahan.adminName;
+        adminRole = "Admin Kelurahan";
+      } else if (hierarchyAdmins.kecamatan?.hasAdmin) {
+        hasAdmin = true;
+        adminName = hierarchyAdmins.kecamatan.adminName;
+        adminRole = "Admin Kecamatan";
+      }
+    }
+
+    // 7. Hitung status keanggotaan user saat ini & wewenang Admin
+    let isPengurusOrKader = isSuperAdmin;
+    let currentUserMembership = null;
+
+    if (currentUserId) {
+      // Cek apakah user adalah Admin yang disetujui di komunitas ini atau di tingkat wilayah yang menaunginya
+      const adminEntryForUser = approvedAdmins.find((ca) => {
+        if (ca.user_id !== currentUserId) return false;
+        if (ca.komunitas_id === dbKomunitasId || ca.komunitas_id === komunitasId) return true;
+
+        const caKom = dbKomMap.get(ca.komunitas_id) || findOrGenerateKomunitasSeed(ca.komunitas_id);
+        const caMeta = extractKomunitasMetadata(caKom || { id: ca.komunitas_id });
+
+        // Admin Kecamatan
+        if (caMeta.kec === pageMeta.kec && !caMeta.hasKel && !caMeta.hasRw && !caMeta.hasRt) return true;
+        // Admin Kelurahan
+        if (caMeta.kec === pageMeta.kec && caMeta.kel === pageMeta.kel && !caMeta.hasRw && !caMeta.hasRt) return true;
+        // Admin RW
+        if (caMeta.kec === pageMeta.kec && caMeta.kel === pageMeta.kel && caMeta.rw === pageMeta.rw && !caMeta.hasRt) return true;
+        // Admin RT
+        if (caMeta.kec === pageMeta.kec && caMeta.kel === pageMeta.kel && caMeta.rw === pageMeta.rw && caMeta.rt === pageMeta.rt) return true;
+
+        return false;
+      });
+
+      if (adminEntryForUser) {
+        isPengurusOrKader = true;
+      }
+
+      // Cari record keanggotaan langsung pada komunitas ini
+      const directMember =
+        userMembershipsMap[dbKomunitasId] ||
+        userMembershipsMap[komunitasId] ||
+        userMembershipsList.find((m) => {
+          const mKom = dbKomMap.get(m.komunitas_id) || findOrGenerateKomunitasSeed(m.komunitas_id);
+          const mMeta = extractKomunitasMetadata(mKom || { id: m.komunitas_id });
+          return (
+            mMeta.kec === pageMeta.kec &&
+            mMeta.kel === pageMeta.kel &&
+            mMeta.rw === pageMeta.rw &&
+            mMeta.rt === pageMeta.rt
+          );
+        });
+
+      if (directMember) {
+        const isApprovedAdmin = isRoleAdmin(directMember.peran);
+        if (isApprovedAdmin || isPengurusOrKader) {
+          isPengurusOrKader = true;
+        }
+
+        currentUserMembership = {
+          id: directMember.id,
+          status: directMember.status as MembershipStatus,
+          peran: isPengurusOrKader
+            ? isApprovedAdmin
+              ? directMember.peran
+              : "Pengurus"
+            : directMember.peran,
+          // PENTING: Jika pengguna telah menjadi Admin wilayah ini, bersihkan peran_diajukan agar tidak muncul "MENUNGGU PERSETUJUAN ADMIN"
+          peran_diajukan: isPengurusOrKader
+            ? null
+            : directMember.peran_diajukan || null,
+          berdomisili: directMember.berdomisili ?? undefined,
+          kk_terdaftar: directMember.kk_terdaftar ?? undefined,
+        };
+      } else if (isPengurusOrKader) {
+        currentUserMembership = {
+          id: `admin-${currentUserId}`,
+          status: "approved" as MembershipStatus,
+          peran: "Pengurus",
+          peran_diajukan: null,
+        };
+      }
+    }
+
     const fullData: KomunitasWithMembership = {
       id: dbKomunitasId,
       nama,
@@ -790,6 +1080,8 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
       created_at: komunitas.created_at,
       jumlah_anggota: count || 0,
       hasAdmin,
+      adminName,
+      adminRole,
       currentUserMembership,
       hierarchyAdmins,
       hierarchyAdminList,
@@ -1386,22 +1678,24 @@ export async function applyForAdminKomunitas({
 
     const { data: existingAdmins } = await supabase
       .from("anggota_komunitas")
-      .select("id, peran, status, user_id, profiles(nama_lengkap)")
+      .select("id, peran, status, user_id")
       .in("komunitas_id", candidateKomIds)
       .eq("status", "approved");
 
-    const activeAdmin = (existingAdmins || []).find((m) => {
-      const p = (m.peran || "").toLowerCase();
-      return (
-        p.includes("admin") ||
-        p.includes("pengurus") ||
-        p.includes("kader") ||
-        p.includes("ketua")
-      );
-    });
+    const activeAdmin = (existingAdmins || []).find((m) => isRoleAdmin(m.peran));
 
     if (activeAdmin && activeAdmin.user_id !== user.id) {
-      const adminName = (activeAdmin.profiles as any)?.nama_lengkap || "Pengurus resmi";
+      let adminName = "Pengurus resmi";
+      if (activeAdmin.user_id) {
+        const { data: prof } = await supabase
+          .from("profiles")
+          .select("nama_lengkap")
+          .eq("id", activeAdmin.user_id)
+          .maybeSingle();
+        if (prof?.nama_lengkap) {
+          adminName = prof.nama_lengkap;
+        }
+      }
       return {
         success: false,
         message: `Komunitas ini sudah memiliki Admin aktif (${adminName}). Satu komunitas hanya boleh memiliki satu Admin.`,

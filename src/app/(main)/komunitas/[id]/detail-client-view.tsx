@@ -187,13 +187,15 @@ export function KomunitasDetailClientView({
                 </span>
               )}
 
-              {/* Tampilkan indikator jika pengguna sedang mengajukan status lain */}
-              {membership.peran_diajukan && membership.peran_diajukan.toLowerCase() !== membership.peran.toLowerCase() && (
-                <span className="inline-flex items-center gap-1.5 rounded-md bg-amber-500/10 px-3 py-1.5 text-xs font-mono text-amber-400 border border-amber-500/30">
-                  <Clock className="h-3.5 w-3.5" />
-                  <span>MENUNGGU PERSETUJUAN ADMIN: {membership.peran_diajukan.toUpperCase()}</span>
-                </span>
-              )}
+              {/* Tampilkan indikator jika pengguna sedang mengajukan status lain (hanya jika bukan Admin/Kader) */}
+              {membership.peran_diajukan &&
+                membership.peran_diajukan.toLowerCase() !== membership.peran.toLowerCase() &&
+                !isAdminOrKader && (
+                  <span className="inline-flex items-center gap-1.5 rounded-md bg-amber-500/10 px-3 py-1.5 text-xs font-mono text-amber-400 border border-amber-500/30">
+                    <Clock className="h-3.5 w-3.5" />
+                    <span>MENUNGGU PERSETUJUAN ADMIN: {membership.peran_diajukan.toUpperCase()}</span>
+                  </span>
+                )}
 
               {membership.status === "pending" && (
                 <span className="inline-flex items-center gap-1.5 rounded-md bg-amber-500/10 px-3 py-1.5 text-xs font-mono text-amber-400 border border-amber-500/30">
@@ -305,7 +307,7 @@ export function KomunitasDetailClientView({
                     </p>
                   ) : (
                     <p className="text-xs text-amber-400/90 font-mono leading-tight">
-                      Komunitas Belum Memiliki Admin / Pengurus
+                      Belum ada Admin terdaftar
                     </p>
                   )}
                 </div>
@@ -323,7 +325,7 @@ export function KomunitasDetailClientView({
                     }
                     setIsApplyAdminOpen(true);
                   }}
-                  className="w-full mt-1 py-1 rounded bg-amber-500/10 border border-amber-500/30 text-amber-300 hover:bg-amber-500/20 text-[10px] font-mono font-semibold transition-all text-center"
+                  className="w-full mt-1 py-1 rounded bg-amber-500/10 border border-amber-500/30 text-amber-300 hover:bg-amber-500/20 text-[10px] font-mono font-semibold transition-all text-center cursor-pointer"
                 >
                   + Ajukan Admin RT
                 </button>
@@ -355,7 +357,7 @@ export function KomunitasDetailClientView({
                     </p>
                   ) : (
                     <p className="text-xs text-amber-400/90 font-mono leading-tight">
-                      Komunitas Belum Memiliki Admin / Pengurus
+                      Belum ada Admin terdaftar
                     </p>
                   )}
                 </div>
@@ -373,7 +375,7 @@ export function KomunitasDetailClientView({
                     }
                     setIsApplyAdminOpen(true);
                   }}
-                  className="w-full mt-1 py-1 rounded bg-amber-500/10 border border-amber-500/30 text-amber-300 hover:bg-amber-500/20 text-[10px] font-mono font-semibold transition-all text-center"
+                  className="w-full mt-1 py-1 rounded bg-amber-500/10 border border-amber-500/30 text-amber-300 hover:bg-amber-500/20 text-[10px] font-mono font-semibold transition-all text-center cursor-pointer"
                 >
                   + Ajukan Admin RW
                 </button>
@@ -405,7 +407,7 @@ export function KomunitasDetailClientView({
                     </p>
                   ) : (
                     <p className="text-xs text-amber-400/90 font-mono leading-tight">
-                      Komunitas Belum Memiliki Admin / Pengurus
+                      Belum ada Admin terdaftar
                     </p>
                   )}
                 </div>
@@ -423,7 +425,7 @@ export function KomunitasDetailClientView({
                     }
                     setIsApplyAdminOpen(true);
                   }}
-                  className="w-full mt-1 py-1 rounded bg-amber-500/10 border border-amber-500/30 text-amber-300 hover:bg-amber-500/20 text-[10px] font-mono font-semibold transition-all text-center"
+                  className="w-full mt-1 py-1 rounded bg-amber-500/10 border border-amber-500/30 text-amber-300 hover:bg-amber-500/20 text-[10px] font-mono font-semibold transition-all text-center cursor-pointer"
                 >
                   + Ajukan Admin Kelurahan
                 </button>
@@ -455,7 +457,7 @@ export function KomunitasDetailClientView({
                     </p>
                   ) : (
                     <p className="text-xs text-amber-400/90 font-mono leading-tight">
-                      Komunitas Belum Memiliki Admin / Pengurus
+                      Belum ada Admin terdaftar
                     </p>
                   )}
                 </div>
@@ -473,11 +475,46 @@ export function KomunitasDetailClientView({
                     }
                     setIsApplyAdminOpen(true);
                   }}
-                  className="w-full mt-1 py-1 rounded bg-amber-500/10 border border-amber-500/30 text-amber-300 hover:bg-amber-500/20 text-[10px] font-mono font-semibold transition-all text-center"
+                  className="w-full mt-1 py-1 rounded bg-amber-500/10 border border-amber-500/30 text-amber-300 hover:bg-amber-500/20 text-[10px] font-mono font-semibold transition-all text-center cursor-pointer"
                 >
                   + Ajukan Admin Kecamatan
                 </button>
               )}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* INFORMASI ADMIN UNTUK POSYANDU & PAUD (JIKA SUDAH ADA ADMIN) */}
+      {komunitas.jenis !== "warga_kita" && komunitas.hasAdmin && (
+        <section className="rounded-lg border border-emerald-500/30 bg-emerald-950/20 p-4 space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-start gap-3">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-emerald-500/40 bg-emerald-500/10 text-emerald-400 mt-0.5">
+                <ShieldCheck className="h-4.5 w-4.5" />
+              </div>
+              <div className="space-y-0.5">
+                <div className="flex items-center gap-2">
+                  <h4 className="text-xs font-bold font-mono uppercase tracking-wider text-emerald-400">
+                    Admin / Pengurus Resmi Terdaftar
+                  </h4>
+                  <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                    Terverifikasi
+                  </span>
+                </div>
+                <p className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
+                  <span>{komunitas.adminName || "Pengurus Resmi Komunitas"}</span>
+                  {komunitas.adminRole && (
+                    <span className="text-muted-foreground font-mono font-normal">
+                      • {komunitas.adminRole}
+                    </span>
+                  )}
+                </p>
+                <p className="text-[11px] text-muted-foreground leading-relaxed">
+                  Pengurus resmi yang mengelola verifikasi anggota, jadwal posyandu/kegiatan, dan rekam medis.
+                </p>
+              </div>
             </div>
           </div>
         </section>
@@ -760,170 +797,176 @@ export function KomunitasDetailClientView({
 
       {/* Modal Ajukan Diri Sebagai Admin */}
       {isApplyAdminOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <div className="relative w-full max-w-lg rounded-xl border border-border bg-card p-6 shadow-2xl space-y-4 animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-start justify-between gap-3">
-              <div className="space-y-1">
-                <div className="inline-flex items-center gap-1 rounded border border-amber-500/30 bg-amber-500/10 px-2.5 py-0.5 text-[10px] font-mono font-bold text-amber-400">
-                  <ShieldCheck className="h-3 w-3" />
-                  <span>PENGAJUAN ADMIN BERJENJANG</span>
-                </div>
-                <h3 className="text-base font-bold text-foreground leading-snug">
-                  Ajukan Diri Sebagai Admin Komunitas
-                </h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsApplyAdminOpen(false)}
-                className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              Pilih posisi tingkatan admin wilayah yang masih kosong untuk diajukan. Pengajuan akan diverifikasi oleh Admin satu tingkat di atasnya (atau Super Admin).
-            </p>
-
-            <form onSubmit={handleApplyAdmin} className="space-y-4 pt-1">
-              {/* Pilihan Tingkatan Admin yang Kosong / Dapat Diajukan (Satu Komunitas Satu Admin) */}
-              {komunitas.jenis === "warga_kita" && (
-                <div className="space-y-2">
-                  <label className="text-xs font-mono text-muted-foreground uppercase block font-semibold">
-                    Pilih Posisi Admin yang Ingin Diajukan (Satu Komunitas Satu Admin):
-                  </label>
-
-                  {vacantTiers.length > 0 ? (
-                    <div className="space-y-2">
-                      {vacantTiers.map((tier) => {
-                        const isSelected = selectedTierKomunitasId === tier.komunitasId;
-                        const isPendingByUser = tier.userStatusAtTier?.peran_diajukan === "Pengurus";
-
-                        return (
-                          <button
-                            key={tier.komunitasId}
-                            type="button"
-                            onClick={() => setSelectedTierKomunitasId(tier.komunitasId)}
-                            className={cn(
-                              "w-full text-left p-3 rounded-lg border transition-all flex items-center justify-between gap-3",
-                              isSelected
-                                ? "border-amber-500/60 bg-amber-500/10 shadow-xs"
-                                : "border-border bg-card hover:border-border/80 hover:bg-muted/20"
-                            )}
-                          >
-                            <div className="flex items-center gap-3">
-                              <div
-                                className={cn(
-                                  "flex h-4 w-4 shrink-0 rounded-full border items-center justify-center",
-                                  isSelected
-                                    ? "border-amber-500 bg-amber-500 text-black"
-                                    : "border-muted-foreground/40 bg-transparent"
-                                )}
-                              >
-                                {isSelected && <div className="h-1.5 w-1.5 rounded-full bg-black" />}
-                              </div>
-                              <div className="space-y-0.5">
-                                <p className="text-xs font-bold text-foreground font-mono">
-                                  {tier.title}
-                                </p>
-                                <p className="text-[10px] text-muted-foreground line-clamp-1">
-                                  {tier.komunitasNama}
-                                </p>
-                              </div>
-                            </div>
-
-                            <div className="shrink-0 text-right">
-                              {isPendingByUser ? (
-                                <span className="text-[9px] font-mono px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40">
-                                  ⏳ Sedang Diajukan
-                                </span>
-                              ) : (
-                                <span className="text-[9px] font-mono px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
-                                  🟢 Posisi Kosong
-                                </span>
-                              )}
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  ) : (
-                    <div className="rounded-lg border border-emerald-500/30 bg-emerald-950/20 p-3.5 text-center space-y-1">
-                      <p className="text-xs font-semibold text-emerald-400 font-mono">
-                        Seluruh Posisi Admin Wilayah Telah Terisi
-                      </p>
-                      <p className="text-[11px] text-muted-foreground">
-                        Sesuai aturan satu komunitas satu admin, posisi admin yang sudah terisi tidak dapat diajukan lagi.
-                      </p>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Form input data hanya aktif jika masih ada posisi kosong (atau untuk komunitas non-warga) */}
-              {(komunitas.jenis !== "warga_kita" || vacantTiers.length > 0) && (
-                <>
-                  <div className="space-y-1">
-                    <label className="text-xs font-mono text-muted-foreground uppercase">
-                      Nomor WhatsApp / HP Aktif
-                    </label>
-                    <input
-                      type="tel"
-                      value={adminHp}
-                      onChange={(e) => setAdminHp(e.target.value)}
-                      placeholder="Contoh: 081234567890"
-                      required
-                      className="h-9 w-full rounded-md border border-input bg-background px-3 text-xs font-mono text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
-                    />
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-3 sm:p-4 overflow-y-auto animate-in fade-in duration-200">
+          <div className="relative w-full max-w-lg max-h-[calc(100dvh-2rem)] flex flex-col rounded-xl border border-border bg-card shadow-2xl z-10 animate-in zoom-in-95 duration-200 overflow-hidden my-auto">
+            {/* Header */}
+            <div className="p-5 sm:p-6 pb-4 border-b border-border shrink-0 bg-card">
+              <div className="flex items-start justify-between gap-3">
+                <div className="space-y-1">
+                  <div className="inline-flex items-center gap-1 rounded border border-amber-500/30 bg-amber-500/10 px-2.5 py-0.5 text-[10px] font-mono font-bold text-amber-400">
+                    <ShieldCheck className="h-3 w-3" />
+                    <span>PENGAJUAN ADMIN BERJENJANG</span>
                   </div>
-
-                  <div className="space-y-1">
-                    <label className="text-xs font-mono text-muted-foreground uppercase">
-                      Alasan / Posisi di Lingkungan (Opsional)
-                    </label>
-                    <textarea
-                      value={adminCatatan}
-                      onChange={(e) => setAdminCatatan(e.target.value)}
-                      placeholder="Misal: Saya Ketua RT / Pengurus RW / Tokoh warga setempat"
-                      rows={2}
-                      className="w-full rounded-md border border-input bg-background p-2.5 text-xs font-sans text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring resize-none"
-                    />
-                  </div>
-                </>
-              )}
-
-              {adminFeedback && (
-                <p className="text-xs font-mono text-center text-emerald-400">
-                  {adminFeedback}
-                </p>
-              )}
-
-              <div className="flex items-center gap-2 pt-2">
+                  <h3 className="text-base font-bold text-foreground leading-snug">
+                    Ajukan Diri Sebagai Admin Komunitas
+                  </h3>
+                </div>
                 <button
                   type="button"
                   onClick={() => setIsApplyAdminOpen(false)}
-                  className="flex-1 h-9 rounded-md border border-border text-xs font-mono text-muted-foreground hover:bg-muted hover:text-foreground"
+                  className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer"
                 >
-                  {komunitas.jenis === "warga_kita" && vacantTiers.length === 0 ? "Tutup" : "Batal"}
+                  <X className="h-4 w-4" />
                 </button>
-                {(komunitas.jenis !== "warga_kita" || vacantTiers.length > 0) && (
-                  <button
-                    type="submit"
-                    disabled={isSubmittingAdmin || !selectedTierKomunitasId}
-                    className="flex-1 h-9 inline-flex items-center justify-center gap-1.5 rounded-md bg-amber-500 px-3 text-xs font-mono font-bold text-black hover:bg-amber-400 disabled:opacity-50"
-                  >
-                    {isSubmittingAdmin ? (
-                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                    ) : (
-                      <>
-                        <Send className="h-3.5 w-3.5" />
-                        <span>Kirim Pengajuan</span>
-                      </>
-                    )}
-                  </button>
-                )}
               </div>
-            </form>
+
+              <p className="text-xs text-muted-foreground leading-relaxed mt-2">
+                Pilih posisi tingkatan admin wilayah yang masih kosong untuk diajukan. Pengajuan akan diverifikasi oleh Admin satu tingkat di atasnya (atau Super Admin).
+              </p>
+            </div>
+
+            {/* Scrollable Form Body */}
+            <div className="p-5 sm:p-6 overflow-y-auto flex-1 space-y-4">
+              <form onSubmit={handleApplyAdmin} className="space-y-4">
+                {/* Pilihan Tingkatan Admin yang Kosong / Dapat Diajukan (Satu Komunitas Satu Admin) */}
+                {komunitas.jenis === "warga_kita" && (
+                  <div className="space-y-2">
+                    <label className="text-xs font-mono text-muted-foreground uppercase block font-semibold">
+                      Pilih Posisi Admin yang Ingin Diajukan (Satu Komunitas Satu Admin):
+                    </label>
+
+                    {vacantTiers.length > 0 ? (
+                      <div className="space-y-2">
+                        {vacantTiers.map((tier) => {
+                          const isSelected = selectedTierKomunitasId === tier.komunitasId;
+                          const isPendingByUser = tier.userStatusAtTier?.peran_diajukan === "Pengurus";
+
+                          return (
+                            <button
+                              key={tier.komunitasId}
+                              type="button"
+                              onClick={() => setSelectedTierKomunitasId(tier.komunitasId)}
+                              className={cn(
+                                "w-full text-left p-3 rounded-lg border transition-all flex items-center justify-between gap-3 cursor-pointer",
+                                isSelected
+                                  ? "border-amber-500/60 bg-amber-500/10 shadow-xs"
+                                  : "border-border bg-card hover:border-border/80 hover:bg-muted/20"
+                              )}
+                            >
+                              <div className="flex items-center gap-3">
+                                <div
+                                  className={cn(
+                                    "flex h-4 w-4 shrink-0 rounded-full border items-center justify-center",
+                                    isSelected
+                                      ? "border-amber-500 bg-amber-500 text-black"
+                                      : "border-muted-foreground/40 bg-transparent"
+                                  )}
+                                >
+                                  {isSelected && <div className="h-1.5 w-1.5 rounded-full bg-black" />}
+                                </div>
+                                <div className="space-y-0.5">
+                                  <p className="text-xs font-bold text-foreground font-mono">
+                                    {tier.title}
+                                  </p>
+                                  <p className="text-[10px] text-muted-foreground line-clamp-1">
+                                    {tier.komunitasNama}
+                                  </p>
+                                </div>
+                              </div>
+
+                              <div className="shrink-0 text-right">
+                                {isPendingByUser ? (
+                                  <span className="text-[9px] font-mono px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                                    ⏳ Sedang Diajukan
+                                  </span>
+                                ) : (
+                                  <span className="text-[9px] font-mono px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                                    🟢 Posisi Kosong
+                                  </span>
+                                )}
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <div className="rounded-lg border border-emerald-500/30 bg-emerald-950/20 p-3.5 text-center space-y-1">
+                        <p className="text-xs font-semibold text-emerald-400 font-mono">
+                          Seluruh Posisi Admin Wilayah Telah Terisi
+                        </p>
+                        <p className="text-[11px] text-muted-foreground">
+                          Sesuai aturan satu komunitas satu admin, posisi admin yang sudah terisi tidak dapat diajukan lagi.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Form input data hanya aktif jika masih ada posisi kosong (atau untuk komunitas non-warga) */}
+                {(komunitas.jenis !== "warga_kita" || vacantTiers.length > 0) && (
+                  <>
+                    <div className="space-y-1">
+                      <label className="text-xs font-mono text-muted-foreground uppercase">
+                        Nomor WhatsApp / HP Aktif
+                      </label>
+                      <input
+                        type="tel"
+                        value={adminHp}
+                        onChange={(e) => setAdminHp(e.target.value)}
+                        placeholder="Contoh: 081234567890"
+                        required
+                        className="h-9 w-full rounded-md border border-input bg-background px-3 text-xs font-mono text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-xs font-mono text-muted-foreground uppercase">
+                        Alasan / Posisi di Lingkungan (Opsional)
+                      </label>
+                      <textarea
+                        value={adminCatatan}
+                        onChange={(e) => setAdminCatatan(e.target.value)}
+                        placeholder="Misal: Saya Ketua RT / Pengurus RW / Tokoh warga setempat"
+                        rows={2}
+                        className="w-full rounded-md border border-input bg-background p-2.5 text-xs font-sans text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring resize-none"
+                      />
+                    </div>
+                  </>
+                )}
+
+                {adminFeedback && (
+                  <p className="text-xs font-mono text-center text-emerald-400">
+                    {adminFeedback}
+                  </p>
+                )}
+
+                <div className="flex items-center gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsApplyAdminOpen(false)}
+                    className="flex-1 h-9 rounded-md border border-border text-xs font-mono text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer"
+                  >
+                    {komunitas.jenis === "warga_kita" && vacantTiers.length === 0 ? "Tutup" : "Batal"}
+                  </button>
+                  {(komunitas.jenis !== "warga_kita" || vacantTiers.length > 0) && (
+                    <button
+                      type="submit"
+                      disabled={isSubmittingAdmin || !selectedTierKomunitasId}
+                      className="flex-1 h-9 inline-flex items-center justify-center gap-1.5 rounded-md bg-amber-500 px-3 text-xs font-mono font-bold text-black hover:bg-amber-400 disabled:opacity-50 cursor-pointer"
+                    >
+                      {isSubmittingAdmin ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <>
+                          <Send className="h-3.5 w-3.5" />
+                          <span>Kirim Pengajuan</span>
+                        </>
+                      )}
+                    </button>
+                  )}
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       )}

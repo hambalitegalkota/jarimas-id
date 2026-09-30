@@ -89,7 +89,7 @@ export function CreateKabarModal({ currentUserId }: CreateKabarModalProps) {
 
       {/* Modal Dialog Backdrop & Sheet */}
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-in fade-in duration-200">
           {/* Overlay */}
           <div
             className="fixed inset-0 bg-black/80 backdrop-blur-xs transition-opacity"
@@ -97,9 +97,9 @@ export function CreateKabarModal({ currentUserId }: CreateKabarModalProps) {
           />
 
           {/* Modal Container */}
-          <div className="relative w-full max-w-lg rounded-t-lg sm:rounded-lg border border-border bg-card p-6 shadow-2xl z-10 animate-in slide-in-from-bottom-5 sm:zoom-in-95 duration-200">
+          <div className="relative w-full max-w-lg max-h-[calc(100dvh-2rem)] flex flex-col rounded-xl border border-border bg-card shadow-2xl z-10 animate-in slide-in-from-bottom-5 sm:zoom-in-95 duration-200 overflow-hidden my-auto">
             {/* Modal Header */}
-            <div className="flex items-center justify-between pb-4 border-b border-border">
+            <div className="flex items-center justify-between p-5 pb-4 border-b border-border shrink-0 bg-card">
               <div className="flex items-center gap-2.5">
                 <div className="flex h-8 w-8 items-center justify-center rounded-md border border-border bg-muted text-foreground">
                   <Sparkles className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
@@ -116,134 +116,137 @@ export function CreateKabarModal({ currentUserId }: CreateKabarModalProps) {
               <button
                 type="button"
                 onClick={() => !isPending && setIsOpen(false)}
-                className="flex h-7 w-7 items-center justify-center rounded-md border border-border text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                className="flex h-7 w-7 items-center justify-center rounded-md border border-border text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
 
-            {/* Error Message */}
-            {errorMessage && (
-              <div className="mt-4 flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-xs text-destructive">
-                <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
-                <span className="font-mono">{errorMessage}</span>
-              </div>
-            )}
-
-            {/* Form */}
-            <form onSubmit={handleSubmit} className="mt-4 space-y-4">
-              {/* Textarea Konten */}
-              <div className="space-y-1.5">
-                <textarea
-                  value={konten}
-                  onChange={(e) => setKonten(e.target.value)}
-                  placeholder="Tulis kabar, pengumuman posyandu, atau informasi warga di sini..."
-                  rows={4}
-                  required
-                  maxLength={2000}
-                  className="w-full rounded-md border border-input bg-background p-3.5 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-ring focus:outline-hidden focus:ring-1 focus:ring-ring resize-none font-sans"
-                />
-                <div className="flex justify-end text-[10px] font-mono text-muted-foreground">
-                  <span>{konten.length}/2000 KARAKTER</span>
+            {/* Modal Scrollable Body */}
+            <div className="p-5 overflow-y-auto flex-1 space-y-4">
+              {/* Error Message */}
+              {errorMessage && (
+                <div className="flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-xs text-destructive">
+                  <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+                  <span className="font-mono">{errorMessage}</span>
                 </div>
-              </div>
+              )}
 
-              {/* Visibilitas Selector */}
-              <div className="space-y-2">
-                <label className="text-[11px] font-mono font-medium uppercase tracking-wider text-muted-foreground block">
-                  Visibilitas Postingan
-                </label>
-                <div className="grid grid-cols-3 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setVisibilitas("publik")}
-                    className={cn(
-                      "flex min-h-[40px] flex-col items-center justify-center gap-1 rounded-md border p-2 text-xs font-mono transition-all",
-                      visibilitas === "publik"
-                        ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-semibold"
-                        : "border-border text-muted-foreground hover:bg-muted hover:text-foreground"
-                    )}
-                  >
-                    <Globe className="h-3.5 w-3.5" />
-                    <span>PUBLIK</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setVisibilitas("teman")}
-                    className={cn(
-                      "flex min-h-[40px] flex-col items-center justify-center gap-1 rounded-md border p-2 text-xs font-mono transition-all",
-                      visibilitas === "teman"
-                        ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-semibold"
-                        : "border-border text-muted-foreground hover:bg-muted hover:text-foreground"
-                    )}
-                  >
-                    <Users className="h-3.5 w-3.5" />
-                    <span>TEMAN</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setVisibilitas("komunitas")}
-                    className={cn(
-                      "flex min-h-[40px] flex-col items-center justify-center gap-1 rounded-md border p-2 text-xs font-mono transition-all",
-                      visibilitas === "komunitas"
-                        ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-semibold"
-                        : "border-border text-muted-foreground hover:bg-muted hover:text-foreground"
-                    )}
-                  >
-                    <Building2 className="h-3.5 w-3.5" />
-                    <span>KOMUNITAS</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Opsi Nonaktifkan Komentar */}
-              <div className="flex items-center justify-between rounded-md border border-border bg-muted/20 p-3">
-                <div className="flex items-start gap-2.5 pr-2">
-                  <MessageSquareOff className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
-                  <div className="space-y-0.5">
-                    <label
-                      htmlFor="disable-comments-toggle"
-                      className="text-xs font-semibold text-foreground cursor-pointer block"
-                    >
-                      Nonaktifkan Komentar
-                    </label>
-                    <p className="text-[11px] text-muted-foreground leading-tight">
-                      Orang lain tidak akan dapat mengirim komentar pada postingan ini
-                    </p>
+              {/* Form */}
+              <form onSubmit={handleSubmit} className="space-y-4">
+                {/* Textarea Konten */}
+                <div className="space-y-1.5">
+                  <textarea
+                    value={konten}
+                    onChange={(e) => setKonten(e.target.value)}
+                    placeholder="Tulis kabar, pengumuman posyandu, atau informasi warga di sini..."
+                    rows={4}
+                    required
+                    maxLength={2000}
+                    className="w-full rounded-md border border-input bg-background p-3.5 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-ring focus:outline-hidden focus:ring-1 focus:ring-ring resize-none font-sans"
+                  />
+                  <div className="flex justify-end text-[10px] font-mono text-muted-foreground">
+                    <span>{konten.length}/2000 KARAKTER</span>
                   </div>
                 </div>
-                <input
-                  id="disable-comments-toggle"
-                  type="checkbox"
-                  checked={komentarDinonaktifkan}
-                  onChange={(e) => setKomentarDinonaktifkan(e.target.checked)}
-                  className="h-4 w-4 rounded border-border accent-emerald-500 cursor-pointer"
-                />
-              </div>
 
-              {/* Submit Button */}
-              <div className="pt-2">
-                <button
-                  type="submit"
-                  disabled={!konten.trim() || isPending}
-                  className="flex w-full min-h-[44px] items-center justify-center gap-2 rounded-md bg-foreground px-5 py-2.5 text-xs font-mono font-bold uppercase tracking-wider text-background shadow-md transition-all active:scale-[0.99] hover:bg-zinc-200 disabled:opacity-40 disabled:cursor-not-allowed"
-                >
-                  {isPending ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      <span>MEMPROSES...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Send className="h-3.5 w-3.5" />
-                      <span>TERBITKAN KABAR</span>
-                    </>
-                  )}
-                </button>
-              </div>
-            </form>
+                {/* Visibilitas Selector */}
+                <div className="space-y-2">
+                  <label className="text-[11px] font-mono font-medium uppercase tracking-wider text-muted-foreground block">
+                    Visibilitas Postingan
+                  </label>
+                  <div className="grid grid-cols-3 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setVisibilitas("publik")}
+                      className={cn(
+                        "flex min-h-[40px] flex-col items-center justify-center gap-1 rounded-md border p-2 text-xs font-mono transition-all cursor-pointer",
+                        visibilitas === "publik"
+                          ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-semibold"
+                          : "border-border text-muted-foreground hover:bg-muted hover:text-foreground"
+                      )}
+                    >
+                      <Globe className="h-3.5 w-3.5" />
+                      <span>PUBLIK</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setVisibilitas("teman")}
+                      className={cn(
+                        "flex min-h-[40px] flex-col items-center justify-center gap-1 rounded-md border p-2 text-xs font-mono transition-all cursor-pointer",
+                        visibilitas === "teman"
+                          ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-semibold"
+                          : "border-border text-muted-foreground hover:bg-muted hover:text-foreground"
+                      )}
+                    >
+                      <Users className="h-3.5 w-3.5" />
+                      <span>TEMAN</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setVisibilitas("komunitas")}
+                      className={cn(
+                        "flex min-h-[40px] flex-col items-center justify-center gap-1 rounded-md border p-2 text-xs font-mono transition-all cursor-pointer",
+                        visibilitas === "komunitas"
+                          ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-semibold"
+                          : "border-border text-muted-foreground hover:bg-muted hover:text-foreground"
+                      )}
+                    >
+                      <Building2 className="h-3.5 w-3.5" />
+                      <span>KOMUNITAS</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Opsi Nonaktifkan Komentar */}
+                <div className="flex items-center justify-between rounded-md border border-border bg-muted/20 p-3">
+                  <div className="flex items-start gap-2.5 pr-2">
+                    <MessageSquareOff className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+                    <div className="space-y-0.5">
+                      <label
+                        htmlFor="disable-comments-toggle"
+                        className="text-xs font-semibold text-foreground cursor-pointer block"
+                      >
+                        Nonaktifkan Komentar
+                      </label>
+                      <p className="text-[11px] text-muted-foreground leading-tight">
+                        Orang lain tidak akan dapat mengirim komentar pada postingan ini
+                      </p>
+                    </div>
+                  </div>
+                  <input
+                    id="disable-comments-toggle"
+                    type="checkbox"
+                    checked={komentarDinonaktifkan}
+                    onChange={(e) => setKomentarDinonaktifkan(e.target.checked)}
+                    className="h-4 w-4 rounded border-border accent-emerald-500 cursor-pointer"
+                  />
+                </div>
+
+                {/* Submit Button */}
+                <div className="pt-2 pb-1">
+                  <button
+                    type="submit"
+                    disabled={!konten.trim() || isPending}
+                    className="flex w-full min-h-[44px] items-center justify-center gap-2 rounded-md bg-foreground px-5 py-2.5 text-xs font-mono font-bold uppercase tracking-wider text-background shadow-md transition-all active:scale-[0.99] hover:bg-zinc-200 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                  >
+                    {isPending ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <span>MEMPROSES...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Send className="h-3.5 w-3.5" />
+                        <span>TERBITKAN KABAR</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       )}

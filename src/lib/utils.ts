@@ -98,4 +98,38 @@ export function formatPeranDisplay(peran?: string | null): string {
   return p.charAt(0).toUpperCase() + p.slice(1);
 }
 
+/**
+ * Mengecek apakah peran tertentu merupakan peran Admin / Pengurus / Kader
+ */
+export function isRoleAdmin(peran?: string | null): boolean {
+  if (!peran) return false;
+  const p = peran.toLowerCase().trim();
+  if (
+    p === "anggota" ||
+    p === "warga" ||
+    p === "penduduk" ||
+    p === "pendatang" ||
+    p === "pengunjung" ||
+    p === "penduduk domisili diluar"
+  ) {
+    return false;
+  }
+  return (
+    p.includes("admin") ||
+    p.includes("pengurus") ||
+    p.includes("kader") ||
+    p.includes("ketua") ||
+    p.includes("pengelola") ||
+    p.includes("pimpinan") ||
+    p.includes("super_admin") ||
+    p.includes("super admin") ||
+    p.includes("nakes") ||
+    p.includes("bidan") ||
+    p.includes("kepala") ||
+    p.includes("guru") ||
+    p.includes("tenaga") ||
+    p.includes("pendidik")
+  );
+}
+
 

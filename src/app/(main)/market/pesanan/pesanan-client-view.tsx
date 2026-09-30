@@ -247,15 +247,15 @@ export function PesananClientView({
 
       {/* Modal Detail & Instruksi Pembayaran */}
       {selectedPesananModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-in fade-in duration-200">
           <div
             className="fixed inset-0 bg-black/80 backdrop-blur-xs"
             onClick={() => setSelectedPesananModal(null)}
           />
 
-          <div className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-lg border border-border bg-card p-6 shadow-2xl z-10 space-y-5 animate-in zoom-in-95 duration-200">
+          <div className="relative w-full max-w-lg max-h-[calc(100dvh-2rem)] flex flex-col rounded-xl border border-border bg-card shadow-2xl z-10 animate-in zoom-in-95 duration-200 overflow-hidden my-auto">
             {/* Header Modal */}
-            <div className="flex items-center justify-between border-b border-border pb-3">
+            <div className="flex items-center justify-between p-5 pb-3 border-b border-border shrink-0 bg-card">
               <div>
                 <h3 className="text-sm font-bold tracking-tight text-foreground font-mono">
                   RINCIAN PESANAN #{selectedPesananModal.id.slice(0, 8)}
@@ -266,107 +266,112 @@ export function PesananClientView({
               </div>
               <button
                 onClick={() => setSelectedPesananModal(null)}
-                className="flex h-7 w-7 items-center justify-center rounded-md border border-border text-muted-foreground hover:bg-muted hover:text-foreground"
+                className="flex h-7 w-7 items-center justify-center rounded-md border border-border text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer"
               >
                 ✕
               </button>
             </div>
 
-            {/* Instruksi Pembayaran jika Pending */}
-            {selectedPesananModal.status_pembayaran === "pending" && (
-              <div className="rounded-md border border-amber-500/30 bg-amber-500/10 p-4 space-y-3">
-                <div className="flex items-center gap-2 font-mono text-xs font-bold text-amber-500 dark:text-amber-400">
-                  <Clock className="h-4 w-4 text-amber-500 dark:text-amber-400" />
-                  <span>SELESAIKAN PEMBAYARAN</span>
-                </div>
-
-                {selectedPesananModal.metode_pembayaran === "qris" ? (
-                  <div className="flex flex-col items-center justify-center space-y-2 rounded-md bg-background border border-border p-4 text-center">
-                    <QrCode className="h-32 w-32 text-foreground" />
-                    <p className="text-[11px] font-mono font-bold text-foreground">
-                      QRIS RESMI JARIMAS KOTA TEGAL
-                    </p>
-                    <p className="text-[10px] text-muted-foreground font-mono">
-                      BCA Mobile, Mandiri Livin, GoPay, OVO, Dana, ShopeePay.
-                    </p>
+            {/* Scrollable Body */}
+            <div className="p-5 overflow-y-auto flex-1 space-y-5">
+              {/* Instruksi Pembayaran jika Pending */}
+              {selectedPesananModal.status_pembayaran === "pending" && (
+                <div className="rounded-md border border-amber-500/30 bg-amber-500/10 p-4 space-y-3">
+                  <div className="flex items-center gap-2 font-mono text-xs font-bold text-amber-500 dark:text-amber-400">
+                    <Clock className="h-4 w-4 text-amber-500 dark:text-amber-400" />
+                    <span>SELESAIKAN PEMBAYARAN</span>
                   </div>
-                ) : (
-                  <div className="rounded-md bg-background border border-border p-3.5 space-y-2 text-xs font-mono">
-                    <div className="flex items-center gap-2 text-foreground font-bold">
-                      <Building2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                      <span>REKENING TRANSFER:</span>
+
+                  {selectedPesananModal.metode_pembayaran === "qris" ? (
+                    <div className="flex flex-col items-center justify-center space-y-2 rounded-md bg-background border border-border p-4 text-center">
+                      <QrCode className="h-32 w-32 text-foreground" />
+                      <p className="text-[11px] font-mono font-bold text-foreground">
+                        QRIS RESMI JARIMAS KOTA TEGAL
+                      </p>
+                      <p className="text-[10px] text-muted-foreground font-mono">
+                        BCA Mobile, Mandiri Livin, GoPay, OVO, Dana, ShopeePay.
+                      </p>
                     </div>
-                    {selectedPesananModal.metode_pembayaran === "transfer_bca" && (
-                      <div>
-                        <div className="text-base font-bold font-mono text-foreground">
-                          138-092-8172
-                        </div>
-                        <div className="text-[11px] text-muted-foreground">
-                          Bank BCA a.n. Jarimas Peduli Anak
-                        </div>
+                  ) : (
+                    <div className="rounded-md bg-background border border-border p-3.5 space-y-2 text-xs font-mono">
+                      <div className="flex items-center gap-2 text-foreground font-bold">
+                        <Building2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                        <span>REKENING TRANSFER:</span>
                       </div>
-                    )}
-                    {selectedPesananModal.metode_pembayaran === "transfer_mandiri" && (
-                      <div>
-                        <div className="text-base font-bold font-mono text-foreground">
-                          139-00-2918273-1
+                      {selectedPesananModal.metode_pembayaran === "transfer_bca" && (
+                        <div>
+                          <div className="text-base font-bold font-mono text-foreground">
+                            138-092-8172
+                          </div>
+                          <div className="text-[11px] text-muted-foreground">
+                            Bank BCA a.n. Jarimas Peduli Anak
+                          </div>
                         </div>
-                        <div className="text-[11px] text-muted-foreground">
-                          Bank Mandiri a.n. Jarimas Official
+                      )}
+                      {selectedPesananModal.metode_pembayaran === "transfer_mandiri" && (
+                        <div>
+                          <div className="text-base font-bold font-mono text-foreground">
+                            139-00-2918273-1
+                          </div>
+                          <div className="text-[11px] text-muted-foreground">
+                            Bank Mandiri a.n. Jarimas Official
+                          </div>
                         </div>
-                      </div>
-                    )}
-                    {selectedPesananModal.metode_pembayaran === "transfer_bri" && (
-                      <div>
-                        <div className="text-base font-bold font-mono text-foreground">
-                          0102-01-092837-50-1
+                      )}
+                      {selectedPesananModal.metode_pembayaran === "transfer_bri" && (
+                        <div>
+                          <div className="text-base font-bold font-mono text-foreground">
+                            0102-01-092837-50-1
+                          </div>
+                          <div className="text-[11px] text-muted-foreground">
+                            Bank BRI a.n. Posyandu Jarimas
+                          </div>
                         </div>
-                        <div className="text-[11px] text-muted-foreground">
-                          Bank BRI a.n. Posyandu Jarimas
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
+                      )}
+                    </div>
+                  )}
 
-                <div className="flex items-center justify-between border-t border-amber-500/20 pt-2 text-xs font-mono font-bold">
-                  <span className="text-muted-foreground">NOMINAL TOTAL:</span>
-                  <span className="text-base text-foreground">
-                    {formatRupiah(selectedPesananModal.total_harga)}
-                  </span>
+                  <div className="flex items-center justify-between border-t border-amber-500/20 pt-2 text-xs font-mono font-bold">
+                    <span className="text-muted-foreground">NOMINAL TOTAL:</span>
+                    <span className="text-base text-foreground">
+                      {formatRupiah(selectedPesananModal.total_harga)}
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* Info Lengkap Pengiriman */}
+              <div className="space-y-2 text-xs">
+                <h4 className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
+                  Detail Penerima &amp; Alamat
+                </h4>
+                <div className="rounded-md border border-border bg-background p-3.5 space-y-1 font-mono">
+                  <div className="font-bold text-foreground">
+                    {selectedPesananModal.nama_penerima} ({selectedPesananModal.nomor_hp})
+                  </div>
+                  <div className="text-muted-foreground text-xs">
+                    {selectedPesananModal.alamat_lengkap}
+                  </div>
+                  <div className="text-muted-foreground text-xs">
+                    Kel. {selectedPesananModal.kelurahan}, Kec. {selectedPesananModal.kecamatan}, Kota Tegal
+                  </div>
+                  {selectedPesananModal.catatan && (
+                    <div className="text-emerald-600 dark:text-emerald-400 pt-1 text-[11px]">
+                      Catatan: &quot;{selectedPesananModal.catatan}&quot;
+                    </div>
+                  )}
                 </div>
               </div>
-            )}
 
-            {/* Info Lengkap Pengiriman */}
-            <div className="space-y-2 text-xs">
-              <h4 className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
-                Detail Penerima &amp; Alamat
-              </h4>
-              <div className="rounded-md border border-border bg-background p-3.5 space-y-1 font-mono">
-                <div className="font-bold text-foreground">
-                  {selectedPesananModal.nama_penerima} ({selectedPesananModal.nomor_hp})
-                </div>
-                <div className="text-muted-foreground text-xs">
-                  {selectedPesananModal.alamat_lengkap}
-                </div>
-                <div className="text-muted-foreground text-xs">
-                  Kel. {selectedPesananModal.kelurahan}, Kec. {selectedPesananModal.kecamatan}, Kota Tegal
-                </div>
-                {selectedPesananModal.catatan && (
-                  <div className="text-emerald-600 dark:text-emerald-400 pt-1 text-[11px]">
-                    Catatan: &quot;{selectedPesananModal.catatan}&quot;
-                  </div>
-                )}
+              <div className="pt-2 pb-1">
+                <button
+                  onClick={() => setSelectedPesananModal(null)}
+                  className="flex h-9 w-full items-center justify-center rounded-md bg-foreground border border-zinc-700 text-xs font-mono font-bold uppercase tracking-wider text-background hover:bg-zinc-200 cursor-pointer"
+                >
+                  TUTUP RINCIAN
+                </button>
               </div>
             </div>
-
-            <button
-              onClick={() => setSelectedPesananModal(null)}
-              className="flex h-9 w-full items-center justify-center rounded-md bg-foreground border border-zinc-700 text-xs font-mono font-bold uppercase tracking-wider text-background hover:bg-zinc-200"
-            >
-              TUTUP RINCIAN
-            </button>
           </div>
         </div>
       )}

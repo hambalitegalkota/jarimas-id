@@ -279,15 +279,15 @@ export function AdminMarketClient({ initialProducts }: AdminMarketClientProps) {
 
       {/* Modal Tambah / Edit Produk */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-in fade-in duration-200">
           <div
             className="fixed inset-0 bg-black/80 backdrop-blur-xs"
             onClick={() => setIsModalOpen(false)}
           />
 
-          <div className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-lg border border-border bg-card p-6 shadow-2xl z-10 space-y-4 animate-in zoom-in-95 duration-200">
+          <div className="relative w-full max-w-lg max-h-[calc(100dvh-2rem)] flex flex-col rounded-xl border border-border bg-card shadow-2xl z-10 animate-in zoom-in-95 duration-200 overflow-hidden my-auto">
             {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-border pb-3">
+            <div className="flex items-center justify-between p-5 pb-3 border-b border-border shrink-0 bg-card">
               <div className="flex items-center gap-2">
                 <div className="flex h-8 w-8 items-center justify-center rounded-md bg-muted text-foreground">
                   <Package className="h-4 w-4" />
@@ -304,167 +304,169 @@ export function AdminMarketClient({ initialProducts }: AdminMarketClientProps) {
               </button>
             </div>
 
-            {/* Modal Form */}
-            <form onSubmit={handleFormSubmit} className="space-y-4">
-              {/* Nama Produk */}
-              <div className="space-y-1">
-                <label className="text-xs font-medium text-muted-foreground">
-                  Nama Produk *
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Contoh: Paket Alat Permainan Edukatif (APE Kit)"
-                  value={nama}
-                  onChange={(e) => setNama(e.target.value)}
-                  className="h-9 w-full rounded-md border border-border bg-background px-3 text-xs font-normal text-foreground placeholder:text-muted-foreground focus:border-zinc-500 focus:outline-hidden"
-                />
-              </div>
-
-              {/* Kategori */}
-              <div className="space-y-1">
-                <label className="text-xs font-medium text-muted-foreground">
-                  Kategori *
-                </label>
-                <select
-                  value={kategori}
-                  onChange={(e) => setKategori(e.target.value as KategoriMarket)}
-                  className="h-9 w-full rounded-md border border-border bg-background px-3 text-xs font-medium text-foreground focus:border-zinc-500 focus:outline-hidden"
-                >
-                  {KATEGORI_OPTIONS.map((kat) => (
-                    <option key={kat} value={kat}>
-                      {kat}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Harga & Stok Grid */}
-              <div className="grid grid-cols-2 gap-3">
+            {/* Modal Form Scrollable Body */}
+            <div className="p-5 overflow-y-auto flex-1">
+              <form onSubmit={handleFormSubmit} className="space-y-4">
+                {/* Nama Produk */}
                 <div className="space-y-1">
-                  <label className="text-xs font-mono uppercase text-muted-foreground">
-                    Harga Satuan (Rp) *
+                  <label className="text-xs font-medium text-muted-foreground">
+                    Nama Produk *
                   </label>
                   <input
-                    type="number"
+                    type="text"
                     required
-                    min="1000"
-                    placeholder="Contoh: 145000"
-                    value={harga}
-                    onChange={(e) => setHarga(e.target.value)}
-                    className="h-9 w-full rounded-md border border-border bg-background px-3 text-xs font-mono text-foreground focus:border-zinc-500 focus:outline-hidden"
+                    placeholder="Contoh: Paket Alat Permainan Edukatif (APE Kit)"
+                    value={nama}
+                    onChange={(e) => setNama(e.target.value)}
+                    className="h-9 w-full rounded-md border border-border bg-background px-3 text-xs font-normal text-foreground placeholder:text-muted-foreground focus:border-zinc-500 focus:outline-hidden"
                   />
                 </div>
 
+                {/* Kategori */}
                 <div className="space-y-1">
-                  <label className="text-xs font-mono uppercase text-muted-foreground">
-                    Jumlah Stok *
+                  <label className="text-xs font-medium text-muted-foreground">
+                    Kategori *
+                  </label>
+                  <select
+                    value={kategori}
+                    onChange={(e) => setKategori(e.target.value as KategoriMarket)}
+                    className="h-9 w-full rounded-md border border-border bg-background px-3 text-xs font-medium text-foreground focus:border-zinc-500 focus:outline-hidden"
+                  >
+                    {KATEGORI_OPTIONS.map((kat) => (
+                      <option key={kat} value={kat}>
+                        {kat}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Harga & Stok Grid */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="text-xs font-mono uppercase text-muted-foreground">
+                      Harga Satuan (Rp) *
+                    </label>
+                    <input
+                      type="number"
+                      required
+                      min="1000"
+                      placeholder="Contoh: 145000"
+                      value={harga}
+                      onChange={(e) => setHarga(e.target.value)}
+                      className="h-9 w-full rounded-md border border-border bg-background px-3 text-xs font-mono text-foreground focus:border-zinc-500 focus:outline-hidden"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-xs font-mono uppercase text-muted-foreground">
+                      Jumlah Stok *
+                    </label>
+                    <input
+                      type="number"
+                      required
+                      min="0"
+                      placeholder="Contoh: 25"
+                      value={stok}
+                      onChange={(e) => setStok(e.target.value)}
+                      className="h-9 w-full rounded-md border border-border bg-background px-3 text-xs font-mono text-foreground focus:border-zinc-500 focus:outline-hidden"
+                    />
+                  </div>
+                </div>
+
+                {/* URL Gambar */}
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-muted-foreground">
+                    URL Foto Produk *
                   </label>
                   <input
-                    type="number"
+                    type="url"
                     required
-                    min="0"
-                    placeholder="Contoh: 25"
-                    value={stok}
-                    onChange={(e) => setStok(e.target.value)}
-                    className="h-9 w-full rounded-md border border-border bg-background px-3 text-xs font-mono text-foreground focus:border-zinc-500 focus:outline-hidden"
+                    placeholder="https://images.unsplash.com/..."
+                    value={gambarUrl}
+                    onChange={(e) => setGambarUrl(e.target.value)}
+                    className="h-9 w-full rounded-md border border-border bg-background px-3 text-xs font-mono text-foreground placeholder:text-muted-foreground focus:border-zinc-500 focus:outline-hidden"
                   />
                 </div>
-              </div>
 
-              {/* URL Gambar */}
-              <div className="space-y-1">
-                <label className="text-xs font-medium text-muted-foreground">
-                  URL Foto Produk *
-                </label>
-                <input
-                  type="url"
-                  required
-                  placeholder="https://images.unsplash.com/..."
-                  value={gambarUrl}
-                  onChange={(e) => setGambarUrl(e.target.value)}
-                  className="h-9 w-full rounded-md border border-border bg-background px-3 text-xs font-mono text-foreground placeholder:text-muted-foreground focus:border-zinc-500 focus:outline-hidden"
-                />
-              </div>
-
-              {/* Deskripsi */}
-              <div className="space-y-1">
-                <label className="text-xs font-medium text-muted-foreground">
-                  Deskripsi Lengkap *
-                </label>
-                <textarea
-                  required
-                  rows={3}
-                  placeholder="Jelaskan spesifikasi, fungsi, sertifikasi, dan manfaat produk..."
-                  value={deskripsi}
-                  onChange={(e) => setDeskripsi(e.target.value)}
-                  className="w-full rounded-md border border-border bg-background p-3 text-xs font-normal text-foreground placeholder:text-muted-foreground focus:border-zinc-500 focus:outline-hidden"
-                />
-              </div>
-
-              {/* Status Aktif */}
-              <div className="flex items-center gap-2 pt-1">
-                <input
-                  type="checkbox"
-                  id="isActiveToggle"
-                  checked={isActive}
-                  onChange={(e) => setIsActive(e.target.checked)}
-                  className="h-4 w-4 rounded border-border accent-emerald-500 cursor-pointer"
-                />
-                <label
-                  htmlFor="isActiveToggle"
-                  className="text-xs font-medium text-foreground cursor-pointer"
-                >
-                  Tampilkan produk di katalog publik Jarimas Market
-                </label>
-              </div>
-
-              {/* Feedback */}
-              {feedback && (
-                <div
-                  className={`flex items-start gap-2 rounded-md p-3 text-xs ${
-                    feedback.type === "success"
-                      ? "bg-emerald-950/40 text-emerald-300 border border-emerald-800"
-                      : "bg-destructive/10 text-destructive border border-destructive/20"
-                  }`}
-                >
-                  {feedback.type === "success" ? (
-                    <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5" />
-                  ) : (
-                    <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
-                  )}
-                  <span>{feedback.message}</span>
+                {/* Deskripsi */}
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-muted-foreground">
+                    Deskripsi Lengkap *
+                  </label>
+                  <textarea
+                    required
+                    rows={3}
+                    placeholder="Jelaskan spesifikasi, fungsi, sertifikasi, dan manfaat produk..."
+                    value={deskripsi}
+                    onChange={(e) => setDeskripsi(e.target.value)}
+                    className="w-full rounded-md border border-border bg-background p-3 text-xs font-normal text-foreground placeholder:text-muted-foreground focus:border-zinc-500 focus:outline-hidden"
+                  />
                 </div>
-              )}
 
-              {/* Submit Buttons */}
-              <div className="flex items-center justify-end gap-2 border-t border-border pt-3">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="inline-flex h-9 items-center rounded-md border border-border bg-card px-3 text-xs font-medium text-foreground hover:bg-muted cursor-pointer"
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  disabled={isPending}
-                  className="inline-flex h-9 items-center gap-2 rounded-md bg-foreground px-4 text-xs font-bold text-background hover:bg-foreground/90 disabled:opacity-50 cursor-pointer"
-                >
-                  {isPending ? (
-                    <>
-                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                      <span>Menyimpan...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Save className="h-3.5 w-3.5" />
-                      <span>Simpan Produk</span>
-                    </>
-                  )}
-                </button>
-              </div>
-            </form>
+                {/* Status Aktif */}
+                <div className="flex items-center gap-2 pt-1">
+                  <input
+                    type="checkbox"
+                    id="isActiveToggle"
+                    checked={isActive}
+                    onChange={(e) => setIsActive(e.target.checked)}
+                    className="h-4 w-4 rounded border-border accent-emerald-500 cursor-pointer"
+                  />
+                  <label
+                    htmlFor="isActiveToggle"
+                    className="text-xs font-medium text-foreground cursor-pointer"
+                  >
+                    Tampilkan produk di katalog publik Jarimas Market
+                  </label>
+                </div>
+
+                {/* Feedback */}
+                {feedback && (
+                  <div
+                    className={`flex items-start gap-2 rounded-md p-3 text-xs ${
+                      feedback.type === "success"
+                        ? "bg-emerald-950/40 text-emerald-300 border border-emerald-800"
+                        : "bg-destructive/10 text-destructive border border-destructive/20"
+                    }`}
+                  >
+                    {feedback.type === "success" ? (
+                      <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5" />
+                    ) : (
+                      <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
+                    )}
+                    <span>{feedback.message}</span>
+                  </div>
+                )}
+
+                {/* Submit Buttons */}
+                <div className="flex items-center justify-end gap-2 border-t border-border pt-3">
+                  <button
+                    type="button"
+                    onClick={() => setIsModalOpen(false)}
+                    className="inline-flex h-9 items-center rounded-md border border-border bg-card px-3 text-xs font-medium text-foreground hover:bg-muted cursor-pointer"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isPending}
+                    className="inline-flex h-9 items-center gap-2 rounded-md bg-foreground px-4 text-xs font-bold text-background hover:bg-foreground/90 disabled:opacity-50 cursor-pointer"
+                  >
+                    {isPending ? (
+                      <>
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        <span>Menyimpan...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Save className="h-3.5 w-3.5" />
+                        <span>Simpan Produk</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       )}

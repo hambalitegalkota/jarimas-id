@@ -104,10 +104,10 @@ export function WargaOnboardingModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-      <div className="relative w-full max-w-lg rounded-xl border border-border bg-card p-6 shadow-2xl space-y-5 animate-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-3 sm:p-4 overflow-y-auto animate-in fade-in duration-200">
+      <div className="relative w-full max-w-lg max-h-[calc(100dvh-2rem)] flex flex-col rounded-xl border border-border bg-card shadow-2xl z-10 animate-in zoom-in-95 duration-200 overflow-hidden my-auto">
         {/* Header Modal */}
-        <div className="text-center space-y-2">
+        <div className="p-5 sm:p-6 pb-4 border-b border-border text-center space-y-2 shrink-0 bg-card">
           <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-mono font-semibold text-emerald-400">
             <Sparkles className="h-3.5 w-3.5" />
             <span>SELAMAT BERGABUNG</span>
@@ -151,7 +151,7 @@ export function WargaOnboardingModal({
         </div>
 
         {/* Form Pertanyaan Domisili & KK */}
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="p-5 sm:p-6 overflow-y-auto flex-1 space-y-4">
           {/* Pertanyaan 1: Domisili */}
           <div className="rounded-lg border border-border bg-background/50 p-3.5 space-y-2.5">
             <div className="flex items-center gap-2">
@@ -166,7 +166,7 @@ export function WargaOnboardingModal({
                 type="button"
                 onClick={() => setBerdomisili(true)}
                 className={cn(
-                  "flex items-center justify-center gap-2 rounded-md border py-2 px-3 text-xs font-mono font-medium transition-all",
+                  "flex items-center justify-center gap-2 rounded-md border py-2 px-3 text-xs font-mono font-medium transition-all cursor-pointer",
                   berdomisili
                     ? "border-emerald-500 bg-emerald-500/15 text-emerald-400 font-bold shadow-xs"
                     : "border-border bg-card text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -180,7 +180,7 @@ export function WargaOnboardingModal({
                 type="button"
                 onClick={() => setBerdomisili(false)}
                 className={cn(
-                  "flex items-center justify-center gap-2 rounded-md border py-2 px-3 text-xs font-mono font-medium transition-all",
+                  "flex items-center justify-center gap-2 rounded-md border py-2 px-3 text-xs font-mono font-medium transition-all cursor-pointer",
                   !berdomisili
                     ? "border-amber-500 bg-amber-500/15 text-amber-400 font-bold shadow-xs"
                     : "border-border bg-card text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -206,7 +206,7 @@ export function WargaOnboardingModal({
                 type="button"
                 onClick={() => setKkTerdaftar(true)}
                 className={cn(
-                  "flex items-center justify-center gap-2 rounded-md border py-2 px-3 text-xs font-mono font-medium transition-all",
+                  "flex items-center justify-center gap-2 rounded-md border py-2 px-3 text-xs font-mono font-medium transition-all cursor-pointer",
                   kkTerdaftar
                     ? "border-emerald-500 bg-emerald-500/15 text-emerald-400 font-bold shadow-xs"
                     : "border-border bg-card text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -220,7 +220,7 @@ export function WargaOnboardingModal({
                 type="button"
                 onClick={() => setKkTerdaftar(false)}
                 className={cn(
-                  "flex items-center justify-center gap-2 rounded-md border py-2 px-3 text-xs font-mono font-medium transition-all",
+                  "flex items-center justify-center gap-2 rounded-md border py-2 px-3 text-xs font-mono font-medium transition-all cursor-pointer",
                   !kkTerdaftar
                     ? "border-amber-500 bg-amber-500/15 text-amber-400 font-bold shadow-xs"
                     : "border-border bg-card text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -262,11 +262,11 @@ export function WargaOnboardingModal({
           )}
 
           {/* Tombol Aksi: Masuk Komunitas */}
-          <div className="space-y-2 pt-2">
+          <div className="space-y-2 pt-2 pb-1">
             <button
               type="submit"
               disabled={isPending}
-              className="flex h-11 w-full items-center justify-center gap-2 rounded-md bg-emerald-600 px-4 text-xs sm:text-sm font-mono font-bold text-white shadow-md transition-all hover:bg-emerald-500 active:scale-[0.98] disabled:opacity-50"
+              className="flex h-11 w-full items-center justify-center gap-2 rounded-md bg-emerald-600 px-4 text-xs sm:text-sm font-mono font-bold text-white shadow-md transition-all hover:bg-emerald-500 active:scale-[0.98] disabled:opacity-50 cursor-pointer"
             >
               {isPending ? (
                 <>

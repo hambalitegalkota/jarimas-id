@@ -87,6 +87,8 @@ export interface WargaHierarchyAdmins {
 export interface KomunitasWithMembership extends Komunitas {
   jumlah_anggota: number;
   hasAdmin?: boolean;
+  adminName?: string | null;
+  adminRole?: string | null;
   currentUserMembership?: {
     id: string;
     status: MembershipStatus;
@@ -118,6 +120,9 @@ export interface UserJoinedKomunitas {
   peran_diajukan?: string | null;
   berdomisili?: boolean;
   kk_terdaftar?: boolean;
+  hasAdmin?: boolean;
+  adminName?: string | null;
+  adminRole?: string | null;
   joinedAt: string;
   jumlah_anggota: number;
 }

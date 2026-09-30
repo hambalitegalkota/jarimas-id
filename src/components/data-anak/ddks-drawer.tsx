@@ -89,7 +89,7 @@ export function DdksDrawer({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-in fade-in duration-200">
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-black/80 backdrop-blur-xs transition-opacity"
@@ -97,9 +97,9 @@ export function DdksDrawer({
       />
 
       {/* Drawer Body */}
-      <div className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-t-lg sm:rounded-lg border border-border bg-card p-6 shadow-2xl z-10 animate-in slide-in-from-bottom-5 sm:zoom-in-95 duration-200 space-y-5">
+      <div className="relative w-full max-w-lg max-h-[calc(100dvh-2rem)] flex flex-col rounded-xl border border-border bg-card shadow-2xl z-10 animate-in slide-in-from-bottom-5 sm:zoom-in-95 duration-200 overflow-hidden my-auto">
         {/* Header */}
-        <div className="flex items-start justify-between pb-3 border-b border-border">
+        <div className="flex items-start justify-between p-5 pb-3 border-b border-border shrink-0 bg-card">
           <div className="flex items-center gap-2.5">
             <div className="flex h-8 w-8 items-center justify-center rounded-md bg-emerald-950/40 border border-emerald-800 text-emerald-400">
               <Activity className="h-4 w-4" />
@@ -120,23 +120,25 @@ export function DdksDrawer({
           </button>
         </div>
 
-        {/* Feedback Alert */}
-        {feedback && (
-          <div
-            className={`flex items-start gap-2.5 rounded-md p-3 text-xs font-semibold animate-in fade-in ${
-              feedback.type === "success"
-                ? "border border-emerald-800 bg-emerald-950/40 text-emerald-300"
-                : "border border-destructive/20 bg-destructive/10 text-destructive"
-            }`}
-          >
-            {feedback.type === "success" ? (
-              <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
-            ) : (
-              <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
-            )}
-            <span>{feedback.message}</span>
-          </div>
-        )}
+        {/* Scrollable Content */}
+        <div className="p-5 overflow-y-auto flex-1 space-y-5">
+          {/* Feedback Alert */}
+          {feedback && (
+            <div
+              className={`flex items-start gap-2.5 rounded-md p-3 text-xs font-semibold animate-in fade-in ${
+                feedback.type === "success"
+                  ? "border border-emerald-800 bg-emerald-950/40 text-emerald-300"
+                  : "border border-destructive/20 bg-destructive/10 text-destructive"
+              }`}
+            >
+              {feedback.type === "success" ? (
+                <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
+              ) : (
+                <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
+              )}
+              <span>{feedback.message}</span>
+            </div>
+          )}
 
         {/* 1. KONDISI TERKINI */}
         <div className="rounded-md border border-border bg-background p-4 space-y-3">
@@ -374,6 +376,7 @@ export function DdksDrawer({
           )}
         </div>
       </div>
+    </div>
     </div>
   );
 }

@@ -38,3 +38,27 @@ export async function createClient() {
     },
   });
 }
+
+/**
+ * Client Supabase dengan Service Role Key untuk operasi administratif backend (bypasses RLS)
+ * Hanya aktif jika SUPABASE_SERVICE_ROLE_KEY tersedia di environment.
+ */
+export function createAdminClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceRoleKey =
+    process.env.SUPABASE_SERVICE_ROLE_KEY ||
+    process.env.SUPABASE_SECRET_KEY ||
+    process.env.SUPABASE_SERVICE_KEY;
+
+  if (!supabaseUrl || !serviceRoleKey) {
+    return null;
+  }
+
+  const { createClient: createSupabaseClient } = require("@supabase/supabase-js");
+  return createSupabaseClient(supabaseUrl, serviceRoleKey, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+    },
+  });
+}

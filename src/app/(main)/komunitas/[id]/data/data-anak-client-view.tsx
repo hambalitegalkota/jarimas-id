@@ -126,14 +126,15 @@ export function DataAnakClientView({
 
       {/* 4. MODAL PENDAFTARAN ANAK */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-in fade-in duration-200">
           <div
             className="fixed inset-0 bg-black/80 backdrop-blur-xs transition-opacity"
             onClick={() => setIsAddModalOpen(false)}
           />
 
-          <div className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-t-lg sm:rounded-lg border border-border bg-card p-6 shadow-2xl z-10 animate-in slide-in-from-bottom-5 sm:zoom-in-95 duration-200 space-y-4">
-            <div className="flex items-start justify-between pb-4 border-b border-border">
+          <div className="relative w-full max-w-lg max-h-[calc(100dvh-2rem)] flex flex-col rounded-xl border border-border bg-card shadow-2xl z-10 animate-in slide-in-from-bottom-5 sm:zoom-in-95 duration-200 overflow-hidden my-auto">
+            {/* Header */}
+            <div className="flex items-start justify-between p-5 pb-4 border-b border-border shrink-0 bg-card">
               <div className="flex items-center gap-2.5">
                 <div className="flex h-8 w-8 items-center justify-center rounded-md border border-border bg-muted text-emerald-600 dark:text-emerald-400">
                   <Baby className="h-4 w-4" />
@@ -150,21 +151,24 @@ export function DataAnakClientView({
               <button
                 type="button"
                 onClick={() => setIsAddModalOpen(false)}
-                className="flex h-7 w-7 items-center justify-center rounded-md border border-border text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                className="flex h-7 w-7 items-center justify-center rounded-md border border-border text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
 
-            <FormDataAnak
-              komunitasId={komunitas.id}
-              komunitasNama={komunitas.nama}
-              jenisKomunitas={komunitas.jenis}
-              onSuccess={() => {
-                setIsAddModalOpen(false);
-                window.location.reload();
-              }}
-            />
+            {/* Scrollable Form Body */}
+            <div className="p-5 overflow-y-auto flex-1">
+              <FormDataAnak
+                komunitasId={komunitas.id}
+                komunitasNama={komunitas.nama}
+                jenisKomunitas={komunitas.jenis}
+                onSuccess={() => {
+                  setIsAddModalOpen(false);
+                  window.location.reload();
+                }}
+              />
+            </div>
           </div>
         </div>
       )}
