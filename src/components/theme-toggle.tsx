@@ -45,7 +45,7 @@ export function ThemeToggle({
           aria-label="Toggle tema light / dark"
         >
           {theme === "dark" ? (
-            <Moon className="h-4 w-4 text-emerald-400" />
+            <Moon className="h-4 w-4 text-sky-400" />
           ) : (
             <Sun className="h-4 w-4 text-amber-500" />
           )}
@@ -87,7 +87,7 @@ export function ThemeToggle({
             : "text-muted-foreground hover:text-foreground hover:bg-card/50"
         )}
       >
-        <Moon className="h-3.5 w-3.5 text-emerald-400" />
+        <Moon className="h-3.5 w-3.5 text-sky-400" />
         <span>DARK</span>
       </button>
 
@@ -102,7 +102,7 @@ export function ThemeToggle({
             : "text-muted-foreground hover:text-foreground hover:bg-card/50"
         )}
       >
-        <Monitor className="h-3.5 w-3.5 text-cyan-400" />
+        <Monitor className="h-3.5 w-3.5 text-blue-400" />
         <span>SYSTEM</span>
       </button>
     </div>

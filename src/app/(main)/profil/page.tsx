@@ -21,9 +21,12 @@ import { getPendingApprovals } from "@/app/actions/admin";
 import { ApprovalList } from "@/components/admin/approval-list";
 import { DatabaseSeedTools } from "@/components/admin/database-seed-tools";
 import { KecamatanMonitoringAccordion } from "@/components/admin/kecamatan-monitoring-accordion";
-import { formatPeranDisplay } from "@/lib/utils";
+import { formatPeranDisplay, isRoleAdmin, toValidUUID } from "@/lib/utils";
+import { extractKomunitasMetadata } from "@/lib/admin-helpers";
+import { getWargaHierarchyChain, slugify } from "@/lib/constants/tegal-data";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { Sun, UserCheck } from "lucide-react";
+import { Sun, UserCheck, Users } from "lucide-react";
+import { UnifiedWargaCard, type WargaTierItem } from "@/components/komunitas/unified-warga-card";
 import type { PendingApprovalItem, AnggotaKomunitas } from "@/types/database";
 
 export default async function ProfilePage() {
@@ -98,6 +101,7 @@ export default async function ProfilePage() {
         id: row.id,
         komunitas_id: row.komunitas_id,
         peran: formatPeranDisplay(row.peran),
+        raw_peran: row.peran,
         peran_diajukan: row.peran_diajukan || null,
         status: row.status,
         created_at: row.created_at,
@@ -105,12 +109,205 @@ export default async function ProfilePage() {
           id: row.komunitas_id,
           nama: namaKomunitas,
           jenis: jenisKomunitas,
+          kecamatan: kom?.kecamatan || null,
+          kelurahan: kom?.kelurahan || null,
+          rw: kom?.rw || null,
+          rt: kom?.rt || null,
           lokasi: lokasiKomunitas,
           deskripsi: kom?.deskripsi || null,
         },
       };
     });
   }
+
+  // Pisahkan Komunitas Warga Kita (untuk diringkas jadi 1 kartu) dan Komunitas lainnya (Posyandu, PAUD)
+  const wargaKitaMemberships = userCommunities.filter(
+    (item) => item.komunitas.jenis === "warga_kita"
+  );
+  const nonWargaMemberships = userCommunities.filter(
+    (item) => item.komunitas.jenis !== "warga_kita"
+  );
+
+  let wargaKitaSummary: {
+    title: string;
+    lokasi: string;
+    highestRole: string;
+    highestStatus: "approved" | "pending" | "rejected";
+    primaryKomunitasId: string;
+    tiers: WargaTierItem[];
+  } | null = null;
+
+  if (wargaKitaMemberships.length > 0) {
+    let rtItem: (typeof wargaKitaMemberships)[0] | undefined;
+    let rwItem: (typeof wargaKitaMemberships)[0] | undefined;
+    let kelItem: (typeof wargaKitaMemberships)[0] | undefined;
+    let kecItem: (typeof wargaKitaMemberships)[0] | undefined;
+
+    for (const item of wargaKitaMemberships) {
+      const meta = extractKomunitasMetadata(item.komunitas);
+      if (meta.hasRt) {
+        rtItem = item;
+      } else if (meta.hasRw) {
+        rwItem = item;
+      } else if (meta.hasKel) {
+        kelItem = item;
+      } else {
+        kecItem = item;
+      }
+    }
+
+    const refMeta = extractKomunitasMetadata(
+      rtItem?.komunitas ||
+        rwItem?.komunitas ||
+        kelItem?.komunitas ||
+        kecItem?.komunitas ||
+        wargaKitaMemberships[0].komunitas
+    );
+
+    const rt = rtItem
+      ? extractKomunitasMetadata(rtItem.komunitas).rt
+      : refMeta.rt;
+    const rw = rwItem
+      ? extractKomunitasMetadata(rwItem.komunitas).rw
+      : rtItem
+      ? extractKomunitasMetadata(rtItem.komunitas).rw
+      : refMeta.rw;
+    const kel = kelItem
+      ? extractKomunitasMetadata(kelItem.komunitas).rawKel
+      : rwItem
+      ? extractKomunitasMetadata(rwItem.komunitas).rawKel
+      : rtItem
+      ? extractKomunitasMetadata(rtItem.komunitas).rawKel
+      : refMeta.rawKel;
+    const kec = kecItem
+      ? extractKomunitasMetadata(kecItem.komunitas).rawKec
+      : kelItem
+      ? extractKomunitasMetadata(kelItem.komunitas).rawKec
+      : rwItem
+      ? extractKomunitasMetadata(rwItem.komunitas).rawKec
+      : rtItem
+      ? extractKomunitasMetadata(rtItem.komunitas).rawKec
+      : refMeta.rawKec || "Kota Tegal";
+
+    // Dapatkan rantai hierarki deterministik 4 tingkat
+    const hierarchyChain = getWargaHierarchyChain({
+      kecamatan: kec,
+      kelurahan: kel,
+      rw: rw,
+      rt: rt,
+    });
+
+    const chainKec = hierarchyChain.find((c) => {
+      const m = extractKomunitasMetadata(c);
+      return !m.hasKel && !m.hasRw && !m.hasRt;
+    });
+    const chainKel = hierarchyChain.find((c) => {
+      const m = extractKomunitasMetadata(c);
+      return m.hasKel && !m.hasRw && !m.hasRt;
+    });
+    const chainRw = hierarchyChain.find((c) => {
+      const m = extractKomunitasMetadata(c);
+      return m.hasRw && !m.hasRt;
+    });
+    const chainRt = hierarchyChain.find((c) => {
+      const m = extractKomunitasMetadata(c);
+      return m.hasRt;
+    });
+
+    // Fallback ID deterministik jika komunitas_id belum tersimpan di memberships
+    const fallbackKecId = kec ? toValidUUID(`kom-warga-${slugify(kec)}`) : undefined;
+    const fallbackKelId = kec && kel ? toValidUUID(`kom-warga-${slugify(kec)}-${slugify(kel)}`) : undefined;
+    const fallbackRwId = kec && kel && rw ? toValidUUID(`kom-warga-${slugify(kec)}-${slugify(kel)}-rw${rw.replace(/\D/g, "").padStart(2, "0")}`) : undefined;
+    const fallbackRtId = kec && kel && rw && rt ? toValidUUID(`kom-warga-${slugify(kec)}-${slugify(kel)}-rw${rw.replace(/\D/g, "").padStart(2, "0")}-rt${rt.replace(/\D/g, "").padStart(2, "0")}`) : undefined;
+
+    const rtKomId = rtItem?.komunitas_id || (chainRt ? toValidUUID(chainRt.id) : fallbackRtId);
+    const rwKomId = rwItem?.komunitas_id || (chainRw ? toValidUUID(chainRw.id) : fallbackRwId);
+    const kelKomId = kelItem?.komunitas_id || (chainKel ? toValidUUID(chainKel.id) : fallbackKelId);
+    const kecKomId = kecItem?.komunitas_id || (chainKec ? toValidUUID(chainKec.id) : fallbackKecId);
+
+    let formattedTitle = "Domisili Warga Kita";
+    if (rt && rw && kel) {
+      formattedTitle = `Warga RT ${rt} / RW ${rw}, Kel. ${kel}`;
+    } else if (rw && kel) {
+      formattedTitle = `Warga RW ${rw}, Kel. ${kel}`;
+    } else if (kel) {
+      formattedTitle = `Warga Kelurahan ${kel}`;
+    } else if (kec) {
+      formattedTitle = `Warga Kecamatan ${kec}`;
+    }
+
+    // Tentukan peran tertinggi untuk badge utama
+    let highestRole = "Penduduk";
+    let highestStatus: "approved" | "pending" | "rejected" = "approved";
+
+    if (rtItem && isRoleAdmin(rtItem.raw_peran)) {
+      highestRole = rtItem.peran;
+      highestStatus = rtItem.status;
+    } else if (rwItem && isRoleAdmin(rwItem.raw_peran)) {
+      highestRole = rwItem.peran;
+      highestStatus = rwItem.status;
+    } else if (kelItem && isRoleAdmin(kelItem.raw_peran)) {
+      highestRole = kelItem.peran;
+      highestStatus = kelItem.status;
+    } else if (kecItem && isRoleAdmin(kecItem.raw_peran)) {
+      highestRole = kecItem.peran;
+      highestStatus = kecItem.status;
+    } else {
+      const approvedItem = wargaKitaMemberships.find(
+        (i) => i.status === "approved"
+      );
+      if (approvedItem) {
+        highestRole = approvedItem.peran;
+        highestStatus = "approved";
+      } else {
+        highestRole = wargaKitaMemberships[0].peran;
+        highestStatus = wargaKitaMemberships[0].status;
+      }
+    }
+
+    const primaryKomunitasId =
+      rtKomId || rwKomId || kelKomId || kecKomId || wargaKitaMemberships[0].komunitas_id;
+
+    wargaKitaSummary = {
+      title: formattedTitle,
+      lokasi: `${kel ? `Kel. ${kel}, ` : ""}Kec. ${kec}, Kota Tegal`,
+      highestRole,
+      highestStatus,
+      primaryKomunitasId,
+      tiers: [
+        {
+          label: "RT" as const,
+          wilayah: rt ? `RT ${rt}` : "-",
+          komunitasId: rtKomId,
+          peran: rtItem?.peran || "Penduduk",
+          status: rtItem?.status || "approved",
+        },
+        {
+          label: "RW" as const,
+          wilayah: rw ? `RW ${rw}` : "-",
+          komunitasId: rwKomId,
+          peran: rwItem?.peran || "Penduduk",
+          status: rwItem?.status || "approved",
+        },
+        {
+          label: "Kelurahan" as const,
+          wilayah: kel ? `Kel. ${kel}` : "-",
+          komunitasId: kelKomId,
+          peran: kelItem?.peran || "Penduduk",
+          status: kelItem?.status || "approved",
+        },
+        {
+          label: "Kecamatan" as const,
+          wilayah: kec ? `Kec. ${kec}` : "-",
+          komunitasId: kecKomId,
+          peran: kecItem?.peran || "Penduduk",
+          status: kecItem?.status || "approved",
+        },
+      ],
+    };
+  }
+
+  const totalCardCount = (wargaKitaSummary ? 1 : 0) + nonWargaMemberships.length;
 
   return (
     <div className="flex flex-col flex-1 px-4 py-8 gap-8">
@@ -177,17 +374,17 @@ export default async function ProfilePage() {
       <section className="rounded-lg border border-border bg-card p-5 space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Sun className="h-4 w-4 text-emerald-400" />
+            <Sun className="h-4 w-4 text-sky-500" />
             <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-foreground">
               Tema &amp; Tampilan Antarmuka
             </h2>
           </div>
-          <span className="text-[10px] font-mono text-muted-foreground">
-            HIGH-CONTRAST / OLED
+          <span className="text-[10px] font-mono text-blue-600 dark:text-sky-400 font-semibold">
+            NUANSA BIRU &amp; SLATE
           </span>
         </div>
         <p className="text-xs text-muted-foreground leading-relaxed">
-          Pilih mode tampilan preferensi Anda: <strong className="text-foreground">Dark</strong> (OLED Pure Black), <strong className="text-foreground">Light</strong> (High-Contrast Monochrome), atau ikuti setelan <strong className="text-foreground">Sistem</strong>.
+          Pilih mode tampilan preferensi Anda: <strong className="text-foreground">Light</strong> (Soft Ice Slate &amp; Ocean Blue - anti-silau) atau <strong className="text-foreground">Dark</strong> (Midnight Navy - teduh &amp; nyaman di mata), atau ikuti setelan <strong className="text-foreground">Sistem</strong>.
         </p>
         <ThemeToggle />
       </section>
@@ -244,21 +441,21 @@ export default async function ProfilePage() {
       <section className="space-y-4">
         <div className="flex items-center justify-between px-0.5">
           <div className="flex items-center gap-2">
-            <Building2 className="h-4 w-4 text-emerald-400" />
+            <Building2 className="h-4 w-4 text-blue-600 dark:text-sky-400" />
             <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground font-mono">
               Komunitas Saya
             </h2>
           </div>
           <span className="text-xs font-mono text-muted-foreground">
-            {userCommunities.length} TERDAFTAR
+            {totalCardCount} TERDAFTAR
           </span>
         </div>
 
         {/* List Komunitas yang Diikuti */}
-        {userCommunities.length === 0 ? (
+        {totalCardCount === 0 ? (
           <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border bg-card/40 p-8 text-center space-y-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-md border border-border bg-muted/30 text-muted-foreground">
-              <Compass className="h-5 w-5 text-emerald-400" />
+              <Compass className="h-5 w-5 text-blue-600 dark:text-sky-400" />
             </div>
             <div className="space-y-1">
               <h3 className="text-sm font-medium text-foreground">
@@ -277,15 +474,28 @@ export default async function ProfilePage() {
             </Link>
           </div>
         ) : (
-          <div className="space-y-3">
-            {userCommunities.map((item) => {
+          <div className="space-y-4">
+            {/* 1. Kartu Rangkuman Warga Kita (1 Kartu untuk Semua Jenjang, Interaktif) */}
+            {wargaKitaSummary && (
+              <UnifiedWargaCard
+                title={wargaKitaSummary.title}
+                lokasi={wargaKitaSummary.lokasi}
+                highestRole={wargaKitaSummary.highestRole}
+                highestStatus={wargaKitaSummary.highestStatus}
+                primaryKomunitasId={wargaKitaSummary.primaryKomunitasId}
+                tiers={wargaKitaSummary.tiers}
+              />
+            )}
+
+            {/* 2. Kartu Komunitas Lainnya (Posyandu, PAUD & Kesetaraan) */}
+            {nonWargaMemberships.map((item) => {
               const kom = item.komunitas || {};
               const status = item.status as "pending" | "approved" | "rejected";
 
               return (
                 <div
                   key={item.id}
-                  className="rounded-lg border border-border bg-card p-4 space-y-3 transition-colors hover:border-zinc-700"
+                  className="rounded-lg border border-border bg-card p-4 space-y-3 transition-colors hover:border-blue-500/40 shadow-xs"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="space-y-1">
@@ -294,7 +504,11 @@ export default async function ProfilePage() {
                       </h4>
                       <div className="flex items-center gap-2 text-xs text-muted-foreground font-mono">
                         <span className="font-medium text-foreground">
-                          {kom.jenis || "Posyandu"}
+                          {kom.jenis === "posyandu"
+                            ? "Posyandu"
+                            : kom.jenis === "satuan_paud"
+                            ? "Satuan PAUD"
+                            : kom.jenis || "Komunitas"}
                         </span>
                         <span>•</span>
                         <span className="flex items-center gap-1">
@@ -330,6 +544,16 @@ export default async function ProfilePage() {
                       {kom.deskripsi}
                     </p>
                   )}
+
+                  <div className="pt-2 border-t border-border">
+                    <Link
+                      href={`/komunitas/${item.komunitas_id}`}
+                      className="group flex h-8 w-full items-center justify-center gap-2 rounded-md border border-border bg-card px-3 text-xs font-mono font-medium text-foreground transition-colors hover:bg-muted"
+                    >
+                      <span>Buka Komunitas</span>
+                      <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-1" />
+                    </Link>
+                  </div>
                 </div>
               );
             })}
@@ -340,7 +564,7 @@ export default async function ProfilePage() {
                 href="/komunitas"
                 className="flex w-full h-10 items-center justify-center gap-2 rounded-md border border-border bg-card px-4 text-xs font-mono font-medium text-foreground transition-colors hover:bg-muted"
               >
-                <Compass className="h-4 w-4 text-emerald-400" />
+                <Compass className="h-4 w-4 text-blue-600 dark:text-sky-400" />
                 <span>Jelajahi Komunitas Lainnya</span>
               </Link>
             </div>

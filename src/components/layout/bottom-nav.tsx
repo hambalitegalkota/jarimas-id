@@ -75,7 +75,7 @@ export function BottomNav() {
             >
               {/* Minimal Top Border Indicator */}
               {active && (
-                <span className="absolute top-0 h-0.5 w-8 bg-emerald-500 rounded-full" />
+                <span className="absolute top-0 h-0.5 w-8 bg-blue-600 dark:bg-sky-400 rounded-full" />
               )}
 
               {/* Icon Container */}
@@ -83,11 +83,11 @@ export function BottomNav() {
                 <Icon
                   className={cn(
                     "h-4.5 w-4.5 transition-colors",
-                    active ? "text-foreground stroke-[2.2px]" : "text-muted-foreground stroke-[1.75px]"
+                    active ? "text-blue-600 dark:text-sky-400 stroke-[2.2px]" : "text-muted-foreground stroke-[1.75px]"
                   )}
                 />
                 {item.badge && (
-                  <span className="absolute -right-2 -top-1 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-emerald-500 px-1 text-[9px] font-bold text-black font-mono">
+                  <span className="absolute -right-2 -top-1 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-blue-600 dark:bg-sky-400 px-1 text-[9px] font-bold text-white dark:text-slate-950 font-mono">
                     {item.badge}
                   </span>
                 )}
