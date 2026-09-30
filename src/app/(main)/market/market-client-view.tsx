@@ -70,7 +70,7 @@ export function MarketClientView({
             <div className="flex flex-wrap items-center gap-2.5 pt-2">
               <Link
                 href="/market/pesanan"
-                className="inline-flex h-9 items-center gap-2 rounded-md bg-foreground px-4 text-xs font-mono font-bold uppercase tracking-wider text-background shadow-md transition-all hover:bg-foreground/90"
+                className="inline-flex h-9 items-center gap-2 rounded-md bg-blue-600 hover:bg-blue-500 px-4 text-xs font-mono font-bold uppercase tracking-wider text-white shadow-sm transition-all"
               >
                 <ClipboardList className="h-3.5 w-3.5" />
                 <span>PESANAN SAYA</span>
@@ -135,7 +135,7 @@ export function MarketClientView({
               className={cn(
                 "inline-flex shrink-0 items-center rounded-md px-3 py-1.5 text-xs font-mono transition-all cursor-pointer",
                 selectedKategori === kat
-                  ? "bg-foreground text-background font-bold border border-foreground"
+                  ? "bg-emerald-600 text-white font-bold shadow-xs border border-emerald-500"
                   : "bg-card border border-border text-muted-foreground hover:bg-muted hover:text-foreground"
               )}
             >
@@ -148,7 +148,7 @@ export function MarketClientView({
       {/* Grid Produk */}
       {filteredProducts.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border bg-card p-12 text-center space-y-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-md border border-border bg-zinc-900 text-muted-foreground">
+          <div className="flex h-12 w-12 items-center justify-center rounded-md border border-border bg-muted text-muted-foreground">
             <Package className="h-6 w-6 stroke-[1.5px]" />
           </div>
           <div className="space-y-1.5 max-w-sm">
@@ -164,7 +164,7 @@ export function MarketClientView({
               setSearchQuery("");
               setSelectedKategori("Semua");
             }}
-            className="inline-flex h-8 items-center rounded-md bg-zinc-900 border border-border px-3 text-xs font-mono text-foreground hover:bg-zinc-800"
+            className="inline-flex h-8 items-center rounded-md bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-500/50 px-3 text-xs font-mono font-bold cursor-pointer shadow-xs"
           >
             RESET FILTER
           </button>

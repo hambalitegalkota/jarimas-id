@@ -106,7 +106,7 @@ export function DdksDrawer({
             </div>
             <div>
               <h3 className="text-sm font-bold text-foreground">
-                Rekam Medis &amp; DDKS
+                Rekam Medis &amp; DDTK
               </h3>
               <p className="text-xs text-muted-foreground">{anak.nama_lengkap}</p>
             </div>
@@ -186,7 +186,7 @@ export function DdksDrawer({
             </div>
           ) : (
             <p className="text-xs text-muted-foreground text-center py-2">
-              Belum ada data pengukuran DDKS tersimpan.
+              Belum ada data pengukuran DDTK tersimpan.
             </p>
           )}
 
@@ -203,10 +203,10 @@ export function DdksDrawer({
             {!showAddForm ? (
               <button
                 onClick={() => setShowAddForm(true)}
-                className="flex w-full h-10 items-center justify-center gap-1.5 rounded-md bg-foreground px-4 text-xs font-bold text-background transition-all hover:bg-foreground/90 cursor-pointer"
+                className="flex w-full h-10 items-center justify-center gap-1.5 rounded-md bg-blue-600 hover:bg-blue-500 text-white px-4 text-xs font-bold transition-all shadow-md cursor-pointer"
               >
                 <Plus className="h-4 w-4" />
-                <span>Catat Pengukuran DDKS Baru</span>
+                <span>Catat Pengukuran DDTK Baru</span>
               </button>
             ) : (
               <form
@@ -307,7 +307,7 @@ export function DdksDrawer({
                 <button
                   type="submit"
                   disabled={isPending}
-                  className="flex w-full h-9 items-center justify-center gap-1.5 rounded-md bg-foreground px-4 text-xs font-bold text-background transition-all hover:bg-foreground/90 disabled:opacity-50 cursor-pointer"
+                  className="flex w-full h-9 items-center justify-center gap-1.5 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white px-4 text-xs font-bold transition-all shadow-md disabled:opacity-50 cursor-pointer"
                 >
                   {isPending ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -326,7 +326,7 @@ export function DdksDrawer({
           <div className="flex items-center gap-2 rounded-md bg-muted/40 p-3 text-xs text-muted-foreground border border-border">
             <ShieldAlert className="h-4 w-4 text-zinc-400 shrink-0" />
             <span>
-              Mode Pratinjau (*Read-Only*). Penginputan dan pembaruan hasil DDKS dilakukan oleh Kader Posyandu &amp; Nakes.
+              Mode Pratinjau (*Read-Only*). Penginputan dan pembaruan hasil DDTK dilakukan oleh Kader Posyandu &amp; Nakes.
             </span>
           </div>
         )}

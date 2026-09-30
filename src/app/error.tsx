@@ -41,7 +41,7 @@ export default function ErrorBoundary({
       <div className="flex w-full flex-col gap-2.5">
         <button
           onClick={() => reset()}
-          className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md bg-foreground border border-border px-4 text-xs font-mono font-bold uppercase tracking-wider text-background shadow-md transition-all hover:opacity-90"
+          className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md bg-blue-600 hover:bg-blue-500 text-white px-4 text-xs font-mono font-bold uppercase tracking-wider shadow-md transition-all cursor-pointer"
         >
           <RefreshCcw className="h-3.5 w-3.5" />
           <span>COBA MUAT ULANG</span>

@@ -505,8 +505,7 @@ export async function getDataAnakByKomunitas(komunitasId: string): Promise<{
           lingkar_kepala,
           catatan,
           recorded_by,
-          created_at,
-          profiles (nama_lengkap)
+          created_at
         )
       `)
       .eq("komunitas_id", toValidUUID(komunitasId))

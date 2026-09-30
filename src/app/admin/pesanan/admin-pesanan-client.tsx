@@ -177,7 +177,7 @@ export function AdminPesananClient({
             className={cn(
               "inline-flex shrink-0 items-center rounded-md px-3 py-1.5 text-xs font-mono font-medium transition-all cursor-pointer",
               activeTab === tab.value
-                ? "bg-foreground text-background font-bold"
+                ? "bg-blue-600 text-white font-bold shadow-xs"
                 : "bg-card border border-border text-muted-foreground hover:text-foreground hover:bg-muted"
             )}
           >
@@ -309,7 +309,7 @@ export function AdminPesananClient({
                           handleUpdateStatus(pesanan.id, "diproses")
                         }
                         disabled={isPending}
-                        className="inline-flex h-8 items-center gap-1.5 rounded-md bg-foreground px-3 text-xs font-bold text-background hover:bg-foreground/90 cursor-pointer"
+                        className="inline-flex h-8 items-center gap-1.5 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white px-3 text-xs font-bold cursor-pointer shadow-xs"
                       >
                         <CheckCircle2 className="h-3.5 w-3.5" />
                         <span>Konfirmasi Bayar</span>
@@ -324,7 +324,7 @@ export function AdminPesananClient({
                         setNomorResiInput(`JRM-TG${Date.now().toString().slice(-6)}`);
                       }}
                       disabled={isPending}
-                      className="inline-flex h-8 items-center gap-1.5 rounded-md bg-cyan-950/60 border border-cyan-700 px-3 text-xs font-bold text-cyan-300 hover:bg-cyan-900 cursor-pointer"
+                      className="inline-flex h-8 items-center gap-1.5 rounded-md bg-blue-600 hover:bg-blue-500 text-white px-3 text-xs font-bold cursor-pointer shadow-xs"
                     >
                       <Truck className="h-3.5 w-3.5" />
                       <span>Input Resi &amp; Kirim</span>
@@ -421,7 +421,7 @@ export function AdminPesananClient({
                       nomorResiInput
                     )
                   }
-                  className="inline-flex h-9 items-center gap-2 rounded-md bg-foreground px-4 text-xs font-bold text-background hover:bg-foreground/90 disabled:opacity-50 cursor-pointer"
+                  className="inline-flex h-9 items-center gap-2 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white px-4 text-xs font-bold disabled:opacity-50 cursor-pointer shadow-md"
                 >
                   {isPending ? (
                     <>

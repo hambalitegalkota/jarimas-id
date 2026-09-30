@@ -44,10 +44,10 @@ export default async function KelolaAnggotaPage({
       <div className="flex items-center justify-between">
         <Link
           href={`/komunitas/${id}`}
-          className="inline-flex h-9 items-center gap-2 rounded-md bg-zinc-900 border border-border px-3 text-xs font-mono text-foreground transition-all hover:bg-zinc-800"
+          className="inline-flex h-9 items-center gap-2 rounded-md bg-card border border-border px-3.5 text-xs font-mono font-semibold text-foreground transition-all hover:bg-muted hover:border-primary/40 shadow-xs"
         >
-          <ArrowLeft className="h-3.5 w-3.5" />
-          <span>KEMBALI KE DETAIL KOMUNITAS</span>
+          <ArrowLeft className="h-3.5 w-3.5 text-primary" />
+          <span>Kembali ke Detail Komunitas</span>
         </Link>
       </div>
 

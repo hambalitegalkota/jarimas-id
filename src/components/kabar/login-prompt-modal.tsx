@@ -115,7 +115,7 @@ export function LoginPromptModal({
           <div className="pt-2 flex flex-col gap-2.5">
             <Link
               href="/login"
-              className="flex min-h-[44px] items-center justify-center gap-2 rounded-md bg-foreground px-4 py-2.5 text-xs font-mono font-bold uppercase tracking-wider text-background shadow-md transition-all active:scale-[0.99] hover:bg-zinc-200"
+              className="flex min-h-[44px] items-center justify-center gap-2 rounded-md bg-blue-600 hover:bg-blue-500 px-4 py-2.5 text-xs font-mono font-bold uppercase tracking-wider text-white shadow-md transition-all active:scale-[0.99]"
             >
               <LogIn className="h-4 w-4" />
               <span>Masuk / Login Sekarang</span>

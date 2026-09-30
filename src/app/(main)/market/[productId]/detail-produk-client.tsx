@@ -65,18 +65,18 @@ export function DetailProdukClient({ produk }: DetailProdukClientProps) {
       <div className="flex items-center justify-between">
         <Link
           href="/market"
-          className="inline-flex h-9 items-center gap-2 rounded-md bg-zinc-900 border border-border px-3 text-xs font-mono text-foreground transition-all hover:bg-zinc-800"
+          className="inline-flex h-9 items-center gap-2 rounded-md bg-card border border-border px-3.5 text-xs font-mono font-semibold text-foreground transition-all hover:bg-muted hover:border-primary/40 shadow-xs"
         >
-          <ArrowLeft className="h-3.5 w-3.5" />
-          <span>KEMBALI KE KATALOG</span>
+          <ArrowLeft className="h-3.5 w-3.5 text-primary" />
+          <span>Kembali ke Katalog</span>
         </Link>
 
         <button
           onClick={handleShare}
-          className="inline-flex h-9 items-center gap-2 rounded-md bg-zinc-900 border border-border px-3 text-xs font-mono text-foreground transition-all hover:bg-zinc-800"
+          className="inline-flex h-9 items-center gap-2 rounded-md bg-card border border-border px-3.5 text-xs font-mono font-semibold text-foreground transition-all hover:bg-muted hover:border-primary/40 shadow-xs cursor-pointer"
         >
           <Share2 className="h-3.5 w-3.5" />
-          <span>{isCopied ? "LINK TERSALIN!" : "BAGIKAN"}</span>
+          <span>{isCopied ? "Link Tersalin!" : "Bagikan"}</span>
         </button>
       </div>
 
@@ -128,7 +128,7 @@ export function DetailProdukClient({ produk }: DetailProdukClientProps) {
             </div>
 
             {/* Harga */}
-            <div className="rounded-md bg-zinc-950 border border-border p-4">
+            <div className="rounded-md bg-muted/40 border border-border p-4">
               <span className="text-[10px] font-mono uppercase text-muted-foreground block">
                 HARGA RESMI SATUAN
               </span>
@@ -142,7 +142,7 @@ export function DetailProdukClient({ produk }: DetailProdukClientProps) {
               <h3 className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground font-bold">
                 Deskripsi Produk
               </h3>
-              <p className="text-xs sm:text-sm leading-relaxed text-zinc-300 whitespace-pre-line">
+              <p className="text-xs sm:text-sm leading-relaxed text-muted-foreground whitespace-pre-line">
                 {produk.deskripsi}
               </p>
             </div>
@@ -169,7 +169,7 @@ export function DetailProdukClient({ produk }: DetailProdukClientProps) {
                 <button
                   onClick={handleDecrease}
                   disabled={jumlah <= 1 || isOutOfStock}
-                  className="flex h-8 w-8 items-center justify-center rounded-md border border-border bg-zinc-900 font-mono font-bold text-foreground transition-all hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="flex h-8 w-8 items-center justify-center rounded-md border border-border bg-card font-mono font-bold text-foreground transition-all hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
                 >
                   <Minus className="h-3.5 w-3.5" />
                 </button>
@@ -179,7 +179,7 @@ export function DetailProdukClient({ produk }: DetailProdukClientProps) {
                 <button
                   onClick={handleIncrease}
                   disabled={jumlah >= produk.stok || isOutOfStock}
-                  className="flex h-8 w-8 items-center justify-center rounded-md border border-border bg-zinc-900 font-mono font-bold text-foreground transition-all hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="flex h-8 w-8 items-center justify-center rounded-md border border-border bg-card font-mono font-bold text-foreground transition-all hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
                 >
                   <Plus className="h-3.5 w-3.5" />
                 </button>
@@ -187,7 +187,7 @@ export function DetailProdukClient({ produk }: DetailProdukClientProps) {
             </div>
 
             {/* Total Perhitungan */}
-            <div className="flex items-center justify-between rounded-md bg-zinc-950 p-3.5 border border-border font-mono">
+            <div className="flex items-center justify-between rounded-md bg-muted/40 p-3.5 border border-border font-mono">
               <span className="text-xs text-muted-foreground">
                 TOTAL ESTIMASI:
               </span>
@@ -200,7 +200,7 @@ export function DetailProdukClient({ produk }: DetailProdukClientProps) {
             <button
               onClick={handleCheckout}
               disabled={isOutOfStock}
-              className="flex h-10 w-full items-center justify-center gap-2 rounded-md bg-foreground border border-zinc-700 px-5 text-xs font-mono font-bold uppercase tracking-wider text-background shadow-md transition-all hover:bg-zinc-200 disabled:bg-zinc-900 disabled:border-border disabled:text-muted-foreground disabled:cursor-not-allowed"
+              className="flex h-10 w-full items-center justify-center gap-2 rounded-md bg-emerald-600 hover:bg-emerald-500 px-5 text-xs font-mono font-bold uppercase tracking-wider text-white shadow-md transition-all active:scale-98 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
               <ShoppingBag className="h-4 w-4" />
               <span>
@@ -212,12 +212,12 @@ export function DetailProdukClient({ produk }: DetailProdukClientProps) {
 
             {/* Info Keamanan & Garansi */}
             <div className="grid grid-cols-2 gap-2 text-center pt-1 font-mono text-[10px] text-muted-foreground">
-              <div className="flex items-center justify-center gap-1.5 p-1.5 rounded-md bg-zinc-950 border border-border/60">
-                <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
+              <div className="flex items-center justify-center gap-1.5 p-1.5 rounded-md bg-muted/40 border border-border/60">
+                <ShieldCheck className="h-3.5 w-3.5 text-emerald-500 dark:text-emerald-400" />
                 <span>TERSTANDAR</span>
               </div>
-              <div className="flex items-center justify-center gap-1.5 p-1.5 rounded-md bg-zinc-950 border border-border/60">
-                <Truck className="h-3.5 w-3.5 text-cyan-400" />
+              <div className="flex items-center justify-center gap-1.5 p-1.5 rounded-md bg-muted/40 border border-border/60">
+                <Truck className="h-3.5 w-3.5 text-cyan-500 dark:text-cyan-400" />
                 <span>KIRIM KOTA TEGAL</span>
               </div>
             </div>

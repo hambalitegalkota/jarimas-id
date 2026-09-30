@@ -188,7 +188,11 @@ export function KomunitasCard({
               {membership?.status === "approved" ? (
                 <Link
                   href={`/komunitas/${komunitas.id}`}
-                  className="group flex flex-1 h-9 items-center justify-center gap-2 rounded-md bg-foreground px-3 text-xs font-mono font-semibold text-background transition-all hover:bg-foreground/90 shadow-xs"
+                  className={cn(
+                    "group flex flex-1 h-9 items-center justify-center gap-2 rounded-md px-3 text-xs font-mono font-semibold text-white transition-all shadow-xs",
+                    komunitas.jenis === "posyandu" && "bg-blue-600 hover:bg-blue-500",
+                    komunitas.jenis === "satuan_paud" && "bg-amber-600 hover:bg-amber-500"
+                  )}
                 >
                   <span>Lihat Komunitas</span>
                   <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
@@ -196,7 +200,7 @@ export function KomunitasCard({
               ) : (
                 <Link
                   href={`/komunitas/${komunitas.id}`}
-                  className="flex flex-1 h-9 items-center justify-center gap-1.5 rounded-md border border-border bg-card px-3 text-xs font-mono font-medium text-foreground transition-colors hover:bg-muted"
+                  className="flex flex-1 h-9 items-center justify-center gap-1.5 rounded-md border border-border bg-card px-3 text-xs font-mono font-medium text-foreground transition-colors hover:bg-muted shadow-xs"
                 >
                   <span>Detail</span>
                   <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
@@ -212,7 +216,11 @@ export function KomunitasCard({
                     }
                     setIsJoinModalOpen(true);
                   }}
-                  className="flex flex-1 h-9 items-center justify-center gap-1.5 rounded-md bg-foreground px-3 text-xs font-medium text-background transition-colors hover:bg-foreground/90 font-mono"
+                  className={cn(
+                    "flex flex-1 h-9 items-center justify-center gap-1.5 rounded-md px-3 text-xs font-bold text-white transition-all font-mono shadow-xs cursor-pointer active:scale-98",
+                    komunitas.jenis === "posyandu" && "bg-blue-600 hover:bg-blue-500",
+                    komunitas.jenis === "satuan_paud" && "bg-amber-600 hover:bg-amber-500"
+                  )}
                 >
                   <UserPlus className="h-3.5 w-3.5" />
                   <span>Gabung</span>

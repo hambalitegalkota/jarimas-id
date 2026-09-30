@@ -467,7 +467,7 @@ export default async function ProfilePage() {
             </div>
             <Link
               href="/komunitas"
-              className="inline-flex h-9 items-center gap-2 rounded-md bg-foreground px-4 text-xs font-medium text-background transition-colors hover:bg-foreground/90 font-mono"
+              className="inline-flex h-9 items-center gap-2 rounded-md bg-blue-600 hover:bg-blue-500 px-4 text-xs font-bold text-white transition-all shadow-sm font-mono"
             >
               <span>Jelajahi Komunitas</span>
               <ArrowRight className="h-3.5 w-3.5" />

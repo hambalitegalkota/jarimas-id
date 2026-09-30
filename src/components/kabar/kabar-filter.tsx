@@ -76,9 +76,9 @@ export function KabarFilter({
           onClick={() => updateFilters("visibility", "semua")}
           disabled={isPending}
           className={cn(
-            "inline-flex h-7 items-center gap-1.5 rounded-md px-2.5 text-xs whitespace-nowrap transition-colors",
+            "inline-flex h-7 items-center gap-1.5 rounded-md px-2.5 text-xs whitespace-nowrap transition-colors cursor-pointer",
             currentVisibility === "semua"
-              ? "bg-foreground text-background font-semibold"
+              ? "bg-blue-600 text-white font-semibold shadow-xs"
               : "border border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground"
           )}
         >
@@ -91,13 +91,13 @@ export function KabarFilter({
           onClick={() => updateFilters("visibility", "publik")}
           disabled={isPending}
           className={cn(
-            "inline-flex h-7 items-center gap-1.5 rounded-md px-2.5 text-xs whitespace-nowrap transition-colors",
+            "inline-flex h-7 items-center gap-1.5 rounded-md px-2.5 text-xs whitespace-nowrap transition-colors cursor-pointer",
             currentVisibility === "publik"
-              ? "bg-foreground text-background font-semibold"
+              ? "bg-emerald-600 text-white font-semibold shadow-xs"
               : "border border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground"
           )}
         >
-          <Globe className="h-3 w-3 text-emerald-400" />
+          <Globe className="h-3 w-3" />
           <span>PUBLIK</span>
         </button>
 
@@ -106,13 +106,13 @@ export function KabarFilter({
           onClick={() => updateFilters("visibility", "teman")}
           disabled={isPending}
           className={cn(
-            "inline-flex h-7 items-center gap-1.5 rounded-md px-2.5 text-xs whitespace-nowrap transition-colors",
+            "inline-flex h-7 items-center gap-1.5 rounded-md px-2.5 text-xs whitespace-nowrap transition-colors cursor-pointer",
             currentVisibility === "teman"
-              ? "bg-foreground text-background font-semibold"
+              ? "bg-cyan-600 text-white font-semibold shadow-xs"
               : "border border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground"
           )}
         >
-          <Users className="h-3 w-3 text-cyan-400" />
+          <Users className="h-3 w-3" />
           <span>TEMAN</span>
         </button>
 
@@ -121,13 +121,13 @@ export function KabarFilter({
           onClick={() => updateFilters("visibility", "komunitas")}
           disabled={isPending}
           className={cn(
-            "inline-flex h-7 items-center gap-1.5 rounded-md px-2.5 text-xs whitespace-nowrap transition-colors",
+            "inline-flex h-7 items-center gap-1.5 rounded-md px-2.5 text-xs whitespace-nowrap transition-colors cursor-pointer",
             currentVisibility === "komunitas"
-              ? "bg-foreground text-background font-semibold"
+              ? "bg-amber-600 text-white font-semibold shadow-xs"
               : "border border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground"
           )}
         >
-          <Building2 className="h-3 w-3 text-amber-400" />
+          <Building2 className="h-3 w-3" />
           <span>KOMUNITAS</span>
         </button>
       </div>

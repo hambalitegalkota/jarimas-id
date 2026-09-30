@@ -70,7 +70,7 @@ export default async function KabarPage({ searchParams }: KabarPageProps) {
       </header>
 
       {/* Filter & Sorting Controls */}
-      <Suspense fallback={<div className="h-16 animate-pulse bg-zinc-900 rounded-md border border-border" />}>
+      <Suspense fallback={<div className="h-16 animate-pulse bg-muted rounded-md border border-border" />}>
         <KabarFilter
           currentSort={currentSort}
           currentVisibility={currentVisibility}
@@ -81,7 +81,7 @@ export default async function KabarPage({ searchParams }: KabarPageProps) {
       <main className="space-y-4 pb-16">
         {feedItems.length === 0 ? (
           <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border bg-card p-12 text-center space-y-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-md border border-border bg-zinc-900 text-muted-foreground">
+            <div className="flex h-12 w-12 items-center justify-center rounded-md border border-border bg-muted text-muted-foreground">
               <MessageSquarePlus className="h-6 w-6 stroke-[1.5px]" />
             </div>
             <div className="space-y-1.5 max-w-sm">

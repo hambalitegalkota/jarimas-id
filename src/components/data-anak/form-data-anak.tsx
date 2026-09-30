@@ -332,7 +332,7 @@ export function FormDataAnak({
               className={cn(
                 "flex h-10 items-center justify-center rounded-md border text-xs font-bold transition-all cursor-pointer",
                 isSekolah
-                  ? "border-foreground bg-foreground text-background"
+                  ? "border-emerald-500 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-bold"
                   : "border-border text-muted-foreground hover:bg-muted"
               )}
             >
@@ -348,7 +348,7 @@ export function FormDataAnak({
               className={cn(
                 "flex h-10 items-center justify-center rounded-md border text-xs font-bold transition-all cursor-pointer",
                 !isSekolah
-                  ? "border-amber-500 bg-amber-950/20 text-amber-400"
+                  ? "border-amber-500 bg-amber-500/15 text-amber-600 dark:text-amber-400 font-bold"
                   : "border-border text-muted-foreground hover:bg-muted"
               )}
             >
@@ -397,12 +397,12 @@ export function FormDataAnak({
         </div>
       </div>
 
-      {/* SECTION 3: PENGUKURAN DDKS AWAL (OPSIONAL) */}
+      {/* SECTION 3: PENGUKURAN DDTK AWAL (OPSIONAL) */}
       <div className="space-y-4 rounded-lg border border-border bg-card p-5">
         <div className="flex items-center gap-2 border-b border-border pb-3">
           <Activity className="h-4 w-4 text-emerald-400" />
           <h3 className="text-xs font-bold font-mono uppercase tracking-wider text-foreground">
-            3. Pengukuran DDKS &amp; Antropometri Awal (Opsional)
+            3. Pengukuran DDTK &amp; Antropometri Awal (Opsional)
           </h3>
         </div>
 
@@ -500,7 +500,7 @@ export function FormDataAnak({
         <button
           type="submit"
           disabled={isPending}
-          className="flex w-full h-10 items-center justify-center gap-2 rounded-md bg-foreground px-5 text-xs font-bold text-background transition-all hover:bg-foreground/90 disabled:opacity-50 cursor-pointer"
+          className="flex w-full h-10 items-center justify-center gap-2 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white px-5 text-xs font-bold transition-all shadow-md disabled:opacity-50 cursor-pointer"
         >
           {isPending ? (
             <>

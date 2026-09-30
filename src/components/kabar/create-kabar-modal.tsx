@@ -73,7 +73,7 @@ export function CreateKabarModal({ currentUserId }: CreateKabarModalProps) {
           setIsOpen(true);
         }}
         aria-label="Buat Kabar Baru"
-        className="fixed bottom-20 right-4 z-40 flex h-11 items-center gap-2 rounded-md bg-foreground px-4 text-xs font-mono font-semibold uppercase tracking-wider text-background shadow-lg transition-all active:scale-95 hover:bg-zinc-200 sm:right-6 sm:bottom-22 border border-zinc-700"
+        className="fixed bottom-20 right-4 z-40 flex h-11 items-center gap-2 rounded-full bg-blue-600 hover:bg-blue-500 px-4.5 text-xs font-mono font-bold uppercase tracking-wider text-white shadow-lg transition-all active:scale-95 sm:right-6 sm:bottom-22 border border-blue-400/30 cursor-pointer"
       >
         <Plus className="h-4 w-4 stroke-[2.5px]" />
         <span>Bagikan Kabar</span>
@@ -230,7 +230,7 @@ export function CreateKabarModal({ currentUserId }: CreateKabarModalProps) {
                   <button
                     type="submit"
                     disabled={!konten.trim() || isPending}
-                    className="flex w-full min-h-[44px] items-center justify-center gap-2 rounded-md bg-foreground px-5 py-2.5 text-xs font-mono font-bold uppercase tracking-wider text-background shadow-md transition-all active:scale-[0.99] hover:bg-zinc-200 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                    className="flex w-full min-h-[44px] items-center justify-center gap-2 rounded-md bg-blue-600 hover:bg-blue-500 px-5 py-2.5 text-xs font-mono font-bold uppercase tracking-wider text-white shadow-md transition-all active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
                   >
                     {isPending ? (
                       <>

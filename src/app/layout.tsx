@@ -19,13 +19,15 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "JARIMAS-ID | Platform Kolaboratif Warga & Posyandu",
   description:
-    "Platform kolaboratif mobile-first interkoneksi data anak 0-7 tahun, DDKS tumbuh kembang, validasi lintas komunitas PAUD & Posyandu, serta pengadaan resmi Jarimas Market Kota Tegal.",
+    "Platform kolaboratif mobile-first interkoneksi data anak 0-7 tahun, DDTK tumbuh kembang, pendataan ATS (Anak Tidak Sekolah), validasi lintas komunitas PAUD & Posyandu, serta pengadaan resmi Jarimas Market Kota Tegal.",
   keywords: [
     "Jarimas",
     "Posyandu",
     "PAUD",
     "Kota Tegal",
-    "DDKS",
+    "DDTK",
+    "ATS",
+    "Anak Tidak Sekolah",
     "Stunting",
     "Tumbuh Kembang Anak",
     "Warga Kita",

@@ -479,7 +479,7 @@ export function ApprovalList({
                   <button
                     onClick={() => handleApprove(item.id, userName)}
                     disabled={isProcessing}
-                    className="flex flex-1 h-9 items-center justify-center gap-1.5 rounded-md bg-foreground px-3 py-1.5 text-xs font-semibold text-background transition-all hover:bg-zinc-200 active:scale-98 disabled:opacity-50 font-mono font-bold uppercase"
+                    className="flex flex-1 h-9 items-center justify-center gap-1.5 rounded-md bg-emerald-600 hover:bg-emerald-500 px-3 py-1.5 text-xs font-bold text-white transition-all active:scale-98 disabled:opacity-50 font-mono uppercase shadow-xs cursor-pointer"
                   >
                     {isProcessing ? (
                       <Loader2 className="h-3.5 w-3.5 animate-spin" />

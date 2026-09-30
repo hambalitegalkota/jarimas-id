@@ -49,7 +49,7 @@ export function KomunitasSayaSection({
 
         <Link
           href="/login"
-          className="inline-flex h-9 items-center justify-center gap-1.5 rounded-md bg-foreground px-4 text-xs font-mono font-semibold text-background hover:bg-foreground/90 transition-colors shrink-0"
+          className="inline-flex h-9 items-center justify-center gap-1.5 rounded-md bg-blue-600 hover:bg-blue-500 px-4 text-xs font-mono font-bold text-white transition-all shadow-sm shrink-0"
         >
           <LogIn className="h-3.5 w-3.5" />
           <span>Masuk / Daftar</span>
@@ -407,7 +407,13 @@ export function KomunitasSayaSection({
                 {isApproved ? (
                   <Link
                     href={`/komunitas/${item.id}`}
-                    className="group flex h-9 w-full items-center justify-center gap-2 rounded-md bg-foreground px-3 text-xs font-mono font-semibold text-background transition-all hover:bg-foreground/90 shadow-xs"
+                    className={cn(
+                      "group flex h-9 w-full items-center justify-center gap-2 rounded-md px-3 text-xs font-mono font-bold uppercase tracking-wider text-white transition-all shadow-xs",
+                      item.jenis === "warga_kita" && "bg-emerald-600 hover:bg-emerald-500",
+                      item.jenis === "posyandu" && "bg-blue-600 hover:bg-blue-500",
+                      item.jenis === "satuan_paud" && "bg-amber-600 hover:bg-amber-500",
+                      !["warga_kita", "posyandu", "satuan_paud"].includes(item.jenis) && "bg-primary hover:bg-primary/90"
+                    )}
                     title={`Masuk ke ${formattedTitle}`}
                   >
                     <span>Lihat Komunitas</span>

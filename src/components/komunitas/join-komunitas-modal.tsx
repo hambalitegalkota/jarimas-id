@@ -180,7 +180,7 @@ export function JoinKomunitasModal({
                 <button
                   type="submit"
                   disabled={isPending}
-                  className="flex w-full min-h-[44px] items-center justify-center gap-2 rounded-md bg-foreground px-5 py-2.5 text-xs font-mono font-bold uppercase tracking-wider text-background shadow-md transition-all active:scale-[0.99] hover:bg-zinc-200 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                  className="flex w-full min-h-[44px] items-center justify-center gap-2 rounded-md bg-blue-600 hover:bg-blue-500 px-5 py-2.5 text-xs font-mono font-bold uppercase tracking-wider text-white shadow-md transition-all active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
                 >
                   {isPending ? (
                     <>

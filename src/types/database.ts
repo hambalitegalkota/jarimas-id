@@ -142,6 +142,9 @@ export interface DdksRecord {
   } | null;
 }
 
+// DDTK (Deteksi Dini Tumbuh Kembang) alias for DDKS
+export type DdtkRecord = DdksRecord;
+
 export interface DataAnakItem {
   id: string;
   nama_lengkap: string;
@@ -164,6 +167,51 @@ export interface DataAnakItem {
   updated_at?: string;
   latest_ddks?: DdksRecord | null;
   ddks_history?: DdksRecord[];
+  latest_ddtk?: DdtkRecord | null;
+  ddtk_history?: DdtkRecord[];
+}
+
+export const ALASAN_TIDAK_SEKOLAH_LIST = [
+  "Data tidak ditemukan",
+  "Pindah domisili",
+  "Bukan Warga RT",
+  "Meninggal dunia",
+  "Tidak mau sekolah lagi",
+  "Tidak ada biaya",
+  "Bekerja",
+  "Menikah",
+  "Masalah kesehatan / disabilitas",
+  "Korban perundungan",
+  "Anak bermasalah dengan hukum",
+  "Anak orang tua bermasalah dengan hukum",
+  "Beranggapan sekolah tidak penting",
+  "Cukup dengan pendidikan yang sekarang",
+  "Pengaruh lingkungan",
+] as const;
+
+export type AlasanTidakSekolah = typeof ALASAN_TIDAK_SEKOLAH_LIST[number] | string;
+
+export interface DataAtsItem {
+  id: string;
+  nama_lengkap: string;
+  tanggal_lahir: string;
+  jenis_kelamin: "L" | "P" | "Laki-laki" | "Perempuan" | string;
+  nama_orangtua: string;
+  nomor_hp: string;
+  tinggal_bersama: string;
+  keinginan_sekolah: "Masih Ada" | "Tidak Ada";
+  alasan_tidak_sekolah: AlasanTidakSekolah;
+  keterangan?: string | null;
+  komunitas_id: string;
+  komunitas_nama?: string;
+  status_approval: "pending" | "approved" | "rejected";
+  validated_by?: string | null;
+  validated_at?: string | null;
+  created_by?: string;
+  created_at: string;
+  updated_at?: string;
+  latest_ddtk?: DdtkRecord | null;
+  ddtk_history?: DdtkRecord[];
 }
 
 export interface PendingApprovalItem {

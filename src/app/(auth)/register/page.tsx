@@ -63,7 +63,7 @@ export default function RegisterPage() {
                 <div className="pt-2">
                   <Link
                     href="/login"
-                    className="inline-flex h-9 items-center justify-center gap-2 rounded-md bg-foreground px-4 text-xs font-mono font-bold uppercase tracking-wider text-background shadow-md transition-all hover:opacity-90 border border-border"
+                    className="inline-flex h-9 items-center justify-center gap-2 rounded-md bg-emerald-600 hover:bg-emerald-500 px-4 text-xs font-mono font-bold uppercase tracking-wider text-white shadow-md transition-all cursor-pointer"
                   >
                     <span>LANJUT KE HALAMAN MASUK</span>
                     <ArrowRight className="h-3.5 w-3.5" />
@@ -205,7 +205,7 @@ export default function RegisterPage() {
                 <button
                   type="submit"
                   disabled={isPending}
-                  className="flex w-full h-10 items-center justify-center gap-2 rounded-md bg-foreground px-4 text-xs font-mono font-bold uppercase tracking-wider text-background shadow-md transition-all active:scale-[0.99] hover:opacity-90 disabled:opacity-40 disabled:pointer-events-none border border-border"
+                  className="flex w-full h-10 items-center justify-center gap-2 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white px-4 text-xs font-mono font-bold uppercase tracking-wider shadow-md transition-all active:scale-[0.99] disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
                 >
                   {isPending ? (
                     <>

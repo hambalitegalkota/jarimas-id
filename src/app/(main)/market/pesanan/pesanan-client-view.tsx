@@ -117,9 +117,9 @@ export function PesananClientView({
             key={f.value}
             onClick={() => setActiveFilter(f.value)}
             className={cn(
-              "inline-flex shrink-0 items-center rounded-md px-3 py-1.5 text-xs font-mono transition-all",
+              "inline-flex shrink-0 items-center rounded-md px-3 py-1.5 text-xs font-mono transition-all cursor-pointer",
               activeFilter === f.value
-                ? "bg-foreground text-background font-semibold"
+                ? "bg-blue-600 text-white font-bold shadow-xs"
                 : "bg-card border border-border text-muted-foreground hover:bg-muted hover:text-foreground"
             )}
           >
@@ -144,7 +144,7 @@ export function PesananClientView({
           </div>
           <Link
             href="/market"
-            className="inline-flex h-8 items-center rounded-md bg-foreground border border-zinc-700 px-3 text-xs font-mono font-bold uppercase tracking-wider text-background hover:bg-zinc-200"
+            className="inline-flex h-8 items-center rounded-md bg-blue-600 hover:bg-blue-500 text-white px-3 text-xs font-mono font-bold uppercase tracking-wider shadow-sm transition-all cursor-pointer"
           >
             MULAI BELANJA
           </Link>
@@ -366,7 +366,7 @@ export function PesananClientView({
               <div className="pt-2 pb-1">
                 <button
                   onClick={() => setSelectedPesananModal(null)}
-                  className="flex h-9 w-full items-center justify-center rounded-md bg-foreground border border-zinc-700 text-xs font-mono font-bold uppercase tracking-wider text-background hover:bg-zinc-200 cursor-pointer"
+                  className="flex h-9 w-full items-center justify-center rounded-md bg-muted hover:bg-muted/80 text-foreground border border-border text-xs font-mono font-bold uppercase tracking-wider transition-colors cursor-pointer"
                 >
                   TUTUP RINCIAN
                 </button>

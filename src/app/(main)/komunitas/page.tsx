@@ -122,40 +122,40 @@ export default async function KomunitasPage({
       />
 
       {/* 3 Tab Kategori Utama (Posyandu, Warga Kita, PAUD & Kesetaraan) */}
-      <div className="flex rounded-md bg-muted/40 p-1 border border-border">
+      <div className="flex rounded-md bg-muted/60 p-1.5 border border-border gap-1.5">
         <Link
           href={createTabUrl("posyandu")}
-          className={`flex flex-1 h-9 items-center justify-center gap-1.5 rounded text-xs font-mono font-medium transition-colors ${
+          className={`flex flex-1 h-9.5 items-center justify-center gap-2 rounded-md text-xs font-mono font-bold transition-all ${
             currentTab === "posyandu"
-              ? "bg-card text-foreground border border-border shadow-xs"
-              : "text-muted-foreground hover:text-foreground"
+              ? "bg-blue-600 text-white shadow-sm"
+              : "text-muted-foreground hover:text-foreground hover:bg-card/60"
           }`}
         >
-          <Sparkles className="h-3.5 w-3.5 text-cyan-400" />
+          <Sparkles className="h-4 w-4" />
           <span>POSYANDU</span>
         </Link>
 
         <Link
           href={createTabUrl("warga_kita")}
-          className={`flex flex-1 h-9 items-center justify-center gap-1.5 rounded text-xs font-mono font-medium transition-colors ${
+          className={`flex flex-1 h-9.5 items-center justify-center gap-2 rounded-md text-xs font-mono font-bold transition-all ${
             currentTab === "warga_kita"
-              ? "bg-card text-foreground border border-border shadow-xs"
-              : "text-muted-foreground hover:text-foreground"
+              ? "bg-emerald-600 text-white shadow-sm"
+              : "text-muted-foreground hover:text-foreground hover:bg-card/60"
           }`}
         >
-          <Users className="h-3.5 w-3.5 text-emerald-400" />
+          <Users className="h-4 w-4" />
           <span>WARGA_KITA</span>
         </Link>
 
         <Link
           href={createTabUrl("satuan_paud")}
-          className={`flex flex-1 h-9 items-center justify-center gap-1.5 rounded text-xs font-mono font-medium transition-colors ${
+          className={`flex flex-1 h-9.5 items-center justify-center gap-2 rounded-md text-xs font-mono font-bold transition-all ${
             currentTab === "satuan_paud"
-              ? "bg-card text-foreground border border-border shadow-xs"
-              : "text-muted-foreground hover:text-foreground"
+              ? "bg-amber-600 text-white shadow-sm"
+              : "text-muted-foreground hover:text-foreground hover:bg-card/60"
           }`}
         >
-          <Building2 className="h-3.5 w-3.5 text-amber-400" />
+          <Building2 className="h-4 w-4" />
           <span>PAUD_KESETARAAN</span>
         </Link>
       </div>

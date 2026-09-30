@@ -233,7 +233,7 @@ export function WargaOnboardingModal({
           </div>
 
           {/* Hasil Identifikasi Real-time */}
-          <div className="rounded-lg border border-border/80 bg-zinc-950/70 p-3 space-y-2">
+          <div className="rounded-lg border border-border bg-muted/60 p-3 space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground font-semibold">
                 Identifikasi Status:

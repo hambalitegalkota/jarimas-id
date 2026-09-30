@@ -2,10 +2,9 @@
 
 import { useState, useTransition } from "react";
 import {
-  Baby,
+  GraduationCap,
   Calendar,
   User,
-  GraduationCap,
   Activity,
   CheckCircle2,
   Clock,
@@ -14,16 +13,19 @@ import {
   ChevronRight,
   Scale,
   Ruler,
+  AlertCircle,
+  HelpCircle,
+  FileText,
 } from "lucide-react";
-import { validateDataAnak } from "@/app/actions/data-anak";
-import { DdksDrawer } from "./ddks-drawer";
-import type { DataAnakItem, DdksRecord } from "@/types/database";
+import { validateDataAts } from "@/app/actions/data-ats";
+import { DdksDrawer } from "@/components/data-anak/ddks-drawer";
+import type { DataAtsItem, DdtkRecord } from "@/types/database";
 import { cn } from "@/lib/utils";
 
-interface CardDataAnakProps {
-  anak: DataAnakItem;
+interface CardDataAtsProps {
+  ats: DataAtsItem;
   canValidate: boolean;
-  canEditDdks: boolean;
+  canEditDdtk: boolean;
 }
 
 function calculateAge(birthDateString: string): string {
@@ -48,24 +50,24 @@ function calculateAge(birthDateString: string): string {
   }
 }
 
-export function CardDataAnak({
-  anak,
+export function CardDataAts({
+  ats,
   canValidate,
-  canEditDdks,
-}: CardDataAnakProps) {
-  const [currentChild, setCurrentChild] = useState<DataAnakItem>(anak);
+  canEditDdtk,
+}: CardDataAtsProps) {
+  const [currentAts, setCurrentAts] = useState<DataAtsItem>(ats);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isPendingValidate, startValidateTransition] = useTransition();
 
-  const isApproved = currentChild.status_approval === "approved";
-  const ageString = calculateAge(currentChild.tanggal_lahir);
-  const latestDdks = currentChild.latest_ddks;
+  const isApproved = currentAts.status_approval === "approved";
+  const ageString = calculateAge(currentAts.tanggal_lahir);
+  const latestDdtk = currentAts.latest_ddtk;
 
   const handleValidate = () => {
     startValidateTransition(async () => {
-      const res = await validateDataAnak(currentChild.id);
+      const res = await validateDataAts(currentAts.id);
       if (res.success) {
-        setCurrentChild((prev) => ({
+        setCurrentAts((prev) => ({
           ...prev,
           status_approval: "approved",
         }));
@@ -75,35 +77,35 @@ export function CardDataAnak({
     });
   };
 
-  const handleRecordAdded = (newRecord: DdksRecord) => {
-    setCurrentChild((prev) => ({
+  const handleRecordAdded = (newRecord: DdtkRecord) => {
+    setCurrentAts((prev) => ({
       ...prev,
-      latest_ddks: newRecord,
-      ddks_history: [newRecord, ...(prev.ddks_history || [])],
+      latest_ddtk: newRecord,
+      ddtk_history: [newRecord, ...(prev.ddtk_history || [])],
     }));
   };
 
   return (
     <>
-      <div className="overflow-hidden rounded-lg border border-border bg-card p-5 space-y-4 transition-colors hover:border-zinc-700">
+      <div className="overflow-hidden rounded-lg border border-border bg-card p-5 space-y-4 transition-colors hover:border-amber-500/40">
         {/* Header: Nama Anak & Status Approval */}
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-start gap-3">
             <div
               className={cn(
                 "flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-border bg-muted font-bold",
-                currentChild.jenis_kelamin === "L" ||
-                  currentChild.jenis_kelamin === "Laki-laki"
-                  ? "text-cyan-400"
-                  : "text-emerald-400"
+                currentAts.jenis_kelamin === "L" ||
+                  currentAts.jenis_kelamin === "Laki-laki"
+                  ? "text-blue-500 dark:text-blue-400"
+                  : "text-rose-500 dark:text-rose-400"
               )}
             >
-              <Baby className="h-5 w-5" />
+              <GraduationCap className="h-5 w-5" />
             </div>
 
             <div className="space-y-0.5">
               <h3 className="text-sm font-bold text-foreground leading-snug">
-                {currentChild.nama_lengkap}
+                {currentAts.nama_lengkap}
               </h3>
               <div className="flex items-center gap-2 text-xs font-mono text-muted-foreground">
                 <span className="font-semibold text-foreground">
@@ -111,8 +113,8 @@ export function CardDataAnak({
                 </span>
                 <span>•</span>
                 <span>
-                  {currentChild.jenis_kelamin === "L" ||
-                  currentChild.jenis_kelamin === "Laki-laki"
+                  {currentAts.jenis_kelamin === "L" ||
+                  currentAts.jenis_kelamin === "Laki-laki"
                     ? "Laki-laki"
                     : "Perempuan"}
                 </span>
@@ -138,61 +140,71 @@ export function CardDataAnak({
 
         {/* Info Detail Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-mono">
-          {/* Orang Tua */}
+          {/* Orang Tua / Wali */}
           <div className="flex items-center gap-2 rounded-md bg-background border border-border p-2.5">
             <User className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
             <span className="text-muted-foreground text-[11px]">WALI:</span>
             <span className="font-bold text-foreground truncate">
-              {currentChild.nama_orangtua}
+              {currentAts.nama_orangtua} ({currentAts.tinggal_bersama})
             </span>
           </div>
 
-          {/* Pendidikan */}
+          {/* Keinginan Sekolah */}
           <div className="flex items-center gap-2 rounded-md bg-background border border-border p-2.5">
-            <GraduationCap className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-            <span className="text-muted-foreground text-[11px]">STATUS:</span>
-            <span className="font-bold text-foreground truncate">
-              {currentChild.is_sekolah
-                ? currentChild.nama_sekolah || "Bersekolah PAUD"
-                : "Belum Sekolah"}
+            <HelpCircle className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+            <span className="text-muted-foreground text-[11px]">KEINGINAN:</span>
+            <span
+              className={cn(
+                "font-bold truncate px-1.5 py-0.5 rounded text-[11px]",
+                currentAts.keinginan_sekolah === "Masih Ada"
+                  ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
+                  : "bg-amber-500/15 text-amber-400 border border-amber-500/30"
+              )}
+            >
+              {currentAts.keinginan_sekolah}
             </span>
           </div>
         </div>
 
-        {/* Alasan Sekolah Tag */}
-        {currentChild.alasan_sekolah && (
-          <div className="rounded-md bg-background p-2.5 text-xs text-muted-foreground border border-border">
-            <span className="font-mono text-muted-foreground text-[11px]">KETERANGAN: </span>
-            <span className="text-foreground">{currentChild.alasan_sekolah}</span>
+        {/* Alasan Tidak Sekolah Tag */}
+        <div className="rounded-md bg-background p-3 space-y-1.5 border border-border">
+          <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-amber-500">
+            <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+            <span>ALASAN: {currentAts.alasan_tidak_sekolah}</span>
           </div>
-        )}
+          {currentAts.keterangan && (
+            <p className="text-xs text-muted-foreground leading-relaxed pl-5">
+              &ldquo;{currentAts.keterangan}&rdquo;
+            </p>
+          )}
+        </div>
 
         {/* DDTK Highlight Bar */}
-        {latestDdks ? (
+        {latestDdtk ? (
           <div className="flex items-center justify-between rounded-md bg-background border border-border p-3 text-xs font-mono">
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-1 font-bold text-emerald-400">
                 <Scale className="h-3.5 w-3.5" />
-                <span>{latestDdks.berat_badan} kg</span>
+                <span>{latestDdtk.berat_badan} kg</span>
               </div>
               <div className="flex items-center gap-1 font-bold text-cyan-400">
                 <Ruler className="h-3.5 w-3.5" />
-                <span>{latestDdks.tinggi_badan} cm</span>
+                <span>{latestDdtk.tinggi_badan} cm</span>
               </div>
               <div className="flex items-center gap-1 font-bold text-muted-foreground">
                 <Activity className="h-3.5 w-3.5" />
-                <span>LK {latestDdks.lingkar_kepala} cm</span>
+                <span>LK {latestDdtk.lingkar_kepala} cm</span>
               </div>
             </div>
             <span className="text-[10px] text-muted-foreground">
-              {new Date(latestDdks.created_at).toLocaleDateString("id-ID", {
+              {new Date(latestDdtk.created_at).toLocaleDateString("id-ID", {
                 month: "short",
                 year: "numeric",
               })}
             </span>
           </div>
         ) : (
-          <div className="rounded-md bg-background border border-border p-3 text-center text-[11px] font-mono text-muted-foreground">
+          <div className="rounded-md bg-background border border-border p-2.5 text-center text-[11px] font-mono text-muted-foreground">
             BELUM ADA PENGUKURAN DDTK TERKINI
           </div>
         )}
@@ -204,7 +216,7 @@ export function CardDataAnak({
             className="flex flex-1 h-8 items-center justify-center gap-1.5 rounded-md bg-muted border border-border px-3 text-xs font-mono text-foreground transition-all hover:bg-muted/80 cursor-pointer"
           >
             <Activity className="h-3.5 w-3.5" />
-            <span>{canEditDdks ? "CATAT DDTK" : "REKAM DDTK"}</span>
+            <span>{canEditDdtk ? "CATAT DDTK" : "REKAM DDTK"}</span>
             <ChevronRight className="h-3 w-3" />
           </button>
 
@@ -212,14 +224,14 @@ export function CardDataAnak({
             <button
               onClick={handleValidate}
               disabled={isPendingValidate}
-              className="flex flex-1 h-8 items-center justify-center gap-1.5 rounded-md bg-emerald-600 hover:bg-emerald-500 px-3 text-xs font-mono font-bold text-white transition-all shadow-xs disabled:opacity-40 cursor-pointer"
+              className="flex flex-1 h-8 items-center justify-center gap-1.5 rounded-md bg-amber-600 hover:bg-amber-500 px-3 text-xs font-mono font-bold text-white transition-all shadow-xs disabled:opacity-40 cursor-pointer"
             >
               {isPendingValidate ? (
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
               ) : (
                 <>
                   <ShieldCheck className="h-3.5 w-3.5" />
-                  <span>VALIDASI ANAK</span>
+                  <span>VALIDASI ATS</span>
                 </>
               )}
             </button>
@@ -227,11 +239,26 @@ export function CardDataAnak({
         </div>
       </div>
 
-      {/* DDKS Drawer */}
+      {/* DDTK Drawer */}
       <DdksDrawer
-        anak={currentChild}
+        anak={{
+          id: currentAts.id,
+          nama_lengkap: currentAts.nama_lengkap,
+          tanggal_lahir: currentAts.tanggal_lahir,
+          jenis_kelamin: currentAts.jenis_kelamin,
+          nama_orangtua: currentAts.nama_orangtua,
+          nomor_hp: currentAts.nomor_hp,
+          tinggal_bersama: currentAts.tinggal_bersama,
+          jarak_rumah_km: 0,
+          is_sekolah: false,
+          komunitas_id: currentAts.komunitas_id,
+          status_approval: currentAts.status_approval,
+          created_at: currentAts.created_at,
+          latest_ddks: currentAts.latest_ddtk,
+          ddks_history: currentAts.ddtk_history,
+        }}
         isOpen={isDrawerOpen}
-        canEditDdks={canEditDdks}
+        canEditDdks={canEditDdtk}
         onClose={() => setIsDrawerOpen(false)}
         onRecordAdded={handleRecordAdded}
       />

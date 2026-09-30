@@ -745,7 +745,7 @@ export function KabarCard({
                     }
                   }}
                   disabled={currentUserId ? !commentText.trim() || isPendingComment : false}
-                  className="flex h-8 w-8 items-center justify-center rounded-md bg-foreground text-background hover:bg-foreground/90 disabled:opacity-50 transition-colors"
+                  className="flex h-8 w-8 items-center justify-center rounded-md bg-blue-600 text-white hover:bg-blue-500 disabled:opacity-50 transition-colors shadow-xs cursor-pointer"
                   aria-label={replyingTo ? "Kirim Balasan" : "Kirim Komentar"}
                   title={replyingTo ? "Kirim Balasan" : "Kirim Komentar"}
                 >

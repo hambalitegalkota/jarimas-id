@@ -70,16 +70,16 @@ export default async function KomunitasDetailPage({
       <div className="flex items-center justify-between">
         <Link
           href="/komunitas"
-          className="inline-flex h-9 items-center gap-2 rounded-md bg-zinc-900 border border-border px-3 text-xs font-mono text-foreground transition-all hover:bg-zinc-800"
+          className="inline-flex h-9 items-center gap-2 rounded-md bg-card border border-border px-3.5 text-xs font-mono font-semibold text-foreground transition-all hover:bg-muted hover:border-primary/40 shadow-xs"
         >
-          <ArrowLeft className="h-3.5 w-3.5" />
-          <span>KEMBALI KE KOMUNITAS</span>
+          <ArrowLeft className="h-3.5 w-3.5 text-primary" />
+          <span>Kembali ke Komunitas</span>
         </Link>
 
         {isAdminOrKader && (
           <Link
             href={`/komunitas/${id}/anggota`}
-            className="inline-flex h-9 items-center gap-1.5 rounded-md bg-foreground border border-zinc-700 px-3 text-xs font-mono font-bold text-background transition-all hover:bg-zinc-200"
+            className="inline-flex h-9 items-center gap-1.5 rounded-md bg-primary text-primary-foreground px-3.5 text-xs font-mono font-bold transition-all hover:bg-primary/90 shadow-xs"
           >
             <Settings2 className="h-3.5 w-3.5" />
             <span>KELOLA ANGGOTA</span>

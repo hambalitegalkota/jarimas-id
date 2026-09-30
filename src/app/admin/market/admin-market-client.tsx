@@ -159,7 +159,7 @@ export function AdminMarketClient({ initialProducts }: AdminMarketClientProps) {
 
         <button
           onClick={handleOpenAddModal}
-          className="inline-flex h-9 items-center gap-2 rounded-md bg-foreground px-4 text-xs font-bold text-background transition-all hover:bg-foreground/90 cursor-pointer"
+          className="inline-flex h-9 items-center gap-2 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white px-4 text-xs font-bold transition-all shadow-md cursor-pointer"
         >
           <Plus className="h-4 w-4" />
           <span>+ Tambah Produk Baru</span>
@@ -450,7 +450,7 @@ export function AdminMarketClient({ initialProducts }: AdminMarketClientProps) {
                   <button
                     type="submit"
                     disabled={isPending}
-                    className="inline-flex h-9 items-center gap-2 rounded-md bg-foreground px-4 text-xs font-bold text-background hover:bg-foreground/90 disabled:opacity-50 cursor-pointer"
+                    className="inline-flex h-9 items-center gap-2 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white px-4 text-xs font-bold shadow-md disabled:opacity-50 cursor-pointer"
                   >
                     {isPending ? (
                       <>

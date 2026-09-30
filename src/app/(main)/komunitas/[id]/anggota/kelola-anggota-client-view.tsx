@@ -215,7 +215,7 @@ export function KelolaAnggotaClientView({
                     <button
                       onClick={() => handleApprove(member.id, name)}
                       disabled={isProcessing}
-                      className="flex flex-1 h-8 items-center justify-center gap-1.5 rounded-md bg-foreground border border-border px-3 text-xs font-mono font-bold text-background transition-all hover:opacity-90 disabled:opacity-40"
+                      className="flex flex-1 h-8 items-center justify-center gap-1.5 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white px-3 text-xs font-mono font-bold transition-all disabled:opacity-40 cursor-pointer shadow-xs"
                     >
                       {isProcessing ? (
                         <Loader2 className="h-3.5 w-3.5 animate-spin" />

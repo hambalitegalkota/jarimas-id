@@ -84,10 +84,10 @@ export function ProdukCard({ produk }: ProdukCardProps) {
           <Link
             href={`/market/${produk.id}`}
             className={cn(
-              "inline-flex h-8 items-center justify-center gap-1.5 rounded-md px-3 text-xs font-mono font-semibold transition-all active:scale-95 cursor-pointer",
+              "inline-flex h-8 items-center justify-center gap-1.5 rounded-md px-3 text-xs font-mono font-bold transition-all active:scale-95 cursor-pointer shadow-xs",
               isOutOfStock
                 ? "bg-muted border border-border text-muted-foreground cursor-not-allowed pointer-events-none"
-                : "bg-foreground border border-foreground text-background hover:bg-foreground/90"
+                : "bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-500/50"
             )}
           >
             <ShoppingBag className="h-3.5 w-3.5" />

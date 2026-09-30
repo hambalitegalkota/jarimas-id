@@ -208,7 +208,7 @@ export function UnifiedWargaCard({
         {targetKomunitasId ? (
           <Link
             href={`/komunitas/${targetKomunitasId}`}
-            className="group flex h-9.5 w-full items-center justify-center gap-2 rounded-md bg-foreground px-4 text-xs font-mono font-semibold text-background transition-all hover:bg-foreground/90 shadow-xs"
+            className="group flex h-9.5 w-full items-center justify-center gap-2 rounded-md bg-emerald-600 hover:bg-emerald-500 px-4 text-xs font-mono font-bold text-white transition-all shadow-sm active:scale-98"
             title={`Buka Komunitas ${selectedTier?.label} (${selectedTier?.wilayah})`}
           >
             <Users className="h-3.5 w-3.5" />

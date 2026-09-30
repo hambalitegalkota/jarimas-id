@@ -454,7 +454,7 @@ export function CheckoutClientView({
               <button
                 type="submit"
                 disabled={isPending}
-                className="flex h-10 w-full items-center justify-center gap-2 rounded-md bg-foreground px-4 text-xs font-bold text-background transition-all hover:bg-foreground/90 disabled:opacity-50 cursor-pointer"
+                className="flex h-10 w-full items-center justify-center gap-2 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white px-4 text-xs font-bold transition-all shadow-md disabled:opacity-50 cursor-pointer"
               >
                 {isPending ? (
                   <>

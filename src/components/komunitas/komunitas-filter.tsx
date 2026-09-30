@@ -200,7 +200,7 @@ export function KomunitasFilter({
             <button
               type="submit"
               disabled={isPending}
-              className="flex h-7 items-center justify-center rounded-md bg-foreground px-2.5 text-xs font-mono font-medium text-background hover:bg-foreground/90 disabled:opacity-50"
+              className="flex h-7 items-center justify-center rounded-md bg-emerald-600 hover:bg-emerald-500 px-2.5 text-xs font-mono font-medium text-white shadow-xs disabled:opacity-50 cursor-pointer"
             >
               {isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : "Cari"}
             </button>

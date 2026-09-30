@@ -2,44 +2,45 @@
 
 import { useState } from "react";
 import {
-  Baby,
+  GraduationCap,
   ShieldCheck,
   Clock,
   Plus,
   X,
   Search,
 } from "lucide-react";
-import { CardDataAnak } from "@/components/data-anak/card-data-anak";
-import { FormDataAnak } from "@/components/data-anak/form-data-anak";
-import type { KomunitasWithMembership, DataAnakItem } from "@/types/database";
+import { CardDataAts } from "./card-data-ats";
+import { FormDataAts } from "./form-data-ats";
+import type { KomunitasWithMembership, DataAtsItem } from "@/types/database";
 
-interface DataAnakClientViewProps {
+interface DataAtsClientViewProps {
   komunitas: KomunitasWithMembership;
-  initialChildren: DataAnakItem[];
+  initialAts: DataAtsItem[];
   canValidate: boolean;
-  canEditDdks: boolean;
+  canEditDdtk: boolean;
 }
 
-export function DataAnakClientView({
+export function DataAtsClientView({
   komunitas,
-  initialChildren,
+  initialAts,
   canValidate,
-  canEditDdks,
-}: DataAnakClientViewProps) {
-  const [childrenList, setChildrenList] = useState<DataAnakItem[]>(initialChildren);
+  canEditDdtk,
+}: DataAtsClientViewProps) {
+  const [atsList, setAtsList] = useState<DataAtsItem[]>(initialAts);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const totalChildren = childrenList.length;
-  const totalApproved = childrenList.filter(
+  const totalAts = atsList.length;
+  const totalApproved = atsList.filter(
     (c) => c.status_approval === "approved"
   ).length;
-  const totalPending = totalChildren - totalApproved;
+  const totalPending = totalAts - totalApproved;
 
-  const filteredChildren = childrenList.filter(
+  const filteredAts = atsList.filter(
     (c) =>
       c.nama_lengkap.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c.nama_orangtua.toLowerCase().includes(searchQuery.toLowerCase())
+      c.nama_orangtua.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c.alasan_tidak_sekolah.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -48,10 +49,10 @@ export function DataAnakClientView({
       <div className="grid grid-cols-3 gap-2">
         <div className="rounded-md border border-border bg-card p-3 text-center">
           <span className="text-[10px] uppercase font-mono text-muted-foreground block">
-            TOTAL ANAK
+            TOTAL ATS
           </span>
           <span className="text-base font-bold font-mono text-foreground">
-            {totalChildren}
+            {totalAts}
           </span>
         </div>
 
@@ -82,49 +83,49 @@ export function DataAnakClientView({
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Cari nama anak atau orang tua..."
-            className="w-full h-10 rounded-md border border-input bg-background pl-9 pr-4 text-xs font-mono text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-hidden focus:ring-1 focus:ring-ring"
+            placeholder="Cari nama anak ATS, orang tua, atau alasan..."
+            className="w-full h-10 rounded-md border border-input bg-background pl-9 pr-4 text-xs font-mono text-foreground placeholder:text-muted-foreground focus:border-amber-500 focus:outline-hidden focus:ring-1 focus:ring-amber-500"
           />
         </div>
 
         <button
           onClick={() => setIsAddModalOpen(true)}
-          className="flex h-10 items-center gap-1.5 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white px-3.5 text-xs font-mono font-bold uppercase tracking-wider shadow-md transition-all shrink-0 cursor-pointer"
+          className="flex h-10 items-center gap-1.5 rounded-md bg-amber-600 hover:bg-amber-500 text-white px-3.5 text-xs font-mono font-bold uppercase tracking-wider shadow-md transition-all shrink-0 cursor-pointer"
         >
           <Plus className="h-3.5 w-3.5 stroke-[2.5px]" />
-          <span>TAMBAH ANAK</span>
+          <span>TAMBAH ATS</span>
         </button>
       </div>
 
-      {/* 3. LIST DATA ANAK */}
+      {/* 3. LIST DATA ATS */}
       <div className="space-y-3 pb-16">
-        {filteredChildren.length === 0 ? (
+        {filteredAts.length === 0 ? (
           <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border bg-card p-12 text-center space-y-4">
             <div className="flex h-12 w-12 items-center justify-center rounded-md border border-border bg-muted text-muted-foreground">
-              <Baby className="h-6 w-6 stroke-[1.5px]" />
+              <GraduationCap className="h-6 w-6 stroke-[1.5px] text-amber-500" />
             </div>
             <div className="space-y-1.5 max-w-sm">
               <h3 className="text-sm font-bold tracking-tight text-foreground font-mono">
-                BELUM ADA DATA ANAK
+                BELUM ADA DATA ANAK TIDAK SEKOLAH (ATS)
               </h3>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Daftarkan data balita / PAUD 0–7 tahun pertama untuk pemantauan tumbuh kembang dan DDTK.
+                Daftarkan data Anak Tidak Sekolah di wilayah Anda untuk pemantauan, verifikasi alasan, dan fasilitasi kembali bersekolah.
               </p>
             </div>
           </div>
         ) : (
-          filteredChildren.map((child) => (
-            <CardDataAnak
+          filteredAts.map((child) => (
+            <CardDataAts
               key={child.id}
-              anak={child}
+              ats={child}
               canValidate={canValidate}
-              canEditDdks={canEditDdks}
+              canEditDdtk={canEditDdtk}
             />
           ))
         )}
       </div>
 
-      {/* 4. MODAL PENDAFTARAN ANAK */}
+      {/* 4. MODAL POPUP PENDATAAN ATS */}
       {isAddModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-in fade-in duration-200">
           <div
@@ -136,12 +137,12 @@ export function DataAnakClientView({
             {/* Header */}
             <div className="flex items-start justify-between p-5 pb-4 border-b border-border shrink-0 bg-card">
               <div className="flex items-center gap-2.5">
-                <div className="flex h-8 w-8 items-center justify-center rounded-md border border-border bg-muted text-emerald-600 dark:text-emerald-400">
-                  <Baby className="h-4 w-4" />
+                <div className="flex h-8 w-8 items-center justify-center rounded-md border border-amber-500/30 bg-amber-500/10 text-amber-500">
+                  <GraduationCap className="h-4 w-4" />
                 </div>
                 <div>
                   <h3 className="text-sm font-bold tracking-tight text-foreground font-mono">
-                    PENDAFTARAN DATA ANAK
+                    PENDATAAN ATS (ANAK TIDAK SEKOLAH)
                   </h3>
                   <p className="text-xs text-muted-foreground line-clamp-1">
                     {komunitas.nama}
@@ -159,10 +160,9 @@ export function DataAnakClientView({
 
             {/* Scrollable Form Body */}
             <div className="p-5 overflow-y-auto flex-1">
-              <FormDataAnak
+              <FormDataAts
                 komunitasId={komunitas.id}
                 komunitasNama={komunitas.nama}
-                jenisKomunitas={komunitas.jenis}
                 onSuccess={() => {
                   setIsAddModalOpen(false);
                   window.location.reload();
