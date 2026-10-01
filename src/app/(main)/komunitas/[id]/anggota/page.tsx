@@ -32,7 +32,49 @@ export default async function KelolaAnggotaPage({
     redirect("/login");
   }
 
-  if (!isAdminOrKader) {
+  const roleLower = (komunitas.currentUserMembership?.peran || "").toLowerCase().trim();
+  const isApproved = komunitas.currentUserMembership?.status === "approved";
+
+  let hasManagePermission = false;
+  if (isAdminOrKader) {
+    if (komunitas.jenis === "warga_kita") {
+      hasManagePermission =
+        isAdminOrKader ||
+        (isApproved &&
+          (roleLower.includes("pengurus") ||
+            roleLower.includes("ketua") ||
+            roleLower.includes("admin") ||
+            roleLower.includes("pimpinan")));
+    } else if (komunitas.jenis === "satuan_paud") {
+      hasManagePermission =
+        (isAdminOrKader &&
+          (roleLower.includes("kepala") ||
+            roleLower.includes("pimpinan") ||
+            roleLower.includes("pengelola") ||
+            roleLower.includes("admin") ||
+            roleLower.includes("super_admin") ||
+            roleLower.includes("super admin"))) ||
+        (isApproved &&
+          (roleLower.includes("kepala") ||
+            roleLower.includes("pimpinan") ||
+            roleLower.includes("pengelola") ||
+            roleLower.includes("admin")));
+    } else if (komunitas.jenis === "posyandu") {
+      hasManagePermission =
+        isAdminOrKader ||
+        (isApproved &&
+          (roleLower.includes("kader") ||
+            roleLower.includes("bidan") ||
+            roleLower.includes("medis") ||
+            roleLower.includes("nakes") ||
+            roleLower.includes("kesehatan") ||
+            roleLower.includes("admin")));
+    } else {
+      hasManagePermission = isAdminOrKader;
+    }
+  }
+
+  if (!hasManagePermission) {
     redirect(`/komunitas/${id}`);
   }
 

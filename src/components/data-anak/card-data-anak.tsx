@@ -14,6 +14,7 @@ import {
   ChevronRight,
   Scale,
   Ruler,
+  AlertCircle,
 } from "lucide-react";
 import { validateDataAnak } from "@/app/actions/data-anak";
 import { DdksDrawer } from "./ddks-drawer";
@@ -110,28 +111,28 @@ export function CardDataAnak({
 
   return (
     <>
-      <div className="overflow-hidden rounded-lg border border-border bg-card p-5 space-y-4 transition-colors hover:border-zinc-700">
+      <div className="overflow-hidden rounded-2xl border-2 border-slate-200 bg-white p-5 space-y-4 shadow-xs transition-all hover:border-slate-300">
         {/* Header: Nama Anak & Status Approval */}
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex items-start gap-3">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-start gap-3.5">
             <div
               className={cn(
-                "flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-border bg-muted font-bold",
+                "flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl font-bold border-2",
                 currentChild.jenis_kelamin === "L" ||
                   currentChild.jenis_kelamin === "Laki-laki"
-                  ? "text-cyan-400"
-                  : "text-emerald-400"
+                  ? "border-blue-200 bg-blue-50 text-blue-700"
+                  : "border-emerald-200 bg-emerald-50 text-emerald-700"
               )}
             >
-              <Baby className="h-5 w-5" />
+              <Baby className="h-6 w-6" />
             </div>
 
-            <div className="space-y-0.5">
-              <h3 className="text-sm font-bold text-foreground leading-snug">
+            <div className="space-y-1">
+              <h3 className="text-base sm:text-lg font-bold text-slate-900 leading-snug">
                 {currentChild.nama_lengkap}
               </h3>
-              <div className="flex items-center gap-2 text-xs font-mono text-muted-foreground">
-                <span className="font-semibold text-foreground" suppressHydrationWarning>
+              <div className="flex flex-wrap items-center gap-2 text-sm font-semibold text-slate-600">
+                <span className="font-mono text-slate-900" suppressHydrationWarning>
                   {ageString}
                 </span>
                 <span>•</span>
@@ -146,70 +147,78 @@ export function CardDataAnak({
           </div>
 
           {/* Status Badge */}
-          <div>
+          <div className="shrink-0">
             {isApproved ? (
-              <span className="inline-flex items-center gap-1 rounded-md bg-emerald-500/10 px-2.5 py-1 text-[10px] font-mono font-bold text-emerald-400 border border-emerald-500/30">
-                <CheckCircle2 className="h-3 w-3" />
+              <span className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-800 border-2 border-emerald-300">
+                <CheckCircle2 className="h-4 w-4 text-emerald-600" />
                 <span>TERVERIFIKASI</span>
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1 rounded-md bg-amber-500/10 px-2.5 py-1 text-[10px] font-mono font-bold text-amber-400 border border-amber-500/30">
-                <Clock className="h-3 w-3" />
+              <span className="inline-flex items-center gap-1.5 rounded-xl bg-amber-50 px-3 py-1.5 text-xs font-bold text-amber-900 border-2 border-amber-300">
+                <Clock className="h-4 w-4 text-amber-600" />
                 <span>MENUNGGU</span>
               </span>
             )}
           </div>
         </div>
 
-        {/* Info Detail Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-mono">
+        {/* Info Detail Grid (Single Column on mobile, 2 col on sm) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-sm">
           {/* Orang Tua */}
-          <div className="flex items-center gap-2 rounded-md bg-background border border-border p-2.5">
-            <User className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-            <span className="text-muted-foreground text-[11px]">WALI:</span>
-            <span className="font-bold text-foreground truncate">
-              {currentChild.nama_orangtua}
-            </span>
+          <div className="flex items-center gap-3 rounded-xl bg-slate-50 border border-slate-200 p-3">
+            <User className="h-4 w-4 text-slate-500 shrink-0" />
+            <div className="min-w-0">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-500 block">
+                Orang Tua / Wali
+              </span>
+              <span className="font-bold text-slate-900 truncate block">
+                {currentChild.nama_orangtua || "-"}
+              </span>
+            </div>
           </div>
 
           {/* Pendidikan */}
-          <div className="flex items-center gap-2 rounded-md bg-background border border-border p-2.5">
-            <GraduationCap className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-            <span className="text-muted-foreground text-[11px]">STATUS:</span>
-            <span className="font-bold text-foreground truncate">
-              {currentChild.is_sekolah
-                ? currentChild.nama_sekolah || "Bersekolah PAUD"
-                : "Belum Sekolah"}
-            </span>
+          <div className="flex items-center gap-3 rounded-xl bg-slate-50 border border-slate-200 p-3">
+            <GraduationCap className="h-4 w-4 text-slate-500 shrink-0" />
+            <div className="min-w-0">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-500 block">
+                Status Pendidikan
+              </span>
+              <span className="font-bold text-slate-900 truncate block">
+                {currentChild.is_sekolah
+                  ? currentChild.nama_sekolah || "Bersekolah PAUD"
+                  : "Belum Sekolah"}
+              </span>
+            </div>
           </div>
         </div>
 
         {/* Alasan Sekolah Tag */}
         {currentChild.alasan_sekolah && (
-          <div className="rounded-md bg-background p-2.5 text-xs text-muted-foreground border border-border">
-            <span className="font-mono text-muted-foreground text-[11px]">KETERANGAN: </span>
-            <span className="text-foreground">{currentChild.alasan_sekolah}</span>
+          <div className="rounded-xl bg-slate-50 p-3 text-sm text-slate-700 border border-slate-200 leading-relaxed">
+            <span className="font-bold text-slate-900">Keterangan: </span>
+            <span>{currentChild.alasan_sekolah}</span>
           </div>
         )}
 
         {/* DDTK Highlight Bar */}
         {latestDdks ? (
-          <div className="flex items-center justify-between rounded-md bg-background border border-border p-3 text-xs font-mono">
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-1 font-bold text-emerald-400">
-                <Scale className="h-3.5 w-3.5" />
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 rounded-xl bg-blue-50/60 border-2 border-blue-200 p-3.5 text-sm font-mono">
+            <div className="flex flex-wrap items-center gap-4">
+              <div className="flex items-center gap-1.5 font-bold text-emerald-800">
+                <Scale className="h-4 w-4 text-emerald-600" />
                 <span>{latestDdks.berat_badan} kg</span>
               </div>
-              <div className="flex items-center gap-1 font-bold text-cyan-400">
-                <Ruler className="h-3.5 w-3.5" />
+              <div className="flex items-center gap-1.5 font-bold text-blue-900">
+                <Ruler className="h-4 w-4 text-blue-600" />
                 <span>{latestDdks.tinggi_badan} cm</span>
               </div>
-              <div className="flex items-center gap-1 font-bold text-muted-foreground">
-                <Activity className="h-3.5 w-3.5" />
+              <div className="flex items-center gap-1.5 font-bold text-slate-700">
+                <Activity className="h-4 w-4 text-slate-500" />
                 <span>LK {latestDdks.lingkar_kepala} cm</span>
               </div>
             </div>
-            <span className="text-[10px] text-muted-foreground" suppressHydrationWarning>
+            <span className="text-xs font-bold text-slate-500" suppressHydrationWarning>
               {new Date(latestDdks.created_at).toLocaleDateString("id-ID", {
                 month: "short",
                 year: "numeric",
@@ -217,34 +226,35 @@ export function CardDataAnak({
             </span>
           </div>
         ) : (
-          <div className="rounded-md bg-background border border-border p-3 text-center text-[11px] font-mono text-muted-foreground">
-            BELUM ADA PENGUKURAN DDTK TERKINI
+          <div className="rounded-xl bg-amber-50/70 border border-amber-200 p-3 text-center text-sm font-semibold text-amber-900 flex items-center justify-center gap-2">
+            <AlertCircle className="h-4 w-4 text-amber-600 shrink-0" />
+            <span>Data Belum Di Isi Oleh Posyandu</span>
           </div>
         )}
 
-        {/* Action Buttons Bar */}
-        <div className="flex items-center gap-2 pt-1 border-t border-border">
+        {/* Action Buttons Bar - Stacked full width on mobile or side-by-side with min-h-[48px] */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 pt-2 border-t-2 border-slate-100">
           <button
             onClick={() => setIsDrawerOpen(true)}
-            className="flex flex-1 h-8 items-center justify-center gap-1.5 rounded-md bg-muted border border-border px-3 text-xs font-mono text-foreground transition-all hover:bg-muted/80 cursor-pointer"
+            className="flex flex-1 min-h-[48px] h-12 items-center justify-center gap-2 rounded-xl bg-slate-100 hover:bg-slate-200 active:scale-98 border-2 border-slate-200 px-4 text-sm font-bold text-slate-800 transition-all cursor-pointer"
           >
-            <Activity className="h-3.5 w-3.5" />
-            <span>{canEditDdks ? "CATAT DDTK" : "REKAM DDTK"}</span>
-            <ChevronRight className="h-3 w-3" />
+            <Activity className="h-4 w-4 text-slate-700" />
+            <span>{canEditDdks ? "Catat DDTK Posyandu" : "Rekam DDTK"}</span>
+            <ChevronRight className="h-4 w-4 text-slate-500" />
           </button>
 
           {!isApproved && canValidate && (
             <button
               onClick={handleValidate}
               disabled={isPendingValidate}
-              className="flex flex-1 h-8 items-center justify-center gap-1.5 rounded-md bg-emerald-600 hover:bg-emerald-500 px-3 text-xs font-mono font-bold text-white transition-all shadow-xs disabled:opacity-40 cursor-pointer"
+              className="flex flex-1 min-h-[48px] h-12 items-center justify-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-98 px-4 text-sm font-bold text-white transition-all shadow-xs disabled:opacity-50 cursor-pointer"
             >
               {isPendingValidate ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
                 <>
-                  <ShieldCheck className="h-3.5 w-3.5" />
-                  <span>VALIDASI ANAK</span>
+                  <ShieldCheck className="h-4 w-4" />
+                  <span>Validasi Data Anak</span>
                 </>
               )}
             </button>

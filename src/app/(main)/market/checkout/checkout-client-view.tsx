@@ -111,21 +111,21 @@ export function CheckoutClientView({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col flex-1 px-4 py-6 sm:px-6 md:px-8 max-w-5xl mx-auto w-full gap-6">
       {/* Header Back */}
       <div className="flex items-center gap-3">
         <Link
           href={`/market/${produk.id}`}
-          className="inline-flex h-9 items-center gap-2 rounded-md bg-card border border-border px-3 text-xs font-medium text-foreground transition-all hover:bg-muted"
+          className="inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 px-4 text-sm font-bold text-slate-700 dark:text-slate-300 transition-all hover:bg-slate-50 shadow-xs"
         >
-          <ArrowLeft className="h-3.5 w-3.5" />
+          <ArrowLeft className="h-4 w-4 text-blue-600 dark:text-blue-400" />
           <span>Kembali</span>
         </Link>
         <div>
-          <h1 className="text-xl sm:text-2xl font-black tracking-tight text-foreground">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
             Checkout Pesanan
           </h1>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400">
             Selesaikan pesanan logistik dan perlengkapan posyandu
           </p>
         </div>
@@ -136,16 +136,16 @@ export function CheckoutClientView({
           {/* Kolom Kiri: Form Alamat & Metode Bayar (2 cols) */}
           <div className="space-y-6 lg:col-span-2">
             {/* Bagian 1: Alamat Pengiriman */}
-            <div className="rounded-lg border border-border bg-card p-5 sm:p-6 space-y-4">
-              <div className="flex items-center gap-2 border-b border-border pb-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-md bg-muted text-foreground">
-                  <MapPin className="h-4 w-4" />
+            <div className="rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-6 space-y-5 shadow-xs">
+              <div className="flex items-center gap-3 border-b border-slate-100 dark:border-slate-800 pb-3.5">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 font-bold">
+                  <MapPin className="h-5 w-5" />
                 </div>
                 <div>
-                  <h2 className="text-sm font-bold text-foreground">
+                  <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">
                     1. Alamat Pengiriman
                   </h2>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-slate-500">
                     Pengiriman resmi ke wilayah Kota Tegal
                   </p>
                 </div>
@@ -153,9 +153,9 @@ export function CheckoutClientView({
 
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 {/* Nama Penerima */}
-                <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-muted-foreground flex items-center gap-1">
-                    <User className="h-3.5 w-3.5" /> Nama Penerima *
+                <div className="space-y-2">
+                  <label className="text-sm sm:text-base font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                    <User className="h-4 w-4 text-blue-600" /> Nama Penerima *
                   </label>
                   <input
                     type="text"
@@ -163,14 +163,14 @@ export function CheckoutClientView({
                     placeholder="Contoh: Ibu Rahayu (Kader Posyandu)"
                     value={namaPenerima}
                     onChange={(e) => setNamaPenerima(e.target.value)}
-                    className="h-10 w-full rounded-md border border-border bg-background px-3 text-xs font-normal text-foreground placeholder:text-muted-foreground focus:border-zinc-500 focus:outline-hidden"
+                    className="min-h-[48px] w-full rounded-xl border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 text-base text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:border-blue-600 focus:outline-hidden"
                   />
                 </div>
 
                 {/* Nomor HP/WA */}
-                <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-muted-foreground flex items-center gap-1">
-                    <Phone className="h-3.5 w-3.5" /> Nomor WhatsApp / HP *
+                <div className="space-y-2">
+                  <label className="text-sm sm:text-base font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                    <Phone className="h-4 w-4 text-blue-600" /> Nomor WhatsApp / HP *
                   </label>
                   <input
                     type="tel"
@@ -178,19 +178,19 @@ export function CheckoutClientView({
                     placeholder="Contoh: 081234567890"
                     value={nomorHp}
                     onChange={(e) => setNomorHp(e.target.value)}
-                    className="h-10 w-full rounded-md border border-border bg-background px-3 text-xs font-mono text-foreground placeholder:text-muted-foreground focus:border-zinc-500 focus:outline-hidden"
+                    className="min-h-[48px] w-full rounded-xl border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 text-base font-mono text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:border-blue-600 focus:outline-hidden"
                   />
                 </div>
 
                 {/* Kecamatan */}
-                <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-muted-foreground">
+                <div className="space-y-2">
+                  <label className="text-sm sm:text-base font-bold text-slate-800 dark:text-slate-200">
                     Kecamatan *
                   </label>
                   <select
                     value={kecamatan}
                     onChange={handleKecamatanChange}
-                    className="h-10 w-full rounded-md border border-border bg-background px-3 text-xs font-medium text-foreground focus:border-zinc-500 focus:outline-hidden"
+                    className="min-h-[48px] w-full rounded-xl border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 text-base font-medium text-slate-900 dark:text-slate-100 focus:border-blue-600 focus:outline-hidden"
                   >
                     {Object.keys(KOTA_TEGAL_DATA).map((kec) => (
                       <option key={kec} value={kec}>
@@ -201,14 +201,14 @@ export function CheckoutClientView({
                 </div>
 
                 {/* Kelurahan */}
-                <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-muted-foreground">
+                <div className="space-y-2">
+                  <label className="text-sm sm:text-base font-bold text-slate-800 dark:text-slate-200">
                     Kelurahan *
                   </label>
                   <select
                     value={kelurahan}
                     onChange={(e) => setKelurahan(e.target.value)}
-                    className="h-10 w-full rounded-md border border-border bg-background px-3 text-xs font-medium text-foreground focus:border-zinc-500 focus:outline-hidden"
+                    className="min-h-[48px] w-full rounded-xl border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 text-base font-medium text-slate-900 dark:text-slate-100 focus:border-blue-600 focus:outline-hidden"
                   >
                     {availableKelurahan.map((kel) => (
                       <option key={kel} value={kel}>
@@ -219,23 +219,23 @@ export function CheckoutClientView({
                 </div>
 
                 {/* Alamat Lengkap */}
-                <div className="sm:col-span-2 space-y-1.5">
-                  <label className="text-xs font-medium text-muted-foreground">
+                <div className="sm:col-span-2 space-y-2">
+                  <label className="text-sm sm:text-base font-bold text-slate-800 dark:text-slate-200">
                     Alamat Lengkap (Jalan, RT/RW, Patokan Rumah / Balai Posyandu) *
                   </label>
                   <textarea
                     required
-                    rows={2}
+                    rows={3}
                     placeholder="Contoh: Jl. Ki Gede Sebayu No. 12, RT 03 RW 02 (Sebelah Balai RW / Depan Posyandu Kamboja)"
                     value={alamatLengkap}
                     onChange={(e) => setAlamatLengkap(e.target.value)}
-                    className="w-full rounded-md border border-border bg-background p-3 text-xs font-normal text-foreground placeholder:text-muted-foreground focus:border-zinc-500 focus:outline-hidden"
+                    className="w-full rounded-xl border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 text-base text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:border-blue-600 focus:outline-hidden"
                   />
                 </div>
 
                 {/* Catatan Kurir */}
-                <div className="sm:col-span-2 space-y-1.5">
-                  <label className="text-xs font-medium text-muted-foreground">
+                <div className="sm:col-span-2 space-y-2">
+                  <label className="text-sm sm:text-base font-bold text-slate-800 dark:text-slate-200">
                     Catatan Khusus Pengiriman (Opsional)
                   </label>
                   <input
@@ -243,23 +243,23 @@ export function CheckoutClientView({
                     placeholder="Contoh: Titipkan di pos satpam jika tidak ada orang"
                     value={catatan}
                     onChange={(e) => setCatatan(e.target.value)}
-                    className="h-10 w-full rounded-md border border-border bg-background px-3 text-xs font-normal text-foreground placeholder:text-muted-foreground focus:border-zinc-500 focus:outline-hidden"
+                    className="min-h-[48px] w-full rounded-xl border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 text-base text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:border-blue-600 focus:outline-hidden"
                   />
                 </div>
               </div>
             </div>
 
             {/* Bagian 2: Pilihan Metode Pembayaran */}
-            <div className="rounded-lg border border-border bg-card p-5 sm:p-6 space-y-4">
-              <div className="flex items-center gap-2 border-b border-border pb-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-md bg-muted text-foreground">
-                  <CreditCard className="h-4 w-4" />
+            <div className="rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-6 space-y-5 shadow-xs">
+              <div className="flex items-center gap-3 border-b border-slate-100 dark:border-slate-800 pb-3.5">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 font-bold">
+                  <CreditCard className="h-5 w-5" />
                 </div>
                 <div>
-                  <h2 className="text-sm font-bold text-foreground">
+                  <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">
                     2. Metode Pembayaran
                   </h2>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-slate-500">
                     Pilih cara pembayaran aman & instan
                   </p>
                 </div>
@@ -268,10 +268,10 @@ export function CheckoutClientView({
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 {/* QRIS */}
                 <label
-                  className={`flex cursor-pointer items-start gap-3 rounded-md border p-3.5 transition-all ${
+                  className={`flex cursor-pointer items-start gap-3 rounded-xl border-2 p-4 transition-all ${
                     metodePembayaran === "qris"
-                      ? "border-emerald-500 bg-emerald-950/20"
-                      : "border-border bg-background hover:bg-muted"
+                      ? "border-blue-600 bg-blue-50/60 dark:bg-blue-950/30"
+                      : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800 hover:border-slate-300"
                   }`}
                 >
                   <input
@@ -280,25 +280,25 @@ export function CheckoutClientView({
                     value="qris"
                     checked={metodePembayaran === "qris"}
                     onChange={() => setMetodePembayaran("qris")}
-                    className="mt-0.5 accent-emerald-500"
+                    className="mt-1 h-5 w-5 accent-blue-600"
                   />
                   <div className="space-y-1">
-                    <div className="flex items-center gap-1.5 font-bold text-xs text-foreground">
-                      <QrCode className="h-3.5 w-3.5 text-emerald-400" />
-                      <span>QRIS (Gopay / OVO / Dana / BCA)</span>
+                    <div className="flex items-center gap-2 font-bold text-sm sm:text-base text-slate-900 dark:text-slate-100">
+                      <QrCode className="h-4 w-4 text-blue-600" />
+                      <span>QRIS (Semua Bank / E-Wallet)</span>
                     </div>
-                    <p className="text-[11px] text-muted-foreground leading-relaxed">
-                      Scan kode QR instan dari semua aplikasi e-wallet & m-banking.
+                    <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                      Scan kode QR instan dari GoPay, OVO, Dana, BCA Mobile, dll.
                     </p>
                   </div>
                 </label>
 
                 {/* Transfer BCA */}
                 <label
-                  className={`flex cursor-pointer items-start gap-3 rounded-md border p-3.5 transition-all ${
+                  className={`flex cursor-pointer items-start gap-3 rounded-xl border-2 p-4 transition-all ${
                     metodePembayaran === "transfer_bca"
-                      ? "border-emerald-500 bg-emerald-950/20"
-                      : "border-border bg-background hover:bg-muted"
+                      ? "border-blue-600 bg-blue-50/60 dark:bg-blue-950/30"
+                      : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800 hover:border-slate-300"
                   }`}
                 >
                   <input
@@ -307,14 +307,14 @@ export function CheckoutClientView({
                     value="transfer_bca"
                     checked={metodePembayaran === "transfer_bca"}
                     onChange={() => setMetodePembayaran("transfer_bca")}
-                    className="mt-0.5 accent-emerald-500"
+                    className="mt-1 h-5 w-5 accent-blue-600"
                   />
                   <div className="space-y-1">
-                    <div className="flex items-center gap-1.5 font-bold text-xs text-foreground">
-                      <Building2 className="h-3.5 w-3.5 text-zinc-400" />
+                    <div className="flex items-center gap-2 font-bold text-sm sm:text-base text-slate-900 dark:text-slate-100">
+                      <Building2 className="h-4 w-4 text-slate-500" />
                       <span>Transfer Bank BCA</span>
                     </div>
-                    <p className="text-[11px] text-muted-foreground font-mono">
+                    <p className="text-xs font-mono text-slate-600 dark:text-slate-400">
                       Rek: 138-092-8172
                     </p>
                   </div>
@@ -322,10 +322,10 @@ export function CheckoutClientView({
 
                 {/* Transfer Mandiri */}
                 <label
-                  className={`flex cursor-pointer items-start gap-3 rounded-md border p-3.5 transition-all ${
+                  className={`flex cursor-pointer items-start gap-3 rounded-xl border-2 p-4 transition-all ${
                     metodePembayaran === "transfer_mandiri"
-                      ? "border-emerald-500 bg-emerald-950/20"
-                      : "border-border bg-background hover:bg-muted"
+                      ? "border-blue-600 bg-blue-50/60 dark:bg-blue-950/30"
+                      : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800 hover:border-slate-300"
                   }`}
                 >
                   <input
@@ -334,14 +334,14 @@ export function CheckoutClientView({
                     value="transfer_mandiri"
                     checked={metodePembayaran === "transfer_mandiri"}
                     onChange={() => setMetodePembayaran("transfer_mandiri")}
-                    className="mt-0.5 accent-emerald-500"
+                    className="mt-1 h-5 w-5 accent-blue-600"
                   />
                   <div className="space-y-1">
-                    <div className="flex items-center gap-1.5 font-bold text-xs text-foreground">
-                      <Building2 className="h-3.5 w-3.5 text-zinc-400" />
+                    <div className="flex items-center gap-2 font-bold text-sm sm:text-base text-slate-900 dark:text-slate-100">
+                      <Building2 className="h-4 w-4 text-slate-500" />
                       <span>Transfer Bank Mandiri</span>
                     </div>
-                    <p className="text-[11px] text-muted-foreground font-mono">
+                    <p className="text-xs font-mono text-slate-600 dark:text-slate-400">
                       Rek: 139-00-2918273-1
                     </p>
                   </div>
@@ -349,10 +349,10 @@ export function CheckoutClientView({
 
                 {/* Transfer BRI */}
                 <label
-                  className={`flex cursor-pointer items-start gap-3 rounded-md border p-3.5 transition-all ${
+                  className={`flex cursor-pointer items-start gap-3 rounded-xl border-2 p-4 transition-all ${
                     metodePembayaran === "transfer_bri"
-                      ? "border-emerald-500 bg-emerald-950/20"
-                      : "border-border bg-background hover:bg-muted"
+                      ? "border-blue-600 bg-blue-50/60 dark:bg-blue-950/30"
+                      : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800 hover:border-slate-300"
                   }`}
                 >
                   <input
@@ -361,14 +361,14 @@ export function CheckoutClientView({
                     value="transfer_bri"
                     checked={metodePembayaran === "transfer_bri"}
                     onChange={() => setMetodePembayaran("transfer_bri")}
-                    className="mt-0.5 accent-emerald-500"
+                    className="mt-1 h-5 w-5 accent-blue-600"
                   />
                   <div className="space-y-1">
-                    <div className="flex items-center gap-1.5 font-bold text-xs text-foreground">
-                      <Building2 className="h-3.5 w-3.5 text-zinc-400" />
+                    <div className="flex items-center gap-2 font-bold text-sm sm:text-base text-slate-900 dark:text-slate-100">
+                      <Building2 className="h-4 w-4 text-slate-500" />
                       <span>Transfer Bank BRI</span>
                     </div>
-                    <p className="text-[11px] text-muted-foreground font-mono">
+                    <p className="text-xs font-mono text-slate-600 dark:text-slate-400">
                       Rek: 0102-01-092837-50-1
                     </p>
                   </div>
@@ -379,14 +379,14 @@ export function CheckoutClientView({
 
           {/* Kolom Kanan: Ringkasan Belanja (1 col) */}
           <div className="space-y-6">
-            <div className="rounded-lg border border-border bg-card p-5 space-y-4">
-              <h2 className="text-sm font-bold text-foreground border-b border-border pb-3">
+            <div className="rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-6 space-y-4 shadow-xs">
+              <h2 className="text-base font-bold text-slate-900 dark:text-slate-100 border-b border-slate-100 dark:border-slate-800 pb-3">
                 Ringkasan Pesanan
               </h2>
 
               {/* Item Produk */}
-              <div className="flex items-center gap-3">
-                <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-md border border-border bg-muted">
+              <div className="flex items-center gap-3.5">
+                <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800">
                   <Image
                     src={
                       produk.gambar_url ||
@@ -397,36 +397,36 @@ export function CheckoutClientView({
                     className="object-cover"
                   />
                 </div>
-                <div className="space-y-0.5 min-w-0">
-                  <h3 className="line-clamp-1 text-xs font-semibold text-foreground">
+                <div className="space-y-1 min-w-0">
+                  <h3 className="line-clamp-1 text-sm font-bold text-slate-900 dark:text-slate-100">
                     {produk.nama}
                   </h3>
-                  <div className="text-[11px] text-muted-foreground font-mono">
+                  <div className="text-xs text-slate-500 font-mono">
                     {jumlah} x {formatRupiah(produk.harga)}
                   </div>
-                  <div className="text-xs font-bold text-foreground font-mono">
+                  <div className="text-sm font-bold text-blue-700 dark:text-blue-400 font-mono">
                     {formatRupiah(totalHarga)}
                   </div>
                 </div>
               </div>
 
               {/* Rincian Biaya */}
-              <div className="space-y-2 border-t border-border pt-4 text-xs">
-                <div className="flex items-center justify-between text-muted-foreground">
+              <div className="space-y-2.5 border-t border-slate-100 dark:border-slate-800 pt-4 text-sm">
+                <div className="flex items-center justify-between text-slate-600 dark:text-slate-400">
                   <span>Subtotal Produk</span>
-                  <span className="font-mono font-medium text-foreground">
+                  <span className="font-mono font-bold text-slate-900 dark:text-slate-100">
                     {formatRupiah(totalHarga)}
                   </span>
                 </div>
-                <div className="flex items-center justify-between text-muted-foreground">
+                <div className="flex items-center justify-between text-slate-600 dark:text-slate-400">
                   <span>Ongkir (Kota Tegal)</span>
-                  <span className="font-mono font-medium text-emerald-400">
+                  <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
                     Rp 0 (Gratis)
                   </span>
                 </div>
-                <div className="flex items-center justify-between border-t border-border pt-3 text-sm font-bold text-foreground">
+                <div className="flex items-center justify-between border-t border-slate-100 dark:border-slate-800 pt-3 text-base font-bold text-slate-900 dark:text-slate-100">
                   <span>Total Bayar</span>
-                  <span className="text-base font-black text-foreground font-mono">
+                  <span className="text-xl font-bold text-blue-700 dark:text-blue-400 font-mono">
                     {formatRupiah(totalPembayaran)}
                   </span>
                 </div>
@@ -435,16 +435,16 @@ export function CheckoutClientView({
               {/* Feedback Error / Success */}
               {feedback && (
                 <div
-                  className={`flex items-start gap-2 rounded-md p-3 text-xs ${
+                  className={`flex items-start gap-2.5 rounded-xl p-3.5 text-sm ${
                     feedback.type === "success"
-                      ? "bg-emerald-950/40 text-emerald-300 border border-emerald-800"
-                      : "bg-destructive/10 text-destructive border border-destructive/20"
+                      ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-200 border-2 border-emerald-500"
+                      : "bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-200 border-2 border-rose-500"
                   }`}
                 >
                   {feedback.type === "success" ? (
-                    <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5" />
+                    <CheckCircle2 className="h-5 w-5 shrink-0 mt-0.5 text-emerald-600" />
                   ) : (
-                    <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+                    <AlertCircle className="h-5 w-5 shrink-0 mt-0.5 text-rose-600" />
                   )}
                   <span>{feedback.message}</span>
                 </div>
@@ -454,24 +454,24 @@ export function CheckoutClientView({
               <button
                 type="submit"
                 disabled={isPending}
-                className="flex h-10 w-full items-center justify-center gap-2 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white px-4 text-xs font-bold transition-all shadow-md disabled:opacity-50 cursor-pointer"
+                className="flex min-h-[52px] w-full items-center justify-center gap-2 rounded-xl bg-blue-700 hover:bg-blue-800 text-white px-5 text-base font-bold transition-all shadow-md active:scale-98 disabled:opacity-50 cursor-pointer"
               >
                 {isPending ? (
                   <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <Loader2 className="h-5 w-5 animate-spin" />
                     <span>Memproses Pesanan...</span>
                   </>
                 ) : (
                   <>
-                    <ShoppingBag className="h-4 w-4" />
-                    <span>Konfirmasi & Bayar</span>
+                    <ShoppingBag className="h-5 w-5" />
+                    <span>Konfirmasi &amp; Bayar</span>
                   </>
                 )}
               </button>
 
-              <div className="flex items-center justify-center gap-1.5 text-[11px] text-muted-foreground pt-1">
-                <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
-                <span className="font-mono">ENCRYPTED CHECKOUT</span>
+              <div className="flex items-center justify-center gap-2 text-xs text-slate-500 pt-1">
+                <ShieldCheck className="h-4 w-4 text-emerald-600" />
+                <span>Transaksi Aman &amp; Terverifikasi</span>
               </div>
             </div>
           </div>

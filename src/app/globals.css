@@ -48,89 +48,84 @@
 
 :root {
   /* =================================================== */
-  /* LIGHT MODE (Soft Ice Slate & Ocean Blue)             */
-  /* Nyaman di mata, ramah, dan anti-silau untuk Kader & Guru */
+  /* COURSERA MOBILE DESIGN SYSTEM (FORM & QUIZ STYLE)   */
+  /* High contrast, large touch targets, senior-friendly */
   /* =================================================== */
-  --background: #F8FAFC; /* Slate 50: Soft Off-White */
-  --foreground: #0F172A; /* Slate 900: Deep Navy Ink */
+  --background: #F8FAFC; /* Slate 50: Solid clean backdrop */
+  --foreground: #0F172A; /* Slate 900: High-contrast rich ink */
 
-  --card: #FFFFFF; /* Pure Crisp Card Surface */
+  --card: #FFFFFF; /* Pure crisp white card surface */
   --card-foreground: #0F172A;
   --popover: #FFFFFF;
   --popover-foreground: #0F172A;
 
-  --primary: #2563EB; /* Royal Blue 600: Ramah, Terpercaya, & Profesional */
+  --primary: #0056D2; /* Coursera Deep Corporate Blue: Authoritative & Clear */
   --primary-foreground: #FFFFFF;
 
-  --secondary: #F1F5F9; /* Slate 100: Soft Cool Blue-Gray */
-  --secondary-foreground: #1E293B; /* Slate 800 */
+  --secondary: #F1F5F9; /* Slate 100: Soft touchable background */
+  --secondary-foreground: #0F172A; /* Slate 900 */
 
-  --muted: #F1F5F9;
-  --muted-foreground: #64748B; /* Slate 500 */
+  --muted: #F8FAFC;
+  --muted-foreground: #475569; /* Slate 600: High-contrast legible text */
 
-  /* Soft Ocean & Healthcare Accent */
+  /* Healthcare & Community Accent */
   --accent: #0284C7; /* Sky Blue 600 */
   --accent-foreground: #FFFFFF;
 
-  --border: #E2E8F0; /* Slate 200 */
-  --input: #E2E8F0;
-  --ring: #3B82F6; /* Blue 500 */
+  --border: #CBD5E1; /* Slate 300: High-visibility solid border */
+  --input: #CBD5E1;
+  --ring: #0056D2; /* Coursera Blue focus ring */
 
-  --destructive: #EF4444;
+  --destructive: #DC2626; /* Solid Red 600 */
   --destructive-foreground: #FFFFFF;
 
-  --radius: 0.5rem;
+  --radius: 0.875rem; /* 14px rounded corners */
 
-  --chart-1: #2563EB;
+  --chart-1: #0056D2;
   --chart-2: #0284C7;
-  --chart-3: #10B981;
-  --chart-4: #F59E0B;
-  --chart-5: #64748B;
+  --chart-3: #16A34A;
+  --chart-4: #D97706;
+  --chart-5: #475569;
 
   --sidebar: #FFFFFF;
   --sidebar-foreground: #0F172A;
-  --sidebar-primary: #2563EB;
+  --sidebar-primary: #0056D2;
   --sidebar-primary-foreground: #FFFFFF;
   --sidebar-accent: #F1F5F9;
-  --sidebar-accent-foreground: #1E293B;
-  --sidebar-border: #E2E8F0;
-  --sidebar-ring: #3B82F6;
+  --sidebar-accent-foreground: #0F172A;
+  --sidebar-border: #CBD5E1;
+  --sidebar-ring: #0056D2;
 }
 
 .dark {
-  /* =================================================== */
-  /* DARK MODE: Calming Midnight Navy & Sky Blue         */
-  /* Tidak hitam pekat OLED, lembut bernuansa langit malam */
-  /* =================================================== */
-  --background: #0F172A; /* Slate 900: Deep Midnight Navy */
-  --foreground: #F8FAFC; /* Slate 50: Pearl White lembut */
+  --background: #0F172A; /* Slate 900 */
+  --foreground: #F8FAFC; /* Slate 50 */
 
-  --card: #1E293B; /* Slate 800: Midnight Slate Surface */
+  --card: #1E293B; /* Slate 800 */
   --card-foreground: #F8FAFC;
   --popover: #1E293B;
   --popover-foreground: #F8FAFC;
 
-  --primary: #38BDF8; /* Sky Blue 400: Terang Ramah & Teduh */
-  --primary-foreground: #0F172A; /* Deep Navy Text di tombol Primary */
+  --primary: #38BDF8; /* Sky Blue 400 */
+  --primary-foreground: #0F172A;
 
   --secondary: #334155; /* Slate 700 */
   --secondary-foreground: #F8FAFC;
 
-  --muted: #1E293B; /* Slate 800 */
-  --muted-foreground: #94A3B8; /* Slate 400 */
+  --muted: #1E293B;
+  --muted-foreground: #94A3B8;
 
-  /* Ocean Sky Accent */
-  --accent: #38BDF8; /* Sky 400 */
+  --accent: #38BDF8;
   --accent-foreground: #0F172A;
 
-  --border: #334155; /* Slate 700 */
+  --border: #334155;
   --input: #334155;
   --ring: #38BDF8;
 
   --destructive: #F87171;
   --destructive-foreground: #0F172A;
 
-  --radius: 0.5rem;
+  --radius: 0.875rem;
 
   --chart-1: #38BDF8;
   --chart-2: #60A5FA;

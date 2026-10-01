@@ -177,7 +177,7 @@ export const USIA_OPTIONS = [
 export type UsiaOption = typeof USIA_OPTIONS[number];
 
 // Opsi Usia khusus Data ATS (dimulai dari usia wajib sekolah SD 8 tahun ke atas s/d >24 tahun)
-// Usia 0 sampai 7 tahun dialokasikan khusus pada Data Anak (Balita & PAUD)
+// Usia 0 sampai 6 tahun dialokasikan khusus pada Data Anak (Balita & PAUD)
 export const USIA_ATS_OPTIONS = [
   "8",
   "9",

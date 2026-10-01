@@ -158,41 +158,36 @@ export function CardDataAts({
 
   return (
     <>
-      <div className="overflow-hidden rounded-lg border border-border bg-card p-5 space-y-4 transition-colors hover:border-amber-500/40 break-inside-avoid print:bg-white print:border-gray-300 print:text-black print:shadow-none">
+      <div className="overflow-hidden rounded-2xl border-2 border-slate-200 bg-white p-5 sm:p-6 space-y-4 transition-all hover:border-blue-400 shadow-xs break-inside-avoid print:bg-white print:border-gray-300 print:text-black print:shadow-none">
         {/* Header: Nama Anak, Jenjang, & Status Approval */}
-        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-          <div className="flex items-start gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 border-b-2 border-slate-100 pb-4">
+          <div className="flex items-start gap-3.5">
             <div
               className={cn(
-                "flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-border bg-muted font-bold",
+                "flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border-2 font-bold",
                 currentAts.jenis_kelamin === "L" ||
                   currentAts.jenis_kelamin === "Laki-laki"
-                  ? "text-blue-500 dark:text-blue-400"
-                  : "text-rose-500 dark:text-rose-400"
+                  ? "border-blue-200 bg-blue-50 text-blue-700"
+                  : "border-rose-200 bg-rose-50 text-rose-700"
               )}
             >
-              <GraduationCap className="h-5 w-5" />
+              <GraduationCap className="h-6 w-6" />
             </div>
 
             <div className="space-y-1">
               <div className="flex flex-wrap items-center gap-2">
-                <h3 className="text-sm font-bold text-foreground leading-snug">
+                <h3 className="text-lg sm:text-xl font-bold text-slate-900 leading-snug">
                   {currentAts.nama_lengkap}
                 </h3>
                 {/* Jenjang Badge */}
-                <span
-                  className={cn(
-                    "inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-mono font-bold border shrink-0",
-                    jenjangInfo.badgeClass
-                  )}
-                >
-                  <BookOpen className="h-3 w-3" />
+                <span className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-bold border-2 border-blue-200 bg-blue-50 text-blue-900 shrink-0">
+                  <BookOpen className="h-3.5 w-3.5" />
                   <span>{jenjangInfo.badgeLabel}</span>
                 </span>
               </div>
 
-              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-mono text-muted-foreground">
-                <span className="font-semibold text-foreground" suppressHydrationWarning>
+              <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-sm font-medium text-slate-600">
+                <span className="font-bold text-slate-900 font-mono" suppressHydrationWarning>
                   {ageString}
                 </span>
                 <span>•</span>
@@ -205,7 +200,7 @@ export function CardDataAts({
                 {currentAts.kelurahan && (
                   <>
                     <span>•</span>
-                    <span className="text-amber-500 font-semibold">
+                    <span className="text-blue-800 font-bold">
                       {currentAts.rt ? `RT ${currentAts.rt}` : ""}
                       {currentAts.rw ? `/RW ${currentAts.rw}, ` : " "}
                       Kel. {currentAts.kelurahan}
@@ -219,27 +214,27 @@ export function CardDataAts({
           {/* Status Badge */}
           <div className="flex items-center gap-2 self-start shrink-0">
             {isApproved ? (
-              <span className="inline-flex items-center gap-1 rounded-md bg-emerald-500/10 px-2.5 py-1 text-[10px] font-mono font-bold text-emerald-400 border border-emerald-500/30">
-                <CheckCircle2 className="h-3 w-3" />
+              <span className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-800 border-2 border-emerald-300">
+                <CheckCircle2 className="h-4 w-4 text-emerald-600" />
                 <span>TERVERIFIKASI</span>
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1 rounded-md bg-amber-500/10 px-2.5 py-1 text-[10px] font-mono font-bold text-amber-400 border border-amber-500/30">
-                <Clock className="h-3 w-3" />
+              <span className="inline-flex items-center gap-1.5 rounded-xl bg-amber-50 px-3 py-1.5 text-xs font-bold text-amber-900 border-2 border-amber-300">
+                <Clock className="h-4 w-4 text-amber-600" />
                 <span>MENUNGGU</span>
               </span>
             )}
           </div>
         </div>
 
-        {/* Info Baris 1: Orang Tua / Wali & Alamat Domisili */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-mono">
+        {/* Info Grid: Orang Tua / Wali & Alamat Domisili */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-sm">
           {/* Orang Tua / Wali */}
-          <div className="flex items-center gap-2 rounded-md bg-background border border-border p-2.5 min-w-0">
-            <User className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-            <span className="text-muted-foreground text-[11px] shrink-0">WALI:</span>
+          <div className="flex items-center gap-2.5 rounded-xl bg-slate-50 border border-slate-200 p-3 min-w-0">
+            <User className="h-4 w-4 text-slate-500 shrink-0" />
+            <span className="text-slate-500 font-bold text-xs shrink-0">WALI:</span>
             <span
-              className="font-bold text-foreground truncate"
+              className="font-bold text-slate-900 truncate"
               title={`${currentAts.nama_orangtua} (${currentAts.tinggal_bersama})`}
             >
               {currentAts.nama_orangtua} ({currentAts.tinggal_bersama})
@@ -247,11 +242,11 @@ export function CardDataAts({
           </div>
 
           {/* Alamat Domisili */}
-          <div className="flex items-center gap-2 rounded-md bg-background border border-border p-2.5 min-w-0">
-            <MapPin className="h-3.5 w-3.5 text-amber-500 shrink-0" />
-            <span className="text-muted-foreground text-[11px] shrink-0">ALAMAT:</span>
+          <div className="flex items-center gap-2.5 rounded-xl bg-slate-50 border border-slate-200 p-3 min-w-0">
+            <MapPin className="h-4 w-4 text-blue-600 shrink-0" />
+            <span className="text-slate-500 font-bold text-xs shrink-0">ALAMAT:</span>
             <span
-              className="font-medium text-foreground truncate"
+              className="font-semibold text-slate-800 truncate"
               title={alamatLengkap || "-"}
             >
               {alamatLengkap || "-"}
@@ -259,18 +254,18 @@ export function CardDataAts({
           </div>
         </div>
 
-        {/* Info Baris 2: Keinginan Sekolah & Alasan Tidak Sekolah */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-mono">
+        {/* Info Grid: Keinginan Sekolah & Alasan Tidak Sekolah */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-sm">
           {/* Keinginan Sekolah */}
-          <div className="flex items-center gap-2 rounded-md bg-background border border-border p-2.5 min-w-0">
-            <HelpCircle className="h-3.5 w-3.5 text-amber-500 shrink-0" />
-            <span className="text-muted-foreground text-[11px] shrink-0">KEINGINAN:</span>
+          <div className="flex items-center gap-2.5 rounded-xl bg-slate-50 border border-slate-200 p-3 min-w-0">
+            <HelpCircle className="h-4 w-4 text-blue-600 shrink-0" />
+            <span className="text-slate-500 font-bold text-xs shrink-0">MINAT:</span>
             <span
               className={cn(
-                "font-bold truncate px-1.5 py-0.5 rounded text-[11px]",
+                "font-bold truncate px-2 py-0.5 rounded-lg text-xs",
                 currentAts.keinginan_sekolah === "Masih Ada"
-                  ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
-                  : "bg-amber-500/15 text-amber-400 border border-amber-500/30"
+                  ? "bg-emerald-100 text-emerald-900 border border-emerald-300"
+                  : "bg-amber-100 text-amber-900 border border-amber-300"
               )}
             >
               {currentAts.keinginan_sekolah}
@@ -278,11 +273,11 @@ export function CardDataAts({
           </div>
 
           {/* Alasan Tidak Sekolah */}
-          <div className="flex items-center gap-2 rounded-md bg-background border border-border p-2.5 min-w-0">
-            <AlertCircle className="h-3.5 w-3.5 text-amber-500 shrink-0" />
-            <span className="text-muted-foreground text-[11px] shrink-0">ALASAN:</span>
+          <div className="flex items-center gap-2.5 rounded-xl bg-slate-50 border border-slate-200 p-3 min-w-0">
+            <AlertCircle className="h-4 w-4 text-amber-600 shrink-0" />
+            <span className="text-slate-500 font-bold text-xs shrink-0">ALASAN:</span>
             <span
-              className="font-bold text-foreground truncate"
+              className="font-bold text-slate-900 truncate"
               title={currentAts.alasan_tidak_sekolah}
             >
               {currentAts.alasan_tidak_sekolah}
@@ -292,21 +287,21 @@ export function CardDataAts({
 
         {/* Keterangan Alasan Tambahan jika ada */}
         {currentAts.keterangan && (
-          <div className="rounded-md bg-background border border-border px-3 py-2 text-xs text-muted-foreground flex items-start gap-2">
-            <span className="font-mono text-[11px] font-bold text-amber-500 shrink-0">KET:</span>
+          <div className="rounded-xl bg-slate-50 border border-slate-200 p-3.5 text-sm text-slate-700 flex items-start gap-2.5">
+            <span className="text-xs font-bold text-blue-700 shrink-0 bg-blue-100 px-2 py-0.5 rounded">KET</span>
             <p className="leading-relaxed italic">&ldquo;{currentAts.keterangan}&rdquo;</p>
           </div>
         )}
 
         {/* Riwayat Sekolah Sebelumnya & Kelas Terakhir */}
         {(currentAts.sekolah_sebelumnya || currentAts.kelas_terakhir) && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-mono">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-sm">
             {currentAts.sekolah_sebelumnya && (
-              <div className="flex items-center gap-2 rounded-md bg-background border border-border p-2.5 min-w-0">
-                <School className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                <span className="text-muted-foreground text-[11px] shrink-0">SEKOLAH ASAL:</span>
+              <div className="flex items-center gap-2.5 rounded-xl bg-slate-50 border border-slate-200 p-3 min-w-0">
+                <School className="h-4 w-4 text-slate-500 shrink-0" />
+                <span className="text-slate-500 font-bold text-xs shrink-0">SEKOLAH:</span>
                 <span
-                  className="font-bold text-foreground truncate"
+                  className="font-bold text-slate-900 truncate"
                   title={currentAts.sekolah_sebelumnya}
                 >
                   {currentAts.sekolah_sebelumnya}
@@ -314,11 +309,11 @@ export function CardDataAts({
               </div>
             )}
             {currentAts.kelas_terakhir && (
-              <div className="flex items-center gap-2 rounded-md bg-background border border-border p-2.5 min-w-0">
-                <BookOpen className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                <span className="text-muted-foreground text-[11px] shrink-0">KELAS TERAKHIR:</span>
+              <div className="flex items-center gap-2.5 rounded-xl bg-slate-50 border border-slate-200 p-3 min-w-0">
+                <BookOpen className="h-4 w-4 text-slate-500 shrink-0" />
+                <span className="text-slate-500 font-bold text-xs shrink-0">KELAS:</span>
                 <span
-                  className="font-bold text-foreground truncate"
+                  className="font-bold text-slate-900 truncate"
                   title={currentAts.kelas_terakhir}
                 >
                   {currentAts.kelas_terakhir}
@@ -328,24 +323,24 @@ export function CardDataAts({
           </div>
         )}
 
-        {/* Action Buttons Bar: VALIDASI, KEMBALI BERSEKOLAH, EDIT, HAPUS (Ukuran Sama, Disembunyikan saat Print) */}
+        {/* Action Buttons Bar: VALIDASI, KEMBALI BERSEKOLAH, EDIT, HAPUS (Min 48px Height Tap Targets) */}
         {((!isApproved && canValidate) || canPerformActions) && (
-          <div className="flex items-center gap-2 pt-2 border-t border-border w-full print:hidden">
+          <div className="grid grid-cols-1 sm:flex sm:items-center gap-2.5 pt-3 border-t-2 border-slate-100 w-full print:hidden">
             {/* 1. Tombol Validasi (jika status masih pending) */}
             {!isApproved && canValidate && (
               <button
                 type="button"
                 onClick={handleValidate}
                 disabled={isPendingValidate}
-                className="flex-1 min-w-0 flex h-8.5 items-center justify-center gap-1.5 rounded-md bg-amber-600 hover:bg-amber-500 px-2 text-xs font-mono font-bold text-white transition-all shadow-xs disabled:opacity-40 cursor-pointer"
+                className="flex-1 min-h-[48px] h-12 flex items-center justify-center gap-2 rounded-xl bg-amber-600 hover:bg-amber-700 active:scale-[0.98] px-4 text-sm font-bold text-white transition-all shadow-sm disabled:opacity-50 cursor-pointer"
                 title="Validasi Data ATS"
               >
                 {isPendingValidate ? (
-                  <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin" />
+                  <Loader2 className="h-4 w-4 shrink-0 animate-spin" />
                 ) : (
                   <>
-                    <ShieldCheck className="h-3.5 w-3.5 shrink-0" />
-                    <span className="truncate">VALIDASI</span>
+                    <ShieldCheck className="h-4 w-4 shrink-0" />
+                    <span>VALIDASI ATS</span>
                   </>
                 )}
               </button>
@@ -358,34 +353,36 @@ export function CardDataAts({
                 <button
                   type="button"
                   onClick={() => setIsKembaliSekolahOpen(true)}
-                  className="flex-1 min-w-0 flex h-8.5 items-center justify-center gap-1.5 rounded-md bg-emerald-600 hover:bg-emerald-500 px-2 text-xs font-mono font-bold text-white transition-all shadow-sm active:scale-98 cursor-pointer"
+                  className="flex-1 min-h-[48px] h-12 flex items-center justify-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] px-4 text-sm font-bold text-white transition-all shadow-sm cursor-pointer"
                   title="Catat Kembali Bersekolah"
                 >
-                  <GraduationCap className="h-3.5 w-3.5 shrink-0" />
-                  <span className="truncate">BERSEKOLAH</span>
+                  <GraduationCap className="h-4 w-4 shrink-0" />
+                  <span>BERSEKOLAH</span>
                 </button>
 
-                {/* 3. EDIT ATS */}
-                <button
-                  type="button"
-                  onClick={() => setIsEditOpen(true)}
-                  className="flex-1 min-w-0 flex h-8.5 items-center justify-center gap-1.5 rounded-md border border-border bg-background hover:bg-muted hover:border-amber-500/40 px-2 text-xs font-mono font-bold text-foreground transition-all cursor-pointer"
-                  title="Edit Data ATS"
-                >
-                  <Pencil className="h-3.5 w-3.5 shrink-0 text-amber-500" />
-                  <span className="truncate">EDIT</span>
-                </button>
+                <div className="flex items-center gap-2">
+                  {/* 3. EDIT ATS */}
+                  <button
+                    type="button"
+                    onClick={() => setIsEditOpen(true)}
+                    className="flex-1 min-h-[48px] h-12 flex items-center justify-center gap-2 rounded-xl border-2 border-slate-300 bg-white hover:bg-slate-100 px-4 text-sm font-bold text-slate-800 transition-all cursor-pointer"
+                    title="Edit Data ATS"
+                  >
+                    <Pencil className="h-4 w-4 shrink-0 text-slate-700" />
+                    <span>EDIT</span>
+                  </button>
 
-                {/* 4. HAPUS ATS */}
-                <button
-                  type="button"
-                  onClick={() => setIsDeleteOpen(true)}
-                  className="flex-1 min-w-0 flex h-8.5 items-center justify-center gap-1.5 rounded-md border border-border bg-background hover:bg-rose-500/10 hover:border-rose-500/40 hover:text-rose-400 px-2 text-xs font-mono font-bold text-muted-foreground hover:text-rose-400 transition-all cursor-pointer"
-                  title="Hapus Data ATS"
-                >
-                  <Trash2 className="h-3.5 w-3.5 shrink-0 text-rose-500" />
-                  <span className="truncate">HAPUS</span>
-                </button>
+                  {/* 4. HAPUS ATS */}
+                  <button
+                    type="button"
+                    onClick={() => setIsDeleteOpen(true)}
+                    className="min-h-[48px] h-12 flex items-center justify-center gap-2 rounded-xl border-2 border-red-200 bg-red-50 hover:bg-red-100 text-red-700 px-4 text-sm font-bold transition-all cursor-pointer"
+                    title="Hapus Data ATS"
+                  >
+                    <Trash2 className="h-4 w-4 shrink-0 text-red-600" />
+                    <span>HAPUS</span>
+                  </button>
+                </div>
               </>
             )}
           </div>

@@ -5,7 +5,6 @@ import { createClient } from "@/utils/supabase/server";
 import { KabarCard } from "@/components/kabar/kabar-card";
 import { KabarFilter } from "@/components/kabar/kabar-filter";
 import { CreateKabarModal } from "@/components/kabar/create-kabar-modal";
-import { ThemeToggle } from "@/components/theme-toggle";
 import type { SortingKabar, VisibilitasKabar } from "@/types/database";
 
 interface KabarPageProps {
@@ -60,12 +59,9 @@ export default async function KabarPage({ searchParams }: KabarPageProps) {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <ThemeToggle variant="compact" />
-          <div className="flex items-center gap-2 font-mono text-xs text-muted-foreground">
-            <span className="inline-block h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span>LIVE</span>
-          </div>
+        <div className="flex items-center gap-2 font-mono text-xs text-muted-foreground">
+          <span className="inline-block h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+          <span>LIVE</span>
         </div>
       </header>
 

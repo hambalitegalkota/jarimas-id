@@ -25,7 +25,6 @@ export function LoginPromptModal({
   title = "Silakan Masuk ke Akun",
   description = "Silahkan login untuk memberikan reaksi dan komentar pada Kabar Warga.",
 }: LoginPromptModalProps) {
-  // Handle ESC key press
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isOpen) {
@@ -39,10 +38,10 @@ export function LoginPromptModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto animate-in fade-in duration-200">
       {/* Overlay Backdrop */}
       <div
-        className="fixed inset-0 bg-black/80 backdrop-blur-xs transition-opacity"
+        className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -52,21 +51,23 @@ export function LoginPromptModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="login-prompt-title"
-        className="relative w-full max-w-md max-h-[min(90dvh,calc(100dvh-2.5rem))] flex flex-col rounded-xl border border-border bg-card shadow-2xl z-10 animate-in slide-in-from-bottom-5 sm:zoom-in-95 duration-200 overflow-hidden my-auto"
+        className="relative w-full max-w-md max-h-[92dvh] sm:max-h-[85dvh] flex flex-col rounded-t-3xl sm:rounded-3xl border-2 border-slate-200 bg-white shadow-2xl z-10 animate-in slide-in-from-bottom-5 sm:zoom-in-95 duration-200 overflow-hidden my-0 sm:my-auto"
       >
         {/* Header with Close Button */}
-        <div className="flex items-start justify-between p-5 pb-4 border-b border-border shrink-0 bg-card">
+        <div className="flex items-start justify-between p-5 pb-4 border-b-2 border-slate-100 shrink-0 bg-white">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 text-blue-700">
               <LogIn className="h-5 w-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="cyber-badge text-[10px] py-0 px-1.5">AUTENTIKASI</span>
+                <span className="rounded-md bg-blue-50 px-2 py-0.5 text-xs font-bold text-blue-800 border border-blue-200">
+                  AUTENTIKASI
+                </span>
               </div>
               <h2
                 id="login-prompt-title"
-                className="text-base font-bold tracking-tight text-foreground mt-0.5"
+                className="text-lg font-bold tracking-tight text-slate-900 mt-0.5"
               >
                 {title}
               </h2>
@@ -77,63 +78,63 @@ export function LoginPromptModal({
             type="button"
             onClick={onClose}
             aria-label="Tutup dialog"
-            className="flex h-8 w-8 items-center justify-center rounded-md border border-border text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
+            className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-colors cursor-pointer"
           >
-            <X className="h-4 w-4" />
+            <X className="h-5 w-5" />
           </button>
         </div>
 
         {/* Modal Body */}
-        <div className="p-4 sm:p-5 pb-10 sm:pb-12 overflow-y-auto flex-1 space-y-4 overscroll-contain">
-          <p className="text-sm text-foreground/90 leading-relaxed font-sans">
+        <div className="p-5 sm:p-6 pb-12 overflow-y-auto flex-1 space-y-4 overscroll-contain bg-slate-50/50">
+          <p className="text-base text-slate-700 leading-relaxed font-medium">
             {description}
           </p>
 
           {/* Feature Highlights */}
-          <div className="rounded-lg border border-border bg-muted/40 p-3.5 space-y-2.5 font-mono text-xs">
-            <div className="flex items-center gap-2.5 text-foreground/85">
-              <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                <Heart className="h-3.5 w-3.5" />
+          <div className="rounded-2xl border-2 border-slate-200 bg-white p-4 space-y-3 text-sm">
+            <div className="flex items-center gap-3 text-slate-800">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-rose-50 text-rose-600 border border-rose-200">
+                <Heart className="h-4 w-4" />
               </div>
-              <span>Ekspresikan reaksi (❤️, 👍, 🙏, 😊)</span>
+              <span className="font-semibold">Ekspresikan reaksi (❤️, 👍, 🙏, 😊)</span>
             </div>
-            <div className="flex items-center gap-2.5 text-foreground/85">
-              <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20">
-                <MessageCircle className="h-3.5 w-3.5" />
+            <div className="flex items-center gap-3 text-slate-800">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-700 border border-blue-200">
+                <MessageCircle className="h-4 w-4" />
               </div>
-              <span>Tulis tanggapan & diskusi bersama warga</span>
+              <span className="font-semibold">Tulis tanggapan & diskusi bersama warga</span>
             </div>
-            <div className="flex items-center gap-2.5 text-foreground/85">
-              <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
-                <Sparkles className="h-3.5 w-3.5" />
+            <div className="flex items-center gap-3 text-slate-800">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-800 border border-amber-200">
+                <Sparkles className="h-4 w-4" />
               </div>
-              <span>Bagikan kabar & pantau info posyandu</span>
+              <span className="font-semibold">Bagikan kabar & pantau info posyandu</span>
             </div>
           </div>
 
           {/* Action Buttons */}
-          <div className="pt-2 flex flex-col gap-2.5">
+          <div className="pt-2 flex flex-col gap-3">
             <Link
               href="/login"
-              className="flex min-h-[44px] items-center justify-center gap-2 rounded-md bg-blue-600 hover:bg-blue-500 px-4 py-2.5 text-xs font-mono font-bold uppercase tracking-wider text-white shadow-md transition-all active:scale-[0.99]"
+              className="flex min-h-[50px] h-13 items-center justify-center gap-2 rounded-2xl bg-blue-700 hover:bg-blue-800 px-6 text-base font-bold text-white shadow-md transition-all active:scale-[0.99]"
             >
-              <LogIn className="h-4 w-4" />
+              <LogIn className="h-5 w-5" />
               <span>Masuk / Login Sekarang</span>
-              <ArrowRight className="h-3.5 w-3.5" />
+              <ArrowRight className="h-4 w-4" />
             </Link>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2.5">
               <Link
                 href="/register"
-                className="flex-1 flex min-h-[40px] items-center justify-center gap-1.5 rounded-md border border-border bg-card px-3 py-2 text-xs font-mono font-medium text-foreground hover:bg-muted transition-colors"
+                className="flex-1 flex min-h-[48px] h-12 items-center justify-center gap-2 rounded-xl border-2 border-slate-200 bg-white px-4 text-sm font-bold text-slate-800 hover:bg-slate-50 transition-colors shadow-xs"
               >
-                <UserPlus className="h-3.5 w-3.5 text-muted-foreground" />
+                <UserPlus className="h-4 w-4 text-slate-500" />
                 <span>Daftar Akun</span>
               </Link>
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 flex min-h-[40px] items-center justify-center rounded-md border border-transparent px-3 py-2 text-xs font-mono font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
+                className="flex-1 flex min-h-[48px] h-12 items-center justify-center rounded-xl border-2 border-transparent px-4 text-sm font-bold text-slate-600 hover:bg-slate-200/60 hover:text-slate-900 transition-colors cursor-pointer"
               >
                 Nanti Saja
               </button>

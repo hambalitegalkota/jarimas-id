@@ -7,6 +7,18 @@ function slugify(text: string): string {
     .replace(/^-+|-+$/g, "");
 }
 
+export function extractCorePosyanduName(rawName: string): string {
+  let name = (rawName || "").trim();
+  name = name.replace(/,\s*Kota\s+Tegal/gi, "");
+  name = name.replace(/,\s*Tegal\s+(Timur|Barat|Selatan|Margadana)/gi, "");
+  name = name.replace(
+    /,\s*(Kejambon|Slerok|Panggung|Mintaragen|Mangkukusuman|Kraton|Tegalsari|Kemandungan|Pekauman|Muarareja|Debong\s+Lor|Bandung|Debong\s+Kidul|Debong\s+Kulon|Debong\s+Tengah|Kalinyamat\s+Kulon|Kalinyamat\s+Wetan|Randugunting|Tunon|Margadana|Cabawan|Kaligangsa|Krandon|Pesurungan\s+Kidul|Pesurungan\s+Lor|Sumurpanggang)/gi,
+    ""
+  );
+  name = name.replace(/[,-\s]+$/, "");
+  return name.trim();
+}
+
 export interface RawPosyanduItem {
   nama: string;
   kecamatan: string;
@@ -51,7 +63,7 @@ export const RAW_POSYANDU_TEGAL: RawPosyanduItem[] = [
   { nama: "Posyandu Sumbodro 1", kecamatan: "Tegal Timur", kelurahan: "Slerok", rw: "07", rt: "04" },
   { nama: "Posyandu Sumbodro 2", kecamatan: "Tegal Timur", kelurahan: "Slerok", rw: "08", rt: "01" },
 
-  // Panggung (17 Posyandu)
+  // Panggung (18 Posyandu)
   { nama: "Posyandu Dahlia", kecamatan: "Tegal Timur", kelurahan: "Panggung", rw: "01", rt: "02" },
   { nama: "Posyandu Anyelir", kecamatan: "Tegal Timur", kelurahan: "Panggung", rw: "01", rt: "04" },
   { nama: "Posyandu Jaya Abadi", kecamatan: "Tegal Timur", kelurahan: "Panggung", rw: "02", rt: "01" },
@@ -69,6 +81,7 @@ export const RAW_POSYANDU_TEGAL: RawPosyanduItem[] = [
   { nama: "Posyandu Bahtera B", kecamatan: "Tegal Timur", kelurahan: "Panggung", rw: "08", rt: "01" },
   { nama: "Posyandu Melati", kecamatan: "Tegal Timur", kelurahan: "Panggung", rw: "08", rt: "03" },
   { nama: "Posyandu Tulip", kecamatan: "Tegal Timur", kelurahan: "Panggung", rw: "09", rt: "02" },
+  { nama: "Posyandu Teratai Putih", kecamatan: "Tegal Timur", kelurahan: "Panggung", rw: "09", rt: "04" },
 
   // Mintaragen (12 Posyandu)
   { nama: "Posyandu Anyelir", kecamatan: "Tegal Timur", kelurahan: "Mintaragen", rw: "01", rt: "01" },
@@ -336,7 +349,7 @@ export function buildPosyanduMasterSeed(): MasterKomunitasSeedItem[] {
 
     return {
       id,
-      nama: `${item.nama}, ${item.kelurahan}, ${item.kecamatan}, Kota Tegal`,
+      nama: item.nama,
       jenis: "posyandu",
       kecamatan: item.kecamatan,
       kelurahan: item.kelurahan,

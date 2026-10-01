@@ -123,10 +123,9 @@ export function KabarCard({
     kabar.profiles?.nama_lengkap || "Warga JARIMAS";
   const authorInitial = authorName.charAt(0).toUpperCase();
 
-  // Semua komentar tampil untuk publik
   const visibleComments = comments;
 
-  // Susun struktur komentar berulir (threaded comments)
+  // Susun struktur komentar berulir
   const commentsMap = new Map(visibleComments.map((c) => [c.id, c]));
   const rootComments: KomentarKabar[] = [];
   const repliesByRootId = new Map<string, KomentarKabar[]>();
@@ -135,7 +134,6 @@ export function KabarCard({
     if (!comment.parent_id || !commentsMap.has(comment.parent_id)) {
       rootComments.push(comment);
     } else {
-      // Telusuri parent untuk menemukan root comment id
       let rootId = comment.parent_id;
       while (
         commentsMap.get(rootId)?.parent_id &&
@@ -149,7 +147,6 @@ export function KabarCard({
     }
   });
 
-  // Handle reaction button click (triggers auth modal if guest)
   const handleReactionButtonClick = () => {
     if (!currentUserId) {
       setShowAuthModal(true);
@@ -158,7 +155,6 @@ export function KabarCard({
     setShowReactionPicker(!showReactionPicker);
   };
 
-  // Handle reaction toggle
   const handleReactionClick = (emoji: string) => {
     if (!currentUserId) {
       setShowReactionPicker(false);
@@ -167,18 +163,15 @@ export function KabarCard({
     }
     setShowReactionPicker(false);
     startReactionTransition(async () => {
-      // Optimistic update
       const previousReaction = userReaction;
       const prevCounts = { ...reactionCounts };
       let newTotal = totalReactions;
 
       if (previousReaction === emoji) {
-        // Toggle off
         setUserReaction(null);
         prevCounts[emoji] = Math.max(0, (prevCounts[emoji] || 1) - 1);
         newTotal = Math.max(0, newTotal - 1);
       } else {
-        // Toggle on or switch
         if (previousReaction && prevCounts[previousReaction]) {
           prevCounts[previousReaction] = Math.max(
             0,
@@ -197,7 +190,6 @@ export function KabarCard({
 
       const res = await toggleReaksiKabar(kabar.id, emoji);
       if (!res.success) {
-        // Revert jika gagal
         setUserReaction(previousReaction);
         setReactionCounts(kabar.reaksi_counts || {});
         setTotalReactions(kabar.jumlah_reaksi);
@@ -205,7 +197,6 @@ export function KabarCard({
     });
   };
 
-  // Handle reply button click on a comment
   const handleReplyClick = (targetComment: KomentarKabar) => {
     if (!currentUserId) {
       setShowAuthModal(true);
@@ -227,7 +218,6 @@ export function KabarCard({
     }, 50);
   };
 
-  // Handle comment or reply submit
   const handleCommentSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!currentUserId) {
@@ -283,7 +273,6 @@ export function KabarCard({
     });
   };
 
-  // Handle delete post
   const handleDeletePost = () => {
     if (!confirm("Apakah Anda yakin ingin menghapus postingan kabar ini?")) {
       return;
@@ -294,14 +283,12 @@ export function KabarCard({
     });
   };
 
-  // Handle delete comment
   const handleDeleteComment = (commentId: string) => {
     if (!confirm("Apakah Anda yakin ingin menghapus komentar ini?")) {
       return;
     }
 
     startDeleteCommentTransition(async () => {
-      // Optimistic delete dengan backup untuk revert jika gagal
       const prevCommentsBackup = [...comments];
       setComments((prev) =>
         prev.filter((c) => c.id !== commentId && c.parent_id !== commentId)
@@ -315,7 +302,6 @@ export function KabarCard({
     });
   };
 
-  // Handle toggle komentar dinonaktifkan / aktif
   const handleToggleComments = () => {
     const newDisabled = !commentsDisabled;
     const confirmMsg = newDisabled
@@ -334,7 +320,6 @@ export function KabarCard({
     });
   };
 
-  // Helper render satu item komentar / balasan
   const renderCommentItem = (
     comment: KomentarKabar,
     isReply: boolean = false
@@ -342,14 +327,12 @@ export function KabarCard({
     const commentAuthor = comment.profiles?.nama_lengkap || "Warga";
     const commentInitial = commentAuthor.charAt(0).toUpperCase();
 
-    // Izin hapus komentar: pembuat komentar, pembuat kabar (author post), atau super admin
     const canDeleteThisComment =
       currentUserId &&
       (comment.user_id === currentUserId ||
         kabar.user_id === currentUserId ||
         isSuperAdmin);
 
-    // Cari nama orang yang dibalas jika ini adalah balasan
     let repliedToAuthor: string | null = null;
     if (comment.parent_id && commentsMap.has(comment.parent_id)) {
       repliedToAuthor =
@@ -360,68 +343,67 @@ export function KabarCard({
       <div
         key={comment.id}
         className={cn(
-          "flex items-start gap-2 group/comment",
+          "flex items-start gap-2.5 group/comment",
           isReply && "pt-1"
         )}
       >
         <div
           className={cn(
-            "flex shrink-0 items-center justify-center rounded border border-border bg-muted font-bold text-foreground",
-            isReply ? "h-4 w-4 text-[9px]" : "h-5 w-5 text-[10px]"
+            "flex shrink-0 items-center justify-center rounded-xl font-bold border-2",
+            isReply
+              ? "h-7 w-7 text-xs bg-slate-100 border-slate-200 text-slate-700"
+              : "h-8 w-8 text-sm bg-blue-50 border-blue-200 text-blue-700"
           )}
         >
           {commentInitial}
         </div>
-        <div className="flex-1 rounded border border-border bg-card p-2 text-xs space-y-1 transition-colors">
-          <div className="flex items-center justify-between gap-1 flex-wrap text-[11px]">
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="font-semibold text-foreground">
+        <div className="flex-1 rounded-2xl border-2 border-slate-200 bg-white p-3.5 text-sm space-y-1.5 shadow-xs">
+          <div className="flex items-center justify-between gap-1 flex-wrap">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="font-bold text-slate-900">
                 {commentAuthor}
               </span>
 
-              {/* Indikator Membalas Siapa */}
               {repliedToAuthor && (
-                <span className="inline-flex items-center gap-0.5 text-[10px] text-cyan-600 dark:text-cyan-400 font-mono">
+                <span className="inline-flex items-center gap-1 text-xs text-blue-700 font-semibold">
                   <span>↳ membalas</span>
-                  <span className="font-medium underline">@{repliedToAuthor}</span>
+                  <span className="underline">@{repliedToAuthor}</span>
                 </span>
               )}
             </div>
 
-            <div className="flex items-center gap-1.5">
-              <span className="text-[10px] text-muted-foreground" suppressHydrationWarning>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold text-slate-500" suppressHydrationWarning>
                 {formatTimeAgo(comment.created_at)}
               </span>
 
-              {/* Tombol Balas Komentar (hanya muncul jika komentar belum dinonaktifkan) */}
               {!commentsDisabled && (
                 <button
                   type="button"
                   onClick={() => handleReplyClick(comment)}
-                  className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                  className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-bold text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors cursor-pointer"
                   title={`Balas komentar ${commentAuthor}`}
                 >
-                  <Reply className="h-2.5 w-2.5" />
+                  <Reply className="h-3 w-3" />
                   <span>Balas</span>
                 </button>
               )}
 
-              {/* Tombol Hapus Komentar */}
               {canDeleteThisComment && (
                 <button
                   type="button"
                   onClick={() => handleDeleteComment(comment.id)}
                   disabled={isPendingDeleteComment}
-                  className="inline-flex items-center justify-center h-5 w-5 rounded text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+                  className="inline-flex items-center justify-center h-6 w-6 rounded-lg text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition-colors cursor-pointer"
                   title="Hapus komentar ini"
                 >
-                  <Trash2 className="h-2.5 w-2.5" />
+                  <Trash2 className="h-3.5 w-3.5" />
                 </button>
               )}
             </div>
           </div>
 
-          <p className="text-foreground/90 font-sans text-xs leading-relaxed break-words whitespace-pre-line">
+          <p className="text-slate-800 text-sm leading-relaxed break-words whitespace-pre-line">
             {comment.konten}
           </p>
         </div>
@@ -430,63 +412,59 @@ export function KabarCard({
   };
 
   return (
-    <article className="rounded-lg border border-border bg-card transition-colors hover:border-zinc-700">
+    <article className="rounded-2xl border-2 border-slate-200 bg-white shadow-xs transition-all hover:border-slate-300 overflow-hidden">
       {/* Card Header: Author Info & Visibilitas */}
-      <div className="flex items-start justify-between p-4 pb-2">
-        <div className="flex items-center gap-3">
+      <div className="flex items-start justify-between p-5 pb-3">
+        <div className="flex items-center gap-3.5">
           {/* Avatar */}
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-border bg-muted/40 font-mono text-sm font-semibold text-foreground">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border-2 border-blue-200 bg-blue-50 text-base font-bold text-blue-700">
             {authorInitial}
           </div>
 
           <div className="space-y-0.5">
-            <div className="flex items-center gap-1.5">
-              <h3 className="text-sm font-medium text-foreground leading-tight">
+            <div className="flex items-center gap-2">
+              <h3 className="text-base font-bold text-slate-900 leading-tight">
                 {authorName}
               </h3>
               {kabar.profiles?.is_super_admin && (
-                <span className="cyber-badge font-mono text-[9px] py-0 px-1">
-                  <ShieldCheck className="h-2.5 w-2.5 text-emerald-400" />
+                <span className="rounded-md bg-blue-50 px-2 py-0.5 text-xs font-bold text-blue-800 border border-blue-200">
                   ADMIN
                 </span>
               )}
             </div>
 
-            <div className="flex items-center gap-2 text-xs text-muted-foreground font-mono">
+            <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-slate-500">
               <span suppressHydrationWarning>{formatTimeAgo(kabar.created_at)}</span>
               <span>•</span>
 
               {/* Visibility Badge Kabar */}
-              <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground">
+              <span className="inline-flex items-center gap-1 font-bold">
                 {kabar.visibilitas === "publik" && (
                   <>
-                    <Globe className="h-3 w-3 text-emerald-400" />
-                    <span>PUBLIK</span>
+                    <Globe className="h-3.5 w-3.5 text-emerald-600" />
+                    <span>Publik</span>
                   </>
                 )}
                 {kabar.visibilitas === "teman" && (
                   <>
-                    <Users className="h-3 w-3 text-cyan-400" />
-                    <span>TEMAN</span>
+                    <Users className="h-3.5 w-3.5 text-blue-600" />
+                    <span>Teman</span>
                   </>
                 )}
                 {kabar.visibilitas === "komunitas" && (
                   <>
-                    <Building2 className="h-3 w-3 text-amber-400" />
-                    <span>
-                      {kabar.komunitas?.nama || "KOMUNITAS"}
-                    </span>
+                    <Building2 className="h-3.5 w-3.5 text-amber-600" />
+                    <span>{kabar.komunitas?.nama || "Komunitas"}</span>
                   </>
                 )}
               </span>
 
-              {/* Indikator Komentar Dinonaktifkan */}
               {commentsDisabled && (
                 <>
                   <span>•</span>
-                  <span className="inline-flex items-center gap-1 text-[10px] text-amber-500 font-medium">
-                    <MessageSquareOff className="h-2.5 w-2.5" />
-                    <span>KOMENTAR TUTUP</span>
+                  <span className="inline-flex items-center gap-1 text-amber-700 font-bold">
+                    <MessageSquareOff className="h-3.5 w-3.5 text-amber-600" />
+                    <span>Komentar Tutup</span>
                   </span>
                 </>
               )}
@@ -496,17 +474,16 @@ export function KabarCard({
 
         {/* Action buttons for author / admin */}
         {canManagePost && (
-          <div className="flex items-center gap-1">
-            {/* Toggle Nonaktifkan / Aktifkan Komentar */}
+          <div className="flex items-center gap-1.5">
             <button
               type="button"
               onClick={handleToggleComments}
               disabled={isPendingToggleComments}
               className={cn(
-                "flex h-7 items-center gap-1 rounded px-2 text-[10px] font-mono transition-colors border",
+                "flex min-h-[36px] h-9 items-center gap-1.5 rounded-xl px-3 text-xs font-bold transition-colors border-2 cursor-pointer",
                 commentsDisabled
-                  ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30 hover:bg-amber-500/20"
-                  : "text-muted-foreground border-transparent hover:bg-muted hover:text-foreground"
+                  ? "bg-amber-50 text-amber-900 border-amber-300 hover:bg-amber-100"
+                  : "text-slate-600 border-slate-200 hover:bg-slate-100"
               )}
               title={
                 commentsDisabled
@@ -515,33 +492,32 @@ export function KabarCard({
               }
             >
               {isPendingToggleComments ? (
-                <Loader2 className="h-3 w-3 animate-spin" />
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
               ) : commentsDisabled ? (
                 <>
-                  <MessageSquareOff className="h-3 w-3 text-amber-500" />
+                  <MessageSquareOff className="h-3.5 w-3.5 text-amber-600" />
                   <span className="hidden sm:inline">Buka Komentar</span>
                 </>
               ) : (
                 <>
-                  <MessageCircle className="h-3 w-3" />
+                  <MessageCircle className="h-3.5 w-3.5 text-slate-500" />
                   <span className="hidden sm:inline">Tutup Komentar</span>
                 </>
               )}
             </button>
 
-            {/* Delete button for author/admin */}
             {canDelete && (
               <button
                 onClick={handleDeletePost}
                 disabled={isPendingDelete}
                 aria-label="Hapus postingan"
-                className="flex h-7 w-7 items-center justify-center rounded text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+                className="flex h-9 w-9 items-center justify-center rounded-xl text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition-colors border-2 border-transparent hover:border-rose-200 cursor-pointer"
                 title="Hapus postingan kabar"
               >
                 {isPendingDelete ? (
-                  <Loader2 className="h-3.5 w-3.5 animate-spin text-destructive" />
+                  <Loader2 className="h-4 w-4 animate-spin text-rose-600" />
                 ) : (
-                  <Trash2 className="h-3.5 w-3.5" />
+                  <Trash2 className="h-4 w-4" />
                 )}
               </button>
             )}
@@ -550,57 +526,57 @@ export function KabarCard({
       </div>
 
       {/* Post Text Content */}
-      <div className="px-4 py-2 text-sm leading-relaxed text-foreground whitespace-pre-line break-words font-normal">
+      <div className="px-5 py-3 text-base leading-relaxed text-slate-800 whitespace-pre-line break-words">
         {kabar.konten}
       </div>
 
       {/* Reaction Summary Pills */}
       {totalReactions > 0 && (
-        <div className="flex items-center gap-1.5 px-4 pt-1 font-mono text-xs text-muted-foreground">
-          <div className="flex -space-x-1 overflow-hidden">
+        <div className="flex items-center gap-2 px-5 pt-1 text-sm font-semibold text-slate-500">
+          <div className="flex -space-x-1.5 overflow-hidden">
             {Object.keys(reactionCounts)
               .filter((k) => reactionCounts[k] > 0)
               .map((emoji) => (
                 <span
                   key={emoji}
-                  className="flex h-5 w-5 items-center justify-center rounded-full bg-muted/60 text-xs border border-border"
+                  className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-100 text-sm border-2 border-white shadow-xs"
                 >
                   {emoji}
                 </span>
               ))}
           </div>
-          <span>[{totalReactions} REAKSI]</span>
+          <span>{totalReactions} Reaksi</span>
         </div>
       )}
 
-      {/* Interactive Bottom Bar */}
-      <div className="relative mt-2 border-t border-border px-3 py-1.5 flex items-center justify-between font-mono text-xs">
+      {/* Interactive Bottom Bar (Min 44px Height Tap Buttons) */}
+      <div className="relative mt-3 border-t-2 border-slate-100 px-4 py-2 flex items-center justify-between">
         {/* Reaction Picker Button & Popover */}
         <div className="relative">
           <button
             onClick={handleReactionButtonClick}
             disabled={isPendingReaction}
             className={cn(
-              "flex h-7 items-center gap-1.5 rounded px-2 text-xs transition-colors",
+              "flex min-h-[40px] h-10 items-center gap-2 rounded-xl px-4 text-sm font-bold transition-all border-2 cursor-pointer",
               userReaction
-                ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/30"
-                : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                ? "bg-blue-50 text-blue-950 border-blue-600 shadow-xs"
+                : "border-slate-200 text-slate-700 hover:bg-slate-50"
             )}
           >
-            <span>{userReaction || "😊"}</span>
-            <span>{userReaction ? "BEREAKSI" : "REAKSI"}</span>
+            <span className="text-base">{userReaction || "😊"}</span>
+            <span>{userReaction ? "Bereaksi" : "Beri Reaksi"}</span>
           </button>
 
           {/* Reaction Picker Popup */}
           {showReactionPicker && (
-            <div className="absolute bottom-full left-0 mb-2 flex items-center gap-1 rounded-md border border-border bg-card p-1 shadow-lg animate-in fade-in zoom-in-95 z-20">
+            <div className="absolute bottom-full left-0 mb-2 flex items-center gap-2 rounded-2xl border-2 border-slate-200 bg-white p-2 shadow-xl animate-in fade-in zoom-in-95 z-20">
               {AVAILABLE_REACTIONS.map((item) => (
                 <button
                   key={item.emoji}
                   onClick={() => handleReactionClick(item.emoji)}
                   className={cn(
-                    "flex h-7 w-7 items-center justify-center rounded text-sm transition-transform hover:scale-125 active:scale-95",
-                    userReaction === item.emoji && "bg-muted scale-110"
+                    "flex h-9 w-9 items-center justify-center rounded-xl text-xl transition-transform hover:scale-125 active:scale-95 cursor-pointer",
+                    userReaction === item.emoji && "bg-blue-50 scale-110 border border-blue-300"
                   )}
                   title={item.label}
                 >
@@ -615,27 +591,27 @@ export function KabarCard({
         <button
           onClick={() => setShowComments(!showComments)}
           className={cn(
-            "flex h-7 items-center gap-1.5 rounded px-2 text-xs transition-colors",
+            "flex min-h-[40px] h-10 items-center gap-2 rounded-xl px-4 text-sm font-bold transition-all border-2 cursor-pointer",
             showComments
-              ? "bg-muted text-foreground"
-              : "text-muted-foreground hover:bg-muted hover:text-foreground"
+              ? "bg-blue-700 text-white border-blue-700 shadow-xs"
+              : "border-slate-200 text-slate-700 hover:bg-slate-50"
           )}
         >
           {commentsDisabled ? (
-            <MessageSquareOff className="h-3.5 w-3.5 text-amber-500" />
+            <MessageSquareOff className="h-4 w-4 text-amber-600" />
           ) : (
-            <MessageCircle className="h-3.5 w-3.5" />
+            <MessageCircle className="h-4 w-4" />
           )}
-          <span>[{visibleComments.length} KOMENTAR]</span>
+          <span>{visibleComments.length} Komentar</span>
         </button>
       </div>
 
       {/* Expanded Comments Section */}
       {showComments && (
-        <div className="border-t border-border bg-muted/20 p-3 space-y-3 font-mono text-xs">
+        <div className="border-t-2 border-slate-100 bg-slate-50/60 p-4 sm:p-5 space-y-4">
           {/* List of Threaded Comments */}
           {visibleComments.length === 0 ? (
-            <p className="text-center text-xs text-muted-foreground py-1">
+            <p className="text-center text-sm text-slate-500 py-2">
               {commentsDisabled ? "Komentar dinonaktifkan." : "Belum ada komentar."}
             </p>
           ) : (
@@ -648,9 +624,9 @@ export function KabarCard({
                     {/* Root Comment */}
                     {renderCommentItem(rootComment, false)}
 
-                    {/* Threaded Replies under this root */}
+                    {/* Threaded Replies */}
                     {replies.length > 0 && (
-                      <div className="ml-3 sm:ml-5 pl-2.5 border-l-2 border-border/70 space-y-2 pt-0.5">
+                      <div className="ml-4 sm:ml-6 pl-3 border-l-2 border-slate-300 space-y-2 pt-1">
                         {replies.map((reply) =>
                           renderCommentItem(reply, true)
                         )}
@@ -664,24 +640,24 @@ export function KabarCard({
 
           {/* Comment Error Alert */}
           {commentError && (
-            <div className="flex items-center gap-2 rounded-md border border-destructive/40 bg-destructive/10 p-2.5 text-xs text-destructive animate-in fade-in">
-              <AlertCircle className="h-4 w-4 shrink-0" />
-              <span className="flex-1 font-mono text-[11px] leading-tight">{commentError}</span>
+            <div className="flex items-center gap-2 rounded-xl border-2 border-rose-300 bg-rose-50 p-3 text-sm font-bold text-rose-900 animate-in fade-in">
+              <AlertCircle className="h-5 w-5 shrink-0 text-rose-600" />
+              <span className="flex-1">{commentError}</span>
               <button
                 type="button"
                 onClick={() => setCommentError(null)}
-                className="text-[10px] underline font-mono hover:text-foreground"
+                className="text-xs underline font-bold hover:text-rose-950 cursor-pointer"
               >
                 Tutup
               </button>
             </div>
           )}
 
-          {/* New Comment / Reply Input Form OR Disabled Banner */}
+          {/* New Comment / Reply Input Form */}
           {commentsDisabled ? (
-            <div className="flex items-center gap-2 rounded-md border border-amber-500/30 bg-amber-500/5 dark:bg-amber-950/20 p-2.5 text-xs text-amber-600 dark:text-amber-400 animate-in fade-in">
-              <MessageSquareOff className="h-4 w-4 shrink-0 text-amber-500" />
-              <span className="font-mono text-[11px] leading-tight">
+            <div className="flex items-center gap-2.5 rounded-xl border-2 border-amber-200 bg-amber-50 p-3.5 text-sm font-semibold text-amber-900 animate-in fade-in">
+              <MessageSquareOff className="h-5 w-5 shrink-0 text-amber-600" />
+              <span>
                 Komentar pada postingan ini telah dinonaktifkan oleh pembuat kabar.
               </span>
             </div>
@@ -689,20 +665,20 @@ export function KabarCard({
             <form onSubmit={handleCommentSubmit} className="space-y-2 pt-1">
               {/* Banner Balasan Aktif */}
               {replyingTo && (
-                <div className="flex items-center justify-between rounded bg-muted/60 px-2.5 py-1 text-[11px] font-mono text-cyan-600 dark:text-cyan-400 border border-cyan-500/20 animate-in fade-in slide-in-from-top-1">
-                  <div className="flex items-center gap-1.5">
-                    <CornerDownRight className="h-3.5 w-3.5 text-cyan-500 shrink-0" />
+                <div className="flex items-center justify-between rounded-xl bg-blue-50 px-3.5 py-2 text-xs font-bold text-blue-900 border-2 border-blue-200 animate-in fade-in slide-in-from-top-1">
+                  <div className="flex items-center gap-2">
+                    <CornerDownRight className="h-4 w-4 text-blue-700 shrink-0" />
                     <span>
-                      Membalas <strong className="font-semibold text-foreground">@{replyingTo.authorName}</strong>
+                      Membalas <strong className="font-extrabold text-blue-950">@{replyingTo.authorName}</strong>
                     </span>
                   </div>
                   <button
                     type="button"
                     onClick={() => setReplyingTo(null)}
-                    className="flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                    className="flex items-center gap-1 rounded-lg px-2 py-1 text-xs text-slate-600 hover:bg-blue-100 hover:text-slate-900 transition-colors cursor-pointer"
                     title="Batalkan balasan"
                   >
-                    <X className="h-3 w-3" />
+                    <X className="h-3.5 w-3.5" />
                     <span>Batal</span>
                   </button>
                 </div>
@@ -732,10 +708,10 @@ export function KabarCard({
                     currentUserId
                       ? replyingTo
                         ? `Tulis balasan untuk @${replyingTo.authorName}...`
-                        : "Tulis komentar..."
+                        : "Tulis komentar Anda..."
                       : "Silahkan login untuk memberikan komentar..."
                   }
-                  className="flex-1 h-8 rounded-md border border-input bg-card px-2.5 text-xs text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring font-sans cursor-pointer sm:cursor-text"
+                  className="flex-1 min-h-[48px] h-12 rounded-xl border-2 border-slate-300 bg-white px-4 text-base text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:outline-hidden"
                 />
                 <button
                   type={currentUserId ? "submit" : "button"}
@@ -745,14 +721,14 @@ export function KabarCard({
                     }
                   }}
                   disabled={currentUserId ? !commentText.trim() || isPendingComment : false}
-                  className="flex h-8 w-8 items-center justify-center rounded-md bg-blue-600 text-white hover:bg-blue-500 disabled:opacity-50 transition-colors shadow-xs cursor-pointer"
+                  className="flex min-h-[48px] h-12 w-12 items-center justify-center rounded-xl bg-blue-700 text-white hover:bg-blue-800 disabled:opacity-50 transition-colors shadow-xs cursor-pointer shrink-0"
                   aria-label={replyingTo ? "Kirim Balasan" : "Kirim Komentar"}
                   title={replyingTo ? "Kirim Balasan" : "Kirim Komentar"}
                 >
                   {isPendingComment ? (
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    <Loader2 className="h-5 w-5 animate-spin" />
                   ) : (
-                    <Send className="h-3.5 w-3.5" />
+                    <Send className="h-5 w-5" />
                   )}
                 </button>
               </div>
@@ -771,6 +747,3 @@ export function KabarCard({
     </article>
   );
 }
-
-
-

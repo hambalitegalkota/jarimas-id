@@ -3,36 +3,36 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "cn"
 
 const buttonVariants = cva(
-  "group/button inline-flex shrink-0 items-center justify-center rounded-md border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-all duration-150 outline-none select-none focus-visible:border-ring focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-1 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "group/button inline-flex shrink-0 items-center justify-center rounded-xl border border-transparent bg-clip-padding text-base font-bold whitespace-nowrap transition-all duration-150 outline-none select-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-2 aria-invalid:ring-destructive/20 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-5",
   {
     variants: {
       variant: {
         default:
-          "bg-primary text-primary-foreground hover:bg-primary/90 active:scale-[0.99]",
+          "bg-primary text-primary-foreground hover:bg-blue-700 active:scale-[0.98] shadow-sm",
         outline:
-          "border-border bg-card text-foreground hover:bg-muted active:scale-[0.99]",
+          "border-2 border-slate-300 bg-white text-slate-900 hover:bg-slate-100 hover:border-slate-400 active:scale-[0.98]",
         secondary:
-          "border border-border/80 bg-secondary text-secondary-foreground hover:bg-muted active:scale-[0.99]",
+          "border border-slate-200 bg-slate-100 text-slate-900 hover:bg-slate-200 active:scale-[0.98]",
         accent:
-          "border border-emerald-500/40 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 active:scale-[0.99]",
+          "border-2 border-emerald-600 bg-emerald-600 text-white hover:bg-emerald-700 active:scale-[0.98] shadow-sm",
         cyan:
-          "border border-cyan-500/40 bg-cyan-500/10 text-cyan-400 hover:bg-cyan-500/20 active:scale-[0.99]",
+          "border-2 border-sky-600 bg-sky-600 text-white hover:bg-sky-700 active:scale-[0.98] shadow-sm",
         ghost:
-          "text-muted-foreground hover:bg-muted hover:text-foreground active:scale-[0.99]",
+          "text-slate-700 hover:bg-slate-100 hover:text-slate-900 active:scale-[0.98]",
         destructive:
-          "border border-destructive/30 bg-destructive/10 text-destructive hover:bg-destructive/20 active:scale-[0.99]",
-        link: "text-primary underline-offset-4 hover:underline",
+          "bg-destructive text-destructive-foreground hover:bg-red-700 active:scale-[0.98] shadow-sm",
+        link: "text-primary underline-offset-4 hover:underline font-semibold",
       },
       size: {
         default:
-          "h-10 gap-2 px-4 py-2 has-data-[icon=inline-end]:pr-3 has-data-[icon=inline-start]:pl-3",
-        xs: "h-7 gap-1 rounded px-2 text-xs [&_svg:not([class*='size-'])]:size-3",
-        sm: "h-8 gap-1.5 rounded-md px-3 text-xs [&_svg:not([class*='size-'])]:size-3.5",
-        lg: "h-12 gap-2.5 rounded-md px-6 text-base",
-        icon: "size-10 rounded-md",
-        "icon-xs": "size-7 rounded [&_svg:not([class*='size-'])]:size-3",
-        "icon-sm": "size-8 rounded-md [&_svg:not([class*='size-'])]:size-3.5",
-        "icon-lg": "size-12 rounded-md",
+          "min-h-[48px] h-12 gap-2.5 px-5 py-3 has-data-[icon=inline-end]:pr-4 has-data-[icon=inline-start]:pl-4",
+        xs: "min-h-[32px] h-8 gap-1.5 rounded-lg px-2.5 text-xs [&_svg:not([class*='size-'])]:size-3.5",
+        sm: "min-h-[40px] h-10 gap-2 rounded-lg px-3.5 text-sm [&_svg:not([class*='size-'])]:size-4",
+        lg: "min-h-[56px] h-14 gap-3 rounded-2xl px-6 text-lg",
+        icon: "size-12 rounded-xl",
+        "icon-xs": "size-8 rounded-lg [&_svg:not([class*='size-'])]:size-3.5",
+        "icon-sm": "size-10 rounded-lg [&_svg:not([class*='size-'])]:size-4",
+        "icon-lg": "size-14 rounded-2xl",
       },
     },
     defaultVariants: {

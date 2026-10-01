@@ -81,7 +81,7 @@ export async function createDataAnak(formData: FormData): Promise<{
     );
 
     // Logika Status & Alasan Sekolah sesuai tipe komunitas
-    let isSekolah = formData.get("isSekolah") === "true";
+    let isSekolah = jenisKomunitas === "satuan_paud";
     let namaSekolah = formData.get("namaSekolah")?.toString()?.trim() || "";
     let alasanSekolah = formData.get("alasanSekolah")?.toString()?.trim() || "";
 
@@ -91,16 +91,15 @@ export async function createDataAnak(formData: FormData): Promise<{
         namaSekolah = komunitasNama || "Satuan PAUD";
       }
       if (!alasanSekolah) {
-        alasanSekolah = "Sudah Usia PAUD & Persiapan Ke SD";
+        alasanSekolah = "Sudah Usia PAUD";
       }
     } else {
-      if (!isSekolah) {
-        if (!namaSekolah) {
-          namaSekolah = "Belum Sekolah";
-        }
-        if (!alasanSekolah) {
-          alasanSekolah = "Belum Wajib";
-        }
+      isSekolah = false;
+      if (!namaSekolah) {
+        namaSekolah = "Belum Sekolah";
+      }
+      if (!alasanSekolah) {
+        alasanSekolah = "Belum Wajib (Masih Balita)";
       }
     }
 
@@ -172,8 +171,8 @@ export async function createDataAnak(formData: FormData): Promise<{
 
     const newChildId = insertedChild.id;
 
-    // Simpan DDKS awal jika diisi
-    if (hasDdksInput) {
+    // Simpan DDKS awal jika diisi dan khusus di Komunitas Posyandu
+    if (hasDdksInput && jenisKomunitas === "posyandu") {
       const ddksValidation = DdksSchema.safeParse({
         beratBadan: parseFloat(beratBadanStr),
         tinggiBadan: parseFloat(tinggiBadanStr),

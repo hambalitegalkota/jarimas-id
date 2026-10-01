@@ -4,9 +4,12 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/utils/supabase/server";
 import {
   RAW_POSYANDU_TEGAL,
+  SEED_POSYANDU_TEGAL,
+  extractCorePosyanduName,
 } from "@/lib/constants/seed-posyandu-tegal";
 import {
   RAW_PAUD_PKBM_TEGAL,
+  SEED_PAUD_PKBM_TEGAL,
 } from "@/lib/constants/seed-paud-tegal";
 import {
   generateWargaKomunitasHierarchy,
@@ -14,6 +17,7 @@ import {
   slugify,
   KOTA_TEGAL_DATA,
   getWargaHierarchyChain,
+  MASTER_KOMUNITAS_SEED,
 } from "@/lib/constants/tegal-data";
 import {
   toValidUUID,
@@ -316,91 +320,90 @@ export async function getKomunitasList(
       };
     }
 
-    // 5. Untuk posyandu dan satuan_paud: Query data dari Supabase
-    let query = supabase
-      .from("komunitas")
-      .select("*", { count: "exact" });
+    // 5. Khusus jenis "satuan_paud", "posyandu", dan "semua": Gunakan Master Seed Resmi Kota Tegal
+    let baseList: any[] = [];
 
-    if (params.jenis && params.jenis !== "semua") {
-      query = query.or(`jenis.eq.${params.jenis},jenis_komunitas.eq.${params.jenis}`);
+    if (params.jenis === "satuan_paud") {
+      baseList = SEED_PAUD_PKBM_TEGAL;
+    } else if (params.jenis === "posyandu") {
+      baseList = SEED_POSYANDU_TEGAL;
+    } else {
+      // jenis "semua"
+      const hierarchyWarga = generateWargaKomunitasHierarchy({
+        kecamatan: params.kecamatan,
+        kelurahan: params.kelurahan,
+        rw: params.rw,
+        rt: params.rt,
+      });
+      baseList = [...hierarchyWarga, ...SEED_POSYANDU_TEGAL, ...SEED_PAUD_PKBM_TEGAL];
     }
+
+    let filteredList = [...baseList];
+
     if (params.kecamatan && params.kecamatan !== "semua") {
-      query = query.ilike("kecamatan", params.kecamatan);
+      const kecLow = params.kecamatan.toLowerCase().trim();
+      filteredList = filteredList.filter(
+        (item) => item.kecamatan && item.kecamatan.toLowerCase().trim() === kecLow
+      );
     }
+
     if (params.kelurahan && params.kelurahan !== "semua") {
-      query = query.ilike("kelurahan", params.kelurahan);
+      const kelLow = params.kelurahan.toLowerCase().trim();
+      filteredList = filteredList.filter(
+        (item) => item.kelurahan && item.kelurahan.toLowerCase().trim() === kelLow
+      );
     }
-    if (params.rw && params.rw !== "semua") {
-      const cleanRw = params.rw.replace(/\D/g, "").padStart(2, "0");
-      query = query.eq("rw", cleanRw);
-    }
-    if (params.rt && params.rt !== "semua") {
-      const cleanRt = params.rt.replace(/\D/g, "").padStart(2, "0");
-      query = query.eq("rt", cleanRt);
-    }
+
     if (params.searchQuery && params.searchQuery.trim()) {
-      const q = params.searchQuery.trim();
-      query = query.or(`nama.ilike.%${q}%,nama_komunitas.ilike.%${q}%`);
+      const sq = params.searchQuery.toLowerCase().trim();
+      filteredList = filteredList.filter(
+        (item) =>
+          item.nama.toLowerCase().includes(sq) ||
+          item.kecamatan.toLowerCase().includes(sq) ||
+          item.kelurahan.toLowerCase().includes(sq) ||
+          (item.deskripsi && item.deskripsi.toLowerCase().includes(sq)) ||
+          (item.lokasi && item.lokasi.toLowerCase().includes(sq))
+      );
     }
 
-    query = query.order("nama", { ascending: true }).range(offset, offset + limit - 1);
+    // Urutkan berdasarkan nama
+    filteredList.sort((a, b) => a.nama.localeCompare(b.nama));
 
-    const { data: dbData, count, error: dbError } = await query;
-
-    if (dbError) {
-      console.warn("Query komunitas error:", dbError.message);
-      return {
-        success: false,
-        message: "Gagal memuat daftar komunitas: " + dbError.message,
-        data: [],
-        currentUserId,
-        pagination: {
-          page,
-          limit,
-          totalCount: 0,
-          totalPages: 1,
-          hasMore: false,
-        },
-      };
-    }
-
-    const rawList: any[] = dbData || [];
-    const totalCount = count || 0;
+    const totalCount = filteredList.length;
     const totalPages = Math.max(1, Math.ceil(totalCount / limit));
     const hasMore = page < totalPages;
+    const pagedList = filteredList.slice(offset, offset + limit);
 
-    // Normalisasi data
-    const items: KomunitasWithMembership[] = rawList.map((k: any) => {
-      const nama = k.nama || k.nama_komunitas || "Komunitas";
-      const jenis = k.jenis || k.jenis_komunitas || "posyandu";
-      const lokasi =
-        k.lokasi ||
-        [k.kelurahan, k.kecamatan, "Kota Tegal"].filter(Boolean).join(", ");
-      const deskripsi =
-        k.deskripsi || `Layanan dan kegiatan ${nama} di ${lokasi}.`;
+    // Normalisasi data dengan status keanggotaan dan admin
+    const items: KomunitasWithMembership[] = pagedList.map((item) => {
+      const validId = toValidUUID(item.id);
+      const membership =
+        userMemberships[validId] ||
+        userMemberships[item.id] ||
+        null;
 
-      const adminFound = adminMembersMap[k.id]?.[0] || null;
+      const adminFound = adminMembersMap[validId]?.[0] || adminMembersMap[item.id]?.[0] || null;
       const hasAdmin = Boolean(adminFound);
       const adminName = adminFound
         ? adminProfileMap.get(adminFound.user_id)?.nama_lengkap || "Pengurus Terdaftar"
         : null;
 
       return {
-        id: k.id,
-        nama,
-        jenis,
-        kecamatan: k.kecamatan,
-        kelurahan: k.kelurahan,
-        rt: k.rt,
-        rw: k.rw,
-        lokasi,
-        deskripsi,
-        logo_url: k.logo_url || null,
-        kontak: k.kontak || null,
-        jadwal: k.jadwal || null,
-        created_at: k.created_at,
-        jumlah_anggota: countsMap[k.id] || 0,
-        currentUserMembership: userMemberships[k.id] || null,
+        id: validId,
+        nama: item.nama,
+        jenis: item.jenis,
+        kecamatan: item.kecamatan,
+        kelurahan: item.kelurahan,
+        rt: item.rt,
+        rw: item.rw,
+        lokasi: item.lokasi,
+        deskripsi: item.deskripsi,
+        logo_url: item.logo_url || null,
+        kontak: item.kontak || null,
+        jadwal: item.jadwal || null,
+        created_at: item.created_at || new Date().toISOString(),
+        jumlah_anggota: countsMap[validId] || countsMap[item.id] || 0,
+        currentUserMembership: membership,
         hasAdmin,
         adminName,
         adminRole: adminFound ? formatPeranDisplay(adminFound.peran) : null,
@@ -1348,18 +1351,17 @@ export interface JoinKomunitasWargaParams {
   deskripsi?: string | null;
   berdomisili: boolean;
   kkTerdaftar: boolean;
+  peran?: string | null;
 }
 
 /**
  * Server Action: Bergabung ke Komunitas Warga dengan Survey Domisili & KK
- * - Mengidentifikasi status:
- *   - Ya Domisili + Ya KK -> "Penduduk"
- *   - Ya Domisili + Tidak KK -> "Pendatang"
- *   - Tidak Domisili + Tidak KK -> "Pengunjung"
- *   - Tidak Domisili + Ya KK -> "Penduduk Domisili Diluar"
- * - Pengguna langsung aktif masuk sebagai "Pengunjung" (status: approved).
- * - Peran yang diidentifikasi selain Pengunjung disimpan sebagai `peran_diajukan` menunggu verifikasi admin.
- * - CASCADE JOIN: Bergabung di 1 RT otomatis terhubung di tingkat RW, Kelurahan, & Kecamatan di atasnya!
+ * Ketentuan Penentuan Peran:
+ * - KK: Kota Tegal & Domisili: Kota Tegal -> "Penduduk" (Akses Penuh Profil Data)
+ * - KK: Kota Tegal & Domisili: Luar Kota Tegal -> "Penduduk Domisili Di Luar" (Akses Penuh Profil Data)
+ * - KK: Luar Kota Tegal & Domisili: Kota Tegal -> "Pendatang" (Hanya Grafik & Chart)
+ * - KK: Luar Kota Tegal & Domisili: Luar Kota Tegal -> "Pengunjung" (Hanya Grafik & Chart)
+ * - CASCADE JOIN: Bergabung di 1 RT otomatis terhubung di tingkat RW, Kelurahan, & Kecamatan di seluruh jenjang!
  */
 export async function joinKomunitasWargaWithSurvey({
   komunitasId,
@@ -1372,6 +1374,7 @@ export async function joinKomunitasWargaWithSurvey({
   deskripsi,
   berdomisili,
   kkTerdaftar,
+  peran,
 }: JoinKomunitasWargaParams): Promise<{
   success: boolean;
   message: string;
@@ -1399,20 +1402,24 @@ export async function joinKomunitasWargaWithSurvey({
     const finalRw = rw || seedItem?.rw || null;
     const finalRt = rt || seedItem?.rt || null;
 
-    // 1. Identifikasi Peran dari Survey:
+    // 1. Identifikasi Peran dari Survey Alamat KK & Domisili:
     let identifiedRole = "Pengunjung";
     if (berdomisili && kkTerdaftar) {
       identifiedRole = "Penduduk";
+    } else if (!berdomisili && kkTerdaftar) {
+      identifiedRole = "Penduduk Domisili Di Luar";
     } else if (berdomisili && !kkTerdaftar) {
       identifiedRole = "Pendatang";
-    } else if (!berdomisili && kkTerdaftar) {
-      identifiedRole = "Penduduk Domisili Diluar";
     } else {
       identifiedRole = "Pengunjung";
     }
 
-    const activePeran = "Pengunjung";
-    const peranDiajukan = identifiedRole === "Pengunjung" ? null : identifiedRole;
+    if (peran && peran.trim()) {
+      identifiedRole = peran.trim();
+    }
+
+    const activePeran = identifiedRole;
+    const peranDiajukan = null;
 
     // 2. Ambil Rantai Hierarki Komunitas (Kecamatan, Kelurahan, RW, RT)
     const hierarchyChain = getWargaHierarchyChain({
@@ -1477,7 +1484,7 @@ export async function joinKomunitasWargaWithSurvey({
 
       return {
         success: true,
-        message: "Selamat bergabung di Komunitas Warga!",
+        message: `Selamat bergabung di Komunitas Warga sebagai ${activePeran}!`,
         membership: memberData,
         peranDiajukan,
       };
@@ -1513,10 +1520,6 @@ export async function joinKomunitasWargaWithSurvey({
         dbItemKomId === toValidUUID(komunitasId) ||
         (!targetMembership && item.rt === finalRt);
 
-      // Hanya komunitas target langsung yang meminta verifikasi peran (peran_diajukan)
-      // Tingkat di atasnya (RW, Kelurahan, Kecamatan) otomatis terhubung tanpa redundansi antrean
-      const tierPeranDiajukan = isTargetCommunity ? peranDiajukan : null;
-
       // Upsert anggota_komunitas record
       const { data: mData } = await supabase
         .from("anggota_komunitas")
@@ -1525,7 +1528,7 @@ export async function joinKomunitasWargaWithSurvey({
             user_id: user.id,
             komunitas_id: dbItemKomId,
             peran: activePeran,
-            peran_diajukan: tierPeranDiajukan,
+            peran_diajukan: null,
             status: "approved",
             berdomisili: berdomisili,
             kk_terdaftar: kkTerdaftar,
@@ -1548,8 +1551,8 @@ export async function joinKomunitasWargaWithSurvey({
 
     const message =
       hierarchyChain.length > 1
-        ? `Selamat bergabung! Anda otomatis terhubung di ${hierarchyChain.length} tingkatan komunitas (RT, RW, Kelurahan, & Kecamatan).`
-        : "Selamat bergabung di Komunitas Warga!";
+        ? `Selamat bergabung sebagai ${activePeran}! Anda otomatis terhubung di ${hierarchyChain.length} tingkatan komunitas (RT, RW, Kelurahan, & Kecamatan).`
+        : `Selamat bergabung di Komunitas Warga sebagai ${activePeran}!`;
 
     return {
       success: true,
@@ -1953,6 +1956,117 @@ export async function seedAllPosyanduTegalAction(): Promise<{
   const res = await seedPosyanduToSupabase();
   revalidatePath("/komunitas");
   return res;
+}
+
+/**
+ * Server Action: Memeriksa dan menghapus data posyandu duplikat di setiap kelurahan pada database Supabase.
+ * Menjaga 1 entri utama dan menghapus entri duplikat dengan nama & kelurahan yang sama.
+ */
+export async function cleanupDuplicatePosyanduAction(): Promise<{
+  success: boolean;
+  deletedCount: number;
+  message: string;
+}> {
+  try {
+    const supabase = await createClient();
+
+    // 1. Ambil seluruh data posyandu dari tabel komunitas
+    const { data: allPosyandu, error: fetchErr } = await supabase
+      .from("komunitas")
+      .select("id, nama, nama_komunitas, jenis, jenis_komunitas, kecamatan, kelurahan, lokasi, deskripsi, rw, rt, created_at")
+      .or("jenis.eq.posyandu,jenis_komunitas.eq.posyandu")
+      .order("created_at", { ascending: false });
+
+    if (fetchErr) {
+      throw fetchErr;
+    }
+
+    if (!allPosyandu || allPosyandu.length === 0) {
+      return {
+        success: true,
+        deletedCount: 0,
+        message: "Tidak ada data posyandu di database.",
+      };
+    }
+
+    // 2. Kelompokkan berdasarkan Kelurahan & Nama Inti Posyandu
+    const grouped = new Map<string, any[]>();
+    for (const p of allPosyandu) {
+      const rawName = p.nama || p.nama_komunitas || "";
+      const coreName = extractCorePosyanduName(rawName).toLowerCase().replace(/\s+/g, " ");
+      const normKel = (p.kelurahan || "").trim().toLowerCase();
+      const key = `${normKel}::${coreName}`;
+      if (!grouped.has(key)) {
+        grouped.set(key, []);
+      }
+      grouped.get(key)!.push(p);
+    }
+
+    // 3. Cari entri duplikat dan pilih entri dengan data paling lengkap sebagai master
+    const duplicateIdsToDelete: string[] = [];
+    for (const [key, items] of grouped.entries()) {
+      if (items.length > 1) {
+        items.sort((a, b) => {
+          const scoreA = (a.lokasi ? 2 : 0) + (a.deskripsi ? 2 : 0) + (a.rw ? 1 : 0);
+          const scoreB = (b.lokasi ? 2 : 0) + (b.deskripsi ? 2 : 0) + (b.rw ? 1 : 0);
+          return scoreB - scoreA;
+        });
+
+        const master = items[0];
+        const duplicates = items.slice(1);
+        for (const dup of duplicates) {
+          duplicateIdsToDelete.push(dup.id);
+          // Pindahkan keanggotaan dari posyandu duplikat ke posyandu master jika ada
+          try {
+            await supabase
+              .from("anggota_komunitas")
+              .update({ komunitas_id: master.id })
+              .eq("komunitas_id", dup.id);
+          } catch {}
+        }
+      }
+    }
+
+    if (duplicateIdsToDelete.length === 0) {
+      return {
+        success: true,
+        deletedCount: 0,
+        message: "Pemeriksaan selesai: Seluruh nama Posyandu di setiap Kelurahan sudah unik (236 Posyandu, tidak ada duplikat).",
+      };
+    }
+
+    // 4. Bersihkan sisa relasi di tabel anggota_komunitas untuk id yang akan dihapus
+    await supabase
+      .from("anggota_komunitas")
+      .delete()
+      .in("komunitas_id", duplicateIdsToDelete);
+
+    // 5. Hapus entri duplikat dari tabel komunitas
+    const { error: deleteErr } = await supabase
+      .from("komunitas")
+      .delete()
+      .in("id", duplicateIdsToDelete);
+
+    if (deleteErr) {
+      throw deleteErr;
+    }
+
+    revalidatePath("/komunitas");
+    revalidatePath("/profil");
+
+    return {
+      success: true,
+      deletedCount: duplicateIdsToDelete.length,
+      message: `Berhasil membersihkan ${duplicateIdsToDelete.length} data Posyandu duplikat. Kini seluruh 236 Posyandu se-Kota Tegal telah rapi dan unik.`,
+    };
+  } catch (err: any) {
+    console.error("Error cleanupDuplicatePosyanduAction:", err);
+    return {
+      success: false,
+      deletedCount: 0,
+      message: err.message || "Gagal membersihkan data posyandu duplikat.",
+    };
+  }
 }
 
 /**

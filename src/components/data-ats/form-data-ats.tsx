@@ -171,62 +171,70 @@ export function FormDataAts({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5 text-left">
+    <form onSubmit={handleSubmit} className="flex flex-col w-full space-y-6 text-left">
       {/* Alert Feedback */}
       {feedback && (
         <div
           className={cn(
-            "flex items-center gap-2 rounded-md p-3.5 text-xs font-mono border",
+            "flex items-center gap-3 rounded-2xl p-4 text-base font-semibold border-2",
             feedback.type === "success"
-              ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-400"
-              : "border-destructive/40 bg-destructive/10 text-destructive"
+              ? "border-emerald-600 bg-emerald-50 text-emerald-900"
+              : "border-red-600 bg-red-50 text-red-900"
           )}
         >
           {feedback.type === "success" ? (
-            <CheckCircle2 className="h-4 w-4 shrink-0" />
+            <CheckCircle2 className="h-6 w-6 text-emerald-600 shrink-0" />
           ) : (
-            <AlertCircle className="h-4 w-4 shrink-0" />
+            <AlertCircle className="h-6 w-6 text-red-600 shrink-0" />
           )}
-          <span>{feedback.message}</span>
+          <span className="leading-relaxed">{feedback.message}</span>
         </div>
       )}
 
-      {/* BANNER WILAYAH WARGA */}
-      <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3.5 space-y-2">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-xs font-bold font-mono text-amber-400 uppercase tracking-wider">
-            <MapPin className="h-4 w-4" />
-            <span>WILAYAH WARGA PENDATAAN ATS</span>
+      {/* BANNER WILAYAH WARGA (Coursera Card Style) */}
+      <div className="rounded-2xl border-2 border-slate-200 bg-white p-5 space-y-4 shadow-xs">
+        <div className="flex items-center justify-between gap-2 border-b border-slate-200 pb-3">
+          <div className="flex items-center gap-2.5 text-base font-bold text-slate-900">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-100 text-blue-700">
+              <MapPin className="h-5 w-5" />
+            </div>
+            <span>Wilayah Pendataan ATS</span>
           </div>
-          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
+          <span className="text-xs font-bold px-3 py-1 rounded-full bg-slate-100 text-slate-800 border border-slate-300">
             Kota Tegal
           </span>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-mono">
-          <div className="flex items-center gap-1.5 text-muted-foreground">
-            <span className="font-semibold text-foreground">Kecamatan:</span>
+
+        <div className="flex flex-col gap-4">
+          <div className="space-y-1.5">
+            <label className="text-base font-bold text-slate-800">
+              Kecamatan
+            </label>
             <select
               value={kecamatan}
               onChange={(e) => handleKecamatanChange(e.target.value)}
-              className="bg-background border border-border rounded px-2 py-1 text-xs text-foreground focus:border-amber-500 focus:outline-hidden"
+              className="w-full min-h-[48px] h-12 bg-slate-50 border-2 border-slate-300 rounded-xl px-4 text-base font-medium text-slate-900 focus:border-blue-600 focus:bg-white focus:outline-hidden"
             >
               {DAFTAR_KECAMATAN_TEGAL.map((kec) => (
                 <option key={kec} value={kec}>
-                  {kec}
+                  Kecamatan {kec}
                 </option>
               ))}
             </select>
           </div>
-          <div className="flex items-center gap-1.5 text-muted-foreground">
-            <span className="font-semibold text-foreground">Kelurahan:</span>
+
+          <div className="space-y-1.5">
+            <label className="text-base font-bold text-slate-800">
+              Kelurahan
+            </label>
             <select
               value={kelurahan}
               onChange={(e) => setKelurahan(e.target.value)}
-              className="bg-background border border-border rounded px-2 py-1 text-xs text-foreground focus:border-amber-500 focus:outline-hidden"
+              className="w-full min-h-[48px] h-12 bg-slate-50 border-2 border-slate-300 rounded-xl px-4 text-base font-medium text-slate-900 focus:border-blue-600 focus:bg-white focus:outline-hidden"
             >
               {kelurahanOptions.map((kel) => (
                 <option key={kel} value={kel}>
-                  {kel}
+                  Kelurahan {kel}
                 </option>
               ))}
             </select>
@@ -235,45 +243,52 @@ export function FormDataAts({
       </div>
 
       {/* SECTION 1: IDENTITAS ANAK TIDAK SEKOLAH (ATS) */}
-      <div className="space-y-4 rounded-lg border border-border bg-card p-5">
-        <div className="flex items-center gap-2 border-b border-border pb-3">
-          <User className="h-4 w-4 text-amber-500" />
-          <h3 className="text-xs font-bold font-mono uppercase tracking-wider text-foreground">
-            1. Identitas Anak Tidak Sekolah (ATS)
-          </h3>
+      <div className="space-y-5 rounded-2xl border-2 border-slate-200 bg-white p-5 sm:p-6 shadow-xs">
+        <div className="flex items-center gap-3 border-b-2 border-slate-100 pb-3.5">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-white font-bold text-base">
+            1
+          </div>
+          <div>
+            <h3 className="text-lg sm:text-xl font-bold tracking-tight text-slate-900">
+              Identitas Anak Tidak Sekolah (ATS)
+            </h3>
+            <p className="text-sm text-slate-600">
+              Isi data identitas diri dan orang tua / wali anak
+            </p>
+          </div>
         </div>
 
         {/* Nama Lengkap */}
-        <div className="space-y-1.5">
-          <label className="text-xs font-medium text-muted-foreground">
-            Nama Lengkap Sesuai Akta / Identitas *
+        <div className="space-y-2">
+          <label className="text-base font-bold text-slate-900 block">
+            Nama Lengkap Anak (Sesuai Akta) <span className="text-red-500">*</span>
           </label>
           <div className="relative">
-            <User className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+            <User className="pointer-events-none absolute left-4 top-4 h-5 w-5 text-slate-500" />
             <input
               type="text"
               required
               value={namaLengkap}
               onChange={(e) => setNamaLengkap(e.target.value)}
-              placeholder="Contoh: Budi Santoso"
-              className="w-full h-10 rounded-md border border-border bg-background pl-9 pr-3 text-xs text-foreground placeholder:text-muted-foreground focus:border-amber-500 focus:outline-hidden"
+              placeholder="Ketik nama lengkap anak..."
+              className="w-full min-h-[52px] h-13 rounded-xl border-2 border-slate-300 bg-white pl-12 pr-4 text-base text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:outline-hidden"
             />
           </div>
         </div>
 
-        {/* Usia & Jenis Kelamin */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div className="space-y-1.5">
-            <label className="text-xs font-medium text-muted-foreground">
-              Usia *
+        {/* Usia & Jenis Kelamin (Vertical Single Column on Mobile) */}
+        <div className="flex flex-col sm:grid sm:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <label className="text-base font-bold text-slate-900 block">
+              Usia Anak <span className="text-red-500">*</span>
             </label>
             <div className="relative">
-              <Calendar className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Calendar className="pointer-events-none absolute left-4 top-4 h-5 w-5 text-slate-500" />
               <select
                 required
                 value={usia}
                 onChange={(e) => setUsia(e.target.value)}
-                className="w-full h-10 rounded-md border border-border bg-background pl-9 pr-8 text-xs font-medium text-foreground focus:border-amber-500 focus:outline-hidden appearance-none"
+                className="w-full min-h-[52px] h-13 rounded-xl border-2 border-slate-300 bg-white pl-12 pr-8 text-base font-semibold text-slate-900 focus:border-blue-600 focus:outline-hidden appearance-none"
               >
                 <option value="" disabled>
                   -- Pilih Usia --
@@ -287,84 +302,84 @@ export function FormDataAts({
             </div>
           </div>
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-medium text-muted-foreground">
-              Jenis Kelamin *
+          <div className="space-y-2">
+            <label className="text-base font-bold text-slate-900 block">
+              Jenis Kelamin <span className="text-red-500">*</span>
             </label>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-3">
               <button
                 type="button"
                 onClick={() => setJenisKelamin("L")}
                 className={cn(
-                  "flex h-10 items-center justify-center rounded-md border text-xs font-bold transition-all cursor-pointer",
+                  "flex min-h-[52px] h-13 items-center justify-center gap-2 rounded-xl border-2 text-base font-bold transition-all cursor-pointer",
                   jenisKelamin === "L"
-                    ? "border-blue-500 bg-blue-500/15 text-blue-600 dark:text-blue-400 font-bold"
-                    : "border-border text-muted-foreground hover:bg-muted"
+                    ? "border-blue-600 bg-blue-50 text-blue-900 ring-2 ring-blue-600/30 font-extrabold shadow-xs"
+                    : "border-slate-300 bg-white text-slate-700 hover:bg-slate-100"
                 )}
               >
-                Laki-laki (L)
+                <span>Laki-laki (L)</span>
               </button>
               <button
                 type="button"
                 onClick={() => setJenisKelamin("P")}
                 className={cn(
-                  "flex h-10 items-center justify-center rounded-md border text-xs font-bold transition-all cursor-pointer",
+                  "flex min-h-[52px] h-13 items-center justify-center gap-2 rounded-xl border-2 text-base font-bold transition-all cursor-pointer",
                   jenisKelamin === "P"
-                    ? "border-rose-500 bg-rose-500/15 text-rose-600 dark:text-rose-400 font-bold"
-                    : "border-border text-muted-foreground hover:bg-muted"
+                    ? "border-rose-600 bg-rose-50 text-rose-900 ring-2 ring-rose-600/30 font-extrabold shadow-xs"
+                    : "border-slate-300 bg-white text-slate-700 hover:bg-slate-100"
                 )}
               >
-                Perempuan (P)
+                <span>Perempuan (P)</span>
               </button>
             </div>
           </div>
         </div>
 
         {/* Nama Orang Tua & Kontak HP */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div className="space-y-1.5">
-            <label className="text-xs font-medium text-muted-foreground">
-              Nama Orang Tua / Wali *
+        <div className="flex flex-col sm:grid sm:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <label className="text-base font-bold text-slate-900 block">
+              Nama Orang Tua / Wali <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
               required
               value={namaOrangtua}
               onChange={(e) => setNamaOrangtua(e.target.value)}
-              placeholder="Contoh: Joko Widodo"
-              className="w-full h-10 rounded-md border border-border bg-background px-3 text-xs text-foreground placeholder:text-muted-foreground focus:border-amber-500 focus:outline-hidden"
+              placeholder="Contoh: Budi Susanto"
+              className="w-full min-h-[52px] h-13 rounded-xl border-2 border-slate-300 bg-white px-4 text-base text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:outline-hidden"
             />
           </div>
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-medium text-muted-foreground">
-              Nomor WhatsApp / HP Aktif *
+          <div className="space-y-2">
+            <label className="text-base font-bold text-slate-900 block">
+              Nomor WhatsApp / HP <span className="text-red-500">*</span>
             </label>
             <div className="relative">
-              <Phone className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Phone className="pointer-events-none absolute left-4 top-4 h-5 w-5 text-slate-500" />
               <input
                 type="tel"
                 required
                 value={nomorHp}
                 onChange={(e) => setNomorHp(e.target.value)}
                 placeholder="081234567890"
-                className="w-full h-10 rounded-md border border-border bg-background pl-9 pr-3 text-xs font-mono text-foreground placeholder:text-muted-foreground focus:border-amber-500 focus:outline-hidden"
+                className="w-full min-h-[52px] h-13 rounded-xl border-2 border-slate-300 bg-white pl-12 pr-4 text-base font-mono font-medium text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:outline-hidden"
               />
             </div>
           </div>
         </div>
 
         {/* Status Tinggal Bersama */}
-        <div className="space-y-1.5">
-          <label className="text-xs font-medium text-muted-foreground">
-            Status Tinggal Bersama *
+        <div className="space-y-2">
+          <label className="text-base font-bold text-slate-900 block">
+            Status Tinggal Bersama <span className="text-red-500">*</span>
           </label>
           <div className="relative">
-            <Home className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+            <Home className="pointer-events-none absolute left-4 top-4 h-5 w-5 text-slate-500" />
             <select
               value={tinggalBersama}
               onChange={(e) => setTinggalBersama(e.target.value)}
-              className="w-full h-10 rounded-md border border-border bg-background pl-9 pr-3 text-xs font-medium text-foreground focus:border-amber-500 focus:outline-hidden"
+              className="w-full min-h-[52px] h-13 rounded-xl border-2 border-slate-300 bg-white pl-12 pr-4 text-base font-medium text-slate-900 focus:border-blue-600 focus:outline-hidden"
             >
               <option value="Orang Tua">Tinggal Bersama Orang Tua</option>
               <option value="Wali / Kakek-Nenek">Tinggal Bersama Wali / Kakek-Nenek</option>
@@ -375,32 +390,32 @@ export function FormDataAts({
           </div>
         </div>
 
-        {/* ALAMAT LENGKAP: Jalan / Gg / Blok / Nomor */}
-        <div className="space-y-1.5">
-          <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-            <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
-            <span>Alamat Lengkap (Jalan / Gg / Blok / Nomor Rumah) *</span>
+        {/* ALAMAT LENGKAP */}
+        <div className="space-y-2">
+          <label className="text-base font-bold text-slate-900 flex items-center gap-2">
+            <Building2 className="h-5 w-5 text-slate-600" />
+            <span>Alamat Rumah (Jalan / Gg / Blok / Nomor) <span className="text-red-500">*</span></span>
           </label>
           <input
             type="text"
             required
             value={alamat}
             onChange={(e) => setAlamat(e.target.value)}
-            placeholder="Contoh: Jl. Merpati No. 12, Gg. Kenanga 2 Blok B"
-            className="w-full h-10 rounded-md border border-border bg-background px-3 text-xs text-foreground placeholder:text-muted-foreground focus:border-amber-500 focus:outline-hidden"
+            placeholder="Contoh: Jl. Merpati No. 12, Gg. Kenanga 2"
+            className="w-full min-h-[52px] h-13 rounded-xl border-2 border-slate-300 bg-white px-4 text-base text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:outline-hidden"
           />
         </div>
 
         {/* RW dan RT */}
         <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-1.5">
-            <label className="text-xs font-medium text-muted-foreground">
-              RW *
+          <div className="space-y-2">
+            <label className="text-base font-bold text-slate-900 block">
+              RW <span className="text-red-500">*</span>
             </label>
             <select
               value={rw}
               onChange={(e) => setRw(e.target.value)}
-              className="w-full h-10 rounded-md border border-border bg-background px-3 text-xs font-medium text-foreground focus:border-amber-500 focus:outline-hidden"
+              className="w-full min-h-[48px] h-12 rounded-xl border-2 border-slate-300 bg-white px-4 text-base font-semibold text-slate-900 focus:border-blue-600 focus:outline-hidden"
             >
               {DAFTAR_RW_TEGAL.map((r) => (
                 <option key={r} value={r}>
@@ -410,14 +425,14 @@ export function FormDataAts({
             </select>
           </div>
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-medium text-muted-foreground">
-              RT *
+          <div className="space-y-2">
+            <label className="text-base font-bold text-slate-900 block">
+              RT <span className="text-red-500">*</span>
             </label>
             <select
               value={rt}
               onChange={(e) => setRt(e.target.value)}
-              className="w-full h-10 rounded-md border border-border bg-background px-3 text-xs font-medium text-foreground focus:border-amber-500 focus:outline-hidden"
+              className="w-full min-h-[48px] h-12 rounded-xl border-2 border-slate-300 bg-white px-4 text-base font-semibold text-slate-900 focus:border-blue-600 focus:outline-hidden"
             >
               {DAFTAR_RT_TEGAL.map((t) => (
                 <option key={t} value={t}>
@@ -429,30 +444,30 @@ export function FormDataAts({
         </div>
 
         {/* SEKOLAH SEBELUMNYA & KELAS TERAKHIR */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-border">
-          <div className="space-y-1.5">
-            <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-              <School className="h-3.5 w-3.5 text-muted-foreground" />
+        <div className="flex flex-col sm:grid sm:grid-cols-2 gap-4 pt-3 border-t-2 border-slate-100">
+          <div className="space-y-2">
+            <label className="text-base font-bold text-slate-900 flex items-center gap-2">
+              <School className="h-5 w-5 text-slate-600" />
               <span>Sekolah Sebelumnya</span>
             </label>
             <input
               type="text"
               value={sekolahSebelumnya}
               onChange={(e) => setSekolahSebelumnya(e.target.value)}
-              placeholder="Contoh: SDN 3 Randugunting / Belum Pernah"
-              className="w-full h-10 rounded-md border border-border bg-background px-3 text-xs text-foreground placeholder:text-muted-foreground focus:border-amber-500 focus:outline-hidden"
+              placeholder="Contoh: SDN 3 Kejambon / Belum Pernah"
+              className="w-full min-h-[52px] h-13 rounded-xl border-2 border-slate-300 bg-white px-4 text-base text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:outline-hidden"
             />
           </div>
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-              <BookOpen className="h-3.5 w-3.5 text-muted-foreground" />
-              <span>Kelas Terakhir Saat Berhenti</span>
+          <div className="space-y-2">
+            <label className="text-base font-bold text-slate-900 flex items-center gap-2">
+              <BookOpen className="h-5 w-5 text-slate-600" />
+              <span>Kelas Terakhir Berhenti</span>
             </label>
             <select
               value={kelasTerakhir}
               onChange={(e) => setKelasTerakhir(e.target.value)}
-              className="w-full h-10 rounded-md border border-border bg-background px-3 text-xs font-medium text-foreground focus:border-amber-500 focus:outline-hidden"
+              className="w-full min-h-[52px] h-13 rounded-xl border-2 border-slate-300 bg-white px-4 text-base font-medium text-slate-900 focus:border-blue-600 focus:outline-hidden"
             >
               {KELAS_TERAKHIR_OPTIONS.map((kls) => (
                 <option key={kls} value={kls}>
@@ -464,60 +479,117 @@ export function FormDataAts({
         </div>
       </div>
 
-      {/* SECTION 2: STATUS PENDIDIKAN & ALASAN ATS */}
-      <div className="space-y-4 rounded-lg border border-border bg-card p-5">
-        <div className="flex items-center gap-2 border-b border-border pb-3">
-          <GraduationCap className="h-4 w-4 text-amber-500" />
-          <h3 className="text-xs font-bold font-mono uppercase tracking-wider text-foreground">
-            2. Status Pendidikan &amp; Alasan Tidak Sekolah
-          </h3>
+      {/* SECTION 2: STATUS PENDIDIKAN & ALASAN ATS (COURSERA QUIZ STYLE) */}
+      <div className="space-y-5 rounded-2xl border-2 border-slate-200 bg-white p-5 sm:p-6 shadow-xs">
+        <div className="flex items-center gap-3 border-b-2 border-slate-100 pb-3.5">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-white font-bold text-base">
+            2
+          </div>
+          <div>
+            <h3 className="text-lg sm:text-xl font-bold tracking-tight text-slate-900">
+              Minat &amp; Alasan Tidak Sekolah
+            </h3>
+            <p className="text-sm text-slate-600">
+              Pilih opsi yang paling sesuai dengan kondisi anak saat ini
+            </p>
+          </div>
         </div>
 
-        {/* 1. KEINGINAN UNTUK MELANJUTKAN SEKOLAH */}
-        <div className="space-y-2">
-          <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-            <HelpCircle className="h-3.5 w-3.5 text-amber-500" />
-            <span>KEINGINAN UNTUK MELANJUTKAN SEKOLAH *</span>
+        {/* 1. KEINGINAN UNTUK MELANJUTKAN SEKOLAH (Quiz Multi-Choice Style) */}
+        <div className="space-y-2.5">
+          <label className="text-base font-bold text-slate-900 flex items-center gap-2">
+            <HelpCircle className="h-5 w-5 text-blue-700" />
+            <span>Apakah anak masih memiliki keinginan kembali sekolah? <span className="text-red-500">*</span></span>
           </label>
-          <div className="grid grid-cols-2 gap-2">
+
+          <div className="flex flex-col gap-3">
             <button
               type="button"
               onClick={() => setKeinginanSekolah("Masih Ada")}
               className={cn(
-                "flex h-10 items-center justify-center gap-1.5 rounded-md border text-xs font-bold transition-all cursor-pointer",
+                "flex items-center justify-between p-4 rounded-2xl border-2 text-left transition-all cursor-pointer",
                 keinginanSekolah === "Masih Ada"
-                  ? "border-emerald-500 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-bold shadow-xs"
-                  : "border-border text-muted-foreground hover:bg-muted"
+                  ? "border-blue-600 bg-blue-50/70 text-blue-950 ring-2 ring-blue-600/30 shadow-xs"
+                  : "border-slate-200 bg-white text-slate-800 hover:bg-slate-50 hover:border-slate-300"
               )}
             >
-              <CheckCircle2 className="h-3.5 w-3.5" />
-              <span>Masih Ada</span>
+              <div className="flex items-center gap-3.5">
+                <div
+                  className={cn(
+                    "flex h-6 w-6 items-center justify-center rounded-full border-2",
+                    keinginanSekolah === "Masih Ada"
+                      ? "border-blue-600 bg-blue-600 text-white"
+                      : "border-slate-400 bg-white"
+                  )}
+                >
+                  {keinginanSekolah === "Masih Ada" && (
+                    <div className="h-2.5 w-2.5 rounded-full bg-white" />
+                  )}
+                </div>
+                <div>
+                  <div className="text-base font-bold">Masih Ada Keinginan</div>
+                  <div className="text-xs sm:text-sm text-slate-600">
+                    Anak bersedia dan berminat kembali bersekolah / ikut program pendidikan
+                  </div>
+                </div>
+              </div>
+              <CheckCircle2
+                className={cn(
+                  "h-5 w-5 shrink-0",
+                  keinginanSekolah === "Masih Ada" ? "text-blue-600" : "text-transparent"
+                )}
+              />
             </button>
+
             <button
               type="button"
               onClick={() => setKeinginanSekolah("Tidak Ada")}
               className={cn(
-                "flex h-10 items-center justify-center gap-1.5 rounded-md border text-xs font-bold transition-all cursor-pointer",
+                "flex items-center justify-between p-4 rounded-2xl border-2 text-left transition-all cursor-pointer",
                 keinginanSekolah === "Tidak Ada"
-                  ? "border-amber-500 bg-amber-500/15 text-amber-600 dark:text-amber-400 font-bold shadow-xs"
-                  : "border-border text-muted-foreground hover:bg-muted"
+                  ? "border-amber-600 bg-amber-50/70 text-amber-950 ring-2 ring-amber-600/30 shadow-xs"
+                  : "border-slate-200 bg-white text-slate-800 hover:bg-slate-50 hover:border-slate-300"
               )}
             >
-              <AlertCircle className="h-3.5 w-3.5" />
-              <span>Tidak Ada</span>
+              <div className="flex items-center gap-3.5">
+                <div
+                  className={cn(
+                    "flex h-6 w-6 items-center justify-center rounded-full border-2",
+                    keinginanSekolah === "Tidak Ada"
+                      ? "border-amber-600 bg-amber-600 text-white"
+                      : "border-slate-400 bg-white"
+                  )}
+                >
+                  {keinginanSekolah === "Tidak Ada" && (
+                    <div className="h-2.5 w-2.5 rounded-full bg-white" />
+                  )}
+                </div>
+                <div>
+                  <div className="text-base font-bold">Tidak Ada Keinginan</div>
+                  <div className="text-xs sm:text-sm text-slate-600">
+                    Anak belum/tidak berminat kembali bersekolah formal saat ini
+                  </div>
+                </div>
+              </div>
+              <AlertCircle
+                className={cn(
+                  "h-5 w-5 shrink-0",
+                  keinginanSekolah === "Tidak Ada" ? "text-amber-600" : "text-transparent"
+                )}
+              />
             </button>
           </div>
         </div>
 
         {/* 2. ALASAN TIDAK SEKOLAH */}
-        <div className="space-y-1.5">
-          <label className="text-xs font-medium text-muted-foreground">
-            ALASAN TIDAK SEKOLAH (PILIH SALAH SATU) *
+        <div className="space-y-2">
+          <label className="text-base font-bold text-slate-900 block">
+            Alasan Utama Tidak Sekolah <span className="text-red-500">*</span>
           </label>
           <select
             value={alasanTidakSekolah}
             onChange={(e) => setAlasanTidakSekolah(e.target.value as AlasanTidakSekolah)}
-            className="w-full h-10 rounded-md border border-border bg-background px-3 text-xs font-medium text-foreground focus:border-amber-500 focus:outline-hidden"
+            className="w-full min-h-[52px] h-13 rounded-xl border-2 border-slate-300 bg-white px-4 text-base font-semibold text-slate-900 focus:border-blue-600 focus:outline-hidden"
           >
             {ALASAN_TIDAK_SEKOLAH_LIST.map((alasan) => (
               <option key={alasan} value={alasan}>
@@ -528,36 +600,36 @@ export function FormDataAts({
         </div>
 
         {/* 3. KETERANGAN */}
-        <div className="space-y-1.5">
-          <label className="text-xs font-medium text-muted-foreground flex items-center gap-1">
-            <FileText className="h-3.5 w-3.5 text-muted-foreground" />
-            <span>KETERANGAN (PERJELAS ALASAN TIDAK BERSEKOLAH)</span>
+        <div className="space-y-2">
+          <label className="text-base font-bold text-slate-900 flex items-center gap-2">
+            <FileText className="h-5 w-5 text-slate-600" />
+            <span>Keterangan / Catatan Lapangan</span>
           </label>
           <textarea
             rows={3}
             value={keterangan}
             onChange={(e) => setKeterangan(e.target.value)}
-            placeholder="Tuliskan keterangan tambahan mengenai kondisi anak, rencana bimbingan, atau kebutuhan intervensi..."
-            className="w-full rounded-md border border-border bg-background p-3 text-xs text-foreground placeholder:text-muted-foreground focus:border-amber-500 focus:outline-hidden leading-relaxed"
+            placeholder="Tuliskan catatan tambahan mengenai kondisi anak, rencana bimbingan kader, atau kebutuhan intervensi..."
+            className="w-full rounded-xl border-2 border-slate-300 bg-white p-4 text-base text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:outline-hidden leading-relaxed"
           />
         </div>
       </div>
 
-      {/* Submit Button */}
-      <div className="pt-2 pb-4">
+      {/* Submit Button (Full Width Mobile Bottom Anchored) */}
+      <div className="pt-2 pb-6">
         <button
           type="submit"
           disabled={isPending}
-          className="flex w-full h-10 items-center justify-center gap-2 rounded-md bg-amber-600 hover:bg-amber-500 text-white px-5 text-xs font-bold transition-all shadow-md disabled:opacity-50 cursor-pointer"
+          className="flex w-full min-h-[56px] h-14 items-center justify-center gap-3 rounded-2xl bg-blue-700 hover:bg-blue-800 active:scale-[0.98] text-white px-6 text-base sm:text-lg font-extrabold transition-all shadow-md disabled:opacity-50 cursor-pointer"
         >
           {isPending ? (
             <>
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <Loader2 className="h-5 w-5 animate-spin" />
               <span>Menyimpan Data ATS...</span>
             </>
           ) : (
             <>
-              <Send className="h-3.5 w-3.5" />
+              <Send className="h-5 w-5" />
               <span>Simpan &amp; Daftarkan Data ATS</span>
             </>
           )}

@@ -17,42 +17,42 @@ export default function ErrorBoundary({
 
   return (
     <div className="container mx-auto flex min-h-[75vh] max-w-md flex-col items-center justify-center px-4 text-center animate-in fade-in duration-300 space-y-6">
-      <div className="flex h-16 w-16 items-center justify-center rounded-lg border border-destructive/40 bg-destructive/10 text-destructive">
-        <AlertCircle className="h-8 w-8 stroke-[1.5px]" />
+      <div className="flex h-16 w-16 items-center justify-center rounded-2xl border-2 border-rose-200 dark:border-rose-900/40 bg-rose-50 dark:bg-rose-950/40 text-rose-600 shadow-xs">
+        <AlertCircle className="h-8 w-8 stroke-[2px]" />
       </div>
 
-      <div className="space-y-2">
-        <span className="cyber-badge text-destructive border-destructive/40 bg-destructive/10">
-          SYSTEM ERROR
+      <div className="space-y-2 max-w-sm mx-auto">
+        <span className="inline-flex items-center rounded-full border-2 border-rose-200 dark:border-rose-900/40 bg-rose-50 dark:bg-rose-950/40 px-3 py-1 text-xs font-bold text-rose-700 dark:text-rose-300">
+          KENDALA SISTEM
         </span>
-        <h1 className="text-xl font-bold tracking-tight text-foreground">
-          TERJADI KENDALA TEKNIS
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+          Terjadi Kendala Teknis
         </h1>
-        <p className="text-xs text-muted-foreground leading-relaxed max-w-xs mx-auto">
+        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
           Mohon maaf, halaman tidak dapat dimuat dengan sempurna. Sistem telah mencatat kendala ini.
         </p>
         {error?.message && (
-          <div className="mt-3 rounded-md bg-background border border-border p-3 text-[11px] font-mono text-destructive text-left line-clamp-3">
+          <div className="mt-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 p-3.5 text-xs font-mono text-rose-600 dark:text-rose-400 text-left line-clamp-3">
             Error: {error.message}
           </div>
         )}
       </div>
 
-      <div className="flex w-full flex-col gap-2.5">
+      <div className="flex w-full flex-col gap-3">
         <button
           onClick={() => reset()}
-          className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md bg-blue-600 hover:bg-blue-500 text-white px-4 text-xs font-mono font-bold uppercase tracking-wider shadow-md transition-all cursor-pointer"
+          className="inline-flex min-h-[52px] w-full items-center justify-center gap-2 rounded-xl bg-blue-700 hover:bg-blue-800 text-white px-5 text-base font-bold shadow-md transition-all active:scale-98 cursor-pointer"
         >
-          <RefreshCcw className="h-3.5 w-3.5" />
-          <span>COBA MUAT ULANG</span>
+          <RefreshCcw className="h-4 w-4" />
+          <span>Coba Muat Ulang</span>
         </button>
 
         <Link
           href="/"
-          className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md border border-border bg-card px-4 text-xs font-mono font-semibold text-foreground hover:bg-muted transition-colors"
+          className="inline-flex min-h-[48px] w-full items-center justify-center gap-2 rounded-xl border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-5 text-base font-bold text-slate-800 dark:text-slate-200 hover:bg-slate-50 transition-colors shadow-xs"
         >
-          <Home className="h-3.5 w-3.5" />
-          <span>KEMBALI KE BERANDA KABAR</span>
+          <Home className="h-4 w-4 text-blue-600" />
+          <span>Kembali ke Beranda</span>
         </Link>
       </div>
     </div>

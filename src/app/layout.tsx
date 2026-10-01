@@ -1,12 +1,13 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Plus_Jakarta_Sans, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { BottomNav } from "@/components/layout/bottom-nav";
 import { ThemeProvider } from "@/components/theme-provider";
 
-const geistSans = Geist({
+const jakartaSans = Plus_Jakarta_Sans({
   variable: "--font-sans",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
   display: "swap",
 });
 
@@ -19,7 +20,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "JARIMAS-ID | Platform Kolaboratif Warga & Posyandu",
   description:
-    "Platform kolaboratif mobile-first interkoneksi data anak 0-7 tahun, DDTK tumbuh kembang, pendataan ATS (Anak Tidak Sekolah), validasi lintas komunitas PAUD & Posyandu, serta pengadaan resmi Jarimas Market Kota Tegal.",
+    "Platform kolaboratif mobile-first interkoneksi data anak 0-6 tahun, DDTK tumbuh kembang, pendataan ATS (Anak Tidak Sekolah), validasi lintas komunitas PAUD & Posyandu, serta pengadaan resmi Jarimas Market Kota Tegal.",
   keywords: [
     "Jarimas",
     "Posyandu",
@@ -63,16 +64,17 @@ export default function RootLayout({
     <html
       lang="id"
       suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${jakartaSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-background text-foreground font-sans pb-32 sm:pb-36 transition-colors duration-150">
+      <body className="min-h-full flex flex-col bg-slate-50 text-slate-900 font-sans pb-32 sm:pb-36 transition-colors duration-150">
         <ThemeProvider
           attribute="class"
-          defaultTheme="dark"
-          enableSystem
+          defaultTheme="light"
+          forcedTheme="light"
+          enableSystem={false}
           disableTransitionOnChange
         >
-          <main className="flex-1 w-full max-w-md mx-auto sm:max-w-xl md:max-w-3xl lg:max-w-5xl flex flex-col">
+          <main className="flex-1 w-full max-w-md mx-auto sm:max-w-xl md:max-w-2xl lg:max-w-4xl flex flex-col">
             {children}
           </main>
           <BottomNav />

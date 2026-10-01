@@ -203,6 +203,26 @@ export function getWilayahScopeInfo(komunitas: KomunitasWithMembership | null | 
     };
   }
 
+  // Jika Komunitas Posyandu: Tampilkan cakupan wilayah Kelurahan tempat Posyandu berada
+  if (meta.jenis === "posyandu") {
+    const rawPosyanduName = typeof komunitas?.nama === "string" ? komunitas.nama : "Posyandu";
+    const namaPosyanduClean = rawPosyanduName.split(",")[0].trim();
+    const kelName = meta.rawKel || "Kelurahan";
+    const kecName = meta.rawKec || "Kota Tegal";
+
+    return {
+      tierLevel: "Kelurahan",
+      scopeTitle: `Wilayah Kelurahan ${kelName} (Mencakup Semua RW & RT)`,
+      scopeSubtitle: `Kecamatan ${kecName} • ${namaPosyanduClean}`,
+      badgeLabel: `Wilayah Kel. ${kelName}`,
+      isWargaKita: true,
+      kecamatan: meta.rawKec,
+      kelurahan: meta.rawKel,
+      rw: "",
+      rt: "",
+    };
+  }
+
   const namaKomunitas = typeof komunitas?.nama === "string" ? komunitas.nama : "Komunitas";
   const lokasiKomunitas = typeof komunitas?.lokasi === "string" ? komunitas.lokasi : "Kota Tegal";
 

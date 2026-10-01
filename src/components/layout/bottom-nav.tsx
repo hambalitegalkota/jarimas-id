@@ -13,6 +13,9 @@ interface NavItem {
   isActive: (pathname: string) => boolean;
 }
 
+// Flag status fitur Market (Set ke `true` jika fitur Market siap diluncurkan ke publik)
+export const SHOW_MARKET_FEATURE = false;
+
 const NAV_ITEMS: NavItem[] = [
   {
     label: "Kabar",
@@ -26,12 +29,16 @@ const NAV_ITEMS: NavItem[] = [
     icon: Users,
     isActive: (pathname: string) => pathname.startsWith("/komunitas"),
   },
-  {
-    label: "Market",
-    href: "/market",
-    icon: ShoppingBag,
-    isActive: (pathname: string) => pathname.startsWith("/market"),
-  },
+  ...(SHOW_MARKET_FEATURE
+    ? [
+        {
+          label: "Market",
+          href: "/market",
+          icon: ShoppingBag,
+          isActive: (pathname: string) => pathname.startsWith("/market"),
+        },
+      ]
+    : []),
   {
     label: "Profil",
     href: "/profil",
@@ -54,9 +61,9 @@ export function BottomNav() {
   return (
     <nav
       aria-label="Navigasi Utama Mobile"
-      className="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-background/90 backdrop-blur-md pb-[env(safe-area-inset-bottom,0px)]"
+      className="fixed bottom-0 left-0 right-0 z-40 border-t-2 border-slate-200 bg-white shadow-lg pb-[env(safe-area-inset-bottom,0px)]"
     >
-      <div className="mx-auto flex h-14 w-full max-w-md items-center justify-around px-2 sm:max-w-lg md:max-w-xl">
+      <div className="mx-auto flex h-16 w-full max-w-md items-center justify-around px-3 sm:max-w-lg md:max-w-xl">
         {NAV_ITEMS.map((item) => {
           const active = item.isActive(pathname);
           const Icon = item.icon;
@@ -67,27 +74,29 @@ export function BottomNav() {
               href={item.href}
               aria-current={active ? "page" : undefined}
               className={cn(
-                "group relative flex h-full flex-1 flex-col items-center justify-center gap-1 px-1 py-1 transition-colors outline-none",
+                "group relative flex h-full flex-1 flex-col items-center justify-center gap-1 px-2 py-1.5 transition-all outline-none",
                 active
-                  ? "text-foreground"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "text-blue-700 font-bold"
+                  : "text-slate-600 hover:text-slate-900 font-medium"
               )}
             >
-              {/* Minimal Top Border Indicator */}
+              {/* Active Top Bar Indicator */}
               {active && (
-                <span className="absolute top-0 h-0.5 w-8 bg-blue-600 dark:bg-sky-400 rounded-full" />
+                <span className="absolute top-0 h-1 w-12 bg-blue-700 rounded-full" />
               )}
 
               {/* Icon Container */}
               <div className="relative flex items-center justify-center">
                 <Icon
                   className={cn(
-                    "h-4.5 w-4.5 transition-colors",
-                    active ? "text-blue-600 dark:text-sky-400 stroke-[2.2px]" : "text-muted-foreground stroke-[1.75px]"
+                    "h-6 w-6 transition-all",
+                    active
+                      ? "text-blue-700 stroke-[2.5px] scale-105"
+                      : "text-slate-600 stroke-[2px]"
                   )}
                 />
                 {item.badge && (
-                  <span className="absolute -right-2 -top-1 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-blue-600 dark:bg-sky-400 px-1 text-[9px] font-bold text-white dark:text-slate-950 font-mono">
+                  <span className="absolute -right-2.5 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-blue-700 px-1 text-[10px] font-bold text-white font-mono">
                     {item.badge}
                   </span>
                 )}
@@ -96,8 +105,10 @@ export function BottomNav() {
               {/* Label Text */}
               <span
                 className={cn(
-                  "text-[10px] font-medium tracking-tight transition-colors font-mono",
-                  active ? "text-foreground font-semibold" : "text-muted-foreground"
+                  "text-xs tracking-tight transition-colors",
+                  active
+                    ? "text-blue-700 font-bold"
+                    : "text-slate-600 font-semibold"
                 )}
               >
                 {item.label}

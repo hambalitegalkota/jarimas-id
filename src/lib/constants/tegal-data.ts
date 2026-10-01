@@ -17,170 +17,491 @@ export interface KecamatanData {
 
 export const KOTA_TEGAL_DATA: Record<string, KecamatanData> = {
   "Tegal Timur": {
-    nama: "Tegal Timur",
-    kelurahan: {
-      Kejambon: {
-        nama: "Kejambon",
-        posyandu: [
+    "nama": "Tegal Timur",
+    "kelurahan": {
+      "Kejambon": {
+        "nama": "Kejambon",
+        "posyandu": [
           "Posyandu Kamboja 1",
           "Posyandu Kamboja 2",
-          "Posyandu Kamboja 3",
+          "Posyandu Kamboja 3"
         ],
-        paud: [
-          "KB / TK Pembina Kejambon",
-          "PAUD Aisyiyah Bustanul Athfal Kejambon",
-        ],
+        "paud": [
+          "RA Permata Hati",
+          "RA Perwanida",
+          "KB Aisyiyah Kejambon",
+          "KB Ananda Mandiri",
+          "KB Nurullah",
+          "Pos PAUD Al Maemunah",
+          "Pos PAUD Sekar Kamboja",
+          "TK Aisyiyah Bustanul Athfal III",
+          "TK Aisyiyah Bustanul Athfal V",
+          "TK Aisyiyah Bustanul Athfal XI",
+          "TK Cendrawasih",
+          "TK Masyithoh II",
+          "TK Masyithoh IV",
+          "TK Permata Ibu",
+          "TK Pertiwi 25.13 Kejambon",
+          "TPA Aisyiyah Kejambon",
+          "TPA Ananda Mandiri"
+        ]
       },
-      Panggung: {
-        nama: "Panggung",
-        posyandu: [
+      "Panggung": {
+        "nama": "Panggung",
+        "posyandu": [
           "Posyandu Mawar 1",
           "Posyandu Mawar 2",
           "Posyandu Melati Panggung",
+          "Posyandu Teratai Putih"
         ],
-        paud: [
-          "RA Sakila Kerti Panggung",
-          "TK Pertiwi Panggung",
-          "KB Cahaya Bintang Panggung",
+        "paud": [
+          "RA Sakila Kerti",
+          "RA Syuhada",
+          "RA Syiarul Islam",
+          "RA Usamah",
+          "KB Aisyiyah Anak Sholeh",
+          "KB Amalia",
+          "KB Bina Anak Sholeh (BIAS)",
+          "KB Ihsaniyah 3",
+          "KB Prima Universal",
+          "KB Sakila Kerti",
+          "KB Syi'arul Islam",
+          "KB Syuhada",
+          "KB Sekar Melati",
+          "KBI Usamah",
+          "PAUD TPQ Nurul Huda",
+          "PKBM Citra Mandiri",
+          "PKBM Sakila Kerti",
+          "Pos PAUD Anyelir",
+          "Pos PAUD Nusa Indah",
+          "Pos PAUD Seruni Panggung",
+          "TK Aisyiyah BA IX",
+          "TK Aisyiyah Bustanul Athfal IV",
+          "TK Aisyiyah Bustanul Athfal VI",
+          "TK Aisyiyah Bustanul Athfal XII",
+          "TK Ihsaniyah III",
+          "TK Islam Ash Sholihin",
+          "TK Kartika III-28",
+          "TK Masyithoh VI",
+          "TK Negeri Pembina Tegal Timur",
+          "TK Pertiwi 25.6 Panggung",
+          "TK PGRI",
+          "TK Syiarul Islam",
+          "TPA Usamah"
+        ]
+      },
+      "Slerok": {
+        "nama": "Slerok",
+        "posyandu": [
+          "Posyandu Kenanga 1",
+          "Posyandu Kenanga 2",
+          "Posyandu Nusa Indah"
         ],
+        "paud": [
+          "RA Al Hasaniyah",
+          "RA Istiqomah",
+          "RA Miftahussalam",
+          "KB Darul Kifaah",
+          "KB Istiqomah",
+          "KB Nurunnisa",
+          "KB Permata Hati",
+          "KB Riyaadul Jannah",
+          "KB Transisi Anilo",
+          "KB Tarbiyatul Khasanah",
+          "PAUD TPQ Ath Thohiriyah",
+          "PKBM Sarana Maju",
+          "PKBM Transisi Anilo",
+          "Pos PAUD Kartini RW. VI",
+          "Pos PAUD Sumbodro",
+          "Pos PAUD Werkudoro",
+          "TK Masyithoh VIII",
+          "TK Nurunnisa",
+          "TK Pertiwi 25.3 Slerok"
+        ]
       },
-      Slerok: {
-        nama: "Slerok",
-        posyandu: ["Posyandu Kenanga 1", "Posyandu Kenanga 2", "Posyandu Nusa Indah"],
-        paud: ["PAUD Mutiara Hati Slerok", "TK Al-Irsyad Slerok"],
+      "Mintaragen": {
+        "nama": "Mintaragen",
+        "posyandu": [
+          "Posyandu Teratai 1",
+          "Posyandu Teratai 2",
+          "Posyandu Bougenville"
+        ],
+        "paud": [
+          "RA Usamah 2",
+          "KB Ihsaniyah 1",
+          "Pos PAUD Kenanga Mintaragen",
+          "TK Aisyiyah Bustanul Athfal VII",
+          "TK Al Hidayah 1",
+          "TK Ihsaniyah 1"
+        ]
       },
-      Mintaragen: {
-        nama: "Mintaragen",
-        posyandu: ["Posyandu Teratai 1", "Posyandu Teratai 2", "Posyandu Bougenville"],
-        paud: ["PAUD Kasih Ibu Mintaragen", "TK Kemala Bhayangkari Mintaragen"],
-      },
-      Mangkukusuman: {
-        nama: "Mangkukusuman",
-        posyandu: ["Posyandu Dahlia 1", "Posyandu Dahlia 2"],
-        paud: ["TK Kristen Mangkukusuman", "PAUD Ceria Mangkukusuman"],
-      },
-    },
+      "Mangkukusuman": {
+        "nama": "Mangkukusuman",
+        "posyandu": [
+          "Posyandu Dahlia 1",
+          "Posyandu Dahlia 2"
+        ],
+        "paud": [
+          "PKBM Star of Tomorrow",
+          "Pos PAUD Cermai",
+          "TK Aisyiyah Bustanul Athfal I",
+          "TK Masyithoh III"
+        ]
+      }
+    }
   },
   "Tegal Barat": {
-    nama: "Tegal Barat",
-    kelurahan: {
-      Kraton: {
-        nama: "Kraton",
-        posyandu: ["Posyandu Anggrek 1", "Posyandu Anggrek 2", "Posyandu Cempaka"],
-        paud: ["TK Pembina Kraton", "PAUD Harapan Bangsa Kraton"],
+    "nama": "Tegal Barat",
+    "kelurahan": {
+      "Kraton": {
+        "nama": "Kraton",
+        "posyandu": [
+          "Posyandu Anggrek 1",
+          "Posyandu Anggrek 2",
+          "Posyandu Cempaka"
+        ],
+        "paud": [
+          "KB Elkana",
+          "KB Pelita Harapan Bangsa",
+          "KB Pius",
+          "KB Aisyiyah Tegal Barat",
+          "Pos PAUD Dewi Sartika Kraton",
+          "Pos PAUD Kartini",
+          "Pos PAUD Kenanga Kraton",
+          "TK Aisyiyah Bustanul Athfal VIII",
+          "TK Al Khairiyyah",
+          "TK Assyifa",
+          "TK Elkana",
+          "TK Little Star",
+          "TK Pertiwi 25.5 Kraton",
+          "TK Pius",
+          "UPTD SPNF Sanggar Kegiatan Belajar Kota Tegal"
+        ]
       },
-      Tegalsari: {
-        nama: "Tegalsari",
-        posyandu: ["Posyandu Sedap Malam 1", "Posyandu Sedap Malam 2"],
-        paud: ["PAUD Bahari Tegalsari", "TK Pertiwi Tegalsari"],
+      "Tegalsari": {
+        "nama": "Tegalsari",
+        "posyandu": [
+          "Posyandu Sedap Malam 1",
+          "Posyandu Sedap Malam 2"
+        ],
+        "paud": [
+          "KB Insan Mandiri",
+          "KB Kalimasada",
+          "KB Little Star",
+          "KB Tunas Hidup Harapan Kita",
+          "PKBM Maju Bersama",
+          "Pos PAUD Bougenville Tegalsari",
+          "Pos PAUD Mawar Merah",
+          "Pos PAUD Melati Sari",
+          "Pos PAUD Sekar Melati",
+          "TK Persatuan Ummat Islam (PUI) Cabang Tegal",
+          "TK Pertiwi 25.4 Tegalsari",
+          "TK Shining Little Star",
+          "TK Tunas Hidup Harapan Kita",
+          "TK Tut Wuri"
+        ]
       },
-      Kemandungan: {
-        nama: "Kemandungan",
-        posyandu: ["Posyandu Melati Kemandungan", "Posyandu Wijaya Kusuma"],
-        paud: ["PAUD Al-Falah Kemandungan"],
+      "Kemandungan": {
+        "nama": "Kemandungan",
+        "posyandu": [
+          "Posyandu Melati Kemandungan",
+          "Posyandu Wijaya Kusuma"
+        ],
+        "paud": [
+          "KB Bina Anak Sholeh (BIAS)",
+          "KB Global Inbyra School",
+          "KB Mutiara Shahabat",
+          "Pos PAUD Kenanga Kemandungan",
+          "TK Global Inbyra School",
+          "TK Pertiwi 25.2 Kemandungan"
+        ]
       },
-      Pekauman: {
-        nama: "Pekauman",
-        posyandu: ["Posyandu Flamboyan 1", "Posyandu Flamboyan 2"],
-        paud: ["TK Aisyiyah Pekauman"],
+      "Pekauman": {
+        "nama": "Pekauman",
+        "posyandu": [
+          "Posyandu Flamboyan 1",
+          "Posyandu Flamboyan 2"
+        ],
+        "paud": [
+          "RA At Taqwa",
+          "KB Al-Irsyad",
+          "KB At-Taqwa",
+          "KB Azzurofah",
+          "KB Elfath Kids",
+          "KB Homeschooling ABC D",
+          "KB Kiddy Care",
+          "PKBM Bina Harapan",
+          "PKBM Budi Luhur",
+          "PKBM Mutiara Shahabat",
+          "Pos PAUD Delima",
+          "TK Al-Irsyad Al-Islamiyah",
+          "TK Bagya Wacana",
+          "TK Hang Tuah 16",
+          "TK Islam Azzurofah",
+          "TK Kiddy Care",
+          "TK Negeri Pembina Kota Tegal",
+          "TK Pertiwi 25.7 Pekauman"
+        ]
       },
-      Muarareja: {
-        nama: "Muarareja",
-        posyandu: ["Posyandu Pesisir 1", "Posyandu Pesisir 2"],
-        paud: ["PAUD Bintang Laut Muarareja"],
+      "Muarareja": {
+        "nama": "Muarareja",
+        "posyandu": [
+          "Posyandu Pesisir 1",
+          "Posyandu Pesisir 2"
+        ],
+        "paud": [
+          "PAUD TPQ Plus Insan Kamil",
+          "Pos PAUD Mawar",
+          "TK Nurul Huda"
+        ]
       },
       "Debong Lor": {
-        nama: "Debong Lor",
-        posyandu: ["Posyandu Asoka 1", "Posyandu Asoka 2"],
-        paud: ["PAUD Tunas Harapan Debong Lor"],
-      },
-    },
-  },
-  "Tegal Selatan": {
-    nama: "Tegal Selatan",
-    kelurahan: {
-      Bandung: {
-        nama: "Bandung",
-        posyandu: ["Posyandu Melati Bandung", "Posyandu Mawar Bandung"],
-        paud: ["PAUD Melati Bandung", "TK Pertiwi Bandung"],
-      },
-      "Debong Kidul": {
-        nama: "Debong Kidul",
-        posyandu: ["Posyandu Kenanga Debong Kidul"],
-        paud: ["PAUD Permata Hati Debong Kidul"],
-      },
-      "Debong Kulon": {
-        nama: "Debong Kulon",
-        posyandu: ["Posyandu Teratai Debong Kulon"],
-        paud: ["PAUD Tunas Bangsa Debong Kulon"],
-      },
-      "Debong Tengah": {
-        nama: "Debong Tengah",
-        posyandu: ["Posyandu Cempaka 1", "Posyandu Cempaka 2"],
-        paud: ["TK Al-Ihsan Debong Tengah", "PAUD Pelangi"],
-      },
-      "Kalinyamat Kulon": {
-        nama: "Kalinyamat Kulon",
-        posyandu: ["Posyandu Anggrek Kalinyamat Kulon"],
-        paud: ["PAUD Bina Insan Kalinyamat Kulon"],
-      },
-      "Kalinyamat Wetan": {
-        nama: "Kalinyamat Wetan",
-        posyandu: ["Posyandu Kamboja Kalinyamat Wetan"],
-        paud: ["TK Pertiwi Kalinyamat Wetan"],
-      },
-      Randugunting: {
-        nama: "Randugunting",
-        posyandu: ["Posyandu Flamboyan 1", "Posyandu Flamboyan 2", "Posyandu Dahlia"],
-        paud: ["PAUD Insan Kamil Randugunting", "TK Trisula Randugunting"],
-      },
-      Tunon: {
-        nama: "Tunon",
-        posyandu: ["Posyandu Asoka Tunon"],
-        paud: ["PAUD Al-Hidayah Tunon"],
-      },
-    },
-  },
-  Margadana: {
-    nama: "Margadana",
-    kelurahan: {
-      Margadana: {
-        nama: "Margadana",
-        posyandu: ["Posyandu Melati Margadana 1", "Posyandu Melati Margadana 2"],
-        paud: ["TK Pembina Margadana", "PAUD Kasih Ibu Margadana"],
-      },
-      Cabawan: {
-        nama: "Cabawan",
-        posyandu: ["Posyandu Kamboja Cabawan"],
-        paud: ["PAUD Tunas Harapan Cabawan"],
-      },
-      Kaligangsa: {
-        nama: "Kaligangsa",
-        posyandu: ["Posyandu Mawar Kaligangsa 1", "Posyandu Mawar Kaligangsa 2"],
-        paud: ["PAUD An-Nur Kaligangsa", "TK Aisyiyah Kaligangsa"],
-      },
-      Krandon: {
-        nama: "Krandon",
-        posyandu: ["Posyandu Kenanga Krandon"],
-        paud: ["PAUD Bina Mandiri Krandon"],
+        "nama": "Debong Lor",
+        "posyandu": [
+          "Posyandu Asoka 1",
+          "Posyandu Asoka 2"
+        ],
+        "paud": [
+          "Pos PAUD Seruni Debong Lor"
+        ]
       },
       "Pesurungan Kidul": {
-        nama: "Pesurungan Kidul",
-        posyandu: ["Posyandu Teratai Pesurungan Kidul"],
-        paud: ["PAUD Permata Bunda Pesurungan Kidul"],
+        "nama": "Pesurungan Kidul",
+        "posyandu": [
+          "Posyandu Teratai Pesurungan Kidul"
+        ],
+        "paud": [
+          "KB Islam Al Azhar 66 Kota Tegal",
+          "KB Mekar",
+          "KB Sofa Marwah",
+          "PKBM Mekar",
+          "Pos PAUD Melati Pesurungan Kidul",
+          "TK Islam Al Azhar 66 Kota Tegal",
+          "TK Pertiwi 25.8 Pesurungan Kidul"
+        ]
+      }
+    }
+  },
+  "Tegal Selatan": {
+    "nama": "Tegal Selatan",
+    "kelurahan": {
+      "Bandung": {
+        "nama": "Bandung",
+        "posyandu": [
+          "Posyandu Melati Bandung",
+          "Posyandu Mawar Bandung"
+        ],
+        "paud": [
+          "Pos PAUD Sejahtera",
+          "TK Aisyiyah Bustanul Athfal XIII",
+          "TK Pertiwi 25.9 Bandung"
+        ]
+      },
+      "Debong Kidul": {
+        "nama": "Debong Kidul",
+        "posyandu": [
+          "Posyandu Kenanga Debong Kidul"
+        ],
+        "paud": [
+          "KB Debong Kidul",
+          "PKBM Arum Indah",
+          "Pos PAUD Mekar Sari"
+        ]
+      },
+      "Debong Kulon": {
+        "nama": "Debong Kulon",
+        "posyandu": [
+          "Posyandu Teratai Debong Kulon"
+        ],
+        "paud": [
+          "Pos PAUD Dewi Sartika Debong Kulon",
+          "TK Darunnajah"
+        ]
+      },
+      "Debong Tengah": {
+        "nama": "Debong Tengah",
+        "posyandu": [
+          "Posyandu Cempaka 1",
+          "Posyandu Cempaka 2"
+        ],
+        "paud": [
+          "KB Aisyiyah Baitul Karim",
+          "KB Qurrota A'yun",
+          "PAUD TPQ Al-Mukhlishin",
+          "Pos PAUD Bianglala",
+          "TK Al Khidmah",
+          "TK Baiturrokhman",
+          "TK Kemala Bhayangkari 25",
+          "TK Pertiwi 25.10 Debong Tengah"
+        ]
+      },
+      "Kalinyamat Kulon": {
+        "nama": "Kalinyamat Kulon",
+        "posyandu": [
+          "Posyandu Anggrek Kalinyamat Kulon"
+        ],
+        "paud": [
+          "PAUD TPQ Al-Hikmah",
+          "Pos PAUD Melati Kalinyamat Kulon",
+          "TK Pertiwi 25.12 Kalinyamat Kulon"
+        ]
+      },
+      "Kalinyamat Wetan": {
+        "nama": "Kalinyamat Wetan",
+        "posyandu": [
+          "Posyandu Kamboja Kalinyamat Wetan"
+        ],
+        "paud": [
+          "KB Jaya Lestari",
+          "Pos PAUD Balita Jaya",
+          "TK Al Quran Al Haromain"
+        ]
+      },
+      "Keturen": {
+        "nama": "Keturen",
+        "posyandu": [
+          "Posyandu Melati Keturen"
+        ],
+        "paud": [
+          "KB Sekar Kemuning",
+          "TK Negeri Pembina Tegal Selatan"
+        ]
+      },
+      "Randugunting": {
+        "nama": "Randugunting",
+        "posyandu": [
+          "Posyandu Flamboyan 1",
+          "Posyandu Flamboyan 2",
+          "Posyandu Dahlia"
+        ],
+        "paud": [
+          "RA Hidayatul Mubtadiien",
+          "RA BIAS Assalam",
+          "KB Bias Assalam",
+          "KB Hidayatul Mubtadi-ien",
+          "KB Pelita Hati",
+          "KB Primagama Islami",
+          "KB Raudlotul Jannah",
+          "KB Tunas Harapan Bangsa",
+          "Pos PAUD Tunas Harapan Randugunting",
+          "SPS PAUD TPQ Tahfidz Cahaya Quran",
+          "TK Aisyiyah Bustanul Athfal II",
+          "TK Al Hidayah II",
+          "TK Masyithoh 1",
+          "TK Nurus Sunnah",
+          "TK Pelita Hati",
+          "TK Pertiwi 25.1 Randugunting",
+          "TK Primagama Islami",
+          "TPA Bias Assalam"
+        ]
+      },
+      "Tunon": {
+        "nama": "Tunon",
+        "posyandu": [
+          "Posyandu Asoka Tunon"
+        ],
+        "paud": [
+          "RA Baitush Shobirin",
+          "Pos PAUD Tunas Mutiara",
+          "TK Masyithoh V"
+        ]
+      }
+    }
+  },
+  "Margadana": {
+    "nama": "Margadana",
+    "kelurahan": {
+      "Margadana": {
+        "nama": "Margadana",
+        "posyandu": [
+          "Posyandu Melati Margadana 1",
+          "Posyandu Melati Margadana 2"
+        ],
+        "paud": [
+          "RA Al Furqon",
+          "KB Minat",
+          "KB Pelita Bangsa",
+          "KB Rumah Bintang",
+          "PAUD TPQ Al-Munawwaroh",
+          "Pos PAUD Anggrek Bulan",
+          "Pos PAUD Bougenville Margadana",
+          "Pos PAUD Kesambi Sari",
+          "TK Negeri Pembina Kecamatan Margadana"
+        ]
+      },
+      "Cabawan": {
+        "nama": "Cabawan",
+        "posyandu": [
+          "Posyandu Kamboja Cabawan"
+        ],
+        "paud": [
+          "PAUD TPQ At Taqwa",
+          "Pos PAUD Tunas Ceria"
+        ]
+      },
+      "Kaligangsa": {
+        "nama": "Kaligangsa",
+        "posyandu": [
+          "Posyandu Mawar Kaligangsa 1",
+          "Posyandu Mawar Kaligangsa 2"
+        ],
+        "paud": [
+          "RA Al-Izzah",
+          "RA Miftahun Najah",
+          "KB Al-Izzah",
+          "PAUD TPQ Al-Izzah",
+          "Pos PAUD Anggrek",
+          "Pos PAUD Sakura"
+        ]
+      },
+      "Krandon": {
+        "nama": "Krandon",
+        "posyandu": [
+          "Posyandu Kenanga Krandon"
+        ],
+        "paud": [
+          "KB Telaga Ilmu",
+          "Pos PAUD Tunas Bangsa",
+          "Pos PAUD Tunas Harapan Krandon",
+          "Pos PAUD Tunas Muda"
+        ]
+      },
+      "Pesurungan Kidul": {
+        "nama": "Pesurungan Kidul",
+        "posyandu": [
+          "Posyandu Teratai Pesurungan Kidul"
+        ],
+        "paud": []
       },
       "Pesurungan Lor": {
-        nama: "Pesurungan Lor",
-        posyandu: ["Posyandu Dahlia Pesurungan Lor"],
-        paud: ["PAUD Bintang Kecil Pesurungan Lor"],
+        "nama": "Pesurungan Lor",
+        "posyandu": [
+          "Posyandu Dahlia Pesurungan Lor"
+        ],
+        "paud": [
+          "RA Baitul Iman",
+          "Pos PAUD Insan Cendikia",
+          "TK Mubarokah"
+        ]
       },
-      Sumurpanggang: {
-        nama: "Sumurpanggang",
-        posyandu: ["Posyandu Cempaka 1 Sumurpanggang", "Posyandu Cempaka 2"],
-        paud: ["TK Pertiwi Sumurpanggang", "PAUD Tunas Bangsa"],
-      },
-    },
-  },
+      "Sumurpanggang": {
+        "nama": "Sumurpanggang",
+        "posyandu": [
+          "Posyandu Cempaka 1 Sumurpanggang",
+          "Posyandu Cempaka 2"
+        ],
+        "paud": [
+          "KB Insan Cerdas",
+          "PAUD TPQ Fahmal Qur'an",
+          "PKBM Ki Hajar Dewantara",
+          "Pos PAUD Seruni Sumurpanggang",
+          "TK Aisyiyah Bustanul Athfal X",
+          "TK Masyithoh VII",
+          "TK Tarbiyatul Islamiyah"
+        ]
+      }
+    }
+  }
 };
 
 export const DAFTAR_KECAMATAN_TEGAL = Object.keys(KOTA_TEGAL_DATA);
@@ -254,7 +575,7 @@ export function generateWargaKomunitasItem(
 // Master Generator untuk mencakup seluruh Kelurahan & Lembaga di Kota Tegal
 function buildMasterKomunitasSeed(): MasterKomunitasSeedItem[] {
   const list: MasterKomunitasSeedItem[] = [
-    // --- SPECIAL PRE-CONFIGURED SEED ITEMS ---
+    // --- SPECIAL PRE-CONFIGURED SEED ITEMS (Warga Kita) ---
     {
       id: "kom-warga-1",
       nama: "Warga: RT 03, RW 02, Kejambon, Tegal Timur, Kota Tegal",
@@ -295,7 +616,7 @@ function buildMasterKomunitasSeed(): MasterKomunitasSeedItem[] {
       deskripsi:
         "Komunitas warga RT 02 RW 01 Kraton peduli tumbuh kembang balita dan pencegahan stunting berbasis keluarga.",
       kontak: "0857-4422-3311 (Kader RW)",
-      jadwal: "Senam Lansia & Balita Sehat Setiap Sabtu",
+      jadwal: "Senin Lansia & Balita Sehat Setiap Sabtu",
     },
     {
       id: "kom-warga-4",
@@ -311,131 +632,25 @@ function buildMasterKomunitasSeed(): MasterKomunitasSeedItem[] {
       kontak: "0877-1122-3344",
       jadwal: "Rembug Warga Bulanan",
     },
-    {
-      id: "kom-posyandu-1",
-      nama: "Posyandu Kamboja 1, Kejambon, Tegal Timur, Kota Tegal",
-      jenis: "posyandu",
-      kecamatan: "Tegal Timur",
-      kelurahan: "Kejambon",
-      rt: "03",
-      rw: "02",
-      lokasi: "Balai Warga RW 02, Kejambon, Tegal Timur, Kota Tegal",
-      deskripsi:
-        "Pos Pelayanan Terpadu Kamboja 1 melayani penimbangan balita, pemantauan DDKS, imunisasi, dan penyuluhan gizi ibu hamil.",
-      kontak: "0812-7788-9900 (Ibu Siti - Ketua Kader)",
-      jadwal: "Hari Rabu Minggu ke-2 Setiap Bulan, Pukul 08.00 - 11.30 WIB",
-    },
-    {
-      id: "kom-posyandu-2",
-      nama: "Posyandu Mawar 2, Panggung, Tegal Timur, Kota Tegal",
-      jenis: "posyandu",
-      kecamatan: "Tegal Timur",
-      kelurahan: "Panggung",
-      rt: "05",
-      rw: "04",
-      lokasi: "Posyandu Terintegrasi RW 04, Panggung, Tegal Timur, Kota Tegal",
-      deskripsi:
-        "Posyandu Mawar 2 melayani pemantauan tumbuh kembang anak, antropometri digital, pemberian vitamin A, dan PMT gizi lokal.",
-      kontak: "0815-6677-8899 (Ibu Rahayu - Bidan Kelurahan)",
-      jadwal: "Hari Selasa Minggu ke-1 Setiap Bulan, Pukul 08.30 - 12.00 WIB",
-    },
-    {
-      id: "kom-posyandu-3",
-      nama: "Posyandu Kenanga 1, Slerok, Tegal Timur, Kota Tegal",
-      jenis: "posyandu",
-      kecamatan: "Tegal Timur",
-      kelurahan: "Slerok",
-      rt: "02",
-      rw: "03",
-      lokasi: "Gedung Posyandu RW 03, Slerok, Tegal Timur, Kota Tegal",
-      deskripsi:
-        "Pelayanan Posyandu Siklus Hidup dari ibu hamil, bayi/balita, remaja, hingga lansia.",
-      kontak: "0821-3344-5566",
-      jadwal: "Hari Kamis Minggu ke-2 Setiap Bulan",
-    },
-    {
-      id: "kom-posyandu-4",
-      nama: "Posyandu Anggrek 1, Kraton, Tegal Barat, Kota Tegal",
-      jenis: "posyandu",
-      kecamatan: "Tegal Barat",
-      kelurahan: "Kraton",
-      rt: "01",
-      rw: "01",
-      lokasi: "Balai Pertemuan RW 01, Kraton, Tegal Barat, Kota Tegal",
-      deskripsi:
-        "Posyandu binaan Puskesmas Tegal Barat dengan fokus pencegahan stunting dan edukasi MPASI sehat.",
-      kontak: "0813-9988-7766",
-      jadwal: "Hari Sabtu Minggu Pertama Pukul 08.00 WIB",
-    },
-    {
-      id: "kom-paud-1",
-      nama: "Satuan PAUD RA Sakila Kerti, Panggung, Tegal Timur, Kota Tegal",
-      jenis: "satuan_paud",
-      kecamatan: "Tegal Timur",
-      kelurahan: "Panggung",
-      rt: "04",
-      rw: "04",
-      lokasi: "Kompleks Terminal Tegal & Pesisir, Panggung, Tegal Timur, Kota Tegal",
-      deskripsi:
-        "Satuan Pendidikan Anak Usia Dini inklusif dan ramah anak yang mendidik tunas bangsa dengan kurikulum holistik integratif dan pendidikan karakter.",
-      kontak: "0812-3344-7788 (Dr. Yusqon - Pengelola)",
-      jadwal: "Senin s/d Jumat, Pukul 07.30 - 11.00 WIB",
-    },
-    {
-      id: "kom-paud-2",
-      nama: "Satuan PAUD KB / TK Pembina, Kejambon, Tegal Timur, Kota Tegal",
-      jenis: "satuan_paud",
-      kecamatan: "Tegal Timur",
-      kelurahan: "Kejambon",
-      rt: "02",
-      rw: "02",
-      lokasi: "Jl. Pendidikan No. 5, Kejambon, Tegal Timur, Kota Tegal",
-      deskripsi:
-        "Lembaga PAUD percontohan Kota Tegal dengan fasilitas lengkap bermain motorik, pembelajaran saintifik, dan pengawasan nutrisi anak.",
-      kontak: "0813-5566-7788 (Kepala Sekolah)",
-      jadwal: "Senin s/d Sabtu, Pukul 07.30 - 10.30 WIB",
-    },
-    {
-      id: "kom-paud-3",
-      nama: "Satuan PAUD Mutiara Hati, Slerok, Tegal Timur, Kota Tegal",
-      jenis: "satuan_paud",
-      kecamatan: "Tegal Timur",
-      kelurahan: "Slerok",
-      rt: "03",
-      rw: "01",
-      lokasi: "Jl. Slerok Asri No. 18, Slerok, Tegal Timur, Kota Tegal",
-      deskripsi:
-        "Kelompok Bermain anak usia 2-6 tahun dengan metode belajar sambil bermain berbasis kecerdasan majemuk.",
-      kontak: "0878-9900-1122",
-      jadwal: "Senin s/d Kamis, Pukul 08.00 - 11.00 WIB",
-    },
-    {
-      id: "kom-paud-4",
-      nama: "Satuan PAUD Kasih Ibu, Margadana, Margadana, Kota Tegal",
-      jenis: "satuan_paud",
-      kecamatan: "Margadana",
-      kelurahan: "Margadana",
-      rt: "02",
-      rw: "03",
-      lokasi: "Jl. Anggrek No. 24, Margadana, Kota Tegal",
-      deskripsi:
-        "PAUD binaan PKK Margadana yang fokus pada stimulasi motorik, bahasa, dan sosial emosional anak usia dini.",
-      kontak: "0856-1122-3344",
-      jadwal: "Senin s/d Jumat, Pukul 08.00 - 10.30 WIB",
-    },
   ];
 
   const existingIds = new Set(list.map((item) => item.id));
 
-  // Loop through all kecamatan and kelurahan in Kota Tegal
+  // Loop through all kecamatan and kelurahan in Kota Tegal untuk Komunitas Warga
   for (const [kecName, kecData] of Object.entries(KOTA_TEGAL_DATA)) {
-    for (const [kelName, kelData] of Object.entries(kecData.kelurahan)) {
+    for (const kelName of Object.keys(kecData.kelurahan)) {
       const kelSlug = slugify(kelName);
       const kecSlug = slugify(kecName);
 
-      // 1. Warga Kita (Generate 2 RT/RW per kelurahan if not exists)
+      // Warga Kita (Generate 2 RT/RW per kelurahan if not exists)
       const warga1Id = `kom-warga-${kecSlug}-${kelSlug}-rt01-rw01`;
-      if (!existingIds.has(warga1Id) && !(kelName === "Kejambon" && kecName === "Tegal Timur") && !(kelName === "Panggung" && kecName === "Tegal Timur") && !(kelName === "Kraton" && kecName === "Tegal Barat") && !(kelName === "Margadana" && kecName === "Margadana")) {
+      if (
+        !existingIds.has(warga1Id) &&
+        !(kelName === "Kejambon" && kecName === "Tegal Timur") &&
+        !(kelName === "Panggung" && kecName === "Tegal Timur") &&
+        !(kelName === "Kraton" && kecName === "Tegal Barat") &&
+        !(kelName === "Margadana" && kecName === "Margadana")
+      ) {
         list.push({
           id: warga1Id,
           nama: `Warga: RT 01, RW 01, ${kelName}, ${kecName}, Kota Tegal`,
@@ -469,69 +684,10 @@ function buildMasterKomunitasSeed(): MasterKomunitasSeedItem[] {
         });
         existingIds.add(warga2Id);
       }
-
-      // 2. Posyandu (Generate all posyandu in this kelurahan)
-      if (Array.isArray(kelData.posyandu)) {
-        kelData.posyandu.forEach((posName, idx) => {
-          const posSlug = slugify(posName);
-          const posId = `kom-posyandu-${kecSlug}-${kelSlug}-${posSlug}`;
-          
-          // Cek jika sudah terdaftar di seed statis
-          const isAlreadyInSeed = list.some(
-            (item) => item.jenis === "posyandu" && item.kelurahan === kelName && item.nama.includes(posName)
-          );
-
-          if (!isAlreadyInSeed && !existingIds.has(posId)) {
-            list.push({
-              id: posId,
-              nama: `${posName}, ${kelName}, ${kecName}, Kota Tegal`,
-              jenis: "posyandu",
-              kecamatan: kecName,
-              kelurahan: kelName,
-              rt: `0${(idx % 4) + 1}`,
-              rw: `0${(idx % 3) + 1}`,
-              lokasi: `Posyandu / Balai RW 0${(idx % 3) + 1}, ${kelName}, ${kecName}, Kota Tegal`,
-              deskripsi: `Layanan Posyandu ${posName} terpadu: penimbangan berat badan, tinggi badan, imunisasi, penyuluhan DDKS, dan PMT balita serta ibu hamil.`,
-              kontak: "0813-2233-4455 (Kader Posyandu)",
-              jadwal: `Setiap Hari Rabu Minggu ke-${(idx % 4) + 1} Pukul 08.30 - 11.30 WIB`,
-            });
-            existingIds.add(posId);
-          }
-        });
-      }
-
-      // 3. Satuan PAUD (Generate all paud in this kelurahan)
-      if (Array.isArray(kelData.paud)) {
-        kelData.paud.forEach((paudName, idx) => {
-          const paudSlug = slugify(paudName);
-          const paudId = `kom-paud-${kecSlug}-${kelSlug}-${paudSlug}`;
-
-          const isAlreadyInSeed = list.some(
-            (item) => item.jenis === "satuan_paud" && item.kelurahan === kelName && item.nama.includes(paudName)
-          );
-
-          if (!isAlreadyInSeed && !existingIds.has(paudId)) {
-            list.push({
-              id: paudId,
-              nama: `Satuan PAUD ${paudName}, ${kelName}, ${kecName}, Kota Tegal`,
-              jenis: "satuan_paud",
-              kecamatan: kecName,
-              kelurahan: kelName,
-              rt: `0${(idx % 3) + 1}`,
-              rw: `0${(idx % 3) + 1}`,
-              lokasi: `Gedung ${paudName}, ${kelName}, ${kecName}, Kota Tegal`,
-              deskripsi: `Lembaga Pendidikan Anak Usia Dini (${paudName}) berfokus pada stimulasi tumbuh kembang fisik-motorik, kognitif, moral, dan kemandirian anak.`,
-              kontak: "0815-4455-6677 (Pengelola PAUD)",
-              jadwal: "Senin s/d Jumat, Pukul 07.30 - 10.30 WIB",
-            });
-            existingIds.add(paudId);
-          }
-        });
-      }
     }
   }
 
-  // Masukkan seluruh 230+ Posyandu resmi se-Kota Tegal
+  // Masukkan seluruh 236 Posyandu resmi se-Kota Tegal dari SEED_POSYANDU_TEGAL
   if (Array.isArray(SEED_POSYANDU_TEGAL)) {
     for (const pos of SEED_POSYANDU_TEGAL) {
       if (!existingIds.has(pos.id)) {
@@ -541,7 +697,7 @@ function buildMasterKomunitasSeed(): MasterKomunitasSeedItem[] {
     }
   }
 
-  // Masukkan seluruh Satuan PAUD & PKBM resmi se-Kota Tegal
+  // Masukkan seluruh Satuan PAUD & PKBM resmi se-Kota Tegal dari SEED_PAUD_PKBM_TEGAL
   if (Array.isArray(SEED_PAUD_PKBM_TEGAL)) {
     for (const paud of SEED_PAUD_PKBM_TEGAL) {
       if (!existingIds.has(paud.id)) {

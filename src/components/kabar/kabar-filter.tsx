@@ -38,19 +38,19 @@ export function KabarFilter({
 
   return (
     <div className="space-y-3">
-      {/* 1. Sorting Tabs (Terbaru vs Terpopuler) */}
-      <div className="flex rounded-md bg-muted/40 p-1 border border-border">
+      {/* 1. Sorting Tabs (Terbaru vs Terpopuler) - Coursera Mobile Touch Pills */}
+      <div className="flex rounded-2xl bg-white p-1.5 border-2 border-slate-200 gap-2 shadow-xs">
         <button
           onClick={() => updateFilters("sort", "terbaru")}
           disabled={isPending}
           className={cn(
-            "flex flex-1 h-8 items-center justify-center gap-1.5 rounded text-xs font-mono font-medium transition-colors",
+            "flex flex-1 min-h-[44px] h-11 items-center justify-center gap-2 rounded-xl text-sm font-bold transition-all cursor-pointer",
             currentSort === "terbaru"
-              ? "bg-card text-foreground border border-border shadow-xs"
-              : "text-muted-foreground hover:text-foreground"
+              ? "bg-blue-700 text-white shadow-xs"
+              : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
           )}
         >
-          <Clock className="h-3.5 w-3.5 text-emerald-400" />
+          <Clock className="h-4 w-4" />
           <span>TERBARU</span>
         </button>
 
@@ -58,32 +58,32 @@ export function KabarFilter({
           onClick={() => updateFilters("sort", "terpopuler")}
           disabled={isPending}
           className={cn(
-            "flex flex-1 h-8 items-center justify-center gap-1.5 rounded text-xs font-mono font-medium transition-colors",
+            "flex flex-1 min-h-[44px] h-11 items-center justify-center gap-2 rounded-xl text-sm font-bold transition-all cursor-pointer",
             currentSort === "terpopuler"
-              ? "bg-card text-foreground border border-border shadow-xs"
-              : "text-muted-foreground hover:text-foreground"
+              ? "bg-amber-600 text-white shadow-xs"
+              : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
           )}
         >
-          <Flame className="h-3.5 w-3.5 text-amber-400" />
+          <Flame className="h-4 w-4" />
           <span>TERPOPULER</span>
         </button>
       </div>
 
-      {/* 2. Visibility Horizontal Buttons */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar font-mono text-xs">
+      {/* 2. Visibility Horizontal Buttons (Min 44px height tap targets) */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
         {/* Semua */}
         <button
           onClick={() => updateFilters("visibility", "semua")}
           disabled={isPending}
           className={cn(
-            "inline-flex h-7 items-center gap-1.5 rounded-md px-2.5 text-xs whitespace-nowrap transition-colors cursor-pointer",
+            "inline-flex min-h-[44px] h-11 items-center gap-2 rounded-xl px-4 text-sm font-bold whitespace-nowrap transition-all border-2 cursor-pointer",
             currentVisibility === "semua"
-              ? "bg-blue-600 text-white font-semibold shadow-xs"
-              : "border border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground"
+              ? "bg-blue-50 border-blue-600 text-blue-950 shadow-xs ring-2 ring-blue-600/20"
+              : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300"
           )}
         >
-          <Globe className="h-3 w-3" />
-          <span>SEMUA</span>
+          <Globe className="h-4 w-4 text-blue-700" />
+          <span>Semua Kabar</span>
         </button>
 
         {/* Publik */}
@@ -91,14 +91,14 @@ export function KabarFilter({
           onClick={() => updateFilters("visibility", "publik")}
           disabled={isPending}
           className={cn(
-            "inline-flex h-7 items-center gap-1.5 rounded-md px-2.5 text-xs whitespace-nowrap transition-colors cursor-pointer",
+            "inline-flex min-h-[44px] h-11 items-center gap-2 rounded-xl px-4 text-sm font-bold whitespace-nowrap transition-all border-2 cursor-pointer",
             currentVisibility === "publik"
-              ? "bg-emerald-600 text-white font-semibold shadow-xs"
-              : "border border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground"
+              ? "bg-blue-50 border-blue-600 text-blue-950 shadow-xs ring-2 ring-blue-600/20"
+              : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300"
           )}
         >
-          <Globe className="h-3 w-3" />
-          <span>PUBLIK</span>
+          <Globe className="h-4 w-4 text-emerald-600" />
+          <span>Publik</span>
         </button>
 
         {/* Teman */}
@@ -106,14 +106,14 @@ export function KabarFilter({
           onClick={() => updateFilters("visibility", "teman")}
           disabled={isPending}
           className={cn(
-            "inline-flex h-7 items-center gap-1.5 rounded-md px-2.5 text-xs whitespace-nowrap transition-colors cursor-pointer",
+            "inline-flex min-h-[44px] h-11 items-center gap-2 rounded-xl px-4 text-sm font-bold whitespace-nowrap transition-all border-2 cursor-pointer",
             currentVisibility === "teman"
-              ? "bg-cyan-600 text-white font-semibold shadow-xs"
-              : "border border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground"
+              ? "bg-blue-50 border-blue-600 text-blue-950 shadow-xs ring-2 ring-blue-600/20"
+              : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300"
           )}
         >
-          <Users className="h-3 w-3" />
-          <span>TEMAN</span>
+          <Users className="h-4 w-4 text-blue-600" />
+          <span>Teman</span>
         </button>
 
         {/* Komunitas */}
@@ -121,14 +121,14 @@ export function KabarFilter({
           onClick={() => updateFilters("visibility", "komunitas")}
           disabled={isPending}
           className={cn(
-            "inline-flex h-7 items-center gap-1.5 rounded-md px-2.5 text-xs whitespace-nowrap transition-colors cursor-pointer",
+            "inline-flex min-h-[44px] h-11 items-center gap-2 rounded-xl px-4 text-sm font-bold whitespace-nowrap transition-all border-2 cursor-pointer",
             currentVisibility === "komunitas"
-              ? "bg-amber-600 text-white font-semibold shadow-xs"
-              : "border border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground"
+              ? "bg-blue-50 border-blue-600 text-blue-950 shadow-xs ring-2 ring-blue-600/20"
+              : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300"
           )}
         >
-          <Building2 className="h-3 w-3" />
-          <span>KOMUNITAS</span>
+          <Building2 className="h-4 w-4 text-amber-600" />
+          <span>Komunitas</span>
         </button>
       </div>
     </div>

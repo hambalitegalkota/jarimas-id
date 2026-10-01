@@ -75,16 +75,6 @@ export default async function KomunitasDetailPage({
           <ArrowLeft className="h-3.5 w-3.5 text-primary" />
           <span>Kembali ke Komunitas</span>
         </Link>
-
-        {isAdminOrKader && (
-          <Link
-            href={`/komunitas/${id}/anggota`}
-            className="inline-flex h-9 items-center gap-1.5 rounded-md bg-primary text-primary-foreground px-3.5 text-xs font-mono font-bold transition-all hover:bg-primary/90 shadow-xs"
-          >
-            <Settings2 className="h-3.5 w-3.5" />
-            <span>KELOLA ANGGOTA</span>
-          </Link>
-        )}
       </div>
 
       {/* Hero Header Card */}

@@ -157,55 +157,55 @@ export function ApprovalList({
       {feedback && (
         <div
           className={cn(
-            "flex items-center gap-3 rounded-md border p-3.5 text-xs font-medium transition-all animate-in fade-in",
+            "flex items-center gap-3 rounded-xl border-2 p-4 text-sm font-bold transition-all animate-in fade-in",
             feedback.type === "success"
-              ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-400 font-mono"
-              : "border-destructive/40 bg-destructive/10 text-destructive font-mono"
+              ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-200"
+              : "border-rose-500 bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-200"
           )}
         >
           {feedback.type === "success" ? (
-            <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-400" />
+            <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-600" />
           ) : (
-            <AlertCircle className="h-4 w-4 shrink-0 text-destructive" />
+            <AlertCircle className="h-5 w-5 shrink-0 text-rose-600" />
           )}
           <span className="flex-1">{feedback.message}</span>
           <button
             onClick={() => setFeedback(null)}
-            className="text-xs font-mono underline opacity-70 hover:opacity-100"
+            className="text-xs font-bold underline cursor-pointer"
           >
-            [Tutup]
+            Tutup
           </button>
         </div>
       )}
 
       {/* Header Section */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-0.5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-1">
         <div className="flex items-center gap-2">
-          <Clock className="h-4 w-4 text-emerald-400" />
-          <h3 className="text-sm font-semibold text-foreground tracking-tight">
+          <Clock className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+          <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
             Daftar Permohonan Peran &amp; Admin
           </h3>
         </div>
-        <span className="cyber-badge font-mono text-[11px] self-start sm:self-auto">
+        <span className="inline-flex items-center gap-1 rounded-full border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/50 px-3 py-1 text-xs font-bold text-blue-700 dark:text-blue-300 self-start sm:self-auto">
           {approvals.length} PERMOHONAN TERTUNDA
         </span>
       </div>
 
       {/* Filter Tabs by Tier Hierarchy */}
       {approvals.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 p-1 rounded-lg border border-border bg-muted/40 text-xs font-mono">
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
           <button
             type="button"
             onClick={() => setActiveTier("semua")}
             className={cn(
-              "px-3 py-1.5 rounded-md transition-all flex items-center gap-1.5",
+              "inline-flex shrink-0 items-center min-h-[44px] rounded-xl px-4 py-2 text-sm font-bold transition-all cursor-pointer gap-2",
               activeTier === "semua"
-                ? "bg-card text-foreground font-bold shadow-xs border border-border"
-                : "text-muted-foreground hover:text-foreground"
+                ? "bg-blue-700 text-white font-bold shadow-xs border-2 border-blue-700"
+                : "bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50"
             )}
           >
             <span>Semua</span>
-            <span className="rounded bg-muted px-1.5 py-0.2 text-[10px]">
+            <span className={cn("rounded-full px-2 py-0.5 text-xs", activeTier === "semua" ? "bg-blue-800 text-white" : "bg-slate-100 dark:bg-slate-800 text-slate-600")}>
               {counts.semua}
             </span>
           </button>
@@ -215,14 +215,14 @@ export function ApprovalList({
               type="button"
               onClick={() => setActiveTier("admin_rt")}
               className={cn(
-                "px-3 py-1.5 rounded-md transition-all flex items-center gap-1.5",
+                "inline-flex shrink-0 items-center min-h-[44px] rounded-xl px-4 py-2 text-sm font-bold transition-all cursor-pointer gap-2",
                 activeTier === "admin_rt"
-                  ? "bg-card text-foreground font-bold shadow-xs border border-border"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "bg-blue-700 text-white font-bold shadow-xs border-2 border-blue-700"
+                  : "bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50"
               )}
             >
               <span>Admin RT</span>
-              <span className="rounded bg-emerald-500/20 text-emerald-400 px-1.5 py-0.2 text-[10px]">
+              <span className={cn("rounded-full px-2 py-0.5 text-xs", activeTier === "admin_rt" ? "bg-blue-800 text-white" : "bg-emerald-50 text-emerald-700")}>
                 {counts.admin_rt}
               </span>
             </button>
@@ -233,14 +233,14 @@ export function ApprovalList({
               type="button"
               onClick={() => setActiveTier("admin_rw")}
               className={cn(
-                "px-3 py-1.5 rounded-md transition-all flex items-center gap-1.5",
+                "inline-flex shrink-0 items-center min-h-[44px] rounded-xl px-4 py-2 text-sm font-bold transition-all cursor-pointer gap-2",
                 activeTier === "admin_rw"
-                  ? "bg-card text-foreground font-bold shadow-xs border border-border"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "bg-blue-700 text-white font-bold shadow-xs border-2 border-blue-700"
+                  : "bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50"
               )}
             >
               <span>Admin RW</span>
-              <span className="rounded bg-cyan-500/20 text-cyan-400 px-1.5 py-0.2 text-[10px]">
+              <span className={cn("rounded-full px-2 py-0.5 text-xs", activeTier === "admin_rw" ? "bg-blue-800 text-white" : "bg-cyan-50 text-cyan-700")}>
                 {counts.admin_rw}
               </span>
             </button>
@@ -251,14 +251,14 @@ export function ApprovalList({
               type="button"
               onClick={() => setActiveTier("admin_kel")}
               className={cn(
-                "px-3 py-1.5 rounded-md transition-all flex items-center gap-1.5",
+                "inline-flex shrink-0 items-center min-h-[44px] rounded-xl px-4 py-2 text-sm font-bold transition-all cursor-pointer gap-2",
                 activeTier === "admin_kel"
-                  ? "bg-card text-foreground font-bold shadow-xs border border-border"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "bg-blue-700 text-white font-bold shadow-xs border-2 border-blue-700"
+                  : "bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50"
               )}
             >
               <span>Admin Kelurahan</span>
-              <span className="rounded bg-amber-500/20 text-amber-400 px-1.5 py-0.2 text-[10px]">
+              <span className={cn("rounded-full px-2 py-0.5 text-xs", activeTier === "admin_kel" ? "bg-blue-800 text-white" : "bg-amber-50 text-amber-700")}>
                 {counts.admin_kel}
               </span>
             </button>
@@ -269,14 +269,14 @@ export function ApprovalList({
               type="button"
               onClick={() => setActiveTier("admin_kec")}
               className={cn(
-                "px-3 py-1.5 rounded-md transition-all flex items-center gap-1.5",
+                "inline-flex shrink-0 items-center min-h-[44px] rounded-xl px-4 py-2 text-sm font-bold transition-all cursor-pointer gap-2",
                 activeTier === "admin_kec"
-                  ? "bg-card text-foreground font-bold shadow-xs border border-border"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "bg-blue-700 text-white font-bold shadow-xs border-2 border-blue-700"
+                  : "bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50"
               )}
             >
               <span>Admin Kecamatan</span>
-              <span className="rounded bg-purple-500/20 text-purple-400 px-1.5 py-0.2 text-[10px]">
+              <span className={cn("rounded-full px-2 py-0.5 text-xs", activeTier === "admin_kec" ? "bg-blue-800 text-white" : "bg-purple-50 text-purple-700")}>
                 {counts.admin_kec}
               </span>
             </button>
@@ -287,14 +287,14 @@ export function ApprovalList({
               type="button"
               onClick={() => setActiveTier("warga")}
               className={cn(
-                "px-3 py-1.5 rounded-md transition-all flex items-center gap-1.5",
+                "inline-flex shrink-0 items-center min-h-[44px] rounded-xl px-4 py-2 text-sm font-bold transition-all cursor-pointer gap-2",
                 activeTier === "warga"
-                  ? "bg-card text-foreground font-bold shadow-xs border border-border"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "bg-blue-700 text-white font-bold shadow-xs border-2 border-blue-700"
+                  : "bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50"
               )}
             >
-              <span>Warga (Penduduk/Pendatang)</span>
-              <span className="rounded bg-muted px-1.5 py-0.2 text-[10px]">
+              <span>Warga</span>
+              <span className={cn("rounded-full px-2 py-0.5 text-xs", activeTier === "warga" ? "bg-blue-800 text-white" : "bg-slate-100 text-slate-700")}>
                 {counts.warga}
               </span>
             </button>
@@ -305,14 +305,14 @@ export function ApprovalList({
               type="button"
               onClick={() => setActiveTier("posyandu_paud")}
               className={cn(
-                "px-3 py-1.5 rounded-md transition-all flex items-center gap-1.5",
+                "inline-flex shrink-0 items-center min-h-[44px] rounded-xl px-4 py-2 text-sm font-bold transition-all cursor-pointer gap-2",
                 activeTier === "posyandu_paud"
-                  ? "bg-card text-foreground font-bold shadow-xs border border-border"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "bg-blue-700 text-white font-bold shadow-xs border-2 border-blue-700"
+                  : "bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50"
               )}
             >
               <span>Posyandu &amp; PAUD</span>
-              <span className="rounded bg-muted px-1.5 py-0.2 text-[10px]">
+              <span className={cn("rounded-full px-2 py-0.5 text-xs", activeTier === "posyandu_paud" ? "bg-blue-800 text-white" : "bg-slate-100 text-slate-700")}>
                 {counts.posyandu_paud}
               </span>
             </button>
@@ -322,19 +322,19 @@ export function ApprovalList({
 
       {/* List / Empty State */}
       {filteredApprovals.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-lg border border-border bg-card/60 p-8 text-center">
-          <div className="flex h-10 w-10 items-center justify-center rounded-md border border-border bg-muted/40 text-muted-foreground mb-3">
-            <Check className="h-5 w-5 text-emerald-400" />
+        <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-8 text-center shadow-xs">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl border-2 border-emerald-200 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 mb-3">
+            <Check className="h-6 w-6" />
           </div>
-          <h4 className="font-semibold text-foreground text-sm">
+          <h4 className="font-bold text-slate-900 dark:text-slate-100 text-base">
             Semua Permohonan Selesai
           </h4>
-          <p className="text-xs text-muted-foreground mt-1 max-w-xs font-mono">
+          <p className="text-sm text-slate-600 dark:text-slate-400 mt-1 max-w-xs leading-relaxed">
             Tidak ada permohonan peran pengurus, kader, atau warga yang pending pada kategori ini.
           </p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-4">
           {filteredApprovals.map((item) => {
             const userName = item.profiles?.nama_lengkap || "Pengguna Tanpa Nama";
             const userEmail = item.profiles?.email || "-";
@@ -351,47 +351,47 @@ export function ApprovalList({
             return (
               <div
                 key={item.id}
-                className="rounded-lg border border-border bg-card p-4 space-y-3 transition-colors hover:border-zinc-700 shadow-xs"
+                className="rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 space-y-4 transition-colors hover:border-blue-500 shadow-xs"
               >
                 {/* Header User, Tier & Role */}
                 <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-                  <div className="flex items-start gap-3">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-border bg-muted/50 text-foreground font-mono text-xs">
-                      <User className="h-4 w-4 text-muted-foreground" />
+                  <div className="flex items-start gap-3.5">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold">
+                      <User className="h-6 w-6 text-slate-500" />
                     </div>
-                    <div className="space-y-0.5">
+                    <div className="space-y-1">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h4 className="font-bold text-sm text-foreground leading-snug">
+                        <h4 className="font-bold text-base text-slate-900 dark:text-slate-100 leading-snug">
                           {userName}
                         </h4>
                         {item.tierLevel && (
                           <span
                             className={cn(
-                              "inline-flex items-center gap-1 rounded px-2 py-0.5 text-[10px] font-mono font-bold uppercase border",
+                              "inline-flex items-center gap-1 rounded-full px-3 py-0.5 text-xs font-bold uppercase border-2",
                               item.tierLevel === "RT" &&
-                                "border-emerald-500/30 bg-emerald-500/10 text-emerald-400",
+                                "border-emerald-500 bg-emerald-50 text-emerald-700",
                               item.tierLevel === "RW" &&
-                                "border-cyan-500/30 bg-cyan-500/10 text-cyan-400",
+                                "border-cyan-500 bg-cyan-50 text-cyan-700",
                               item.tierLevel === "Kelurahan" &&
-                                "border-amber-500/30 bg-amber-500/10 text-amber-400",
+                                "border-amber-500 bg-amber-50 text-amber-700",
                               item.tierLevel === "Kecamatan" &&
-                                "border-purple-500/30 bg-purple-500/10 text-purple-400",
+                                "border-purple-500 bg-purple-50 text-purple-700",
                               (item.tierLevel === "Posyandu" ||
                                 item.tierLevel === "Satuan PAUD") &&
-                                "border-border bg-muted text-foreground"
+                                "border-slate-300 bg-slate-100 text-slate-700"
                             )}
                           >
-                            <Layers className="h-3 w-3" />
+                            <Layers className="h-3.5 w-3.5" />
                             <span>TINGKAT {item.tierLevel}</span>
                           </span>
                         )}
                       </div>
 
-                      <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground font-mono">
+                      <div className="flex flex-wrap items-center gap-3 text-xs text-slate-600 dark:text-slate-400 font-mono">
                         <span>{userEmail}</span>
                         {userPhone && (
-                          <span className="flex items-center gap-1 text-foreground">
-                            <Phone className="h-3 w-3 text-emerald-400" />
+                          <span className="flex items-center gap-1 text-slate-900 dark:text-slate-100 font-bold">
+                            <Phone className="h-3.5 w-3.5 text-emerald-600" />
                             {userPhone}
                           </span>
                         )}
@@ -403,13 +403,13 @@ export function ApprovalList({
                   <div className="flex flex-wrap items-center gap-1.5 shrink-0 self-start">
                     <span
                       className={cn(
-                        "inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-mono font-bold",
+                        "inline-flex items-center gap-1.5 rounded-full border-2 px-3 py-1 text-xs font-bold",
                         isRolePengurus
-                          ? "border-amber-500/40 bg-amber-500/15 text-amber-400"
-                          : "border-emerald-500/40 bg-emerald-500/15 text-emerald-400"
+                          ? "border-amber-500 bg-amber-50 text-amber-700"
+                          : "border-emerald-500 bg-emerald-50 text-emerald-700"
                       )}
                     >
-                      <Shield className="h-3.5 w-3.5" />
+                      <Shield className="h-4 w-4" />
                       <span>{item.peran.toUpperCase()}</span>
                     </span>
                   </div>
@@ -418,30 +418,30 @@ export function ApprovalList({
                 {/* Survey Information if available (Domisili / KK) */}
                 {(item.berdomisili !== undefined || item.kk_terdaftar !== undefined) && (
                   <div className="flex flex-wrap items-center gap-2 text-xs font-mono">
-                    <span className="text-muted-foreground text-[11px]">Hasil Survey:</span>
+                    <span className="text-slate-500 font-bold">Hasil Survey:</span>
                     {item.berdomisili !== undefined && (
                       <span
                         className={cn(
-                          "inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] border",
+                          "inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold border",
                           item.berdomisili
-                            ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-400"
-                            : "border-amber-500/30 bg-amber-500/10 text-amber-400"
+                            ? "border-emerald-400 bg-emerald-50 text-emerald-700"
+                            : "border-amber-400 bg-amber-50 text-amber-700"
                         )}
                       >
-                        <Home className="h-3 w-3" />
+                        <Home className="h-3.5 w-3.5" />
                         <span>{item.berdomisili ? "Berdomisili Disini" : "Bukan Domisili"}</span>
                       </span>
                     )}
                     {item.kk_terdaftar !== undefined && (
                       <span
                         className={cn(
-                          "inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] border",
+                          "inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold border",
                           item.kk_terdaftar
-                            ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-400"
-                            : "border-amber-500/30 bg-amber-500/10 text-amber-400"
+                            ? "border-emerald-400 bg-emerald-50 text-emerald-700"
+                            : "border-amber-400 bg-amber-50 text-amber-700"
                         )}
                       >
-                        <FileText className="h-3 w-3" />
+                        <FileText className="h-3.5 w-3.5" />
                         <span>{item.kk_terdaftar ? "KK Terdaftar" : "KK Luar"}</span>
                       </span>
                     )}
@@ -449,25 +449,25 @@ export function ApprovalList({
                 )}
 
                 {/* Komunitas Info Box & Hierarchical Approver Target */}
-                <div className="rounded-md border border-border/80 bg-background/50 p-3 text-xs space-y-1.5 font-mono">
-                  <div className="flex items-center gap-2 text-foreground font-medium">
-                    <Building2 className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 p-3.5 text-xs space-y-1.5 font-mono">
+                  <div className="flex items-center gap-2 text-slate-900 dark:text-slate-100 font-bold">
+                    <Building2 className="h-4 w-4 text-slate-500 shrink-0" />
                     <span className="truncate">
                       {komunitasNama}{" "}
-                      <span className="text-muted-foreground font-normal">
+                      <span className="text-slate-500 font-normal">
                         ({komunitasJenis.replace("_", " ")})
                       </span>
                     </span>
                   </div>
-                  <div className="flex items-center gap-2 text-muted-foreground text-[11px]">
-                    <MapPin className="h-3 w-3 shrink-0" />
+                  <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
+                    <MapPin className="h-3.5 w-3.5 shrink-0" />
                     <span className="truncate">{komunitasLokasi}</span>
                   </div>
 
                   {item.targetApproverTitle && (
-                    <div className="pt-1 border-t border-border/50 flex items-center justify-between text-[11px]">
-                      <span className="text-muted-foreground">Wewenang Persetujuan:</span>
-                      <span className="text-emerald-400 font-bold">
+                    <div className="pt-1.5 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between">
+                      <span className="text-slate-500">Wewenang Persetujuan:</span>
+                      <span className="text-blue-700 dark:text-blue-400 font-bold">
                         {item.targetApproverTitle}
                       </span>
                     </div>
@@ -475,17 +475,17 @@ export function ApprovalList({
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex items-center gap-2 pt-1">
+                <div className="flex flex-col sm:flex-row items-center gap-2.5 pt-1">
                   <button
                     onClick={() => handleApprove(item.id, userName)}
                     disabled={isProcessing}
-                    className="flex flex-1 h-9 items-center justify-center gap-1.5 rounded-md bg-emerald-600 hover:bg-emerald-500 px-3 py-1.5 text-xs font-bold text-white transition-all active:scale-98 disabled:opacity-50 font-mono uppercase shadow-xs cursor-pointer"
+                    className="flex min-h-[48px] w-full sm:flex-1 items-center justify-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 px-4 text-sm font-bold text-white transition-all active:scale-98 disabled:opacity-50 shadow-xs cursor-pointer"
                   >
                     {isProcessing ? (
-                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      <Loader2 className="h-4 w-4 animate-spin" />
                     ) : (
                       <>
-                        <Check className="h-3.5 w-3.5" />
+                        <Check className="h-4 w-4" />
                         <span>Setujui Peran</span>
                       </>
                     )}
@@ -494,13 +494,13 @@ export function ApprovalList({
                   <button
                     onClick={() => handleReject(item.id, userName)}
                     disabled={isProcessing}
-                    className="flex flex-1 h-9 items-center justify-center gap-1.5 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-1.5 text-xs font-medium text-destructive transition-all hover:bg-destructive/20 active:scale-98 disabled:opacity-50 font-mono font-bold uppercase"
+                    className="flex min-h-[48px] w-full sm:flex-1 items-center justify-center gap-2 rounded-xl border-2 border-rose-200 dark:border-rose-900/40 bg-rose-50 dark:bg-rose-950/30 px-4 text-sm font-bold text-rose-700 dark:text-rose-400 transition-all hover:bg-rose-100 active:scale-98 disabled:opacity-50 cursor-pointer"
                   >
                     {isProcessing ? (
-                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      <Loader2 className="h-4 w-4 animate-spin" />
                     ) : (
                       <>
-                        <X className="h-3.5 w-3.5" />
+                        <X className="h-4 w-4" />
                         <span>Tolak</span>
                       </>
                     )}

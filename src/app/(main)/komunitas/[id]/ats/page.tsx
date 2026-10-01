@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { getKomunitasDetail } from "@/app/actions/komunitas";
 import { getDataAtsByKomunitas } from "@/app/actions/data-ats";
@@ -22,6 +22,10 @@ export default async function KomunitasDataAtsPage({
     notFound();
   }
 
+  if (komunitas.jenis === "satuan_paud") {
+    redirect(`/komunitas/${id}`);
+  }
+
   const {
     data: atsList,
     canValidate,
@@ -32,33 +36,33 @@ export default async function KomunitasDataAtsPage({
   } = await getDataAtsByKomunitas(id);
 
   return (
-    <div className="flex flex-col flex-1 px-4 py-8 sm:px-6 md:px-8 gap-6">
+    <div className="flex flex-col flex-1 px-4 py-6 sm:px-6 md:px-8 gap-6 max-w-4xl mx-auto w-full">
       {/* Back Button */}
       <div className="flex items-center justify-between print:hidden">
         <Link
           href={`/komunitas/${id}`}
-          className="inline-flex h-9 items-center gap-2 rounded-md bg-card border border-border px-3.5 text-xs font-mono font-semibold text-foreground transition-all hover:bg-muted hover:border-amber-500/40 shadow-xs"
+          className="inline-flex min-h-[44px] h-11 items-center gap-2 rounded-xl bg-white border-2 border-slate-200 px-4 text-sm font-bold text-slate-800 transition-all hover:bg-slate-50 shadow-xs"
         >
-          <ArrowLeft className="h-3.5 w-3.5 text-amber-500" />
+          <ArrowLeft className="h-4 w-4 text-blue-700" />
           <span>Kembali ke Detail Komunitas</span>
         </Link>
       </div>
 
-      {/* Header Info */}
-      <div className="flex items-start justify-between gap-3 border-b border-border pb-5 print:hidden">
+      {/* Header Info - Coursera Mobile */}
+      <div className="flex items-start justify-between gap-3 border-b-2 border-slate-200 pb-5 print:hidden">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <span className="cyber-badge bg-amber-500/10 text-amber-500 border-amber-500/30">
+            <span className="rounded-md bg-amber-50 px-2.5 py-0.5 text-xs font-bold text-amber-900 border border-amber-200">
               DATA ATS (ANAK TIDAK SEKOLAH)
             </span>
-            <span className="text-xs font-mono text-muted-foreground uppercase">
+            <span className="text-xs font-bold text-slate-500 uppercase">
               {komunitas.nama}
             </span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground">
+          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900">
             Data Anak Tidak Sekolah (ATS)
           </h1>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-sm text-slate-600 leading-relaxed max-w-lg">
             Pendataan, verifikasi alasan tidak sekolah, dan perencanaan intervensi kembali bersekolah di Kota Tegal.
           </p>
         </div>

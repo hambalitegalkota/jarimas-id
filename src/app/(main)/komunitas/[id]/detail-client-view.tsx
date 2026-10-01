@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useMemo } from "react";
 import Link from "next/link";
 import {
   MapPin,
@@ -23,18 +23,20 @@ import {
   Loader2,
   X,
   Send,
+  Settings2,
 } from "lucide-react";
 import { JoinKomunitasModal } from "@/components/komunitas/join-komunitas-modal";
 import { WargaOnboardingModal } from "@/components/komunitas/warga-onboarding-modal";
 import { KabarCard } from "@/components/kabar/kabar-card";
 import { CreateKabarModal } from "@/components/kabar/create-kabar-modal";
+import { KomunitasProfilCharts } from "@/components/komunitas/komunitas-profil-charts";
 import { applyForAdminKomunitas } from "@/app/actions/komunitas";
 import type {
   KomunitasWithMembership,
   AnggotaKomunitasDetail,
   KabarItem,
 } from "@/types/database";
-import { cn } from "@/lib/utils";
+import { cn, hasFullProfilDataAccess } from "@/lib/utils";
 
 interface KomunitasDetailClientViewProps {
   komunitas: KomunitasWithMembership;
@@ -72,6 +74,60 @@ export function KomunitasDetailClientView({
   const membership = membershipState;
   const approvedMembers = anggotaList.filter((m) => m.status === "approved");
 
+  // Otorisasi Kelola Anggota:
+  // - Komunitas Warga Kita: Pengurus
+  // - Komunitas Satuan PAUD: Kepala Sekolah / Pengelola
+  // - Komunitas Posyandu: Kader
+  const canManageMembers = useMemo(() => {
+    if (!currentUserId) return false;
+
+    const roleLower = (membership?.peran || "").toLowerCase().trim();
+    const isApproved = membership?.status === "approved";
+
+    if (komunitas.jenis === "warga_kita") {
+      return (
+        isAdminOrKader ||
+        (isApproved &&
+          (roleLower.includes("pengurus") ||
+            roleLower.includes("ketua") ||
+            roleLower.includes("admin") ||
+            roleLower.includes("pimpinan")))
+      );
+    }
+
+    if (komunitas.jenis === "satuan_paud") {
+      return (
+        (isAdminOrKader &&
+          (roleLower.includes("kepala") ||
+            roleLower.includes("pimpinan") ||
+            roleLower.includes("pengelola") ||
+            roleLower.includes("admin") ||
+            roleLower.includes("super_admin") ||
+            roleLower.includes("super admin"))) ||
+        (isApproved &&
+          (roleLower.includes("kepala") ||
+            roleLower.includes("pimpinan") ||
+            roleLower.includes("pengelola") ||
+            roleLower.includes("admin")))
+      );
+    }
+
+    if (komunitas.jenis === "posyandu") {
+      return (
+        isAdminOrKader ||
+        (isApproved &&
+          (roleLower.includes("kader") ||
+            roleLower.includes("bidan") ||
+            roleLower.includes("medis") ||
+            roleLower.includes("nakes") ||
+            roleLower.includes("kesehatan") ||
+            roleLower.includes("admin")))
+      );
+    }
+
+    return isAdminOrKader;
+  }, [komunitas.jenis, membership, isAdminOrKader, currentUserId]);
+
   const handleApplyAdmin = (e: React.FormEvent) => {
     e.preventDefault();
     setAdminFeedback(null);
@@ -107,38 +163,38 @@ export function KomunitasDetailClientView({
   };
 
   return (
-    <>
+    <div className="space-y-6">
       {/* 1. HERO HEADER CARD */}
-      <section className="relative overflow-hidden rounded-lg border border-border bg-card p-6 space-y-5">
+      <section className="relative overflow-hidden rounded-2xl border-2 border-slate-200 bg-white p-5 sm:p-6 space-y-5 shadow-xs">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-4">
             <div
               className={cn(
-                "flex h-12 w-12 shrink-0 items-center justify-center rounded-md border border-border bg-muted/60 font-bold",
-                komunitas.jenis === "warga_kita" && "text-emerald-500 dark:text-emerald-400",
-                komunitas.jenis === "posyandu" && "text-cyan-500 dark:text-cyan-400",
-                komunitas.jenis === "satuan_paud" && "text-amber-500 dark:text-amber-400"
+                "flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl font-bold border-2",
+                komunitas.jenis === "warga_kita" && "bg-blue-50 text-blue-700 border-blue-200",
+                komunitas.jenis === "posyandu" && "bg-emerald-50 text-emerald-700 border-emerald-200",
+                komunitas.jenis === "satuan_paud" && "bg-amber-50 text-amber-800 border-amber-200"
               )}
             >
-              {komunitas.jenis === "warga_kita" && <Users className="h-6 w-6 stroke-[1.75px]" />}
-              {komunitas.jenis === "posyandu" && <Sparkles className="h-6 w-6 stroke-[1.75px]" />}
-              {komunitas.jenis === "satuan_paud" && <Building2 className="h-6 w-6 stroke-[1.75px]" />}
+              {komunitas.jenis === "warga_kita" && <Users className="h-7 w-7" />}
+              {komunitas.jenis === "posyandu" && <Sparkles className="h-7 w-7" />}
+              {komunitas.jenis === "satuan_paud" && <Building2 className="h-7 w-7" />}
             </div>
 
             <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <span className="cyber-badge uppercase font-mono">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="rounded-md bg-blue-50 px-2.5 py-0.5 text-xs font-bold text-blue-800 border border-blue-200 uppercase">
                   {komunitas.jenis.replace("_", " ")}
                 </span>
-                <span className="text-[11px] font-mono text-muted-foreground">
+                <span className="text-xs font-bold text-slate-500 font-mono">
                   {komunitas.jumlah_anggota} ANGGOTA
                 </span>
               </div>
-              <h2 className="text-xl sm:text-2xl font-black tracking-tight text-foreground">
+              <h2 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900">
                 {komunitas.nama}
               </h2>
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-mono">
-                <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
+              <div className="flex items-center gap-1.5 text-sm font-semibold text-slate-600">
+                <MapPin className="h-4 w-4 text-slate-500" />
                 <span>{komunitas.kelurahan || "Tegal"}, {komunitas.kecamatan || "Kota Tegal"}</span>
               </div>
             </div>
@@ -146,29 +202,29 @@ export function KomunitasDetailClientView({
         </div>
 
         {/* User Status / Action Button */}
-        <div className="pt-2 flex flex-wrap items-center justify-between gap-2 border-t border-border">
+        <div className="pt-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-t-2 border-slate-100">
           {membership ? (
             <div className="flex flex-wrap items-center gap-2">
               {membership.status === "approved" && (
-                <span className="inline-flex items-center gap-1.5 rounded-md bg-emerald-500/10 px-3 py-1.5 text-xs font-mono text-emerald-400 border border-emerald-500/30">
-                  <CheckCircle2 className="h-3.5 w-3.5" />
+                <span className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-50 px-3.5 py-2 text-xs font-bold text-emerald-800 border-2 border-emerald-300">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-600" />
                   <span>TERKONFIRMASI: {membership.peran.toUpperCase()}</span>
                 </span>
               )}
 
-              {/* Tampilkan indikator jika pengguna sedang mengajukan status lain (hanya jika bukan Admin/Kader) */}
+              {/* Tampilkan indikator jika pengguna sedang mengajukan status lain */}
               {membership.peran_diajukan &&
                 membership.peran_diajukan.toLowerCase() !== membership.peran.toLowerCase() &&
                 !isAdminOrKader && (
-                  <span className="inline-flex items-center gap-1.5 rounded-md bg-amber-500/10 px-3 py-1.5 text-xs font-mono text-amber-400 border border-amber-500/30">
-                    <Clock className="h-3.5 w-3.5" />
-                    <span>MENUNGGU PERSETUJUAN ADMIN: {membership.peran_diajukan.toUpperCase()}</span>
+                  <span className="inline-flex items-center gap-1.5 rounded-xl bg-amber-50 px-3.5 py-2 text-xs font-bold text-amber-900 border-2 border-amber-300">
+                    <Clock className="h-4 w-4 text-amber-600" />
+                    <span>MENUNGGU PERSETUJUAN: {membership.peran_diajukan.toUpperCase()}</span>
                   </span>
                 )}
 
               {membership.status === "pending" && (
-                <span className="inline-flex items-center gap-1.5 rounded-md bg-amber-500/10 px-3 py-1.5 text-xs font-mono text-amber-400 border border-amber-500/30">
-                  <Clock className="h-3.5 w-3.5" />
+                <span className="inline-flex items-center gap-1.5 rounded-xl bg-amber-50 px-3.5 py-2 text-xs font-bold text-amber-900 border-2 border-amber-300">
+                  <Clock className="h-4 w-4 text-amber-600" />
                   <span>MENUNGGU VERIFIKASI: {membership.peran.toUpperCase()}</span>
                 </span>
               )}
@@ -187,59 +243,47 @@ export function KomunitasDetailClientView({
                 }
               }}
               className={cn(
-                "inline-flex h-9 items-center gap-2 rounded-md px-4 text-xs font-mono font-bold uppercase tracking-wider text-white shadow-md transition-all active:scale-95 cursor-pointer",
-                komunitas.jenis === "warga_kita" && "bg-emerald-600 hover:bg-emerald-500",
-                komunitas.jenis === "posyandu" && "bg-blue-600 hover:bg-blue-500",
-                komunitas.jenis === "satuan_paud" && "bg-amber-600 hover:bg-amber-500"
+                "inline-flex min-h-[48px] h-12 w-full sm:w-auto items-center justify-center gap-2 rounded-xl px-6 text-base font-bold text-white shadow-md transition-all active:scale-98 cursor-pointer",
+                komunitas.jenis === "warga_kita" && "bg-blue-700 hover:bg-blue-800",
+                komunitas.jenis === "posyandu" && "bg-blue-700 hover:bg-blue-800",
+                komunitas.jenis === "satuan_paud" && "bg-amber-600 hover:bg-amber-700"
               )}
             >
-              <UserPlus className="h-3.5 w-3.5" />
+              <UserPlus className="h-4 w-4" />
               <span>{komunitas.jenis === "warga_kita" ? "BERGABUNG" : "MINTA BERGABUNG"}</span>
             </button>
-          )}
-
-          {isAdminOrKader && (
-            <Link
-              href={`/komunitas/${komunitas.id}/anggota`}
-              className="inline-flex h-9 items-center gap-1.5 rounded-md bg-card border border-border px-3.5 text-xs font-mono font-medium text-foreground transition-all hover:bg-muted shadow-xs"
-            >
-              <UserCheck className="h-3.5 w-3.5 text-primary" />
-              <span>KELOLA PERMOHONAN</span>
-            </Link>
           )}
         </div>
       </section>
 
       {/* INFORMASI ADMIN / PENGURUS KOMUNITAS (JIKA SUDAH ADA ADMIN) */}
       {komunitas.hasAdmin && (
-        <section className="rounded-lg border border-emerald-500/30 bg-emerald-950/20 p-4 space-y-3">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex items-start gap-3">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-emerald-500/40 bg-emerald-500/10 text-emerald-400 mt-0.5">
-                <ShieldCheck className="h-4.5 w-4.5" />
+        <section className="rounded-2xl border-2 border-emerald-200 bg-emerald-50/60 p-5 space-y-2 shadow-xs">
+          <div className="flex items-start gap-3.5">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-800">
+              <ShieldCheck className="h-5 w-5" />
+            </div>
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <h4 className="text-sm font-bold text-emerald-950 uppercase tracking-wider">
+                  Admin / Pengurus Resmi Terdaftar
+                </h4>
+                <span className="text-xs font-bold px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-900 border border-emerald-300">
+                  Terverifikasi
+                </span>
               </div>
-              <div className="space-y-0.5">
-                <div className="flex items-center gap-2">
-                  <h4 className="text-xs font-bold font-mono uppercase tracking-wider text-emerald-400">
-                    Admin / Pengurus Resmi Terdaftar
-                  </h4>
-                  <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                    Terverifikasi
+              <p className="text-base font-bold text-slate-900 flex items-center gap-1.5">
+                <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+                <span>{komunitas.adminName || "Pengurus Resmi Komunitas"}</span>
+                {komunitas.adminRole && (
+                  <span className="text-slate-600 font-semibold text-sm">
+                    • {komunitas.adminRole}
                   </span>
-                </div>
-                <p className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
-                  <span>{komunitas.adminName || "Pengurus Resmi Komunitas"}</span>
-                  {komunitas.adminRole && (
-                    <span className="text-muted-foreground font-mono font-normal">
-                      • {komunitas.adminRole}
-                    </span>
-                  )}
-                </p>
-                <p className="text-[11px] text-muted-foreground leading-relaxed">
-                  Pengurus resmi yang mengelola verifikasi anggota, jadwal kegiatan, dan layanan komunitas.
-                </p>
-              </div>
+                )}
+              </p>
+              <p className="text-sm text-slate-600 leading-relaxed">
+                Pengurus resmi yang mengelola verifikasi anggota, jadwal kegiatan, dan layanan komunitas.
+              </p>
             </div>
           </div>
         </section>
@@ -247,132 +291,75 @@ export function KomunitasDetailClientView({
 
       {/* ALERT JIKA BELUM MEMILIKI ADMIN */}
       {!komunitas.hasAdmin && (
-        <section className="rounded-lg border border-amber-500/30 bg-amber-950/20 p-4 space-y-3">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex items-start gap-3">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-amber-500/40 bg-amber-500/10 text-amber-400 mt-0.5">
-                <ShieldAlert className="h-4 w-4" />
-              </div>
-              <div className="space-y-0.5">
-                <h4 className="text-xs font-bold font-mono uppercase tracking-wider text-amber-400">
-                  Komunitas Belum Memiliki Admin / Pengurus
-                </h4>
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  Komunitas ini belum memiliki Admin/Pengurus resmi untuk mengelola data anggota dan kegiatan.
-                </p>
-              </div>
+        <section className="rounded-2xl border-2 border-amber-200 bg-amber-50/70 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
+          <div className="flex items-start gap-3.5">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-900">
+              <ShieldAlert className="h-5 w-5" />
             </div>
-
-            <button
-              onClick={() => {
-                if (!currentUserId) {
-                  window.location.href = `/login?redirectTo=/komunitas/${komunitas.id}`;
-                  return;
-                }
-                setIsApplyAdminOpen(true);
-              }}
-              className="inline-flex h-9 items-center justify-center gap-1.5 rounded-md bg-amber-500 px-3.5 text-xs font-mono font-bold text-black shadow-sm transition-all hover:bg-amber-400 active:scale-95 shrink-0 cursor-pointer"
-            >
-              <ShieldCheck className="h-3.5 w-3.5" />
-              <span>Ajukan Diri Sebagai Admin</span>
-            </button>
+            <div className="space-y-1">
+              <h4 className="text-base font-bold text-amber-950">
+                Komunitas Belum Memiliki Admin / Pengurus
+              </h4>
+              <p className="text-sm text-slate-700 leading-relaxed">
+                Komunitas ini belum memiliki Admin/Pengurus resmi untuk mengelola data anggota dan kegiatan.
+              </p>
+            </div>
           </div>
+
+          <button
+            onClick={() => {
+              if (!currentUserId) {
+                window.location.href = `/login?redirectTo=/komunitas/${komunitas.id}`;
+                return;
+              }
+              setIsApplyAdminOpen(true);
+            }}
+            className="inline-flex min-h-[48px] h-12 items-center justify-center gap-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white px-5 text-base font-bold shadow-xs transition-all active:scale-98 shrink-0 cursor-pointer"
+          >
+            <ShieldCheck className="h-5 w-5" />
+            <span>Ajukan Diri Sebagai Admin</span>
+          </button>
         </section>
       )}
 
-      {/* QUICK ACCESS CARDS: DATA ANAK & DATA ATS */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {/* Card Data Anak 0-7 */}
-        <Link
-          href={`/komunitas/${komunitas.id}/data`}
-          className="group rounded-lg border border-emerald-500/40 bg-card p-4 flex items-center justify-between gap-3 hover:border-emerald-500 transition-all hover:shadow-md"
-        >
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-emerald-500/40 bg-emerald-500/10 text-emerald-400 group-hover:scale-105 transition-transform">
-              <Baby className="h-5 w-5" />
-            </div>
-            <div className="space-y-0.5">
-              <div className="flex items-center gap-1.5">
-                <h4 className="text-xs font-bold font-mono uppercase tracking-wider text-foreground group-hover:text-emerald-400 transition-colors">
-                  DATA ANAK (0–7 THN) &amp; DDTK
-                </h4>
-              </div>
-              <p className="text-[11px] text-muted-foreground line-clamp-1">
-                Rekam tumbuh kembang balita &amp; validasi data
-              </p>
-            </div>
-          </div>
-          <span className="inline-flex h-8 items-center gap-1 rounded-md bg-emerald-600 group-hover:bg-emerald-500 px-3 text-[11px] font-mono font-bold text-white shadow-xs shrink-0 transition-colors">
-            <span>BUKA</span>
-            <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
-          </span>
-        </Link>
-
-        {/* Card Data ATS */}
-        <Link
-          href={`/komunitas/${komunitas.id}/ats`}
-          className="group rounded-lg border border-amber-500/40 bg-card p-4 flex items-center justify-between gap-3 hover:border-amber-500 transition-all hover:shadow-md"
-        >
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-amber-500/40 bg-amber-500/10 text-amber-400 group-hover:scale-105 transition-transform">
-              <GraduationCap className="h-5 w-5" />
-            </div>
-            <div className="space-y-0.5">
-              <div className="flex items-center gap-1.5">
-                <h4 className="text-xs font-bold font-mono uppercase tracking-wider text-foreground group-hover:text-amber-400 transition-colors">
-                  DATA ATS (ANAK TIDAK SEKOLAH)
-                </h4>
-              </div>
-              <p className="text-[11px] text-muted-foreground line-clamp-1">
-                Pendataan anak tidak sekolah &amp; alasan
-              </p>
-            </div>
-          </div>
-          <span className="inline-flex h-8 items-center gap-1 rounded-md bg-amber-600 group-hover:bg-amber-500 px-3 text-[11px] font-mono font-bold text-white shadow-xs shrink-0 transition-colors">
-            <span>BUKA</span>
-            <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
-          </span>
-        </Link>
-      </div>
-
-      {/* 2. SUB-TABS NAVIGATION */}
-      <div className="flex rounded-md bg-muted/60 p-1.5 border border-border gap-1.5">
+      {/* 2. SUB-TABS NAVIGATION (Pill Style) */}
+      <div className="flex rounded-2xl bg-white p-1.5 border-2 border-slate-200 gap-2 shadow-xs">
         <button
           onClick={() => setActiveTab("kabar")}
           className={cn(
-            "flex flex-1 h-9.5 items-center justify-center gap-1.5 rounded-md text-xs font-mono font-bold transition-all cursor-pointer",
+            "flex flex-1 min-h-[44px] h-11 items-center justify-center gap-2 rounded-xl text-sm font-bold transition-all cursor-pointer",
             activeTab === "kabar"
-              ? "bg-blue-600 text-white shadow-sm"
-              : "text-muted-foreground hover:text-foreground hover:bg-card/60"
+              ? "bg-blue-700 text-white shadow-xs"
+              : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
           )}
         >
-          <MessageSquare className="h-3.5 w-3.5" />
+          <MessageSquare className="h-4 w-4" />
           <span>KABAR ({kabarKomunitas.length})</span>
         </button>
 
         <button
           onClick={() => setActiveTab("anggota")}
           className={cn(
-            "flex flex-1 h-9.5 items-center justify-center gap-1.5 rounded-md text-xs font-mono font-bold transition-all cursor-pointer",
+            "flex flex-1 min-h-[44px] h-11 items-center justify-center gap-2 rounded-xl text-sm font-bold transition-all cursor-pointer",
             activeTab === "anggota"
-              ? "bg-emerald-600 text-white shadow-sm"
-              : "text-muted-foreground hover:text-foreground hover:bg-card/60"
+              ? "bg-blue-700 text-white shadow-xs"
+              : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
           )}
         >
-          <Users className="h-3.5 w-3.5" />
+          <Users className="h-4 w-4" />
           <span>ANGGOTA ({approvedMembers.length})</span>
         </button>
 
         <button
           onClick={() => setActiveTab("data")}
           className={cn(
-            "flex flex-1 h-9.5 items-center justify-center gap-1.5 rounded-md text-xs font-mono font-bold transition-all cursor-pointer",
+            "flex flex-1 min-h-[44px] h-11 items-center justify-center gap-2 rounded-xl text-sm font-bold transition-all cursor-pointer",
             activeTab === "data"
-              ? "bg-amber-600 text-white shadow-sm"
-              : "text-muted-foreground hover:text-foreground hover:bg-card/60"
+              ? "bg-blue-700 text-white shadow-xs"
+              : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
           )}
         >
-          <Info className="h-3.5 w-3.5" />
+          <Info className="h-4 w-4" />
           <span>PROFIL DATA</span>
         </button>
       </div>
@@ -382,15 +369,15 @@ export function KomunitasDetailClientView({
       {activeTab === "kabar" && (
         <section className="space-y-4 pb-16">
           {kabarKomunitas.length === 0 ? (
-            <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border bg-card p-12 text-center space-y-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-md border border-border bg-muted/60 text-muted-foreground">
-                <MessageSquare className="h-6 w-6 stroke-[1.5px]" />
+            <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-white p-12 text-center space-y-4">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-blue-700 border-2 border-blue-200">
+                <MessageSquare className="h-7 w-7" />
               </div>
-              <div className="space-y-1.5 max-w-sm">
-                <h3 className="text-sm font-bold tracking-tight text-foreground font-mono">
-                  BELUM ADA KABAR KOMUNITAS
+              <div className="space-y-1.5 max-w-md">
+                <h3 className="text-base font-bold text-slate-900">
+                  Belum Ada Kabar Komunitas
                 </h3>
-                <p className="text-xs text-muted-foreground leading-relaxed">
+                <p className="text-sm text-slate-600 leading-relaxed">
                   Bagikan pengumuman atau jadwal kegiatan pertama untuk komunitas ini.
                 </p>
               </div>
@@ -413,13 +400,35 @@ export function KomunitasDetailClientView({
 
       {/* Subtab: DAFTAR ANGGOTA */}
       {activeTab === "anggota" && (
-        <section className="space-y-3 pb-16">
+        <section className="space-y-4 pb-16">
+          {/* Header Action Bar di dalam Tab Anggota */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 sm:p-5 rounded-2xl border-2 border-slate-200 shadow-xs">
+            <div className="space-y-0.5">
+              <h3 className="text-base font-bold text-slate-900">
+                Daftar Anggota Komunitas
+              </h3>
+              <p className="text-sm text-slate-500 font-medium">
+                Total {approvedMembers.length} anggota aktif terdaftar
+              </p>
+            </div>
+
+            {canManageMembers && (
+              <Link
+                href={`/komunitas/${komunitas.id}/anggota`}
+                className="inline-flex min-h-[44px] h-11 items-center justify-center gap-2 rounded-xl bg-blue-700 hover:bg-blue-800 text-white px-5 text-sm font-bold shadow-xs transition-all active:scale-98 shrink-0 cursor-pointer"
+              >
+                <Settings2 className="h-4 w-4" />
+                <span>KELOLA ANGGOTA</span>
+              </Link>
+            )}
+          </div>
+
           {approvedMembers.length === 0 ? (
-            <div className="rounded-lg border border-dashed border-border bg-card p-12 text-center text-xs font-mono text-muted-foreground">
-              BELUM ADA ANGGOTA TERDAFTAR SECARA DARING
+            <div className="rounded-2xl border-2 border-dashed border-slate-300 bg-white p-12 text-center text-sm font-semibold text-slate-500">
+              Belum ada anggota terdaftar secara daring
             </div>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-2.5">
               {approvedMembers.map((member) => {
                 const name = member.profiles?.nama_lengkap || "Warga Komunitas";
                 const initial = name.charAt(0).toUpperCase();
@@ -427,27 +436,27 @@ export function KomunitasDetailClientView({
                 return (
                   <div
                     key={member.id}
-                    className="flex items-center justify-between rounded-lg border border-border bg-card p-3.5"
+                    className="flex items-center justify-between rounded-2xl border-2 border-slate-200 bg-white p-4 shadow-xs"
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-border bg-muted text-foreground font-mono font-bold text-xs">
+                    <div className="flex items-center gap-3.5">
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 border-2 border-blue-200 text-blue-700 font-bold text-base">
                         {initial}
                       </div>
                       <div>
-                        <h4 className="text-sm font-bold text-foreground">
+                        <h4 className="text-base font-bold text-slate-900">
                           {name}
                         </h4>
-                        <p className="text-xs font-mono text-muted-foreground">
+                        <p className="text-sm font-semibold text-slate-500">
                           {member.profiles?.email || "-"}
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-1.5">
-                      <span className="rounded-md bg-muted px-2.5 py-1 text-xs font-mono text-muted-foreground border border-border">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="rounded-xl bg-slate-100 px-3 py-1.5 text-xs font-bold text-slate-800 border border-slate-200">
                         {member.peran}
                       </span>
                       {member.peran_diajukan && (
-                        <span className="rounded-md bg-amber-500/10 px-2 py-0.5 text-[10px] font-mono text-amber-400 border border-amber-500/30">
+                        <span className="rounded-xl bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-900 border border-amber-200">
                           Diajukan: {member.peran_diajukan}
                         </span>
                       )}
@@ -460,116 +469,193 @@ export function KomunitasDetailClientView({
         </section>
       )}
 
-      {/* Subtab: DATA KOMUNITAS */}
-      {activeTab === "data" && (
-        <section className="space-y-4 pb-16">
-          {/* Card Direct to Data Anak & DDTK */}
-          <div className="rounded-lg border border-border bg-card p-5 flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-border bg-muted/60 text-emerald-500 dark:text-emerald-400">
-                <Baby className="h-5 w-5" />
-              </div>
-              <div className="space-y-0.5">
-                <h4 className="text-sm font-bold text-foreground font-mono">
-                  DATA ANAK 0–7 TAHUN &amp; DDTK
-                </h4>
-                <p className="text-xs text-muted-foreground">
-                  Kelola pendaftaran balita, riwayat DDTK tumbuh kembang, dan validasi data.
-                </p>
-              </div>
-            </div>
-            <Link
-              href={`/komunitas/${komunitas.id}/data`}
-              className="inline-flex h-9 items-center gap-1.5 rounded-md bg-emerald-600 hover:bg-emerald-500 px-4 text-xs font-mono font-bold text-white transition-all shadow-sm active:scale-98 shrink-0"
-            >
-              <span>BUKA DATA</span>
-              <ArrowRight className="h-3.5 w-3.5" />
-            </Link>
-          </div>
+      {/* Subtab: PROFIL DATA */}
+      {activeTab === "data" && (() => {
+        const userPeran = membership?.peran || "Pengunjung";
+        const isWargaKita = komunitas.jenis === "warga_kita";
+        const hasFullAccess = !isWargaKita || hasFullProfilDataAccess(userPeran, isAdminOrKader);
+        const isChartOnly = isWargaKita && !hasFullAccess;
 
-          {/* Card Direct to Data ATS (Anak Tidak Sekolah) */}
-          <div className="rounded-lg border border-border bg-card p-5 flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-border bg-muted/60 text-amber-500 dark:text-amber-400">
-                <GraduationCap className="h-5 w-5" />
-              </div>
-              <div className="space-y-0.5">
-                <h4 className="text-sm font-bold text-foreground font-mono">
-                  DATA ATS (ANAK TIDAK SEKOLAH)
-                </h4>
-                <p className="text-xs text-muted-foreground">
-                  Pendataan Anak Tidak Sekolah, pemantauan alasan, dan rencana intervensi kembali bersekolah.
-                </p>
-              </div>
-            </div>
-            <Link
-              href={`/komunitas/${komunitas.id}/ats`}
-              className="inline-flex h-9 items-center gap-1.5 rounded-md bg-amber-600 hover:bg-amber-500 px-4 text-xs font-mono font-bold text-white transition-all shadow-sm active:scale-98 shrink-0"
-            >
-              <span>BUKA DATA ATS</span>
-              <ArrowRight className="h-3.5 w-3.5" />
-            </Link>
-          </div>
-
-          <div className="rounded-lg border border-border bg-card p-5 space-y-4">
-            <h3 className="text-xs font-mono uppercase tracking-wider text-muted-foreground font-bold">
-              Informasi Resmi &amp; Operasional
-            </h3>
-
-            <div className="space-y-3 text-xs">
-              {/* Alamat Lengkap */}
-              <div className="flex items-start gap-3 p-3.5 rounded-md bg-muted/40 border border-border">
-                <MapPin className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
-                <div className="space-y-0.5">
-                  <span className="font-mono text-muted-foreground text-[11px] block">ALAMAT LOKASI</span>
-                  <p className="text-foreground leading-relaxed">
-                    {komunitas.lokasi}
-                  </p>
-                </div>
-              </div>
-
-              {/* Jadwal Kegiatan */}
-              {komunitas.jadwal && (
-                <div className="flex items-start gap-3 p-3.5 rounded-md bg-muted/40 border border-border">
-                  <Calendar className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+        return (
+          <section className="space-y-5 pb-16">
+            {/* 1. Header Banner Hak Akses (Khusus Warga Kita) */}
+            {isWargaKita && (
+              <div
+                className={cn(
+                  "rounded-2xl border-2 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs",
+                  hasFullAccess
+                    ? "border-emerald-200 bg-emerald-50/70 text-emerald-950"
+                    : "border-amber-200 bg-amber-50/80 text-amber-950"
+                )}
+              >
+                <div className="flex items-start gap-3">
+                  <div
+                    className={cn(
+                      "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl font-bold text-sm",
+                      hasFullAccess
+                        ? "bg-emerald-100 text-emerald-800"
+                        : "bg-amber-100 text-amber-900"
+                    )}
+                  >
+                    <ShieldCheck className="h-5 w-5" />
+                  </div>
                   <div className="space-y-0.5">
-                    <span className="font-mono text-muted-foreground text-[11px] block">JADWAL LAYANAN</span>
-                    <p className="text-foreground leading-relaxed">
-                      {komunitas.jadwal}
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h4 className="text-sm sm:text-base font-bold">
+                        {hasFullAccess
+                          ? `Hak Akses Penuh: ${userPeran.toUpperCase()}`
+                          : `Hak Akses Pratinjau: ${userPeran.toUpperCase()}`}
+                      </h4>
+                      <span
+                        className={cn(
+                          "rounded-md px-2 py-0.5 text-2xs font-extrabold uppercase border",
+                          hasFullAccess
+                            ? "bg-emerald-100 text-emerald-800 border-emerald-300"
+                            : "bg-amber-100 text-amber-900 border-amber-300"
+                        )}
+                      >
+                        {hasFullAccess ? "AKSES SELURUH DATA" : "HANYA GRAFIK & CHART"}
+                      </span>
+                    </div>
+                    <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">
+                      {hasFullAccess
+                        ? `Sebagai ${userPeran}, Anda memiliki hak akses penuh ke seluruh unsur Profil Data (visualisasi Grafik & Chart, rincian data anak, data ATS, validasi, dan informasi operasional).`
+                        : `Sebagai ${userPeran}, Anda memiliki hak akses untuk melihat visualisasi Grafik dan Chart statistik agregat wilayah ini. Akses rincian data anak & penambahan data diperuntukkan bagi Penduduk dan Penduduk Domisili Di Luar.`}
                     </p>
                   </div>
                 </div>
-              )}
+              </div>
+            )}
 
-              {/* Kontak */}
-              {komunitas.kontak && (
-                <div className="flex items-start gap-3 p-3.5 rounded-md bg-muted/40 border border-border">
-                  <Phone className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+            {/* 2. Visualisasi Grafik & Chart Statistik Wilayah */}
+            <KomunitasProfilCharts
+              komunitas={komunitas}
+              userRole={userPeran}
+              isChartOnly={isChartOnly}
+            />
+
+            {/* 3. Elemen Rincian Data Anak & ATS (Hanya untuk yang berhak akses penuh: Penduduk, Penduduk Domisili Di Luar, atau Pengurus/Admin) */}
+            {hasFullAccess ? (
+              <div className="space-y-4">
+                <div className="border-t-2 border-slate-200 pt-4">
+                  <h3 className="text-xs font-bold uppercase text-slate-600 tracking-wider mb-3">
+                    MANAJEMEN DATA &amp; DDTK
+                  </h3>
+                </div>
+
+                {/* Card Direct to Data Anak & DDTK */}
+                <div className="rounded-2xl border-2 border-slate-200 bg-white p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
+                  <div className="flex items-center gap-3.5">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-blue-50 border-2 border-blue-200 text-blue-700">
+                      <Baby className="h-6 w-6" />
+                    </div>
+                    <div className="space-y-1">
+                      <h4 className="text-base font-bold text-slate-900">
+                        Data Anak (0–6 Tahun) &amp; DDTK
+                      </h4>
+                      <p className="text-sm text-slate-600 leading-relaxed">
+                        Kelola pendaftaran balita, riwayat DDTK tumbuh kembang, dan validasi data.
+                      </p>
+                    </div>
+                  </div>
+                  <Link
+                    href={`/komunitas/${komunitas.id}/data`}
+                    className="inline-flex min-h-[48px] h-12 w-full sm:w-auto items-center justify-center gap-2 rounded-xl bg-blue-700 hover:bg-blue-800 px-6 text-base font-bold text-white transition-all shadow-xs shrink-0"
+                  >
+                    <span>BUKA DATA</span>
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </div>
+
+                {/* Card Direct to Data ATS (Anak Tidak Sekolah) */}
+                {komunitas.jenis !== "satuan_paud" && (
+                  <div className="rounded-2xl border-2 border-slate-200 bg-white p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
+                    <div className="flex items-center gap-3.5">
+                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-50 border-2 border-amber-200 text-amber-800">
+                        <GraduationCap className="h-6 w-6" />
+                      </div>
+                      <div className="space-y-1">
+                        <h4 className="text-base font-bold text-slate-900">
+                          Data ATS (Anak Tidak Sekolah)
+                        </h4>
+                        <p className="text-sm text-slate-600 leading-relaxed">
+                          Pendataan Anak Tidak Sekolah, pemantauan alasan, dan rencana intervensi kembali bersekolah.
+                        </p>
+                      </div>
+                    </div>
+                    <Link
+                      href={`/komunitas/${komunitas.id}/ats`}
+                      className="inline-flex min-h-[48px] h-12 w-full sm:w-auto items-center justify-center gap-2 rounded-xl bg-amber-600 hover:bg-amber-700 px-6 text-base font-bold text-white transition-all shadow-xs shrink-0"
+                    >
+                      <span>BUKA DATA ATS</span>
+                      <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  </div>
+                )}
+              </div>
+            ) : null}
+
+            {/* 4. Informasi Resmi & Operasional Wilayah */}
+            <div className="rounded-2xl border-2 border-slate-200 bg-white p-5 sm:p-6 space-y-4 shadow-xs">
+              <h3 className="text-base font-bold text-slate-900 uppercase tracking-wider">
+                Informasi Resmi &amp; Operasional
+              </h3>
+
+              <div className="space-y-3 text-sm">
+                {/* Alamat Lengkap */}
+                <div className="flex items-start gap-3.5 p-4 rounded-xl bg-slate-50 border border-slate-200">
+                  <MapPin className="h-5 w-5 text-slate-500 shrink-0 mt-0.5" />
                   <div className="space-y-0.5">
-                    <span className="font-mono text-muted-foreground text-[11px] block">KONTAK RESMI</span>
-                    <p className="text-foreground leading-relaxed">
-                      {komunitas.kontak}
+                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">ALAMAT LOKASI</span>
+                    <p className="text-slate-900 font-semibold leading-relaxed">
+                      {komunitas.lokasi}
                     </p>
                   </div>
                 </div>
-              )}
 
-              {/* Deskripsi */}
-              {komunitas.deskripsi && (
-                <div className="flex items-start gap-3 p-3.5 rounded-md bg-muted/40 border border-border">
-                  <Info className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
-                  <div className="space-y-0.5">
-                    <span className="font-mono text-muted-foreground text-[11px] block">PROFIL &amp; VISI</span>
-                    <p className="text-foreground leading-relaxed">
-                      {komunitas.deskripsi}
-                    </p>
+                {/* Jadwal Kegiatan */}
+                {komunitas.jadwal && (
+                  <div className="flex items-start gap-3.5 p-4 rounded-xl bg-slate-50 border border-slate-200">
+                    <Calendar className="h-5 w-5 text-blue-700 shrink-0 mt-0.5" />
+                    <div className="space-y-0.5">
+                      <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">JADWAL LAYANAN</span>
+                      <p className="text-slate-900 font-semibold leading-relaxed">
+                        {komunitas.jadwal}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+
+                {/* Kontak */}
+                {komunitas.kontak && (
+                  <div className="flex items-start gap-3.5 p-4 rounded-xl bg-slate-50 border border-slate-200">
+                    <Phone className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />
+                    <div className="space-y-0.5">
+                      <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">KONTAK RESMI</span>
+                      <p className="text-slate-900 font-semibold leading-relaxed">
+                        {komunitas.kontak}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Deskripsi */}
+                {komunitas.deskripsi && (
+                  <div className="flex items-start gap-3.5 p-4 rounded-xl bg-slate-50 border border-slate-200">
+                    <Info className="h-5 w-5 text-slate-500 shrink-0 mt-0.5" />
+                    <div className="space-y-0.5">
+                      <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">PROFIL &amp; VISI</span>
+                      <p className="text-slate-900 font-medium leading-relaxed">
+                        {komunitas.deskripsi}
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        </section>
-      )}
+          </section>
+        );
+      })()}
 
       {/* Modal Join Reguler (Posyandu & Satuan PAUD) */}
       <JoinKomunitasModal
@@ -600,43 +686,43 @@ export function KomunitasDetailClientView({
 
       {/* Modal Ajukan Diri Sebagai Admin */}
       {isApplyAdminOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-3 sm:p-4 overflow-y-auto animate-in fade-in duration-200">
-          <div className="relative w-full max-w-lg max-h-[min(90dvh,calc(100dvh-2.5rem))] flex flex-col rounded-xl border border-border bg-card shadow-2xl z-10 animate-in zoom-in-95 duration-200 overflow-hidden my-auto">
+        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-slate-900/60 backdrop-blur-xs p-0 sm:p-4 overflow-y-auto animate-in fade-in duration-200">
+          <div className="relative w-full max-w-lg max-h-[92dvh] sm:max-h-[85dvh] flex flex-col rounded-t-3xl sm:rounded-3xl border-2 border-slate-200 bg-white shadow-2xl z-10 animate-in zoom-in-95 duration-200 overflow-hidden my-0 sm:my-auto">
             {/* Header */}
-            <div className="p-5 sm:p-6 pb-4 border-b border-border shrink-0 bg-card">
+            <div className="p-5 sm:p-6 pb-4 border-b-2 border-slate-100 shrink-0 bg-white">
               <div className="flex items-start justify-between gap-3">
                 <div className="space-y-1">
-                  <div className="inline-flex items-center gap-1 rounded border border-amber-500/30 bg-amber-500/10 px-2.5 py-0.5 text-[10px] font-mono font-bold text-amber-400">
-                    <ShieldCheck className="h-3 w-3" />
+                  <div className="inline-flex items-center gap-1 rounded-md border-2 border-amber-200 bg-amber-50 px-2.5 py-0.5 text-xs font-bold text-amber-900">
+                    <ShieldCheck className="h-3.5 w-3.5" />
                     <span>PENGAJUAN ADMIN KOMUNITAS</span>
                   </div>
-                  <h3 className="text-base font-bold text-foreground leading-snug">
+                  <h3 className="text-lg font-bold text-slate-900 leading-snug">
                     Ajukan Diri Sebagai Admin
                   </h3>
-                  <p className="text-xs font-mono text-emerald-400 font-semibold">
+                  <p className="text-sm font-bold text-blue-700">
                     {komunitas.nama}
                   </p>
                 </div>
                 <button
                   type="button"
                   onClick={() => setIsApplyAdminOpen(false)}
-                  className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer"
+                  className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-colors cursor-pointer"
                 >
-                  <X className="h-4 w-4" />
+                  <X className="h-5 w-5" />
                 </button>
               </div>
 
-              <p className="text-xs text-muted-foreground leading-relaxed mt-2">
+              <p className="text-sm text-slate-600 leading-relaxed mt-2">
                 Pengajuan Anda akan diverifikasi oleh Admin satu tingkat di atasnya atau Super Admin. Sesuai ketentuan, satu komunitas memiliki satu Admin resmi penanggung jawab.
               </p>
             </div>
 
             {/* Scrollable Form Body */}
-            <div className="p-5 sm:p-6 pb-12 sm:pb-16 overflow-y-auto flex-1 space-y-4 overscroll-contain">
+            <div className="p-5 sm:p-6 pb-12 overflow-y-auto flex-1 space-y-4 overscroll-contain bg-slate-50/50">
               <form onSubmit={handleApplyAdmin} className="space-y-4">
-                <div className="space-y-1">
-                  <label className="text-xs font-mono text-muted-foreground uppercase">
-                    Nomor WhatsApp / HP Aktif
+                <div className="space-y-1.5">
+                  <label className="text-base font-bold text-slate-900 block">
+                    Nomor WhatsApp / HP Aktif <span className="text-rose-600">*</span>
                   </label>
                   <input
                     type="tel"
@@ -644,12 +730,12 @@ export function KomunitasDetailClientView({
                     onChange={(e) => setAdminHp(e.target.value)}
                     placeholder="Contoh: 081234567890"
                     required
-                    className="h-9 w-full rounded-md border border-input bg-background px-3 text-xs font-mono text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
+                    className="w-full min-h-[48px] h-12 rounded-xl border-2 border-slate-300 bg-white px-4 text-base font-mono text-slate-900 focus:border-blue-600 focus:outline-hidden"
                   />
                 </div>
 
-                <div className="space-y-1">
-                  <label className="text-xs font-mono text-muted-foreground uppercase">
+                <div className="space-y-1.5">
+                  <label className="text-base font-bold text-slate-900 block">
                     Alasan / Posisi di Lingkungan (Opsional)
                   </label>
                   <textarea
@@ -657,34 +743,34 @@ export function KomunitasDetailClientView({
                     onChange={(e) => setAdminCatatan(e.target.value)}
                     placeholder="Misal: Saya Pengurus RT / Tokoh warga setempat"
                     rows={2}
-                    className="w-full rounded-md border border-input bg-background p-2.5 text-xs font-sans text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring resize-none"
+                    className="w-full rounded-xl border-2 border-slate-300 bg-white p-3.5 text-base text-slate-900 focus:border-blue-600 focus:outline-hidden resize-none"
                   />
                 </div>
 
                 {adminFeedback && (
-                  <p className="text-xs font-mono text-center text-emerald-400">
+                  <p className="text-sm font-bold text-emerald-800 bg-emerald-50 p-3 rounded-xl border-2 border-emerald-200 text-center">
                     {adminFeedback}
                   </p>
                 )}
 
-                <div className="flex items-center gap-2 pt-2">
+                <div className="flex items-center gap-3 pt-2">
                   <button
                     type="button"
                     onClick={() => setIsApplyAdminOpen(false)}
-                    className="flex-1 h-9 rounded-md border border-border text-xs font-mono text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer"
+                    className="flex-1 min-h-[48px] h-12 rounded-xl border-2 border-slate-300 bg-white text-base font-bold text-slate-700 hover:bg-slate-100 cursor-pointer"
                   >
                     Batal
                   </button>
                   <button
                     type="submit"
                     disabled={isSubmittingAdmin}
-                    className="flex-1 h-9 inline-flex items-center justify-center gap-1.5 rounded-md bg-amber-500 px-3 text-xs font-mono font-bold text-black hover:bg-amber-400 disabled:opacity-50 cursor-pointer"
+                    className="flex-1 min-h-[48px] h-12 inline-flex items-center justify-center gap-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-base font-bold text-white disabled:opacity-50 cursor-pointer shadow-xs"
                   >
                     {isSubmittingAdmin ? (
-                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      <Loader2 className="h-5 w-5 animate-spin" />
                     ) : (
                       <>
-                        <Send className="h-3.5 w-3.5" />
+                        <Send className="h-4 w-4" />
                         <span>Kirim Pengajuan</span>
                       </>
                     )}
@@ -695,6 +781,6 @@ export function KomunitasDetailClientView({
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 }

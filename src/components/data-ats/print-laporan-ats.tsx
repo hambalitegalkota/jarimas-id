@@ -155,7 +155,7 @@ export function PrintLaporanAts({
         </div>
         <div className="text-right shrink-0">
           <div>
-            Dicetak: <span className="font-bold">{tanggalCetakLengkap}</span>
+            Dicetak: <span suppressHydrationWarning className="font-bold">{tanggalCetakLengkap}</span>
           </div>
           <div>
             Total Rincian: <span className="font-bold">{totalFiltered}</span> dari {totalAllAts} anak
@@ -320,8 +320,8 @@ export function PrintLaporanAts({
           </div>
 
           <div className="space-y-12">
-            <p>
-              Kota Tegal, {tanggalSimple}
+            <p suppressHydrationWarning>
+              Kota Tegal, <span suppressHydrationWarning>{tanggalSimple}</span>
               <br />
               <span className="font-bold uppercase">
                 {customSigner2Title}

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/utils/supabase/server";
 import { DataAtsSchema, DdtkSchema } from "@/lib/zod-schemas";
 import { toValidUUID } from "@/lib/utils";
+import { getKomunitasDetail } from "./komunitas";
 import type {
   DataAtsItem,
   DdtkRecord,
@@ -63,6 +64,14 @@ export async function createDataAts(formData: FormData): Promise<{
       return {
         success: false,
         message: "Komunitas tujuan tidak valid.",
+      };
+    }
+
+    const { data: targetKomunitas } = await getKomunitasDetail(komunitasId);
+    if (targetKomunitas?.jenis === "satuan_paud") {
+      return {
+        success: false,
+        message: "Data ATS tidak tersedia untuk Komunitas Satuan PAUD.",
       };
     }
 
@@ -944,13 +953,25 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
       targetKomunitas = findOrGenerateKomunitasSeed(komunitasId);
     }
 
+    if (targetKomunitas?.jenis === "satuan_paud") {
+      return {
+        success: false,
+        data: [],
+        canValidate: false,
+        canEditDdtk: false,
+        canManage: false,
+        message: "Data ATS tidak tersedia untuk Komunitas Satuan PAUD.",
+      };
+    }
+
     const meta = extractKomunitasMetadata(targetKomunitas || { id: komunitasId });
 
     // HANYA jenjang RT (memiliki RT dan RW) yang memiliki izin untuk memvalidasi Data ATS!
     // Jenjang RW, Kelurahan, Kecamatan, dan Posyandu hanya untuk pemantauan/monitoring.
     const isRtCommunity = Boolean(
-      (meta.hasRt && meta.hasRw) ||
-      (targetKomunitas?.rt && targetKomunitas?.rw)
+      meta.jenis === "warga_kita" &&
+      ((meta.hasRt && meta.hasRw) ||
+        (targetKomunitas?.rt && targetKomunitas?.rw))
     );
     canValidate = isRtCommunity && (isSuperAdmin || canManage);
 
@@ -1059,6 +1080,23 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
         const targetKel = normalizeWilayah(meta.rawKel);
         const targetRw = normalizeRtRwNum(meta.rawRw);
         const targetRt = normalizeRtRwNum(meta.rawRt);
+
+        // 0. Komunitas Posyandu: Tampilkan seluruh data Anak ATS di Kelurahan tempat Posyandu berada (Sama persis dengan Komunitas Warga Kelurahan)
+        if (meta.jenis === "posyandu" || targetKomunitas?.jenis === "posyandu") {
+          const matchKel =
+            !targetKel ||
+            itemKel === targetKel ||
+            itemKel.includes(targetKel) ||
+            targetKel.includes(itemKel);
+          const matchKec =
+            !targetKec ||
+            !itemKec ||
+            itemKec === targetKec ||
+            itemKec.includes(targetKec) ||
+            targetKec.includes(itemKec);
+
+          return matchKel && matchKec;
+        }
 
         // 1. Komunitas RT: Hanya tampilkan data Anak ATS di RT tersebut
         if (meta.hasRt && meta.hasRw) {

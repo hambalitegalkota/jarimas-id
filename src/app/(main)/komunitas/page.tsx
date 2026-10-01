@@ -9,14 +9,9 @@ import {
   ChevronRight,
   Compass,
 } from "lucide-react";
-import {
-  getKomunitasList,
-  getUserJoinedKomunitas,
-} from "@/app/actions/komunitas";
+import { getKomunitasList } from "@/app/actions/komunitas";
 import { KomunitasFilter } from "@/components/komunitas/komunitas-filter";
 import { KomunitasCard } from "@/components/komunitas/komunitas-card";
-import { KomunitasSayaSection } from "@/components/komunitas/komunitas-saya-section";
-import { ThemeToggle } from "@/components/theme-toggle";
 import type { JenisKomunitas } from "@/types/database";
 
 interface KomunitasPageProps {
@@ -39,27 +34,23 @@ export default async function KomunitasPage({
   const currentSearch = resolvedParams.search?.trim() || "";
   const currentKecamatan = resolvedParams.kecamatan || "semua";
   const currentKelurahan = resolvedParams.kelurahan || "semua";
-  const currentRw = resolvedParams.rw || "semua";
-  const currentRt = resolvedParams.rt || "semua";
+  const currentRw = currentTab === "warga_kita" ? resolvedParams.rw || "semua" : "semua";
+  const currentRt = currentTab === "warga_kita" ? resolvedParams.rt || "semua" : "semua";
   const currentPage = Math.max(1, Number(resolvedParams.page) || 1);
   const pageSize = 20;
 
-  const [komunitasResult, userJoinedResult] = await Promise.all([
-    getKomunitasList({
-      jenis: currentTab,
-      kecamatan: currentKecamatan,
-      kelurahan: currentKelurahan,
-      rw: currentRw,
-      rt: currentRt,
-      searchQuery: currentSearch,
-      page: currentPage,
-      limit: pageSize,
-    }),
-    getUserJoinedKomunitas(),
-  ]);
+  const komunitasResult = await getKomunitasList({
+    jenis: currentTab,
+    kecamatan: currentKecamatan,
+    kelurahan: currentKelurahan,
+    rw: currentRw,
+    rt: currentRt,
+    searchQuery: currentSearch,
+    page: currentPage,
+    limit: pageSize,
+  });
 
   const { data: listKomunitas, currentUserId, pagination } = komunitasResult;
-  const userJoinedList = userJoinedResult.data || [];
 
   // Helper untuk membuat URL dengan parameter yang konsisten
   const createPageUrl = (targetPage: number) => {
@@ -68,8 +59,10 @@ export default async function KomunitasPage({
     if (currentSearch) params.set("search", currentSearch);
     if (currentKecamatan !== "semua") params.set("kecamatan", currentKecamatan);
     if (currentKelurahan !== "semua") params.set("kelurahan", currentKelurahan);
-    if (currentRw !== "semua") params.set("rw", currentRw);
-    if (currentRt !== "semua") params.set("rt", currentRt);
+    if (currentTab === "warga_kita") {
+      if (currentRw !== "semua") params.set("rw", currentRw);
+      if (currentRt !== "semua") params.set("rt", currentRt);
+    }
     if (targetPage > 1) params.set("page", String(targetPage));
     const qs = params.toString();
     return `/komunitas${qs ? `?${qs}` : ""}`;
@@ -81,8 +74,10 @@ export default async function KomunitasPage({
     if (currentSearch) params.set("search", currentSearch);
     if (currentKecamatan !== "semua") params.set("kecamatan", currentKecamatan);
     if (currentKelurahan !== "semua") params.set("kelurahan", currentKelurahan);
-    if (currentRw !== "semua") params.set("rw", currentRw);
-    if (currentRt !== "semua") params.set("rt", currentRt);
+    if (targetTab === "warga_kita") {
+      if (currentRw !== "semua") params.set("rw", currentRw);
+      if (currentRt !== "semua") params.set("rt", currentRt);
+    }
     const qs = params.toString();
     return `/komunitas?${qs}`;
   };
@@ -91,44 +86,33 @@ export default async function KomunitasPage({
   const endIndex = Math.min(pagination.page * pagination.limit, pagination.totalCount);
 
   return (
-    <div className="flex flex-col flex-1 px-4 py-8 gap-8">
-      {/* Header Banner - Superlist Maximalist Headline */}
-      <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-border pb-6">
-        <div className="space-y-1.5">
+    <div className="flex flex-col flex-1 px-4 py-6 sm:px-6 md:px-8 gap-6 max-w-4xl mx-auto w-full">
+      {/* Header Banner - Coursera Mobile Style */}
+      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b-2 border-slate-200 pb-5">
+        <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <span className="cyber-badge font-mono text-[10px]">
-              <Compass className="h-3 w-3" />
-              JARIMAS_EXPLORER
+            <span className="rounded-md bg-blue-50 px-2.5 py-0.5 text-xs font-bold text-blue-800 border border-blue-200">
+              JARIMAS EXPLORER
             </span>
-            <span className="text-xs font-mono text-muted-foreground">KOTA TEGAL</span>
+            <span className="text-xs font-bold text-slate-500">KOTA TEGAL</span>
           </div>
-          <h1 className="text-3xl sm:text-4xl font-black tracking-tighter text-foreground">
+          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900">
             Eksplorasi Komunitas
           </h1>
-          <p className="text-xs sm:text-sm text-muted-foreground">
-            Akses 230+ Posyandu, PAUD &amp; Kesetaraan (TK, KB, RA, PKBM, SKB), dan RT/RW se-Kota Tegal dalam satu jaringan terpadu.
+          <p className="text-sm text-slate-600 leading-relaxed max-w-lg">
+            Akses 230+ Posyandu, PAUD &amp; Kesetaraan (TK, KB, RA, PKBM, SKB), dan RT/RW se-Kota Tegal.
           </p>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <ThemeToggle variant="compact" />
         </div>
       </header>
 
-      {/* Komunitas yang Telah Diikuti oleh Pengguna */}
-      <KomunitasSayaSection
-        userJoinedList={userJoinedList}
-        currentUserId={currentUserId}
-      />
-
-      {/* 3 Tab Kategori Utama (Posyandu, Warga Kita, PAUD & Kesetaraan) */}
-      <div className="flex rounded-md bg-muted/60 p-1.5 border border-border gap-1.5">
+      {/* 3 Tab Kategori Utama (Posyandu, Warga Kita, PAUD & Kesetaraan) - Coursera Mobile Touch Pills */}
+      <div className="flex rounded-2xl bg-white p-1.5 border-2 border-slate-200 gap-2 shadow-xs">
         <Link
           href={createTabUrl("posyandu")}
-          className={`flex flex-1 h-9.5 items-center justify-center gap-2 rounded-md text-xs font-mono font-bold transition-all ${
+          className={`flex flex-1 min-h-[48px] h-12 items-center justify-center gap-2 rounded-xl text-sm font-bold transition-all ${
             currentTab === "posyandu"
-              ? "bg-blue-600 text-white shadow-sm"
-              : "text-muted-foreground hover:text-foreground hover:bg-card/60"
+              ? "bg-blue-700 text-white shadow-xs"
+              : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
           }`}
         >
           <Sparkles className="h-4 w-4" />
@@ -137,32 +121,33 @@ export default async function KomunitasPage({
 
         <Link
           href={createTabUrl("warga_kita")}
-          className={`flex flex-1 h-9.5 items-center justify-center gap-2 rounded-md text-xs font-mono font-bold transition-all ${
+          className={`flex flex-1 min-h-[48px] h-12 items-center justify-center gap-2 rounded-xl text-sm font-bold transition-all ${
             currentTab === "warga_kita"
-              ? "bg-emerald-600 text-white shadow-sm"
-              : "text-muted-foreground hover:text-foreground hover:bg-card/60"
+              ? "bg-blue-700 text-white shadow-xs"
+              : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
           }`}
         >
           <Users className="h-4 w-4" />
-          <span>WARGA_KITA</span>
+          <span>WARGA KITA</span>
         </Link>
 
         <Link
           href={createTabUrl("satuan_paud")}
-          className={`flex flex-1 h-9.5 items-center justify-center gap-2 rounded-md text-xs font-mono font-bold transition-all ${
+          className={`flex flex-1 min-h-[48px] h-12 items-center justify-center gap-2 rounded-xl text-sm font-bold transition-all ${
             currentTab === "satuan_paud"
-              ? "bg-amber-600 text-white shadow-sm"
-              : "text-muted-foreground hover:text-foreground hover:bg-card/60"
+              ? "bg-amber-600 text-white shadow-xs"
+              : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
           }`}
         >
           <Building2 className="h-4 w-4" />
-          <span>PAUD_KESETARAAN</span>
+          <span>PAUD</span>
         </Link>
       </div>
 
       {/* Filter Dropdown & Search Wilayah */}
-      <Suspense fallback={<div className="h-32 animate-pulse rounded-lg bg-muted/40 border border-border" />}>
+      <Suspense fallback={<div className="min-h-[100px] animate-pulse rounded-2xl bg-slate-100 border-2 border-slate-200" />}>
         <KomunitasFilter
+          currentTab={currentTab}
           currentSearch={currentSearch}
           currentKecamatan={currentKecamatan}
           currentKelurahan={currentKelurahan}
@@ -174,34 +159,34 @@ export default async function KomunitasPage({
       {/* List Komunitas Stream */}
       <main className="space-y-4 pb-12">
         {/* Subheader Hasil & Paginasi Info */}
-        <div className="flex flex-wrap items-center justify-between gap-2 px-0.5 font-mono text-xs text-muted-foreground">
+        <div className="flex flex-wrap items-center justify-between gap-2 px-1 text-sm font-semibold text-slate-600">
           <div className="flex items-center gap-2">
-            <span className="font-semibold uppercase text-foreground">
+            <span className="font-bold uppercase tracking-wider text-slate-900">
               Daftar Komunitas
             </span>
             {currentSearch && (
-              <span className="cyber-badge-cyan text-[10px]">
-                Q: &ldquo;{currentSearch}&rdquo;
+              <span className="rounded-md bg-blue-50 px-2 py-0.5 text-xs font-bold text-blue-800 border border-blue-200">
+                Pencarian: &ldquo;{currentSearch}&rdquo;
               </span>
             )}
           </div>
-          <span>
+          <span className="font-mono text-slate-700 font-bold">
             {pagination.totalCount > 0
-              ? `[${startIndex}–${endIndex} / ${pagination.totalCount}]`
-              : "[0 data]"}
+              ? `${startIndex}–${endIndex} dari ${pagination.totalCount} data`
+              : "0 data"}
           </span>
         </div>
 
         {listKomunitas.length === 0 ? (
-          <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border bg-card/40 p-8 text-center space-y-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-md border border-border bg-muted/30 text-muted-foreground">
-              <Search className="h-5 w-5" />
+          <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-white p-12 text-center space-y-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 border-2 border-blue-200 text-blue-700">
+              <Search className="h-6 w-6" />
             </div>
-            <div className="space-y-1">
-              <h3 className="text-sm font-semibold text-foreground">
+            <div className="space-y-1 max-w-sm">
+              <h3 className="text-base font-bold text-slate-900">
                 Tidak Ada Komunitas yang Cocok
               </h3>
-              <p className="text-xs text-muted-foreground max-w-sm font-mono">
+              <p className="text-sm text-slate-600 leading-relaxed">
                 {currentSearch
                   ? `Tidak ditemukan hasil untuk "${currentSearch}". Coba kata kunci lain atau reset filter.`
                   : "Ubah pilihan kecamatan, kelurahan, atau RT/RW untuk melihat data lainnya."}
@@ -210,14 +195,14 @@ export default async function KomunitasPage({
             {(currentSearch || currentKecamatan !== "semua" || currentKelurahan !== "semua") && (
               <Link
                 href={`/komunitas?tab=${currentTab}`}
-                className="inline-flex h-8 items-center justify-center rounded-md border border-border bg-card px-3 text-xs font-mono font-medium text-foreground hover:bg-muted"
+                className="inline-flex min-h-[44px] h-11 items-center justify-center rounded-xl border-2 border-slate-300 bg-white px-5 text-sm font-bold text-slate-800 hover:bg-slate-50 transition-colors"
               >
                 Reset Semua Filter
               </Link>
             )}
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-4">
             {listKomunitas.map((kom) => (
               <KomunitasCard
                 key={kom.id}
@@ -230,25 +215,25 @@ export default async function KomunitasPage({
 
         {/* Navigasi Pagination */}
         {pagination.totalPages > 1 && (
-          <div className="flex items-center justify-between border-t border-border pt-4 font-mono text-xs">
+          <div className="flex items-center justify-between border-t-2 border-slate-200 pt-4 text-sm font-bold">
             <div>
               {pagination.page > 1 ? (
                 <Link
                   href={createPageUrl(pagination.page - 1)}
-                  className="inline-flex h-8 items-center gap-1 rounded-md border border-border bg-card px-3 text-foreground hover:bg-muted"
+                  className="inline-flex min-h-[44px] h-11 items-center gap-1.5 rounded-xl border-2 border-slate-300 bg-white px-4 text-slate-800 hover:bg-slate-50 transition-colors"
                 >
-                  <ChevronLeft className="h-3.5 w-3.5" />
+                  <ChevronLeft className="h-4 w-4" />
                   <span>Sebelumnya</span>
                 </Link>
               ) : (
-                <span className="inline-flex h-8 items-center gap-1 rounded-md border border-border/40 bg-muted/20 px-3 text-muted-foreground/40 cursor-not-allowed">
-                  <ChevronLeft className="h-3.5 w-3.5" />
+                <span className="inline-flex min-h-[44px] h-11 items-center gap-1.5 rounded-xl border-2 border-slate-200 bg-slate-50 px-4 text-slate-400 cursor-not-allowed">
+                  <ChevronLeft className="h-4 w-4" />
                   <span>Sebelumnya</span>
                 </span>
               )}
             </div>
 
-            <span className="text-muted-foreground">
+            <span className="text-slate-600">
               Halaman {pagination.page} dari {pagination.totalPages}
             </span>
 
@@ -256,15 +241,15 @@ export default async function KomunitasPage({
               {pagination.hasMore ? (
                 <Link
                   href={createPageUrl(pagination.page + 1)}
-                  className="inline-flex h-8 items-center gap-1 rounded-md border border-border bg-card px-3 text-foreground hover:bg-muted"
+                  className="inline-flex min-h-[44px] h-11 items-center gap-1.5 rounded-xl border-2 border-slate-300 bg-white px-4 text-slate-800 hover:bg-slate-50 transition-colors"
                 >
                   <span>Berikutnya</span>
-                  <ChevronRight className="h-3.5 w-3.5" />
+                  <ChevronRight className="h-4 w-4" />
                 </Link>
               ) : (
-                <span className="inline-flex h-8 items-center gap-1 rounded-md border border-border/40 bg-muted/20 px-3 text-muted-foreground/40 cursor-not-allowed">
+                <span className="inline-flex min-h-[44px] h-11 items-center gap-1.5 rounded-xl border-2 border-slate-200 bg-slate-50 px-4 text-slate-400 cursor-not-allowed">
                   <span>Berikutnya</span>
-                  <ChevronRight className="h-3.5 w-3.5" />
+                  <ChevronRight className="h-4 w-4" />
                 </span>
               )}
             </div>

@@ -32,16 +32,16 @@ export function KomunitasSayaSection({
   // Jika user belum login, tampilkan banner ajakan login
   if (!currentUserId) {
     return (
-      <div className="rounded-lg border border-border bg-card/60 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-start gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-blue-500/30 bg-blue-500/10 text-blue-600 dark:text-sky-400 font-mono">
-            <UserCheck className="h-4 w-4" />
+      <div className="rounded-2xl border-2 border-slate-200 bg-white p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
+        <div className="flex items-start gap-3.5">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border-2 border-blue-200 bg-blue-50 text-blue-700 font-mono">
+            <UserCheck className="h-6 w-6" />
           </div>
           <div className="space-y-1">
-            <h3 className="text-sm font-semibold text-foreground">
+            <h3 className="text-base sm:text-lg font-bold text-slate-900 leading-snug">
               Ingin melihat komunitas yang Anda ikuti?
             </h3>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-sm text-slate-600 leading-relaxed">
               Masuk ke akun Anda untuk mengakses Posyandu, RT/RW Warga Kita, dan PAUD &amp; Kesetaraan yang telah Anda ikuti.
             </p>
           </div>
@@ -49,9 +49,9 @@ export function KomunitasSayaSection({
 
         <Link
           href="/login"
-          className="inline-flex h-9 items-center justify-center gap-1.5 rounded-md bg-blue-600 hover:bg-blue-500 px-4 text-xs font-mono font-bold text-white transition-all shadow-sm shrink-0"
+          className="inline-flex min-h-[48px] h-12 items-center justify-center gap-2 rounded-xl bg-blue-700 hover:bg-blue-800 px-6 text-base font-bold text-white transition-all shadow-xs shrink-0"
         >
-          <LogIn className="h-3.5 w-3.5" />
+          <LogIn className="h-4 w-4" />
           <span>Masuk / Daftar</span>
         </Link>
       </div>
@@ -61,19 +61,18 @@ export function KomunitasSayaSection({
   // Jika user sudah login tapi belum bergabung ke komunitas manapun
   if (userJoinedList.length === 0) {
     return (
-      <div className="rounded-lg border border-dashed border-border bg-card/40 p-5 sm:p-6 space-y-2">
-        <div className="flex items-center gap-2">
-          <div className="flex h-7 w-7 items-center justify-center rounded-md border border-border bg-muted/40 text-muted-foreground">
-            <UserCheck className="h-3.5 w-3.5 text-blue-600 dark:text-sky-400" />
-          </div>
-          <h3 className="text-sm font-semibold text-foreground">
-            Komunitas Saya
-          </h3>
-          <span className="cyber-badge font-mono text-[10px]">0 TERGABUNG</span>
+      <div className="rounded-2xl border-2 border-dashed border-slate-300 bg-white p-6 sm:p-8 space-y-3 text-center">
+        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 border-2 border-blue-200 text-blue-700 mx-auto">
+          <UserCheck className="h-6 w-6" />
         </div>
-        <p className="text-xs text-muted-foreground max-w-2xl leading-relaxed">
-          Anda belum bergabung dengan komunitas manapun. Temukan Posyandu di lingkungan Anda, RT/RW Warga Kita, atau PAUD &amp; Kesetaraan pada daftar di bawah dan klik tombol <span className="font-semibold text-foreground">Gabung</span> untuk mulai terhubung.
-        </p>
+        <div className="space-y-1">
+          <h3 className="text-lg font-bold text-slate-900">
+            Komunitas Saya (0 Tergabung)
+          </h3>
+          <p className="text-sm text-slate-600 max-w-xl mx-auto leading-relaxed">
+            Anda belum bergabung dengan komunitas manapun. Temukan Posyandu di lingkungan Anda, RT/RW Warga Kita, atau PAUD &amp; Kesetaraan pada daftar di bawah dan klik tombol <span className="font-bold text-blue-700">Gabung</span> untuk mulai terhubung.
+          </p>
+        </div>
       </div>
     );
   }
@@ -261,33 +260,32 @@ export function KomunitasSayaSection({
 
   const totalSummaryCount = (wargaKitaSummary ? 1 : 0) + otherItems.length;
 
-  // Jika user sudah memiliki komunitas yang diikuti
   return (
-    <section className="rounded-lg border border-border bg-card p-4 sm:p-6 space-y-4 shadow-xs">
+    <section className="rounded-2xl border-2 border-slate-200 bg-white p-5 sm:p-6 space-y-5 shadow-xs">
       {/* Header Section */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-3">
-        <div className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-md border border-blue-500/30 bg-blue-500/10 text-blue-600 dark:text-sky-400">
-            <UserCheck className="h-4 w-4" />
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-slate-100 pb-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 text-blue-700">
+            <UserCheck className="h-5 w-5" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-base font-bold tracking-tight text-foreground">
+              <h2 className="text-lg font-bold tracking-tight text-slate-900">
                 Komunitas Saya
               </h2>
-              <span className="cyber-badge font-mono text-[10px]">
+              <span className="rounded-md bg-blue-50 px-2.5 py-0.5 text-xs font-bold text-blue-800 border border-blue-200">
                 {totalSummaryCount} KOMUNITAS
               </span>
             </div>
-            <p className="text-[11px] text-muted-foreground font-mono">
-              Komunitas yang telah Anda ikuti. Klik pada tingkatan wilayah untuk memilih tujuan lalu klik tombol &ldquo;Lihat Komunitas&rdquo;.
+            <p className="text-xs sm:text-sm font-medium text-slate-600">
+              Komunitas yang telah Anda ikuti. Klik tingkatan wilayah lalu pilih &ldquo;Lihat Komunitas&rdquo;.
             </p>
           </div>
         </div>
       </div>
 
       {/* Grid Komunitas yang Diikuti */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {/* 1. Kartu Warga Kita Terpadu (Interaktif 4 Jenjang) */}
         {wargaKitaSummary && (
           <div className="col-span-full">
@@ -310,21 +308,7 @@ export function KomunitasSayaSection({
               formattedTitle = `Posyandu ${item.nama}`;
             }
           } else if (item.jenis === "satuan_paud") {
-            if (
-              !formattedTitle.startsWith("Satuan PAUD") &&
-              !formattedTitle.startsWith("PAUD") &&
-              !formattedTitle.startsWith("RA") &&
-              !formattedTitle.startsWith("TK") &&
-              !formattedTitle.startsWith("KB") &&
-              !formattedTitle.startsWith("SKB") &&
-              !formattedTitle.startsWith("UPTD") &&
-              !formattedTitle.startsWith("SPNF") &&
-              !formattedTitle.startsWith("PKBM") &&
-              !formattedTitle.startsWith("SPS") &&
-              !formattedTitle.startsWith("TPA")
-            ) {
-              formattedTitle = `PAUD & Kesetaraan ${item.nama}`;
-            }
+            formattedTitle = item.nama;
           }
 
           const isApproved = item.status === "approved";
@@ -333,45 +317,45 @@ export function KomunitasSayaSection({
           return (
             <div
               key={item.membershipId}
-              className="flex flex-col justify-between rounded-lg border border-border bg-card p-4 space-y-3 transition-all hover:border-blue-500/40 hover:shadow-xs"
+              className="flex flex-col justify-between rounded-2xl border-2 border-slate-200 bg-white p-5 space-y-4 transition-all hover:border-slate-300 shadow-xs"
             >
               {/* Top Header Card */}
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <div className="flex items-start justify-between gap-2">
                   <div
                     className={cn(
-                      "flex h-8 w-8 shrink-0 items-center justify-center rounded-md border font-mono",
+                      "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border-2",
                       item.jenis === "posyandu" &&
-                        "bg-cyan-500/10 text-cyan-400 border-cyan-500/30",
+                        "bg-emerald-50 text-emerald-700 border-emerald-200",
                       item.jenis === "satuan_paud" &&
-                        "bg-amber-500/10 text-amber-400 border-amber-500/30"
+                        "bg-amber-50 text-amber-800 border-amber-200"
                     )}
                   >
                     {item.jenis === "posyandu" && (
-                      <Sparkles className="h-4 w-4" />
+                      <Sparkles className="h-5 w-5" />
                     )}
                     {item.jenis === "satuan_paud" && (
-                      <Building2 className="h-4 w-4" />
+                      <Building2 className="h-5 w-5" />
                     )}
                   </div>
 
                   {/* Status & Peran Badge */}
                   <div className="shrink-0">
                     {isApproved && (
-                      <span className="cyber-badge font-mono text-[10px] py-0.5">
-                        <CheckCircle2 className="h-3 w-3 text-blue-600 dark:text-sky-400" />
+                      <span className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-800 border-2 border-emerald-300">
+                        <CheckCircle2 className="h-4 w-4 text-emerald-600" />
                         <span>{item.peran.toUpperCase()}</span>
                       </span>
                     )}
                     {isPending && (
-                      <span className="inline-flex items-center gap-1 rounded border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-[10px] font-mono text-amber-400">
-                        <Clock className="h-3 w-3" />
+                      <span className="inline-flex items-center gap-1.5 rounded-xl bg-amber-50 px-3 py-1.5 text-xs font-bold text-amber-900 border-2 border-amber-300">
+                        <Clock className="h-4 w-4 text-amber-600" />
                         <span>PENDING</span>
                       </span>
                     )}
                     {item.status === "rejected" && (
-                      <span className="inline-flex items-center gap-1 rounded border border-destructive/30 bg-destructive/10 px-2 py-0.5 text-[10px] font-mono text-destructive">
-                        <XCircle className="h-3 w-3" />
+                      <span className="inline-flex items-center gap-1.5 rounded-xl bg-rose-50 px-3 py-1.5 text-xs font-bold text-rose-900 border-2 border-rose-300">
+                        <XCircle className="h-4 w-4 text-rose-600" />
                         <span>DITOLAK</span>
                       </span>
                     )}
@@ -380,56 +364,56 @@ export function KomunitasSayaSection({
 
                 {/* Nama & Wilayah */}
                 <div>
-                  <h3 className="text-sm font-bold text-foreground line-clamp-1 leading-snug">
+                  <h3 className="text-base font-bold text-slate-900 line-clamp-1 leading-snug">
                     {formattedTitle}
                   </h3>
-                  <div className="flex items-center gap-2 text-[11px] text-muted-foreground font-mono mt-1">
+                  <div className="flex items-center gap-2 text-sm font-semibold text-slate-600 mt-1">
                     <span className="flex items-center gap-1">
-                      <MapPin className="h-3 w-3 text-sky-500" />
+                      <MapPin className="h-3.5 w-3.5 text-slate-500" />
                       {item.kelurahan || "Tegal"}, {item.kecamatan || "Kota Tegal"}
                     </span>
                     <span>•</span>
-                    <span>{item.jumlah_anggota} Anggota</span>
+                    <span className="font-mono text-slate-900">{item.jumlah_anggota} Anggota</span>
                   </div>
                 </div>
 
                 {/* Jadwal jika ada */}
                 {item.jadwal && (
-                  <div className="flex items-center gap-1.5 rounded border border-border/60 bg-muted/20 px-2 py-1 text-[10px] text-muted-foreground font-mono">
-                    <Calendar className="h-3 w-3 text-blue-600 dark:text-sky-400 shrink-0" />
+                  <div className="flex items-center gap-2 rounded-xl bg-slate-50 border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700">
+                    <Calendar className="h-4 w-4 text-blue-700 shrink-0" />
                     <span className="truncate">{item.jadwal}</span>
                   </div>
                 )}
               </div>
 
               {/* Tombol Lihat Komunitas */}
-              <div className="pt-2 border-t border-border">
+              <div className="pt-2 border-t-2 border-slate-100">
                 {isApproved ? (
                   <Link
                     href={`/komunitas/${item.id}`}
                     className={cn(
-                      "group flex h-9 w-full items-center justify-center gap-2 rounded-md px-3 text-xs font-mono font-bold uppercase tracking-wider text-white transition-all shadow-xs",
-                      item.jenis === "warga_kita" && "bg-emerald-600 hover:bg-emerald-500",
-                      item.jenis === "posyandu" && "bg-blue-600 hover:bg-blue-500",
-                      item.jenis === "satuan_paud" && "bg-amber-600 hover:bg-amber-500",
-                      !["warga_kita", "posyandu", "satuan_paud"].includes(item.jenis) && "bg-primary hover:bg-primary/90"
+                      "group flex min-h-[48px] h-12 w-full items-center justify-center gap-2 rounded-xl px-4 text-base font-bold text-white transition-all shadow-xs",
+                      item.jenis === "warga_kita" && "bg-blue-700 hover:bg-blue-800",
+                      item.jenis === "posyandu" && "bg-blue-700 hover:bg-blue-800",
+                      item.jenis === "satuan_paud" && "bg-amber-600 hover:bg-amber-700",
+                      !["warga_kita", "posyandu", "satuan_paud"].includes(item.jenis) && "bg-blue-700 hover:bg-blue-800"
                     )}
                     title={`Masuk ke ${formattedTitle}`}
                   >
                     <span>Lihat Komunitas</span>
-                    <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
+                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                   </Link>
                 ) : (
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                     <Link
                       href={`/komunitas/${item.id}`}
-                      className="group flex flex-1 h-9 items-center justify-center gap-1.5 rounded-md border border-border bg-card px-3 text-xs font-mono font-medium text-foreground transition-colors hover:bg-muted"
+                      className="group flex flex-1 min-h-[48px] h-12 items-center justify-center gap-2 rounded-xl border-2 border-slate-200 bg-white px-4 text-base font-bold text-slate-800 transition-colors hover:bg-slate-50"
                     >
                       <span>Detail</span>
-                      <ArrowRight className="h-3.5 w-3.5 text-muted-foreground transition-transform group-hover:translate-x-1" />
+                      <ArrowRight className="h-4 w-4 text-slate-500 transition-transform group-hover:translate-x-1" />
                     </Link>
-                    <span className="inline-flex items-center gap-1 px-2.5 h-9 rounded-md bg-amber-500/10 border border-amber-500/30 text-[11px] font-mono text-amber-400 shrink-0">
-                      <Clock className="h-3 w-3" />
+                    <span className="inline-flex items-center justify-center gap-1.5 px-4 min-h-[48px] h-12 rounded-xl bg-amber-50 border-2 border-amber-200 text-sm font-bold text-amber-900 shrink-0">
+                      <Clock className="h-4 w-4 text-amber-600" />
                       <span>Menunggu</span>
                     </span>
                   </div>

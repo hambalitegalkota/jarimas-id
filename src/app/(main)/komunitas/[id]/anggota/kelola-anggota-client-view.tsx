@@ -17,7 +17,7 @@ import {
   rejectAnggotaByAdmin,
 } from "@/app/actions/komunitas";
 import type { AnggotaKomunitasDetail } from "@/types/database";
-import { cn } from "@/lib/utils";
+import { cn, formatPeranDisplay } from "@/lib/utils";
 
 interface KelolaAnggotaClientViewProps {
   komunitasId: string;
@@ -277,7 +277,7 @@ export function KelolaAnggotaClientView({
                     </div>
                   </div>
                   <span className="rounded-md bg-emerald-500/10 px-2.5 py-1 text-xs font-mono text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
-                    {member.peran.toUpperCase()}
+                    {formatPeranDisplay(member.peran).toUpperCase()}
                   </span>
                 </div>
               );
