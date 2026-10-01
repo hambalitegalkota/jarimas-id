@@ -203,10 +203,13 @@ export function getWilayahScopeInfo(komunitas: KomunitasWithMembership | null | 
     };
   }
 
+  const namaKomunitas = typeof komunitas?.nama === "string" ? komunitas.nama : "Komunitas";
+  const lokasiKomunitas = typeof komunitas?.lokasi === "string" ? komunitas.lokasi : "Kota Tegal";
+
   return {
     tierLevel: "Komunitas",
-    scopeTitle: komunitas?.nama || "Komunitas",
-    scopeSubtitle: komunitas?.lokasi || "Kota Tegal",
+    scopeTitle: namaKomunitas,
+    scopeSubtitle: lokasiKomunitas,
     badgeLabel: "Komunitas",
     isWargaKita: false,
     kecamatan: meta.rawKec,
