@@ -3,20 +3,13 @@
 import { useState } from "react";
 import {
   GraduationCap,
-  ShieldCheck,
-  Clock,
   Plus,
   X,
   Search,
-  CheckCircle2,
   AlertCircle,
   Sparkles,
   MapPin,
-  BookOpen,
-  Filter,
   Layers,
-  Baby,
-  School,
   HeartHandshake,
   Printer,
 } from "lucide-react";
@@ -27,7 +20,6 @@ import { DiagramChartFilterAts } from "./diagram-chart-filter-ats";
 import {
   getJenjangAts,
   getWilayahScopeInfo,
-  JENJANG_ATS_CONFIG,
   type JenjangAtsId,
 } from "@/lib/ats-helpers";
 import {

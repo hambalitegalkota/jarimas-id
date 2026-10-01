@@ -4,12 +4,8 @@ import { useState, useMemo } from "react";
 import {
   PieChart as PieChartIcon,
   BarChart2,
-  TrendingUp,
   Layers,
   HeartHandshake,
-  Users,
-  AlertCircle,
-  HelpCircle,
   Sparkles,
 } from "lucide-react";
 import { getJenjangAts } from "@/lib/ats-helpers";
@@ -18,7 +14,7 @@ import { cn } from "@/lib/utils";
 
 interface DiagramChartFilterAtsProps {
   filteredAts: DataAtsItem[];
-  totalAllAts: number;
+  totalAllAts?: number;
 }
 
 // Helper untuk menghasilkan path SVG Donut Chart

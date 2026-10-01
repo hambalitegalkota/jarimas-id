@@ -1,5 +1,5 @@
 import { extractKomunitasMetadata } from "@/lib/admin-helpers";
-import type { DataAtsItem, KomunitasWithMembership } from "@/types/database";
+import type { KomunitasWithMembership } from "@/types/database";
 
 export type JenjangAtsId = "semua" | "sd" | "smp" | "sma" | "dewasa";
 
@@ -137,7 +137,7 @@ export function getJenjangAts(ats: {
 /**
  * Informasi cakupan wilayah berjenjang (RT, RW, Kelurahan, Kecamatan)
  */
-export function getWilayahScopeInfo(komunitas: any): {
+export function getWilayahScopeInfo(komunitas: KomunitasWithMembership | null | undefined | Record<string, unknown>): {
   tierLevel: "RT" | "RW" | "Kelurahan" | "Kecamatan" | "Komunitas";
   scopeTitle: string;
   scopeSubtitle: string;

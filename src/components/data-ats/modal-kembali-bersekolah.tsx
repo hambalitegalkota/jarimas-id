@@ -15,7 +15,6 @@ import {
 } from "lucide-react";
 import { kembaliBersekolah } from "@/app/actions/data-ats";
 import type { DataAtsItem } from "@/types/database";
-import { cn } from "@/lib/utils";
 
 interface ModalKembaliBersekolahProps {
   isOpen: boolean;
