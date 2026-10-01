@@ -164,7 +164,7 @@ export function GrafikFilterAts({
   }
 
   return (
-    <div className="rounded-xl border border-border bg-card/60 backdrop-blur-xs p-4 sm:p-6 space-y-6 shadow-sm">
+    <div className="rounded-xl border border-border bg-card/60 backdrop-blur-xs p-4 sm:p-6 space-y-6 shadow-sm break-inside-avoid print:bg-white print:border-gray-300 print:text-black">
       {/* Header Grafik */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border pb-4">
         <div className="space-y-1">

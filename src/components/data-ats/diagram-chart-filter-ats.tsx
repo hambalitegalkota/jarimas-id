@@ -231,7 +231,7 @@ export function DiagramChartFilterAts({
     keinginanChartData.find((k) => k.id === hoveredKeinginan) || null;
 
   return (
-    <div className="rounded-xl border border-border bg-card/70 backdrop-blur-xs p-4 sm:p-6 space-y-6 shadow-sm">
+    <div className="rounded-xl border border-border bg-card/70 backdrop-blur-xs p-4 sm:p-6 space-y-6 shadow-sm break-inside-avoid print:bg-white print:border-gray-300 print:text-black">
       {/* Header Diagram */}
       <div className="flex items-center justify-between border-b border-border pb-4">
         <div className="flex items-center gap-2.5">

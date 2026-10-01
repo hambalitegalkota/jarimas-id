@@ -158,7 +158,7 @@ export function CardDataAts({
 
   return (
     <>
-      <div className="overflow-hidden rounded-lg border border-border bg-card p-5 space-y-4 transition-colors hover:border-amber-500/40">
+      <div className="overflow-hidden rounded-lg border border-border bg-card p-5 space-y-4 transition-colors hover:border-amber-500/40 break-inside-avoid print:bg-white print:border-gray-300 print:text-black print:shadow-none">
         {/* Header: Nama Anak, Jenjang, & Status Approval */}
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
           <div className="flex items-start gap-3">
@@ -328,9 +328,9 @@ export function CardDataAts({
           </div>
         )}
 
-        {/* Action Buttons Bar: VALIDASI, KEMBALI BERSEKOLAH, EDIT, HAPUS (Ukuran Sama) */}
+        {/* Action Buttons Bar: VALIDASI, KEMBALI BERSEKOLAH, EDIT, HAPUS (Ukuran Sama, Disembunyikan saat Print) */}
         {((!isApproved && canValidate) || canPerformActions) && (
-          <div className="flex items-center gap-2 pt-2 border-t border-border w-full">
+          <div className="flex items-center gap-2 pt-2 border-t border-border w-full print:hidden">
             {/* 1. Tombol Validasi (jika status masih pending) */}
             {!isApproved && canValidate && (
               <button

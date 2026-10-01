@@ -24,7 +24,6 @@ import { CardDataAts } from "./card-data-ats";
 import { FormDataAts } from "./form-data-ats";
 import { GrafikFilterAts } from "./grafik-filter-ats";
 import { DiagramChartFilterAts } from "./diagram-chart-filter-ats";
-import { PrintLaporanAts } from "./print-laporan-ats";
 import {
   getJenjangAts,
   getWilayahScopeInfo,
@@ -157,14 +156,12 @@ export function DataAtsClientView({
   };
 
   const handleDeleteItem = (deletedId: string) => {
-    const target = atsList.find((item) => item.id === deletedId);
     setAtsList((prev) => prev.filter((item) => item.id !== deletedId));
-    showToast(`Data ATS ${target ? target.nama_lengkap : ""} berhasil dihapus dari sistem.`);
+    showToast(`Data ATS berhasil dihapus dari sistem.`);
   };
 
   const handleKembaliSekolah = (atsId: string, namaSekolah: string) => {
     const target = atsList.find((item) => item.id === atsId);
-    // Remove from ATS list since child is now officially re-enrolled in school
     setAtsList((prev) => prev.filter((item) => item.id !== atsId));
     showToast(
       `🎉 Selamat! ${target?.nama_lengkap || "Anak"} telah berhasil difasilitasi kembali bersekolah di ${namaSekolah} dan dialihkan ke Data Anak aktif.`,
@@ -231,11 +228,74 @@ export function DataAtsClientView({
     },
   ];
 
+  const tanggalCetakLengkap = new Intl.DateTimeFormat("id-ID", {
+    dateStyle: "long",
+    timeStyle: "short",
+  }).format(new Date());
+
+  const tanggalSimple = new Intl.DateTimeFormat("id-ID", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(new Date());
+
+  const filterDetails = [
+    selectedJenjang !== "semua" ? `Jenjang: ${selectedJenjang.toUpperCase()}` : "Semua Jenjang",
+    selectedKeinginan !== "semua" ? `Keinginan: ${selectedKeinginan}` : "Semua Keinginan",
+    selectedAlasan !== "semua" ? `Alasan: ${selectedAlasan}` : "Semua Alasan",
+    statusFilter !== "semua" ? `Status: ${statusFilter === "approved" ? "Terverifikasi" : "Menunggu"}` : "Semua Status",
+    searchQuery.trim() ? `Pencarian: "${searchQuery}"` : null,
+  ].filter(Boolean).join(" | ");
+
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
+      {/* 0. KOP DOKUMEN RESMI A4 (HANYA MUNCUL SAAT CETAK KE PDF / KERTAS A4) */}
+      <div className="hidden print:block border-b-2 border-black pb-3 mb-4 text-center">
+        <div className="flex items-center justify-between gap-4">
+          {/* Logo Cap Left */}
+          <div className="w-14 h-14 border-2 border-black rounded-md flex flex-col items-center justify-center p-1 shrink-0">
+            <span className="text-[9px] font-bold font-mono leading-none text-center">TEGAL</span>
+            <span className="text-[7px] font-mono leading-none mt-1 text-center">BAHARI</span>
+          </div>
+
+          {/* Kop Center */}
+          <div className="flex-1 text-center space-y-0.5">
+            <h2 className="text-[11px] font-bold uppercase tracking-wider font-mono">
+              PEMERINTAH KOTA TEGAL
+            </h2>
+            <h1 className="text-sm sm:text-base font-black uppercase tracking-tight">
+              LAPORAN DATA & PEMETAAN ANAK TIDAK SEKOLAH (ATS)
+            </h1>
+            <p className="text-[10px] font-semibold">
+              JARIMAS-ID • Jaringan Informasi & Layanan Anak Kota Tegal
+            </p>
+            <p className="text-[9px] text-gray-700">
+              Wilayah: <span className="font-bold">{komunitas.nama}</span> • Cakupan:{" "}
+              {scopeInfo.scopeTitle} ({scopeInfo.scopeSubtitle})
+            </p>
+          </div>
+
+          {/* Logo Cap Right */}
+          <div className="w-14 h-14 border-2 border-black rounded-md flex flex-col items-center justify-center p-1 shrink-0">
+            <span className="text-[9px] font-bold font-mono leading-none text-center">JARIMAS</span>
+            <span className="text-[7px] font-mono leading-none mt-1 text-center">ATS-2026</span>
+          </div>
+        </div>
+
+        <div className="border-t border-black mt-2 pt-1.5 flex items-center justify-between text-[9px] font-mono text-gray-800">
+          <div className="text-left">
+            <span className="font-bold">Kriteria Filter: </span>
+            <span>{filterDetails}</span>
+          </div>
+          <div className="text-right shrink-0">
+            <span>Dicetak: <b>{tanggalCetakLengkap}</b> ({filteredAts.length} anak)</span>
+          </div>
+        </div>
+      </div>
+
       {/* Toast Notification Banner */}
       {feedbackToast && (
-        <div className="flex items-center justify-between gap-2 rounded-lg border border-emerald-500/40 bg-emerald-950/40 p-3.5 text-xs font-mono text-emerald-300 shadow-md animate-in slide-in-from-top-2 duration-200">
+        <div className="flex items-center justify-between gap-2 rounded-lg border border-emerald-500/40 bg-emerald-950/40 p-3.5 text-xs font-mono text-emerald-300 shadow-md animate-in slide-in-from-top-2 duration-200 print:hidden">
           <div className="flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-emerald-400 shrink-0" />
             <span>{feedbackToast.message}</span>
@@ -251,21 +311,21 @@ export function DataAtsClientView({
 
       {/* 1. WILAYAH SCOPE BANNER */}
       {scopeInfo.isWargaKita && (
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-lg border border-amber-500/30 bg-amber-500/5 p-4 text-xs font-mono">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-lg border border-amber-500/30 bg-amber-500/5 p-4 text-xs font-mono break-inside-avoid print:bg-white print:border-gray-400 print:text-black">
           <div className="flex items-start gap-3">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-amber-500/30 bg-amber-500/15 text-amber-400">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-amber-500/30 bg-amber-500/15 text-amber-400 print:bg-gray-100 print:text-black">
               <MapPin className="h-4 w-4" />
             </div>
             <div className="space-y-0.5">
               <div className="flex items-center gap-2">
-                <span className="font-bold text-foreground">
+                <span className="font-bold text-foreground print:text-black">
                   CAKUPAN WILAYAH: {scopeInfo.scopeTitle}
                 </span>
-                <span className="rounded bg-amber-500/20 px-1.5 py-0.5 text-[10px] font-bold text-amber-400 border border-amber-500/30">
+                <span className="rounded bg-amber-500/20 px-1.5 py-0.5 text-[10px] font-bold text-amber-400 border border-amber-500/30 print:border-black print:text-black">
                   {scopeInfo.badgeLabel}
                 </span>
               </div>
-              <p className="text-muted-foreground text-[11px]">
+              <p className="text-muted-foreground print:text-gray-700 text-[11px]">
                 {scopeInfo.tierLevel === "RT" &&
                   `Menampilkan data Anak ATS khusus di wilayah ${scopeInfo.scopeTitle}, ${scopeInfo.scopeSubtitle}.`}
                 {scopeInfo.tierLevel === "RW" &&
@@ -277,62 +337,62 @@ export function DataAtsClientView({
               </p>
             </div>
           </div>
-          <div className="text-[11px] text-amber-400/90 shrink-0 self-start sm:self-center font-bold">
+          <div className="text-[11px] text-amber-400/90 print:text-gray-800 shrink-0 self-start sm:self-center font-bold">
             Filter Terkoneksi Otomatis
           </div>
         </div>
       )}
 
       {/* 2. STATISTIC METRIC CARDS */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-        <div className="rounded-md border border-border bg-card p-3.5 text-center space-y-1">
-          <span className="text-[10px] uppercase font-mono text-muted-foreground block">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 break-inside-avoid">
+        <div className="rounded-md border border-border bg-card p-3.5 text-center space-y-1 print:bg-white print:border-gray-400 print:text-black">
+          <span className="text-[10px] uppercase font-mono text-muted-foreground print:text-gray-600 block">
             TOTAL DATA ATS
           </span>
-          <span className="text-2xl font-black font-mono text-foreground">
+          <span className="text-2xl font-black font-mono text-foreground print:text-black">
             {totalAts}
           </span>
-          <span className="text-[10px] font-mono text-muted-foreground block">
+          <span className="text-[10px] font-mono text-muted-foreground print:text-gray-600 block">
             Anak Tidak Sekolah
           </span>
         </div>
 
-        <div className="rounded-md border border-emerald-500/30 bg-emerald-500/10 p-3.5 text-center space-y-1">
-          <span className="text-[10px] uppercase font-mono text-emerald-400 block">
+        <div className="rounded-md border border-emerald-500/30 bg-emerald-500/10 p-3.5 text-center space-y-1 print:bg-white print:border-gray-400 print:text-black">
+          <span className="text-[10px] uppercase font-mono text-emerald-400 print:text-emerald-700 block">
             TERVERIFIKASI
           </span>
-          <span className="text-2xl font-black font-mono text-emerald-400">
+          <span className="text-2xl font-black font-mono text-emerald-400 print:text-emerald-700">
             {totalApproved}
           </span>
-          <span className="text-[10px] font-mono text-emerald-400/80 block">
+          <span className="text-[10px] font-mono text-emerald-400/80 print:text-gray-600 block">
             Tervalidasi oleh Kader/Admin
           </span>
         </div>
 
-        <div className="rounded-md border border-amber-500/30 bg-amber-500/10 p-3.5 text-center space-y-1">
-          <span className="text-[10px] uppercase font-mono text-amber-400 block">
+        <div className="rounded-md border border-amber-500/30 bg-amber-500/10 p-3.5 text-center space-y-1 print:bg-white print:border-gray-400 print:text-black">
+          <span className="text-[10px] uppercase font-mono text-amber-400 print:text-amber-700 block">
             MENUNGGU VALIDASI
           </span>
-          <span className="text-2xl font-black font-mono text-amber-400">
+          <span className="text-2xl font-black font-mono text-amber-400 print:text-amber-700">
             {totalPending}
           </span>
-          <span className="text-[10px] font-mono text-amber-400/80 block">
+          <span className="text-[10px] font-mono text-amber-400/80 print:text-gray-600 block">
             Perlu Verifikasi Lapangan
           </span>
         </div>
       </div>
 
       {/* 3. JENJANG PENDIDIKAN DISTRIBUTION CARDS */}
-      <div className="rounded-lg border border-border bg-card p-4 space-y-3">
+      <div className="rounded-lg border border-border bg-card p-4 space-y-3 break-inside-avoid print:bg-white print:border-gray-400 print:text-black">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Layers className="h-4 w-4 text-amber-500" />
-            <span className="text-xs font-mono font-bold uppercase text-foreground">
+            <span className="text-xs font-mono font-bold uppercase text-foreground print:text-black">
               DISTRIBUSI JENJANG PENDIDIKAN ATS
             </span>
           </div>
-          <span className="text-[11px] font-mono text-muted-foreground">
-            Klik jenjang untuk memfilter
+          <span className="text-[11px] font-mono text-muted-foreground print:text-gray-600">
+            {selectedJenjang !== "semua" ? `Filter: ${selectedJenjang.toUpperCase()}` : "Semua Jenjang"}
           </span>
         </div>
 
@@ -348,8 +408,8 @@ export function DataAtsClientView({
                 className={cn(
                   "flex items-center gap-2 rounded-md px-3 py-2 text-xs font-mono font-bold transition-all cursor-pointer border",
                   isSelected
-                    ? "bg-amber-600 border-amber-500 text-white shadow-sm ring-1 ring-amber-500"
-                    : "bg-background border-border text-muted-foreground hover:bg-muted hover:text-foreground"
+                    ? "bg-amber-600 border-amber-500 text-white shadow-sm ring-1 ring-amber-500 print:bg-gray-200 print:text-black print:border-black"
+                    : "bg-background border-border text-muted-foreground hover:bg-muted hover:text-foreground print:bg-white print:text-gray-700 print:border-gray-300"
                 )}
               >
                 <span>{tab.label}</span>
@@ -357,8 +417,8 @@ export function DataAtsClientView({
                   className={cn(
                     "rounded-full px-1.5 py-0.2 text-[10px] font-mono font-bold",
                     isSelected
-                      ? "bg-black/30 text-white"
-                      : "bg-muted text-foreground border border-border"
+                      ? "bg-black/30 text-white print:bg-black print:text-white"
+                      : "bg-muted text-foreground border border-border print:bg-gray-100 print:text-black print:border-gray-300"
                   )}
                 >
                   {tab.count}
@@ -370,16 +430,16 @@ export function DataAtsClientView({
       </div>
 
       {/* 3b. KEINGINAN UNTUK BERSEKOLAH FILTER CARD */}
-      <div className="rounded-lg border border-border bg-card p-4 space-y-3">
+      <div className="rounded-lg border border-border bg-card p-4 space-y-3 break-inside-avoid print:bg-white print:border-gray-400 print:text-black">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <HeartHandshake className="h-4 w-4 text-emerald-500" />
-            <span className="text-xs font-mono font-bold uppercase text-foreground">
+            <span className="text-xs font-mono font-bold uppercase text-foreground print:text-black">
               KEINGINAN UNTUK BERSEKOLAH
             </span>
           </div>
-          <span className="text-[11px] font-mono text-muted-foreground">
-            Klik status untuk memfilter
+          <span className="text-[11px] font-mono text-muted-foreground print:text-gray-600">
+            {selectedKeinginan !== "semua" ? `Filter: ${selectedKeinginan}` : "Semua Status"}
           </span>
         </div>
 
@@ -395,8 +455,8 @@ export function DataAtsClientView({
                 className={cn(
                   "flex items-center gap-2 rounded-md px-3 py-2 text-xs font-mono font-bold transition-all cursor-pointer border",
                   isSelected
-                    ? tab.activeClass
-                    : "bg-background border-border text-muted-foreground hover:bg-muted hover:text-foreground"
+                    ? tab.activeClass + " print:bg-gray-200 print:text-black print:border-black"
+                    : "bg-background border-border text-muted-foreground hover:bg-muted hover:text-foreground print:bg-white print:text-gray-700 print:border-gray-300"
                 )}
               >
                 <span>{tab.label}</span>
@@ -404,8 +464,8 @@ export function DataAtsClientView({
                   className={cn(
                     "rounded-full px-1.5 py-0.2 text-[10px] font-mono font-bold",
                     isSelected
-                      ? "bg-black/30 text-white"
-                      : "bg-muted text-foreground border border-border"
+                      ? "bg-black/30 text-white print:bg-black print:text-white"
+                      : "bg-muted text-foreground border border-border print:bg-gray-100 print:text-black print:border-gray-300"
                   )}
                 >
                   {tab.count}
@@ -417,16 +477,16 @@ export function DataAtsClientView({
       </div>
 
       {/* 3c. ALASAN TIDAK SEKOLAH FILTER CARD */}
-      <div className="rounded-lg border border-border bg-card p-4 space-y-3">
+      <div className="rounded-lg border border-border bg-card p-4 space-y-3 break-inside-avoid print:bg-white print:border-gray-400 print:text-black">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <AlertCircle className="h-4 w-4 text-amber-500" />
-            <span className="text-xs font-mono font-bold uppercase text-foreground">
+            <span className="text-xs font-mono font-bold uppercase text-foreground print:text-black">
               ALASAN TIDAK SEKOLAH
             </span>
           </div>
-          <span className="text-[11px] font-mono text-muted-foreground">
-            Klik alasan untuk memfilter
+          <span className="text-[11px] font-mono text-muted-foreground print:text-gray-600">
+            {selectedAlasan !== "semua" ? `Filter: ${selectedAlasan}` : "Semua Alasan"}
           </span>
         </div>
 
@@ -438,8 +498,8 @@ export function DataAtsClientView({
             className={cn(
               "flex items-center gap-2 rounded-md px-3 py-2 text-xs font-mono font-bold transition-all cursor-pointer border",
               selectedAlasan === "semua"
-                ? "bg-amber-600 border-amber-500 text-white shadow-sm ring-1 ring-amber-500"
-                : "bg-background border-border text-muted-foreground hover:bg-muted hover:text-foreground"
+                ? "bg-amber-600 border-amber-500 text-white shadow-sm ring-1 ring-amber-500 print:bg-gray-200 print:text-black print:border-black"
+                : "bg-background border-border text-muted-foreground hover:bg-muted hover:text-foreground print:bg-white print:text-gray-700 print:border-gray-300"
             )}
           >
             <span>Semua Alasan</span>
@@ -447,8 +507,8 @@ export function DataAtsClientView({
               className={cn(
                 "rounded-full px-1.5 py-0.2 text-[10px] font-mono font-bold",
                 selectedAlasan === "semua"
-                  ? "bg-black/30 text-white"
-                  : "bg-muted text-foreground border border-border"
+                  ? "bg-black/30 text-white print:bg-black print:text-white"
+                  : "bg-muted text-foreground border border-border print:bg-gray-100 print:text-black"
               )}
             >
               {atsList.length}
@@ -466,10 +526,10 @@ export function DataAtsClientView({
                 className={cn(
                   "flex items-center gap-2 rounded-md px-3 py-2 text-xs font-mono font-bold transition-all cursor-pointer border",
                   isSelected
-                    ? "bg-amber-600 border-amber-500 text-white shadow-sm ring-1 ring-amber-500"
+                    ? "bg-amber-600 border-amber-500 text-white shadow-sm ring-1 ring-amber-500 print:bg-gray-200 print:text-black print:border-black"
                     : count > 0
-                    ? "bg-background border-border text-foreground hover:bg-muted"
-                    : "bg-background/40 border-border/60 text-muted-foreground hover:bg-muted/50"
+                    ? "bg-background border-border text-foreground hover:bg-muted print:bg-white print:text-gray-800 print:border-gray-300"
+                    : "bg-background/40 border-border/60 text-muted-foreground hover:bg-muted/50 print:bg-white print:text-gray-500"
                 )}
               >
                 <span>{alasan}</span>
@@ -477,10 +537,10 @@ export function DataAtsClientView({
                   className={cn(
                     "rounded-full px-1.5 py-0.2 text-[10px] font-mono font-bold",
                     isSelected
-                      ? "bg-black/30 text-white"
+                      ? "bg-black/30 text-white print:bg-black print:text-white"
                       : count > 0
-                      ? "bg-amber-500/15 text-amber-400 border border-amber-500/30"
-                      : "bg-muted text-muted-foreground border border-border"
+                      ? "bg-amber-500/15 text-amber-400 border border-amber-500/30 print:bg-gray-100 print:text-black"
+                      : "bg-muted text-muted-foreground border border-border print:bg-gray-100 print:text-gray-600"
                   )}
                 >
                   {count}
@@ -491,8 +551,8 @@ export function DataAtsClientView({
         </div>
       </div>
 
-      {/* 4. SEARCH & STATUS FILTER & ADD BUTTON */}
-      <div className="flex flex-col sm:flex-row sm:items-center gap-2.5">
+      {/* 4. SEARCH & STATUS FILTER & TAMBAH ATS (KONTROL LAYAR) */}
+      <div className="flex flex-col sm:flex-row sm:items-center gap-2.5 print:hidden">
         <div className="relative flex-1">
           <Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
           <input
@@ -544,42 +604,39 @@ export function DataAtsClientView({
           </button>
         </div>
 
-        {/* Tombol Cetak PDF A4 & Tambah ATS */}
-        <div className="flex items-center gap-2 shrink-0">
-          <button
-            type="button"
-            onClick={() => window.print()}
-            className="flex h-10 items-center justify-center gap-1.5 rounded-md bg-card hover:bg-muted border border-border hover:border-amber-500/50 text-foreground px-3.5 text-xs font-mono font-bold tracking-wider shadow-xs transition-all shrink-0 cursor-pointer"
-            title="Cetak Laporan Format PDF / Kertas A4"
-          >
-            <Printer className="h-4 w-4 text-amber-500" />
-            <span>CETAK PDF (A4)</span>
-          </button>
-
-          <button
-            onClick={() => setIsAddModalOpen(true)}
-            className="flex h-10 items-center justify-center gap-1.5 rounded-md bg-amber-600 hover:bg-amber-500 text-white px-4 text-xs font-mono font-bold uppercase tracking-wider shadow-md transition-all shrink-0 cursor-pointer"
-          >
-            <Plus className="h-3.5 w-3.5 stroke-[2.5px]" />
-            <span>TAMBAH ATS</span>
-          </button>
-        </div>
+        {/* Tombol Tambah ATS */}
+        <button
+          onClick={() => setIsAddModalOpen(true)}
+          className="flex h-10 items-center justify-center gap-1.5 rounded-md bg-amber-600 hover:bg-amber-500 text-white px-4 text-xs font-mono font-bold uppercase tracking-wider shadow-md transition-all shrink-0 cursor-pointer"
+        >
+          <Plus className="h-3.5 w-3.5 stroke-[2.5px]" />
+          <span>TAMBAH ATS</span>
+        </button>
       </div>
 
-      {/* 5. LIST DATA ATS */}
-      <div className="space-y-3">
+      {/* 5. LIST DATA ATS (SESUAI FILTER SAAT INI) */}
+      <div className="space-y-3.5">
+        <div className="flex items-center justify-between border-b border-border pb-2">
+          <h3 className="text-xs font-mono font-bold uppercase text-foreground print:text-black">
+            DAFTAR RINCIAN ANAK TIDAK SEKOLAH ({filteredAts.length} DATA)
+          </h3>
+          <span className="text-[11px] font-mono text-muted-foreground print:text-gray-600">
+            {filteredAts.length} dari total {totalAts} anak
+          </span>
+        </div>
+
         {filteredAts.length === 0 ? (
-          <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border bg-card p-12 text-center space-y-4">
+          <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border bg-card p-12 text-center space-y-4 print:bg-white print:border-gray-400 print:text-black">
             <div className="flex h-12 w-12 items-center justify-center rounded-md border border-border bg-muted text-muted-foreground">
               <GraduationCap className="h-6 w-6 stroke-[1.5px] text-amber-500" />
             </div>
             <div className="space-y-1.5 max-w-sm">
-              <h3 className="text-sm font-bold tracking-tight text-foreground font-mono">
+              <h3 className="text-sm font-bold tracking-tight text-foreground font-mono print:text-black">
                 {selectedJenjang !== "semua" || selectedKeinginan !== "semua" || selectedAlasan !== "semua" || statusFilter !== "semua" || searchQuery
                   ? "TIDAK ADA DATA ATS SESUAI FILTER"
                   : "BELUM ADA DATA ANAK TIDAK SEKOLAH (ATS)"}
               </h3>
-              <p className="text-xs text-muted-foreground leading-relaxed">
+              <p className="text-xs text-muted-foreground leading-relaxed print:text-gray-600">
                 {selectedJenjang !== "semua" || selectedKeinginan !== "semua" || selectedAlasan !== "semua" || statusFilter !== "semua" || searchQuery
                   ? "Tidak ditemukan data ATS yang cocok dengan filter atau kata kunci pencarian yang dipilih."
                   : "Daftarkan data Anak Tidak Sekolah di wilayah Anda untuk pemantauan, verifikasi alasan, dan fasilitasi kembali bersekolah."}
@@ -620,30 +677,75 @@ export function DataAtsClientView({
       />
 
       {/* 7. DIAGRAM CHART HASIL FILTER (PIE / DONUT & BAR COLUMNS) */}
-      <div className="pb-16">
-        <DiagramChartFilterAts
-          filteredAts={filteredAts}
-          totalAllAts={totalAts}
-        />
-      </div>
-
-      {/* 8. DOKUMEN CETAK / PDF LAPORAN A4 (HANYA TAMPIL SAAT PRINT) */}
-      <PrintLaporanAts
-        komunitas={komunitas}
+      <DiagramChartFilterAts
         filteredAts={filteredAts}
         totalAllAts={totalAts}
-        activeFilters={{
-          jenjang: selectedJenjang,
-          keinginan: selectedKeinginan,
-          alasan: selectedAlasan,
-          status: statusFilter,
-          search: searchQuery,
-        }}
       />
+
+      {/* TANDA TANGAN & PENGESAHAN DOKUMEN CETAK A4 (HANYA MUNCUL SAAT PRINT) */}
+      <div className="hidden print:grid grid-cols-2 text-center text-[10px] font-sans break-inside-avoid mt-8 pt-4 border-t border-black">
+        <div className="space-y-12">
+          <p>
+            Mengetahui,
+            <br />
+            <span className="font-bold uppercase">
+              Ketua RT / RW / Tokoh Masyarakat
+            </span>
+          </p>
+          <p className="font-bold underline uppercase">( ........................................ )</p>
+        </div>
+
+        <div className="space-y-12">
+          <p>
+            Kota Tegal, {tanggalSimple}
+            <br />
+            <span className="font-bold uppercase">
+              Kader Pendata / Pengurus Jarimas
+            </span>
+          </p>
+          <p className="font-bold underline uppercase">( ........................................ )</p>
+        </div>
+      </div>
+
+      <div className="hidden print:flex mt-4 pt-1 border-t border-gray-400 text-[8px] font-mono text-gray-500 justify-between">
+        <span>JARIMAS-ID • Dicetak otomatis sesuai tampilan layar dan filter aktif</span>
+        <span>Dokumen Sah Pemkot Tegal (A4)</span>
+      </div>
+
+      {/* 8. MENU CETAK PDF DATA ATS (HANYA 1 MENU, DI PALING BAWAH HALAMAN) */}
+      <div className="rounded-xl border border-amber-500/40 bg-gradient-to-r from-amber-500/10 via-card to-amber-500/5 p-4 sm:p-5 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm print:hidden">
+        <div className="flex items-center gap-3.5 w-full sm:w-auto">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-amber-500/40 bg-amber-500/20 text-amber-400">
+            <Printer className="h-6 w-6" />
+          </div>
+          <div className="space-y-0.5">
+            <div className="flex items-center gap-2">
+              <h4 className="text-sm font-bold font-mono text-foreground">
+                CETAK / SIMPAN PDF DATA ATS (A4)
+              </h4>
+              <span className="rounded bg-amber-500/20 px-1.5 py-0.5 text-[10px] font-bold text-amber-400 border border-amber-500/30 font-mono">
+                FORMAT A4
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Mencetak seluruh data, statistik, dan grafik ATS yang tampil di layar saat ini ({filteredAts.length} anak) ke dalam berkas PDF ukuran A4.
+            </p>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => window.print()}
+          className="w-full sm:w-auto flex h-11 items-center justify-center gap-2 rounded-lg bg-amber-600 hover:bg-amber-500 active:scale-98 text-white px-6 text-xs font-mono font-bold uppercase tracking-wider shadow-md transition-all shrink-0 cursor-pointer"
+        >
+          <Printer className="h-4 w-4 stroke-[2.2px]" />
+          <span>CETAK PDF (A4)</span>
+        </button>
+      </div>
 
       {/* 9. MODAL POPUP PENDATAAN ATS */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-in fade-in duration-200 print:hidden">
           <div
             className="fixed inset-0 bg-black/80 backdrop-blur-xs transition-opacity"
             onClick={() => setIsAddModalOpen(false)}

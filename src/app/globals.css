@@ -199,7 +199,16 @@ button, input, select, textarea {
 @media print {
   @page {
     size: A4 portrait;
-    margin: 10mm 12mm 10mm 12mm;
+    margin: 8mm 10mm 8mm 10mm;
+  }
+
+  @page landscape {
+    size: A4 landscape;
+    margin: 8mm 10mm 8mm 10mm;
+  }
+
+  .print-landscape {
+    page: landscape;
   }
 
   html, body {
@@ -208,7 +217,7 @@ button, input, select, textarea {
     padding: 0 !important;
     margin: 0 !important;
     min-height: auto !important;
-    font-size: 11pt;
+    font-size: 10pt;
   }
 
   main {
