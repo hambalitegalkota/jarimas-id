@@ -13,6 +13,30 @@ import type {
 /**
  * Server Action: Menyimpan Data Anak Baru beserta Record DDKS Awal
  */
+function parseUsiaToDate(usiaStr?: string | null, tanggalLahirStr?: string | null): string {
+  if (tanggalLahirStr && tanggalLahirStr.includes("-") && tanggalLahirStr.length >= 8) {
+    return tanggalLahirStr;
+  }
+  
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+
+  const raw = (usiaStr || tanggalLahirStr || "0").toString().trim();
+  if (raw === "24>" || raw === ">24" || raw.includes(">")) {
+    return `${currentYear - 25}-01-01`;
+  }
+
+  const ageNum = parseInt(raw, 10);
+  if (!isNaN(ageNum)) {
+    const birthYear = currentYear - Math.max(0, ageNum);
+    return `${birthYear}-${month}-${day}`;
+  }
+
+  return `${currentYear}-${month}-${day}`;
+}
+
 export async function createDataAnak(formData: FormData): Promise<{
   success: boolean;
   message: string;
@@ -45,7 +69,9 @@ export async function createDataAnak(formData: FormData): Promise<{
     }
 
     const namaLengkap = formData.get("namaLengkap")?.toString() || "";
-    const tanggalLahir = formData.get("tanggalLahir")?.toString() || "";
+    const usia = formData.get("usia")?.toString() || "";
+    const tanggalLahirInput = formData.get("tanggalLahir")?.toString() || "";
+    const tanggalLahir = parseUsiaToDate(usia, tanggalLahirInput);
     const jenisKelamin = formData.get("jenisKelamin")?.toString() || "L";
     const namaOrangtua = formData.get("namaOrangtua")?.toString() || "";
     const nomorHp = formData.get("nomorHp")?.toString() || "";
@@ -81,6 +107,7 @@ export async function createDataAnak(formData: FormData): Promise<{
     // Validasi Zod Data Anak
     const validationResult = DataAnakSchema.safeParse({
       namaLengkap,
+      usia,
       tanggalLahir,
       jenisKelamin,
       namaOrangtua,

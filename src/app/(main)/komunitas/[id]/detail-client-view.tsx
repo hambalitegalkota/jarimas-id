@@ -600,8 +600,8 @@ export function KomunitasDetailClientView({
 
       {/* Modal Ajukan Diri Sebagai Admin */}
       {isApplyAdminOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-3 sm:p-4 overflow-y-auto animate-in fade-in duration-200">
-          <div className="relative w-full max-w-lg max-h-[calc(100dvh-2rem)] flex flex-col rounded-xl border border-border bg-card shadow-2xl z-10 animate-in zoom-in-95 duration-200 overflow-hidden my-auto">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-3 sm:p-4 overflow-y-auto animate-in fade-in duration-200">
+          <div className="relative w-full max-w-lg max-h-[min(90dvh,calc(100dvh-2.5rem))] flex flex-col rounded-xl border border-border bg-card shadow-2xl z-10 animate-in zoom-in-95 duration-200 overflow-hidden my-auto">
             {/* Header */}
             <div className="p-5 sm:p-6 pb-4 border-b border-border shrink-0 bg-card">
               <div className="flex items-start justify-between gap-3">
@@ -632,7 +632,7 @@ export function KomunitasDetailClientView({
             </div>
 
             {/* Scrollable Form Body */}
-            <div className="p-5 sm:p-6 overflow-y-auto flex-1 space-y-4">
+            <div className="p-5 sm:p-6 pb-12 sm:pb-16 overflow-y-auto flex-1 space-y-4 overscroll-contain">
               <form onSubmit={handleApplyAdmin} className="space-y-4">
                 <div className="space-y-1">
                   <label className="text-xs font-mono text-muted-foreground uppercase">

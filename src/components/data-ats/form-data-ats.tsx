@@ -7,29 +7,65 @@ import {
   Phone,
   Home,
   GraduationCap,
-  Activity,
-  Scale,
-  Ruler,
   Send,
   Loader2,
   AlertCircle,
   CheckCircle2,
   HelpCircle,
   FileText,
+  MapPin,
+  Building2,
+  School,
+  BookOpen,
 } from "lucide-react";
 import { createDataAts } from "@/app/actions/data-ats";
-import { ALASAN_TIDAK_SEKOLAH_LIST, type AlasanTidakSekolah } from "@/types/database";
+import {
+  ALASAN_TIDAK_SEKOLAH_LIST,
+  type AlasanTidakSekolah,
+  USIA_ATS_OPTIONS,
+} from "@/types/database";
+import {
+  DAFTAR_KECAMATAN_TEGAL,
+  getKelurahanByKecamatan,
+  DAFTAR_RW_TEGAL,
+  DAFTAR_RT_TEGAL,
+} from "@/lib/constants/tegal-data";
+import { extractKomunitasMetadata } from "@/lib/admin-helpers";
+import type { KomunitasWithMembership } from "@/types/database";
 import { cn } from "@/lib/utils";
 
 interface FormDataAtsProps {
   komunitasId: string;
   komunitasNama: string;
+  komunitas?: KomunitasWithMembership;
   onSuccess?: () => void;
 }
+
+export const KELAS_TERAKHIR_OPTIONS = [
+  "Belum Pernah Sekolah",
+  "Kelas 1 SD / MI",
+  "Kelas 2 SD / MI",
+  "Kelas 3 SD / MI",
+  "Kelas 4 SD / MI",
+  "Kelas 5 SD / MI",
+  "Kelas 6 SD / MI (Lulus / Putus)",
+  "Kelas 7 SMP / MTs (Kelas 1 SMP)",
+  "Kelas 8 SMP / MTs (Kelas 2 SMP)",
+  "Kelas 9 SMP / MTs (Lulus / Putus)",
+  "Kelas 10 SMA / SMK / MA (Kelas 1 SMA)",
+  "Kelas 11 SMA / SMK / MA (Kelas 2 SMA)",
+  "Kelas 12 SMA / SMK / MA (Lulus / Putus)",
+  "PKBM - Paket A (Setara SD)",
+  "PKBM - Paket B (Setara SMP)",
+  "PKBM - Paket C (Setara SMA)",
+  "Pondok Pesantren",
+  "Lainnya",
+] as const;
 
 export function FormDataAts({
   komunitasId,
   komunitasNama,
+  komunitas,
   onSuccess,
 }: FormDataAtsProps) {
   const [isPending, startTransition] = useTransition();
@@ -38,23 +74,52 @@ export function FormDataAts({
     message: string;
   } | null>(null);
 
+  // Wilayah Warga (Auto-detect from Komunitas Metadata)
+  const meta = extractKomunitasMetadata(
+    komunitas || { id: komunitasId, nama: komunitasNama }
+  );
+  const initialKecamatan =
+    meta.rawKec && meta.rawKec !== "Kota Tegal"
+      ? meta.rawKec
+      : "Tegal Selatan";
+  const initialKelurahan = meta.rawKel || "Randugunting";
+  const initialRw = meta.rawRw || "01";
+  const initialRt = meta.rawRt || "01";
+
+  const [kecamatan, setKecamatan] = useState(initialKecamatan);
+  const [kelurahan, setKelurahan] = useState(initialKelurahan);
+  const [rt, setRt] = useState(initialRt);
+  const [rw, setRw] = useState(initialRw);
+  const [alamat, setAlamat] = useState("");
+
   // Identitas Anak
   const [namaLengkap, setNamaLengkap] = useState("");
-  const [tanggalLahir, setTanggalLahir] = useState("");
+  const [usia, setUsia] = useState("10");
   const [jenisKelamin, setJenisKelamin] = useState<"L" | "P">("L");
   const [namaOrangtua, setNamaOrangtua] = useState("");
   const [nomorHp, setNomorHp] = useState("");
   const [tinggalBersama, setTinggalBersama] = useState("Orang Tua");
 
+  // Riwayat Pendidikan Sebelumnya
+  const [sekolahSebelumnya, setSekolahSebelumnya] = useState("");
+  const [kelasTerakhir, setKelasTerakhir] = useState<string>(KELAS_TERAKHIR_OPTIONS[0]);
+
   // Status Pendidikan ATS
   const [keinginanSekolah, setKeinginanSekolah] = useState<"Masih Ada" | "Tidak Ada">("Masih Ada");
-  const [alasanTidakSekolah, setAlasanTidakSekolah] = useState<AlasanTidakSekolah>(ALASAN_TIDAK_SEKOLAH_LIST[0]);
+  const [alasanTidakSekolah, setAlasanTidakSekolah] = useState<AlasanTidakSekolah>(
+    ALASAN_TIDAK_SEKOLAH_LIST[0]
+  );
   const [keterangan, setKeterangan] = useState("");
 
-  // DDTK Awal (Opsional)
-  const [beratBadan, setBeratBadan] = useState("");
-  const [tinggiBadan, setTinggiBadan] = useState("");
-  const [lingkarKepala, setLingkarKepala] = useState("");
+  const kelurahanOptions = getKelurahanByKecamatan(kecamatan);
+
+  const handleKecamatanChange = (newKec: string) => {
+    setKecamatan(newKec);
+    const kels = getKelurahanByKecamatan(newKec);
+    if (kels.length > 0) {
+      setKelurahan(kels[0]);
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,19 +129,27 @@ export function FormDataAts({
     formData.append("komunitasId", komunitasId);
     formData.append("komunitasNama", komunitasNama);
     formData.append("namaLengkap", namaLengkap);
-    formData.append("tanggalLahir", tanggalLahir);
+    formData.append("usia", usia);
     formData.append("jenisKelamin", jenisKelamin);
     formData.append("namaOrangtua", namaOrangtua);
     formData.append("nomorHp", nomorHp);
     formData.append("tinggalBersama", tinggalBersama);
 
+    // Alamat, RT/RW, Wilayah
+    formData.append("alamat", alamat);
+    formData.append("rt", rt);
+    formData.append("rw", rw);
+    formData.append("kelurahan", kelurahan);
+    formData.append("kecamatan", kecamatan);
+
+    // Sekolah Sebelumnya & Kelas Terakhir
+    formData.append("sekolahSebelumnya", sekolahSebelumnya);
+    formData.append("kelasTerakhir", kelasTerakhir);
+
+    // Status ATS
     formData.append("keinginanSekolah", keinginanSekolah);
     formData.append("alasanTidakSekolah", alasanTidakSekolah);
     formData.append("keterangan", keterangan);
-
-    if (beratBadan) formData.append("beratBadan", beratBadan);
-    if (tinggiBadan) formData.append("tinggiBadan", tinggiBadan);
-    if (lingkarKepala) formData.append("lingkarKepala", lingkarKepala);
 
     startTransition(async () => {
       const res = await createDataAts(formData);
@@ -118,7 +191,50 @@ export function FormDataAts({
         </div>
       )}
 
-      {/* SECTION 1: IDENTITAS ANAK */}
+      {/* BANNER WILAYAH WARGA */}
+      <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3.5 space-y-2">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 text-xs font-bold font-mono text-amber-400 uppercase tracking-wider">
+            <MapPin className="h-4 w-4" />
+            <span>WILAYAH WARGA PENDATAAN ATS</span>
+          </div>
+          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
+            Kota Tegal
+          </span>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-mono">
+          <div className="flex items-center gap-1.5 text-muted-foreground">
+            <span className="font-semibold text-foreground">Kecamatan:</span>
+            <select
+              value={kecamatan}
+              onChange={(e) => handleKecamatanChange(e.target.value)}
+              className="bg-background border border-border rounded px-2 py-1 text-xs text-foreground focus:border-amber-500 focus:outline-hidden"
+            >
+              {DAFTAR_KECAMATAN_TEGAL.map((kec) => (
+                <option key={kec} value={kec}>
+                  {kec}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="flex items-center gap-1.5 text-muted-foreground">
+            <span className="font-semibold text-foreground">Kelurahan:</span>
+            <select
+              value={kelurahan}
+              onChange={(e) => setKelurahan(e.target.value)}
+              className="bg-background border border-border rounded px-2 py-1 text-xs text-foreground focus:border-amber-500 focus:outline-hidden"
+            >
+              {kelurahanOptions.map((kel) => (
+                <option key={kel} value={kel}>
+                  {kel}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* SECTION 1: IDENTITAS ANAK TIDAK SEKOLAH (ATS) */}
       <div className="space-y-4 rounded-lg border border-border bg-card p-5">
         <div className="flex items-center gap-2 border-b border-border pb-3">
           <User className="h-4 w-4 text-amber-500" />
@@ -145,21 +261,29 @@ export function FormDataAts({
           </div>
         </div>
 
-        {/* Tanggal Lahir & Jenis Kelamin */}
+        {/* Usia & Jenis Kelamin */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="space-y-1.5">
             <label className="text-xs font-medium text-muted-foreground">
-              Tanggal Lahir *
+              Usia *
             </label>
             <div className="relative">
               <Calendar className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <input
-                type="date"
+              <select
                 required
-                value={tanggalLahir}
-                onChange={(e) => setTanggalLahir(e.target.value)}
-                className="w-full h-10 rounded-md border border-border bg-background pl-9 pr-3 text-xs font-mono text-foreground focus:border-amber-500 focus:outline-hidden"
-              />
+                value={usia}
+                onChange={(e) => setUsia(e.target.value)}
+                className="w-full h-10 rounded-md border border-border bg-background pl-9 pr-8 text-xs font-medium text-foreground focus:border-amber-500 focus:outline-hidden appearance-none"
+              >
+                <option value="" disabled>
+                  -- Pilih Usia --
+                </option>
+                {USIA_ATS_OPTIONS.map((opt) => (
+                  <option key={opt} value={opt}>
+                    {opt === "24>" ? "24> (Lebih dari 24 Tahun)" : `${opt} Tahun`}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 
@@ -230,7 +354,7 @@ export function FormDataAts({
           </div>
         </div>
 
-        {/* Tinggal Bersama */}
+        {/* Status Tinggal Bersama */}
         <div className="space-y-1.5">
           <label className="text-xs font-medium text-muted-foreground">
             Status Tinggal Bersama *
@@ -247,6 +371,94 @@ export function FormDataAts({
               <option value="Kerabat / Saudara">Tinggal Bersama Kerabat / Saudara</option>
               <option value="Mandiri / Sendiri">Mandiri / Sendiri</option>
               <option value="Panti / Lembaga Sosial">Panti / Lembaga Sosial</option>
+            </select>
+          </div>
+        </div>
+
+        {/* ALAMAT LENGKAP: Jalan / Gg / Blok / Nomor */}
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+            <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
+            <span>Alamat Lengkap (Jalan / Gg / Blok / Nomor Rumah) *</span>
+          </label>
+          <input
+            type="text"
+            required
+            value={alamat}
+            onChange={(e) => setAlamat(e.target.value)}
+            placeholder="Contoh: Jl. Merpati No. 12, Gg. Kenanga 2 Blok B"
+            className="w-full h-10 rounded-md border border-border bg-background px-3 text-xs text-foreground placeholder:text-muted-foreground focus:border-amber-500 focus:outline-hidden"
+          />
+        </div>
+
+        {/* RW dan RT */}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-muted-foreground">
+              RW *
+            </label>
+            <select
+              value={rw}
+              onChange={(e) => setRw(e.target.value)}
+              className="w-full h-10 rounded-md border border-border bg-background px-3 text-xs font-medium text-foreground focus:border-amber-500 focus:outline-hidden"
+            >
+              {DAFTAR_RW_TEGAL.map((r) => (
+                <option key={r} value={r}>
+                  RW {r}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-muted-foreground">
+              RT *
+            </label>
+            <select
+              value={rt}
+              onChange={(e) => setRt(e.target.value)}
+              className="w-full h-10 rounded-md border border-border bg-background px-3 text-xs font-medium text-foreground focus:border-amber-500 focus:outline-hidden"
+            >
+              {DAFTAR_RT_TEGAL.map((t) => (
+                <option key={t} value={t}>
+                  RT {t}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* SEKOLAH SEBELUMNYA & KELAS TERAKHIR */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-border">
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+              <School className="h-3.5 w-3.5 text-muted-foreground" />
+              <span>Sekolah Sebelumnya</span>
+            </label>
+            <input
+              type="text"
+              value={sekolahSebelumnya}
+              onChange={(e) => setSekolahSebelumnya(e.target.value)}
+              placeholder="Contoh: SDN 3 Randugunting / Belum Pernah"
+              className="w-full h-10 rounded-md border border-border bg-background px-3 text-xs text-foreground placeholder:text-muted-foreground focus:border-amber-500 focus:outline-hidden"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+              <BookOpen className="h-3.5 w-3.5 text-muted-foreground" />
+              <span>Kelas Terakhir Saat Berhenti</span>
+            </label>
+            <select
+              value={kelasTerakhir}
+              onChange={(e) => setKelasTerakhir(e.target.value)}
+              className="w-full h-10 rounded-md border border-border bg-background px-3 text-xs font-medium text-foreground focus:border-amber-500 focus:outline-hidden"
+            >
+              {KELAS_TERAKHIR_OPTIONS.map((kls) => (
+                <option key={kls} value={kls}>
+                  {kls}
+                </option>
+              ))}
             </select>
           </div>
         </div>
@@ -331,72 +543,8 @@ export function FormDataAts({
         </div>
       </div>
 
-      {/* SECTION 3: PENGUKURAN DDTK AWAL (OPSIONAL) */}
-      <div className="space-y-4 rounded-lg border border-border bg-card p-5">
-        <div className="flex items-center gap-2 border-b border-border pb-3">
-          <Activity className="h-4 w-4 text-emerald-500" />
-          <h3 className="text-xs font-bold font-mono uppercase tracking-wider text-foreground">
-            3. Pengukuran DDTK &amp; Antropometri Awal (Opsional)
-          </h3>
-        </div>
-
-        <p className="text-xs text-muted-foreground leading-relaxed">
-          Catatan fisik / penimbangan kesehatan anak jika tersedia.
-        </p>
-
-        <div className="grid grid-cols-3 gap-3">
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-mono uppercase text-muted-foreground flex items-center gap-1">
-              <Scale className="h-3 w-3 text-muted-foreground" />
-              BB (KG)
-            </label>
-            <input
-              type="number"
-              step="0.1"
-              min="0"
-              value={beratBadan}
-              onChange={(e) => setBeratBadan(e.target.value)}
-              placeholder="25.0"
-              className="w-full h-10 rounded-md border border-border bg-background px-3 text-xs font-mono font-bold text-foreground focus:border-amber-500 focus:outline-hidden"
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-mono uppercase text-muted-foreground flex items-center gap-1">
-              <Ruler className="h-3 w-3 text-muted-foreground" />
-              TB (CM)
-            </label>
-            <input
-              type="number"
-              step="0.5"
-              min="0"
-              value={tinggiBadan}
-              onChange={(e) => setTinggiBadan(e.target.value)}
-              placeholder="120.0"
-              className="w-full h-10 rounded-md border border-border bg-background px-3 text-xs font-mono font-bold text-foreground focus:border-amber-500 focus:outline-hidden"
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-mono uppercase text-muted-foreground flex items-center gap-1">
-              <Activity className="h-3 w-3 text-muted-foreground" />
-              LK (CM)
-            </label>
-            <input
-              type="number"
-              step="0.1"
-              min="0"
-              value={lingkarKepala}
-              onChange={(e) => setLingkarKepala(e.target.value)}
-              placeholder="50.0"
-              className="w-full h-10 rounded-md border border-border bg-background px-3 text-xs font-mono font-bold text-foreground focus:border-amber-500 focus:outline-hidden"
-            />
-          </div>
-        </div>
-      </div>
-
       {/* Submit Button */}
-      <div className="pt-2">
+      <div className="pt-2 pb-4">
         <button
           type="submit"
           disabled={isPending}

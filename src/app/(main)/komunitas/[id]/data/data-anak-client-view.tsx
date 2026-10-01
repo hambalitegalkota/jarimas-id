@@ -126,13 +126,13 @@ export function DataAnakClientView({
 
       {/* 4. MODAL PENDAFTARAN ANAK */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-in fade-in duration-200">
           <div
             className="fixed inset-0 bg-black/80 backdrop-blur-xs transition-opacity"
             onClick={() => setIsAddModalOpen(false)}
           />
 
-          <div className="relative w-full max-w-lg max-h-[calc(100dvh-2rem)] flex flex-col rounded-xl border border-border bg-card shadow-2xl z-10 animate-in slide-in-from-bottom-5 sm:zoom-in-95 duration-200 overflow-hidden my-auto">
+          <div className="relative w-full max-w-lg max-h-[min(90dvh,calc(100dvh-2.5rem))] flex flex-col rounded-xl border border-border bg-card shadow-2xl z-10 animate-in slide-in-from-bottom-5 sm:zoom-in-95 duration-200 overflow-hidden my-auto">
             {/* Header */}
             <div className="flex items-start justify-between p-5 pb-4 border-b border-border shrink-0 bg-card">
               <div className="flex items-center gap-2.5">
@@ -158,7 +158,7 @@ export function DataAnakClientView({
             </div>
 
             {/* Scrollable Form Body */}
-            <div className="p-5 overflow-y-auto flex-1">
+            <div className="p-4 sm:p-5 pb-10 sm:pb-12 overflow-y-auto flex-1 overscroll-contain">
               <FormDataAnak
                 komunitasId={komunitas.id}
                 komunitasNama={komunitas.nama}

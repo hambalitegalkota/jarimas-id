@@ -22,13 +22,19 @@ export default async function KomunitasDataAtsPage({
     notFound();
   }
 
-  const { data: atsList, canValidate, canEditDdtk } =
-    await getDataAtsByKomunitas(id);
+  const {
+    data: atsList,
+    canValidate,
+    canEditDdtk,
+    canManage,
+    currentUserId,
+    isSuperAdmin,
+  } = await getDataAtsByKomunitas(id);
 
   return (
     <div className="flex flex-col flex-1 px-4 py-8 sm:px-6 md:px-8 gap-6">
       {/* Back Button */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between print:hidden">
         <Link
           href={`/komunitas/${id}`}
           className="inline-flex h-9 items-center gap-2 rounded-md bg-card border border-border px-3.5 text-xs font-mono font-semibold text-foreground transition-all hover:bg-muted hover:border-amber-500/40 shadow-xs"
@@ -39,7 +45,7 @@ export default async function KomunitasDataAtsPage({
       </div>
 
       {/* Header Info */}
-      <div className="flex items-start justify-between gap-3 border-b border-border pb-5">
+      <div className="flex items-start justify-between gap-3 border-b border-border pb-5 print:hidden">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <span className="cyber-badge bg-amber-500/10 text-amber-500 border-amber-500/30">
@@ -64,6 +70,9 @@ export default async function KomunitasDataAtsPage({
         initialAts={atsList}
         canValidate={canValidate}
         canEditDdtk={canEditDdtk}
+        canManage={canManage}
+        currentUserId={currentUserId}
+        isSuperAdmin={isSuperAdmin}
       />
     </div>
   );

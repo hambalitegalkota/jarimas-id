@@ -27,8 +27,24 @@ interface CardDataAnakProps {
 }
 
 function calculateAge(birthDateString: string): string {
+  if (!birthDateString) return "-";
+  const str = birthDateString.trim();
+  if (str === "24>" || str === ">24" || str.includes(">")) {
+    return "> 24 Tahun";
+  }
+  if (/^\d+$/.test(str)) {
+    return `${str} Tahun`;
+  }
   try {
-    const birthDate = new Date(birthDateString);
+    let birthDate: Date;
+    if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {
+      const [y, m, d] = str.split("-").map(Number);
+      birthDate = new Date(y, m - 1, d);
+    } else {
+      birthDate = new Date(str);
+    }
+
+    if (isNaN(birthDate.getTime())) return str;
     const now = new Date();
 
     let years = now.getFullYear() - birthDate.getFullYear();
@@ -39,12 +55,21 @@ function calculateAge(birthDateString: string): string {
       months += 12;
     }
 
+    if (years >= 25) {
+      return "> 24 Tahun";
+    }
+    if (years === 0 && months === 0) {
+      return "0 Tahun";
+    }
     if (years === 0) {
       return `${months} Bulan`;
     }
+    if (months === 0) {
+      return `${years} Tahun`;
+    }
     return `${years} Thn ${months} Bln`;
   } catch {
-    return "-";
+    return birthDateString;
   }
 }
 
@@ -106,7 +131,7 @@ export function CardDataAnak({
                 {currentChild.nama_lengkap}
               </h3>
               <div className="flex items-center gap-2 text-xs font-mono text-muted-foreground">
-                <span className="font-semibold text-foreground">
+                <span className="font-semibold text-foreground" suppressHydrationWarning>
                   {ageString}
                 </span>
                 <span>•</span>
@@ -184,7 +209,7 @@ export function CardDataAnak({
                 <span>LK {latestDdks.lingkar_kepala} cm</span>
               </div>
             </div>
-            <span className="text-[10px] text-muted-foreground">
+            <span className="text-[10px] text-muted-foreground" suppressHydrationWarning>
               {new Date(latestDdks.created_at).toLocaleDateString("id-ID", {
                 month: "short",
                 year: "numeric",

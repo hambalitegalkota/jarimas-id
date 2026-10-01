@@ -89,7 +89,7 @@ export function CreateKabarModal({ currentUserId }: CreateKabarModalProps) {
 
       {/* Modal Dialog Backdrop & Sheet */}
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-in fade-in duration-200">
           {/* Overlay */}
           <div
             className="fixed inset-0 bg-black/80 backdrop-blur-xs transition-opacity"
@@ -97,7 +97,7 @@ export function CreateKabarModal({ currentUserId }: CreateKabarModalProps) {
           />
 
           {/* Modal Container */}
-          <div className="relative w-full max-w-lg max-h-[calc(100dvh-2rem)] flex flex-col rounded-xl border border-border bg-card shadow-2xl z-10 animate-in slide-in-from-bottom-5 sm:zoom-in-95 duration-200 overflow-hidden my-auto">
+          <div className="relative w-full max-w-lg max-h-[min(90dvh,calc(100dvh-2.5rem))] flex flex-col rounded-xl border border-border bg-card shadow-2xl z-10 animate-in slide-in-from-bottom-5 sm:zoom-in-95 duration-200 overflow-hidden my-auto">
             {/* Modal Header */}
             <div className="flex items-center justify-between p-5 pb-4 border-b border-border shrink-0 bg-card">
               <div className="flex items-center gap-2.5">
@@ -123,7 +123,7 @@ export function CreateKabarModal({ currentUserId }: CreateKabarModalProps) {
             </div>
 
             {/* Modal Scrollable Body */}
-            <div className="p-5 overflow-y-auto flex-1 space-y-4">
+            <div className="p-4 sm:p-5 pb-12 sm:pb-16 overflow-y-auto flex-1 space-y-4 overscroll-contain">
               {/* Error Message */}
               {errorMessage && (
                 <div className="flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-xs text-destructive">

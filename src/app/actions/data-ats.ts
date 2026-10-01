@@ -13,6 +13,30 @@ import type {
 /**
  * Server Action: Mendaftarkan Data Anak Tidak Sekolah (ATS) Baru
  */
+function parseUsiaToDate(usiaStr?: string | null, tanggalLahirStr?: string | null): string {
+  if (tanggalLahirStr && tanggalLahirStr.includes("-") && tanggalLahirStr.length >= 8) {
+    return tanggalLahirStr;
+  }
+  
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+
+  const raw = (usiaStr || tanggalLahirStr || "0").toString().trim();
+  if (raw === "24>" || raw === ">24" || raw.includes(">")) {
+    return `${currentYear - 25}-01-01`;
+  }
+
+  const ageNum = parseInt(raw, 10);
+  if (!isNaN(ageNum)) {
+    const birthYear = currentYear - Math.max(0, ageNum);
+    return `${birthYear}-${month}-${day}`;
+  }
+
+  return `${currentYear}-${month}-${day}`;
+}
+
 export async function createDataAts(formData: FormData): Promise<{
   success: boolean;
   message: string;
@@ -43,11 +67,22 @@ export async function createDataAts(formData: FormData): Promise<{
     }
 
     const namaLengkap = formData.get("namaLengkap")?.toString() || "";
-    const tanggalLahir = formData.get("tanggalLahir")?.toString() || "";
+    const usia = formData.get("usia")?.toString() || "";
+    const tanggalLahirInput = formData.get("tanggalLahir")?.toString() || "";
+    const tanggalLahir = parseUsiaToDate(usia, tanggalLahirInput);
     const jenisKelamin = formData.get("jenisKelamin")?.toString() || "L";
     const namaOrangtua = formData.get("namaOrangtua")?.toString() || "";
     const nomorHp = formData.get("nomorHp")?.toString() || "";
     const tinggalBersama = formData.get("tinggalBersama")?.toString() || "Orang Tua";
+
+    // Alamat, RT/RW, Wilayah & Riwayat Sekolah
+    const alamat = formData.get("alamat")?.toString()?.trim() || "";
+    const rt = formData.get("rt")?.toString()?.trim() || "";
+    const rw = formData.get("rw")?.toString()?.trim() || "";
+    const kelurahan = formData.get("kelurahan")?.toString()?.trim() || "Randugunting";
+    const kecamatan = formData.get("kecamatan")?.toString()?.trim() || "Tegal Selatan";
+    const sekolahSebelumnya = formData.get("sekolahSebelumnya")?.toString()?.trim() || "";
+    const kelasTerakhir = formData.get("kelasTerakhir")?.toString()?.trim() || "";
 
     // ATS Specific Fields
     const keinginanSekolah = (formData.get("keinginanSekolah")?.toString() || "Masih Ada") as "Masih Ada" | "Tidak Ada";
@@ -57,11 +92,19 @@ export async function createDataAts(formData: FormData): Promise<{
     // Validasi Zod Data ATS
     const validationResult = DataAtsSchema.safeParse({
       namaLengkap,
+      usia,
       tanggalLahir,
       jenisKelamin,
       namaOrangtua,
       nomorHp,
       tinggalBersama,
+      alamat,
+      rt,
+      rw,
+      kelurahan,
+      kecamatan,
+      sekolahSebelumnya,
+      kelasTerakhir,
       keinginanSekolah,
       alasanTidakSekolah,
       keterangan,
@@ -76,9 +119,15 @@ export async function createDataAts(formData: FormData): Promise<{
     }
 
     // Format alasan_sekolah string untuk interoperabilitas database
-    const formattedAlasan = `[KEINGINAN:${keinginanSekolah}] [ALASAN:${alasanTidakSekolah}]${
-      keterangan ? ` [KET:${keterangan}]` : ""
-    }`;
+    let formattedAlasan = `[KEINGINAN:${keinginanSekolah}] [ALASAN:${alasanTidakSekolah}]`;
+    if (alamat) formattedAlasan += ` [ALAMAT:${alamat}]`;
+    if (rt) formattedAlasan += ` [RT:${rt}]`;
+    if (rw) formattedAlasan += ` [RW:${rw}]`;
+    if (kelurahan) formattedAlasan += ` [KEL:${kelurahan}]`;
+    if (kecamatan) formattedAlasan += ` [KEC:${kecamatan}]`;
+    if (sekolahSebelumnya) formattedAlasan += ` [SEKOLAH_ASAL:${sekolahSebelumnya}]`;
+    if (kelasTerakhir) formattedAlasan += ` [KELAS:${kelasTerakhir}]`;
+    if (keterangan) formattedAlasan += ` [KET:${keterangan}]`;
 
     // Simpan ke Supabase Data Anak
     const atsPayload = {
@@ -244,53 +293,591 @@ export async function validateDataAts(dataAtsId: string): Promise<{
   }
 }
 
+import { extractKomunitasMetadata } from "@/lib/admin-helpers";
+import { findOrGenerateKomunitasSeed } from "@/lib/constants/tegal-data";
+
+function normalizeWilayah(val?: any): string {
+  return String(val ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/^(kelurahan|kecamatan|kel\.|kec\.)\s+/i, "")
+    .replace(/\s+/g, " ");
+}
+
+function normalizeRtRwNum(val?: any): string {
+  const digits = String(val ?? "").replace(/\D/g, "");
+  if (!digits) return "";
+  return digits.padStart(2, "0");
+}
+
 /**
  * Helper untuk mem-parsing alasan_sekolah format ATS
  */
-function parseAtsDetails(alasanSekolahRaw?: string | null): {
+function parseAtsDetails(alasanSekolahRaw?: string | null, fallbackKomunitas?: any): {
   keinginan: "Masih Ada" | "Tidak Ada";
   alasan: AlasanTidakSekolah;
   keterangan: string;
+  alamat: string;
+  rt: string;
+  rw: string;
+  kelurahan: string;
+  kecamatan: string;
+  sekolahSebelumnya: string;
+  kelasTerakhir: string;
 } {
-  const raw = alasanSekolahRaw || "";
+  const raw = String(alasanSekolahRaw || "");
+  const komMeta = fallbackKomunitas ? extractKomunitasMetadata(fallbackKomunitas) : null;
+
   let keinginan: "Masih Ada" | "Tidak Ada" = "Masih Ada";
   let alasan: AlasanTidakSekolah = "Tidak ada biaya";
   let keterangan = "";
+  let alamat = "";
+  let rt = komMeta?.rawRt ? String(komMeta.rawRt) : "";
+  let rw = komMeta?.rawRw ? String(komMeta.rawRw) : "";
+  let kelurahan = komMeta?.rawKel ? String(komMeta.rawKel) : "";
+  let kecamatan = komMeta?.rawKec ? String(komMeta.rawKec) : "";
+  let sekolahSebelumnya = "";
+  let kelasTerakhir = "";
 
-  if (raw.includes("[KEINGINAN:")) {
-    const matchKeinginan = raw.match(/\[KEINGINAN:(.*?)\]/);
-    if (matchKeinginan && matchKeinginan[1]) {
-      keinginan = matchKeinginan[1].trim() as "Masih Ada" | "Tidak Ada";
-    }
+  const matchKeinginan = raw.match(/\[KEINGINAN\s*:\s*([^\]]+)\]/i);
+  if (matchKeinginan && matchKeinginan[1]) {
+    keinginan = matchKeinginan[1].trim() as "Masih Ada" | "Tidak Ada";
   }
 
-  if (raw.includes("[ALASAN:")) {
-    const matchAlasan = raw.match(/\[ALASAN:(.*?)\]/);
-    if (matchAlasan && matchAlasan[1]) {
-      alasan = matchAlasan[1].trim() as AlasanTidakSekolah;
-    }
+  const matchAlasan = raw.match(/\[ALASAN\s*:\s*([^\]]+)\]/i);
+  if (matchAlasan && matchAlasan[1]) {
+    alasan = matchAlasan[1].trim() as AlasanTidakSekolah;
   } else if (raw && !raw.startsWith("[")) {
     alasan = raw as AlasanTidakSekolah;
   }
 
-  if (raw.includes("[KET:")) {
-    const matchKet = raw.match(/\[KET:(.*?)\]/);
-    if (matchKet && matchKet[1]) {
-      keterangan = matchKet[1].trim();
-    }
+  const matchAlamat = raw.match(/\[ALAMAT\s*:\s*([^\]]+)\]/i);
+  if (matchAlamat && matchAlamat[1]) alamat = matchAlamat[1].trim();
+
+  const matchRt = raw.match(/\[RT\s*:\s*([^\]]+)\]/i);
+  if (matchRt && matchRt[1]) rt = matchRt[1].trim();
+
+  const matchRw = raw.match(/\[RW\s*:\s*([^\]]+)\]/i);
+  if (matchRw && matchRw[1]) rw = matchRw[1].trim();
+
+  const matchKel = raw.match(/\[KEL(?:URAHAN)?\s*:\s*([^\]]+)\]/i);
+  if (matchKel && matchKel[1]) kelurahan = matchKel[1].trim();
+
+  const matchKec = raw.match(/\[KEC(?:AMATAN)?\s*:\s*([^\]]+)\]/i);
+  if (matchKec && matchKec[1]) kecamatan = matchKec[1].trim();
+
+  const matchSekolahAsal = raw.match(/\[SEKOLAH_ASAL\s*:\s*([^\]]+)\]/i);
+  if (matchSekolahAsal && matchSekolahAsal[1]) sekolahSebelumnya = matchSekolahAsal[1].trim();
+
+  const matchKelas = raw.match(/\[KELAS\s*:\s*([^\]]+)\]/i);
+  if (matchKelas && matchKelas[1]) kelasTerakhir = matchKelas[1].trim();
+
+  const matchKet = raw.match(/\[KET\s*:\s*([^\]]+)\]/i);
+  if (matchKet && matchKet[1]) {
+    keterangan = matchKet[1].trim();
   }
 
-  return { keinginan, alasan, keterangan };
+  return {
+    keinginan,
+    alasan,
+    keterangan,
+    alamat,
+    rt,
+    rw,
+    kelurahan,
+    kecamatan,
+    sekolahSebelumnya,
+    kelasTerakhir,
+  };
+}
+
+/**
+ * Server Action: Memperbarui Data ATS yang Ada (Edit ATS)
+ */
+export async function updateDataAts(
+  dataAtsId: string,
+  formData: FormData
+): Promise<{
+  success: boolean;
+  message: string;
+  data?: DataAtsItem;
+}> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return {
+        success: false,
+        message: "Silakan masuk terlebih dahulu untuk mengubah data ATS.",
+      };
+    }
+
+    // Ambil data ATS eksisting
+    const { data: existingChild, error: fetchError } = await supabase
+      .from("data_anak")
+      .select("id, created_by, komunitas_id")
+      .eq("id", dataAtsId)
+      .maybeSingle();
+
+    if (fetchError || !existingChild) {
+      return {
+        success: false,
+        message: "Data ATS tidak ditemukan atau telah dihapus.",
+      };
+    }
+
+    // Cek otorisasi user
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("is_super_admin")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    const isSuperAdmin = profile?.is_super_admin === true;
+    const isCreator = existingChild.created_by === user.id;
+
+    if (!isSuperAdmin && !isCreator) {
+      const { data: membership } = await supabase
+        .from("anggota_komunitas")
+        .select("peran, status")
+        .eq("user_id", user.id)
+        .eq("komunitas_id", existingChild.komunitas_id)
+        .eq("status", "approved")
+        .maybeSingle();
+
+      const roleLower = (membership?.peran || "").toLowerCase();
+      const isAuthorized =
+        roleLower.includes("kader") ||
+        roleLower.includes("pengurus") ||
+        roleLower.includes("nakes") ||
+        roleLower.includes("medis") ||
+        roleLower.includes("admin");
+
+      if (!isAuthorized) {
+        return {
+          success: false,
+          message:
+            "Akses ditolak: Anda tidak memiliki izin untuk mengubah data ATS ini.",
+        };
+      }
+    }
+
+    const komunitasId =
+      formData.get("komunitasId")?.toString() || existingChild.komunitas_id;
+    const namaLengkap = formData.get("namaLengkap")?.toString() || "";
+    const usia = formData.get("usia")?.toString() || "";
+    const tanggalLahirInput = formData.get("tanggalLahir")?.toString() || "";
+    const tanggalLahir = parseUsiaToDate(usia, tanggalLahirInput);
+    const jenisKelamin = formData.get("jenisKelamin")?.toString() || "L";
+    const namaOrangtua = formData.get("namaOrangtua")?.toString() || "";
+    const nomorHp = formData.get("nomorHp")?.toString() || "";
+    const tinggalBersama =
+      formData.get("tinggalBersama")?.toString() || "Orang Tua";
+
+    // Alamat, RT/RW, Wilayah & Riwayat Sekolah
+    const alamat = formData.get("alamat")?.toString()?.trim() || "";
+    const rt = formData.get("rt")?.toString()?.trim() || "";
+    const rw = formData.get("rw")?.toString()?.trim() || "";
+    const kelurahan = formData.get("kelurahan")?.toString()?.trim() || "Randugunting";
+    const kecamatan = formData.get("kecamatan")?.toString()?.trim() || "Tegal Selatan";
+    const sekolahSebelumnya = formData.get("sekolahSebelumnya")?.toString()?.trim() || "";
+    const kelasTerakhir = formData.get("kelasTerakhir")?.toString()?.trim() || "";
+
+    // ATS Specific Fields
+    const keinginanSekolah = (formData.get("keinginanSekolah")?.toString() ||
+      "Masih Ada") as "Masih Ada" | "Tidak Ada";
+    const alasanTidakSekolah =
+      formData.get("alasanTidakSekolah")?.toString() || "Tidak ada biaya";
+    const keterangan = formData.get("keterangan")?.toString()?.trim() || "";
+
+    // Validasi Zod Data ATS
+    const validationResult = DataAtsSchema.safeParse({
+      namaLengkap,
+      usia,
+      tanggalLahir,
+      jenisKelamin,
+      namaOrangtua,
+      nomorHp,
+      tinggalBersama,
+      alamat,
+      rt,
+      rw,
+      kelurahan,
+      kecamatan,
+      sekolahSebelumnya,
+      kelasTerakhir,
+      keinginanSekolah,
+      alasanTidakSekolah,
+      keterangan,
+    });
+
+    if (!validationResult.success) {
+      const firstError = validationResult.error.issues[0]?.message;
+      return {
+        success: false,
+        message: firstError || "Periksa kembali kelengkapan data ATS.",
+      };
+    }
+
+    // Format alasan_sekolah
+    let formattedAlasan = `[KEINGINAN:${keinginanSekolah}] [ALASAN:${alasanTidakSekolah}]`;
+    if (alamat) formattedAlasan += ` [ALAMAT:${alamat}]`;
+    if (rt) formattedAlasan += ` [RT:${rt}]`;
+    if (rw) formattedAlasan += ` [RW:${rw}]`;
+    if (kelurahan) formattedAlasan += ` [KEL:${kelurahan}]`;
+    if (kecamatan) formattedAlasan += ` [KEC:${kecamatan}]`;
+    if (sekolahSebelumnya) formattedAlasan += ` [SEKOLAH_ASAL:${sekolahSebelumnya}]`;
+    if (kelasTerakhir) formattedAlasan += ` [KELAS:${kelasTerakhir}]`;
+    if (keterangan) formattedAlasan += ` [KET:${keterangan}]`;
+
+    // Reset status_approval kembali ke "pending" pada setiap perubahan data agar perlu divalidasi ulang di jenjang RT
+    const updatePayload = {
+      nama_lengkap: namaLengkap,
+      tanggal_lahir: tanggalLahir,
+      jenis_kelamin: jenisKelamin,
+      nama_orangtua: namaOrangtua,
+      nomor_hp: nomorHp,
+      tinggal_bersama: tinggalBersama,
+      alasan_sekolah: formattedAlasan,
+      status_approval: "pending" as const,
+      validated_by: null,
+      validated_at: null,
+      updated_at: new Date().toISOString(),
+    };
+
+    const { data: updatedData, error: updateError } = await supabase
+      .from("data_anak")
+      .update(updatePayload)
+      .eq("id", dataAtsId)
+      .select("*")
+      .single();
+
+    if (updateError || !updatedData) {
+      return {
+        success: false,
+        message:
+          "Gagal memperbarui data ATS: " +
+          (updateError?.message || "Kesalahan database"),
+      };
+    }
+
+    revalidatePath(`/komunitas/${komunitasId}/ats`);
+    revalidatePath(`/komunitas/${komunitasId}`);
+    revalidatePath("/komunitas");
+
+    const parsed = parseAtsDetails(updatedData.alasan_sekolah);
+    const formattedItem: DataAtsItem = {
+      id: updatedData.id,
+      nama_lengkap: updatedData.nama_lengkap,
+      tanggal_lahir: updatedData.tanggal_lahir,
+      jenis_kelamin: updatedData.jenis_kelamin,
+      nama_orangtua: updatedData.nama_orangtua,
+      nomor_hp: updatedData.nomor_hp,
+      tinggal_bersama: updatedData.tinggal_bersama || "Orang Tua",
+      alamat: parsed.alamat,
+      rt: parsed.rt,
+      rw: parsed.rw,
+      kelurahan: parsed.kelurahan,
+      kecamatan: parsed.kecamatan,
+      sekolah_sebelumnya: parsed.sekolahSebelumnya,
+      kelas_terakhir: parsed.kelasTerakhir,
+      keinginan_sekolah: parsed.keinginan,
+      alasan_tidak_sekolah: parsed.alasan,
+      keterangan: parsed.keterangan,
+      komunitas_id: updatedData.komunitas_id,
+      status_approval: "pending",
+      validated_by: null,
+      validated_at: null,
+      created_by: updatedData.created_by,
+      created_at: updatedData.created_at,
+      updated_at: updatedData.updated_at,
+    };
+
+    return {
+      success: true,
+      message: "Data ATS berhasil diperbarui dan status kembali Menunggu Validasi RT.",
+      data: formattedItem,
+    };
+  } catch (err: any) {
+    console.error("Error updateDataAts:", err);
+    return {
+      success: false,
+      message: err.message || "Terjadi kesalahan saat memperbarui data ATS.",
+    };
+  }
+}
+
+/**
+ * Server Action: Intervensi Kembali Bersekolah bagi Anak ATS
+ * Mengubah status anak menjadi bersekolah (is_sekolah = true) dan mencatat nama sekolah baru
+ */
+export async function kembaliBersekolah(
+  dataAtsId: string,
+  payload: {
+    namaSekolah: string;
+    jenjang?: string;
+    bentukIntervensi?: string;
+    catatan?: string;
+    komunitasId?: string;
+  }
+): Promise<{
+  success: boolean;
+  message: string;
+}> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return {
+        success: false,
+        message:
+          "Silakan masuk terlebih dahulu untuk memproses intervensi kembali bersekolah.",
+      };
+    }
+
+    if (!payload.namaSekolah || payload.namaSekolah.trim().length < 2) {
+      return {
+        success: false,
+        message: "Nama sekolah / lembaga pendidikan baru wajib diisi.",
+      };
+    }
+
+    // Ambil data ATS target
+    const { data: existingChild, error: fetchError } = await supabase
+      .from("data_anak")
+      .select("id, nama_lengkap, created_by, komunitas_id")
+      .eq("id", dataAtsId)
+      .maybeSingle();
+
+    if (fetchError || !existingChild) {
+      return {
+        success: false,
+        message: "Data ATS tidak ditemukan atau telah dihapus.",
+      };
+    }
+
+    // Cek otorisasi user
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("is_super_admin")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    const isSuperAdmin = profile?.is_super_admin === true;
+    const isCreator = existingChild.created_by === user.id;
+
+    if (!isSuperAdmin && !isCreator) {
+      const { data: membership } = await supabase
+        .from("anggota_komunitas")
+        .select("peran, status")
+        .eq("user_id", user.id)
+        .eq("komunitas_id", existingChild.komunitas_id)
+        .eq("status", "approved")
+        .maybeSingle();
+
+      const roleLower = (membership?.peran || "").toLowerCase();
+      const isAuthorized =
+        roleLower.includes("kader") ||
+        roleLower.includes("pengurus") ||
+        roleLower.includes("nakes") ||
+        roleLower.includes("medis") ||
+        roleLower.includes("admin");
+
+      if (!isAuthorized) {
+        return {
+          success: false,
+          message:
+            "Akses ditolak: Hanya Pengurus, Kader, atau pembuat data yang dapat mencatat kembali bersekolah.",
+        };
+      }
+    }
+
+    const schoolNote = `[KEMBALI BERSEKOLAH] Sekolah: ${payload.namaSekolah.trim()}${
+      payload.jenjang ? ` | Jenjang: ${payload.jenjang}` : ""
+    }${
+      payload.bentukIntervensi
+        ? ` | Intervensi: ${payload.bentukIntervensi}`
+        : ""
+    }${payload.catatan?.trim() ? ` | Catatan: ${payload.catatan.trim()}` : ""}`;
+
+    const { error: updateError } = await supabase
+      .from("data_anak")
+      .update({
+        is_sekolah: true,
+        nama_sekolah: payload.namaSekolah.trim(),
+        alasan_sekolah: schoolNote,
+        status_approval: "approved",
+        validated_by: user.id,
+        validated_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", dataAtsId);
+
+    if (updateError) {
+      return {
+        success: false,
+        message:
+          "Gagal mencatat status kembali bersekolah: " + updateError.message,
+      };
+    }
+
+    const targetKomunitasId = payload.komunitasId || existingChild.komunitas_id;
+    revalidatePath(`/komunitas/${targetKomunitasId}/ats`);
+    revalidatePath(`/komunitas/${targetKomunitasId}/data`);
+    revalidatePath(`/komunitas/${targetKomunitasId}`);
+
+    return {
+      success: true,
+      message: `Selamat! ${existingChild.nama_lengkap} berhasil tercatat kembali bersekolah di ${payload.namaSekolah.trim()} dan dialihkan ke Data Anak aktif.`,
+    };
+  } catch (err: any) {
+    console.error("Error kembaliBersekolah:", err);
+    return {
+      success: false,
+      message:
+        err.message || "Terjadi kesalahan saat memproses status kembali bersekolah.",
+    };
+  }
+}
+
+/**
+ * Server Action: Menghapus Data ATS (Hapus ATS)
+ */
+export async function deleteDataAts(
+  dataAtsId: string,
+  komunitasId?: string
+): Promise<{
+  success: boolean;
+  message: string;
+}> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return {
+        success: false,
+        message: "Silakan masuk terlebih dahulu untuk menghapus data ATS.",
+      };
+    }
+
+    // Ambil data ATS eksisting
+    const { data: existingChild, error: fetchError } = await supabase
+      .from("data_anak")
+      .select("id, nama_lengkap, created_by, komunitas_id")
+      .eq("id", dataAtsId)
+      .maybeSingle();
+
+    if (fetchError || !existingChild) {
+      return {
+        success: false,
+        message: "Data ATS tidak ditemukan atau sudah dihapus.",
+      };
+    }
+
+    // Cek otorisasi user
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("is_super_admin")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    const isSuperAdmin = profile?.is_super_admin === true;
+    const isCreator = existingChild.created_by === user.id;
+
+    if (!isSuperAdmin && !isCreator) {
+      const { data: membership } = await supabase
+        .from("anggota_komunitas")
+        .select("peran, status")
+        .eq("user_id", user.id)
+        .eq("komunitas_id", existingChild.komunitas_id)
+        .eq("status", "approved")
+        .maybeSingle();
+
+      const roleLower = (membership?.peran || "").toLowerCase();
+      const isAuthorized =
+        roleLower.includes("kader") ||
+        roleLower.includes("pengurus") ||
+        roleLower.includes("nakes") ||
+        roleLower.includes("medis") ||
+        roleLower.includes("admin");
+
+      if (!isAuthorized) {
+        return {
+          success: false,
+          message:
+            "Akses ditolak: Anda tidak memiliki izin untuk menghapus data ATS ini.",
+        };
+      }
+    }
+
+    // Hapus relasi riwayat DDTK jika ada
+    try {
+      await supabase
+        .from("ddks_records")
+        .delete()
+        .eq("data_anak_id", dataAtsId);
+    } catch (e) {
+      console.warn("Hapus ddks_records warning:", e);
+    }
+
+    // Hapus record data_anak
+    const { error: deleteError } = await supabase
+      .from("data_anak")
+      .delete()
+      .eq("id", dataAtsId);
+
+    if (deleteError) {
+      return {
+        success: false,
+        message: "Gagal menghapus data ATS: " + deleteError.message,
+      };
+    }
+
+    const targetKomunitasId = komunitasId || existingChild.komunitas_id;
+    revalidatePath(`/komunitas/${targetKomunitasId}/ats`);
+    revalidatePath(`/komunitas/${targetKomunitasId}/data`);
+    revalidatePath(`/komunitas/${targetKomunitasId}`);
+
+    return {
+      success: true,
+      message: `Data ATS ${existingChild.nama_lengkap} berhasil dihapus dari sistem.`,
+    };
+  } catch (err: any) {
+    console.error("Error deleteDataAts:", err);
+    return {
+      success: false,
+      message: err.message || "Terjadi kendala saat menghapus data ATS.",
+    };
+  }
 }
 
 /**
  * Server Action: Mengambil Data ATS berdasarkan Komunitas
+ * - Komunitas RT: Hanya tampilkan data Anak ATS di RT tersebut & tombol Validasi aktif
+ * - Komunitas RW: Tampilkan seluruh data Anak ATS di RW tersebut (semua RT di RW itu) & tombol Validasi tersembunyi
+ * - Komunitas Kelurahan: Tampilkan seluruh data Anak ATS di Kelurahan tersebut (semua RW & RT di Kelurahan itu) & tombol Validasi tersembunyi
+ * - Komunitas Kecamatan: Tampilkan seluruh data Anak ATS di Kecamatan tersebut & tombol Validasi tersembunyi
  */
 export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
   success: boolean;
   data: DataAtsItem[];
   canValidate: boolean;
   canEditDdtk: boolean;
+  canManage: boolean;
+  currentUserId?: string | null;
+  isSuperAdmin?: boolean;
   message?: string;
 }> {
   try {
@@ -298,6 +885,9 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
 
     let canValidate = false;
     let canEditDdtk = false;
+    let canManage = false;
+    let currentUserId: string | null = null;
+    let isSuperAdmin = false;
 
     try {
       const {
@@ -305,13 +895,14 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
       } = await supabase.auth.getUser();
 
       if (user) {
+        currentUserId = user.id;
         const { data: profile } = await supabase
           .from("profiles")
           .select("is_super_admin")
           .eq("id", user.id)
           .single();
 
-        const isSuperAdmin = profile?.is_super_admin === true;
+        isSuperAdmin = profile?.is_super_admin === true;
         const dbKomunitasId = toValidUUID(komunitasId);
 
         const { data: member } = await supabase
@@ -333,12 +924,43 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
 
         canValidate = isSuperAdmin || isKader || isPengurus;
         canEditDdtk = isSuperAdmin || isKader;
+        canManage = isSuperAdmin || isKader || isPengurus;
       }
     } catch {
       // Tamu
     }
 
-    // Query data ATS dari data_anak dengan filter is_sekolah = false atau nama_sekolah ATS
+    // 1. Ekstraksi informasi tingkat wilayah komunitas target (RT, RW, Kelurahan, Kecamatan)
+    let targetKomunitas: any = null;
+    const { data: dbKom } = await supabase
+      .from("komunitas")
+      .select("*")
+      .eq("id", toValidUUID(komunitasId))
+      .maybeSingle();
+
+    if (dbKom) {
+      targetKomunitas = dbKom;
+    } else {
+      targetKomunitas = findOrGenerateKomunitasSeed(komunitasId);
+    }
+
+    const meta = extractKomunitasMetadata(targetKomunitas || { id: komunitasId });
+
+    // HANYA jenjang RT (memiliki RT dan RW) yang memiliki izin untuk memvalidasi Data ATS!
+    // Jenjang RW, Kelurahan, Kecamatan, dan Posyandu hanya untuk pemantauan/monitoring.
+    const isRtCommunity = Boolean(
+      (meta.hasRt && meta.hasRw) ||
+      (targetKomunitas?.rt && targetKomunitas?.rw)
+    );
+    canValidate = isRtCommunity && (isSuperAdmin || canManage);
+
+    // 2. Ambil peta seluruh komunitas dari DB untuk resolusi fallback metadata
+    const { data: allDbKom } = await supabase
+      .from("komunitas")
+      .select("id, nama, jenis, kecamatan, kelurahan, rw, rt");
+    const dbKomMap = new Map((allDbKom || []).map((k: any) => [k.id, k]));
+
+    // 3. Query data ATS dari data_anak dengan filter is_sekolah = false
     const { data: dbChildren, error: childError } = await supabase
       .from("data_anak")
       .select(`
@@ -371,7 +993,6 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
           created_at
         )
       `)
-      .eq("komunitas_id", toValidUUID(komunitasId))
       .eq("is_sekolah", false)
       .order("created_at", { ascending: false });
 
@@ -380,42 +1001,140 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
     }
 
     const rows = dbChildren || [];
+    const validKomId = toValidUUID(komunitasId);
 
-    const items: DataAtsItem[] = rows.map((row: any) => {
-      const records: DdtkRecord[] = (row.ddks_records || []).sort(
-        (a: any, b: any) =>
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-      );
+    const items: DataAtsItem[] = rows
+      .map((row: any) => {
+        const records: DdtkRecord[] = (row.ddks_records || []).sort(
+          (a: any, b: any) =>
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
 
-      const parsed = parseAtsDetails(row.alasan_sekolah);
+        const childKomObj =
+          dbKomMap.get(row.komunitas_id) ||
+          findOrGenerateKomunitasSeed(row.komunitas_id) ||
+          { id: row.komunitas_id };
+        const parsed = parseAtsDetails(row.alasan_sekolah, childKomObj);
 
-      return {
-        id: row.id,
-        nama_lengkap: row.nama_lengkap,
-        tanggal_lahir: row.tanggal_lahir,
-        jenis_kelamin: row.jenis_kelamin,
-        nama_orangtua: row.nama_orangtua,
-        nomor_hp: row.nomor_hp,
-        tinggal_bersama: row.tinggal_bersama || "Orang Tua",
-        keinginan_sekolah: parsed.keinginan,
-        alasan_tidak_sekolah: parsed.alasan,
-        keterangan: parsed.keterangan,
-        komunitas_id: row.komunitas_id,
-        status_approval: row.status_approval || "pending",
-        validated_by: row.validated_by,
-        validated_at: row.validated_at,
-        created_by: row.created_by,
-        created_at: row.created_at,
-        latest_ddtk: records[0] || null,
-        ddtk_history: records,
-      };
-    });
+        return {
+          id: row.id,
+          nama_lengkap: row.nama_lengkap,
+          tanggal_lahir: row.tanggal_lahir,
+          jenis_kelamin: row.jenis_kelamin,
+          nama_orangtua: row.nama_orangtua,
+          nomor_hp: row.nomor_hp,
+          tinggal_bersama: row.tinggal_bersama || "Orang Tua",
+          alamat: parsed.alamat,
+          rt: parsed.rt,
+          rw: parsed.rw,
+          kelurahan: parsed.kelurahan,
+          kecamatan: parsed.kecamatan,
+          sekolah_sebelumnya: parsed.sekolahSebelumnya,
+          kelas_terakhir: parsed.kelasTerakhir,
+          keinginan_sekolah: parsed.keinginan,
+          alasan_tidak_sekolah: parsed.alasan,
+          keterangan: parsed.keterangan,
+          komunitas_id: row.komunitas_id,
+          status_approval: row.status_approval || "pending",
+          validated_by: row.validated_by,
+          validated_at: row.validated_at,
+          created_by: row.created_by,
+          created_at: row.created_at,
+          latest_ddtk: records[0] || null,
+          ddtk_history: records,
+        };
+      })
+      .filter((item) => {
+        // Jika cocok langsung dengan ID komunitas
+        if (item.komunitas_id === validKomId || item.komunitas_id === komunitasId) {
+          return true;
+        }
+
+        const itemKec = normalizeWilayah(item.kecamatan);
+        const itemKel = normalizeWilayah(item.kelurahan);
+        const itemRw = normalizeRtRwNum(item.rw);
+        const itemRt = normalizeRtRwNum(item.rt);
+
+        const targetKec = normalizeWilayah(meta.rawKec);
+        const targetKel = normalizeWilayah(meta.rawKel);
+        const targetRw = normalizeRtRwNum(meta.rawRw);
+        const targetRt = normalizeRtRwNum(meta.rawRt);
+
+        // 1. Komunitas RT: Hanya tampilkan data Anak ATS di RT tersebut
+        if (meta.hasRt && meta.hasRw) {
+          const matchRw = itemRw === targetRw;
+          const matchRt = itemRt === targetRt;
+          const matchKel =
+            !targetKel ||
+            !itemKel ||
+            itemKel === targetKel ||
+            itemKel.includes(targetKel) ||
+            targetKel.includes(itemKel);
+          const matchKec =
+            !targetKec ||
+            !itemKec ||
+            itemKec === targetKec ||
+            itemKec.includes(targetKec) ||
+            targetKec.includes(itemKec);
+
+          return matchRw && matchRt && matchKel && matchKec;
+        }
+
+        // 2. Komunitas RW: Hanya tampilkan data Anak ATS di RW tersebut (mencakup semua RT di RW itu)
+        if (meta.hasRw && !meta.hasRt) {
+          const matchRw = itemRw === targetRw;
+          const matchKel =
+            !targetKel ||
+            !itemKel ||
+            itemKel === targetKel ||
+            itemKel.includes(targetKel) ||
+            targetKel.includes(itemKel);
+          const matchKec =
+            !targetKec ||
+            !itemKec ||
+            itemKec === targetKec ||
+            itemKec.includes(targetKec) ||
+            targetKec.includes(itemKec);
+
+          return matchRw && matchKel && matchKec;
+        }
+
+        // 3. Komunitas Kelurahan: Hanya tampilkan data Anak ATS di Kelurahan tersebut (mencakup semua RW & RT di Kelurahan itu)
+        if (meta.hasKel && !meta.hasRw && !meta.hasRt) {
+          const matchKel =
+            itemKel === targetKel ||
+            itemKel.includes(targetKel) ||
+            targetKel.includes(itemKel);
+          const matchKec =
+            !targetKec ||
+            !itemKec ||
+            itemKec === targetKec ||
+            itemKec.includes(targetKec) ||
+            targetKec.includes(itemKec);
+
+          return matchKel && matchKec;
+        }
+
+        // 4. Komunitas Kecamatan: Hanya tampilkan data Anak ATS di Kecamatan tersebut (mencakup semua Kelurahan, RW & RT se-Kecamatan)
+        if (targetKec && targetKec !== "kota tegal" && targetKec !== "semua") {
+          return (
+            itemKec === targetKec ||
+            itemKec.includes(targetKec) ||
+            targetKec.includes(itemKec)
+          );
+        }
+
+        return true;
+      });
 
     return {
       success: true,
       data: items,
       canValidate,
       canEditDdtk,
+      canManage,
+      currentUserId,
+      isSuperAdmin,
     };
   } catch (err: any) {
     console.error("Error getDataAtsByKomunitas:", err);
@@ -425,6 +1144,7 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
       data: [],
       canValidate: false,
       canEditDdtk: false,
+      canManage: false,
     };
   }
 }

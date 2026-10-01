@@ -216,7 +216,7 @@ export function AdminPesananClient({
                     <span className="text-xs font-mono font-bold text-foreground">
                       #{pesanan.id}
                     </span>
-                    <span className="text-xs font-mono text-muted-foreground">
+                    <span className="text-xs font-mono text-muted-foreground" suppressHydrationWarning>
                       • {new Date(pesanan.created_at).toLocaleDateString("id-ID", {
                         day: "numeric",
                         month: "short",
@@ -358,13 +358,13 @@ export function AdminPesananClient({
 
       {/* Modal Input Nomor Resi */}
       {selectedPesananForResi && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-in fade-in duration-200">
           <div
             className="fixed inset-0 bg-black/80 backdrop-blur-xs"
             onClick={() => setSelectedPesananForResi(null)}
           />
 
-          <div className="relative w-full max-w-md max-h-[calc(100dvh-2rem)] flex flex-col rounded-xl border border-border bg-card shadow-2xl z-10 animate-in zoom-in-95 duration-200 overflow-hidden my-auto">
+          <div className="relative w-full max-w-md max-h-[min(90dvh,calc(100dvh-2.5rem))] flex flex-col rounded-xl border border-border bg-card shadow-2xl z-10 animate-in zoom-in-95 duration-200 overflow-hidden my-auto">
             {/* Header */}
             <div className="flex items-center justify-between p-5 pb-3 border-b border-border shrink-0 bg-card">
               <div className="flex items-center gap-2">
@@ -384,7 +384,7 @@ export function AdminPesananClient({
             </div>
 
             {/* Body */}
-            <div className="p-5 overflow-y-auto flex-1 space-y-4">
+            <div className="p-4 sm:p-5 pb-12 sm:pb-16 overflow-y-auto flex-1 space-y-4 overscroll-contain">
               <p className="text-xs text-muted-foreground">
                 Masukkan nomor resi ekspedisi/kurir internal Jarimas untuk pesanan <strong>#{selectedPesananForResi.id}</strong> ({selectedPesananForResi.nama_penerima}).
               </p>

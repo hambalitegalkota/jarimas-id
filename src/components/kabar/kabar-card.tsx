@@ -389,7 +389,7 @@ export function KabarCard({
             </div>
 
             <div className="flex items-center gap-1.5">
-              <span className="text-[10px] text-muted-foreground">
+              <span className="text-[10px] text-muted-foreground" suppressHydrationWarning>
                 {formatTimeAgo(comment.created_at)}
               </span>
 
@@ -453,7 +453,7 @@ export function KabarCard({
             </div>
 
             <div className="flex items-center gap-2 text-xs text-muted-foreground font-mono">
-              <span>{formatTimeAgo(kabar.created_at)}</span>
+              <span suppressHydrationWarning>{formatTimeAgo(kabar.created_at)}</span>
               <span>•</span>
 
               {/* Visibility Badge Kabar */}

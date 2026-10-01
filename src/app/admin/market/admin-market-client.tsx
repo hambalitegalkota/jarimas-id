@@ -279,13 +279,13 @@ export function AdminMarketClient({ initialProducts }: AdminMarketClientProps) {
 
       {/* Modal Tambah / Edit Produk */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-in fade-in duration-200">
           <div
             className="fixed inset-0 bg-black/80 backdrop-blur-xs"
             onClick={() => setIsModalOpen(false)}
           />
 
-          <div className="relative w-full max-w-lg max-h-[calc(100dvh-2rem)] flex flex-col rounded-xl border border-border bg-card shadow-2xl z-10 animate-in zoom-in-95 duration-200 overflow-hidden my-auto">
+          <div className="relative w-full max-w-lg max-h-[min(90dvh,calc(100dvh-2.5rem))] flex flex-col rounded-xl border border-border bg-card shadow-2xl z-10 animate-in zoom-in-95 duration-200 overflow-hidden my-auto">
             {/* Modal Header */}
             <div className="flex items-center justify-between p-5 pb-3 border-b border-border shrink-0 bg-card">
               <div className="flex items-center gap-2">
@@ -305,7 +305,7 @@ export function AdminMarketClient({ initialProducts }: AdminMarketClientProps) {
             </div>
 
             {/* Modal Form Scrollable Body */}
-            <div className="p-5 overflow-y-auto flex-1">
+            <div className="p-4 sm:p-5 pb-12 sm:pb-16 overflow-y-auto flex-1 overscroll-contain">
               <form onSubmit={handleFormSubmit} className="space-y-4">
                 {/* Nama Produk */}
                 <div className="space-y-1">

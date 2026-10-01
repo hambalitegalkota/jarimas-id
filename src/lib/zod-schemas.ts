@@ -51,9 +51,18 @@ export const DataAnakSchema = z.object({
     .trim()
     .min(2, "Nama lengkap anak minimal 2 karakter")
     .max(100, "Nama lengkap anak maksimal 100 karakter"),
+  usia: z
+    .string()
+    .trim()
+    .optional()
+    .nullable()
+    .or(z.literal("")),
   tanggalLahir: z
     .string()
-    .min(1, "Tanggal lahir anak wajib diisi"),
+    .trim()
+    .optional()
+    .nullable()
+    .or(z.literal("")),
   jenisKelamin: z.enum(["L", "P", "Laki-laki", "Perempuan"], {
     message: "Pilih jenis kelamin yang valid (L/P)",
   }),
@@ -105,9 +114,18 @@ export const DataAtsSchema = z.object({
     .trim()
     .min(2, "Nama lengkap anak minimal 2 karakter")
     .max(100, "Nama lengkap maksimal 100 karakter"),
+  usia: z
+    .string()
+    .trim()
+    .optional()
+    .nullable()
+    .or(z.literal("")),
   tanggalLahir: z
     .string()
-    .min(1, "Tanggal lahir anak wajib diisi"),
+    .trim()
+    .optional()
+    .nullable()
+    .or(z.literal("")),
   jenisKelamin: z.enum(["L", "P", "Laki-laki", "Perempuan"], {
     message: "Pilih jenis kelamin anak (Laki-laki / Perempuan)",
   }),
@@ -120,12 +138,54 @@ export const DataAtsSchema = z.object({
     .string()
     .trim()
     .min(10, "Nomor HP minimal 10 digit")
-    .max(15, "Nomor HP maksimal 15 digit")
+    .max(16, "Nomor HP maksimal 16 digit")
     .regex(/^(\+62|62|0)[0-9]{8,14}$/, "Format nomor HP tidak valid (contoh: 081234567890)"),
   tinggalBersama: z
     .string()
     .trim()
     .min(1, "Status tinggal bersama wajib diisi"),
+  alamat: z
+    .string()
+    .trim()
+    .optional()
+    .nullable()
+    .or(z.literal("")),
+  rt: z
+    .string()
+    .trim()
+    .optional()
+    .nullable()
+    .or(z.literal("")),
+  rw: z
+    .string()
+    .trim()
+    .optional()
+    .nullable()
+    .or(z.literal("")),
+  kelurahan: z
+    .string()
+    .trim()
+    .optional()
+    .nullable()
+    .or(z.literal("")),
+  kecamatan: z
+    .string()
+    .trim()
+    .optional()
+    .nullable()
+    .or(z.literal("")),
+  sekolahSebelumnya: z
+    .string()
+    .trim()
+    .optional()
+    .nullable()
+    .or(z.literal("")),
+  kelasTerakhir: z
+    .string()
+    .trim()
+    .optional()
+    .nullable()
+    .or(z.literal("")),
   keinginanSekolah: z.enum(["Masih Ada", "Tidak Ada"], {
     message: "Keinginan untuk melanjutkan sekolah wajib dipilih",
   }),

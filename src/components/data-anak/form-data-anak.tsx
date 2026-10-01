@@ -18,7 +18,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { createDataAnak } from "@/app/actions/data-anak";
-import type { JenisKomunitas } from "@/types/database";
+import { type JenisKomunitas, USIA_OPTIONS } from "@/types/database";
 import { cn } from "@/lib/utils";
 
 interface FormDataAnakProps {
@@ -56,7 +56,7 @@ export function FormDataAnak({
   const isPaud = jenisKomunitas === "satuan_paud";
 
   const [namaLengkap, setNamaLengkap] = useState("");
-  const [tanggalLahir, setTanggalLahir] = useState("");
+  const [usia, setUsia] = useState("3");
   const [jenisKelamin, setJenisKelamin] = useState<"L" | "P">("L");
   const [namaOrangtua, setNamaOrangtua] = useState("");
   const [nomorHp, setNomorHp] = useState("");
@@ -95,7 +95,7 @@ export function FormDataAnak({
     formData.append("komunitasNama", komunitasNama);
 
     formData.append("namaLengkap", namaLengkap);
-    formData.append("tanggalLahir", tanggalLahir);
+    formData.append("usia", usia);
     formData.append("jenisKelamin", jenisKelamin);
     formData.append("namaOrangtua", namaOrangtua);
     formData.append("nomorHp", nomorHp);
@@ -178,21 +178,29 @@ export function FormDataAnak({
           </div>
         </div>
 
-        {/* Tanggal Lahir & Jenis Kelamin */}
+        {/* Usia & Jenis Kelamin */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="space-y-1.5">
             <label className="text-xs font-medium text-muted-foreground">
-              Tanggal Lahir *
+              Usia *
             </label>
             <div className="relative">
               <Calendar className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <input
-                type="date"
+              <select
                 required
-                value={tanggalLahir}
-                onChange={(e) => setTanggalLahir(e.target.value)}
-                className="w-full h-10 rounded-md border border-border bg-background pl-9 pr-3 text-xs font-mono text-foreground focus:border-zinc-500 focus:outline-hidden"
-              />
+                value={usia}
+                onChange={(e) => setUsia(e.target.value)}
+                className="w-full h-10 rounded-md border border-border bg-background pl-9 pr-8 text-xs font-medium text-foreground focus:border-zinc-500 focus:outline-hidden appearance-none"
+              >
+                <option value="" disabled>
+                  -- Pilih Usia --
+                </option>
+                {USIA_OPTIONS.map((opt) => (
+                  <option key={opt} value={opt}>
+                    {opt === "24>" ? "24> (Lebih dari 24 Tahun)" : `${opt} Tahun`}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 
@@ -496,7 +504,7 @@ export function FormDataAnak({
       </div>
 
       {/* Submit Button */}
-      <div className="pt-2">
+      <div className="pt-2 pb-4">
         <button
           type="submit"
           disabled={isPending}

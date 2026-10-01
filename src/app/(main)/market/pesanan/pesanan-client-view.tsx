@@ -164,7 +164,7 @@ export function PesananClientView({
                     <span className="text-xs font-bold text-foreground">
                       #{pesanan.id.slice(0, 8)}
                     </span>
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-xs text-muted-foreground" suppressHydrationWarning>
                       •{" "}
                       {new Date(pesanan.created_at).toLocaleDateString(
                         "id-ID",
@@ -247,13 +247,13 @@ export function PesananClientView({
 
       {/* Modal Detail & Instruksi Pembayaran */}
       {selectedPesananModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-in fade-in duration-200">
           <div
             className="fixed inset-0 bg-black/80 backdrop-blur-xs"
             onClick={() => setSelectedPesananModal(null)}
           />
 
-          <div className="relative w-full max-w-lg max-h-[calc(100dvh-2rem)] flex flex-col rounded-xl border border-border bg-card shadow-2xl z-10 animate-in zoom-in-95 duration-200 overflow-hidden my-auto">
+          <div className="relative w-full max-w-lg max-h-[min(90dvh,calc(100dvh-2.5rem))] flex flex-col rounded-xl border border-border bg-card shadow-2xl z-10 animate-in zoom-in-95 duration-200 overflow-hidden my-auto">
             {/* Header Modal */}
             <div className="flex items-center justify-between p-5 pb-3 border-b border-border shrink-0 bg-card">
               <div>
@@ -273,7 +273,7 @@ export function PesananClientView({
             </div>
 
             {/* Scrollable Body */}
-            <div className="p-5 overflow-y-auto flex-1 space-y-5">
+            <div className="p-4 sm:p-5 pb-12 sm:pb-16 overflow-y-auto flex-1 space-y-5 overscroll-contain">
               {/* Instruksi Pembayaran jika Pending */}
               {selectedPesananModal.status_pembayaran === "pending" && (
                 <div className="rounded-md border border-amber-500/30 bg-amber-500/10 p-4 space-y-3">

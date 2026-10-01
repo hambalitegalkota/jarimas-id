@@ -104,8 +104,8 @@ export function WargaOnboardingModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-3 sm:p-4 overflow-y-auto animate-in fade-in duration-200">
-      <div className="relative w-full max-w-lg max-h-[calc(100dvh-2rem)] flex flex-col rounded-xl border border-border bg-card shadow-2xl z-10 animate-in zoom-in-95 duration-200 overflow-hidden my-auto">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-3 sm:p-4 overflow-y-auto animate-in fade-in duration-200">
+      <div className="relative w-full max-w-lg max-h-[min(90dvh,calc(100dvh-2.5rem))] flex flex-col rounded-xl border border-border bg-card shadow-2xl z-10 animate-in zoom-in-95 duration-200 overflow-hidden my-auto">
         {/* Header Modal */}
         <div className="p-5 sm:p-6 pb-4 border-b border-border text-center space-y-2 shrink-0 bg-card">
           <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-mono font-semibold text-emerald-400">
@@ -151,7 +151,7 @@ export function WargaOnboardingModal({
         </div>
 
         {/* Form Pertanyaan Domisili & KK */}
-        <form onSubmit={handleSubmit} className="p-5 sm:p-6 overflow-y-auto flex-1 space-y-4">
+        <form onSubmit={handleSubmit} className="p-5 sm:p-6 pb-12 sm:pb-16 overflow-y-auto flex-1 space-y-4 overscroll-contain">
           {/* Pertanyaan 1: Domisili */}
           <div className="rounded-lg border border-border bg-background/50 p-3.5 space-y-2.5">
             <div className="flex items-center gap-2">

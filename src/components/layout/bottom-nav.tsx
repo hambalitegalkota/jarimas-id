@@ -54,7 +54,7 @@ export function BottomNav() {
   return (
     <nav
       aria-label="Navigasi Utama Mobile"
-      className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-background/90 backdrop-blur-md pb-[env(safe-area-inset-bottom,0px)]"
+      className="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-background/90 backdrop-blur-md pb-[env(safe-area-inset-bottom,0px)]"
     >
       <div className="mx-auto flex h-14 w-full max-w-md items-center justify-around px-2 sm:max-w-lg md:max-w-xl">
         {NAV_ITEMS.map((item) => {

@@ -145,10 +145,67 @@ export interface DdksRecord {
 // DDTK (Deteksi Dini Tumbuh Kembang) alias for DDKS
 export type DdtkRecord = DdksRecord;
 
+export const USIA_OPTIONS = [
+  "0",
+  "1",
+  "2",
+  "3",
+  "4",
+  "5",
+  "6",
+  "7",
+  "8",
+  "9",
+  "10",
+  "11",
+  "12",
+  "13",
+  "14",
+  "15",
+  "16",
+  "17",
+  "18",
+  "19",
+  "20",
+  "21",
+  "22",
+  "23",
+  "24",
+  "24>",
+] as const;
+
+export type UsiaOption = typeof USIA_OPTIONS[number];
+
+// Opsi Usia khusus Data ATS (dimulai dari usia wajib sekolah SD 8 tahun ke atas s/d >24 tahun)
+// Usia 0 sampai 7 tahun dialokasikan khusus pada Data Anak (Balita & PAUD)
+export const USIA_ATS_OPTIONS = [
+  "8",
+  "9",
+  "10",
+  "11",
+  "12",
+  "13",
+  "14",
+  "15",
+  "16",
+  "17",
+  "18",
+  "19",
+  "20",
+  "21",
+  "22",
+  "23",
+  "24",
+  "24>",
+] as const;
+
+export type UsiaAtsOption = typeof USIA_ATS_OPTIONS[number];
+
 export interface DataAnakItem {
   id: string;
   nama_lengkap: string;
   tanggal_lahir: string;
+  usia?: string;
   jenis_kelamin: "L" | "P" | "Laki-laki" | "Perempuan" | string;
   nama_orangtua: string;
   nomor_hp: string;
@@ -195,10 +252,18 @@ export interface DataAtsItem {
   id: string;
   nama_lengkap: string;
   tanggal_lahir: string;
+  usia?: string;
   jenis_kelamin: "L" | "P" | "Laki-laki" | "Perempuan" | string;
   nama_orangtua: string;
   nomor_hp: string;
   tinggal_bersama: string;
+  alamat?: string | null;
+  rt?: string | null;
+  rw?: string | null;
+  kelurahan?: string | null;
+  kecamatan?: string | null;
+  sekolah_sebelumnya?: string | null;
+  kelas_terakhir?: string | null;
   keinginan_sekolah: "Masih Ada" | "Tidak Ada";
   alasan_tidak_sekolah: AlasanTidakSekolah;
   keterangan?: string | null;
