@@ -19,7 +19,8 @@ import { createClient } from "@/utils/supabase/server";
 import { logoutUser } from "@/app/actions/auth";
 import { getPendingApprovals } from "@/app/actions/admin";
 import { ApprovalList } from "@/components/admin/approval-list";
-import { DatabaseSeedTools } from "@/components/admin/database-seed-tools";
+import { CleanupTestDataTool } from "@/components/admin/cleanup-test-data-tool";
+import { KomunitasManagementTools } from "@/components/admin/komunitas-management-tools";
 import { KecamatanMonitoringAccordion } from "@/components/admin/kecamatan-monitoring-accordion";
 import { formatPeranDisplay, isRoleAdmin, toValidUUID } from "@/lib/utils";
 import { extractKomunitasMetadata } from "@/lib/admin-helpers";
@@ -330,11 +331,11 @@ export default async function ProfilePage() {
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 text-center sm:text-left pr-0 sm:pr-36">
           {/* Avatar */}
           <div className="relative shrink-0">
-            <div className="flex h-16 w-16 sm:h-18 sm:w-18 items-center justify-center rounded-2xl border-2 border-blue-100 dark:border-blue-900/40 bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 font-bold">
+            <div className="flex h-16 w-16 sm:h-18 sm:w-18 items-center justify-center rounded-2xl border-2 border-emerald-200 dark:border-emerald-800/60 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 font-bold shadow-xs">
               <User className="h-8 w-8 sm:h-9 sm:w-9" />
             </div>
             {isSuperAdmin && (
-              <div className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-blue-700 text-white shadow-md border-2 border-white dark:border-slate-900">
+              <div className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-emerald-600 text-white shadow-md border-2 border-white dark:border-slate-900">
                 <Crown className="h-3.5 w-3.5" />
               </div>
             )}
@@ -350,8 +351,8 @@ export default async function ProfilePage() {
 
                 {/* Role Badge */}
                 {isSuperAdmin ? (
-                  <span className="inline-flex items-center gap-1.5 rounded-full border-2 border-blue-600 bg-blue-50 dark:bg-blue-950/50 px-3 py-1 text-xs font-bold text-blue-700 dark:text-blue-300">
-                    <Crown className="h-3.5 w-3.5 text-blue-600" />
+                  <span className="inline-flex items-center gap-1.5 rounded-full border-2 border-emerald-600 bg-emerald-50 dark:bg-emerald-950/60 px-3 py-1 text-xs font-bold text-emerald-700 dark:text-emerald-300 shadow-2xs">
+                    <Crown className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
                     SUPER ADMIN
                   </span>
                 ) : (
@@ -376,25 +377,25 @@ export default async function ProfilePage() {
         /* SUPER ADMIN VIEW: Approval Dashboard & Seeding Tools */
         <section className="space-y-6">
           <div className="flex items-center gap-2 px-1">
-            <Sparkles className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+            <Sparkles className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
             <h2 className="text-base font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100">
               Panel Kendali Super Admin
             </h2>
           </div>
 
-          {/* Database Seed Tools for Posyandu & Warga Kota Tegal */}
-          <DatabaseSeedTools />
+          {/* Pembersih Data Uji Coba (Testing Clean-up) */}
+          <CleanupTestDataTool />
 
           {/* Persetujuan Langsung Super Admin (Hanya Permohonan Admin Kecamatan & Layanan Kota) */}
           <div className="space-y-3">
             <div className="flex items-center justify-between px-1">
               <div className="flex items-center gap-2">
-                <UserCheck className="h-4 w-4 text-amber-600" />
+                <UserCheck className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                 <h3 className="text-sm font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100">
                   Persetujuan Langsung (Admin Wilayah)
                 </h3>
               </div>
-              <span className="text-xs font-mono font-bold text-slate-500">
+              <span className="text-xs font-mono font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/50 px-2.5 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
                 {pendingApprovals.length} PERMOHONAN
               </span>
             </div>
@@ -403,6 +404,9 @@ export default async function ProfilePage() {
 
           {/* Monitoring Seluruh Permohonan Wilayah Berjenjang (Accordion per Kecamatan) */}
           <KecamatanMonitoringAccordion initialItems={allHierarchyPendingApprovals} />
+
+          {/* Manajemen & Audit Komunitas Kota Tegal (Tambah, Nonaktifkan, Hapus & Cek Kesesuaian) */}
+          <KomunitasManagementTools />
         </section>
       )}
 
@@ -410,7 +414,7 @@ export default async function ProfilePage() {
         /* COMMUNITY ADMIN VIEW: Tiered Approval List */
         <section className="space-y-4">
           <div className="flex items-center gap-2 px-1">
-            <UserCheck className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+            <UserCheck className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
             <h2 className="text-base font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100">
               Persetujuan Peran &amp; Admin Komunitas
             </h2>
@@ -423,12 +427,12 @@ export default async function ProfilePage() {
       <section className="space-y-4">
         <div className="flex items-center justify-between px-1">
           <div className="flex items-center gap-2">
-            <Building2 className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+            <Building2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
             <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">
               Komunitas Saya
             </h2>
           </div>
-          <span className="text-xs font-mono font-bold text-slate-600 dark:text-slate-400">
+          <span className="text-xs font-mono font-bold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2.5 py-0.5 rounded-full">
             {totalCardCount} TERDAFTAR
           </span>
         </div>
@@ -436,7 +440,7 @@ export default async function ProfilePage() {
         {/* List Komunitas yang Diikuti */}
         {totalCardCount === 0 ? (
           <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-900 p-8 text-center space-y-4 shadow-xs">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl border-2 border-blue-100 dark:border-blue-900/40 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl border-2 border-emerald-100 dark:border-emerald-900/40 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400">
               <Compass className="h-7 w-7" />
             </div>
             <div className="space-y-1.5">
@@ -449,7 +453,7 @@ export default async function ProfilePage() {
             </div>
             <Link
               href="/komunitas"
-              className="inline-flex min-h-[48px] w-full sm:w-auto items-center justify-center gap-2 rounded-xl bg-blue-700 hover:bg-blue-800 px-6 text-base font-bold text-white transition-all shadow-sm active:scale-98"
+              className="inline-flex min-h-[48px] w-full sm:w-auto items-center justify-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 px-6 text-base font-bold text-white transition-all shadow-sm active:scale-98"
             >
               <span>Jelajahi Komunitas</span>
               <ArrowRight className="h-4 w-4" />
@@ -477,7 +481,7 @@ export default async function ProfilePage() {
               return (
                 <div
                   key={item.id}
-                  className="rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 space-y-4 transition-colors hover:border-blue-500 shadow-xs"
+                  className="rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 space-y-4 transition-all hover:border-emerald-400 dark:hover:border-emerald-600 shadow-xs"
                 >
                   <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                     <div className="space-y-1.5">
@@ -485,7 +489,7 @@ export default async function ProfilePage() {
                         {kom.nama || "Komunitas"}
                       </h4>
                       <div className="flex flex-wrap items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-                        <span className="font-bold text-blue-700 dark:text-blue-400">
+                        <span className="font-bold text-emerald-700 dark:text-emerald-400">
                           {kom.jenis === "posyandu"
                             ? "Posyandu"
                             : kom.jenis === "satuan_paud"
@@ -532,7 +536,7 @@ export default async function ProfilePage() {
                   <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
                     <Link
                       href={`/komunitas/${item.komunitas_id}`}
-                      className="inline-flex min-h-[48px] w-full items-center justify-center gap-2 rounded-xl bg-blue-50 dark:bg-blue-950/40 border-2 border-blue-200 dark:border-blue-900/50 px-4 text-base font-bold text-blue-700 dark:text-blue-300 transition-colors hover:bg-blue-100 dark:hover:bg-blue-900/60 active:scale-98"
+                      className="inline-flex min-h-[48px] w-full items-center justify-center gap-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border-2 border-emerald-200 dark:border-emerald-800/60 px-4 text-base font-bold text-emerald-700 dark:text-emerald-300 transition-colors hover:bg-emerald-100 dark:hover:bg-emerald-900/50 active:scale-98"
                     >
                       <span>Buka Halaman Komunitas</span>
                       <ArrowRight className="h-4 w-4" />
@@ -546,9 +550,9 @@ export default async function ProfilePage() {
             <div className="pt-2">
               <Link
                 href="/komunitas"
-                className="flex min-h-[48px] w-full items-center justify-center gap-2 rounded-xl border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 text-base font-bold text-slate-800 dark:text-slate-200 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800 active:scale-98 shadow-xs"
+                className="flex min-h-[48px] w-full items-center justify-center gap-2 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 text-base font-bold text-slate-800 dark:text-slate-200 transition-all hover:border-emerald-400 dark:hover:border-emerald-600 hover:bg-emerald-50/40 dark:hover:bg-emerald-950/20 active:scale-98 shadow-xs"
               >
-                <Compass className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                <Compass className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                 <span>Jelajahi Komunitas Lainnya</span>
               </Link>
             </div>

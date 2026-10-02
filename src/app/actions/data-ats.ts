@@ -186,15 +186,30 @@ export async function createDataAts(formData: FormData): Promise<{
       });
 
       if (ddtkValidation.success) {
-        await supabase.from("ddks_records").insert({
+        const ddtkPayload: any = {
           data_anak_id: newChildId,
           berat_badan: parseFloat(beratBadanStr),
           tinggi_badan: parseFloat(tinggiBadanStr),
           lingkar_kepala: parseFloat(lingkarKepalaStr),
           catatan: "Pencatatan DDTK saat pendataan awal ATS",
+          dicatat_oleh: user.id,
           recorded_by: user.id,
           created_at: new Date().toISOString(),
-        });
+        };
+
+        const { error: ddtkError } = await supabase
+          .from("ddks_records")
+          .insert(ddtkPayload);
+
+        if (ddtkError) {
+          if (ddtkError.message.includes("recorded_by")) {
+            delete ddtkPayload.recorded_by;
+            await supabase.from("ddks_records").insert(ddtkPayload);
+          } else if (ddtkError.message.includes("dicatat_oleh")) {
+            delete ddtkPayload.dicatat_oleh;
+            await supabase.from("ddks_records").insert(ddtkPayload);
+          }
+        }
       }
     }
 
@@ -304,6 +319,7 @@ export async function validateDataAts(dataAtsId: string): Promise<{
 
 import { extractKomunitasMetadata } from "@/lib/admin-helpers";
 import { findOrGenerateKomunitasSeed } from "@/lib/constants/tegal-data";
+import { isDataAtsRecord } from "@/lib/data-anak-helpers";
 
 function normalizeWilayah(val?: any): string {
   return String(val ?? "")
@@ -1002,17 +1018,7 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
         validated_at,
         created_by,
         created_at,
-        ddks_records (
-          id,
-          data_anak_id,
-          berat_badan,
-          tinggi_badan,
-          panjang_badan,
-          lingkar_kepala,
-          catatan,
-          recorded_by,
-          created_at
-        )
+        ddks_records (*)
       `)
       .eq("is_sekolah", false)
       .order("created_at", { ascending: false });
@@ -1021,12 +1027,15 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
       console.warn("Query data_ats error:", childError.message);
     }
 
-    const rows = dbChildren || [];
+    const rows = (dbChildren || []).filter((row: any) => isDataAtsRecord(row));
     const validKomId = toValidUUID(komunitasId);
 
     const items: DataAtsItem[] = rows
       .map((row: any) => {
-        const records: DdtkRecord[] = (row.ddks_records || []).sort(
+        const records: DdtkRecord[] = (row.ddks_records || []).map((r: any) => ({
+          ...r,
+          recorded_by: r.recorded_by || r.dicatat_oleh || r.created_by || r.user_id,
+        })).sort(
           (a: any, b: any) =>
             new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
         );

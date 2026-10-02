@@ -157,8 +157,19 @@ export function DataAnakClientView({
             <CardDataAnak
               key={child.id}
               anak={child}
+              komunitas={komunitas}
               canValidate={canValidate}
               canEditDdks={canEditDdks}
+              onUpdate={(updated) => {
+                setChildrenList((prev) =>
+                  prev.map((c) => (c.id === updated.id ? updated : c))
+                );
+              }}
+              onDelete={(deletedId) => {
+                setChildrenList((prev) =>
+                  prev.filter((c) => c.id !== deletedId)
+                );
+              }}
             />
           ))
         )}
@@ -203,6 +214,7 @@ export function DataAnakClientView({
                 komunitasId={komunitas.id}
                 komunitasNama={komunitas.nama}
                 jenisKomunitas={komunitas.jenis}
+                komunitas={komunitas}
                 onSuccess={() => {
                   setIsAddModalOpen(false);
                   window.location.reload();

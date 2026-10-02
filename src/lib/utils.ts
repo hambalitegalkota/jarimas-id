@@ -97,8 +97,12 @@ export function formatPeranDisplay(peran?: string | null): string {
   if (pLower === "anggota") return "Anggota";
   if (pLower === "super_admin" || pLower === "super admin") return "Super Admin";
   if (pLower === "penduduk") return "Penduduk";
-  if (pLower === "penduduk domisili di luar" || pLower === "penduduk domisili diluar") {
-    return "Penduduk Domisili Di Luar";
+  if (
+    pLower === "penduduk berdomisili luar kota" ||
+    pLower === "penduduk domisili di luar" ||
+    pLower === "penduduk domisili diluar"
+  ) {
+    return "Penduduk Berdomisili Luar Kota";
   }
   if (pLower === "pendatang") return "Pendatang";
   if (pLower === "pengunjung") return "Pengunjung";
@@ -117,6 +121,7 @@ export function isRoleAdmin(peran?: string | null): boolean {
     p === "penduduk" ||
     p === "pendatang" ||
     p === "pengunjung" ||
+    p === "penduduk berdomisili luar kota" ||
     p === "penduduk domisili diluar" ||
     p === "penduduk domisili di luar"
   ) {
@@ -142,7 +147,7 @@ export function isRoleAdmin(peran?: string | null): boolean {
 
 /**
  * Mengecek apakah peran memiliki hak akses penuh ke seluruh unsur Profil Data Komunitas Warga Kita
- * (Penduduk & Penduduk Domisili Di Luar, atau Pengurus/Admin/Kader)
+ * (Penduduk & Penduduk Berdomisili Luar Kota, atau Pengurus/Admin/Kader)
  */
 export function hasFullProfilDataAccess(
   peran?: string | null,
@@ -153,6 +158,7 @@ export function hasFullProfilDataAccess(
   const p = peran.toLowerCase().trim();
   if (
     p === "penduduk" ||
+    p === "penduduk berdomisili luar kota" ||
     p === "penduduk domisili di luar" ||
     p === "penduduk domisili diluar"
   ) {
@@ -160,5 +166,19 @@ export function hasFullProfilDataAccess(
   }
   return isRoleAdmin(p);
 }
+
+/**
+ * Format angka numerik ke format mata uang Rupiah Indonesia (IDR)
+ */
+export function formatRupiah(amount: number): string {
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(amount);
+}
+
+
 
 

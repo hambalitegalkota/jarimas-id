@@ -29,6 +29,7 @@ export interface Komunitas {
   kontak?: string | null;
   jadwal?: string | null;
   created_at?: string;
+  updated_at?: string;
 }
 
 export interface AnggotaKomunitas {
@@ -62,7 +63,7 @@ export interface AnggotaKomunitasDetail {
 }
 
 export interface HierarchyAdminTierInfo {
-  level: "rt" | "rw" | "kelurahan" | "kecamatan";
+  level: "rt" | "rw" | "kelurahan" | "kecamatan" | "kota";
   levelLabel: string;
   title: string;
   komunitasId: string;
@@ -78,10 +79,11 @@ export interface HierarchyAdminTierInfo {
 }
 
 export interface WargaHierarchyAdmins {
-  rt?: HierarchyAdminTierInfo | null;
-  rw?: HierarchyAdminTierInfo | null;
-  kelurahan?: HierarchyAdminTierInfo | null;
+  kota?: HierarchyAdminTierInfo | null;
   kecamatan?: HierarchyAdminTierInfo | null;
+  kelurahan?: HierarchyAdminTierInfo | null;
+  rw?: HierarchyAdminTierInfo | null;
+  rt?: HierarchyAdminTierInfo | null;
 }
 
 export interface KomunitasWithMembership extends Komunitas {
@@ -214,6 +216,23 @@ export interface DataAnakItem {
   is_sekolah: boolean;
   nama_sekolah?: string | null;
   alasan_sekolah?: string | null;
+
+  // Alamat Sesuai KK (Kartu Keluarga)
+  kk_kabupaten?: string | null;
+  kk_kecamatan?: string | null;
+  kk_kelurahan?: string | null;
+  kk_rw?: string | null;
+  kk_rt?: string | null;
+  kk_jalan?: string | null;
+
+  // Alamat Domisili (Tempat Tinggal)
+  domisili_kabupaten?: string | null;
+  domisili_kecamatan?: string | null;
+  domisili_kelurahan?: string | null;
+  domisili_rw?: string | null;
+  domisili_rt?: string | null;
+  domisili_jalan?: string | null;
+
   komunitas_id: string;
   komunitas_nama?: string;
   status_approval: "pending" | "approved" | "rejected";
@@ -287,7 +306,7 @@ export interface PendingApprovalItem {
   peran_diajukan?: string | null;
   status: MembershipStatus;
   created_at: string;
-  tierLevel?: "RT" | "RW" | "Kelurahan" | "Kecamatan" | "Posyandu" | "Satuan PAUD" | "Umum";
+  tierLevel?: "RT" | "RW" | "Kelurahan" | "Kecamatan" | "Kota" | "Posyandu" | "Satuan PAUD" | "Umum";
   targetApproverTitle?: string;
   berdomisili?: boolean;
   kk_terdaftar?: boolean;

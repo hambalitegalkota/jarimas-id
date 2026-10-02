@@ -352,7 +352,7 @@ export function KabarCard({
             "flex shrink-0 items-center justify-center rounded-xl font-bold border-2",
             isReply
               ? "h-7 w-7 text-xs bg-slate-100 border-slate-200 text-slate-700"
-              : "h-8 w-8 text-sm bg-blue-50 border-blue-200 text-blue-700"
+              : "h-8 w-8 text-sm bg-emerald-50 border-emerald-200 text-emerald-700"
           )}
         >
           {commentInitial}
@@ -365,7 +365,7 @@ export function KabarCard({
               </span>
 
               {repliedToAuthor && (
-                <span className="inline-flex items-center gap-1 text-xs text-blue-700 font-semibold">
+                <span className="inline-flex items-center gap-1 text-xs text-emerald-700 font-semibold">
                   <span>↳ membalas</span>
                   <span className="underline">@{repliedToAuthor}</span>
                 </span>
@@ -417,7 +417,7 @@ export function KabarCard({
       <div className="flex items-start justify-between p-5 pb-3">
         <div className="flex items-center gap-3.5">
           {/* Avatar */}
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border-2 border-blue-200 bg-blue-50 text-base font-bold text-blue-700">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border-2 border-emerald-200 bg-emerald-50 text-base font-bold text-emerald-700">
             {authorInitial}
           </div>
 
@@ -441,19 +441,19 @@ export function KabarCard({
               <span className="inline-flex items-center gap-1 font-bold">
                 {kabar.visibilitas === "publik" && (
                   <>
-                    <Globe className="h-3.5 w-3.5 text-emerald-600" />
+                    <Globe className="h-3.5 w-3.5 text-blue-600" />
                     <span>Publik</span>
                   </>
                 )}
                 {kabar.visibilitas === "teman" && (
                   <>
-                    <Users className="h-3.5 w-3.5 text-blue-600" />
+                    <Users className="h-3.5 w-3.5 text-sky-600" />
                     <span>Teman</span>
                   </>
                 )}
                 {kabar.visibilitas === "komunitas" && (
                   <>
-                    <Building2 className="h-3.5 w-3.5 text-amber-600" />
+                    <Building2 className="h-3.5 w-3.5 text-indigo-600" />
                     <span>{kabar.komunitas?.nama || "Komunitas"}</span>
                   </>
                 )}
@@ -559,7 +559,7 @@ export function KabarCard({
             className={cn(
               "flex min-h-[40px] h-10 items-center gap-2 rounded-xl px-4 text-sm font-bold transition-all border-2 cursor-pointer",
               userReaction
-                ? "bg-blue-50 text-blue-950 border-blue-600 shadow-xs"
+                ? "bg-emerald-50 text-emerald-950 border-emerald-600 shadow-xs"
                 : "border-slate-200 text-slate-700 hover:bg-slate-50"
             )}
           >
@@ -576,7 +576,7 @@ export function KabarCard({
                   onClick={() => handleReactionClick(item.emoji)}
                   className={cn(
                     "flex h-9 w-9 items-center justify-center rounded-xl text-xl transition-transform hover:scale-125 active:scale-95 cursor-pointer",
-                    userReaction === item.emoji && "bg-blue-50 scale-110 border border-blue-300"
+                    userReaction === item.emoji && "bg-emerald-50 scale-110 border border-emerald-300"
                   )}
                   title={item.label}
                 >
@@ -593,7 +593,7 @@ export function KabarCard({
           className={cn(
             "flex min-h-[40px] h-10 items-center gap-2 rounded-xl px-4 text-sm font-bold transition-all border-2 cursor-pointer",
             showComments
-              ? "bg-blue-700 text-white border-blue-700 shadow-xs"
+              ? "bg-emerald-600 text-white border-emerald-600 shadow-xs"
               : "border-slate-200 text-slate-700 hover:bg-slate-50"
           )}
         >
@@ -665,17 +665,17 @@ export function KabarCard({
             <form onSubmit={handleCommentSubmit} className="space-y-2 pt-1">
               {/* Banner Balasan Aktif */}
               {replyingTo && (
-                <div className="flex items-center justify-between rounded-xl bg-blue-50 px-3.5 py-2 text-xs font-bold text-blue-900 border-2 border-blue-200 animate-in fade-in slide-in-from-top-1">
+                <div className="flex items-center justify-between rounded-xl bg-emerald-50 px-3.5 py-2 text-xs font-bold text-emerald-900 border-2 border-emerald-200 animate-in fade-in slide-in-from-top-1">
                   <div className="flex items-center gap-2">
-                    <CornerDownRight className="h-4 w-4 text-blue-700 shrink-0" />
+                    <CornerDownRight className="h-4 w-4 text-emerald-700 shrink-0" />
                     <span>
-                      Membalas <strong className="font-extrabold text-blue-950">@{replyingTo.authorName}</strong>
+                      Membalas <strong className="font-extrabold text-emerald-950">@{replyingTo.authorName}</strong>
                     </span>
                   </div>
                   <button
                     type="button"
                     onClick={() => setReplyingTo(null)}
-                    className="flex items-center gap-1 rounded-lg px-2 py-1 text-xs text-slate-600 hover:bg-blue-100 hover:text-slate-900 transition-colors cursor-pointer"
+                    className="flex items-center gap-1 rounded-lg px-2 py-1 text-xs text-slate-600 hover:bg-emerald-100 hover:text-slate-900 transition-colors cursor-pointer"
                     title="Batalkan balasan"
                   >
                     <X className="h-3.5 w-3.5" />
@@ -711,7 +711,7 @@ export function KabarCard({
                         : "Tulis komentar Anda..."
                       : "Silahkan login untuk memberikan komentar..."
                   }
-                  className="flex-1 min-h-[48px] h-12 rounded-xl border-2 border-slate-300 bg-white px-4 text-base text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:outline-hidden"
+                  className="flex-1 min-h-[48px] h-12 rounded-xl border-2 border-slate-300 bg-white px-4 text-base text-slate-900 placeholder:text-slate-400 focus:border-emerald-600 focus:outline-hidden"
                 />
                 <button
                   type={currentUserId ? "submit" : "button"}
@@ -721,7 +721,7 @@ export function KabarCard({
                     }
                   }}
                   disabled={currentUserId ? !commentText.trim() || isPendingComment : false}
-                  className="flex min-h-[48px] h-12 w-12 items-center justify-center rounded-xl bg-blue-700 text-white hover:bg-blue-800 disabled:opacity-50 transition-colors shadow-xs cursor-pointer shrink-0"
+                  className="flex min-h-[48px] h-12 w-12 items-center justify-center rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50 transition-colors shadow-xs cursor-pointer shrink-0"
                   aria-label={replyingTo ? "Kirim Balasan" : "Kirim Komentar"}
                   title={replyingTo ? "Kirim Balasan" : "Kirim Komentar"}
                 >

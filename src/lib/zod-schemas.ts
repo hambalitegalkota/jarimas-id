@@ -100,6 +100,78 @@ export const DataAnakSchema = z.object({
     .optional()
     .nullable()
     .or(z.literal("")),
+  kkKabupaten: z
+    .string()
+    .trim()
+    .optional()
+    .nullable()
+    .or(z.literal("")),
+  kkKecamatan: z
+    .string()
+    .trim()
+    .optional()
+    .nullable()
+    .or(z.literal("")),
+  kkKelurahan: z
+    .string()
+    .trim()
+    .optional()
+    .nullable()
+    .or(z.literal("")),
+  kkRw: z
+    .string()
+    .trim()
+    .optional()
+    .nullable()
+    .or(z.literal("")),
+  kkRt: z
+    .string()
+    .trim()
+    .optional()
+    .nullable()
+    .or(z.literal("")),
+  kkJalan: z
+    .string()
+    .trim()
+    .optional()
+    .nullable()
+    .or(z.literal("")),
+  domisiliKabupaten: z
+    .string()
+    .trim()
+    .optional()
+    .nullable()
+    .or(z.literal("")),
+  domisiliKecamatan: z
+    .string()
+    .trim()
+    .optional()
+    .nullable()
+    .or(z.literal("")),
+  domisiliKelurahan: z
+    .string()
+    .trim()
+    .optional()
+    .nullable()
+    .or(z.literal("")),
+  domisiliRw: z
+    .string()
+    .trim()
+    .optional()
+    .nullable()
+    .or(z.literal("")),
+  domisiliRt: z
+    .string()
+    .trim()
+    .optional()
+    .nullable()
+    .or(z.literal("")),
+  domisiliJalan: z
+    .string()
+    .trim()
+    .optional()
+    .nullable()
+    .or(z.literal("")),
 });
 
 export type DataAnakInput = z.infer<typeof DataAnakSchema>;

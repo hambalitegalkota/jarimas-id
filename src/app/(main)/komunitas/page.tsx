@@ -8,10 +8,14 @@ import {
   ChevronLeft,
   ChevronRight,
   Compass,
+  HeartPulse,
+  GraduationCap,
+  MapPin,
 } from "lucide-react";
 import { getKomunitasList } from "@/app/actions/komunitas";
 import { KomunitasFilter } from "@/components/komunitas/komunitas-filter";
 import { KomunitasCard } from "@/components/komunitas/komunitas-card";
+import { KomunitasRekapSection } from "@/components/komunitas/komunitas-rekap-section";
 import type { JenisKomunitas } from "@/types/database";
 
 interface KomunitasPageProps {
@@ -86,66 +90,101 @@ export default async function KomunitasPage({
   const endIndex = Math.min(pagination.page * pagination.limit, pagination.totalCount);
 
   return (
-    <div className="flex flex-col flex-1 px-4 py-6 sm:px-6 md:px-8 gap-6 max-w-4xl mx-auto w-full">
-      {/* Header Banner - Coursera Mobile Style */}
-      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b-2 border-slate-200 pb-5">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <span className="rounded-md bg-blue-50 px-2.5 py-0.5 text-xs font-bold text-blue-800 border border-blue-200">
-              JARIMAS EXPLORER
-            </span>
-            <span className="text-xs font-bold text-slate-500">KOTA TEGAL</span>
+    <div className="flex flex-col flex-1 px-4 py-4 sm:px-6 md:px-8 gap-6 max-w-4xl mx-auto w-full pb-20">
+      {/* ========================================================= */}
+      {/* 1. HEADER BANNER EKSPLORASI KOMUNITAS                     */}
+      {/* ========================================================= */}
+      <section className="relative overflow-hidden rounded-3xl border-2 border-slate-800 bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-white p-5 sm:p-7 shadow-lg shadow-slate-950/30 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-2">
+              <span className="rounded-full bg-white/10 border border-white/20 px-3 py-0.5 text-xs font-bold text-emerald-300 backdrop-blur-xs">
+                KOMUNITAS JARIMAS
+              </span>
+              <span className="text-xs font-bold text-slate-300 font-mono">
+                KOTA TEGAL
+              </span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
+              Eksplorasi Komunitas di Kota Tegal
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-300 max-w-lg leading-relaxed">
+              Jelajahi 230+ Posyandu Balita, Satuan PAUD &amp; Kesetaraan, dan Komunitas Warga 4 Tingkat (RT/RW/Kelurahan) se-Kota Tegal.
+            </p>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900">
-            Eksplorasi Komunitas
-          </h1>
-          <p className="text-sm text-slate-600 leading-relaxed max-w-lg">
-            Akses 230+ Posyandu, PAUD &amp; Kesetaraan (TK, KB, RA, PKBM, SKB), dan RT/RW se-Kota Tegal.
-          </p>
-        </div>
-      </header>
 
-      {/* 3 Tab Kategori Utama (Posyandu, Warga Kita, PAUD & Kesetaraan) - Coursera Mobile Touch Pills */}
-      <div className="flex rounded-2xl bg-white p-1.5 border-2 border-slate-200 gap-2 shadow-xs">
+          <div className="shrink-0">
+            <div className="flex items-center gap-2">
+              <div className="px-3.5 py-2 rounded-2xl bg-white/10 border border-white/20 backdrop-blur-xs text-center">
+                <span className="text-base sm:text-lg font-black block font-mono text-emerald-400">
+                  {pagination.totalCount}
+                </span>
+                <span className="text-[10px] text-slate-300 uppercase font-bold">
+                  Komunitas
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ========================================================= */}
+      {/* 2. 3 TAB KATEGORI UTAMA (COLOR CODED)                     */}
+      {/* ========================================================= */}
+      <div className="grid grid-cols-3 rounded-2xl bg-white dark:bg-slate-900 p-1.5 border-2 border-slate-200 dark:border-slate-800 gap-1.5 shadow-2xs">
+        {/* Tab 1: Posyandu */}
         <Link
           href={createTabUrl("posyandu")}
-          className={`flex flex-1 min-h-[48px] h-12 items-center justify-center gap-2 rounded-xl text-sm font-bold transition-all ${
+          className={`flex min-h-[48px] items-center justify-center gap-2 rounded-xl text-xs sm:text-sm font-extrabold transition-all cursor-pointer active:scale-98 ${
             currentTab === "posyandu"
-              ? "bg-blue-700 text-white shadow-xs"
-              : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+              ? "bg-emerald-600 text-white shadow-xs"
+              : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800"
           }`}
         >
-          <Sparkles className="h-4 w-4" />
+          <HeartPulse className="h-4 w-4 shrink-0" />
           <span>POSYANDU</span>
         </Link>
 
+        {/* Tab 2: Warga Kita */}
         <Link
           href={createTabUrl("warga_kita")}
-          className={`flex flex-1 min-h-[48px] h-12 items-center justify-center gap-2 rounded-xl text-sm font-bold transition-all ${
+          className={`flex min-h-[48px] items-center justify-center gap-2 rounded-xl text-xs sm:text-sm font-extrabold transition-all cursor-pointer active:scale-98 ${
             currentTab === "warga_kita"
-              ? "bg-blue-700 text-white shadow-xs"
-              : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+              ? "bg-blue-600 text-white shadow-xs"
+              : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800"
           }`}
         >
-          <Users className="h-4 w-4" />
+          <Users className="h-4 w-4 shrink-0" />
           <span>WARGA KITA</span>
         </Link>
 
+        {/* Tab 3: PAUD */}
         <Link
           href={createTabUrl("satuan_paud")}
-          className={`flex flex-1 min-h-[48px] h-12 items-center justify-center gap-2 rounded-xl text-sm font-bold transition-all ${
+          className={`flex min-h-[48px] items-center justify-center gap-2 rounded-xl text-xs sm:text-sm font-extrabold transition-all cursor-pointer active:scale-98 ${
             currentTab === "satuan_paud"
-              ? "bg-amber-600 text-white shadow-xs"
-              : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+              ? "bg-indigo-600 text-white font-black shadow-xs"
+              : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800"
           }`}
         >
-          <Building2 className="h-4 w-4" />
+          <GraduationCap className="h-4 w-4 shrink-0" />
           <span>PAUD</span>
         </Link>
       </div>
 
-      {/* Filter Dropdown & Search Wilayah */}
-      <Suspense fallback={<div className="min-h-[100px] animate-pulse rounded-2xl bg-slate-100 border-2 border-slate-200" />}>
+      {/* ========================================================= */}
+      {/* 2.5. REKAP JUMLAH KOMUNITAS PER KECAMATAN & KELURAHAN     */}
+      {/* ========================================================= */}
+      <KomunitasRekapSection
+        currentTab={currentTab}
+        currentKecamatan={currentKecamatan}
+        currentKelurahan={currentKelurahan}
+      />
+
+      {/* ========================================================= */}
+      {/* 3. FILTER DROPDOWN & SEARCH WILAYAH                       */}
+      {/* ========================================================= */}
+      <Suspense fallback={<div className="min-h-[100px] animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-800" />}>
         <KomunitasFilter
           currentTab={currentTab}
           currentSearch={currentSearch}
@@ -156,21 +195,23 @@ export default async function KomunitasPage({
         />
       </Suspense>
 
-      {/* List Komunitas Stream */}
+      {/* ========================================================= */}
+      {/* 4. LIST KOMUNITAS STREAM                                  */}
+      {/* ========================================================= */}
       <main className="space-y-4 pb-12">
         {/* Subheader Hasil & Paginasi Info */}
-        <div className="flex flex-wrap items-center justify-between gap-2 px-1 text-sm font-semibold text-slate-600">
+        <div className="flex flex-wrap items-center justify-between gap-2 px-1 text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400">
           <div className="flex items-center gap-2">
-            <span className="font-bold uppercase tracking-wider text-slate-900">
+            <span className="font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100">
               Daftar Komunitas
             </span>
             {currentSearch && (
-              <span className="rounded-md bg-blue-50 px-2 py-0.5 text-xs font-bold text-blue-800 border border-blue-200">
+              <span className="rounded-md bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 text-xs font-bold text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
                 Pencarian: &ldquo;{currentSearch}&rdquo;
               </span>
             )}
           </div>
-          <span className="font-mono text-slate-700 font-bold">
+          <span className="font-mono text-slate-700 dark:text-slate-300 font-bold text-xs">
             {pagination.totalCount > 0
               ? `${startIndex}–${endIndex} dari ${pagination.totalCount} data`
               : "0 data"}
@@ -178,15 +219,15 @@ export default async function KomunitasPage({
         </div>
 
         {listKomunitas.length === 0 ? (
-          <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-white p-12 text-center space-y-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 border-2 border-blue-200 text-blue-700">
-              <Search className="h-6 w-6" />
+          <div className="flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-900 p-12 text-center space-y-3 shadow-xs">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border-2 border-emerald-200 dark:border-emerald-900 text-emerald-700 dark:text-emerald-400">
+              <Search className="h-7 w-7" />
             </div>
-            <div className="space-y-1 max-w-sm">
-              <h3 className="text-base font-bold text-slate-900">
+            <div className="space-y-1.5 max-w-sm">
+              <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
                 Tidak Ada Komunitas yang Cocok
               </h3>
-              <p className="text-sm text-slate-600 leading-relaxed">
+              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
                 {currentSearch
                   ? `Tidak ditemukan hasil untuk "${currentSearch}". Coba kata kunci lain atau reset filter.`
                   : "Ubah pilihan kecamatan, kelurahan, atau RT/RW untuk melihat data lainnya."}
@@ -195,14 +236,14 @@ export default async function KomunitasPage({
             {(currentSearch || currentKecamatan !== "semua" || currentKelurahan !== "semua") && (
               <Link
                 href={`/komunitas?tab=${currentTab}`}
-                className="inline-flex min-h-[44px] h-11 items-center justify-center rounded-xl border-2 border-slate-300 bg-white px-5 text-sm font-bold text-slate-800 hover:bg-slate-50 transition-colors"
+                className="inline-flex min-h-[44px] items-center justify-center rounded-xl border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-5 text-xs font-bold text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
               >
                 Reset Semua Filter
               </Link>
             )}
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-3.5">
             {listKomunitas.map((kom) => (
               <KomunitasCard
                 key={kom.id}
@@ -215,25 +256,25 @@ export default async function KomunitasPage({
 
         {/* Navigasi Pagination */}
         {pagination.totalPages > 1 && (
-          <div className="flex items-center justify-between border-t-2 border-slate-200 pt-4 text-sm font-bold">
+          <div className="flex items-center justify-between border-t-2 border-slate-200 dark:border-slate-800 pt-4 text-xs sm:text-sm font-bold">
             <div>
               {pagination.page > 1 ? (
                 <Link
                   href={createPageUrl(pagination.page - 1)}
-                  className="inline-flex min-h-[44px] h-11 items-center gap-1.5 rounded-xl border-2 border-slate-300 bg-white px-4 text-slate-800 hover:bg-slate-50 transition-colors"
+                  className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
                 >
                   <ChevronLeft className="h-4 w-4" />
                   <span>Sebelumnya</span>
                 </Link>
               ) : (
-                <span className="inline-flex min-h-[44px] h-11 items-center gap-1.5 rounded-xl border-2 border-slate-200 bg-slate-50 px-4 text-slate-400 cursor-not-allowed">
+                <span className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border-2 border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 px-4 text-slate-400 dark:text-slate-600 cursor-not-allowed">
                   <ChevronLeft className="h-4 w-4" />
                   <span>Sebelumnya</span>
                 </span>
               )}
             </div>
 
-            <span className="text-slate-600">
+            <span className="text-slate-600 dark:text-slate-400 font-mono text-xs">
               Halaman {pagination.page} dari {pagination.totalPages}
             </span>
 
@@ -241,13 +282,13 @@ export default async function KomunitasPage({
               {pagination.hasMore ? (
                 <Link
                   href={createPageUrl(pagination.page + 1)}
-                  className="inline-flex min-h-[44px] h-11 items-center gap-1.5 rounded-xl border-2 border-slate-300 bg-white px-4 text-slate-800 hover:bg-slate-50 transition-colors"
+                  className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
                 >
                   <span>Berikutnya</span>
                   <ChevronRight className="h-4 w-4" />
                 </Link>
               ) : (
-                <span className="inline-flex min-h-[44px] h-11 items-center gap-1.5 rounded-xl border-2 border-slate-200 bg-slate-50 px-4 text-slate-400 cursor-not-allowed">
+                <span className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border-2 border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 px-4 text-slate-400 dark:text-slate-600 cursor-not-allowed">
                   <span>Berikutnya</span>
                   <ChevronRight className="h-4 w-4" />
                 </span>

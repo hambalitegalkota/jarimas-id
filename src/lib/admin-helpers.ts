@@ -174,7 +174,7 @@ export function computeTierAndApprover(
   peranDiajukan?: string | null,
   peranBase?: string
 ): {
-  tierLevel: "RT" | "RW" | "Kelurahan" | "Kecamatan" | "Posyandu" | "Satuan PAUD" | "Umum";
+  tierLevel: "RT" | "RW" | "Kelurahan" | "Kecamatan" | "Kota" | "Posyandu" | "Satuan PAUD" | "Umum";
   targetApproverTitle: string;
 } {
   const roleReq = (peranDiajukan || peranBase || "").toLowerCase();
@@ -217,8 +217,18 @@ export function computeTierAndApprover(
     }
 
     // 4. Tingkat Kecamatan (Kecamatan tanpa Kelurahan/RW/RT)
+    if (meta.rawKec && meta.rawKec !== "Kota Tegal") {
+      return {
+        tierLevel: "Kecamatan",
+        targetApproverTitle: isAdmin
+          ? "Admin Kota Tegal"
+          : `Admin Kecamatan ${meta.rawKec}`,
+      };
+    }
+
+    // 5. Tingkat Kota (Kota Tegal)
     return {
-      tierLevel: "Kecamatan",
+      tierLevel: "Kota",
       targetApproverTitle: "Super Admin",
     };
   }

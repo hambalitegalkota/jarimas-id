@@ -181,12 +181,12 @@ export function ApprovalList({
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-1">
         <div className="flex items-center gap-2">
-          <Clock className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+          <Clock className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
           <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
             Daftar Permohonan Peran &amp; Admin
           </h3>
         </div>
-        <span className="inline-flex items-center gap-1 rounded-full border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/50 px-3 py-1 text-xs font-bold text-blue-700 dark:text-blue-300 self-start sm:self-auto">
+        <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/50 px-3 py-1 text-xs font-bold text-emerald-700 dark:text-emerald-300 self-start sm:self-auto">
           {approvals.length} PERMOHONAN TERTUNDA
         </span>
       </div>
@@ -200,12 +200,12 @@ export function ApprovalList({
             className={cn(
               "inline-flex shrink-0 items-center min-h-[44px] rounded-xl px-4 py-2 text-sm font-bold transition-all cursor-pointer gap-2",
               activeTier === "semua"
-                ? "bg-blue-700 text-white font-bold shadow-xs border-2 border-blue-700"
-                : "bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50"
+                ? "bg-emerald-600 text-white font-bold shadow-xs border-2 border-emerald-600"
+                : "bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60"
             )}
           >
             <span>Semua</span>
-            <span className={cn("rounded-full px-2 py-0.5 text-xs", activeTier === "semua" ? "bg-blue-800 text-white" : "bg-slate-100 dark:bg-slate-800 text-slate-600")}>
+            <span className={cn("rounded-full px-2 py-0.5 text-xs font-bold font-mono", activeTier === "semua" ? "bg-emerald-700 text-white" : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300")}>
               {counts.semua}
             </span>
           </button>
@@ -217,12 +217,12 @@ export function ApprovalList({
               className={cn(
                 "inline-flex shrink-0 items-center min-h-[44px] rounded-xl px-4 py-2 text-sm font-bold transition-all cursor-pointer gap-2",
                 activeTier === "admin_rt"
-                  ? "bg-blue-700 text-white font-bold shadow-xs border-2 border-blue-700"
-                  : "bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50"
+                  ? "bg-emerald-600 text-white font-bold shadow-xs border-2 border-emerald-600"
+                  : "bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60"
               )}
             >
               <span>Admin RT</span>
-              <span className={cn("rounded-full px-2 py-0.5 text-xs", activeTier === "admin_rt" ? "bg-blue-800 text-white" : "bg-emerald-50 text-emerald-700")}>
+              <span className={cn("rounded-full px-2 py-0.5 text-xs font-bold font-mono", activeTier === "admin_rt" ? "bg-emerald-700 text-white" : "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300")}>
                 {counts.admin_rt}
               </span>
             </button>
@@ -235,12 +235,12 @@ export function ApprovalList({
               className={cn(
                 "inline-flex shrink-0 items-center min-h-[44px] rounded-xl px-4 py-2 text-sm font-bold transition-all cursor-pointer gap-2",
                 activeTier === "admin_rw"
-                  ? "bg-blue-700 text-white font-bold shadow-xs border-2 border-blue-700"
-                  : "bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50"
+                  ? "bg-emerald-600 text-white font-bold shadow-xs border-2 border-emerald-600"
+                  : "bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60"
               )}
             >
               <span>Admin RW</span>
-              <span className={cn("rounded-full px-2 py-0.5 text-xs", activeTier === "admin_rw" ? "bg-blue-800 text-white" : "bg-cyan-50 text-cyan-700")}>
+              <span className={cn("rounded-full px-2 py-0.5 text-xs font-bold font-mono", activeTier === "admin_rw" ? "bg-emerald-700 text-white" : "bg-cyan-50 dark:bg-cyan-950/60 text-cyan-700 dark:text-cyan-300")}>
                 {counts.admin_rw}
               </span>
             </button>
@@ -253,12 +253,12 @@ export function ApprovalList({
               className={cn(
                 "inline-flex shrink-0 items-center min-h-[44px] rounded-xl px-4 py-2 text-sm font-bold transition-all cursor-pointer gap-2",
                 activeTier === "admin_kel"
-                  ? "bg-blue-700 text-white font-bold shadow-xs border-2 border-blue-700"
-                  : "bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50"
+                  ? "bg-emerald-600 text-white font-bold shadow-xs border-2 border-emerald-600"
+                  : "bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60"
               )}
             >
               <span>Admin Kelurahan</span>
-              <span className={cn("rounded-full px-2 py-0.5 text-xs", activeTier === "admin_kel" ? "bg-blue-800 text-white" : "bg-amber-50 text-amber-700")}>
+              <span className={cn("rounded-full px-2 py-0.5 text-xs font-bold font-mono", activeTier === "admin_kel" ? "bg-emerald-700 text-white" : "bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300")}>
                 {counts.admin_kel}
               </span>
             </button>
@@ -271,12 +271,12 @@ export function ApprovalList({
               className={cn(
                 "inline-flex shrink-0 items-center min-h-[44px] rounded-xl px-4 py-2 text-sm font-bold transition-all cursor-pointer gap-2",
                 activeTier === "admin_kec"
-                  ? "bg-blue-700 text-white font-bold shadow-xs border-2 border-blue-700"
-                  : "bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50"
+                  ? "bg-emerald-600 text-white font-bold shadow-xs border-2 border-emerald-600"
+                  : "bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60"
               )}
             >
               <span>Admin Kecamatan</span>
-              <span className={cn("rounded-full px-2 py-0.5 text-xs", activeTier === "admin_kec" ? "bg-blue-800 text-white" : "bg-purple-50 text-purple-700")}>
+              <span className={cn("rounded-full px-2 py-0.5 text-xs font-bold font-mono", activeTier === "admin_kec" ? "bg-emerald-700 text-white" : "bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300")}>
                 {counts.admin_kec}
               </span>
             </button>
@@ -289,12 +289,12 @@ export function ApprovalList({
               className={cn(
                 "inline-flex shrink-0 items-center min-h-[44px] rounded-xl px-4 py-2 text-sm font-bold transition-all cursor-pointer gap-2",
                 activeTier === "warga"
-                  ? "bg-blue-700 text-white font-bold shadow-xs border-2 border-blue-700"
-                  : "bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50"
+                  ? "bg-emerald-600 text-white font-bold shadow-xs border-2 border-emerald-600"
+                  : "bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60"
               )}
             >
               <span>Warga</span>
-              <span className={cn("rounded-full px-2 py-0.5 text-xs", activeTier === "warga" ? "bg-blue-800 text-white" : "bg-slate-100 text-slate-700")}>
+              <span className={cn("rounded-full px-2 py-0.5 text-xs font-bold font-mono", activeTier === "warga" ? "bg-emerald-700 text-white" : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300")}>
                 {counts.warga}
               </span>
             </button>
@@ -307,12 +307,12 @@ export function ApprovalList({
               className={cn(
                 "inline-flex shrink-0 items-center min-h-[44px] rounded-xl px-4 py-2 text-sm font-bold transition-all cursor-pointer gap-2",
                 activeTier === "posyandu_paud"
-                  ? "bg-blue-700 text-white font-bold shadow-xs border-2 border-blue-700"
-                  : "bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50"
+                  ? "bg-emerald-600 text-white font-bold shadow-xs border-2 border-emerald-600"
+                  : "bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60"
               )}
             >
               <span>Posyandu &amp; PAUD</span>
-              <span className={cn("rounded-full px-2 py-0.5 text-xs", activeTier === "posyandu_paud" ? "bg-blue-800 text-white" : "bg-slate-100 text-slate-700")}>
+              <span className={cn("rounded-full px-2 py-0.5 text-xs font-bold font-mono", activeTier === "posyandu_paud" ? "bg-emerald-700 text-white" : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300")}>
                 {counts.posyandu_paud}
               </span>
             </button>
@@ -323,7 +323,7 @@ export function ApprovalList({
       {/* List / Empty State */}
       {filteredApprovals.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-8 text-center shadow-xs">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl border-2 border-emerald-200 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 mb-3">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl border-2 border-emerald-200 dark:border-emerald-800/60 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 mb-3">
             <Check className="h-6 w-6" />
           </div>
           <h4 className="font-bold text-slate-900 dark:text-slate-100 text-base">
@@ -351,7 +351,7 @@ export function ApprovalList({
             return (
               <div
                 key={item.id}
-                className="rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 space-y-4 transition-colors hover:border-blue-500 shadow-xs"
+                className="rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 space-y-4 transition-all hover:border-emerald-400 dark:hover:border-emerald-600 shadow-xs"
               >
                 {/* Header User, Tier & Role */}
                 <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
@@ -369,16 +369,16 @@ export function ApprovalList({
                             className={cn(
                               "inline-flex items-center gap-1 rounded-full px-3 py-0.5 text-xs font-bold uppercase border-2",
                               item.tierLevel === "RT" &&
-                                "border-emerald-500 bg-emerald-50 text-emerald-700",
+                                "border-emerald-500 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300",
                               item.tierLevel === "RW" &&
-                                "border-cyan-500 bg-cyan-50 text-cyan-700",
+                                "border-cyan-500 bg-cyan-50 dark:bg-cyan-950/60 text-cyan-700 dark:text-cyan-300",
                               item.tierLevel === "Kelurahan" &&
-                                "border-amber-500 bg-amber-50 text-amber-700",
+                                "border-amber-500 bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300",
                               item.tierLevel === "Kecamatan" &&
-                                "border-purple-500 bg-purple-50 text-purple-700",
+                                "border-purple-500 bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300",
                               (item.tierLevel === "Posyandu" ||
                                 item.tierLevel === "Satuan PAUD") &&
-                                "border-slate-300 bg-slate-100 text-slate-700"
+                                "border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
                             )}
                           >
                             <Layers className="h-3.5 w-3.5" />
@@ -391,7 +391,7 @@ export function ApprovalList({
                         <span>{userEmail}</span>
                         {userPhone && (
                           <span className="flex items-center gap-1 text-slate-900 dark:text-slate-100 font-bold">
-                            <Phone className="h-3.5 w-3.5 text-emerald-600" />
+                            <Phone className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
                             {userPhone}
                           </span>
                         )}
@@ -405,8 +405,8 @@ export function ApprovalList({
                       className={cn(
                         "inline-flex items-center gap-1.5 rounded-full border-2 px-3 py-1 text-xs font-bold",
                         isRolePengurus
-                          ? "border-amber-500 bg-amber-50 text-amber-700"
-                          : "border-emerald-500 bg-emerald-50 text-emerald-700"
+                          ? "border-amber-500 bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300"
+                          : "border-emerald-500 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300"
                       )}
                     >
                       <Shield className="h-4 w-4" />
@@ -424,8 +424,8 @@ export function ApprovalList({
                         className={cn(
                           "inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold border",
                           item.berdomisili
-                            ? "border-emerald-400 bg-emerald-50 text-emerald-700"
-                            : "border-amber-400 bg-amber-50 text-amber-700"
+                            ? "border-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300"
+                            : "border-amber-400 bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300"
                         )}
                       >
                         <Home className="h-3.5 w-3.5" />
@@ -437,8 +437,8 @@ export function ApprovalList({
                         className={cn(
                           "inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold border",
                           item.kk_terdaftar
-                            ? "border-emerald-400 bg-emerald-50 text-emerald-700"
-                            : "border-amber-400 bg-amber-50 text-amber-700"
+                            ? "border-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300"
+                            : "border-amber-400 bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300"
                         )}
                       >
                         <FileText className="h-3.5 w-3.5" />
@@ -467,7 +467,7 @@ export function ApprovalList({
                   {item.targetApproverTitle && (
                     <div className="pt-1.5 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between">
                       <span className="text-slate-500">Wewenang Persetujuan:</span>
-                      <span className="text-blue-700 dark:text-blue-400 font-bold">
+                      <span className="text-emerald-700 dark:text-emerald-400 font-bold">
                         {item.targetApproverTitle}
                       </span>
                     </div>
@@ -494,7 +494,7 @@ export function ApprovalList({
                   <button
                     onClick={() => handleReject(item.id, userName)}
                     disabled={isProcessing}
-                    className="flex min-h-[48px] w-full sm:flex-1 items-center justify-center gap-2 rounded-xl border-2 border-rose-200 dark:border-rose-900/40 bg-rose-50 dark:bg-rose-950/30 px-4 text-sm font-bold text-rose-700 dark:text-rose-400 transition-all hover:bg-rose-100 active:scale-98 disabled:opacity-50 cursor-pointer"
+                    className="flex min-h-[48px] w-full sm:flex-1 items-center justify-center gap-2 rounded-xl border-2 border-rose-200 dark:border-rose-900/40 bg-rose-50 dark:bg-rose-950/30 px-4 text-sm font-bold text-rose-700 dark:text-rose-400 transition-all hover:bg-rose-100 dark:hover:bg-rose-900/50 active:scale-98 disabled:opacity-50 cursor-pointer"
                   >
                     {isProcessing ? (
                       <Loader2 className="h-4 w-4 animate-spin" />

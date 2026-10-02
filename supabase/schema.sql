@@ -336,6 +336,7 @@ CREATE TABLE IF NOT EXISTS public.ddks_records (
   panjang_badan NUMERIC(5,2),
   lingkar_kepala NUMERIC(5,2) NOT NULL DEFAULT 0,
   catatan TEXT,
+  dicatat_oleh UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
   recorded_by UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
@@ -347,12 +348,21 @@ ALTER TABLE public.ddks_records ADD COLUMN IF NOT EXISTS tinggi_badan NUMERIC(5,
 ALTER TABLE public.ddks_records ADD COLUMN IF NOT EXISTS panjang_badan NUMERIC(5,2);
 ALTER TABLE public.ddks_records ADD COLUMN IF NOT EXISTS lingkar_kepala NUMERIC(5,2) NOT NULL DEFAULT 0;
 ALTER TABLE public.ddks_records ADD COLUMN IF NOT EXISTS catatan TEXT;
+ALTER TABLE public.ddks_records ADD COLUMN IF NOT EXISTS dicatat_oleh UUID REFERENCES public.profiles(id) ON DELETE CASCADE;
 ALTER TABLE public.ddks_records ADD COLUMN IF NOT EXISTS recorded_by UUID REFERENCES public.profiles(id) ON DELETE CASCADE;
+DO $$ BEGIN
+  ALTER TABLE public.ddks_records ALTER COLUMN dicatat_oleh DROP NOT NULL;
+  ALTER TABLE public.ddks_records ALTER COLUMN recorded_by DROP NOT NULL;
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 ALTER TABLE public.ddks_records ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT now();
 
 DO $$
 BEGIN
-  -- Migrasi data user_id / created_by jika ada dari skema lama
+  -- Migrasi & sinkronisasi data dicatat_oleh / recorded_by / user_id / created_by
+  IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'ddks_records' AND column_name = 'dicatat_oleh') THEN
+    UPDATE public.ddks_records SET recorded_by = dicatat_oleh WHERE recorded_by IS NULL;
+    UPDATE public.ddks_records SET dicatat_oleh = recorded_by WHERE dicatat_oleh IS NULL;
+  END IF;
   IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'ddks_records' AND column_name = 'user_id') THEN
     UPDATE public.ddks_records SET recorded_by = user_id WHERE recorded_by IS NULL;
   END IF;

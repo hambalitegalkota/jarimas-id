@@ -4,19 +4,11 @@ import Link from "next/link";
 import Image from "next/image";
 import { ShoppingBag, ArrowRight, CheckCircle2, AlertTriangle, XCircle, Tag } from "lucide-react";
 import type { MarketProduk } from "@/types/database";
-import { cn } from "@/lib/utils";
+import { cn, formatRupiah } from "@/lib/utils";
+export { formatRupiah };
 
 interface ProdukCardProps {
   produk: MarketProduk;
-}
-
-export function formatRupiah(amount: number): string {
-  return new Intl.NumberFormat("id-ID", {
-    style: "currency",
-    currency: "IDR",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
 }
 
 export function ProdukCard({ produk }: ProdukCardProps) {
@@ -24,7 +16,7 @@ export function ProdukCard({ produk }: ProdukCardProps) {
   const isLowStock = produk.stok > 0 && produk.stok <= 5;
 
   return (
-    <div className="group relative flex flex-col overflow-hidden rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 transition-all hover:border-blue-500 shadow-xs">
+    <div className="group relative flex flex-col overflow-hidden rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 transition-all hover:border-emerald-500 shadow-xs">
       {/* Gambar Produk */}
       <div className="relative aspect-4/3 w-full overflow-hidden bg-slate-100 dark:bg-slate-800 border-b-2 border-slate-100 dark:border-slate-800">
         <Image
@@ -37,7 +29,7 @@ export function ProdukCard({ produk }: ProdukCardProps) {
 
         {/* Badge Kategori */}
         <div className="absolute top-3 left-3 flex items-center gap-1 rounded-full bg-white/95 dark:bg-slate-900/95 border border-slate-200 dark:border-slate-700 px-3 py-1 text-xs font-bold text-slate-800 dark:text-slate-200 shadow-sm backdrop-blur-xs">
-          <Tag className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+          <Tag className="h-3.5 w-3.5 text-emerald-600" />
           <span>{produk.kategori}</span>
         </div>
 
@@ -76,7 +68,7 @@ export function ProdukCard({ produk }: ProdukCardProps) {
             <span className="text-xs font-bold text-slate-500 block">
               HARGA RESMI
             </span>
-            <span className="text-lg sm:text-xl font-bold font-mono text-blue-700 dark:text-blue-400">
+            <span className="text-lg sm:text-xl font-bold font-mono text-emerald-700 dark:text-emerald-400">
               {formatRupiah(produk.harga)}
             </span>
           </div>
@@ -84,10 +76,10 @@ export function ProdukCard({ produk }: ProdukCardProps) {
           <Link
             href={`/market/${produk.id}`}
             className={cn(
-              "inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl px-4 text-sm font-bold transition-all active:scale-95 cursor-pointer shadow-xs",
+              "inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl px-4 text-sm font-extrabold transition-all active:scale-95 cursor-pointer shadow-xs",
               isOutOfStock
                 ? "bg-slate-100 dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 text-slate-400 cursor-not-allowed pointer-events-none"
-                : "bg-blue-700 hover:bg-blue-800 text-white"
+                : "bg-emerald-600 hover:bg-emerald-700 text-white"
             )}
           >
             <ShoppingBag className="h-4 w-4" />

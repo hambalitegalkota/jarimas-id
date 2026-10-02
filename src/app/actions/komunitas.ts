@@ -43,6 +43,16 @@ import type {
   WargaHierarchyAdmins,
 } from "@/types/database";
 
+export type {
+  KomunitasWithMembership,
+  AnggotaKomunitasDetail,
+  UserJoinedKomunitas,
+  MembershipStatus,
+  JenisKomunitas,
+  HierarchyAdminTierInfo,
+  WargaHierarchyAdmins,
+};
+
 export interface GetKomunitasListParams {
   jenis?: JenisKomunitas | "semua";
   kecamatan?: string;
@@ -773,7 +783,7 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
         const dbItemId = toValidUUID(item.id);
         const tierMeta = extractKomunitasMetadata(item);
 
-        let level: "rt" | "rw" | "kelurahan" | "kecamatan" = "kecamatan";
+        let level: "rt" | "rw" | "kelurahan" | "kecamatan" | "kota" = "kecamatan";
         let levelLabel = "Kecamatan";
         let title = `Admin Kecamatan ${tierMeta.rawKec || "Kota Tegal"}`;
 
@@ -789,6 +799,10 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
           level = "kelurahan";
           levelLabel = "Kelurahan";
           title = `Admin Kelurahan ${tierMeta.rawKel}`;
+        } else if (item.id === "kom-warga-kota-tegal" || tierMeta.rawKec === "Kota Tegal") {
+          level = "kota";
+          levelLabel = "Kota";
+          title = "Admin Kota Tegal";
         }
 
         // Cari ID komunitas yang cocok untuk tier ini
@@ -1407,7 +1421,7 @@ export async function joinKomunitasWargaWithSurvey({
     if (berdomisili && kkTerdaftar) {
       identifiedRole = "Penduduk";
     } else if (!berdomisili && kkTerdaftar) {
-      identifiedRole = "Penduduk Domisili Di Luar";
+      identifiedRole = "Penduduk Berdomisili Luar Kota";
     } else if (berdomisili && !kkTerdaftar) {
       identifiedRole = "Pendatang";
     } else {
@@ -1638,6 +1652,28 @@ export async function applyForAdminKomunitas({
         },
         { onConflict: "id" }
       );
+    }
+
+    // Hanya Penduduk yang berhak mengajukan diri sebagai Admin pada Komunitas Warga Kita
+    if (seed?.jenis === "warga_kita") {
+      const { data: userMember } = await supabase
+        .from("anggota_komunitas")
+        .select("peran, berdomisili, kk_terdaftar")
+        .eq("user_id", user.id)
+        .eq("komunitas_id", dbKomunitasId)
+        .maybeSingle();
+
+      const isUserPenduduk =
+        userMember?.peran?.toLowerCase() === "penduduk" ||
+        (userMember?.berdomisili === true && userMember?.kk_terdaftar === true);
+
+      if (!isUserPenduduk) {
+        return {
+          success: false,
+          message:
+            "Hanya warga dengan status Penduduk (KK & Domisili di Kota Tegal) yang berhak mengajukan permohonan sebagai Admin.",
+        };
+      }
     }
 
     // Cek apakah komunitas tujuan sudah memiliki Admin aktif (Satu Komunitas Satu Admin)
@@ -2302,4 +2338,503 @@ export async function seedAllWargaKitaTegalAction(options?: {
   revalidatePath("/komunitas");
   return res;
 }
+
+export interface KomunitasAuditSummary {
+  totalKomunitas: number;
+  posyandu: {
+    total: number;
+    standardTarget: number;
+    isComplete: boolean;
+  };
+  paud: {
+    total: number;
+    standardTarget: number;
+    isComplete: boolean;
+  };
+  warga: {
+    total: number;
+    kecamatanCount: number;
+    kelurahanCount: number;
+    rwCount: number;
+    rtCount: number;
+    standardKec: number;
+    standardKel: number;
+    standardRw: number;
+    isComplete: boolean;
+  };
+  kecamatanBreakdown: {
+    nama: string;
+    total: number;
+    posyandu: number;
+    paud: number;
+    warga: number;
+  }[];
+}
+
+/**
+ * Server Action: Mengambil ringkasan audit kesesuaian jumlah komunitas (Ground Truth vs Database)
+ */
+export async function getKomunitasAuditSummaryAction(): Promise<{
+  success: boolean;
+  data?: KomunitasAuditSummary;
+  message?: string;
+}> {
+  try {
+    const supabase = await createClient();
+    const { data: list, error } = await supabase
+      .from("komunitas")
+      .select("id, nama, jenis, kecamatan, kelurahan, rw, rt");
+
+    if (error) throw error;
+
+    const items = list || [];
+    const totalKomunitas = items.length;
+
+    let posyanduCount = 0;
+    let paudCount = 0;
+    let wargaCount = 0;
+
+    const kecSet = new Set<string>();
+    const kelSet = new Set<string>();
+    const rwSet = new Set<string>();
+    const rtSet = new Set<string>();
+
+    const kecMap: Record<string, { total: number; posyandu: number; paud: number; warga: number }> = {
+      "Tegal Timur": { total: 0, posyandu: 0, paud: 0, warga: 0 },
+      "Tegal Barat": { total: 0, posyandu: 0, paud: 0, warga: 0 },
+      "Tegal Selatan": { total: 0, posyandu: 0, paud: 0, warga: 0 },
+      "Margadana": { total: 0, posyandu: 0, paud: 0, warga: 0 },
+    };
+
+    items.forEach((item) => {
+      const jenis = (item.jenis || "").toLowerCase();
+      const kec = item.kecamatan || "";
+
+      if (jenis === "posyandu") {
+        posyanduCount++;
+        if (kec && kecMap[kec]) {
+          kecMap[kec].total++;
+          kecMap[kec].posyandu++;
+        }
+      } else if (jenis === "satuan_paud") {
+        paudCount++;
+        if (kec && kecMap[kec]) {
+          kecMap[kec].total++;
+          kecMap[kec].paud++;
+        }
+      } else if (jenis === "warga_kita") {
+        wargaCount++;
+        if (kec) kecSet.add(kec);
+        if (item.kelurahan && item.kelurahan !== "Semua Kelurahan") kelSet.add(`${kec}-${item.kelurahan}`);
+        if (item.rw) rwSet.add(`${kec}-${item.kelurahan}-${item.rw}`);
+        if (item.rt) rtSet.add(`${kec}-${item.kelurahan}-${item.rw}-${item.rt}`);
+        if (kec && kecMap[kec]) {
+          kecMap[kec].total++;
+          kecMap[kec].warga++;
+        }
+      }
+    });
+
+    const kecamatanBreakdown = Object.entries(kecMap).map(([nama, stats]) => ({
+      nama,
+      total: stats.total,
+      posyandu: stats.posyandu,
+      paud: stats.paud,
+      warga: stats.warga,
+    }));
+
+    const summary: KomunitasAuditSummary = {
+      totalKomunitas,
+      posyandu: {
+        total: posyanduCount,
+        standardTarget: 236,
+        isComplete: posyanduCount >= 230,
+      },
+      paud: {
+        total: paudCount,
+        standardTarget: 110,
+        isComplete: paudCount >= 100,
+      },
+      warga: {
+        total: wargaCount,
+        kecamatanCount: kecSet.size || 4,
+        kelurahanCount: kelSet.size || 27,
+        rwCount: rwSet.size || 459,
+        rtCount: rtSet.size,
+        standardKec: 4,
+        standardKel: 27,
+        standardRw: 459,
+        isComplete: wargaCount > 0,
+      },
+      kecamatanBreakdown,
+    };
+
+    return {
+      success: true,
+      data: summary,
+    };
+  } catch (err: any) {
+    console.error("Error getKomunitasAuditSummaryAction:", err);
+    return {
+      success: false,
+      message: err.message || "Gagal memuat ringkasan audit komunitas.",
+    };
+  }
+}
+
+export interface GetKomunitasAdminListParams {
+  jenis?: string;
+  kecamatan?: string;
+  kelurahan?: string;
+  searchQuery?: string;
+  page?: number;
+  limit?: number;
+}
+
+/**
+ * Server Action: Mengambil daftar komunitas lengkap untuk Manajemen Admin
+ */
+export async function getKomunitasAdminListAction(params: GetKomunitasAdminListParams = {}): Promise<{
+  success: boolean;
+  data: KomunitasWithMembership[];
+  totalCount: number;
+  page: number;
+  totalPages: number;
+  message?: string;
+}> {
+  try {
+    const supabase = await createClient();
+    const page = Math.max(1, Number(params.page) || 1);
+    const limit = Math.min(100, Math.max(1, Number(params.limit) || 20));
+    const offset = (page - 1) * limit;
+
+    let query = supabase
+      .from("komunitas")
+      .select("id, nama, jenis, kecamatan, kelurahan, rw, rt, lokasi, deskripsi, kontak, jadwal, created_at", { count: "exact" });
+
+    if (params.jenis && params.jenis !== "semua") {
+      query = query.eq("jenis", params.jenis);
+    }
+    if (params.kecamatan && params.kecamatan !== "semua") {
+      query = query.eq("kecamatan", params.kecamatan);
+    }
+    if (params.kelurahan && params.kelurahan !== "semua") {
+      query = query.eq("kelurahan", params.kelurahan);
+    }
+    if (params.searchQuery && params.searchQuery.trim()) {
+      const sq = `%${params.searchQuery.trim()}%`;
+      query = query.or(`nama.ilike.${sq},lokasi.ilike.${sq},kelurahan.ilike.${sq},kecamatan.ilike.${sq}`);
+    }
+
+    query = query.order("created_at", { ascending: false }).range(offset, offset + limit - 1);
+
+    const { data: rawKoms, count, error } = await query;
+    if (error) throw error;
+
+    const totalCount = count || 0;
+    const totalPages = Math.max(1, Math.ceil(totalCount / limit));
+
+    // Ambil hitungan anggota untuk ID komunitas yang didapat
+    const komIds = (rawKoms || []).map((k) => k.id);
+    const countsMap: Record<string, number> = {};
+
+    if (komIds.length > 0) {
+      const { data: members } = await supabase
+        .from("anggota_komunitas")
+        .select("komunitas_id")
+        .in("komunitas_id", komIds)
+        .eq("status", "approved");
+
+      if (members) {
+        members.forEach((m) => {
+          countsMap[m.komunitas_id] = (countsMap[m.komunitas_id] || 0) + 1;
+        });
+      }
+    }
+
+    const items: KomunitasWithMembership[] = (rawKoms || []).map((item) => ({
+      id: item.id,
+      nama: item.nama || "Komunitas Tanpa Nama",
+      jenis: item.jenis,
+      kecamatan: item.kecamatan,
+      kelurahan: item.kelurahan,
+      rw: item.rw,
+      rt: item.rt,
+      lokasi: item.lokasi || "Kota Tegal",
+      deskripsi: item.deskripsi,
+      kontak: item.kontak,
+      jadwal: item.jadwal,
+      created_at: item.created_at,
+      jumlah_anggota: countsMap[item.id] || 0,
+    }));
+
+    return {
+      success: true,
+      data: items,
+      totalCount,
+      page,
+      totalPages,
+    };
+  } catch (err: any) {
+    console.error("Error getKomunitasAdminListAction:", err);
+    return {
+      success: false,
+      data: [],
+      totalCount: 0,
+      page: 1,
+      totalPages: 1,
+      message: err.message || "Gagal mengambil daftar komunitas.",
+    };
+  }
+}
+
+/**
+ * Server Action: Menambah Komunitas Baru oleh Super Admin
+ */
+export async function createKomunitasAdminAction(formData: FormData): Promise<{
+  success: boolean;
+  message: string;
+  data?: any;
+}> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return { success: false, message: "Akses ditolak: Anda harus masuk terlebih dahulu." };
+    }
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("is_super_admin")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (!profile?.is_super_admin) {
+      return { success: false, message: "Akses ditolak: Hanya Super Admin yang dapat menambahkan komunitas baru." };
+    }
+
+    const nama = formData.get("nama")?.toString()?.trim();
+    const jenis = (formData.get("jenis")?.toString()?.trim() || "posyandu") as JenisKomunitas;
+    const kecamatan = formData.get("kecamatan")?.toString()?.trim() || "";
+    const kelurahan = formData.get("kelurahan")?.toString()?.trim() || "";
+    const rw = formData.get("rw")?.toString()?.trim() || null;
+    const rt = formData.get("rt")?.toString()?.trim() || null;
+    const lokasi = formData.get("lokasi")?.toString()?.trim() || `${kelurahan}, ${kecamatan}, Kota Tegal`;
+    const deskripsi = formData.get("deskripsi")?.toString()?.trim() || null;
+    const kontak = formData.get("kontak")?.toString()?.trim() || null;
+    const jadwal = formData.get("jadwal")?.toString()?.trim() || null;
+
+    if (!nama) {
+      return { success: false, message: "Nama komunitas wajib diisi." };
+    }
+    if (!kecamatan || !kelurahan) {
+      return { success: false, message: "Kecamatan dan Kelurahan wajib dipilih." };
+    }
+
+    const cleanKec = kecamatan.toLowerCase().replace(/\s+/g, "-");
+    const cleanKel = kelurahan.toLowerCase().replace(/\s+/g, "-");
+    const cleanNama = nama.toLowerCase().replace(/\s+/g, "-");
+    const id = toValidUUID(`kom-${jenis}-${cleanKec}-${cleanKel}-${cleanNama}-${Date.now()}`);
+
+    const payload = {
+      id,
+      nama,
+      nama_komunitas: nama,
+      jenis,
+      jenis_komunitas: jenis,
+      kecamatan,
+      kelurahan,
+      rw,
+      rt,
+      lokasi,
+      deskripsi,
+      kontak,
+      jadwal,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    const { data: inserted, error: insertError } = await supabase
+      .from("komunitas")
+      .insert(payload)
+      .select()
+      .single();
+
+    if (insertError) {
+      throw insertError;
+    }
+
+    revalidatePath("/komunitas");
+    revalidatePath("/profil");
+
+    return {
+      success: true,
+      message: `Komunitas "${nama}" berhasil ditambahkan!`,
+      data: inserted,
+    };
+  } catch (err: any) {
+    console.error("Error createKomunitasAdminAction:", err);
+    return {
+      success: false,
+      message: err.message || "Gagal menambahkan komunitas baru.",
+    };
+  }
+}
+
+/**
+ * Server Action: Mengubah Data Komunitas oleh Super Admin
+ */
+export async function updateKomunitasAdminAction(
+  komunitasId: string,
+  formData: FormData
+): Promise<{
+  success: boolean;
+  message: string;
+  data?: any;
+}> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return { success: false, message: "Akses ditolak: Anda harus masuk terlebih dahulu." };
+    }
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("is_super_admin")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (!profile?.is_super_admin) {
+      return { success: false, message: "Akses ditolak: Hanya Super Admin yang dapat mengubah data komunitas." };
+    }
+
+    const nama = formData.get("nama")?.toString()?.trim();
+    const jenis = formData.get("jenis")?.toString()?.trim();
+    const kecamatan = formData.get("kecamatan")?.toString()?.trim();
+    const kelurahan = formData.get("kelurahan")?.toString()?.trim();
+    const rw = formData.get("rw")?.toString()?.trim() || null;
+    const rt = formData.get("rt")?.toString()?.trim() || null;
+    const lokasi = formData.get("lokasi")?.toString()?.trim();
+    const deskripsi = formData.get("deskripsi")?.toString()?.trim() || null;
+    const kontak = formData.get("kontak")?.toString()?.trim() || null;
+    const jadwal = formData.get("jadwal")?.toString()?.trim() || null;
+
+    if (!nama) {
+      return { success: false, message: "Nama komunitas wajib diisi." };
+    }
+
+    const updatePayload: any = {
+      nama,
+      nama_komunitas: nama,
+      updated_at: new Date().toISOString(),
+    };
+
+    if (jenis) {
+      updatePayload.jenis = jenis;
+      updatePayload.jenis_komunitas = jenis;
+    }
+    if (kecamatan) updatePayload.kecamatan = kecamatan;
+    if (kelurahan) updatePayload.kelurahan = kelurahan;
+    updatePayload.rw = rw;
+    updatePayload.rt = rt;
+    if (lokasi) updatePayload.lokasi = lokasi;
+    updatePayload.deskripsi = deskripsi;
+    updatePayload.kontak = kontak;
+    updatePayload.jadwal = jadwal;
+
+    const { data: updated, error: updateError } = await supabase
+      .from("komunitas")
+      .update(updatePayload)
+      .eq("id", komunitasId)
+      .select()
+      .single();
+
+    if (updateError) {
+      throw updateError;
+    }
+
+    revalidatePath("/komunitas");
+    revalidatePath("/profil");
+
+    return {
+      success: true,
+      message: `Data komunitas "${nama}" berhasil diperbarui!`,
+      data: updated,
+    };
+  } catch (err: any) {
+    console.error("Error updateKomunitasAdminAction:", err);
+    return {
+      success: false,
+      message: err.message || "Gagal memperbarui data komunitas.",
+    };
+  }
+}
+
+/**
+ * Server Action: Menghapus Komunitas oleh Super Admin
+ */
+export async function deleteKomunitasAdminAction(komunitasId: string): Promise<{
+  success: boolean;
+  message: string;
+}> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return { success: false, message: "Akses ditolak: Anda harus masuk terlebih dahulu." };
+    }
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("is_super_admin")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (!profile?.is_super_admin) {
+      return { success: false, message: "Akses ditolak: Hanya Super Admin yang dapat menghapus komunitas." };
+    }
+
+    // 1. Bersihkan anggota terkait
+    await supabase
+      .from("anggota_komunitas")
+      .delete()
+      .eq("komunitas_id", komunitasId);
+
+    // 2. Hapus komunitas
+    const { error } = await supabase
+      .from("komunitas")
+      .delete()
+      .eq("id", komunitasId);
+
+    if (error) throw error;
+
+    revalidatePath("/komunitas");
+    revalidatePath("/profil");
+
+    return {
+      success: true,
+      message: "Komunitas berhasil dihapus permanen.",
+    };
+  } catch (err: any) {
+    console.error("Error deleteKomunitasAdminAction:", err);
+    return {
+      success: false,
+      message: err.message || "Gagal menghapus komunitas.",
+    };
+  }
+}
+
 

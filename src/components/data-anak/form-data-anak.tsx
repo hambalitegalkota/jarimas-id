@@ -18,22 +18,35 @@ import {
   CheckCircle2,
   Check,
   Lock,
+  FileText,
+  Copy,
 } from "lucide-react";
 import { createDataAnak } from "@/app/actions/data-anak";
 import { type JenisKomunitas } from "@/types/database";
+import { extractKomunitasMetadata } from "@/lib/admin-helpers";
+import { findPaudLocation } from "@/lib/data-anak-helpers";
+import {
+  DAFTAR_KECAMATAN_TEGAL,
+  DAFTAR_RW_TEGAL,
+  DAFTAR_RT_TEGAL,
+  getKelurahanByKecamatan,
+  findOrGenerateKomunitasSeed,
+} from "@/lib/constants/tegal-data";
 import { cn } from "@/lib/utils";
 
 interface FormDataAnakProps {
   komunitasId: string;
   komunitasNama: string;
   jenisKomunitas: JenisKomunitas | string;
+  komunitas?: any;
   onSuccess?: () => void;
 }
 
 export const USIA_ANAK_OPTIONS = ["0", "1", "2", "3", "4", "5", "6"] as const;
 
-const ALASAN_SEKOLAH_PAUD = [
+export const ALASAN_SEKOLAH_PAUD = [
   "Sudah Usia PAUD",
+  "Memberikan Pendidikan Terbaik Sejak Usia Dini",
   "Agar Mandiri",
   "Supaya Lebih Matang Emosional",
   "Persiapan Ke SD",
@@ -41,7 +54,7 @@ const ALASAN_SEKOLAH_PAUD = [
   "Semua Kerabat, Tetangga Seusia Sekolah PAUD",
 ];
 
-const ALASAN_BELUM_SEKOLAH = [
+export const ALASAN_BELUM_SEKOLAH = [
   "Belum Wajib (Masih Balita)",
   "Keterbatasan Ekonomi",
   "Jarak Sekolah Jauh",
@@ -56,8 +69,43 @@ export function FormDataAnak({
   komunitasId,
   komunitasNama,
   jenisKomunitas,
+  komunitas,
   onSuccess,
 }: FormDataAnakProps) {
+  // Ekstraksi Metadata Komunitas & Lokasi PAUD untuk default alamat awal
+  const meta = extractKomunitasMetadata(
+    komunitas ||
+      findOrGenerateKomunitasSeed(komunitasId) || {
+        id: komunitasId,
+        nama: komunitasNama,
+        jenis: jenisKomunitas,
+      }
+  );
+  const paudLoc =
+    jenisKomunitas === "satuan_paud" || meta.jenis === "satuan_paud"
+      ? findPaudLocation(komunitasNama || komunitasId)
+      : null;
+
+  const initialKec =
+    paudLoc?.kecamatan ||
+    (meta.rawKec && meta.rawKec !== "Kota Tegal" && meta.rawKec !== "semua"
+      ? meta.rawKec
+      : null) ||
+    DAFTAR_KECAMATAN_TEGAL[0] ||
+    "Tegal Timur";
+
+  const initialKel =
+    paudLoc?.kelurahan ||
+    (meta.rawKel && meta.rawKel !== "Semua Kelurahan" && meta.rawKel !== "semua"
+      ? meta.rawKel
+      : null) ||
+    getKelurahanByKecamatan(initialKec)[0] ||
+    "Kejambon";
+
+  const initialRw = meta.rawRw || "01";
+  const initialRt = meta.rawRt || "01";
+
+  // Identitas Dasar Anak
   const [namaLengkap, setNamaLengkap] = useState("");
   const [usia, setUsia] = useState("3");
   const [jenisKelamin, setJenisKelamin] = useState<"L" | "P">("L");
@@ -66,13 +114,33 @@ export function FormDataAnak({
   const [tinggalBersama, setTinggalBersama] = useState("Orang Tua");
   const [jarakRumahKm, setJarakRumahKm] = useState("0.5");
 
+  // Alamat Sesuai KK
+  const [kkKabupatenChoice, setKkKabupatenChoice] = useState<
+    "kota_tegal" | "luar_kota_tegal"
+  >("kota_tegal");
+  const [kkKabupatenCustom, setKkKabupatenCustom] = useState("");
+  const [kkKecamatan, setKkKecamatan] = useState<string>(initialKec);
+  const [kkKelurahan, setKkKelurahan] = useState<string>(initialKel);
+  const [kkRw, setKkRw] = useState(initialRw);
+  const [kkRt, setKkRt] = useState(initialRt);
+  const [kkJalan, setKkJalan] = useState("");
+
+  // Alamat Domisili
+  const [isDomisiliSameAsKk, setIsDomisiliSameAsKk] = useState(true);
+  const [domisiliKabupatenChoice, setDomisiliKabupatenChoice] = useState<
+    "kota_tegal" | "luar_kota_tegal"
+  >("kota_tegal");
+  const [domisiliKabupatenCustom, setDomisiliKabupatenCustom] = useState("");
+  const [domisiliKecamatan, setDomisiliKecamatan] = useState<string>(initialKec);
+  const [domisiliKelurahan, setDomisiliKelurahan] = useState<string>(initialKel);
+  const [domisiliRw, setDomisiliRw] = useState(initialRw);
+  const [domisiliRt, setDomisiliRt] = useState(initialRt);
+  const [domisiliJalan, setDomisiliJalan] = useState("");
+
   const isPaud = jenisKomunitas === "satuan_paud";
   const isPosyandu = jenisKomunitas === "posyandu";
 
   // Sekolah State
-  // Jika Komunitas PAUD: isSekolah = true (Sudah Bersekolah), namaSekolah = komunitasNama || "Satuan PAUD"
-  // Selain Komunitas PAUD: isSekolah = false (Belum Bersekolah), namaSekolah = "Belum Sekolah"
-  const isSekolah = isPaud;
   const [alasanSekolah, setAlasanSekolah] = useState(
     isPaud ? ALASAN_SEKOLAH_PAUD[0] : ALASAN_BELUM_SEKOLAH[0]
   );
@@ -90,6 +158,22 @@ export function FormDataAnak({
   } | null>(null);
   const [isPending, startTransition] = useTransition();
 
+  const handleKkKecamatanChange = (kec: string) => {
+    setKkKecamatan(kec);
+    const kels = getKelurahanByKecamatan(kec);
+    if (kels.length > 0) {
+      setKkKelurahan(kels[0]);
+    }
+  };
+
+  const handleDomisiliKecamatanChange = (kec: string) => {
+    setDomisiliKecamatan(kec);
+    const kels = getKelurahanByKecamatan(kec);
+    if (kels.length > 0) {
+      setDomisiliKelurahan(kels[0]);
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setFeedback(null);
@@ -106,6 +190,41 @@ export function FormDataAnak({
     formData.append("nomorHp", nomorHp);
     formData.append("tinggalBersama", tinggalBersama);
     formData.append("jarakRumahKm", jarakRumahKm);
+
+    // Alamat KK
+    const isKkLuar = kkKabupatenChoice === "luar_kota_tegal";
+    const finalKkKab =
+      !isKkLuar
+        ? "Kota Tegal"
+        : kkKabupatenCustom.trim() || "Luar Kota Tegal";
+    formData.append("kkKabupaten", finalKkKab);
+    formData.append("kkKecamatan", isKkLuar ? "" : kkKecamatan);
+    formData.append("kkKelurahan", isKkLuar ? "" : kkKelurahan);
+    formData.append("kkRw", isKkLuar ? "" : kkRw);
+    formData.append("kkRt", isKkLuar ? "" : kkRt);
+    formData.append("kkJalan", isKkLuar ? "" : kkJalan);
+
+    // Alamat Domisili
+    if (isDomisiliSameAsKk) {
+      formData.append("domisiliKabupaten", finalKkKab);
+      formData.append("domisiliKecamatan", isKkLuar ? "" : kkKecamatan);
+      formData.append("domisiliKelurahan", isKkLuar ? "" : kkKelurahan);
+      formData.append("domisiliRw", isKkLuar ? "" : kkRw);
+      formData.append("domisiliRt", isKkLuar ? "" : kkRt);
+      formData.append("domisiliJalan", isKkLuar ? "" : kkJalan);
+    } else {
+      const isDomLuar = domisiliKabupatenChoice === "luar_kota_tegal";
+      const finalDomKab =
+        !isDomLuar
+          ? "Kota Tegal"
+          : domisiliKabupatenCustom.trim() || "Luar Kota Tegal";
+      formData.append("domisiliKabupaten", finalDomKab);
+      formData.append("domisiliKecamatan", isDomLuar ? "" : domisiliKecamatan);
+      formData.append("domisiliKelurahan", isDomLuar ? "" : domisiliKelurahan);
+      formData.append("domisiliRw", isDomLuar ? "" : domisiliRw);
+      formData.append("domisiliRt", isDomLuar ? "" : domisiliRt);
+      formData.append("domisiliJalan", isDomLuar ? "" : domisiliJalan);
+    }
 
     const finalNamaSekolah = isPaud
       ? komunitasNama || "Satuan PAUD"
@@ -145,6 +264,9 @@ export function FormDataAnak({
     });
   };
 
+  const kkKelurahanOptions = getKelurahanByKecamatan(kkKecamatan);
+  const domisiliKelurahanOptions = getKelurahanByKecamatan(domisiliKecamatan);
+
   return (
     <form onSubmit={handleSubmit} className="flex flex-col w-full space-y-6">
       {/* Toast Feedback */}
@@ -181,7 +303,7 @@ export function FormDataAnak({
           </div>
         </div>
 
-        {/* 1. Nama Lengkap Sesuai Akta Kelahiran (Memanjang) */}
+        {/* 1. Nama Lengkap Sesuai Akta Kelahiran */}
         <div className="space-y-2">
           <label className="text-base font-bold text-slate-900 leading-snug block">
             Nama Lengkap Sesuai Akta Kelahiran <span className="text-rose-600">*</span>
@@ -199,7 +321,7 @@ export function FormDataAnak({
           </div>
         </div>
 
-        {/* 2. Jenis Kelamin (Dibawah Nama Lengkap) */}
+        {/* 2. Jenis Kelamin */}
         <div className="space-y-2">
           <label className="text-base font-bold text-slate-900 leading-snug block">
             Jenis Kelamin <span className="text-rose-600">*</span>
@@ -253,7 +375,7 @@ export function FormDataAnak({
           </div>
         </div>
 
-        {/* 3. Usia Anak & Jarak Rumah ke PAUD (Berdampingan) */}
+        {/* 3. Usia Anak & Jarak Rumah ke PAUD */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-2">
             <label className="text-base font-bold text-slate-900 leading-snug block">
@@ -299,7 +421,7 @@ export function FormDataAnak({
           </div>
         </div>
 
-        {/* 4. Nama Orang Tua / Wali (Memanjang Seperti Nama Lengkap) */}
+        {/* 4. Nama Orang Tua / Wali */}
         <div className="space-y-2">
           <label className="text-base font-bold text-slate-900 leading-snug block">
             Nama Orang Tua / Wali <span className="text-rose-600">*</span>
@@ -317,7 +439,7 @@ export function FormDataAnak({
           </div>
         </div>
 
-        {/* 5. Nomor WhatsApp & Status Tinggal Bersama (Berdampingan) */}
+        {/* 5. Nomor WhatsApp & Status Tinggal Bersama */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-2">
             <label className="text-base font-bold text-slate-900 leading-snug block">
@@ -355,6 +477,402 @@ export function FormDataAnak({
               </select>
             </div>
           </div>
+        </div>
+
+        {/* ------------------------------------------------------------- */}
+        {/* SUBSECTION A: ALAMAT SESUAI KK */}
+        {/* ------------------------------------------------------------- */}
+        <div className="rounded-2xl border-2 border-blue-200 bg-blue-50/40 p-4 sm:p-5 space-y-4 shadow-2xs mt-4">
+          <div className="flex items-center gap-2 border-b border-blue-200 pb-2.5">
+            <FileText className="h-5 w-5 text-blue-700" />
+            <h4 className="text-base font-bold text-blue-950">
+              Alamat Sesuai KK (Kartu Keluarga) <span className="text-rose-600">*</span>
+            </h4>
+          </div>
+
+          {/* Kabupaten/Kota Sesuai KK */}
+          <div className="space-y-2">
+            <label className="text-sm font-bold text-slate-900 block">
+              Kabupaten / Kota Sesuai KK
+            </label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <button
+                type="button"
+                onClick={() => setKkKabupatenChoice("kota_tegal")}
+                className={cn(
+                  "flex min-h-[46px] items-center justify-between rounded-xl border-2 py-2.5 px-4 text-sm font-bold transition-all cursor-pointer",
+                  kkKabupatenChoice === "kota_tegal"
+                    ? "border-blue-600 bg-blue-50 text-blue-950 shadow-2xs ring-2 ring-blue-600/20"
+                    : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                )}
+              >
+                <span>Kota Tegal</span>
+                <div
+                  className={cn(
+                    "flex h-5 w-5 items-center justify-center rounded-full border-2",
+                    kkKabupatenChoice === "kota_tegal"
+                      ? "border-blue-600 bg-blue-600 text-white"
+                      : "border-slate-300 bg-white"
+                  )}
+                >
+                  {kkKabupatenChoice === "kota_tegal" && (
+                    <Check className="h-3 w-3 stroke-[3px]" />
+                  )}
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setKkKabupatenChoice("luar_kota_tegal")}
+                className={cn(
+                  "flex min-h-[46px] items-center justify-between rounded-xl border-2 py-2.5 px-4 text-sm font-bold transition-all cursor-pointer",
+                  kkKabupatenChoice === "luar_kota_tegal"
+                    ? "border-blue-600 bg-blue-50 text-blue-950 shadow-2xs ring-2 ring-blue-600/20"
+                    : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                )}
+              >
+                <span>Luar Kota Tegal</span>
+                <div
+                  className={cn(
+                    "flex h-5 w-5 items-center justify-center rounded-full border-2",
+                    kkKabupatenChoice === "luar_kota_tegal"
+                      ? "border-blue-600 bg-blue-600 text-white"
+                      : "border-slate-300 bg-white"
+                  )}
+                >
+                  {kkKabupatenChoice === "luar_kota_tegal" && (
+                    <Check className="h-3 w-3 stroke-[3px]" />
+                  )}
+                </div>
+              </button>
+            </div>
+          </div>
+
+          {kkKabupatenChoice === "luar_kota_tegal" ? (
+            <div className="space-y-1.5 animate-in fade-in">
+              <label className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                Nama Kabupaten / Kota Luar <span className="text-rose-600">*</span>
+              </label>
+              <input
+                type="text"
+                required
+                value={kkKabupatenCustom}
+                onChange={(e) => setKkKabupatenCustom(e.target.value)}
+                placeholder="Contoh: Kabupaten Tegal, Brebes, Pemalang, dll."
+                className="w-full min-h-[44px] h-11 rounded-xl border-2 border-slate-300 bg-white px-4 text-sm font-medium text-slate-900 focus:border-blue-600 focus:outline-hidden"
+              />
+            </div>
+          ) : (
+            <div className="space-y-4 animate-in fade-in">
+              {/* Kecamatan & Kelurahan KK */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                    Kecamatan KK <span className="text-rose-600">*</span>
+                  </label>
+                  <select
+                    value={kkKecamatan}
+                    onChange={(e) => handleKkKecamatanChange(e.target.value)}
+                    className="w-full min-h-[44px] h-11 rounded-xl border-2 border-slate-300 bg-white px-3 text-sm font-bold text-slate-900 focus:border-blue-600 focus:outline-hidden cursor-pointer"
+                  >
+                    {DAFTAR_KECAMATAN_TEGAL.map((kec) => (
+                      <option key={kec} value={kec}>
+                        {kec}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                    Kelurahan KK <span className="text-rose-600">*</span>
+                  </label>
+                  <select
+                    value={kkKelurahan}
+                    onChange={(e) => setKkKelurahan(e.target.value)}
+                    className="w-full min-h-[44px] h-11 rounded-xl border-2 border-slate-300 bg-white px-3 text-sm font-bold text-slate-900 focus:border-blue-600 focus:outline-hidden cursor-pointer"
+                  >
+                    {kkKelurahanOptions.map((kel) => (
+                      <option key={kel} value={kel}>
+                        {kel}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* RW (17) & RT (17) KK */}
+              <div className="grid grid-cols-2 gap-3.5">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                    RW Sesuai KK (01–17) <span className="text-rose-600">*</span>
+                  </label>
+                  <select
+                    value={kkRw}
+                    onChange={(e) => setKkRw(e.target.value)}
+                    className="w-full min-h-[44px] h-11 rounded-xl border-2 border-slate-300 bg-white px-3 text-sm font-mono font-bold text-slate-900 focus:border-blue-600 focus:outline-hidden cursor-pointer"
+                  >
+                    {DAFTAR_RW_TEGAL.map((rw) => (
+                      <option key={rw} value={rw}>
+                        RW {rw}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                    RT Sesuai KK (01–17) <span className="text-rose-600">*</span>
+                  </label>
+                  <select
+                    value={kkRt}
+                    onChange={(e) => setKkRt(e.target.value)}
+                    className="w-full min-h-[44px] h-11 rounded-xl border-2 border-slate-300 bg-white px-3 text-sm font-mono font-bold text-slate-900 focus:border-blue-600 focus:outline-hidden cursor-pointer"
+                  >
+                    {DAFTAR_RT_TEGAL.map((rt) => (
+                      <option key={rt} value={rt}>
+                        RT {rt}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Jalan KK */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-700 block">
+                  Jalan / Alamat Sesuai KK <span className="text-rose-600">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={kkJalan}
+                  onChange={(e) => setKkJalan(e.target.value)}
+                  placeholder="Contoh: Jl. Werkudoro No. 12, Gang Melati"
+                  className="w-full min-h-[44px] h-11 rounded-xl border-2 border-slate-300 bg-white px-4 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:outline-hidden"
+                />
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* ------------------------------------------------------------- */}
+        {/* SUBSECTION B: ALAMAT DOMISILI */}
+        {/* ------------------------------------------------------------- */}
+        <div className="rounded-2xl border-2 border-emerald-200 bg-emerald-50/40 p-4 sm:p-5 space-y-4 shadow-2xs mt-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-emerald-200 pb-2.5">
+            <div className="flex items-center gap-2">
+              <Home className="h-5 w-5 text-emerald-700" />
+              <h4 className="text-base font-bold text-emerald-950">
+                Alamat Domisili (Tempat Tinggal Saat Ini) <span className="text-rose-600">*</span>
+              </h4>
+            </div>
+
+            {/* Tombol Sinkronisasi Sama Dengan KK */}
+            <button
+              type="button"
+              onClick={() => setIsDomisiliSameAsKk(!isDomisiliSameAsKk)}
+              className={cn(
+                "inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border-2 text-xs font-bold transition-all cursor-pointer w-fit",
+                isDomisiliSameAsKk
+                  ? "border-emerald-600 bg-emerald-100 text-emerald-900 shadow-2xs"
+                  : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
+              )}
+            >
+              <div
+                className={cn(
+                  "flex h-4 w-4 items-center justify-center rounded border",
+                  isDomisiliSameAsKk
+                    ? "border-emerald-600 bg-emerald-600 text-white"
+                    : "border-slate-400 bg-white"
+                )}
+              >
+                {isDomisiliSameAsKk && <Check className="h-3 w-3 stroke-[3px]" />}
+              </div>
+              <span>Sama dengan Alamat KK</span>
+            </button>
+          </div>
+
+          {!isDomisiliSameAsKk ? (
+            <div className="space-y-4 animate-in fade-in">
+              {/* Kabupaten/Kota Domisili */}
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-slate-900 block">
+                  Kabupaten / Kota Domisili
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => setDomisiliKabupatenChoice("kota_tegal")}
+                    className={cn(
+                      "flex min-h-[46px] items-center justify-between rounded-xl border-2 py-2.5 px-4 text-sm font-bold transition-all cursor-pointer",
+                      domisiliKabupatenChoice === "kota_tegal"
+                        ? "border-emerald-600 bg-emerald-50 text-emerald-950 shadow-2xs ring-2 ring-emerald-600/20"
+                        : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                    )}
+                  >
+                    <span>Kota Tegal</span>
+                    <div
+                      className={cn(
+                        "flex h-5 w-5 items-center justify-center rounded-full border-2",
+                        domisiliKabupatenChoice === "kota_tegal"
+                          ? "border-emerald-600 bg-emerald-600 text-white"
+                          : "border-slate-300 bg-white"
+                      )}
+                    >
+                      {domisiliKabupatenChoice === "kota_tegal" && (
+                        <Check className="h-3 w-3 stroke-[3px]" />
+                      )}
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setDomisiliKabupatenChoice("luar_kota_tegal")}
+                    className={cn(
+                      "flex min-h-[46px] items-center justify-between rounded-xl border-2 py-2.5 px-4 text-sm font-bold transition-all cursor-pointer",
+                      domisiliKabupatenChoice === "luar_kota_tegal"
+                        ? "border-emerald-600 bg-emerald-50 text-emerald-950 shadow-2xs ring-2 ring-emerald-600/20"
+                        : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                    )}
+                  >
+                    <span>Luar Kota Tegal</span>
+                    <div
+                      className={cn(
+                        "flex h-5 w-5 items-center justify-center rounded-full border-2",
+                        domisiliKabupatenChoice === "luar_kota_tegal"
+                          ? "border-emerald-600 bg-emerald-600 text-white"
+                          : "border-slate-300 bg-white"
+                      )}
+                    >
+                      {domisiliKabupatenChoice === "luar_kota_tegal" && (
+                        <Check className="h-3 w-3 stroke-[3px]" />
+                      )}
+                    </div>
+                  </button>
+                </div>
+              </div>
+
+              {domisiliKabupatenChoice === "luar_kota_tegal" ? (
+                <div className="space-y-1.5 animate-in fade-in">
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                    Nama Kabupaten / Kota Luar <span className="text-rose-600">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required={!isDomisiliSameAsKk}
+                    value={domisiliKabupatenCustom}
+                    onChange={(e) => setDomisiliKabupatenCustom(e.target.value)}
+                    placeholder="Contoh: Kabupaten Tegal, Brebes, Pemalang, dll."
+                    className="w-full min-h-[44px] h-11 rounded-xl border-2 border-slate-300 bg-white px-4 text-sm font-medium text-slate-900 focus:border-emerald-600 focus:outline-hidden"
+                  />
+                </div>
+              ) : (
+                <div className="space-y-4 animate-in fade-in">
+                  {/* Kecamatan & Kelurahan Domisili */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                        Kecamatan Domisili <span className="text-rose-600">*</span>
+                      </label>
+                      <select
+                        value={domisiliKecamatan}
+                        onChange={(e) => handleDomisiliKecamatanChange(e.target.value)}
+                        className="w-full min-h-[44px] h-11 rounded-xl border-2 border-slate-300 bg-white px-3 text-sm font-bold text-slate-900 focus:border-emerald-600 focus:outline-hidden cursor-pointer"
+                      >
+                        {DAFTAR_KECAMATAN_TEGAL.map((kec) => (
+                          <option key={kec} value={kec}>
+                            {kec}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                        Kelurahan Domisili <span className="text-rose-600">*</span>
+                      </label>
+                      <select
+                        value={domisiliKelurahan}
+                        onChange={(e) => setDomisiliKelurahan(e.target.value)}
+                        className="w-full min-h-[44px] h-11 rounded-xl border-2 border-slate-300 bg-white px-3 text-sm font-bold text-slate-900 focus:border-emerald-600 focus:outline-hidden cursor-pointer"
+                      >
+                        {domisiliKelurahanOptions.map((kel) => (
+                          <option key={kel} value={kel}>
+                            {kel}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* RW (17) & RT (17) Domisili */}
+                  <div className="grid grid-cols-2 gap-3.5">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                        RW Domisili (01–17) <span className="text-rose-600">*</span>
+                      </label>
+                      <select
+                        value={domisiliRw}
+                        onChange={(e) => setDomisiliRw(e.target.value)}
+                        className="w-full min-h-[44px] h-11 rounded-xl border-2 border-slate-300 bg-white px-3 text-sm font-mono font-bold text-slate-900 focus:border-emerald-600 focus:outline-hidden cursor-pointer"
+                      >
+                        {DAFTAR_RW_TEGAL.map((rw) => (
+                          <option key={rw} value={rw}>
+                            RW {rw}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                        RT Domisili (01–17) <span className="text-rose-600">*</span>
+                      </label>
+                      <select
+                        value={domisiliRt}
+                        onChange={(e) => setDomisiliRt(e.target.value)}
+                        className="w-full min-h-[44px] h-11 rounded-xl border-2 border-slate-300 bg-white px-3 text-sm font-mono font-bold text-slate-900 focus:border-emerald-600 focus:outline-hidden cursor-pointer"
+                      >
+                        {DAFTAR_RT_TEGAL.map((rt) => (
+                          <option key={rt} value={rt}>
+                            RT {rt}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Jalan Domisili */}
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold uppercase tracking-wider text-slate-700 block">
+                      Jalan / Alamat Domisili <span className="text-rose-600">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required={!isDomisiliSameAsKk}
+                      value={domisiliJalan}
+                      onChange={(e) => setDomisiliJalan(e.target.value)}
+                      placeholder="Contoh: Jl. Melati No. 5, Lingkungan Warga"
+                      className="w-full min-h-[44px] h-11 rounded-xl border-2 border-slate-300 bg-white px-4 text-sm text-slate-900 placeholder:text-slate-400 focus:border-emerald-600 focus:outline-hidden"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="rounded-xl border border-emerald-300 bg-emerald-100/60 p-3.5 text-xs sm:text-sm font-semibold text-emerald-950 flex items-center gap-2.5">
+              <CheckCircle2 className="h-4 w-4 text-emerald-700 shrink-0" />
+              <span>
+                Alamat domisili anak sama dengan Alamat Kartu Keluarga (KK):{" "}
+                <strong className="font-bold">
+                  {kkKabupatenChoice === "kota_tegal"
+                    ? `${kkJalan || "Jl. ..."}, RT ${kkRt} / RW ${kkRw}, Kel. ${kkKelurahan}, Kec. ${kkKecamatan} (Kota Tegal)`
+                    : `Luar Kota Tegal (${kkKabupatenCustom || "Nama Kab/Kota Belum Diisi"})`}
+                </strong>
+              </span>
+            </div>
+          )}
         </div>
       </div>
 

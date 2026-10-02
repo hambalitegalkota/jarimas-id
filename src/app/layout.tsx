@@ -74,7 +74,7 @@ export default function RootLayout({
           enableSystem={false}
           disableTransitionOnChange
         >
-          <main className="flex-1 w-full max-w-md mx-auto sm:max-w-xl md:max-w-2xl lg:max-w-4xl flex flex-col">
+          <main className="flex-1 w-full max-w-md mx-auto sm:max-w-xl md:max-w-3xl lg:max-w-5xl flex flex-col">
             {children}
           </main>
           <BottomNav />

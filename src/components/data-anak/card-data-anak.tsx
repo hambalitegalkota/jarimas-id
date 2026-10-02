@@ -15,16 +15,26 @@ import {
   Scale,
   Ruler,
   AlertCircle,
+  Pencil,
+  LogOut,
+  Home,
+  FileText,
+  MapPin,
 } from "lucide-react";
 import { validateDataAnak } from "@/app/actions/data-anak";
 import { DdksDrawer } from "./ddks-drawer";
-import type { DataAnakItem, DdksRecord } from "@/types/database";
+import { ModalEditDataAnak } from "./modal-edit-data-anak";
+import { ModalKeluarDataAnak } from "./modal-keluar-data-anak";
+import type { DataAnakItem, DdksRecord, KomunitasWithMembership } from "@/types/database";
 import { cn } from "@/lib/utils";
 
 interface CardDataAnakProps {
   anak: DataAnakItem;
+  komunitas?: KomunitasWithMembership;
   canValidate: boolean;
   canEditDdks: boolean;
+  onUpdate?: (updated: DataAnakItem) => void;
+  onDelete?: (deletedId: string) => void;
 }
 
 function calculateAge(birthDateString: string): string {
@@ -74,27 +84,82 @@ function calculateAge(birthDateString: string): string {
   }
 }
 
+function formatAddressString(
+  jalan?: string | null,
+  rt?: string | null,
+  rw?: string | null,
+  kel?: string | null,
+  kec?: string | null,
+  kab?: string | null
+): string {
+  const parts: string[] = [];
+  if (jalan) parts.push(jalan);
+  if (rt || rw) parts.push(`RT ${rt || "01"} / RW ${rw || "01"}`);
+  if (kel) parts.push(`Kel. ${kel}`);
+  if (kec) parts.push(`Kec. ${kec}`);
+  if (kab) parts.push(kab);
+  return parts.join(", ");
+}
+
+function cleanAlasanString(raw?: string | null): string {
+  if (!raw) return "";
+  const match = raw.match(/\[ALASAN\s*:\s*([^\]]+)\]/i);
+  if (match && match[1]) return match[1].trim();
+  // Remove all bracket tags
+  const cleaned = raw.replace(/\[[^\]]+\]/g, "").trim();
+  return cleaned || raw;
+}
+
 export function CardDataAnak({
   anak,
+  komunitas,
   canValidate,
   canEditDdks,
+  onUpdate,
+  onDelete,
 }: CardDataAnakProps) {
   const [currentChild, setCurrentChild] = useState<DataAnakItem>(anak);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isKeluarModalOpen, setIsKeluarModalOpen] = useState(false);
   const [isPendingValidate, startValidateTransition] = useTransition();
 
+  const isPaud = komunitas?.jenis === "satuan_paud" || currentChild.is_sekolah;
   const isApproved = currentChild.status_approval === "approved";
   const ageString = calculateAge(currentChild.tanggal_lahir);
   const latestDdks = currentChild.latest_ddks;
+
+  const kkAddressStr = formatAddressString(
+    currentChild.kk_jalan,
+    currentChild.kk_rt,
+    currentChild.kk_rw,
+    currentChild.kk_kelurahan,
+    currentChild.kk_kecamatan,
+    currentChild.kk_kabupaten
+  );
+
+  const domisiliAddressStr = formatAddressString(
+    currentChild.domisili_jalan,
+    currentChild.domisili_rt,
+    currentChild.domisili_rw,
+    currentChild.domisili_kelurahan,
+    currentChild.domisili_kecamatan,
+    currentChild.domisili_kabupaten
+  );
+
+  const isSameAddress = kkAddressStr && kkAddressStr === domisiliAddressStr;
+  const cleanedAlasan = cleanAlasanString(currentChild.alasan_sekolah);
 
   const handleValidate = () => {
     startValidateTransition(async () => {
       const res = await validateDataAnak(currentChild.id);
       if (res.success) {
-        setCurrentChild((prev) => ({
-          ...prev,
-          status_approval: "approved",
-        }));
+        const updated = {
+          ...currentChild,
+          status_approval: "approved" as const,
+        };
+        setCurrentChild(updated);
+        onUpdate?.(updated);
       } else {
         alert(res.message);
       }
@@ -102,11 +167,22 @@ export function CardDataAnak({
   };
 
   const handleRecordAdded = (newRecord: DdksRecord) => {
-    setCurrentChild((prev) => ({
-      ...prev,
+    const updated = {
+      ...currentChild,
       latest_ddks: newRecord,
-      ddks_history: [newRecord, ...(prev.ddks_history || [])],
-    }));
+      ddks_history: [newRecord, ...(currentChild.ddks_history || [])],
+    };
+    setCurrentChild(updated);
+    onUpdate?.(updated);
+  };
+
+  const handleChildUpdated = (updated: DataAnakItem) => {
+    setCurrentChild(updated);
+    onUpdate?.(updated);
+  };
+
+  const handleChildDeleted = (deletedId: string) => {
+    onDelete?.(deletedId);
   };
 
   return (
@@ -162,7 +238,7 @@ export function CardDataAnak({
           </div>
         </div>
 
-        {/* Info Detail Grid (Single Column on mobile, 2 col on sm) */}
+        {/* Info Detail Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-sm">
           {/* Orang Tua */}
           <div className="flex items-center gap-3 rounded-xl bg-slate-50 border border-slate-200 p-3">
@@ -193,11 +269,38 @@ export function CardDataAnak({
           </div>
         </div>
 
-        {/* Alasan Sekolah Tag */}
-        {currentChild.alasan_sekolah && (
-          <div className="rounded-xl bg-slate-50 p-3 text-sm text-slate-700 border border-slate-200 leading-relaxed">
-            <span className="font-bold text-slate-900">Keterangan: </span>
-            <span>{currentChild.alasan_sekolah}</span>
+        {/* Info Alamat KK & Domisili */}
+        <div className="space-y-2 rounded-xl bg-slate-50/80 border border-slate-200 p-3 text-xs sm:text-sm">
+          {/* Alamat KK */}
+          <div className="flex items-start gap-2 text-slate-700">
+            <FileText className="h-4 w-4 text-blue-700 shrink-0 mt-0.5" />
+            <div className="min-w-0">
+              <span className="font-bold text-slate-900">Alamat KK: </span>
+              <span className="text-slate-800">
+                {kkAddressStr || "Belum dilengkapi"}
+              </span>
+            </div>
+          </div>
+
+          {/* Alamat Domisili */}
+          <div className="flex items-start gap-2 text-slate-700">
+            <Home className="h-4 w-4 text-emerald-700 shrink-0 mt-0.5" />
+            <div className="min-w-0">
+              <span className="font-bold text-slate-900">Domisili: </span>
+              <span className="text-slate-800">
+                {isSameAddress
+                  ? "Sama dengan Alamat KK"
+                  : domisiliAddressStr || "Belum dilengkapi"}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Alasan Sekolah / Keterangan Tag */}
+        {cleanedAlasan && (
+          <div className="rounded-xl bg-blue-50/50 p-3 text-xs sm:text-sm text-slate-700 border border-blue-100 leading-relaxed">
+            <span className="font-bold text-blue-950">Keterangan: </span>
+            <span className="text-slate-800">{cleanedAlasan}</span>
           </div>
         )}
 
@@ -232,29 +335,54 @@ export function CardDataAnak({
           </div>
         )}
 
-        {/* Action Buttons Bar - Stacked full width on mobile or side-by-side with min-h-[48px] */}
+        {/* Action Buttons Bar */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 pt-2 border-t-2 border-slate-100">
           <button
+            type="button"
             onClick={() => setIsDrawerOpen(true)}
-            className="flex flex-1 min-h-[48px] h-12 items-center justify-center gap-2 rounded-xl bg-slate-100 hover:bg-slate-200 active:scale-98 border-2 border-slate-200 px-4 text-sm font-bold text-slate-800 transition-all cursor-pointer"
+            className="flex flex-1 min-h-[44px] h-11 items-center justify-center gap-2 rounded-xl bg-slate-100 hover:bg-slate-200 active:scale-98 border-2 border-slate-200 px-3.5 text-xs sm:text-sm font-bold text-slate-800 transition-all cursor-pointer"
           >
             <Activity className="h-4 w-4 text-slate-700" />
             <span>{canEditDdks ? "Catat DDTK Posyandu" : "Rekam DDTK"}</span>
             <ChevronRight className="h-4 w-4 text-slate-500" />
           </button>
 
+          {/* Menu Edit Data & Keluar untuk Data Anak di Komunitas PAUD */}
+          {isPaud && (
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={() => setIsEditModalOpen(true)}
+                className="flex min-h-[44px] h-11 items-center justify-center gap-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 active:scale-98 border-2 border-blue-200 px-3.5 text-xs sm:text-sm font-bold text-blue-900 transition-all cursor-pointer"
+              >
+                <Pencil className="h-4 w-4 text-blue-700" />
+                <span>Edit Data</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setIsKeluarModalOpen(true)}
+                className="flex min-h-[44px] h-11 items-center justify-center gap-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 active:scale-98 border-2 border-rose-200 px-3.5 text-xs sm:text-sm font-bold text-rose-900 transition-all cursor-pointer"
+              >
+                <LogOut className="h-4 w-4 text-rose-700" />
+                <span>Keluar</span>
+              </button>
+            </div>
+          )}
+
           {!isApproved && canValidate && (
             <button
+              type="button"
               onClick={handleValidate}
               disabled={isPendingValidate}
-              className="flex flex-1 min-h-[48px] h-12 items-center justify-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-98 px-4 text-sm font-bold text-white transition-all shadow-xs disabled:opacity-50 cursor-pointer"
+              className="flex min-h-[44px] h-11 items-center justify-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-98 px-4 text-xs sm:text-sm font-bold text-white transition-all shadow-xs disabled:opacity-50 cursor-pointer"
             >
               {isPendingValidate ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
                 <>
                   <ShieldCheck className="h-4 w-4" />
-                  <span>Validasi Data Anak</span>
+                  <span>Validasi</span>
                 </>
               )}
             </button>
@@ -270,6 +398,31 @@ export function CardDataAnak({
         onClose={() => setIsDrawerOpen(false)}
         onRecordAdded={handleRecordAdded}
       />
+
+      {/* Edit Data Anak Modal */}
+      {isEditModalOpen && (
+        <ModalEditDataAnak
+          isOpen={isEditModalOpen}
+          anak={currentChild}
+          komunitasId={komunitas?.id || currentChild.komunitas_id}
+          komunitasNama={komunitas?.nama || currentChild.nama_sekolah || "Satuan PAUD"}
+          jenisKomunitas={komunitas?.jenis || "satuan_paud"}
+          onClose={() => setIsEditModalOpen(false)}
+          onSuccess={handleChildUpdated}
+        />
+      )}
+
+      {/* Keluar Data Anak Modal */}
+      {isKeluarModalOpen && (
+        <ModalKeluarDataAnak
+          isOpen={isKeluarModalOpen}
+          anak={currentChild}
+          komunitasId={komunitas?.id || currentChild.komunitas_id}
+          komunitasNama={komunitas?.nama || currentChild.nama_sekolah || "Satuan PAUD"}
+          onClose={() => setIsKeluarModalOpen(false)}
+          onSuccess={handleChildDeleted}
+        />
+      )}
     </>
   );
 }

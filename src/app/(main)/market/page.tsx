@@ -28,11 +28,9 @@ export default async function MarketPage() {
   const { data: products } = await getMarketProduk();
 
   return (
-    <div className="container mx-auto max-w-5xl px-4 py-6">
-      <MarketClientView
-        initialProducts={products || []}
-        isSuperAdmin={isSuperAdmin}
-      />
-    </div>
+    <MarketClientView
+      initialProducts={products || []}
+      isSuperAdmin={isSuperAdmin}
+    />
   );
 }

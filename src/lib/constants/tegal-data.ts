@@ -577,6 +577,20 @@ function buildMasterKomunitasSeed(): MasterKomunitasSeedItem[] {
   const list: MasterKomunitasSeedItem[] = [
     // --- SPECIAL PRE-CONFIGURED SEED ITEMS (Warga Kita) ---
     {
+      id: "kom-warga-kota-tegal",
+      nama: "Warga Kota Tegal",
+      jenis: "warga_kita",
+      kecamatan: "Kota Tegal",
+      kelurahan: "Semua Kelurahan",
+      rt: "",
+      rw: "",
+      lokasi: "Pemerintah Kota Tegal, Jawa Tengah",
+      deskripsi:
+        "Komunitas resmi seluruh warga masyarakat Kota Tegal, Jawa Tengah. Wadah kebersamaan, koordinasi layanan publik, kesehatan keluarga, dan partisipasi warga se-Kota Tegal.",
+      kontak: "Pemerintah Kota Tegal / Forum Warga Kota Tegal",
+      jadwal: "Forum Komunikasi & Pelayanan Warga Tingkat Kota Tegal",
+    },
+    {
       id: "kom-warga-1",
       nama: "Warga: RT 03, RW 02, Kejambon, Tegal Timur, Kota Tegal",
       jenis: "warga_kita",
@@ -874,9 +888,25 @@ export function generateWargaKomunitasHierarchy({
   }
 
   // 5. Kasus Semua Kecamatan (Default tanpa filter)
-  // Menampilkan 4 Komunitas Kecamatan + Komunitas Seluruh 27 Kelurahan Se-Kota Tegal
+  // Menampilkan 1 Komunitas Kota Tegal + 4 Komunitas Kecamatan + Komunitas Seluruh 27 Kelurahan Se-Kota Tegal
+  const items: MasterKomunitasSeedItem[] = [
+    {
+      id: "kom-warga-kota-tegal",
+      nama: "Warga Kota Tegal",
+      jenis: "warga_kita",
+      kecamatan: "Kota Tegal",
+      kelurahan: "Semua Kelurahan",
+      rt: "",
+      rw: "",
+      lokasi: "Pemerintah Kota Tegal, Jawa Tengah",
+      deskripsi:
+        "Komunitas resmi seluruh warga masyarakat Kota Tegal, Jawa Tengah. Wadah kebersamaan, koordinasi layanan publik, kesehatan keluarga, dan partisipasi warga se-Kota Tegal.",
+      kontak: "Pemerintah Kota Tegal / Forum Warga Kota Tegal",
+      jadwal: "Forum Komunikasi & Pelayanan Warga Tingkat Kota Tegal",
+    },
+  ];
+
   const kecamatans = ["Tegal Timur", "Tegal Barat", "Tegal Selatan", "Margadana"];
-  const items: MasterKomunitasSeedItem[] = [];
 
   // Tambahkan 4 Komunitas Tingkat Kecamatan
   kecamatans.forEach((kec) => {
@@ -930,6 +960,29 @@ export function findOrGenerateKomunitasSeed(
       toValidUUID(k.id) === komunitasId
   );
   if (directMatch) return directMatch;
+
+  // 0. Cocokkan Tingkat Kota Tegal
+  if (
+    komunitasId === "kom-warga-kota-tegal" ||
+    komunitasId === "kom-warga-tegal" ||
+    toValidUUID("kom-warga-kota-tegal") === targetUuid ||
+    toValidUUID("kom-warga-kota-tegal") === komunitasId
+  ) {
+    return {
+      id: "kom-warga-kota-tegal",
+      nama: "Warga Kota Tegal",
+      jenis: "warga_kita",
+      kecamatan: "Kota Tegal",
+      kelurahan: "Semua Kelurahan",
+      rt: "",
+      rw: "",
+      lokasi: "Pemerintah Kota Tegal, Jawa Tengah",
+      deskripsi:
+        "Komunitas resmi seluruh warga masyarakat Kota Tegal, Jawa Tengah. Wadah kebersamaan, koordinasi layanan publik, kesehatan keluarga, dan partisipasi warga se-Kota Tegal.",
+      kontak: "Pemerintah Kota Tegal / Forum Warga Kota Tegal",
+      jadwal: "Forum Komunikasi & Pelayanan Warga Tingkat Kota Tegal",
+    };
+  }
 
   // Cek seluruh kemungkinan hierarki Warga Kota Tegal (Kecamatan, Kelurahan, RW 1..17, RT 1..17)
   for (const [kecName, kecData] of Object.entries(KOTA_TEGAL_DATA)) {
@@ -1048,10 +1101,31 @@ export function getWargaHierarchyChain(params: {
   rt?: string | null;
 }): MasterKomunitasSeedItem[] {
   const { kecamatan, kelurahan, rw, rt } = params;
-  if (!kecamatan || kecamatan === "semua") return [];
+
+  const chain: MasterKomunitasSeedItem[] = [];
+
+  // 0. Tingkat Kota Tegal (Puncak Hierarki Warga)
+  const kotaItem: MasterKomunitasSeedItem = {
+    id: "kom-warga-kota-tegal",
+    nama: "Warga Kota Tegal",
+    jenis: "warga_kita",
+    kecamatan: "Kota Tegal",
+    kelurahan: "Semua Kelurahan",
+    rt: "",
+    rw: "",
+    lokasi: "Pemerintah Kota Tegal, Jawa Tengah",
+    deskripsi:
+      "Komunitas resmi seluruh warga masyarakat Kota Tegal, Jawa Tengah. Wadah kebersamaan, koordinasi layanan publik, kesehatan keluarga, dan partisipasi warga se-Kota Tegal.",
+    kontak: "Pemerintah Kota Tegal / Forum Warga Kota Tegal",
+    jadwal: "Forum Komunikasi & Pelayanan Warga Tingkat Kota Tegal",
+  };
+  chain.push(kotaItem);
+
+  if (!kecamatan || kecamatan === "semua" || kecamatan === "Kota Tegal") {
+    return chain;
+  }
 
   const kecSlug = slugify(kecamatan);
-  const chain: MasterKomunitasSeedItem[] = [];
 
   // 1. Tingkat Kecamatan
   const kecId = `kom-warga-${kecSlug}`;
@@ -1133,5 +1207,107 @@ export function getWargaHierarchyChain(params: {
   return chain;
 }
 
+export interface RekapKelurahanItem {
+  kelurahan: string;
+  count: number;
+}
 
+export interface RekapKecamatanItem {
+  kecamatan: string;
+  totalCount: number;
+  kelurahanList: RekapKelurahanItem[];
+}
 
+export interface RekapTabSummary {
+  tab: "posyandu" | "warga_kita" | "satuan_paud";
+  labelSingkat: string;
+  satuanLabel: string;
+  totalSemua: number;
+  totalKecamatan: number;
+  totalKelurahan: number;
+  kecamatanList: RekapKecamatanItem[];
+}
+
+export function getKomunitasRekapData(
+  tab: "posyandu" | "warga_kita" | "satuan_paud" | string = "posyandu"
+): RekapTabSummary {
+  const isPosyandu = tab === "posyandu";
+  const isPaud = tab === "satuan_paud";
+
+  const labelSingkat = isPosyandu
+    ? "Posyandu Balita"
+    : isPaud
+    ? "Satuan PAUD & PKBM"
+    : "Komunitas Warga Kita";
+
+  const satuanLabel = isPosyandu
+    ? "Posyandu"
+    : isPaud
+    ? "Lembaga"
+    : "Komunitas";
+
+  const kecamatanList: RekapKecamatanItem[] = [];
+  let totalSemua = 0;
+  let totalKelurahanCount = 0;
+
+  for (const [kecName, kecData] of Object.entries(KOTA_TEGAL_DATA)) {
+    const kelurahanList: RekapKelurahanItem[] = [];
+    let kecTotal = 0;
+
+    for (const [kelName, kelData] of Object.entries(kecData.kelurahan)) {
+      totalKelurahanCount++;
+      let count = 0;
+
+      if (isPosyandu) {
+        count = SEED_POSYANDU_TEGAL.filter(
+          (p) =>
+            p.kecamatan?.toLowerCase().trim() === kecName.toLowerCase().trim() &&
+            p.kelurahan?.toLowerCase().trim() === kelName.toLowerCase().trim()
+        ).length;
+        if (count === 0 && Array.isArray(kelData.posyandu)) {
+          count = kelData.posyandu.length;
+        }
+      } else if (isPaud) {
+        count = SEED_PAUD_PKBM_TEGAL.filter(
+          (p) =>
+            p.kecamatan?.toLowerCase().trim() === kecName.toLowerCase().trim() &&
+            p.kelurahan?.toLowerCase().trim() === kelName.toLowerCase().trim()
+        ).length;
+        if (count === 0 && Array.isArray(kelData.paud)) {
+          count = kelData.paud.length;
+        }
+      } else {
+        const wargaCount = MASTER_KOMUNITAS_SEED.filter(
+          (w) =>
+            w.jenis === "warga_kita" &&
+            w.kecamatan?.toLowerCase().trim() === kecName.toLowerCase().trim() &&
+            w.kelurahan?.toLowerCase().trim() === kelName.toLowerCase().trim()
+        ).length;
+        count = wargaCount > 0 ? wargaCount : 2;
+      }
+
+      kecTotal += count;
+      kelurahanList.push({
+        kelurahan: kelName,
+        count,
+      });
+    }
+
+    totalSemua += kecTotal;
+    kecamatanList.push({
+      kecamatan: kecName,
+      totalCount: kecTotal,
+      kelurahanList,
+    });
+  }
+
+  return {
+    tab: (tab as any) || "posyandu",
+    labelSingkat,
+    satuanLabel,
+    totalSemua,
+    totalKecamatan: kecamatanList.length,
+    totalKelurahan: totalKelurahanCount,
+    kecamatanList,
+  };
+}
