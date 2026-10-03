@@ -22,18 +22,23 @@ export const KOTA_TEGAL_DATA: Record<string, KecamatanData> = {
       "Kejambon": {
         "nama": "Kejambon",
         "posyandu": [
+          "Posyandu Arimbi",
           "Posyandu Kamboja 1",
           "Posyandu Kamboja 2",
-          "Posyandu Kamboja 3"
+          "Posyandu Kemuning 1",
+          "Posyandu Kemuning 2",
+          "Posyandu Seruni",
+          "Posyandu Tanjungsari",
+          "Posyandu Teratai Merah"
         ],
         "paud": [
-          "RA Permata Hati",
-          "RA Perwanida",
           "KB Aisyiyah Kejambon",
           "KB Ananda Mandiri",
           "KB Nurullah",
           "Pos PAUD Al Maemunah",
           "Pos PAUD Sekar Kamboja",
+          "RA Permata Hati",
+          "RA Perwanida",
           "TK Aisyiyah Bustanul Athfal III",
           "TK Aisyiyah Bustanul Athfal V",
           "TK Aisyiyah Bustanul Athfal XI",
@@ -49,25 +54,34 @@ export const KOTA_TEGAL_DATA: Record<string, KecamatanData> = {
       "Panggung": {
         "nama": "Panggung",
         "posyandu": [
-          "Posyandu Mawar 1",
-          "Posyandu Mawar 2",
-          "Posyandu Melati Panggung",
-          "Posyandu Teratai Putih"
+          "Posyandu Anggrek 1",
+          "Posyandu Anggrek 2",
+          "Posyandu Anyelir",
+          "Posyandu Bahtera A",
+          "Posyandu Bahtera B",
+          "Posyandu Bahtera Serayu",
+          "Posyandu Dahlia",
+          "Posyandu Dewi Shinta",
+          "Posyandu Harapan",
+          "Posyandu Jaya Abadi",
+          "Posyandu Kuntum Melati",
+          "Posyandu Mekarsari",
+          "Posyandu Melati",
+          "Posyandu Nusa Indah 1",
+          "Posyandu Nusa Indah 2",
+          "Posyandu Seruni",
+          "Posyandu Tulip"
         ],
         "paud": [
-          "RA Sakila Kerti",
-          "RA Syuhada",
-          "RA Syiarul Islam",
-          "RA Usamah",
           "KB Aisyiyah Anak Sholeh",
           "KB Amalia",
           "KB Bina Anak Sholeh (BIAS)",
           "KB Ihsaniyah 3",
           "KB Prima Universal",
           "KB Sakila Kerti",
+          "KB Sekar Melati",
           "KB Syi'arul Islam",
           "KB Syuhada",
-          "KB Sekar Melati",
           "KBI Usamah",
           "PAUD TPQ Nurul Huda",
           "PKBM Citra Mandiri",
@@ -75,6 +89,10 @@ export const KOTA_TEGAL_DATA: Record<string, KecamatanData> = {
           "Pos PAUD Anyelir",
           "Pos PAUD Nusa Indah",
           "Pos PAUD Seruni Panggung",
+          "RA Sakila Kerti",
+          "RA Syiarul Islam",
+          "RA Syuhada",
+          "RA Usamah",
           "TK Aisyiyah BA IX",
           "TK Aisyiyah Bustanul Athfal IV",
           "TK Aisyiyah Bustanul Athfal VI",
@@ -84,8 +102,8 @@ export const KOTA_TEGAL_DATA: Record<string, KecamatanData> = {
           "TK Kartika III-28",
           "TK Masyithoh VI",
           "TK Negeri Pembina Tegal Timur",
-          "TK Pertiwi 25.6 Panggung",
           "TK PGRI",
+          "TK Pertiwi 25.6 Panggung",
           "TK Syiarul Islam",
           "TPA Usamah"
         ]
@@ -93,27 +111,38 @@ export const KOTA_TEGAL_DATA: Record<string, KecamatanData> = {
       "Slerok": {
         "nama": "Slerok",
         "posyandu": [
-          "Posyandu Kenanga 1",
-          "Posyandu Kenanga 2",
-          "Posyandu Nusa Indah"
+          "Posyandu Abimanyu",
+          "Posyandu Arjuna 1",
+          "Posyandu Arjuna 2",
+          "Posyandu Bima 1",
+          "Posyandu Bima 2",
+          "Posyandu Nakula 1",
+          "Posyandu Nakula 2",
+          "Posyandu Srikandi",
+          "Posyandu Subali",
+          "Posyandu Sukosrono",
+          "Posyandu Sumbodro 1",
+          "Posyandu Sumbodro 2",
+          "Posyandu Werkudoro 1",
+          "Posyandu Werkudoro 2"
         ],
         "paud": [
-          "RA Al Hasaniyah",
-          "RA Istiqomah",
-          "RA Miftahussalam",
           "KB Darul Kifaah",
           "KB Istiqomah",
           "KB Nurunnisa",
           "KB Permata Hati",
           "KB Riyaadul Jannah",
-          "KB Transisi Anilo",
           "KB Tarbiyatul Khasanah",
+          "KB Transisi Anilo",
           "PAUD TPQ Ath Thohiriyah",
           "PKBM Sarana Maju",
           "PKBM Transisi Anilo",
           "Pos PAUD Kartini RW. VI",
           "Pos PAUD Sumbodro",
           "Pos PAUD Werkudoro",
+          "RA Al Hasaniyah",
+          "RA Istiqomah",
+          "RA Miftahussalam",
           "TK Masyithoh VIII",
           "TK Nurunnisa",
           "TK Pertiwi 25.3 Slerok"
@@ -122,14 +151,23 @@ export const KOTA_TEGAL_DATA: Record<string, KecamatanData> = {
       "Mintaragen": {
         "nama": "Mintaragen",
         "posyandu": [
-          "Posyandu Teratai 1",
-          "Posyandu Teratai 2",
-          "Posyandu Bougenville"
+          "Posyandu Anggrek",
+          "Posyandu Anyelir",
+          "Posyandu Bougenville",
+          "Posyandu Flamboyan",
+          "Posyandu Kenanga",
+          "Posyandu Mawar",
+          "Posyandu Melati",
+          "Posyandu Nusa Indah 1",
+          "Posyandu Nusa Indah 2",
+          "Posyandu Sedap Malam",
+          "Posyandu Seruni",
+          "Posyandu Teratai"
         ],
         "paud": [
-          "RA Usamah 2",
           "KB Ihsaniyah 1",
           "Pos PAUD Kenanga Mintaragen",
+          "RA Usamah 2",
           "TK Aisyiyah Bustanul Athfal VII",
           "TK Al Hidayah 1",
           "TK Ihsaniyah 1"
@@ -138,8 +176,11 @@ export const KOTA_TEGAL_DATA: Record<string, KecamatanData> = {
       "Mangkukusuman": {
         "nama": "Mangkukusuman",
         "posyandu": [
-          "Posyandu Dahlia 1",
-          "Posyandu Dahlia 2"
+          "Posyandu Cempaka",
+          "Posyandu Fatmawati",
+          "Posyandu Kartini",
+          "Posyandu Kenanga",
+          "Posyandu Melati"
         ],
         "paud": [
           "PKBM Star of Tomorrow",
@@ -156,15 +197,26 @@ export const KOTA_TEGAL_DATA: Record<string, KecamatanData> = {
       "Kraton": {
         "nama": "Kraton",
         "posyandu": [
-          "Posyandu Anggrek 1",
-          "Posyandu Anggrek 2",
-          "Posyandu Cempaka"
+          "Posyandu Astika A",
+          "Posyandu Astika B",
+          "Posyandu Astika C",
+          "Posyandu Dewi Sartika",
+          "Posyandu Kartini A",
+          "Posyandu Kartini B",
+          "Posyandu Kenanga A",
+          "Posyandu Mawar A",
+          "Posyandu Mawar A",
+          "Posyandu Mayangsari",
+          "Posyandu Nusa Indah",
+          "Posyandu Sekar Indah A",
+          "Posyandu Sekar Indah B",
+          "Posyandu Seruni"
         ],
         "paud": [
+          "KB Aisyiyah Tegal Barat",
           "KB Elkana",
           "KB Pelita Harapan Bangsa",
           "KB Pius",
-          "KB Aisyiyah Tegal Barat",
           "Pos PAUD Dewi Sartika Kraton",
           "Pos PAUD Kartini",
           "Pos PAUD Kenanga Kraton",
@@ -181,8 +233,25 @@ export const KOTA_TEGAL_DATA: Record<string, KecamatanData> = {
       "Tegalsari": {
         "nama": "Tegalsari",
         "posyandu": [
-          "Posyandu Sedap Malam 1",
-          "Posyandu Sedap Malam 2"
+          "Posyandu Anggrek Unggu",
+          "Posyandu Bougenville",
+          "Posyandu Kamboja",
+          "Posyandu Kenanga A",
+          "Posyandu Kenanga B",
+          "Posyandu Kuncup Mekar",
+          "Posyandu Layangsari A",
+          "Posyandu Layangsari B",
+          "Posyandu Mawar  Merah",
+          "Posyandu Mekarsari",
+          "Posyandu Melatisari A",
+          "Posyandu Melatisari B",
+          "Posyandu Mina Bahari",
+          "Posyandu Minasari",
+          "Posyandu Sejahtera 1",
+          "Posyandu Sejahtera 2",
+          "Posyandu Tunas Bahari",
+          "Posyandu Wijayakusuma A",
+          "Posyandu Wijayakusuma B"
         ],
         "paud": [
           "KB Insan Mandiri",
@@ -204,8 +273,9 @@ export const KOTA_TEGAL_DATA: Record<string, KecamatanData> = {
       "Kemandungan": {
         "nama": "Kemandungan",
         "posyandu": [
-          "Posyandu Melati Kemandungan",
-          "Posyandu Wijaya Kusuma"
+          "Posyandu Cempaka",
+          "Posyandu Melati",
+          "Posyandu Seruni"
         ],
         "paud": [
           "KB Bina Anak Sholeh (BIAS)",
@@ -219,11 +289,14 @@ export const KOTA_TEGAL_DATA: Record<string, KecamatanData> = {
       "Pekauman": {
         "nama": "Pekauman",
         "posyandu": [
-          "Posyandu Flamboyan 1",
-          "Posyandu Flamboyan 2"
+          "Posyandu Belimbing",
+          "Posyandu Duku",
+          "Posyandu Garuda",
+          "Posyandu Jalak",
+          "Posyandu Nanas",
+          "Posyandu Tunas"
         ],
         "paud": [
-          "RA At Taqwa",
           "KB Al-Irsyad",
           "KB At-Taqwa",
           "KB Azzurofah",
@@ -234,6 +307,7 @@ export const KOTA_TEGAL_DATA: Record<string, KecamatanData> = {
           "PKBM Budi Luhur",
           "PKBM Mutiara Shahabat",
           "Pos PAUD Delima",
+          "RA At Taqwa",
           "TK Al-Irsyad Al-Islamiyah",
           "TK Bagya Wacana",
           "TK Hang Tuah 16",
@@ -246,8 +320,13 @@ export const KOTA_TEGAL_DATA: Record<string, KecamatanData> = {
       "Muarareja": {
         "nama": "Muarareja",
         "posyandu": [
-          "Posyandu Pesisir 1",
-          "Posyandu Pesisir 2"
+          "Posyandu Anggrek",
+          "Posyandu Cempaka",
+          "Posyandu Dahlia",
+          "Posyandu Kemuning",
+          "Posyandu Mawar",
+          "Posyandu Melati",
+          "Posyandu Nusa Indah"
         ],
         "paud": [
           "PAUD TPQ Plus Insan Kamil",
@@ -258,8 +337,10 @@ export const KOTA_TEGAL_DATA: Record<string, KecamatanData> = {
       "Debong Lor": {
         "nama": "Debong Lor",
         "posyandu": [
-          "Posyandu Asoka 1",
-          "Posyandu Asoka 2"
+          "Posyandu Mawar",
+          "Posyandu Sartika",
+          "Posyandu Seruni 1",
+          "Posyandu Seruni 2"
         ],
         "paud": [
           "Pos PAUD Seruni Debong Lor"
@@ -268,7 +349,13 @@ export const KOTA_TEGAL_DATA: Record<string, KecamatanData> = {
       "Pesurungan Kidul": {
         "nama": "Pesurungan Kidul",
         "posyandu": [
-          "Posyandu Teratai Pesurungan Kidul"
+          "Posyandu Anggrek Kidul",
+          "Posyandu Kamboja Asri",
+          "Posyandu Mawar Kidul",
+          "Posyandu Melati Kidul 1",
+          "Posyandu Melati Kidul 2",
+          "Posyandu Teratai Pesurungan Kidul 1",
+          "Posyandu Teratai Pesurungan Kidul 2"
         ],
         "paud": [
           "KB Islam Al Azhar 66 Kota Tegal",
@@ -288,8 +375,11 @@ export const KOTA_TEGAL_DATA: Record<string, KecamatanData> = {
       "Bandung": {
         "nama": "Bandung",
         "posyandu": [
-          "Posyandu Melati Bandung",
-          "Posyandu Mawar Bandung"
+          "Posyandu Melati I",
+          "Posyandu Melati II",
+          "Posyandu Melati III",
+          "Posyandu Melati IV",
+          "Posyandu Melati V"
         ],
         "paud": [
           "Pos PAUD Sejahtera",
@@ -300,7 +390,10 @@ export const KOTA_TEGAL_DATA: Record<string, KecamatanData> = {
       "Debong Kidul": {
         "nama": "Debong Kidul",
         "posyandu": [
-          "Posyandu Kenanga Debong Kidul"
+          "Posyandu Seruni I",
+          "Posyandu Seruni II",
+          "Posyandu Seruni III",
+          "Posyandu Seruni IV"
         ],
         "paud": [
           "KB Debong Kidul",
@@ -311,7 +404,11 @@ export const KOTA_TEGAL_DATA: Record<string, KecamatanData> = {
       "Debong Kulon": {
         "nama": "Debong Kulon",
         "posyandu": [
-          "Posyandu Teratai Debong Kulon"
+          "Posyandu Cempaka",
+          "Posyandu Kenanga",
+          "Posyandu Mawar",
+          "Posyandu Melati",
+          "Posyandu Nusa Indah"
         ],
         "paud": [
           "Pos PAUD Dewi Sartika Debong Kulon",
@@ -321,8 +418,14 @@ export const KOTA_TEGAL_DATA: Record<string, KecamatanData> = {
       "Debong Tengah": {
         "nama": "Debong Tengah",
         "posyandu": [
-          "Posyandu Cempaka 1",
-          "Posyandu Cempaka 2"
+          "Posyandu Anggrek 1",
+          "Posyandu Anggrek 2",
+          "Posyandu Anyelir A",
+          "Posyandu Anyelir B",
+          "Posyandu Bougenville",
+          "Posyandu Lengkeng",
+          "Posyandu Teratai",
+          "Posyandu Tulip"
         ],
         "paud": [
           "KB Aisyiyah Baitul Karim",
@@ -335,21 +438,13 @@ export const KOTA_TEGAL_DATA: Record<string, KecamatanData> = {
           "TK Pertiwi 25.10 Debong Tengah"
         ]
       },
-      "Kalinyamat Kulon": {
-        "nama": "Kalinyamat Kulon",
-        "posyandu": [
-          "Posyandu Anggrek Kalinyamat Kulon"
-        ],
-        "paud": [
-          "PAUD TPQ Al-Hikmah",
-          "Pos PAUD Melati Kalinyamat Kulon",
-          "TK Pertiwi 25.12 Kalinyamat Kulon"
-        ]
-      },
       "Kalinyamat Wetan": {
         "nama": "Kalinyamat Wetan",
         "posyandu": [
-          "Posyandu Kamboja Kalinyamat Wetan"
+          "Posyandu Dahlia I",
+          "Posyandu Dahlia II",
+          "Posyandu Dahlia III",
+          "Posyandu Dahlia IV"
         ],
         "paud": [
           "KB Jaya Lestari",
@@ -360,7 +455,10 @@ export const KOTA_TEGAL_DATA: Record<string, KecamatanData> = {
       "Keturen": {
         "nama": "Keturen",
         "posyandu": [
-          "Posyandu Melati Keturen"
+          "Posyandu Kemuning I",
+          "Posyandu Kemuning II",
+          "Posyandu Kemuning III Selatan",
+          "Posyandu Kemuning III Utara"
         ],
         "paud": [
           "KB Sekar Kemuning",
@@ -370,13 +468,21 @@ export const KOTA_TEGAL_DATA: Record<string, KecamatanData> = {
       "Randugunting": {
         "nama": "Randugunting",
         "posyandu": [
-          "Posyandu Flamboyan 1",
-          "Posyandu Flamboyan 2",
-          "Posyandu Dahlia"
+          "Posyandu Ababil",
+          "Posyandu Cendrawasih",
+          "Posyandu Garuda A",
+          "Posyandu Garuda B",
+          "Posyandu Gelatik",
+          "Posyandu Kasuari",
+          "Posyandu Ketilang",
+          "Posyandu Merak",
+          "Posyandu Merpati",
+          "Posyandu Mliwis",
+          "Posyandu Nuri",
+          "Posyandu Puter",
+          "Posyandu Rajawali"
         ],
         "paud": [
-          "RA Hidayatul Mubtadiien",
-          "RA BIAS Assalam",
           "KB Bias Assalam",
           "KB Hidayatul Mubtadi-ien",
           "KB Pelita Hati",
@@ -384,6 +490,8 @@ export const KOTA_TEGAL_DATA: Record<string, KecamatanData> = {
           "KB Raudlotul Jannah",
           "KB Tunas Harapan Bangsa",
           "Pos PAUD Tunas Harapan Randugunting",
+          "RA BIAS Assalam",
+          "RA Hidayatul Mubtadiien",
           "SPS PAUD TPQ Tahfidz Cahaya Quran",
           "TK Aisyiyah Bustanul Athfal II",
           "TK Al Hidayah II",
@@ -398,11 +506,14 @@ export const KOTA_TEGAL_DATA: Record<string, KecamatanData> = {
       "Tunon": {
         "nama": "Tunon",
         "posyandu": [
-          "Posyandu Asoka Tunon"
+          "Posyandu Mawar I",
+          "Posyandu Mawar II",
+          "Posyandu Mawar III",
+          "Posyandu Mawar IV"
         ],
         "paud": [
-          "RA Baitush Shobirin",
           "Pos PAUD Tunas Mutiara",
+          "RA Baitush Shobirin",
           "TK Masyithoh V"
         ]
       }
@@ -414,11 +525,22 @@ export const KOTA_TEGAL_DATA: Record<string, KecamatanData> = {
       "Margadana": {
         "nama": "Margadana",
         "posyandu": [
-          "Posyandu Melati Margadana 1",
-          "Posyandu Melati Margadana 2"
+          "Posyandu Anggrek Bulan",
+          "Posyandu Anyelir",
+          "Posyandu Bougenville",
+          "Posyandu Cempaka 1",
+          "Posyandu Cempaka 2",
+          "Posyandu Dahlia",
+          "Posyandu Edelweis",
+          "Posyandu Jagadipa",
+          "Posyandu Kenanga",
+          "Posyandu Kesambi Sari",
+          "Posyandu Lavender",
+          "Posyandu Sedap Malam",
+          "Posyandu Suflir",
+          "Posyandu Wijaya Kusuma"
         ],
         "paud": [
-          "RA Al Furqon",
           "KB Minat",
           "KB Pelita Bangsa",
           "KB Rumah Bintang",
@@ -426,13 +548,17 @@ export const KOTA_TEGAL_DATA: Record<string, KecamatanData> = {
           "Pos PAUD Anggrek Bulan",
           "Pos PAUD Bougenville Margadana",
           "Pos PAUD Kesambi Sari",
+          "RA Al Furqon",
           "TK Negeri Pembina Kecamatan Margadana"
         ]
       },
       "Cabawan": {
         "nama": "Cabawan",
         "posyandu": [
-          "Posyandu Kamboja Cabawan"
+          "Posyandu Anggerk RW 1",
+          "Posyandu Bougenville RW 2",
+          "Posyandu Cempaka RW 3",
+          "Posyandu Dahlia RW 4"
         ],
         "paud": [
           "PAUD TPQ At Taqwa",
@@ -442,22 +568,47 @@ export const KOTA_TEGAL_DATA: Record<string, KecamatanData> = {
       "Kaligangsa": {
         "nama": "Kaligangsa",
         "posyandu": [
-          "Posyandu Mawar Kaligangsa 1",
-          "Posyandu Mawar Kaligangsa 2"
+          "Posyandu Anggrek",
+          "Posyandu Bougenville",
+          "Posyandu Cempaka",
+          "Posyandu Dahlia",
+          "Posyandu Flamboyan",
+          "Posyandu Melati",
+          "Posyandu Rosela"
         ],
         "paud": [
-          "RA Al-Izzah",
-          "RA Miftahun Najah",
           "KB Al-Izzah",
           "PAUD TPQ Al-Izzah",
           "Pos PAUD Anggrek",
-          "Pos PAUD Sakura"
+          "Pos PAUD Sakura",
+          "RA Al-Izzah",
+          "RA Miftahun Najah"
+        ]
+      },
+      "Kalinyamat Kulon": {
+        "nama": "Kalinyamat Kulon",
+        "posyandu": [
+          "Posyandu Anggrek Kalinyamat Kulon 1",
+          "Posyandu Anggrek Kalinyamat Kulon 2",
+          "Posyandu Dahlia Sejahtera",
+          "Posyandu Kenanga Kulon",
+          "Posyandu Mawar Kalinyamat",
+          "Posyandu Melati Kulon",
+          "Posyandu Teratai Sehat"
+        ],
+        "paud": [
+          "PAUD TPQ Al-Hikmah",
+          "Pos PAUD Melati Kalinyamat Kulon",
+          "TK Pertiwi 25.12 Kalinyamat Kulon"
         ]
       },
       "Krandon": {
         "nama": "Krandon",
         "posyandu": [
-          "Posyandu Kenanga Krandon"
+          "Posyandu Berlian",
+          "Posyandu Intan",
+          "Posyandu Mutiara",
+          "Posyandu Permata"
         ],
         "paud": [
           "KB Telaga Ilmu",
@@ -466,29 +617,29 @@ export const KOTA_TEGAL_DATA: Record<string, KecamatanData> = {
           "Pos PAUD Tunas Muda"
         ]
       },
-      "Pesurungan Kidul": {
-        "nama": "Pesurungan Kidul",
-        "posyandu": [
-          "Posyandu Teratai Pesurungan Kidul"
-        ],
-        "paud": []
-      },
       "Pesurungan Lor": {
         "nama": "Pesurungan Lor",
         "posyandu": [
-          "Posyandu Dahlia Pesurungan Lor"
+          "Posyandu Anggrek",
+          "Posyandu Jaya Samudera",
+          "Posyandu Mawar",
+          "Posyandu Melati"
         ],
         "paud": [
-          "RA Baitul Iman",
           "Pos PAUD Insan Cendikia",
+          "RA Baitul Iman",
           "TK Mubarokah"
         ]
       },
       "Sumurpanggang": {
         "nama": "Sumurpanggang",
         "posyandu": [
-          "Posyandu Cempaka 1 Sumurpanggang",
-          "Posyandu Cempaka 2"
+          "Posyandu Cempaka",
+          "Posyandu Manggis",
+          "Posyandu Mawar",
+          "Posyandu Melati",
+          "Posyandu Nur Hikmah",
+          "Posyandu Ragasela"
         ],
         "paud": [
           "KB Insan Cerdas",
@@ -528,8 +679,8 @@ export interface MasterKomunitasSeedItem {
   jenis: "warga_kita" | "posyandu" | "satuan_paud";
   kecamatan: string;
   kelurahan: string;
-  rt: string;
-  rw: string;
+  rt?: string;
+  rw?: string;
   lokasi: string;
   deskripsi: string;
   kontak: string;

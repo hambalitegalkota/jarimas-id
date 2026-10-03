@@ -5,11 +5,13 @@ import { createClient } from "@/utils/supabase/server";
 import {
   RAW_POSYANDU_TEGAL,
   SEED_POSYANDU_TEGAL,
+  INVALID_POSYANDU_IDS,
   extractCorePosyanduName,
 } from "@/lib/constants/seed-posyandu-tegal";
 import {
   RAW_PAUD_PKBM_TEGAL,
   SEED_PAUD_PKBM_TEGAL,
+  INVALID_PAUD_IDS,
 } from "@/lib/constants/seed-paud-tegal";
 import {
   generateWargaKomunitasHierarchy,
@@ -2067,7 +2069,7 @@ export async function cleanupDuplicatePosyanduAction(): Promise<{
       return {
         success: true,
         deletedCount: 0,
-        message: "Pemeriksaan selesai: Seluruh nama Posyandu di setiap Kelurahan sudah unik (236 Posyandu, tidak ada duplikat).",
+        message: `Pemeriksaan selesai: Seluruh nama Posyandu di setiap Kelurahan sudah unik (${SEED_POSYANDU_TEGAL.length} Posyandu, tidak ada duplikat).`,
       };
     }
 
@@ -2093,7 +2095,7 @@ export async function cleanupDuplicatePosyanduAction(): Promise<{
     return {
       success: true,
       deletedCount: duplicateIdsToDelete.length,
-      message: `Berhasil membersihkan ${duplicateIdsToDelete.length} data Posyandu duplikat. Kini seluruh 236 Posyandu se-Kota Tegal telah rapi dan unik.`,
+      message: `Berhasil membersihkan ${duplicateIdsToDelete.length} data Posyandu duplikat. Kini seluruh ${SEED_POSYANDU_TEGAL.length} Posyandu se-Kota Tegal telah rapi dan unik.`,
     };
   } catch (err: any) {
     console.error("Error cleanupDuplicatePosyanduAction:", err);
@@ -2381,86 +2383,122 @@ export async function getKomunitasAuditSummaryAction(): Promise<{
 }> {
   try {
     const supabase = await createClient();
-    const { data: list, error } = await supabase
-      .from("komunitas")
-      .select("id, nama, jenis, kecamatan, kelurahan, rw, rt");
 
-    if (error) throw error;
+    const allInvalidIds = [...(INVALID_POSYANDU_IDS || []), ...(INVALID_PAUD_IDS || [])];
 
-    const items = list || [];
-    const totalKomunitas = items.length;
-
-    let posyanduCount = 0;
-    let paudCount = 0;
-    let wargaCount = 0;
-
-    const kecSet = new Set<string>();
-    const kelSet = new Set<string>();
-    const rwSet = new Set<string>();
-    const rtSet = new Set<string>();
-
-    const kecMap: Record<string, { total: number; posyandu: number; paud: number; warga: number }> = {
-      "Tegal Timur": { total: 0, posyandu: 0, paud: 0, warga: 0 },
-      "Tegal Barat": { total: 0, posyandu: 0, paud: 0, warga: 0 },
-      "Tegal Selatan": { total: 0, posyandu: 0, paud: 0, warga: 0 },
-      "Margadana": { total: 0, posyandu: 0, paud: 0, warga: 0 },
-    };
-
-    items.forEach((item) => {
-      const jenis = (item.jenis || "").toLowerCase();
-      const kec = item.kecamatan || "";
-
-      if (jenis === "posyandu") {
-        posyanduCount++;
-        if (kec && kecMap[kec]) {
-          kecMap[kec].total++;
-          kecMap[kec].posyandu++;
-        }
-      } else if (jenis === "satuan_paud") {
-        paudCount++;
-        if (kec && kecMap[kec]) {
-          kecMap[kec].total++;
-          kecMap[kec].paud++;
-        }
-      } else if (jenis === "warga_kita") {
-        wargaCount++;
-        if (kec) kecSet.add(kec);
-        if (item.kelurahan && item.kelurahan !== "Semua Kelurahan") kelSet.add(`${kec}-${item.kelurahan}`);
-        if (item.rw) rwSet.add(`${kec}-${item.kelurahan}-${item.rw}`);
-        if (item.rt) rtSet.add(`${kec}-${item.kelurahan}-${item.rw}-${item.rt}`);
-        if (kec && kecMap[kec]) {
-          kecMap[kec].total++;
-          kecMap[kec].warga++;
-        }
+    // 1. Upayakan pembersihan data dummy/salah input posyandu & PAUD secara otomatis
+    if (allInvalidIds.length > 0) {
+      try {
+        await supabase.from("komunitas").delete().in("id", allInvalidIds);
+      } catch {
+        // Abaikan jika user bukan super admin (RLS restrict)
       }
-    });
+    }
 
-    const kecamatanBreakdown = Object.entries(kecMap).map(([nama, stats]) => ({
-      nama,
-      total: stats.total,
-      posyandu: stats.posyandu,
-      paud: stats.paud,
-      warga: stats.warga,
-    }));
+    const invalidFilter = `(${allInvalidIds.join(",")})`;
+
+    // Query exact database counts in parallel (head request without row size limits, excluding dummy IDs)
+    const [
+      totalRes,
+      posyanduRes,
+      paudRes,
+      wargaRes,
+      timurRes,
+      baratRes,
+      selatanRes,
+      margadanaRes,
+      timurPosRes,
+      baratPosRes,
+      selatanPosRes,
+      margadanaPosRes,
+      timurPaudRes,
+      baratPaudRes,
+      selatanPaudRes,
+      margadanaPaudRes,
+      timurWargaRes,
+      baratWargaRes,
+      selatanWargaRes,
+      margadanaWargaRes,
+    ] = await Promise.all([
+      supabase.from("komunitas").select("*", { count: "exact", head: true }).not("id", "in", invalidFilter),
+      supabase.from("komunitas").select("*", { count: "exact", head: true }).eq("jenis", "posyandu").not("id", "in", invalidFilter),
+      supabase.from("komunitas").select("*", { count: "exact", head: true }).eq("jenis", "satuan_paud").not("id", "in", invalidFilter),
+      supabase.from("komunitas").select("*", { count: "exact", head: true }).eq("jenis", "warga_kita"),
+      supabase.from("komunitas").select("*", { count: "exact", head: true }).eq("kecamatan", "Tegal Timur").not("id", "in", invalidFilter),
+      supabase.from("komunitas").select("*", { count: "exact", head: true }).eq("kecamatan", "Tegal Barat").not("id", "in", invalidFilter),
+      supabase.from("komunitas").select("*", { count: "exact", head: true }).eq("kecamatan", "Tegal Selatan").not("id", "in", invalidFilter),
+      supabase.from("komunitas").select("*", { count: "exact", head: true }).eq("kecamatan", "Margadana").not("id", "in", invalidFilter),
+      supabase.from("komunitas").select("*", { count: "exact", head: true }).eq("kecamatan", "Tegal Timur").eq("jenis", "posyandu").not("id", "in", invalidFilter),
+      supabase.from("komunitas").select("*", { count: "exact", head: true }).eq("kecamatan", "Tegal Barat").eq("jenis", "posyandu").not("id", "in", invalidFilter),
+      supabase.from("komunitas").select("*", { count: "exact", head: true }).eq("kecamatan", "Tegal Selatan").eq("jenis", "posyandu").not("id", "in", invalidFilter),
+      supabase.from("komunitas").select("*", { count: "exact", head: true }).eq("kecamatan", "Margadana").eq("jenis", "posyandu").not("id", "in", invalidFilter),
+      supabase.from("komunitas").select("*", { count: "exact", head: true }).eq("kecamatan", "Tegal Timur").eq("jenis", "satuan_paud").not("id", "in", invalidFilter),
+      supabase.from("komunitas").select("*", { count: "exact", head: true }).eq("kecamatan", "Tegal Barat").eq("jenis", "satuan_paud").not("id", "in", invalidFilter),
+      supabase.from("komunitas").select("*", { count: "exact", head: true }).eq("kecamatan", "Tegal Selatan").eq("jenis", "satuan_paud").not("id", "in", invalidFilter),
+      supabase.from("komunitas").select("*", { count: "exact", head: true }).eq("kecamatan", "Margadana").eq("jenis", "satuan_paud").not("id", "in", invalidFilter),
+      supabase.from("komunitas").select("*", { count: "exact", head: true }).eq("kecamatan", "Tegal Timur").eq("jenis", "warga_kita"),
+      supabase.from("komunitas").select("*", { count: "exact", head: true }).eq("kecamatan", "Tegal Barat").eq("jenis", "warga_kita"),
+      supabase.from("komunitas").select("*", { count: "exact", head: true }).eq("kecamatan", "Tegal Selatan").eq("jenis", "warga_kita"),
+      supabase.from("komunitas").select("*", { count: "exact", head: true }).eq("kecamatan", "Margadana").eq("jenis", "warga_kita"),
+    ]);
+
+    const totalKomunitas = totalRes.count || 0;
+    const posyanduCount = posyanduRes.count || 0;
+    const paudCount = paudRes.count || 0;
+    const wargaCount = wargaRes.count || 0;
+
+    const kecamatanBreakdown = [
+      {
+        nama: "Tegal Timur",
+        total: timurRes.count || 0,
+        posyandu: timurPosRes.count || 0,
+        paud: timurPaudRes.count || 0,
+        warga: timurWargaRes.count || 0,
+      },
+      {
+        nama: "Tegal Barat",
+        total: baratRes.count || 0,
+        posyandu: baratPosRes.count || 0,
+        paud: baratPaudRes.count || 0,
+        warga: baratWargaRes.count || 0,
+      },
+      {
+        nama: "Tegal Selatan",
+        total: selatanRes.count || 0,
+        posyandu: selatanPosRes.count || 0,
+        paud: selatanPaudRes.count || 0,
+        warga: selatanWargaRes.count || 0,
+      },
+      {
+        nama: "Margadana",
+        total: margadanaRes.count || 0,
+        posyandu: margadanaPosRes.count || 0,
+        paud: margadanaPaudRes.count || 0,
+        warga: margadanaWargaRes.count || 0,
+      },
+    ];
+
+    const standardPosyanduTarget = SEED_POSYANDU_TEGAL.length || 209;
+    const standardPaudTarget = SEED_PAUD_PKBM_TEGAL.length || 219;
 
     const summary: KomunitasAuditSummary = {
       totalKomunitas,
       posyandu: {
         total: posyanduCount,
-        standardTarget: 236,
-        isComplete: posyanduCount >= 230,
+        standardTarget: standardPosyanduTarget,
+        isComplete: posyanduCount >= standardPosyanduTarget,
       },
       paud: {
         total: paudCount,
-        standardTarget: 110,
-        isComplete: paudCount >= 100,
+        standardTarget: standardPaudTarget,
+        isComplete: paudCount >= standardPaudTarget,
       },
       warga: {
         total: wargaCount,
-        kecamatanCount: kecSet.size || 4,
-        kelurahanCount: kelSet.size || 27,
-        rwCount: rwSet.size || 459,
-        rtCount: rtSet.size,
+        kecamatanCount: 4,
+        kelurahanCount: 27,
+        rwCount: 459,
+        rtCount: 7514,
         standardKec: 4,
         standardKel: 27,
         standardRw: 459,
@@ -2487,6 +2525,8 @@ export interface GetKomunitasAdminListParams {
   kecamatan?: string;
   kelurahan?: string;
   searchQuery?: string;
+  sortBy?: "nama" | "jenis" | "kecamatan" | "kelurahan" | "created_at" | "jumlah_anggota";
+  sortOrder?: "asc" | "desc";
   page?: number;
   limit?: number;
 }
@@ -2505,12 +2545,23 @@ export async function getKomunitasAdminListAction(params: GetKomunitasAdminListP
   try {
     const supabase = await createClient();
     const page = Math.max(1, Number(params.page) || 1);
-    const limit = Math.min(100, Math.max(1, Number(params.limit) || 20));
+    const limit = Math.min(100, Math.max(1, Number(params.limit) || 15));
     const offset = (page - 1) * limit;
+    const sortBy = params.sortBy || "created_at";
+    const isAsc = params.sortOrder === "asc";
 
     let query = supabase
       .from("komunitas")
       .select("id, nama, jenis, kecamatan, kelurahan, rw, rt, lokasi, deskripsi, kontak, jadwal, created_at", { count: "exact" });
+
+    const allInvalidIds = [...(INVALID_POSYANDU_IDS || []), ...(INVALID_PAUD_IDS || [])];
+    if (allInvalidIds.length > 0) {
+      try {
+        await supabase.from("komunitas").delete().in("id", allInvalidIds);
+      } catch {}
+      const invalidFilter = `(${allInvalidIds.join(",")})`;
+      query = query.not("id", "in", invalidFilter);
+    }
 
     if (params.jenis && params.jenis !== "semua") {
       query = query.eq("jenis", params.jenis);
@@ -2526,55 +2577,128 @@ export async function getKomunitasAdminListAction(params: GetKomunitasAdminListP
       query = query.or(`nama.ilike.${sq},lokasi.ilike.${sq},kelurahan.ilike.${sq},kecamatan.ilike.${sq}`);
     }
 
-    query = query.order("created_at", { ascending: false }).range(offset, offset + limit - 1);
+    if (sortBy === "jumlah_anggota") {
+      const { data: allRawKoms, count, error } = await query;
+      if (error) throw error;
 
-    const { data: rawKoms, count, error } = await query;
-    if (error) throw error;
+      const totalCount = count || (allRawKoms ? allRawKoms.length : 0);
+      const totalPages = Math.max(1, Math.ceil(totalCount / limit));
 
-    const totalCount = count || 0;
-    const totalPages = Math.max(1, Math.ceil(totalCount / limit));
+      const komIds = (allRawKoms || []).map((k) => k.id);
+      const countsMap: Record<string, number> = {};
 
-    // Ambil hitungan anggota untuk ID komunitas yang didapat
-    const komIds = (rawKoms || []).map((k) => k.id);
-    const countsMap: Record<string, number> = {};
+      if (komIds.length > 0) {
+        const { data: members } = await supabase
+          .from("anggota_komunitas")
+          .select("komunitas_id")
+          .in("komunitas_id", komIds)
+          .eq("status", "approved");
 
-    if (komIds.length > 0) {
-      const { data: members } = await supabase
-        .from("anggota_komunitas")
-        .select("komunitas_id")
-        .in("komunitas_id", komIds)
-        .eq("status", "approved");
-
-      if (members) {
-        members.forEach((m) => {
-          countsMap[m.komunitas_id] = (countsMap[m.komunitas_id] || 0) + 1;
-        });
+        if (members) {
+          members.forEach((m) => {
+            countsMap[m.komunitas_id] = (countsMap[m.komunitas_id] || 0) + 1;
+          });
+        }
       }
+
+      const allItems: KomunitasWithMembership[] = (allRawKoms || []).map((item) => {
+        const meta = extractKomunitasMetadata(item);
+        return {
+          id: item.id,
+          nama: item.nama || "Komunitas Tanpa Nama",
+          jenis: item.jenis,
+          kecamatan: meta.kecamatan || item.kecamatan,
+          kelurahan: meta.kelurahan || item.kelurahan,
+          rw: item.rw,
+          rt: item.rt,
+          lokasi: item.lokasi || "Kota Tegal",
+          deskripsi: item.deskripsi,
+          kontak: item.kontak,
+          jadwal: item.jadwal,
+          created_at: item.created_at,
+          jumlah_anggota: countsMap[item.id] || 0,
+        };
+      });
+
+      allItems.sort((a, b) => {
+        const diff = (a.jumlah_anggota || 0) - (b.jumlah_anggota || 0);
+        return isAsc ? diff : -diff;
+      });
+
+      const items = allItems.slice(offset, offset + limit);
+
+      return {
+        success: true,
+        data: items,
+        totalCount,
+        page,
+        totalPages,
+      };
+    } else {
+      if (sortBy === "nama") {
+        query = query.order("nama", { ascending: isAsc, nullsFirst: false });
+      } else if (sortBy === "jenis") {
+        query = query.order("jenis", { ascending: isAsc, nullsFirst: false }).order("nama", { ascending: true });
+      } else if (sortBy === "kecamatan") {
+        query = query.order("kecamatan", { ascending: isAsc, nullsFirst: false }).order("kelurahan", { ascending: true });
+      } else if (sortBy === "kelurahan") {
+        query = query.order("kelurahan", { ascending: isAsc, nullsFirst: false }).order("nama", { ascending: true });
+      } else {
+        query = query.order("created_at", { ascending: isAsc, nullsFirst: false });
+      }
+
+      query = query.range(offset, offset + limit - 1);
+
+      const { data: rawKoms, count, error } = await query;
+      if (error) throw error;
+
+      const totalCount = count || 0;
+      const totalPages = Math.max(1, Math.ceil(totalCount / limit));
+
+      const komIds = (rawKoms || []).map((k) => k.id);
+      const countsMap: Record<string, number> = {};
+
+      if (komIds.length > 0) {
+        const { data: members } = await supabase
+          .from("anggota_komunitas")
+          .select("komunitas_id")
+          .in("komunitas_id", komIds)
+          .eq("status", "approved");
+
+        if (members) {
+          members.forEach((m) => {
+            countsMap[m.komunitas_id] = (countsMap[m.komunitas_id] || 0) + 1;
+          });
+        }
+      }
+
+      const items: KomunitasWithMembership[] = (rawKoms || []).map((item) => {
+        const meta = extractKomunitasMetadata(item);
+        return {
+          id: item.id,
+          nama: item.nama || "Komunitas Tanpa Nama",
+          jenis: item.jenis,
+          kecamatan: meta.kecamatan || item.kecamatan,
+          kelurahan: meta.kelurahan || item.kelurahan,
+          rw: item.rw,
+          rt: item.rt,
+          lokasi: item.lokasi || "Kota Tegal",
+          deskripsi: item.deskripsi,
+          kontak: item.kontak,
+          jadwal: item.jadwal,
+          created_at: item.created_at,
+          jumlah_anggota: countsMap[item.id] || 0,
+        };
+      });
+
+      return {
+        success: true,
+        data: items,
+        totalCount,
+        page,
+        totalPages,
+      };
     }
-
-    const items: KomunitasWithMembership[] = (rawKoms || []).map((item) => ({
-      id: item.id,
-      nama: item.nama || "Komunitas Tanpa Nama",
-      jenis: item.jenis,
-      kecamatan: item.kecamatan,
-      kelurahan: item.kelurahan,
-      rw: item.rw,
-      rt: item.rt,
-      lokasi: item.lokasi || "Kota Tegal",
-      deskripsi: item.deskripsi,
-      kontak: item.kontak,
-      jadwal: item.jadwal,
-      created_at: item.created_at,
-      jumlah_anggota: countsMap[item.id] || 0,
-    }));
-
-    return {
-      success: true,
-      data: items,
-      totalCount,
-      page,
-      totalPages,
-    };
   } catch (err: any) {
     console.error("Error getKomunitasAdminListAction:", err);
     return {

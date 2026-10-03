@@ -190,9 +190,7 @@ export default async function HomePage() {
               <ShoppingBag className="h-3.5 w-3.5" />
             </div>
             <span>Jarimas Market</span>
-            <span className="rounded-full bg-blue-600 text-white text-[9px] px-1.5 py-0.2 font-black uppercase shrink-0">
-              Resmi
-            </span>
+
           </Link>
         )}
 
@@ -245,13 +243,13 @@ export default async function HomePage() {
           {/* Main Headline */}
           <div className="space-y-3 max-w-2xl">
             <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-[32px] font-black tracking-tight leading-snug">
-              Wujudkan Masa Depan Anak Kota Tegal yang{" "}
+              Wujudkan Masa Depan Anak Kota Tegal {" "}
               <span className="text-emerald-400 underline decoration-emerald-500 decoration-wavy decoration-2">
                 Sehat &amp; Berdaya
               </span>
             </h1>
             <p className="text-sm sm:text-base text-slate-300 leading-relaxed font-normal">
-              Ekosistem digital terpadu interkoneksi pemantauan tumbuh kembang balita (DDTK Posyandu), penanganan Anak Tidak Sekolah (ATS), serta kolaborasi 4 tingkat domisili warga Kota Tegal.
+              Ekosistem digital terpadu interkoneksi pemantauan tumbuh kembang anak (DDTK Posyandu), penanganan Anak Tidak Sekolah (ATS), serta kolaborasi antar warga RT, RW, Kelurahan, Kecamatan se Kota Tegal.
             </p>
           </div>
 
@@ -273,9 +271,7 @@ export default async function HomePage() {
               >
                 <ShoppingBag className="h-4 w-4 text-white" />
                 <span>Buka Jarimas Market</span>
-                <span className="rounded-full bg-white text-emerald-800 text-[10px] px-2 py-0.5 font-black uppercase">
-                  Resmi
-                </span>
+
               </Link>
             ) : (
               <Link
@@ -677,7 +673,7 @@ export default async function HomePage() {
               Tegal Selatan
             </h3>
             <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-              Randugunting, Bandung, Tunon, Debong Kulon, Kalinyamat, dll.
+              Randugunting, Bandung, Tunon, Debong Kulon, Kalinyamat Wetan, dll.
             </p>
           </Link>
 
@@ -693,7 +689,7 @@ export default async function HomePage() {
               Margadana
             </h3>
             <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-              Margadana, Sumurpanggang, Kaligangsa, Cabawan, Krandon, dll.
+              Margadana, Kalinyamat Kulon, Sumurpanggang, Kaligangsa, Cabawan, dll.
             </p>
           </Link>
         </div>
@@ -763,10 +759,10 @@ export default async function HomePage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
           <div className="space-y-2 max-w-xl">
             <h2 className="text-xl sm:text-2xl font-black tracking-tight">
-              Siap Terhubung dengan Posyandu &amp; RT Anda?
+              Siap Terhubung dengan Posyandu, PAUD, RT, RW, Kelurahan &amp; Kecamatan Anda?
             </h2>
             <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-              Daftarkan diri dan pantau tumbuh kembang balita Anda, dukung gerakan pengentasan stunting, dan terhubung bersama posyandu serta komunitas warga terdekat.
+              Daftarkan diri dan pantau tumbuh kembang balita Anda, dukung gerakan pengentasan stunting, dan terhubung bersama Posyandu, PAUD serta komunitas warga terdekat.
             </p>
           </div>
 

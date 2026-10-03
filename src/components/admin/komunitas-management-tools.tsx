@@ -22,6 +22,12 @@ import {
   Check,
   X,
   ExternalLink,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
+  ArrowUpAZ,
+  ArrowDownAZ,
+  SlidersHorizontal,
 } from "lucide-react";
 import {
   getKomunitasAuditSummaryAction,
@@ -39,7 +45,7 @@ export function KomunitasManagementTools() {
   const [auditSummary, setAuditSummary] = useState<KomunitasAuditSummary | null>(null);
   const [loadingAudit, setLoadingAudit] = useState(true);
 
-  // State List & Filter
+  // State List, Filter & Sort
   const [items, setItems] = useState<KomunitasWithMembership[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [page, setPage] = useState(1);
@@ -52,6 +58,10 @@ export function KomunitasManagementTools() {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [appliedSearch, setAppliedSearch] = useState<string>("");
 
+  // Kriteria dan Arah Pengurutan (Ascending / Descending)
+  const [sortBy, setSortBy] = useState<"nama" | "jenis" | "kecamatan" | "kelurahan" | "created_at" | "jumlah_anggota">("created_at");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+
   // Transitions & Feedback
   const [isPendingAction, startTransition] = useTransition();
   const [feedback, setFeedback] = useState<{
@@ -63,8 +73,6 @@ export function KomunitasManagementTools() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [editItem, setEditItem] = useState<KomunitasWithMembership | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<KomunitasWithMembership | null>(null);
-
-
 
   // Load audit summary
   const fetchAuditSummary = async () => {
@@ -81,8 +89,12 @@ export function KomunitasManagementTools() {
     }
   };
 
-  // Load komunitas list
-  const fetchList = async (targetPage = page) => {
+  // Load komunitas list dengan parameter filter dan pengurutan
+  const fetchList = async (
+    targetPage = page,
+    currentSortBy = sortBy,
+    currentSortOrder = sortOrder
+  ) => {
     setLoadingList(true);
     try {
       const res = await getKomunitasAdminListAction({
@@ -90,6 +102,8 @@ export function KomunitasManagementTools() {
         kecamatan: filterKecamatan,
         kelurahan: filterKelurahan,
         searchQuery: appliedSearch,
+        sortBy: currentSortBy,
+        sortOrder: currentSortOrder,
         page: targetPage,
         limit: 15,
       });
@@ -114,13 +128,45 @@ export function KomunitasManagementTools() {
   }, []);
 
   useEffect(() => {
-    fetchList(1);
-  }, [filterJenis, filterKecamatan, filterKelurahan, appliedSearch]);
+    fetchList(1, sortBy, sortOrder);
+  }, [filterJenis, filterKecamatan, filterKelurahan, appliedSearch, sortBy, sortOrder]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setAppliedSearch(searchQuery);
   };
+
+  // Toggle pengurutan per kolom (Ascending <-> Descending)
+  const handleSortToggle = (column: "nama" | "jenis" | "kecamatan" | "kelurahan" | "created_at" | "jumlah_anggota") => {
+    if (sortBy === column) {
+      setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+    } else {
+      setSortBy(column);
+      if (column === "nama" || column === "jenis" || column === "kecamatan" || column === "kelurahan") {
+        setSortOrder("asc");
+      } else {
+        setSortOrder("desc");
+      }
+    }
+  };
+
+  const handleResetFilters = () => {
+    setFilterJenis("semua");
+    setFilterKecamatan("semua");
+    setFilterKelurahan("semua");
+    setSearchQuery("");
+    setAppliedSearch("");
+    setSortBy("created_at");
+    setSortOrder("desc");
+  };
+
+  const isFilteredOrSorted =
+    filterJenis !== "semua" ||
+    filterKecamatan !== "semua" ||
+    filterKelurahan !== "semua" ||
+    appliedSearch !== "" ||
+    sortBy !== "created_at" ||
+    sortOrder !== "desc";
 
   // Handle Delete
   const handleConfirmDelete = () => {
@@ -285,9 +331,15 @@ export function KomunitasManagementTools() {
                     <School className="h-4 w-4" />
                     <span>2. Satuan PAUD &amp; PKBM</span>
                   </div>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-300 px-2 py-0.5 text-[10px] font-bold">
-                    <Check className="h-3 w-3" /> Tersedia
-                  </span>
+                  {auditSummary.paud.total >= auditSummary.paud.standardTarget ? (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-300 px-2 py-0.5 text-[10px] font-bold">
+                      <Check className="h-3 w-3" /> Sesuai Target
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-300 px-2 py-0.5 text-[10px] font-bold">
+                      {auditSummary.paud.total} / {auditSummary.paud.standardTarget}
+                    </span>
+                  )}
                 </div>
 
                 <div className="mt-3 flex items-baseline gap-2">
@@ -295,7 +347,7 @@ export function KomunitasManagementTools() {
                     {auditSummary.paud.total}
                   </span>
                   <span className="text-xs text-slate-500 font-medium">
-                    Satuan Lembaga (TK, KB, RA, PKBM)
+                    Satuan Lembaga (Target: {auditSummary.paud.standardTarget})
                   </span>
                 </div>
               </div>
@@ -364,10 +416,10 @@ export function KomunitasManagementTools() {
 
       {/* 2. SECTION DAFTAR & MANAJEMEN KOMUNITAS */}
       <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-6 space-y-5 shadow-xs">
-        {/* Controls: Search, Category, District */}
+        {/* Controls: Search, Category, District, Sort */}
         <div className="space-y-3">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <Building2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
               <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
                 Daftar Komunitas Terdaftar
@@ -375,26 +427,35 @@ export function KomunitasManagementTools() {
               <span className="text-xs font-mono font-bold text-slate-500 bg-slate-100 dark:bg-slate-800 px-2.5 py-0.5 rounded-full">
                 {totalCount} TOTAL
               </span>
+              {/* Active Sort Badge */}
+              <span className="text-[11px] font-medium text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 px-2.5 py-0.5 rounded-full inline-flex items-center gap-1.5 shadow-2xs">
+                {sortOrder === "asc" ? (
+                  <ArrowUp className="h-3 w-3 text-emerald-600" />
+                ) : (
+                  <ArrowDown className="h-3 w-3 text-emerald-600" />
+                )}
+                <span>
+                  {sortBy === "nama" && "Nama (A-Z)"}
+                  {sortBy === "created_at" && (sortOrder === "asc" ? "Terlama" : "Terbaru")}
+                  {sortBy === "jenis" && "Kategori"}
+                  {sortBy === "kecamatan" && "Kecamatan"}
+                  {sortBy === "kelurahan" && "Kelurahan"}
+                  {sortBy === "jumlah_anggota" && (sortOrder === "asc" ? "Anggota (Sedikit)" : "Anggota (Terbanyak)")}
+                  {" • "}
+                  <strong className="uppercase">{sortOrder === "asc" ? "Ascending" : "Descending"}</strong>
+                </span>
+              </span>
             </div>
 
-            {/* Quick Reset Filter */}
-            {(filterJenis !== "semua" ||
-              filterKecamatan !== "semua" ||
-              filterKelurahan !== "semua" ||
-              appliedSearch !== "") && (
+            {/* Quick Reset Filter & Sort */}
+            {isFilteredOrSorted && (
               <button
                 type="button"
-                onClick={() => {
-                  setFilterJenis("semua");
-                  setFilterKecamatan("semua");
-                  setFilterKelurahan("semua");
-                  setSearchQuery("");
-                  setAppliedSearch("");
-                }}
+                onClick={handleResetFilters}
                 className="text-xs font-bold text-rose-600 hover:underline inline-flex items-center gap-1 cursor-pointer"
               >
                 <X className="h-3.5 w-3.5" />
-                <span>Reset Semua Filter</span>
+                <span>Reset Semua Filter &amp; Urutan</span>
               </button>
             )}
           </div>
@@ -421,7 +482,7 @@ export function KomunitasManagementTools() {
 
           {/* Filter Dropdowns Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
-            {/* Filter Jenis */}
+            {/* 1. Filter Kategori */}
             <div>
               <label className="block text-[11px] font-bold text-slate-500 mb-1">
                 Kategori
@@ -438,7 +499,7 @@ export function KomunitasManagementTools() {
               </select>
             </div>
 
-            {/* Filter Kecamatan */}
+            {/* 2. Filter Kecamatan */}
             <div>
               <label className="block text-[11px] font-bold text-slate-500 mb-1">
                 Kecamatan
@@ -459,7 +520,7 @@ export function KomunitasManagementTools() {
               </select>
             </div>
 
-            {/* Filter Kelurahan */}
+            {/* 3. Filter Kelurahan */}
             <div>
               <label className="block text-[11px] font-bold text-slate-500 mb-1">
                 Kelurahan
@@ -511,12 +572,113 @@ export function KomunitasManagementTools() {
           <div className="overflow-hidden border border-slate-200 dark:border-slate-800 rounded-2xl">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 font-bold border-b border-slate-200 dark:border-slate-800">
+                <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 font-bold border-b border-slate-200 dark:border-slate-800 select-none">
                   <tr>
-                    <th className="py-3.5 px-4">Nama Komunitas</th>
-                    <th className="py-3.5 px-4">Kategori</th>
-                    <th className="py-3.5 px-4">Wilayah &amp; Lokasi</th>
-                    <th className="py-3.5 px-4 text-center">Anggota Terdaftar</th>
+                    {/* Nama Komunitas */}
+                    <th
+                      onClick={() => handleSortToggle("nama")}
+                      className="py-3.5 px-4 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors group"
+                      title="Klik untuk urutkan berdasarkan Nama Komunitas"
+                    >
+                      <div className="flex items-center gap-1.5">
+                        <span className={sortBy === "nama" ? "text-emerald-700 dark:text-emerald-400 font-extrabold" : ""}>
+                          Nama Komunitas
+                        </span>
+                        {sortBy === "nama" ? (
+                          sortOrder === "asc" ? (
+                            <span className="p-0.5 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 inline-flex items-center shadow-2xs" title="Ascending (A-Z)">
+                              <ArrowUp className="h-3.5 w-3.5" />
+                            </span>
+                          ) : (
+                            <span className="p-0.5 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 inline-flex items-center shadow-2xs" title="Descending (Z-A)">
+                              <ArrowDown className="h-3.5 w-3.5" />
+                            </span>
+                          )
+                        ) : (
+                          <ArrowUpDown className="h-3.5 w-3.5 text-slate-400 opacity-30 group-hover:opacity-100 transition-opacity" />
+                        )}
+                      </div>
+                    </th>
+
+                    {/* Kategori */}
+                    <th
+                      onClick={() => handleSortToggle("jenis")}
+                      className="py-3.5 px-4 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors group"
+                      title="Klik untuk urutkan berdasarkan Kategori"
+                    >
+                      <div className="flex items-center gap-1.5">
+                        <span className={sortBy === "jenis" ? "text-emerald-700 dark:text-emerald-400 font-extrabold" : ""}>
+                          Kategori
+                        </span>
+                        {sortBy === "jenis" ? (
+                          sortOrder === "asc" ? (
+                            <span className="p-0.5 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 inline-flex items-center shadow-2xs" title="Ascending (A-Z)">
+                              <ArrowUp className="h-3.5 w-3.5" />
+                            </span>
+                          ) : (
+                            <span className="p-0.5 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 inline-flex items-center shadow-2xs" title="Descending (Z-A)">
+                              <ArrowDown className="h-3.5 w-3.5" />
+                            </span>
+                          )
+                        ) : (
+                          <ArrowUpDown className="h-3.5 w-3.5 text-slate-400 opacity-30 group-hover:opacity-100 transition-opacity" />
+                        )}
+                      </div>
+                    </th>
+
+                    {/* Wilayah & Lokasi */}
+                    <th
+                      onClick={() => handleSortToggle("kecamatan")}
+                      className="py-3.5 px-4 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors group"
+                      title="Klik untuk urutkan berdasarkan Wilayah (Kecamatan / Kelurahan)"
+                    >
+                      <div className="flex items-center gap-1.5">
+                        <span className={sortBy === "kecamatan" || sortBy === "kelurahan" ? "text-emerald-700 dark:text-emerald-400 font-extrabold" : ""}>
+                          Wilayah &amp; Lokasi
+                        </span>
+                        {sortBy === "kecamatan" || sortBy === "kelurahan" ? (
+                          sortOrder === "asc" ? (
+                            <span className="p-0.5 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 inline-flex items-center shadow-2xs" title="Ascending (A-Z)">
+                              <ArrowUp className="h-3.5 w-3.5" />
+                            </span>
+                          ) : (
+                            <span className="p-0.5 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 inline-flex items-center shadow-2xs" title="Descending (Z-A)">
+                              <ArrowDown className="h-3.5 w-3.5" />
+                            </span>
+                          )
+                        ) : (
+                          <ArrowUpDown className="h-3.5 w-3.5 text-slate-400 opacity-30 group-hover:opacity-100 transition-opacity" />
+                        )}
+                      </div>
+                    </th>
+
+                    {/* Anggota Terdaftar */}
+                    <th
+                      onClick={() => handleSortToggle("jumlah_anggota")}
+                      className="py-3.5 px-4 text-center cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors group"
+                      title="Klik untuk urutkan berdasarkan Jumlah Anggota"
+                    >
+                      <div className="flex items-center justify-center gap-1.5">
+                        <span className={sortBy === "jumlah_anggota" ? "text-emerald-700 dark:text-emerald-400 font-extrabold" : ""}>
+                          Anggota Terdaftar
+                        </span>
+                        {sortBy === "jumlah_anggota" ? (
+                          sortOrder === "asc" ? (
+                            <span className="p-0.5 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 inline-flex items-center shadow-2xs" title="Sedikit ke Banyak (Ascending)">
+                              <ArrowUp className="h-3.5 w-3.5" />
+                            </span>
+                          ) : (
+                            <span className="p-0.5 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 inline-flex items-center shadow-2xs" title="Banyak ke Sedikit (Descending)">
+                              <ArrowDown className="h-3.5 w-3.5" />
+                            </span>
+                          )
+                        ) : (
+                          <ArrowUpDown className="h-3.5 w-3.5 text-slate-400 opacity-30 group-hover:opacity-100 transition-opacity" />
+                        )}
+                      </div>
+                    </th>
+
+                    {/* Aksi */}
                     <th className="py-3.5 px-4 text-right">Aksi</th>
                   </tr>
                 </thead>

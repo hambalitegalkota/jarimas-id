@@ -44,15 +44,16 @@ const KELURAHAN_TO_KECAMATAN_MAP: Record<string, string> = {
   "debong kulon": "Tegal Selatan",
   debongtengah: "Tegal Selatan",
   "debong tengah": "Tegal Selatan",
-  kalinyamatkulon: "Tegal Selatan",
-  "kalinyamat kulon": "Tegal Selatan",
   kalinyamatwetan: "Tegal Selatan",
   "kalinyamat wetan": "Tegal Selatan",
+  keturen: "Tegal Selatan",
   randugunting: "Tegal Selatan",
   tunon: "Tegal Selatan",
 
   cabawan: "Margadana",
   kaligangsa: "Margadana",
+  kalinyamatkulon: "Margadana",
+  "kalinyamat kulon": "Margadana",
   krandon: "Margadana",
   margadana: "Margadana",
   pesurunganlor: "Margadana",
@@ -105,6 +106,7 @@ export function extractKomunitasMetadata(kom: any) {
         "Debong Tengah",
         "Kalinyamat Kulon",
         "Kalinyamat Wetan",
+        "Keturen",
         "Randugunting",
         "Tunon",
         "Margadana",
@@ -123,7 +125,7 @@ export function extractKomunitasMetadata(kom: any) {
     }
   }
 
-  // Cek fallback Kecamatan jika kosong atau dari pemetaan kelurahan
+  // Cek validasi Kecamatan dari pemetaan kelurahan resmi jika belum tersedia
   let rawKec = rawKecFromKom;
   if (!rawKec && rawKel) {
     const mappedKec = KELURAHAN_TO_KECAMATAN_MAP[normalizeStr(rawKel)];
@@ -155,6 +157,8 @@ export function extractKomunitasMetadata(kom: any) {
     rawKel: rawKel || "",
     rawRw: rawRw || "",
     rawRt: rawRt || "",
+    kecamatan: rawKec || "Kota Tegal",
+    kelurahan: rawKel || "",
     kec,
     kel,
     rw,
