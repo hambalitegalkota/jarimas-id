@@ -477,6 +477,11 @@ export default async function ProfilePage() {
             {nonWargaMemberships.map((item) => {
               const kom = item.komunitas || {};
               const status = item.status as "pending" | "approved" | "rejected";
+              let formattedKomNama = kom.nama || "Komunitas";
+              if (kom.jenis === "posyandu") {
+                const cleanName = (kom.nama || "").replace(/^(Posyandu\s*)+/gi, "").trim();
+                formattedKomNama = cleanName ? `Posyandu ${cleanName}` : "Posyandu";
+              }
 
               return (
                 <div
@@ -486,7 +491,7 @@ export default async function ProfilePage() {
                   <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                     <div className="space-y-1.5">
                       <h4 className="font-bold text-lg text-slate-900 dark:text-slate-100">
-                        {kom.nama || "Komunitas"}
+                        {formattedKomNama}
                       </h4>
                       <div className="flex flex-wrap items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
                         <span className="font-bold text-emerald-700 dark:text-emerald-400">

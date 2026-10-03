@@ -339,8 +339,13 @@ export function ApprovalList({
             const userName = item.profiles?.nama_lengkap || "Pengguna Tanpa Nama";
             const userEmail = item.profiles?.email || "-";
             const userPhone = item.profiles?.nomor_hp;
-            const komunitasNama = item.komunitas?.nama || "Komunitas";
+            const rawKomNama = item.komunitas?.nama || "Komunitas";
             const komunitasJenis = item.komunitas?.jenis || "warga_kita";
+            let komunitasNama = rawKomNama;
+            if (komunitasJenis === "posyandu") {
+              const cleanName = rawKomNama.replace(/^(Posyandu\s*)+/gi, "").trim();
+              komunitasNama = cleanName ? `Posyandu ${cleanName}` : "Posyandu";
+            }
             const komunitasLokasi = item.komunitas?.lokasi || "Kota Tegal";
             const isProcessing = loadingId === item.id && isPending;
 

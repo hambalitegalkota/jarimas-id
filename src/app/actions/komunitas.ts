@@ -400,16 +400,26 @@ export async function getKomunitasList(
         ? adminProfileMap.get(adminFound.user_id)?.nama_lengkap || "Pengurus Terdaftar"
         : null;
 
+      let itemNama = item.nama;
+      let itemDeskripsi = item.deskripsi;
+      if (item.jenis === "posyandu") {
+        const coreName = extractCorePosyanduName(item.nama);
+        itemNama = coreName ? `Posyandu ${coreName}` : "Posyandu";
+        if (itemDeskripsi) {
+          itemDeskripsi = itemDeskripsi.replace(/Posyandu\s+Posyandu/gi, "Posyandu");
+        }
+      }
+
       return {
         id: validId,
-        nama: item.nama,
+        nama: itemNama,
         jenis: item.jenis,
         kecamatan: item.kecamatan,
         kelurahan: item.kelurahan,
         rt: item.rt,
         rw: item.rw,
         lokasi: item.lokasi,
-        deskripsi: item.deskripsi,
+        deskripsi: itemDeskripsi,
         logo_url: item.logo_url || null,
         kontak: item.kontak || null,
         jadwal: item.jadwal || null,
@@ -699,15 +709,22 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
       };
     }
 
-    const nama = komunitas.nama || komunitas.nama_komunitas || "Komunitas";
+    let nama = komunitas.nama || komunitas.nama_komunitas || "Komunitas";
     const jenis = komunitas.jenis || komunitas.jenis_komunitas || "posyandu";
+    if (jenis === "posyandu") {
+      const coreName = extractCorePosyanduName(nama);
+      nama = coreName ? `Posyandu ${coreName}` : "Posyandu";
+    }
     const lokasi =
       komunitas.lokasi ||
       [komunitas.kelurahan, komunitas.kecamatan, "Kota Tegal"]
         .filter(Boolean)
         .join(", ");
-    const deskripsi =
+    let deskripsi =
       komunitas.deskripsi || `Layanan dan kegiatan ${nama} di ${lokasi}.`;
+    if (jenis === "posyandu") {
+      deskripsi = deskripsi.replace(/Posyandu\s+Posyandu/gi, "Posyandu");
+    }
 
     // 1. Ambil seluruh komunitas dari database
     const { data: dbAllKomunitas } = await supabase
@@ -1931,27 +1948,34 @@ export async function seedPosyanduToSupabase(): Promise<{
   try {
     const supabase = await createClient();
 
-    const items = RAW_POSYANDU_TEGAL.map((p) => ({
-      id: toValidUUID(
-        `kom-posyandu-${p.kecamatan.toLowerCase().replace(/\s+/g, "-")}-${p.kelurahan.toLowerCase().replace(/\s+/g, "-")}-${p.nama.toLowerCase().replace(/\s+/g, "-")}`
-      ),
-      nama: p.nama,
-      nama_komunitas: p.nama,
-      jenis: "posyandu",
-      jenis_komunitas: "posyandu",
-      kecamatan: p.kecamatan,
-      kelurahan: p.kelurahan,
-      lokasi:
-        p.lokasi ||
-        `Balai Posyandu / RW ${p.rw || "01"}, ${p.kelurahan}, ${p.kecamatan}, Kota Tegal`,
-      deskripsi:
+    const items = RAW_POSYANDU_TEGAL.map((p) => {
+      const coreName = extractCorePosyanduName(p.nama);
+      const cleanNama = `Posyandu ${coreName}`;
+      const cleanDeskripsi = (
         p.deskripsi ||
-        `Layanan terpadu Posyandu ${p.nama} ${p.kelurahan}: penimbangan berat badan, tinggi badan, imunisasi, DDKS, dan PMT balita serta ibu hamil.`,
-      kontak: p.kontak || "0813-2233-4455",
-      jadwal: p.jadwal || `Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB`,
-      rt: p.rt || null,
-      rw: p.rw || null,
-    }));
+        `Layanan terpadu Posyandu ${coreName} ${p.kelurahan}: penimbangan berat badan, tinggi badan, imunisasi, DDKS, dan PMT balita serta ibu hamil.`
+      ).replace(/Posyandu\s+Posyandu/gi, "Posyandu");
+
+      return {
+        id: toValidUUID(
+          `kom-posyandu-${p.kecamatan.toLowerCase().replace(/\s+/g, "-")}-${p.kelurahan.toLowerCase().replace(/\s+/g, "-")}-${coreName.toLowerCase().replace(/\s+/g, "-")}`
+        ),
+        nama: cleanNama,
+        nama_komunitas: cleanNama,
+        jenis: "posyandu",
+        jenis_komunitas: "posyandu",
+        kecamatan: p.kecamatan,
+        kelurahan: p.kelurahan,
+        lokasi:
+          p.lokasi ||
+          `Balai Posyandu / RW ${p.rw || "01"}, ${p.kelurahan}, ${p.kecamatan}, Kota Tegal`,
+        deskripsi: cleanDeskripsi,
+        kontak: p.kontak || "0813-2233-4455",
+        jadwal: p.jadwal || `Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB`,
+        rt: p.rt || null,
+        rw: p.rw || null,
+      };
+    });
 
     const chunkSize = 50;
     let totalInserted = 0;
@@ -2603,16 +2627,26 @@ export async function getKomunitasAdminListAction(params: GetKomunitasAdminListP
 
       const allItems: KomunitasWithMembership[] = (allRawKoms || []).map((item) => {
         const meta = extractKomunitasMetadata(item);
+        let itemNama = item.nama || "Komunitas Tanpa Nama";
+        let itemDeskripsi = item.deskripsi;
+        if (item.jenis === "posyandu") {
+          const coreName = extractCorePosyanduName(itemNama);
+          itemNama = coreName ? `Posyandu ${coreName}` : "Posyandu";
+          if (itemDeskripsi) {
+            itemDeskripsi = itemDeskripsi.replace(/Posyandu\s+Posyandu/gi, "Posyandu");
+          }
+        }
+
         return {
           id: item.id,
-          nama: item.nama || "Komunitas Tanpa Nama",
+          nama: itemNama,
           jenis: item.jenis,
           kecamatan: meta.kecamatan || item.kecamatan,
           kelurahan: meta.kelurahan || item.kelurahan,
           rw: item.rw,
           rt: item.rt,
           lokasi: item.lokasi || "Kota Tegal",
-          deskripsi: item.deskripsi,
+          deskripsi: itemDeskripsi,
           kontak: item.kontak,
           jadwal: item.jadwal,
           created_at: item.created_at,
@@ -2674,16 +2708,26 @@ export async function getKomunitasAdminListAction(params: GetKomunitasAdminListP
 
       const items: KomunitasWithMembership[] = (rawKoms || []).map((item) => {
         const meta = extractKomunitasMetadata(item);
+        let itemNama = item.nama || "Komunitas Tanpa Nama";
+        let itemDeskripsi = item.deskripsi;
+        if (item.jenis === "posyandu") {
+          const coreName = extractCorePosyanduName(itemNama);
+          itemNama = coreName ? `Posyandu ${coreName}` : "Posyandu";
+          if (itemDeskripsi) {
+            itemDeskripsi = itemDeskripsi.replace(/Posyandu\s+Posyandu/gi, "Posyandu");
+          }
+        }
+
         return {
           id: item.id,
-          nama: item.nama || "Komunitas Tanpa Nama",
+          nama: itemNama,
           jenis: item.jenis,
           kecamatan: meta.kecamatan || item.kecamatan,
           kelurahan: meta.kelurahan || item.kelurahan,
           rw: item.rw,
           rt: item.rt,
           lokasi: item.lokasi || "Kota Tegal",
-          deskripsi: item.deskripsi,
+          deskripsi: itemDeskripsi,
           kontak: item.kontak,
           jadwal: item.jadwal,
           created_at: item.created_at,

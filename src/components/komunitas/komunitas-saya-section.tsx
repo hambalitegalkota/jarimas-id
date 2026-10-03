@@ -304,9 +304,8 @@ export function KomunitasSayaSection({
         {otherItems.map((item) => {
           let formattedTitle = item.nama;
           if (item.jenis === "posyandu") {
-            if (!formattedTitle.startsWith("Posyandu")) {
-              formattedTitle = `Posyandu ${item.nama}`;
-            }
+            const cleanName = (item.nama || "").replace(/^(Posyandu\s*)+/gi, "").trim();
+            formattedTitle = cleanName ? `Posyandu ${cleanName}` : "Posyandu";
           } else if (item.jenis === "satuan_paud") {
             formattedTitle = item.nama;
           }

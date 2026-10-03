@@ -106,7 +106,7 @@ export default async function KomunitasPage({
               </span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
-              Eksplorasi Komunitas di Kota Tegal
+              Eksplorasi Komunitas Kota Tegal
             </h1>
             <p className="text-xs sm:text-sm text-slate-300 max-w-lg leading-relaxed">
               Jelajahi 230+ Posyandu Balita, Satuan PAUD &amp; Kesetaraan, dan Komunitas Warga 4 Tingkat (RT/RW/Kelurahan) se-Kota Tegal.
@@ -135,11 +135,10 @@ export default async function KomunitasPage({
         {/* Tab 1: Posyandu */}
         <Link
           href={createTabUrl("posyandu")}
-          className={`flex min-h-[48px] items-center justify-center gap-2 rounded-xl text-xs sm:text-sm font-extrabold transition-all cursor-pointer active:scale-98 ${
-            currentTab === "posyandu"
+          className={`flex min-h-[48px] items-center justify-center gap-2 rounded-xl text-xs sm:text-sm font-extrabold transition-all cursor-pointer active:scale-98 ${currentTab === "posyandu"
               ? "bg-emerald-600 text-white shadow-xs"
               : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800"
-          }`}
+            }`}
         >
           <HeartPulse className="h-4 w-4 shrink-0" />
           <span>POSYANDU</span>
@@ -148,11 +147,10 @@ export default async function KomunitasPage({
         {/* Tab 2: Warga Kita */}
         <Link
           href={createTabUrl("warga_kita")}
-          className={`flex min-h-[48px] items-center justify-center gap-2 rounded-xl text-xs sm:text-sm font-extrabold transition-all cursor-pointer active:scale-98 ${
-            currentTab === "warga_kita"
+          className={`flex min-h-[48px] items-center justify-center gap-2 rounded-xl text-xs sm:text-sm font-extrabold transition-all cursor-pointer active:scale-98 ${currentTab === "warga_kita"
               ? "bg-blue-600 text-white shadow-xs"
               : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800"
-          }`}
+            }`}
         >
           <Users className="h-4 w-4 shrink-0" />
           <span>WARGA KITA</span>
@@ -161,11 +159,10 @@ export default async function KomunitasPage({
         {/* Tab 3: PAUD */}
         <Link
           href={createTabUrl("satuan_paud")}
-          className={`flex min-h-[48px] items-center justify-center gap-2 rounded-xl text-xs sm:text-sm font-extrabold transition-all cursor-pointer active:scale-98 ${
-            currentTab === "satuan_paud"
+          className={`flex min-h-[48px] items-center justify-center gap-2 rounded-xl text-xs sm:text-sm font-extrabold transition-all cursor-pointer active:scale-98 ${currentTab === "satuan_paud"
               ? "bg-indigo-600 text-white font-black shadow-xs"
               : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800"
-          }`}
+            }`}
         >
           <GraduationCap className="h-4 w-4 shrink-0" />
           <span>PAUD</span>

@@ -74,6 +74,12 @@ export function KomunitasDetailClientView({
   const isChartOnly = isWargaKita && !hasFullAccess;
   const isPenduduk = userPeran === "Penduduk";
 
+  let formattedTitle = komunitas.nama;
+  if (komunitas.jenis === "posyandu") {
+    const cleanName = (komunitas.nama || "").replace(/^(Posyandu\s*)+/gi, "").trim();
+    formattedTitle = cleanName ? `Posyandu ${cleanName}` : "Posyandu";
+  }
+
   const approvedMembers = anggotaList.filter((m) => m.status === "approved");
 
   // Otorisasi Kelola Anggota
@@ -193,7 +199,7 @@ export function KomunitasDetailClientView({
               </div>
 
               <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-                {komunitas.nama}
+                {formattedTitle}
               </h1>
 
               <div className="flex flex-wrap items-center gap-3 text-sm text-slate-600 font-semibold pt-0.5">
@@ -671,7 +677,7 @@ export function KomunitasDetailClientView({
                     Pengajuan Admin Komunitas
                   </h4>
                   <p className="text-[11px] text-slate-500">
-                    {komunitas.nama}
+                    {formattedTitle}
                   </p>
                 </div>
               </div>

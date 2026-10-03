@@ -59,9 +59,8 @@ export function KomunitasCard({
       }
     }
   } else if (komunitas.jenis === "posyandu") {
-    if (!formattedTitle.startsWith("Posyandu")) {
-      formattedTitle = `Posyandu ${komunitas.nama}`;
-    }
+    const cleanName = (komunitas.nama || "").replace(/^(Posyandu\s*)+/gi, "").trim();
+    formattedTitle = cleanName ? `Posyandu ${cleanName}` : "Posyandu";
   } else if (komunitas.jenis === "satuan_paud") {
     formattedTitle = komunitas.nama;
   }
@@ -244,7 +243,7 @@ export function KomunitasCard({
                   Kunjungan Komunitas
                 </h4>
                 <p className="text-xs text-slate-500 font-medium">
-                  {komunitas.nama}
+                  {formattedTitle}
                 </p>
               </div>
             </div>

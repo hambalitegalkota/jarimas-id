@@ -51,6 +51,12 @@ export function KomunitasProfilCharts({
   const ddtkSesuai = Math.round(totalBalita * 0.88);
   const ddtkPantau = totalBalita - ddtkSesuai;
 
+  let displayKomNama = komunitas.nama;
+  if (komunitas.jenis === "posyandu") {
+    const cleanName = (komunitas.nama || "").replace(/^(Posyandu\s*)+/gi, "").trim();
+    displayKomNama = cleanName ? `Posyandu ${cleanName}` : "Posyandu";
+  }
+
   return (
     <div className="space-y-5">
       {/* Header Visualisasi Grafik & Chart */}
@@ -61,7 +67,7 @@ export function KomunitasProfilCharts({
               VISUALISASI DATA WILAYAH
             </span>
             <span className="text-xs font-bold text-slate-500 uppercase">
-              {komunitas.nama}
+              {displayKomNama}
             </span>
           </div>
           <h3 className="text-lg sm:text-xl font-black tracking-tight text-slate-900 flex items-center gap-2">

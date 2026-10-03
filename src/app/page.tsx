@@ -323,7 +323,235 @@ export default async function HomePage() {
       </section>
 
       {/* ========================================================= */}
-      {/* 4. FEATURED SPOTLIGHT: JARIMAS MARKET (CONDITIONAL)       */}
+      {/* 4. 4 PILAR UTAMA EKOSISTEM JARIMAS-ID (BENTO GRID)        */}
+      {/* ========================================================= */}
+      <section className="space-y-4">
+        <div className="space-y-1 text-center sm:text-left">
+          <span className="rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-800 px-3 py-0.5 text-xs font-bold text-emerald-800 dark:text-emerald-300">
+            FITUR UTAMA
+          </span>
+          <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
+            Layanan Unggulan Warga &amp; Komunitas
+          </h2>
+          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400">
+            Satu genggaman untuk mewujudkan perlindungan, gizi, dan pendidikan anak se-Kota Tegal.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Bento Card 1: DDTK Posyandu */}
+          <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-4 shadow-xs hover:border-emerald-500/50 transition-colors">
+            <div className="flex items-center justify-between">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-600 text-white font-bold shadow-md shadow-emerald-500/20">
+                <HeartPulse className="h-6 w-6" />
+              </div>
+              <span className="text-[11px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
+                DDTK Posyandu
+              </span>
+            </div>
+
+            <div className="space-y-1.5">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
+                Pemantauan Tumbuh Kembang &amp; Antropometri
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                Pencatatan berkala berat badan, tinggi badan, lingkar kepala, dan deteksi dini risiko stunting dengan kurva pertumbuhan standar WHO.
+              </p>
+            </div>
+
+            <Link
+              href="/komunitas?tab=posyandu"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-400 hover:text-emerald-800 underline"
+            >
+              <span>Pantau di Komunitas Posyandu</span>
+              <ChevronRight className="h-4 w-4" />
+            </Link>
+          </div>
+
+          {/* Bento Card 2: ATS */}
+          <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-4 shadow-xs hover:border-blue-500/50 transition-colors">
+            <div className="flex items-center justify-between">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-600 text-white font-bold shadow-md shadow-blue-500/20">
+                <GraduationCap className="h-6 w-6" />
+              </div>
+              <span className="text-[11px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-800 border border-blue-200">
+                Pendidikan Anak
+              </span>
+            </div>
+
+            <div className="space-y-1.5">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
+                Pendataan Anak Tidak Sekolah (ATS)
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                Validasi data anak putus sekolah atau belum sekolah berjenjang (RT, RW, Kelurahan) untuk intervensi kembali bersekolah atau program kesetaraan.
+              </p>
+            </div>
+
+            <Link
+              href="/komunitas?tab=satuan_paud"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-700 dark:text-blue-400 hover:text-blue-800 underline"
+            >
+              <span>Pelajari Mekanisme Pendataan ATS</span>
+              <ChevronRight className="h-4 w-4" />
+            </Link>
+          </div>
+
+          {/* Bento Card 3: Warga Kita 4 Tingkat */}
+          <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-4 shadow-xs hover:border-slate-400 transition-colors">
+            <div className="flex items-center justify-between">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-800 dark:bg-slate-700 text-white font-bold shadow-md shadow-slate-700/20">
+                <Building2 className="h-6 w-6" />
+              </div>
+              <span className="text-[11px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-800 border border-slate-200">
+                Domisili Warga
+              </span>
+            </div>
+
+            <div className="space-y-1.5">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
+                Komunitas Warga Kita
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                Hierarki domisili cerdas yang otomatis menghubungkan akun warga ke RT, RW, Kelurahan, hingga Kecamatan tempat tinggal secara terverifikasi.
+              </p>
+            </div>
+
+            <Link
+              href="/komunitas?tab=warga_kita"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:text-slate-900 underline"
+            >
+              <span>Gabung dengan RT &amp; RW Anda</span>
+              <ChevronRight className="h-4 w-4" />
+            </Link>
+          </div>
+
+          {/* Bento Card 4: Kabar & Forum Warga */}
+          <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-4 shadow-xs hover:border-emerald-500/50 transition-colors">
+            <div className="flex items-center justify-between">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-700 text-white font-bold shadow-md shadow-emerald-700/20">
+                <MessageSquare className="h-6 w-6" />
+              </div>
+              <span className="text-[11px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
+                Forum Terbuka
+              </span>
+            </div>
+
+            <div className="space-y-1.5">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
+                Kabar Warga &amp; Edukasi Nutrisi
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                Ruang berbagi informasi imunisasi posyandu, tanya jawab kesehatan anak, tips menu gizi seimbang, dan pengumuman lingkungan terkini.
+              </p>
+            </div>
+
+            <Link
+              href="/kabar"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-400 hover:text-emerald-800 underline"
+            >
+              <span>Baca Kabar Terhangat Hari Ini</span>
+              <ChevronRight className="h-4 w-4" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ========================================================= */}
+      {/* 5. PETA 4 WILAYAH KECAMATAN KOTA TEGAL                     */}
+      {/* ========================================================= */}
+      <section className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-7 space-y-5 shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <MapPin className="h-4 w-4 text-emerald-600" />
+              <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-slate-100">
+                Jangkauan Wilayah Layanan Kota Tegal
+              </h2>
+            </div>
+            <p className="text-xs text-slate-500">
+              Cakup seluruh posyandu dan warga di 4 kecamatan dan 27 kelurahan Kota Tegal.
+            </p>
+          </div>
+
+          <Link
+            href="/komunitas"
+            className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 dark:text-emerald-400 hover:underline"
+          >
+            <span>Semua Wilayah</span>
+            <ChevronRight className="h-3.5 w-3.5" />
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          {/* Card Tegal Timur */}
+          <Link
+            href="/komunitas?kecamatan=Tegal+Timur"
+            className="p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-800 hover:border-emerald-500 bg-slate-50/50 dark:bg-slate-800/40 transition-all cursor-pointer group shadow-2xs"
+          >
+            <span className="text-[10px] font-black text-emerald-700 dark:text-emerald-400 block tracking-wider uppercase">
+              KECAMATAN
+            </span>
+            <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 group-hover:text-emerald-700 transition-colors">
+              Tegal Timur
+            </h3>
+            <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+              Mintaragen, Panggung, Slerok, Kejambon, Mangkukusuman.
+            </p>
+          </Link>
+
+          {/* Card Tegal Barat */}
+          <Link
+            href="/komunitas?kecamatan=Tegal+Barat"
+            className="p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-800 hover:border-blue-500 bg-slate-50/50 dark:bg-slate-800/40 transition-all cursor-pointer group shadow-2xs"
+          >
+            <span className="text-[10px] font-black text-blue-700 dark:text-blue-400 block tracking-wider uppercase">
+              KECAMATAN
+            </span>
+            <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 group-hover:text-blue-700 transition-colors">
+              Tegal Barat
+            </h3>
+            <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+              Tegalsari, Kraton, Pekauman, Muarareja, Kemandungan, dll.
+            </p>
+          </Link>
+
+          {/* Card Tegal Selatan */}
+          <Link
+            href="/komunitas?kecamatan=Tegal+Selatan"
+            className="p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-800 hover:border-sky-500 bg-slate-50/50 dark:bg-slate-800/40 transition-all cursor-pointer group shadow-2xs"
+          >
+            <span className="text-[10px] font-black text-sky-700 dark:text-sky-400 block tracking-wider uppercase">
+              KECAMATAN
+            </span>
+            <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 group-hover:text-sky-700 transition-colors">
+              Tegal Selatan
+            </h3>
+            <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+              Randugunting, Bandung, Tunon, Debong Kulon, Kalinyamat Wetan, dll.
+            </p>
+          </Link>
+
+          {/* Card Margadana */}
+          <Link
+            href="/komunitas?kecamatan=Margadana"
+            className="p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-800 hover:border-emerald-500 bg-slate-50/50 dark:bg-slate-800/40 transition-all cursor-pointer group shadow-2xs"
+          >
+            <span className="text-[10px] font-black text-emerald-700 dark:text-emerald-400 block tracking-wider uppercase">
+              KECAMATAN
+            </span>
+            <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 group-hover:text-emerald-700 transition-colors">
+              Margadana
+            </h3>
+            <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+              Margadana, Kalinyamat Kulon, Sumurpanggang, Kaligangsa, Cabawan, dll.
+            </p>
+          </Link>
+        </div>
+      </section>
+
+      {/* ========================================================= */}
+      {/* 6. FEATURED SPOTLIGHT: JARIMAS MARKET (CONDITIONAL)       */}
       {/* ========================================================= */}
       {SHOW_MARKET_FEATURE && (
         <section className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-gradient-to-br from-slate-50 via-white to-emerald-50/20 dark:from-slate-900 dark:via-slate-900 dark:to-slate-900 p-5 sm:p-7 space-y-6 shadow-sm">
@@ -466,234 +694,6 @@ export default async function HomePage() {
           </div>
         </section>
       )}
-
-      {/* ========================================================= */}
-      {/* 5. 4 PILAR UTAMA EKOSISTEM JARIMAS-ID (BENTO GRID)        */}
-      {/* ========================================================= */}
-      <section className="space-y-4">
-        <div className="space-y-1 text-center sm:text-left">
-          <span className="rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-800 px-3 py-0.5 text-xs font-bold text-emerald-800 dark:text-emerald-300">
-            FITUR UTAMA
-          </span>
-          <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
-            Layanan Unggulan Warga &amp; Komunitas
-          </h2>
-          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400">
-            Satu genggaman untuk mewujudkan perlindungan, gizi, dan pendidikan anak se-Kota Tegal.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {/* Bento Card 1: DDTK Posyandu */}
-          <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-4 shadow-xs hover:border-emerald-500/50 transition-colors">
-            <div className="flex items-center justify-between">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-600 text-white font-bold shadow-md shadow-emerald-500/20">
-                <HeartPulse className="h-6 w-6" />
-              </div>
-              <span className="text-[11px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
-                DDTK Posyandu
-              </span>
-            </div>
-
-            <div className="space-y-1.5">
-              <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
-                Pemantauan Tumbuh Kembang &amp; Antropometri
-              </h3>
-              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                Pencatatan berkala berat badan, tinggi badan, lingkar kepala, dan deteksi dini risiko stunting dengan kurva pertumbuhan standar WHO.
-              </p>
-            </div>
-
-            <Link
-              href="/komunitas?tab=posyandu"
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-400 hover:text-emerald-800 underline"
-            >
-              <span>Pantau di Komunitas Posyandu</span>
-              <ChevronRight className="h-4 w-4" />
-            </Link>
-          </div>
-
-          {/* Bento Card 2: ATS */}
-          <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-4 shadow-xs hover:border-blue-500/50 transition-colors">
-            <div className="flex items-center justify-between">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-600 text-white font-bold shadow-md shadow-blue-500/20">
-                <GraduationCap className="h-6 w-6" />
-              </div>
-              <span className="text-[11px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-800 border border-blue-200">
-                Pendidikan Anak
-              </span>
-            </div>
-
-            <div className="space-y-1.5">
-              <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
-                Pendataan Anak Tidak Sekolah (ATS)
-              </h3>
-              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                Validasi data anak putus sekolah atau belum sekolah berjenjang (RT, RW, Kelurahan) untuk intervensi kembali bersekolah atau program kesetaraan.
-              </p>
-            </div>
-
-            <Link
-              href="/komunitas?tab=satuan_paud"
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-700 dark:text-blue-400 hover:text-blue-800 underline"
-            >
-              <span>Pelajari Mekanisme Pendataan ATS</span>
-              <ChevronRight className="h-4 w-4" />
-            </Link>
-          </div>
-
-          {/* Bento Card 3: Warga Kita 4 Tingkat */}
-          <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-4 shadow-xs hover:border-slate-400 transition-colors">
-            <div className="flex items-center justify-between">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-800 dark:bg-slate-700 text-white font-bold shadow-md shadow-slate-700/20">
-                <Building2 className="h-6 w-6" />
-              </div>
-              <span className="text-[11px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-800 border border-slate-200">
-                Domisili Warga
-              </span>
-            </div>
-
-            <div className="space-y-1.5">
-              <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
-                Komunitas Warga Kita
-              </h3>
-              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                Hierarki domisili cerdas yang otomatis menghubungkan akun warga ke RT, RW, Kelurahan, hingga Kecamatan tempat tinggal secara terverifikasi.
-              </p>
-            </div>
-
-            <Link
-              href="/komunitas?tab=warga_kita"
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:text-slate-900 underline"
-            >
-              <span>Gabung dengan RT &amp; RW Anda</span>
-              <ChevronRight className="h-4 w-4" />
-            </Link>
-          </div>
-
-          {/* Bento Card 4: Kabar & Forum Warga */}
-          <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-4 shadow-xs hover:border-emerald-500/50 transition-colors">
-            <div className="flex items-center justify-between">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-700 text-white font-bold shadow-md shadow-emerald-700/20">
-                <MessageSquare className="h-6 w-6" />
-              </div>
-              <span className="text-[11px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
-                Forum Terbuka
-              </span>
-            </div>
-
-            <div className="space-y-1.5">
-              <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
-                Kabar Warga &amp; Edukasi Nutrisi
-              </h3>
-              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                Ruang berbagi informasi imunisasi posyandu, tanya jawab kesehatan anak, tips menu gizi seimbang, dan pengumuman lingkungan terkini.
-              </p>
-            </div>
-
-            <Link
-              href="/kabar"
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-400 hover:text-emerald-800 underline"
-            >
-              <span>Baca Kabar Terhangat Hari Ini</span>
-              <ChevronRight className="h-4 w-4" />
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* ========================================================= */}
-      {/* 6. PETA 4 WILAYAH KECAMATAN KOTA TEGAL                     */}
-      {/* ========================================================= */}
-      <section className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-7 space-y-5 shadow-xs">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <MapPin className="h-4 w-4 text-emerald-600" />
-              <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-slate-100">
-                Jangkauan Wilayah Layanan Kota Tegal
-              </h2>
-            </div>
-            <p className="text-xs text-slate-500">
-              Cakup seluruh posyandu dan warga di 4 kecamatan dan 27 kelurahan Kota Tegal.
-            </p>
-          </div>
-
-          <Link
-            href="/komunitas"
-            className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 dark:text-emerald-400 hover:underline"
-          >
-            <span>Semua Wilayah</span>
-            <ChevronRight className="h-3.5 w-3.5" />
-          </Link>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          {/* Card Tegal Timur */}
-          <Link
-            href="/komunitas?kecamatan=Tegal+Timur"
-            className="p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-800 hover:border-emerald-500 bg-slate-50/50 dark:bg-slate-800/40 transition-all cursor-pointer group shadow-2xs"
-          >
-            <span className="text-[10px] font-black text-emerald-700 dark:text-emerald-400 block tracking-wider uppercase">
-              KECAMATAN
-            </span>
-            <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 group-hover:text-emerald-700 transition-colors">
-              Tegal Timur
-            </h3>
-            <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-              Mintaragen, Panggung, Slerok, Kejambon, Mangkukusuman.
-            </p>
-          </Link>
-
-          {/* Card Tegal Barat */}
-          <Link
-            href="/komunitas?kecamatan=Tegal+Barat"
-            className="p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-800 hover:border-blue-500 bg-slate-50/50 dark:bg-slate-800/40 transition-all cursor-pointer group shadow-2xs"
-          >
-            <span className="text-[10px] font-black text-blue-700 dark:text-blue-400 block tracking-wider uppercase">
-              KECAMATAN
-            </span>
-            <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 group-hover:text-blue-700 transition-colors">
-              Tegal Barat
-            </h3>
-            <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-              Tegalsari, Kraton, Pekauman, Muarareja, Kemandungan, dll.
-            </p>
-          </Link>
-
-          {/* Card Tegal Selatan */}
-          <Link
-            href="/komunitas?kecamatan=Tegal+Selatan"
-            className="p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-800 hover:border-sky-500 bg-slate-50/50 dark:bg-slate-800/40 transition-all cursor-pointer group shadow-2xs"
-          >
-            <span className="text-[10px] font-black text-sky-700 dark:text-sky-400 block tracking-wider uppercase">
-              KECAMATAN
-            </span>
-            <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 group-hover:text-sky-700 transition-colors">
-              Tegal Selatan
-            </h3>
-            <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-              Randugunting, Bandung, Tunon, Debong Kulon, Kalinyamat Wetan, dll.
-            </p>
-          </Link>
-
-          {/* Card Margadana */}
-          <Link
-            href="/komunitas?kecamatan=Margadana"
-            className="p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-800 hover:border-emerald-500 bg-slate-50/50 dark:bg-slate-800/40 transition-all cursor-pointer group shadow-2xs"
-          >
-            <span className="text-[10px] font-black text-emerald-700 dark:text-emerald-400 block tracking-wider uppercase">
-              KECAMATAN
-            </span>
-            <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 group-hover:text-emerald-700 transition-colors">
-              Margadana
-            </h3>
-            <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-              Margadana, Kalinyamat Kulon, Sumurpanggang, Kaligangsa, Cabawan, dll.
-            </p>
-          </Link>
-        </div>
-      </section>
 
       {/* ========================================================= */}
       {/* 7. KABAR WARGA FEED PREVIEW                               */}
