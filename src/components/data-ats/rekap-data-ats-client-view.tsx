@@ -40,7 +40,7 @@ export function RekapDataAtsClientView({ initialData }: RekapDataAtsClientViewPr
   const [selectedTingkat, setSelectedTingkat] = useState<"kota" | "kecamatan" | "kelurahan">("kota");
   const [selectedKecamatan, setSelectedKecamatan] = useState<string>("Tegal Timur");
   const [selectedKelurahan, setSelectedKelurahan] = useState<string>("Kejambon");
-  const [activeTabSection, setActiveTabSection] = useState<"semua" | "kategori" | "jenjang_usia" | "intervensi" | "tabel">("semua");
+  const [activeTabSection, setActiveTabSection] = useState<"semua" | "kategori" | "jenjang_usia" | "tabel">("semua");
   const [tableSearch, setTableSearch] = useState<string>("");
 
   // Daftar opsi kecamatan & kelurahan
@@ -431,18 +431,6 @@ export function RekapDataAtsClientView({ initialData }: RekapDataAtsClientViewPr
           📚 Jenjang Asal &amp; Kelompok Usia
         </button>
 
-        <button
-          type="button"
-          onClick={() => setActiveTabSection("intervensi")}
-          className={cn(
-            "px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0",
-            activeTabSection === "intervensi"
-              ? "bg-emerald-600 text-white shadow-xs font-black"
-              : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
-          )}
-        >
-          💡 Jalur Intervensi &amp; Rekomendasi
-        </button>
 
         <button
           type="button"
@@ -765,57 +753,6 @@ export function RekapDataAtsClientView({ initialData }: RekapDataAtsClientViewPr
         </div>
       )}
 
-      {/* ========================================================= */}
-      {/* 7. SECTION: JALUR INTERVENSI & REKOMENDASI SOLUSI         */}
-      {/* ========================================================= */}
-      {(activeTabSection === "semua" || activeTabSection === "intervensi") && (
-        <div className="space-y-4 pt-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold">
-                <HeartHandshake className="h-4 w-4" />
-              </div>
-              <div>
-                <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-slate-100">
-                  Rekomendasi Jalur Intervensi &amp; Tindak Lanjut
-                </h2>
-                <p className="text-xs text-slate-500 font-medium">
-                  Pemetaan target intervensi program pendidikan kesetaraan, beasiswa, dan pelatihan vokasi.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {currentWilayahData.rekomendasiList.map((rek, idx) => (
-              <div
-                key={idx}
-                className="rounded-3xl border-2 border-emerald-200/80 dark:border-emerald-800 bg-white dark:bg-slate-900 p-5 space-y-3 shadow-xs flex flex-col justify-between hover:border-emerald-400 transition-colors"
-              >
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-2xs font-extrabold uppercase">
-                      Target: {rek.jumlahTarget} Anak ({rek.persentase}%)
-                    </span>
-                    <span className="text-xs font-mono font-bold text-slate-400">#0{idx + 1}</span>
-                  </div>
-                  <h4 className="text-sm font-extrabold text-slate-900 dark:text-slate-100 leading-snug">
-                    {rek.jalur}
-                  </h4>
-                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                    {rek.deskripsi}
-                  </p>
-                </div>
-
-                <div className="pt-2 border-t border-slate-100 dark:border-slate-800 text-2xs font-bold text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5">
-                  <Building2 className="h-3.5 w-3.5 shrink-0" />
-                  <span>{rek.lembagaTujuan}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* ========================================================= */}
       {/* 8. TABEL KOMPARATIF BERJENJANG (27 KELURAHAN SE-KOTA TEGAL)*/}
