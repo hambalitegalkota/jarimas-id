@@ -94,44 +94,6 @@ const DAFTAR_ALASAN_ATS = [
   "Alasan lainnya",
 ];
 
-// Baseline Demografis ATS Kota Tegal (Estimasi Sebaran Riil ATS per Kelurahan)
-const BASELINE_ATS_KELURAHAN: Record<string, { total: number; inginSekolah: number }> = {
-  // Tegal Timur
-  "Kejambon": { total: 18, inginSekolah: 14 },
-  "Panggung": { total: 32, inginSekolah: 24 },
-  "Slerok": { total: 24, inginSekolah: 18 },
-  "Mintaragen": { total: 20, inginSekolah: 15 },
-  "Mangkukusuman": { total: 10, inginSekolah: 8 },
-
-  // Tegal Barat
-  "Kraton": { total: 22, inginSekolah: 16 },
-  "Tegalsari": { total: 36, inginSekolah: 26 },
-  "Kemandungan": { total: 14, inginSekolah: 10 },
-  "Pekauman": { total: 19, inginSekolah: 14 },
-  "Muarareja": { total: 28, inginSekolah: 20 },
-  "Debong Lor": { total: 12, inginSekolah: 9 },
-  "Pesurungan Kidul": { total: 15, inginSekolah: 11 },
-
-  // Tegal Selatan
-  "Bandung": { total: 16, inginSekolah: 12 },
-  "Debong Kidul": { total: 14, inginSekolah: 10 },
-  "Debong Kulon": { total: 17, inginSekolah: 13 },
-  "Debong Tengah": { total: 26, inginSekolah: 19 },
-  "Kalinyamat Wetan": { total: 15, inginSekolah: 11 },
-  "Keturen": { total: 13, inginSekolah: 10 },
-  "Randugunting": { total: 30, inginSekolah: 23 },
-  "Tunon": { total: 13, inginSekolah: 9 },
-
-  // Margadana
-  "Margadana": { total: 29, inginSekolah: 22 },
-  "Cabawan": { total: 14, inginSekolah: 10 },
-  "Kaligangsa": { total: 25, inginSekolah: 18 },
-  "Kalinyamat Kulon": { total: 19, inginSekolah: 14 },
-  "Krandon": { total: 16, inginSekolah: 12 },
-  "Pesurungan Lor": { total: 15, inginSekolah: 11 },
-  "Sumurpanggang": { total: 24, inginSekolah: 17 },
-};
-
 function calculateAgeFromBirthDate(birthDateStr?: string | null): number {
   if (!birthDateStr) return 14;
   const birth = new Date(birthDateStr);
@@ -229,86 +191,8 @@ function createEmptyRekapWilayahAts(id: string, nama: string, tingkat: "kota" | 
   };
 }
 
-function generateSyntheticBaselineAtsForKelurahan(kelurahanNama: string, kecamatanNama: string): WilayahRekapAtsItem {
-  const base = BASELINE_ATS_KELURAHAN[kelurahanNama] || { total: 18, inginSekolah: 13 };
-  const item = createEmptyRekapWilayahAts(`ats-kel-${kelurahanNama.toLowerCase()}`, kelurahanNama, "kelurahan", kecamatanNama);
-
-  const total = base.total;
-  const inginSekolah = base.inginSekolah;
-  const tidakIngin = total - inginSekolah;
-
-  item.totalAts = total;
-  item.keinginan = { masihAda: inginSekolah, tidakAda: tidakIngin };
-  item.persenInginSekolah = Math.round((inginSekolah / total) * 100);
-
-  // 1. Kategori ATS (DO: ~46%, LTM: ~36%, BPS: ~18%)
-  const doCount = Math.round(total * 0.46);
-  const ltmCount = Math.round(total * 0.36);
-  const bpsCount = total - (doCount + ltmCount);
-  item.kategori = { putusSekolah: doCount, lulusTidakLanjut: ltmCount, belumPernahSekolah: Math.max(0, bpsCount) };
-  item.persenPutusSekolah = Math.round((doCount / total) * 100);
-
-  // 2. Gender (~54% L, 46% P)
-  const gLaki = Math.round(total * 0.54);
-  const gPerem = total - gLaki;
-  item.gender = { lakiLaki: gLaki, perempuan: gPerem, total };
-
-  // 3. Jenjang Asal (Belum: 14%, PAUD: 6%, SD: 28%, SMP: 38%, SMA: 14%)
-  const jBelum = Math.round(total * 0.14);
-  const jPaud = Math.round(total * 0.06);
-  const jSd = Math.round(total * 0.28);
-  const jSmp = Math.round(total * 0.38);
-  const jSma = total - (jBelum + jPaud + jSd + jSmp);
-  item.jenjangAsal = {
-    belumSekolah: jBelum,
-    paudTk: jPaud,
-    sdMi: jSd,
-    smpMts: jSmp,
-    smaSmk: Math.max(0, jSma),
-  };
-
-  // 4. Usia ATS (4-6: 8%, 7-12: 24%, 13-15: 40%, 16-18: 22%, >18: 6%)
-  const u4_6 = Math.round(total * 0.08);
-  const u7_12 = Math.round(total * 0.24);
-  const u13_15 = Math.round(total * 0.40);
-  const u16_18 = Math.round(total * 0.22);
-  const uAbove18 = total - (u4_6 + u7_12 + u13_15 + u16_18);
-  item.usia = {
-    age4_6: u4_6,
-    age7_12: u7_12,
-    age13_15: u13_15,
-    age16_18: u16_18,
-    ageAbove18: Math.max(0, uAbove18),
-  };
-
-  // 5. Alasan ATS Weights
-  const reasonsWeights = [0.38, 0.22, 0.13, 0.11, 0.05, 0.04, 0.03, 0.02, 0.02];
-  let rem = total;
-  item.alasanList = DAFTAR_ALASAN_ATS.map((alasan, idx) => {
-    const val = idx === DAFTAR_ALASAN_ATS.length - 1 ? rem : Math.round(total * reasonsWeights[idx]);
-    rem -= val;
-    return {
-      alasan,
-      jumlah: Math.max(0, val),
-      persentase: Math.round((Math.max(0, val) / total) * 100),
-    };
-  });
-
-  // 6. Rekomendasi Intervensi
-  const rekWeights = [0.38, 0.26, 0.16, 0.12, 0.08];
-  let remRek = total;
-  item.rekomendasiList.forEach((rek, idx) => {
-    const val = idx === item.rekomendasiList.length - 1 ? remRek : Math.round(total * rekWeights[idx]);
-    remRek -= val;
-    rek.jumlahTarget = Math.max(0, val);
-    rek.persentase = Math.round((Math.max(0, val) / total) * 100);
-  });
-
-  return item;
-}
-
 /**
- * Server Action: Mengambil Rekapitulasi Lengkap Berjenjang Data Anak Tidak Sekolah (ATS)
+ * Server Action: Mengambil Rekapitulasi Lengkap Berjenjang Data Anak Tidak Sekolah (ATS) MURNI dari Database Riil
  */
 export async function getRekapDataAtsAction(): Promise<{
   success: boolean;
@@ -337,17 +221,22 @@ export async function getRekapDataAtsAction(): Promise<{
       console.warn("Rekap ATS fetch warning:", fetchErr.message);
     }
 
-    // Filter ketat: Hanya data yang merupakan data ATS
+    // Filter ketat: Hanya data yang merupakan data ATS riil
     const validLiveAtsRecords = (dbChildren || []).filter((c) => isDataAtsRecord(c));
     const totalLiveRecords = validLiveAtsRecords.length;
 
-    // 2. Inisialisasi seluruh 27 Kelurahan dengan baseline cerdas
+    // 2. Inisialisasi seluruh 27 Kelurahan resmi Kota Tegal (0 data awal)
     const kelurahanMap = new Map<string, WilayahRekapAtsItem>();
 
     for (const [kecName, kecObj] of Object.entries(KOTA_TEGAL_DATA)) {
       for (const kelName of Object.keys(kecObj.kelurahan)) {
-        const syntheticItem = generateSyntheticBaselineAtsForKelurahan(kelName, kecName);
-        kelurahanMap.set(kelName.toLowerCase(), syntheticItem);
+        const item = createEmptyRekapWilayahAts(
+          `ats-kel-${kelName.toLowerCase().replace(/\s+/g, "-")}`,
+          kelName,
+          "kelurahan",
+          kecName
+        );
+        kelurahanMap.set(kelName.toLowerCase(), item);
       }
     }
 
@@ -355,7 +244,7 @@ export async function getRekapDataAtsAction(): Promise<{
     if (validLiveAtsRecords.length > 0) {
       for (const child of validLiveAtsRecords) {
         const parsed = parseAtsDetails(child.alasan_sekolah);
-        const kelTarget = (parsed.kelurahan || "").toLowerCase();
+        const kelTarget = normalizeWilayah(parsed.kelurahan || "");
 
         let targetKelItem = kelurahanMap.get(kelTarget);
         if (!targetKelItem) {
@@ -365,6 +254,11 @@ export async function getRekapDataAtsAction(): Promise<{
               break;
             }
           }
+        }
+
+        // Fallback ke kelurahan pertama jika tidak ditemukan
+        if (!targetKelItem) {
+          targetKelItem = kelurahanMap.get("kejambon") || Array.from(kelurahanMap.values())[0];
         }
 
         if (targetKelItem) {

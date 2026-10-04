@@ -551,6 +551,11 @@ export async function getDataAnakByKomunitas(komunitasId: string): Promise<{
   data: DataAnakItem[];
   canValidate: boolean;
   canEditDdks: boolean;
+  canCreate: boolean;
+  canEdit: boolean;
+  canDelete: boolean;
+  isReadOnly: boolean;
+  userRole?: string;
   message?: string;
 }> {
   try {
@@ -558,6 +563,30 @@ export async function getDataAnakByKomunitas(komunitasId: string): Promise<{
 
     let canValidate = false;
     let canEditDdks = false;
+    let canCreate = false;
+    let canEdit = false;
+    let canDelete = false;
+    let isReadOnly = true;
+    let userRole = "Pengunjung";
+
+    // 1. Ekstraksi metadata komunitas target
+    let targetKomunitas: any = null;
+    const { data: dbKom } = await supabase
+      .from("komunitas")
+      .select("*")
+      .eq("id", toValidUUID(komunitasId))
+      .maybeSingle();
+
+    if (dbKom) {
+      targetKomunitas = dbKom;
+    } else {
+      targetKomunitas = findOrGenerateKomunitasSeed(komunitasId);
+    }
+
+    const targetMeta = extractKomunitasMetadata(
+      targetKomunitas || { id: komunitasId }
+    );
+    const targetJenis = targetKomunitas?.jenis || "satuan_paud";
 
     try {
       const {
@@ -582,39 +611,88 @@ export async function getDataAnakByKomunitas(komunitasId: string): Promise<{
           .eq("status", "approved")
           .maybeSingle();
 
+        userRole = member?.peran || (isSuperAdmin ? "Super Admin" : "Pengunjung");
         const roleLower = (member?.peran || "").toLowerCase();
-        const isKader =
-          roleLower.includes("kader") ||
-          roleLower.includes("medis") ||
-          roleLower.includes("nakes") ||
-          roleLower.includes("bidan");
-        const isPengurus =
-          roleLower.includes("pengurus") || roleLower.includes("admin");
 
-        canValidate = isSuperAdmin || isKader || isPengurus;
-        canEditDdks = isSuperAdmin || isKader;
+        if (isSuperAdmin) {
+          canCreate = true;
+          canEdit = true;
+          canDelete = true;
+          canValidate = true;
+          canEditDdks = true;
+          isReadOnly = false;
+        } else if (member && member.status === "approved") {
+          if (targetJenis === "satuan_paud") {
+            // Admin, Kepala Sekolah, Guru PAUD / Pendidik -> Full Access
+            const isPaudStaff =
+              roleLower.includes("admin") ||
+              roleLower.includes("kepala") ||
+              roleLower.includes("guru") ||
+              roleLower.includes("pendidik") ||
+              roleLower.includes("tutor") ||
+              roleLower.includes("pengelola") ||
+              roleLower.includes("pengurus");
+
+            if (isPaudStaff) {
+              canCreate = true;
+              canEdit = true;
+              canDelete = true;
+              canValidate = true;
+              canEditDdks = true;
+              isReadOnly = false;
+            } else {
+              // Orangtua/Wali Murid, Komite, Alumni -> Read Only
+              canCreate = false;
+              canEdit = false;
+              canDelete = false;
+              canValidate = false;
+              canEditDdks = false;
+              isReadOnly = true;
+            }
+          } else if (targetJenis === "posyandu") {
+            const isKader =
+              roleLower.includes("kader") ||
+              roleLower.includes("medis") ||
+              roleLower.includes("kesehatan") ||
+              roleLower.includes("bidan") ||
+              roleLower.includes("nakes") ||
+              roleLower.includes("plkb") ||
+              roleLower.includes("pkk") ||
+              roleLower.includes("pengurus") ||
+              roleLower.includes("admin");
+
+            if (isKader) {
+              canCreate = true;
+              canEdit = true;
+              canDelete = true;
+              canValidate = true;
+              canEditDdks = true;
+              isReadOnly = false;
+            }
+          } else {
+            // Warga Kita (RT, RW, Kelurahan, Kecamatan)
+            const isWarga =
+              roleLower.includes("penduduk") ||
+              roleLower.includes("pengurus") ||
+              roleLower.includes("admin") ||
+              roleLower.includes("kader") ||
+              roleLower.includes("ketua") ||
+              roleLower.includes("pendatang");
+
+            if (isWarga) {
+              canCreate = true;
+              canEdit = true;
+              canDelete = roleLower.includes("pengurus") || roleLower.includes("admin") || roleLower.includes("ketua");
+              canValidate = roleLower.includes("pengurus") || roleLower.includes("admin") || roleLower.includes("kader") || roleLower.includes("ketua");
+              canEditDdks = roleLower.includes("kader") || roleLower.includes("pengurus");
+              isReadOnly = false;
+            }
+          }
+        }
       }
     } catch {
       // Tamu
     }
-
-    // 1. Ekstraksi metadata komunitas target
-    let targetKomunitas: any = null;
-    const { data: dbKom } = await supabase
-      .from("komunitas")
-      .select("*")
-      .eq("id", toValidUUID(komunitasId))
-      .maybeSingle();
-
-    if (dbKom) {
-      targetKomunitas = dbKom;
-    } else {
-      targetKomunitas = findOrGenerateKomunitasSeed(komunitasId);
-    }
-
-    const targetMeta = extractKomunitasMetadata(
-      targetKomunitas || { id: komunitasId }
-    );
 
     // 2. Ambil peta seluruh komunitas untuk fallback metadata
     const { data: allDbKom } = await supabase
@@ -655,6 +733,11 @@ export async function getDataAnakByKomunitas(komunitasId: string): Promise<{
         data: [],
         canValidate,
         canEditDdks,
+        canCreate,
+        canEdit,
+        canDelete,
+        isReadOnly,
+        userRole,
       };
     }
 
@@ -667,6 +750,11 @@ export async function getDataAnakByKomunitas(komunitasId: string): Promise<{
         data: [],
         canValidate,
         canEditDdks,
+        canCreate,
+        canEdit,
+        canDelete,
+        isReadOnly,
+        userRole,
       };
     }
 
@@ -738,6 +826,11 @@ export async function getDataAnakByKomunitas(komunitasId: string): Promise<{
       data: items,
       canValidate,
       canEditDdks,
+      canCreate,
+      canEdit,
+      canDelete,
+      isReadOnly,
+      userRole,
     };
   } catch (err: any) {
     console.error("Error getDataAnakByKomunitas:", err);
@@ -747,6 +840,11 @@ export async function getDataAnakByKomunitas(komunitasId: string): Promise<{
       data: [],
       canValidate: false,
       canEditDdks: false,
+      canCreate: false,
+      canEdit: false,
+      canDelete: false,
+      isReadOnly: true,
+      userRole: "Pengunjung",
     };
   }
 }

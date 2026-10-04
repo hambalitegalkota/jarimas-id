@@ -2,11 +2,9 @@
 
 import { createClient } from "@/utils/supabase/server";
 import { KOTA_TEGAL_DATA } from "@/lib/constants/tegal-data";
-import { RAW_PAUD_PKBM_TEGAL } from "@/lib/constants/seed-paud-tegal";
 import {
   parseDataAnakDetails,
   isDataAtsRecord,
-  findPaudLocation,
   normalizeWilayah,
 } from "@/lib/data-anak-helpers";
 
@@ -72,9 +70,6 @@ export interface RekapDataAnakUsiaDiniResult {
   totalLiveRecords: number;
 }
 
-/**
- * Daftar alasan standar anak bersekolah
- */
 const DAFTAR_ALASAN_BERSEKOLAH = [
   "Stimulasi & Pendidikan Usia Dini",
   "Melatih Kemandirian & Sosialisasi",
@@ -86,9 +81,6 @@ const DAFTAR_ALASAN_BERSEKOLAH = [
   "Alasan Lainnya",
 ];
 
-/**
- * Daftar alasan standar anak tidak / belum bersekolah
- */
 const DAFTAR_ALASAN_TIDAK_SEKOLAH = [
   "Belum Cukup Usia / Masih Balita",
   "Keterbatasan Biaya / Ekonomi",
@@ -99,44 +91,6 @@ const DAFTAR_ALASAN_TIDAK_SEKOLAH = [
   "Kondisi Kesehatan / Khusus",
   "Alasan Lainnya",
 ];
-
-// Baseline Demografis Resmi Kota Tegal (Estimasi Balita 0-6 Tahun per Kelurahan)
-const BASELINE_POPULASI_KELURAHAN: Record<string, { total: number; targetSekolah: number }> = {
-  // Tegal Timur
-  "Kejambon": { total: 680, targetSekolah: 510 },
-  "Panggung": { total: 1120, targetSekolah: 820 },
-  "Slerok": { total: 850, targetSekolah: 630 },
-  "Mintaragen": { total: 620, targetSekolah: 450 },
-  "Mangkukusuman": { total: 340, targetSekolah: 260 },
-
-  // Tegal Barat
-  "Kraton": { total: 780, targetSekolah: 590 },
-  "Tegalsari": { total: 960, targetSekolah: 690 },
-  "Kemandungan": { total: 420, targetSekolah: 310 },
-  "Pekauman": { total: 610, targetSekolah: 460 },
-  "Muarareja": { total: 540, targetSekolah: 370 },
-  "Debong Lor": { total: 390, targetSekolah: 270 },
-  "Pesurungan Kidul": { total: 460, targetSekolah: 340 },
-
-  // Tegal Selatan
-  "Bandung": { total: 490, targetSekolah: 360 },
-  "Debong Kidul": { total: 430, targetSekolah: 310 },
-  "Debong Kulon": { total: 510, targetSekolah: 370 },
-  "Debong Tengah": { total: 890, targetSekolah: 670 },
-  "Kalinyamat Wetan": { total: 470, targetSekolah: 330 },
-  "Keturen": { total: 440, targetSekolah: 320 },
-  "Randugunting": { total: 1050, targetSekolah: 810 },
-  "Tunon": { total: 410, targetSekolah: 290 },
-
-  // Margadana
-  "Margadana": { total: 920, targetSekolah: 670 },
-  "Cabawan": { total: 360, targetSekolah: 240 },
-  "Kaligangsa": { total: 690, targetSekolah: 490 },
-  "Kalinyamat Kulon": { total: 580, targetSekolah: 420 },
-  "Krandon": { total: 470, targetSekolah: 330 },
-  "Pesurungan Lor": { total: 430, targetSekolah: 300 },
-  "Sumurpanggang": { total: 760, targetSekolah: 550 },
-};
 
 function calculateAgeFromBirthDate(birthDateStr?: string | null): number {
   if (!birthDateStr) return 4;
@@ -201,9 +155,6 @@ function normalizeReasonTidakSekolah(raw?: string | null, age: number = 2): stri
   return "Belum Cukup Usia / Masih Balita";
 }
 
-/**
- * Membuat struktur agregat kosong untuk suatu wilayah
- */
 function createEmptyRekapWilayah(id: string, nama: string, tingkat: "kota" | "kecamatan" | "kelurahan", kecamatan?: string): WilayahRekapItem {
   return {
     id,
@@ -226,125 +177,7 @@ function createEmptyRekapWilayah(id: string, nama: string, tingkat: "kota" | "ke
 }
 
 /**
- * Menambahkan data sintetis realistis untuk kelurahan yang belum memiliki catatan lengkap
- */
-function generateSyntheticBaselineForKelurahan(
-  kelurahanNama: string,
-  kecamatanNama: string,
-  paudInstitutionsInKel: typeof RAW_PAUD_PKBM_TEGAL
-): WilayahRekapItem {
-  const base = BASELINE_POPULASI_KELURAHAN[kelurahanNama] || { total: 500, targetSekolah: 360 };
-  const item = createEmptyRekapWilayah(`kel-${kelurahanNama.toLowerCase()}`, kelurahanNama, "kelurahan", kecamatanNama);
-
-  const total = base.total;
-  const bersekolah = base.targetSekolah;
-  const tidakSekolah = total - bersekolah;
-
-  item.totalAnak = total;
-  item.totalBersekolah = bersekolah;
-  item.totalTidakBersekolah = tidakSekolah;
-  item.persenBersekolah = Math.round((bersekolah / total) * 100);
-  item.persenTidakBersekolah = Math.round((tidakSekolah / total) * 100);
-
-  // 1. Bersekolah Gender (~51% L, 49% P)
-  const bLaki = Math.round(bersekolah * 0.51);
-  const bPerem = bersekolah - bLaki;
-  item.bersekolahGender = { lakiLaki: bLaki, perempuan: bPerem, total: bersekolah };
-
-  // 2. Bersekolah Jenjang (Disesuaikan dengan institusi PAUD yang ada di kelurahan tsb)
-  let tkCount = 0;
-  let raCount = 0;
-  let kbCount = 0;
-  let spsCount = 0;
-  let tpaCount = 0;
-  let skbCount = 0;
-  let pkbmCount = 0;
-
-  const hasTk = paudInstitutionsInKel.some((p) => p.jenis_institusi === "TK" || p.nama.startsWith("TK"));
-  const hasRa = paudInstitutionsInKel.some((p) => p.jenis_institusi === "RA" || p.nama.startsWith("RA"));
-  const hasKb = paudInstitutionsInKel.some((p) => p.jenis_institusi === "KB" || p.nama.startsWith("KB"));
-  const hasSps = paudInstitutionsInKel.some((p) => p.jenis_institusi === "SPS" || p.nama.startsWith("Pos PAUD") || p.nama.startsWith("PAUD TPQ"));
-  const hasTpa = paudInstitutionsInKel.some((p) => p.jenis_institusi === "TPA" || p.nama.startsWith("TPA"));
-  const hasSkb = paudInstitutionsInKel.some((p) => p.jenis_institusi === "SKB" || p.nama.includes("SKB"));
-  const hasPkbm = paudInstitutionsInKel.some((p) => p.jenis_institusi === "PKBM" || p.nama.startsWith("PKBM"));
-
-  // Distribusi proporsi
-  tkCount = Math.round(bersekolah * (hasTk ? 0.44 : 0.20));
-  raCount = Math.round(bersekolah * (hasRa ? 0.16 : 0.05));
-  kbCount = Math.round(bersekolah * (hasKb ? 0.22 : 0.10));
-  spsCount = Math.round(bersekolah * (hasSps ? 0.12 : 0.05));
-  tpaCount = Math.round(bersekolah * (hasTpa ? 0.03 : 0.01));
-  skbCount = Math.round(bersekolah * (hasSkb ? 0.02 : 0.0));
-  pkbmCount = bersekolah - (tkCount + raCount + kbCount + spsCount + tpaCount + skbCount);
-  if (pkbmCount < 0) {
-    tkCount += pkbmCount;
-    pkbmCount = 0;
-  }
-
-  item.bersekolahJenjang = {
-    tk: tkCount,
-    ra: raCount,
-    kb: kbCount,
-    sps: spsCount,
-    tpa: tpaCount,
-    skb: skbCount,
-    pkbm: Math.max(0, pkbmCount),
-  };
-
-  // 3. Bersekolah Usia (0-1: 2%, 2: 8%, 3: 18%, 4: 28%, 5: 30%, 6: 14%)
-  const bU0_1 = Math.round(bersekolah * 0.02);
-  const bU2 = Math.round(bersekolah * 0.08);
-  const bU3 = Math.round(bersekolah * 0.18);
-  const bU4 = Math.round(bersekolah * 0.28);
-  const bU5 = Math.round(bersekolah * 0.30);
-  const bU6 = bersekolah - (bU0_1 + bU2 + bU3 + bU4 + bU5);
-  item.bersekolahUsia = { age0_1: bU0_1, age2: bU2, age3: bU3, age4: bU4, age5: bU5, age6: bU6 };
-
-  // 4. Bersekolah Alasan
-  const reasonsBWeights = [0.28, 0.22, 0.20, 0.12, 0.08, 0.05, 0.03, 0.02];
-  let remB = bersekolah;
-  item.bersekolahAlasan = DAFTAR_ALASAN_BERSEKOLAH.map((alasan, idx) => {
-    const val = idx === DAFTAR_ALASAN_BERSEKOLAH.length - 1 ? remB : Math.round(bersekolah * reasonsBWeights[idx]);
-    remB -= val;
-    return {
-      alasan,
-      jumlah: Math.max(0, val),
-      persentase: Math.round((Math.max(0, val) / bersekolah) * 100),
-    };
-  });
-
-  // 5. Tidak Bersekolah Gender (~50% L, 50% P)
-  const tbLaki = Math.round(tidakSekolah * 0.50);
-  const tbPerem = tidakSekolah - tbLaki;
-  item.tidakBersekolahGender = { lakiLaki: tbLaki, perempuan: tbPerem, total: tidakSekolah };
-
-  // 6. Tidak Bersekolah Usia (0-1: 52%, 2: 24%, 3: 12%, 4: 6%, 5: 4%, 6: 2%)
-  const tbU0_1 = Math.round(tidakSekolah * 0.52);
-  const tbU2 = Math.round(tidakSekolah * 0.24);
-  const tbU3 = Math.round(tidakSekolah * 0.12);
-  const tbU4 = Math.round(tidakSekolah * 0.06);
-  const tbU5 = Math.round(tidakSekolah * 0.04);
-  const tbU6 = tidakSekolah - (tbU0_1 + tbU2 + tbU3 + tbU4 + tbU5);
-  item.tidakBersekolahUsia = { age0_1: tbU0_1, age2: tbU2, age3: tbU3, age4: tbU4, age5: tbU5, age6: tbU6 };
-
-  // 7. Tidak Bersekolah Alasan
-  const reasonsTBWeights = [0.48, 0.18, 0.10, 0.08, 0.06, 0.05, 0.03, 0.02];
-  let remTB = tidakSekolah;
-  item.tidakBersekolahAlasan = DAFTAR_ALASAN_TIDAK_SEKOLAH.map((alasan, idx) => {
-    const val = idx === DAFTAR_ALASAN_TIDAK_SEKOLAH.length - 1 ? remTB : Math.round(tidakSekolah * reasonsTBWeights[idx]);
-    remTB -= val;
-    return {
-      alasan,
-      jumlah: Math.max(0, val),
-      persentase: Math.round((Math.max(0, val) / tidakSekolah) * 100),
-    };
-  });
-
-  return item;
-}
-
-/**
- * Server Action: Mengambil Rekapitulasi Lengkap Berjenjang Data Anak Usia Dini (0-6 Tahun)
+ * Server Action: Mengambil Rekapitulasi Berjenjang Data Anak Usia Dini MURNI dari Database Riil
  */
 export async function getRekapDataAnakUsiaDiniAction(): Promise<{
   success: boolean;
@@ -373,36 +206,34 @@ export async function getRekapDataAnakUsiaDiniAction(): Promise<{
       console.warn("Rekap data_anak fetch warning:", fetchErr.message);
     }
 
-    // Filter ketat: Hanya data anak balita (BUKAN ATS)
+    // Filter ketat: Hanya data anak balita / PAUD riil (BUKAN data ATS)
     const validLiveChildren = (dbChildren || []).filter((c) => !isDataAtsRecord(c));
     const totalLiveRecords = validLiveChildren.length;
 
-    // 2. Inisialisasi seluruh 27 Kelurahan dengan baseline cerdas
+    // 2. Inisialisasi seluruh 27 Kelurahan resmi Kota Tegal
     const kelurahanMap = new Map<string, WilayahRekapItem>();
 
     for (const [kecName, kecObj] of Object.entries(KOTA_TEGAL_DATA)) {
       for (const kelName of Object.keys(kecObj.kelurahan)) {
-        const paudsInKel = RAW_PAUD_PKBM_TEGAL.filter(
-          (p) =>
-            normalizeWilayah(p.kecamatan) === normalizeWilayah(kecName) &&
-            normalizeWilayah(p.kelurahan) === normalizeWilayah(kelName)
+        const item = createEmptyRekapWilayah(
+          `kel-${kelName.toLowerCase().replace(/\s+/g, "-")}`,
+          kelName,
+          "kelurahan",
+          kecName
         );
-
-        const syntheticItem = generateSyntheticBaselineForKelurahan(kelName, kecName, paudsInKel);
-        kelurahanMap.set(kelName.toLowerCase(), syntheticItem);
+        kelurahanMap.set(kelName.toLowerCase(), item);
       }
     }
 
-    // 3. Gabungkan catatan live dari Supabase ke dalam kelurahan yang sesuai
+    // 3. Akumulasikan seluruh data riil dari database Supabase
     if (validLiveChildren.length > 0) {
       for (const child of validLiveChildren) {
         const parsed = parseDataAnakDetails(child.alasan_sekolah);
-        const kelTarget = (parsed.domisiliKelurahan || parsed.kkKelurahan || "").toLowerCase();
-        
-        // Cari kelurahan yang cocok
+        const kelTarget = normalizeWilayah(parsed.domisiliKelurahan || parsed.kkKelurahan || "");
+
+        // Cari kelurahan target yang cocok
         let targetKelItem = kelurahanMap.get(kelTarget);
         if (!targetKelItem) {
-          // Cari by substring
           for (const [kKey, kVal] of kelurahanMap.entries()) {
             if (kKey.includes(kelTarget) || kelTarget.includes(kKey)) {
               targetKelItem = kVal;
@@ -411,10 +242,17 @@ export async function getRekapDataAnakUsiaDiniAction(): Promise<{
           }
         }
 
+        // Fallback kelurahan pertama jika tidak teridentifikasi
+        if (!targetKelItem) {
+          targetKelItem = kelurahanMap.get("kejambon") || Array.from(kelurahanMap.values())[0];
+        }
+
         if (targetKelItem) {
           const age = calculateAgeFromBirthDate(child.tanggal_lahir);
           const isLaki = (child.jenis_kelamin || "L").toUpperCase() === "L";
-          const isSekolah = child.is_sekolah === true || Boolean(child.nama_sekolah && !child.nama_sekolah.toLowerCase().includes("belum"));
+          const isSekolah =
+            child.is_sekolah === true ||
+            Boolean(child.nama_sekolah && !child.nama_sekolah.toLowerCase().includes("belum"));
 
           targetKelItem.totalAnak += 1;
 
@@ -461,15 +299,27 @@ export async function getRekapDataAnakUsiaDiniAction(): Promise<{
             if (rObjTB) rObjTB.jumlah += 1;
           }
 
-          // Recalculate percentages
-          targetKelItem.persenBersekolah = Math.round((targetKelItem.totalBersekolah / targetKelItem.totalAnak) * 100);
-          targetKelItem.persenTidakBersekolah = Math.round((targetKelItem.totalTidakBersekolah / targetKelItem.totalAnak) * 100);
-          
+          // Hitung persentase
+          targetKelItem.persenBersekolah =
+            targetKelItem.totalAnak > 0
+              ? Math.round((targetKelItem.totalBersekolah / targetKelItem.totalAnak) * 100)
+              : 0;
+          targetKelItem.persenTidakBersekolah =
+            targetKelItem.totalAnak > 0
+              ? Math.round((targetKelItem.totalTidakBersekolah / targetKelItem.totalAnak) * 100)
+              : 0;
+
           targetKelItem.bersekolahAlasan.forEach((r) => {
-            r.persentase = targetKelItem!.totalBersekolah > 0 ? Math.round((r.jumlah / targetKelItem!.totalBersekolah) * 100) : 0;
+            r.persentase =
+              targetKelItem!.totalBersekolah > 0
+                ? Math.round((r.jumlah / targetKelItem!.totalBersekolah) * 100)
+                : 0;
           });
           targetKelItem.tidakBersekolahAlasan.forEach((r) => {
-            r.persentase = targetKelItem!.totalTidakBersekolah > 0 ? Math.round((r.jumlah / targetKelItem!.totalTidakBersekolah) * 100) : 0;
+            r.persentase =
+              targetKelItem!.totalTidakBersekolah > 0
+                ? Math.round((r.jumlah / targetKelItem!.totalTidakBersekolah) * 100)
+                : 0;
           });
         }
       }
@@ -480,14 +330,17 @@ export async function getRekapDataAnakUsiaDiniAction(): Promise<{
     // 4. Bangun Agregat Tingkat Kecamatan (4 Kecamatan)
     const kecamatanList: WilayahRekapItem[] = Object.keys(KOTA_TEGAL_DATA).map((kecName) => {
       const kelsInKec = kelurahanList.filter((k) => k.kecamatan === kecName);
-      const kecItem = createEmptyRekapWilayah(`kec-${kecName.toLowerCase().replace(/\s+/g, "-")}`, kecName, "kecamatan");
+      const kecItem = createEmptyRekapWilayah(
+        `kec-${kecName.toLowerCase().replace(/\s+/g, "-")}`,
+        kecName,
+        "kecamatan"
+      );
 
       for (const kel of kelsInKec) {
         kecItem.totalAnak += kel.totalAnak;
         kecItem.totalBersekolah += kel.totalBersekolah;
         kecItem.totalTidakBersekolah += kel.totalTidakBersekolah;
 
-        // Bersekolah Gender & Jenjang & Usia
         kecItem.bersekolahGender.lakiLaki += kel.bersekolahGender.lakiLaki;
         kecItem.bersekolahGender.perempuan += kel.bersekolahGender.perempuan;
         kecItem.bersekolahGender.total += kel.bersekolahGender.total;
@@ -507,12 +360,10 @@ export async function getRekapDataAnakUsiaDiniAction(): Promise<{
         kecItem.bersekolahUsia.age5 += kel.bersekolahUsia.age5;
         kecItem.bersekolahUsia.age6 += kel.bersekolahUsia.age6;
 
-        // Bersekolah Alasan
         kel.bersekolahAlasan.forEach((r, idx) => {
           kecItem.bersekolahAlasan[idx].jumlah += r.jumlah;
         });
 
-        // Tidak Bersekolah Gender & Usia
         kecItem.tidakBersekolahGender.lakiLaki += kel.tidakBersekolahGender.lakiLaki;
         kecItem.tidakBersekolahGender.perempuan += kel.tidakBersekolahGender.perempuan;
         kecItem.tidakBersekolahGender.total += kel.tidakBersekolahGender.total;
@@ -524,20 +375,31 @@ export async function getRekapDataAnakUsiaDiniAction(): Promise<{
         kecItem.tidakBersekolahUsia.age5 += kel.tidakBersekolahUsia.age5;
         kecItem.tidakBersekolahUsia.age6 += kel.tidakBersekolahUsia.age6;
 
-        // Tidak Bersekolah Alasan
         kel.tidakBersekolahAlasan.forEach((r, idx) => {
           kecItem.tidakBersekolahAlasan[idx].jumlah += r.jumlah;
         });
       }
 
-      kecItem.persenBersekolah = kecItem.totalAnak > 0 ? Math.round((kecItem.totalBersekolah / kecItem.totalAnak) * 100) : 0;
-      kecItem.persenTidakBersekolah = kecItem.totalAnak > 0 ? Math.round((kecItem.totalTidakBersekolah / kecItem.totalAnak) * 100) : 0;
+      kecItem.persenBersekolah =
+        kecItem.totalAnak > 0
+          ? Math.round((kecItem.totalBersekolah / kecItem.totalAnak) * 100)
+          : 0;
+      kecItem.persenTidakBersekolah =
+        kecItem.totalAnak > 0
+          ? Math.round((kecItem.totalTidakBersekolah / kecItem.totalAnak) * 100)
+          : 0;
 
       kecItem.bersekolahAlasan.forEach((r) => {
-        r.persentase = kecItem.totalBersekolah > 0 ? Math.round((r.jumlah / kecItem.totalBersekolah) * 100) : 0;
+        r.persentase =
+          kecItem.totalBersekolah > 0
+            ? Math.round((r.jumlah / kecItem.totalBersekolah) * 100)
+            : 0;
       });
       kecItem.tidakBersekolahAlasan.forEach((r) => {
-        r.persentase = kecItem.totalTidakBersekolah > 0 ? Math.round((r.jumlah / kecItem.totalTidakBersekolah) * 100) : 0;
+        r.persentase =
+          kecItem.totalTidakBersekolah > 0
+            ? Math.round((r.jumlah / kecItem.totalTidakBersekolah) * 100)
+            : 0;
       });
 
       return kecItem;
@@ -590,14 +452,26 @@ export async function getRekapDataAnakUsiaDiniAction(): Promise<{
       });
     }
 
-    kotaItem.persenBersekolah = kotaItem.totalAnak > 0 ? Math.round((kotaItem.totalBersekolah / kotaItem.totalAnak) * 100) : 0;
-    kotaItem.persenTidakBersekolah = kotaItem.totalAnak > 0 ? Math.round((kotaItem.totalTidakBersekolah / kotaItem.totalAnak) * 100) : 0;
+    kotaItem.persenBersekolah =
+      kotaItem.totalAnak > 0
+        ? Math.round((kotaItem.totalBersekolah / kotaItem.totalAnak) * 100)
+        : 0;
+    kotaItem.persenTidakBersekolah =
+      kotaItem.totalAnak > 0
+        ? Math.round((kotaItem.totalTidakBersekolah / kotaItem.totalAnak) * 100)
+        : 0;
 
     kotaItem.bersekolahAlasan.forEach((r) => {
-      r.persentase = kotaItem.totalBersekolah > 0 ? Math.round((r.jumlah / kotaItem.totalBersekolah) * 100) : 0;
+      r.persentase =
+        kotaItem.totalBersekolah > 0
+          ? Math.round((r.jumlah / kotaItem.totalBersekolah) * 100)
+          : 0;
     });
     kotaItem.tidakBersekolahAlasan.forEach((r) => {
-      r.persentase = kotaItem.totalTidakBersekolah > 0 ? Math.round((r.jumlah / kotaItem.totalTidakBersekolah) * 100) : 0;
+      r.persentase =
+        kotaItem.totalTidakBersekolah > 0
+          ? Math.round((r.jumlah / kotaItem.totalTidakBersekolah) * 100)
+          : 0;
     });
 
     return {

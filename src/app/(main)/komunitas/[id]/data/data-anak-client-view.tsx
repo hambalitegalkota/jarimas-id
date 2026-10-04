@@ -8,6 +8,8 @@ import {
   Search,
   ShieldCheck,
   AlertCircle,
+  Eye,
+  Lock,
 } from "lucide-react";
 import { CardDataAnak } from "@/components/data-anak/card-data-anak";
 import { FormDataAnak } from "@/components/data-anak/form-data-anak";
@@ -19,6 +21,11 @@ interface DataAnakClientViewProps {
   initialChildren: DataAnakItem[];
   canValidate: boolean;
   canEditDdks: boolean;
+  canCreate?: boolean;
+  canEdit?: boolean;
+  canDelete?: boolean;
+  isReadOnly?: boolean;
+  userRole?: string;
 }
 
 export function DataAnakClientView({
@@ -26,14 +33,20 @@ export function DataAnakClientView({
   initialChildren,
   canValidate,
   canEditDdks,
+  canCreate = true,
+  canEdit = true,
+  canDelete = true,
+  isReadOnly = false,
+  userRole,
 }: DataAnakClientViewProps) {
   const [childrenList, setChildrenList] = useState<DataAnakItem[]>(initialChildren);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const userPeran = komunitas.currentUserMembership?.peran || "Pengunjung";
+  const effectiveRole = userRole || komunitas.currentUserMembership?.peran || "Pengunjung";
   const isWargaKita = komunitas.jenis === "warga_kita";
-  const hasFullAccess = !isWargaKita || hasFullProfilDataAccess(userPeran, canValidate);
+  const isPaud = komunitas.jenis === "satuan_paud";
+  const isPosyandu = komunitas.jenis === "posyandu";
 
   const totalChildren = childrenList.length;
   const totalApproved = childrenList.filter(
@@ -49,22 +62,37 @@ export function DataAnakClientView({
 
   return (
     <div className="space-y-5">
-      {/* Notice Banner jika Warga Kita dan Bukan Penduduk / Penduduk Domisili Di Luar */}
-      {isWargaKita && !hasFullAccess && (
-        <div className="rounded-2xl border-2 border-amber-200 bg-amber-50/80 p-4 sm:p-5 flex items-start gap-3 text-amber-950 shadow-xs">
-          <AlertCircle className="h-5 w-5 text-amber-700 shrink-0 mt-0.5" />
+      {/* 1. Notice Banner untuk Peran Read-Only di Satuan PAUD (Orangtua/Wali Murid, Komite, Alumni, Pengunjung) */}
+      {isPaud && isReadOnly && (
+        <div className="rounded-2xl border-2 border-blue-200 bg-blue-50/80 p-4 sm:p-5 flex items-start gap-3 text-blue-950 shadow-xs">
+          <Eye className="h-5 w-5 text-blue-700 shrink-0 mt-0.5" />
           <div className="space-y-1">
-            <h4 className="text-sm sm:text-base font-bold">
-              Hak Akses Terbatas ({userPeran.toUpperCase()}): Hanya Melihat Grafik &amp; Statistik
+            <h4 className="text-sm sm:text-base font-bold text-blue-950">
+              Mode Akses: Tinjauan Siswa ({effectiveRole})
             </h4>
             <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">
-              Sesuai ketentuan, status {userPeran} memiliki akses ke statistik agregat. Penambahan data baru &amp; validasi anak hanya dapat dilakukan oleh Penduduk atau Penduduk Domisili Di Luar.
+              Sebagai {effectiveRole} di Satuan PAUD ini, Anda memiliki akses melihat (Read-Only) data profil siswa dan riwayat DDTK secara transparan. Pembuatan, pengeditan, dan pengelolaan status siswa dikelola oleh Admin, Kepala Sekolah, dan Guru PAUD.
             </p>
           </div>
         </div>
       )}
 
-      {/* 1. STATISTIC METRIC CARDS - Coursera High-Contrast */}
+      {/* Notice Banner untuk Pengunjung di Warga Kita */}
+      {isWargaKita && isReadOnly && (
+        <div className="rounded-2xl border-2 border-amber-200 bg-amber-50/80 p-4 sm:p-5 flex items-start gap-3 text-amber-950 shadow-xs">
+          <AlertCircle className="h-5 w-5 text-amber-700 shrink-0 mt-0.5" />
+          <div className="space-y-1">
+            <h4 className="text-sm sm:text-base font-bold text-amber-950">
+              Hak Akses Terbatas ({effectiveRole}): Tinjauan Statistik
+            </h4>
+            <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">
+              Sesuai ketentuan, status {effectiveRole} memiliki akses membaca data dan statistik. Penambahan data anak dan validasi warga RT dilakukan oleh Warga Penduduk atau Pengurus RT.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* 2. STATISTIC METRIC CARDS */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
         <div className="rounded-2xl border-2 border-slate-200 bg-white p-5 text-center space-y-1.5 shadow-xs">
           <span className="text-xs font-bold uppercase tracking-wider text-slate-500 block">
@@ -74,7 +102,7 @@ export function DataAnakClientView({
             {totalChildren}
           </span>
           <span className="text-sm font-semibold text-slate-600 block">
-            Balita Terdaftar
+            {isPaud ? "Siswa Terdata" : "Balita Terdaftar"}
           </span>
         </div>
 
@@ -86,7 +114,7 @@ export function DataAnakClientView({
             {totalApproved}
           </span>
           <span className="text-sm font-semibold text-emerald-800 block">
-            Tervalidasi Kader
+            {isWargaKita ? "Tervalidasi Warga RT" : "Tervalidasi Kader/RT"}
           </span>
         </div>
 
@@ -103,7 +131,7 @@ export function DataAnakClientView({
         </div>
       </div>
 
-      {/* 2. SEARCH & ADD BUTTON (Hanya jika memiliki akses penuh) */}
+      {/* 3. SEARCH & ADD BUTTON */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-3">
         <div className="relative flex-1">
           <Search className="pointer-events-none absolute left-4 top-4 h-5 w-5 text-slate-400" />
@@ -116,7 +144,7 @@ export function DataAnakClientView({
           />
         </div>
 
-        {hasFullAccess && (
+        {canCreate && (
           <button
             onClick={() => setIsAddModalOpen(true)}
             className="flex min-h-[50px] h-13 items-center justify-center gap-2 rounded-2xl bg-blue-700 hover:bg-blue-800 active:scale-[0.98] text-white px-6 text-base font-bold shadow-md transition-all shrink-0 cursor-pointer"
@@ -127,7 +155,7 @@ export function DataAnakClientView({
         )}
       </div>
 
-      {/* 3. LIST DATA ANAK */}
+      {/* 4. LIST DATA ANAK */}
       <div className="space-y-4 pb-16">
         <div className="flex items-center justify-between border-b-2 border-slate-100 pb-2">
           <h3 className="text-xs font-bold uppercase text-slate-600 tracking-wider">
@@ -148,7 +176,9 @@ export function DataAnakClientView({
                 Belum Ada Data Anak
               </h3>
               <p className="text-sm text-slate-600 leading-relaxed">
-                Daftarkan data balita / PAUD 0–6 tahun pertama untuk pemantauan tumbuh kembang dan DDTK.
+                {isPaud
+                  ? "Admin, Kepala Sekolah, dan Guru PAUD dapat menambahkan siswa terdaftar di satuan PAUD ini."
+                  : "Daftarkan data balita / PAUD 0–6 tahun pertama untuk pemantauan tumbuh kembang dan verifikasi wilayah."}
               </p>
             </div>
           </div>
@@ -160,6 +190,9 @@ export function DataAnakClientView({
               komunitas={komunitas}
               canValidate={canValidate}
               canEditDdks={canEditDdks}
+              canEdit={canEdit}
+              canDelete={canDelete}
+              isReadOnly={isReadOnly}
               onUpdate={(updated) => {
                 setChildrenList((prev) =>
                   prev.map((c) => (c.id === updated.id ? updated : c))
@@ -175,8 +208,8 @@ export function DataAnakClientView({
         )}
       </div>
 
-      {/* 4. MODAL PENDAFTARAN ANAK */}
-      {isAddModalOpen && (
+      {/* 5. MODAL PENDAFTARAN ANAK */}
+      {isAddModalOpen && canCreate && (
         <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto animate-in fade-in duration-200">
           <div
             className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity"

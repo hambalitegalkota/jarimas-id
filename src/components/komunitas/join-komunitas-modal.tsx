@@ -32,12 +32,12 @@ const ROLE_OPTIONS_BY_TYPE: Record<string, string[]> = {
     "PKK",
   ],
   satuan_paud: [
+    "Admin",
+    "Kepala Sekolah",
+    "Guru PAUD",
     "Orangtua/Wali Murid",
-    "Tenaga Pendidik / Tutor",
-    "Tenaga Kependidikan",
-    "Pengelola PAUD / PKBM / SKB",
-    "Kepala Satuan / Pimpinan",
-    "Warga Belajar",
+    "Komite",
+    "Alumni",
     "Pengunjung",
   ],
 };

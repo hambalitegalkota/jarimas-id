@@ -179,6 +179,82 @@ export function formatRupiah(amount: number): string {
   }).format(amount);
 }
 
+/**
+ * Mengecek apakah pengguna memiliki hak akses penuh (Membuat, Mengedit, Mendelet) Data Anak di Komunitas
+ * - Di Satuan PAUD: Admin, Kepala Sekolah, Guru PAUD / Pendidik, Super Admin -> Full Access
+ * - Di Satuan PAUD: Orangtua/Wali Murid, Komite, Alumni -> Read Only
+ * - Di Posyandu: Kader, Tenaga Kesehatan/Medis, Bidan, Pengurus, Super Admin -> Full Access
+ * - Di Warga Kita (RT/RW/Kelurahan): Pengurus RT, Penduduk, Super Admin -> Full Access
+ */
+export function canManageDataAnakInKomunitas(
+  jenisKomunitas?: string | null,
+  peran?: string | null,
+  isSuperAdmin: boolean = false
+): { canCreate: boolean; canEdit: boolean; canDelete: boolean; isReadOnly: boolean } {
+  if (isSuperAdmin) {
+    return { canCreate: true, canEdit: true, canDelete: true, isReadOnly: false };
+  }
+  if (!peran) {
+    return { canCreate: false, canEdit: false, canDelete: false, isReadOnly: true };
+  }
+
+  const p = peran.toLowerCase().trim();
+  const jenis = (jenisKomunitas || "").toLowerCase().trim();
+
+  if (jenis === "satuan_paud") {
+    // Admin, Kepala Sekolah, Guru PAUD / Pendidik -> Full Access
+    const isPaudStaff =
+      p.includes("admin") ||
+      p.includes("kepala") ||
+      p.includes("guru") ||
+      p.includes("pendidik") ||
+      p.includes("tutor") ||
+      p.includes("pengelola") ||
+      p.includes("pengurus");
+
+    if (isPaudStaff) {
+      return { canCreate: true, canEdit: true, canDelete: true, isReadOnly: false };
+    }
+
+    // Orangtua/Wali Murid, Komite, Alumni, Warga Belajar, Pengunjung -> Read Only
+    return { canCreate: false, canEdit: false, canDelete: false, isReadOnly: true };
+  }
+
+  if (jenis === "posyandu") {
+    const isPosyanduStaff =
+      p.includes("kader") ||
+      p.includes("medis") ||
+      p.includes("kesehatan") ||
+      p.includes("bidan") ||
+      p.includes("nakes") ||
+      p.includes("plkb") ||
+      p.includes("pkk") ||
+      p.includes("pengurus") ||
+      p.includes("admin");
+
+    if (isPosyanduStaff) {
+      return { canCreate: true, canEdit: true, canDelete: true, isReadOnly: false };
+    }
+    return { canCreate: false, canEdit: false, canDelete: false, isReadOnly: true };
+  }
+
+  // Warga Kita (RT, RW, Kelurahan, Kecamatan)
+  const isWargaOrPengurus =
+    p.includes("penduduk") ||
+    p.includes("pengurus") ||
+    p.includes("admin") ||
+    p.includes("kader") ||
+    p.includes("ketua") ||
+    p.includes("pendatang");
+
+  if (isWargaOrPengurus) {
+    return { canCreate: true, canEdit: true, canDelete: true, isReadOnly: false };
+  }
+
+  return { canCreate: false, canEdit: false, canDelete: false, isReadOnly: true };
+}
+
+
 
 
 

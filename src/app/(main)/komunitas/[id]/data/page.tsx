@@ -25,8 +25,16 @@ export default async function KomunitasDataAnakPage({
     notFound();
   }
 
-  const { data: childrenList, canValidate, canEditDdks } =
-    await getDataAnakByKomunitas(id);
+  const {
+    data: childrenList,
+    canValidate,
+    canEditDdks,
+    canCreate,
+    canEdit,
+    canDelete,
+    isReadOnly,
+    userRole,
+  } = await getDataAnakByKomunitas(id);
 
   return (
     <div className="flex flex-col flex-1 px-4 py-6 sm:px-6 md:px-8 gap-6 max-w-4xl mx-auto w-full">
@@ -54,7 +62,7 @@ export default async function KomunitasDataAnakPage({
             Data Anak (0–6 Tahun)
           </h1>
           <p className="text-sm text-slate-600 leading-relaxed max-w-lg">
-            Pemantauan tumbuh kembang DDTK dan validasi data posyandu / PAUD.
+            Pemantauan data anak usia dini, verifikasi lintas komunitas (PAUD, Posyandu, RT), dan catatan DDTK.
           </p>
         </div>
       </div>
@@ -65,6 +73,11 @@ export default async function KomunitasDataAnakPage({
         initialChildren={childrenList}
         canValidate={canValidate}
         canEditDdks={canEditDdks}
+        canCreate={canCreate}
+        canEdit={canEdit}
+        canDelete={canDelete}
+        isReadOnly={isReadOnly}
+        userRole={userRole}
       />
     </div>
   );

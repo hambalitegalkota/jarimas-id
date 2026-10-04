@@ -33,6 +33,9 @@ interface CardDataAnakProps {
   komunitas?: KomunitasWithMembership;
   canValidate: boolean;
   canEditDdks: boolean;
+  canEdit?: boolean;
+  canDelete?: boolean;
+  isReadOnly?: boolean;
   onUpdate?: (updated: DataAnakItem) => void;
   onDelete?: (deletedId: string) => void;
 }
@@ -115,6 +118,9 @@ export function CardDataAnak({
   komunitas,
   canValidate,
   canEditDdks,
+  canEdit,
+  canDelete,
+  isReadOnly,
   onUpdate,
   onDelete,
 }: CardDataAnakProps) {
@@ -347,26 +353,30 @@ export function CardDataAnak({
             <ChevronRight className="h-4 w-4 text-slate-500" />
           </button>
 
-          {/* Menu Edit Data & Keluar untuk Data Anak di Komunitas PAUD */}
-          {isPaud && (
+          {/* Menu Edit Data & Keluar untuk Data Anak (Admin, Kepala Sekolah, Guru PAUD / Pengurus / Pembuat Data) */}
+          {(canEdit || canDelete || isPaud) && !canValidate && (
             <div className="flex items-center gap-2 shrink-0">
-              <button
-                type="button"
-                onClick={() => setIsEditModalOpen(true)}
-                className="flex min-h-[44px] h-11 items-center justify-center gap-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 active:scale-98 border-2 border-blue-200 px-3.5 text-xs sm:text-sm font-bold text-blue-900 transition-all cursor-pointer"
-              >
-                <Pencil className="h-4 w-4 text-blue-700" />
-                <span>Edit Data</span>
-              </button>
+              {canEdit !== false && (
+                <button
+                  type="button"
+                  onClick={() => setIsEditModalOpen(true)}
+                  className="flex min-h-[44px] h-11 items-center justify-center gap-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 active:scale-98 border-2 border-blue-200 px-3.5 text-xs sm:text-sm font-bold text-blue-900 transition-all cursor-pointer"
+                >
+                  <Pencil className="h-4 w-4 text-blue-700" />
+                  <span>Edit Data</span>
+                </button>
+              )}
 
-              <button
-                type="button"
-                onClick={() => setIsKeluarModalOpen(true)}
-                className="flex min-h-[44px] h-11 items-center justify-center gap-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 active:scale-98 border-2 border-rose-200 px-3.5 text-xs sm:text-sm font-bold text-rose-900 transition-all cursor-pointer"
-              >
-                <LogOut className="h-4 w-4 text-rose-700" />
-                <span>Keluar</span>
-              </button>
+              {canDelete !== false && (
+                <button
+                  type="button"
+                  onClick={() => setIsKeluarModalOpen(true)}
+                  className="flex min-h-[44px] h-11 items-center justify-center gap-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 active:scale-98 border-2 border-rose-200 px-3.5 text-xs sm:text-sm font-bold text-rose-900 transition-all cursor-pointer"
+                >
+                  <LogOut className="h-4 w-4 text-rose-700" />
+                  <span>Keluar / Hapus</span>
+                </button>
+              )}
             </div>
           )}
 

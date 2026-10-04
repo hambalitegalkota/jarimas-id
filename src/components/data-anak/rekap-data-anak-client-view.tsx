@@ -368,7 +368,16 @@ export function RekapDataAnakClientView({ initialData }: RekapDataAnakClientView
           </div>
           <div className="flex items-center justify-between text-2xs font-bold text-amber-900 dark:text-amber-300 border-t border-amber-100 dark:border-amber-900/40 pt-2">
             <span>Target Kota: &gt;75%</span>
-            <span className="font-extrabold text-emerald-600 dark:text-emerald-400">Status Optimal</span>
+            <span className={cn(
+              "font-extrabold",
+              currentWilayahData.totalAnak === 0
+                ? "text-slate-500"
+                : currentWilayahData.persenBersekolah >= 75
+                ? "text-emerald-600 dark:text-emerald-400"
+                : "text-amber-600 dark:text-amber-400"
+            )}>
+              {currentWilayahData.totalAnak === 0 ? "Belum Ada Data" : currentWilayahData.persenBersekolah >= 75 ? "Optimal" : "Cukup"}
+            </span>
           </div>
         </div>
       </div>
