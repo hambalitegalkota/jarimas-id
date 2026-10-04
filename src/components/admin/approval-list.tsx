@@ -28,7 +28,7 @@ interface ApprovalListProps {
   isSuperAdmin?: boolean;
 }
 
-type FilterTier = "semua" | "admin_rt" | "admin_rw" | "admin_kel" | "admin_kec" | "warga";
+type FilterTier = "semua" | "admin_rt" | "admin_rw" | "admin_kel" | "admin_kec" | "satuan_paud" | "posyandu" | "warga";
 
 export function ApprovalList({
   initialApprovals,
@@ -104,6 +104,12 @@ export function ApprovalList({
     if (activeTier === "admin_kec") {
       return jenis === "warga_kita" && isAdmin && item.tierLevel === "Kecamatan";
     }
+    if (activeTier === "satuan_paud") {
+      return jenis === "satuan_paud" || item.tierLevel === "Satuan PAUD";
+    }
+    if (activeTier === "posyandu") {
+      return jenis === "posyandu" || item.tierLevel === "Posyandu";
+    }
     if (activeTier === "warga") {
       return jenis === "warga_kita" && !isAdmin;
     }
@@ -136,6 +142,12 @@ export function ApprovalList({
         i.komunitas?.jenis === "warga_kita" &&
         isRoleAdmin(i.peran_diajukan || i.peran) &&
         i.tierLevel === "Kecamatan"
+    ).length,
+    satuan_paud: approvals.filter(
+      (i) => i.komunitas?.jenis === "satuan_paud" || i.tierLevel === "Satuan PAUD"
+    ).length,
+    posyandu: approvals.filter(
+      (i) => i.komunitas?.jenis === "posyandu" || i.tierLevel === "Posyandu"
     ).length,
     warga: approvals.filter(
       (i) =>
@@ -275,6 +287,42 @@ export function ApprovalList({
             </button>
           )}
 
+          {counts.satuan_paud > 0 && (
+            <button
+              type="button"
+              onClick={() => setActiveTier("satuan_paud")}
+              className={cn(
+                "inline-flex shrink-0 items-center min-h-[44px] rounded-xl px-4 py-2 text-sm font-bold transition-all cursor-pointer gap-2",
+                activeTier === "satuan_paud"
+                  ? "bg-amber-600 text-white font-bold shadow-xs border-2 border-amber-600"
+                  : "bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60"
+              )}
+            >
+              <span>Satuan PAUD</span>
+              <span className={cn("rounded-full px-2 py-0.5 text-xs font-bold font-mono", activeTier === "satuan_paud" ? "bg-amber-700 text-white" : "bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300")}>
+                {counts.satuan_paud}
+              </span>
+            </button>
+          )}
+
+          {counts.posyandu > 0 && (
+            <button
+              type="button"
+              onClick={() => setActiveTier("posyandu")}
+              className={cn(
+                "inline-flex shrink-0 items-center min-h-[44px] rounded-xl px-4 py-2 text-sm font-bold transition-all cursor-pointer gap-2",
+                activeTier === "posyandu"
+                  ? "bg-rose-600 text-white font-bold shadow-xs border-2 border-rose-600"
+                  : "bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60"
+              )}
+            >
+              <span>Posyandu</span>
+              <span className={cn("rounded-full px-2 py-0.5 text-xs font-bold font-mono", activeTier === "posyandu" ? "bg-rose-700 text-white" : "bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300")}>
+                {counts.posyandu}
+              </span>
+            </button>
+          )}
+
           {counts.warga > 0 && (
             <button
               type="button"
@@ -357,8 +405,11 @@ export function ApprovalList({
                                 "border-amber-500 bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300",
                               item.tierLevel === "Kecamatan" &&
                                 "border-purple-500 bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300",
-                              (item.tierLevel === "Posyandu" ||
-                                item.tierLevel === "Satuan PAUD") &&
+                              item.tierLevel === "Satuan PAUD" &&
+                                "border-amber-500 bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-200",
+                              item.tierLevel === "Posyandu" &&
+                                "border-rose-500 bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300",
+                              !["RT", "RW", "Kelurahan", "Kecamatan", "Satuan PAUD", "Posyandu"].includes(item.tierLevel) &&
                                 "border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
                             )}
                           >

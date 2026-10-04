@@ -126,6 +126,8 @@ export function KomunitasDetailClientView({
           (roleLower.includes("kepala") ||
             roleLower.includes("pimpinan") ||
             roleLower.includes("pengelola") ||
+            roleLower.includes("guru") ||
+            roleLower.includes("pendidik") ||
             roleLower.includes("admin")))
       );
     }

@@ -240,14 +240,18 @@ export function computeTierAndApprover(
   if (meta.jenis === "posyandu") {
     return {
       tierLevel: "Posyandu",
-      targetApproverTitle: "Pengurus / Kader Posyandu",
+      targetApproverTitle: isAdmin
+        ? "Super Admin"
+        : "Pengurus / Kader Posyandu",
     };
   }
 
   if (meta.jenis === "satuan_paud") {
     return {
       tierLevel: "Satuan PAUD",
-      targetApproverTitle: "Pengelola / Kepala PAUD",
+      targetApproverTitle: isAdmin
+        ? "Super Admin"
+        : "Admin / Kepala Sekolah / Guru",
     };
   }
 
@@ -395,7 +399,16 @@ export function checkUserCanApproveItem({
   }
 
   // Untuk Posyandu / PAUD / Komunitas Khusus
-  return userAdminKomunitas.some(
-    (uKom) => uKom.id === targetItem.komunitas_id || uKom.id === kom.id
+  if (isAdminApp) {
+    // Pengajuan peran Admin di PAUD / Posyandu disetujui oleh Super Admin
+    return isSuperAdmin;
+  }
+
+  // Pengajuan peran anggota / staf (Guru, Orangtua, dll) di PAUD / Posyandu dapat disetujui oleh Super Admin, Admin, Kepala Sekolah, atau Guru komunitas tersebut
+  return (
+    isSuperAdmin ||
+    userAdminKomunitas.some(
+      (uKom) => uKom.id === targetItem.komunitas_id || uKom.id === kom.id
+    )
   );
 }

@@ -51,7 +51,14 @@ async function getAuthenticatedUserContext() {
           p.includes("ketua") ||
           p.includes("pengelola") ||
           p.includes("pimpinan") ||
-          p.includes("tenaga medis")
+          p.includes("kepala") ||
+          p.includes("guru") ||
+          p.includes("pendidik") ||
+          p.includes("tutor") ||
+          p.includes("tenaga medis") ||
+          p.includes("tenaga kesehatan") ||
+          p.includes("plkb") ||
+          p.includes("pkk")
         );
       })
       .map((m) => m.komunitas_id);
@@ -255,23 +262,25 @@ export async function getPendingApprovals(): Promise<{
       };
     });
 
-    // Saring hanya untuk komunitas Warga Kita (karena sistem persetujuan berjenjang hanya berlaku untuk hierarki Warga Kita)
-    const wargaItems = allItems.filter(
-      (item) => item.komunitas?.jenis === "warga_kita"
-    );
-
     // 1. Primary Approvals:
-    // - Jika Super Admin: Hanya tampilkan permohonan yang menjadi wewenang langsung Super Admin
-    //   (yaitu Admin Kecamatan di Warga Kita)
-    // - Jika Community Admin: Hanya tampilkan yang memiliki hak akses approval sesuai tingkatannya di Warga Kita
+    // - Jika Super Admin: Tampilkan seluruh permohonan peran Admin (Admin PAUD, Admin Posyandu, Admin Kecamatan/Kelurahan/RW/RT)
+    //   serta permohonan yang ditujukan kepada Super Admin
+    // - Jika Community Admin (Admin/Kepala Sekolah/Guru PAUD, Kader Posyandu, Admin RW/RT): Tampilkan permohonan yang sesuai wewenangnya
     const primaryApprovals = isSuperAdmin
-      ? wargaItems.filter((item) => item.tierLevel === "Kecamatan")
-      : wargaItems.filter((item) => item.canApprove);
+      ? allItems.filter(
+          (item) =>
+            item.targetApproverTitle === "Super Admin" ||
+            isRoleAdmin(item.peran_diajukan || item.peran) ||
+            item.tierLevel === "Kecamatan" ||
+            item.tierLevel === "Satuan PAUD" ||
+            item.canApprove
+        )
+      : allItems.filter((item) => item.canApprove);
 
     return {
       success: true,
       data: primaryApprovals,
-      allHierarchyItems: isSuperAdmin ? wargaItems : [],
+      allHierarchyItems: isSuperAdmin ? allItems : [],
       isSuperAdmin,
     };
   } catch (err: any) {
@@ -418,20 +427,22 @@ export async function approveMemberRole(anggotaId: string): Promise<{
             updated_at: new Date().toISOString(),
           })
           .eq("komunitas_id", memberTarget.komunitas_id)
-          .eq("peran_diajukan", "Pengurus")
+          .eq("peran_diajukan", memberTarget.peran_diajukan || targetPeran)
           .neq("id", anggotaId);
 
-        await writeClient
-          .from("anggota_komunitas")
-          .update({
-            peran_diajukan: null,
-            status: "approved",
-            peran: "Penduduk",
-            updated_at: new Date().toISOString(),
-          })
-          .eq("user_id", memberTarget.user_id)
-          .neq("id", anggotaId)
-          .eq("peran", "Pengunjung");
+        if (komInfo?.jenis === "warga_kita") {
+          await writeClient
+            .from("anggota_komunitas")
+            .update({
+              peran_diajukan: null,
+              status: "approved",
+              peran: "Penduduk",
+              updated_at: new Date().toISOString(),
+            })
+            .eq("user_id", memberTarget.user_id)
+            .neq("id", anggotaId)
+            .eq("peran", "Pengunjung");
+        }
       } catch (cleanErr) {
         console.warn(
           "Notice clearing competing admin applications & syncing user memberships:",

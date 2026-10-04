@@ -968,17 +968,21 @@ export async function updateDataAnak(
 
       const roleLower = (membership?.peran || "").toLowerCase();
       const isAuthorized =
-        roleLower.includes("kader") ||
-        roleLower.includes("pengurus") ||
-        roleLower.includes("guru") ||
         roleLower.includes("admin") ||
-        roleLower.includes("pendidik");
+        roleLower.includes("kepala") ||
+        roleLower.includes("guru") ||
+        roleLower.includes("pendidik") ||
+        roleLower.includes("tutor") ||
+        roleLower.includes("pengelola") ||
+        roleLower.includes("pengurus") ||
+        roleLower.includes("pimpinan") ||
+        roleLower.includes("kader");
 
       if (!isAuthorized) {
         return {
           success: false,
           message:
-            "Akses ditolak: Hanya Pengurus/Pendidik PAUD atau penginput data yang dapat mengubah data anak.",
+            "Akses ditolak: Hanya Admin, Kepala Sekolah, Guru/Pendidik PAUD, atau penginput data yang dapat mengubah data anak.",
         };
       }
     }
@@ -1239,17 +1243,21 @@ export async function keluarDataAnak(
 
       const roleLower = (membership?.peran || "").toLowerCase();
       const isAuthorized =
-        roleLower.includes("kader") ||
-        roleLower.includes("pengurus") ||
-        roleLower.includes("guru") ||
         roleLower.includes("admin") ||
-        roleLower.includes("pendidik");
+        roleLower.includes("kepala") ||
+        roleLower.includes("guru") ||
+        roleLower.includes("pendidik") ||
+        roleLower.includes("tutor") ||
+        roleLower.includes("pengelola") ||
+        roleLower.includes("pengurus") ||
+        roleLower.includes("pimpinan") ||
+        roleLower.includes("kader");
 
       if (!isAuthorized) {
         return {
           success: false,
           message:
-            "Akses ditolak: Hanya Pengurus/Pendidik PAUD atau penginput data yang dapat mencatat anak keluar.",
+            "Akses ditolak: Hanya Admin, Kepala Sekolah, Guru/Pendidik PAUD, atau penginput data yang dapat mencatat anak keluar.",
         };
       }
     }
@@ -1353,11 +1361,15 @@ export async function deleteDataAnak(
 
       const roleLower = (membership?.peran || "").toLowerCase();
       const isAuthorized =
-        roleLower.includes("kader") ||
-        roleLower.includes("pengurus") ||
-        roleLower.includes("guru") ||
         roleLower.includes("admin") ||
-        roleLower.includes("pendidik");
+        roleLower.includes("kepala") ||
+        roleLower.includes("guru") ||
+        roleLower.includes("pendidik") ||
+        roleLower.includes("tutor") ||
+        roleLower.includes("pengelola") ||
+        roleLower.includes("pengurus") ||
+        roleLower.includes("pimpinan") ||
+        roleLower.includes("kader");
 
       if (!isAuthorized) {
         return {
