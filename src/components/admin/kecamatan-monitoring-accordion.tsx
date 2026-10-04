@@ -12,7 +12,10 @@ import {
   Loader2,
   Layers,
   AlertCircle,
-  Check,
+  Home,
+  FileText,
+  User,
+  ShieldCheck,
 } from "lucide-react";
 import { approveMemberRole, rejectMemberRole } from "@/app/actions/admin";
 import type { PendingApprovalItem } from "@/types/database";
@@ -142,7 +145,7 @@ export function KecamatanMonitoringAccordion({
               </span>
             </div>
             <p className="text-[11px] text-slate-500">
-              Pantau dan kelola seluruh permohonan berjenjang (RT, RW, Kelurahan, Kecamatan) dalam satu panel.
+              Pantau dan kelola seluruh permohonan berjenjang (RT, RW, Kelurahan, Kecamatan, Satuan PAUD, Posyandu) dalam satu panel.
             </p>
           </div>
         </div>
@@ -158,6 +161,7 @@ export function KecamatanMonitoringAccordion({
           >
             {totalPending} PERMOHONAN
           </span>
+
           <div className="flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
             {isOpen ? (
               <ChevronUp className="h-4 w-4" />
@@ -282,7 +286,7 @@ export function KecamatanMonitoringAccordion({
                 : `Tidak ada permohonan berjenjang di Kecamatan ${selectedKecamatan}.`}
             </div>
           ) : (
-            <div className="space-y-2.5">
+            <div className="space-y-3">
               {displayedItems.map((item) => {
                 const isThisProcessing = isPending && processingId === item.id;
                 const roleLower = (item.peran_diajukan || item.peran || "").toLowerCase();
@@ -290,29 +294,39 @@ export function KecamatanMonitoringAccordion({
                   roleLower.includes("pengurus") ||
                   roleLower.includes("admin") ||
                   roleLower.includes("ketua");
-                const userName = item.profiles?.nama_lengkap || "Warga";
+                const userName = item.profiles?.nama_lengkap || "Pengguna JARIMAS";
+                const cleanPhone = (item.profiles?.nomor_hp || "").replace(/[^0-9]/g, "");
+                const waPhone = cleanPhone.startsWith("0") ? `62${cleanPhone.slice(1)}` : cleanPhone;
 
                 return (
                   <div
                     key={item.id}
-                    className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3.5 space-y-2.5 shadow-2xs hover:border-emerald-400 dark:hover:border-emerald-700 transition-all"
+                    className="rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 space-y-3 shadow-xs hover:border-emerald-400 dark:hover:border-emerald-700 transition-all"
                   >
                     <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                       {/* Left: Info */}
-                      <div className="space-y-1">
+                      <div className="space-y-2 flex-1 min-w-0">
+                        {/* Header Badges */}
                         <div className="flex flex-wrap items-center gap-1.5">
+                          {/* Tier Badge */}
                           <span
                             className={cn(
-                              "text-[10px] px-2 py-0.5 rounded-md font-bold uppercase border",
+                              "text-[10px] px-2.5 py-0.5 rounded-full font-bold uppercase border",
                               item.tierLevel === "RT" && "bg-cyan-50 dark:bg-cyan-950/50 text-cyan-700 dark:text-cyan-300 border-cyan-300 dark:border-cyan-800",
                               item.tierLevel === "RW" && "bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800",
                               item.tierLevel === "Kelurahan" && "bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 border-indigo-300 dark:border-indigo-800",
-                              item.tierLevel === "Kecamatan" && "bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-800"
+                              item.tierLevel === "Kecamatan" && "bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-800",
+                              item.tierLevel === "Satuan PAUD" && "bg-amber-50 dark:bg-amber-950/50 text-amber-800 dark:text-amber-300 border-amber-400 dark:border-amber-700",
+                              item.tierLevel === "Posyandu" && "bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 border-rose-300 dark:border-rose-800",
+                              !item.tierLevel && "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700"
                             )}
                           >
-                            {isAdminApplication
-                              ? `Admin ${item.tierLevel || "Wilayah"}`
-                              : `Warga (${item.peran})`}
+                            TINGKAT {item.tierLevel?.toUpperCase() || "KOMUNITAS"}
+                          </span>
+
+                          {/* Role Tag */}
+                          <span className="text-[10px] px-2.5 py-0.5 rounded-full font-bold uppercase bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
+                            {item.peran}
                           </span>
 
                           {item.targetApproverTitle && (
@@ -322,47 +336,72 @@ export function KecamatanMonitoringAccordion({
                           )}
                         </div>
 
-                        <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100">
-                          {userName}
-                        </h4>
+                        {/* Name & Contacts */}
+                        <div>
+                          <h4 className="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                            <span>{userName}</span>
+                          </h4>
 
-                        <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[11px] text-slate-500 font-mono">
-                          <span>{item.profiles?.email || "-"}</span>
-                          {item.profiles?.nomor_hp && (
-                            <span className="flex items-center gap-1 text-emerald-700 dark:text-emerald-400 font-medium">
-                              <Phone className="h-3 w-3" />
-                              <span>{item.profiles.nomor_hp}</span>
-                            </span>
-                          )}
+                          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500 font-mono mt-0.5">
+                            <span>{item.profiles?.email || "-"}</span>
+                            {item.profiles?.nomor_hp && (
+                              <a
+                                href={`https://wa.me/${waPhone}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 text-emerald-700 dark:text-emerald-400 font-medium hover:underline"
+                              >
+                                <Phone className="h-3 w-3" />
+                                <span>{item.profiles.nomor_hp}</span>
+                              </a>
+                            )}
+                          </div>
                         </div>
 
-                        <p className="text-[11px] text-slate-600 dark:text-slate-400 pt-0.5 flex items-center gap-1">
-                          <MapPin className="h-3 w-3 text-slate-400 shrink-0" />
-                          <span>{item.komunitas?.nama || "Komunitas"}</span>
-                        </p>
+                        {/* Survey Result Badges */}
+                        {(item.berdomisili || item.kk_terdaftar) && (
+                          <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                            <span className="text-[11px] text-slate-500 font-medium">Hasil Survey:</span>
+                            {item.berdomisili && (
+                              <span className="inline-flex items-center gap-1 rounded-md border border-emerald-300 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300">
+                                <Home className="h-3 w-3" />
+                                Berdomisili Disini
+                              </span>
+                            )}
+                            {item.kk_terdaftar && (
+                              <span className="inline-flex items-center gap-1 rounded-md border border-teal-300 dark:border-teal-800 bg-teal-50 dark:bg-teal-950/60 px-2 py-0.5 text-[11px] font-semibold text-teal-700 dark:text-teal-300">
+                                <FileText className="h-3 w-3" />
+                                KK Terdaftar
+                              </span>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Community Info Box */}
+                        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40 p-2.5 text-xs text-slate-600 dark:text-slate-300 space-y-0.5">
+                          <div className="flex items-center gap-1.5 font-bold text-slate-900 dark:text-slate-100">
+                            <Building2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                            <span>{item.komunitas?.nama || "Komunitas"}</span>
+                            {item.komunitas?.jenis && (
+                              <span className="text-[10px] font-normal text-slate-500">
+                                ({item.komunitas.jenis.replace("_", " ")})
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-1.5 text-[11px] text-slate-500">
+                            <MapPin className="h-3 w-3 text-slate-400 shrink-0" />
+                            <span>{item.komunitas?.lokasi || "Kota Tegal"}</span>
+                          </div>
+                        </div>
                       </div>
 
-                      {/* Right: Quick Action Buttons */}
-                      <div className="flex items-center gap-2 shrink-0 pt-1 sm:pt-0">
-                        <button
-                          type="button"
-                          onClick={() => handleReject(item.id, userName)}
-                          disabled={isPending}
-                          className="inline-flex min-h-[36px] items-center justify-center gap-1.5 rounded-lg border border-rose-200 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-950/30 px-3 text-xs font-bold text-rose-700 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-all disabled:opacity-50 cursor-pointer active:scale-98"
-                        >
-                          {isThisProcessing ? (
-                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                          ) : (
-                            <XCircle className="h-3.5 w-3.5" />
-                          )}
-                          <span>Tolak</span>
-                        </button>
-
+                      {/* Right: Action Buttons */}
+                      <div className="flex sm:flex-col items-center gap-2 shrink-0 pt-2 sm:pt-0 w-full sm:w-auto">
                         <button
                           type="button"
                           onClick={() => handleApprove(item.id, userName)}
                           disabled={isPending}
-                          className="inline-flex min-h-[36px] items-center justify-center gap-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 px-3 text-xs font-bold text-white transition-all disabled:opacity-50 cursor-pointer active:scale-98 shadow-xs"
+                          className="flex-1 sm:flex-none inline-flex min-h-[40px] w-full sm:w-28 items-center justify-center gap-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 px-4 text-xs font-bold text-white transition-all disabled:opacity-50 cursor-pointer active:scale-98 shadow-xs"
                         >
                           {isThisProcessing ? (
                             <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -370,6 +409,20 @@ export function KecamatanMonitoringAccordion({
                             <CheckCircle2 className="h-3.5 w-3.5" />
                           )}
                           <span>Setujui</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleReject(item.id, userName)}
+                          disabled={isPending}
+                          className="flex-1 sm:flex-none inline-flex min-h-[40px] w-full sm:w-28 items-center justify-center gap-1.5 rounded-xl border border-rose-200 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-950/30 px-4 text-xs font-bold text-rose-700 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-all disabled:opacity-50 cursor-pointer active:scale-98"
+                        >
+                          {isThisProcessing ? (
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <XCircle className="h-3.5 w-3.5" />
+                          )}
+                          <span>Tolak</span>
                         </button>
                       </div>
                     </div>
@@ -383,3 +436,4 @@ export function KecamatanMonitoringAccordion({
     </div>
   );
 }
+

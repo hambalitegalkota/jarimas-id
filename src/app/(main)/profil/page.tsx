@@ -386,22 +386,6 @@ export default async function ProfilePage() {
           {/* Pembersih Data Uji Coba (Testing Clean-up) */}
           <CleanupTestDataTool />
 
-          {/* Persetujuan Langsung Super Admin (Hanya Permohonan Admin Kecamatan & Layanan Kota) */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between px-1">
-              <div className="flex items-center gap-2">
-                <UserCheck className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                <h3 className="text-sm font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100">
-                  Persetujuan Langsung (Admin Wilayah)
-                </h3>
-              </div>
-              <span className="text-xs font-mono font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/50 px-2.5 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
-                {pendingApprovals.length} PERMOHONAN
-              </span>
-            </div>
-            <ApprovalList initialApprovals={pendingApprovals} isSuperAdmin={true} />
-          </div>
-
           {/* Monitoring Seluruh Permohonan Wilayah Berjenjang (Accordion per Kecamatan) */}
           <KecamatanMonitoringAccordion initialItems={allHierarchyPendingApprovals} />
 
