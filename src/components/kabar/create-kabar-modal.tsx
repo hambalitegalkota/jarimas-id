@@ -20,13 +20,21 @@ import { LoginPromptModal } from "@/components/kabar/login-prompt-modal";
 
 interface CreateKabarModalProps {
   currentUserId?: string | null;
+  komunitasId?: string;
+  komunitasNama?: string;
 }
 
-export function CreateKabarModal({ currentUserId }: CreateKabarModalProps) {
+export function CreateKabarModal({
+  currentUserId,
+  komunitasId,
+  komunitasNama,
+}: CreateKabarModalProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [konten, setKonten] = useState("");
-  const [visibilitas, setVisibilitas] = useState<VisibilitasKabar>("publik");
+  const [visibilitas, setVisibilitas] = useState<VisibilitasKabar>(
+    komunitasId ? "komunitas" : "publik"
+  );
   const [komentarDinonaktifkan, setKomentarDinonaktifkan] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -43,6 +51,9 @@ export function CreateKabarModal({ currentUserId }: CreateKabarModalProps) {
     const formData = new FormData();
     formData.append("konten", konten);
     formData.append("visibilitas", visibilitas);
+    if (komunitasId) {
+      formData.append("komunitas_id", komunitasId);
+    }
     formData.append(
       "komentar_dinonaktifkan",
       komentarDinonaktifkan ? "true" : "false"
@@ -52,7 +63,7 @@ export function CreateKabarModal({ currentUserId }: CreateKabarModalProps) {
       const res = await createKabar(formData);
       if (res.success) {
         setKonten("");
-        setVisibilitas("publik");
+        setVisibilitas(komunitasId ? "komunitas" : "publik");
         setKomentarDinonaktifkan(false);
         setIsOpen(false);
       } else {
@@ -134,6 +145,13 @@ export function CreateKabarModal({ currentUserId }: CreateKabarModalProps) {
 
               {/* Form */}
               <form onSubmit={handleSubmit} className="space-y-5">
+                {komunitasNama && (
+                  <div className="flex items-center gap-2 p-3 rounded-xl bg-blue-50 border border-blue-200 text-xs font-bold text-blue-900">
+                    <Building2 className="h-4 w-4 text-blue-700 shrink-0" />
+                    <span>Postingan ini akan diterbitkan di komunitas: <strong>{komunitasNama}</strong></span>
+                  </div>
+                )}
+
                 {/* Textarea Konten */}
                 <div className="space-y-2">
                   <label className="text-base font-bold text-slate-900 block leading-snug">

@@ -14,42 +14,93 @@ import {
   AlertTriangle,
   HeartPulse,
 } from "lucide-react";
-import type { KomunitasWithMembership } from "@/types/database";
+import type { KomunitasWithMembership, DataAnakItem } from "@/types/database";
 import { cn } from "@/lib/utils";
 
 interface KomunitasProfilChartsProps {
   komunitas: KomunitasWithMembership;
+  dataAnakList?: DataAnakItem[];
   userRole?: string;
   isChartOnly?: boolean;
 }
 
 export function KomunitasProfilCharts({
   komunitas,
+  dataAnakList = [],
   userRole = "Pengunjung",
   isChartOnly = false,
 }: KomunitasProfilChartsProps) {
   const [activeChartFilter, setActiveChartFilter] = useState<"semua" | "usia" | "paud" | "ddtk">("semua");
 
-  // Perkiraan data agregat berbasis jumlah anggota & wilayah komunitas untuk visualisasi real-time
-  const totalWarga = Math.max(komunitas.jumlah_anggota || 12, 18);
-  const totalBalita = Math.max(Math.round(totalWarga * 0.75), 8);
+  // Perhitungan data agregat 100% NYATA berbasis data_anak aktual
+  const totalWarga = komunitas.jumlah_anggota || 0;
+  const totalBalita = dataAnakList.length;
 
-  // Demografi Usia
-  const usia0to2 = Math.max(1, Math.round(totalBalita * 0.35));
-  const usia3to4 = Math.max(1, Math.round(totalBalita * 0.38));
-  const usia5to6 = Math.max(1, totalBalita - usia0to2 - usia3to4);
+  let usia0to2 = 0;
+  let usia3to4 = 0;
+  let usia5to6 = 0;
+  let maleCount = 0;
+  let femaleCount = 0;
+  let sudahPaud = 0;
+  let belumSekolah = 0;
+  let potensiAts = 0;
+  let ddtkSesuai = 0;
+  let ddtkPantau = 0;
 
-  const maleCount = Math.round(totalBalita * 0.52);
-  const femaleCount = totalBalita - maleCount;
+  dataAnakList.forEach((child) => {
+    // 1. Jenis Kelamin
+    if (child.jenis_kelamin === "L") {
+      maleCount++;
+    } else {
+      femaleCount++;
+    }
 
-  // Status PAUD / Sekolah
-  const sudahPaud = Math.round(totalBalita * 0.68);
-  const belumSekolah = Math.max(0, totalBalita - sudahPaud);
-  const potensiAts = Math.max(0, Math.round(totalBalita * 0.08));
+    // 2. Kelompok Umur
+    let age = 0;
+    if (child.tanggal_lahir) {
+      const birthDate = new Date(child.tanggal_lahir);
+      if (!isNaN(birthDate.getTime())) {
+        const diffMs = Date.now() - birthDate.getTime();
+        const ageDate = new Date(diffMs);
+        age = Math.max(0, Math.abs(ageDate.getUTCFullYear() - 1970));
+      }
+    }
 
-  // DDTK / Tumbuh Kembang
-  const ddtkSesuai = Math.round(totalBalita * 0.88);
-  const ddtkPantau = totalBalita - ddtkSesuai;
+    if (age <= 2) {
+      usia0to2++;
+    } else if (age <= 4) {
+      usia3to4++;
+    } else {
+      usia5to6++;
+    }
+
+    // 3. Status Sekolah / PAUD
+    const lowerSekolah = (child.nama_sekolah || "").toLowerCase();
+    const isEnrolled = child.is_sekolah || (lowerSekolah && !lowerSekolah.includes("belum"));
+    if (isEnrolled) {
+      sudahPaud++;
+    } else {
+      belumSekolah++;
+      if (age >= 4) {
+        potensiAts++;
+      }
+    }
+
+    // 4. Status DDTK
+    if (child.latest_ddks) {
+      ddtkSesuai++;
+    } else {
+      ddtkPantau++;
+    }
+  });
+
+  const pctPaud = totalBalita > 0 ? Math.round((sudahPaud / totalBalita) * 100) : 0;
+  const pctDdtk = totalBalita > 0 ? Math.round((ddtkSesuai / totalBalita) * 100) : 0;
+  const pct0to2 = totalBalita > 0 ? Math.round((usia0to2 / totalBalita) * 100) : 0;
+  const pct3to4 = totalBalita > 0 ? Math.round((usia3to4 / totalBalita) * 100) : 0;
+  const pct5to6 = totalBalita > 0 ? Math.round((usia5to6 / totalBalita) * 100) : 0;
+  const pctBelum = totalBalita > 0 ? Math.round((belumSekolah / totalBalita) * 100) : 0;
+  const pctPotensiAts = totalBalita > 0 ? Math.round((potensiAts / totalBalita) * 100) : 0;
 
   let displayKomNama = komunitas.nama;
   if (komunitas.jenis === "posyandu") {
@@ -75,7 +126,7 @@ export function KomunitasProfilCharts({
             <span>Grafik &amp; Chart Statistik Komunitas</span>
           </h3>
           <p className="text-xs sm:text-sm text-slate-600 font-medium">
-            Pratinjau agregat data anak (0–6 tahun), partisipasi PAUD, dan pemantauan DDTK se-wilayah.
+            Pratinjau data anak (0–6 tahun), partisipasi PAUD, dan pemantauan DDTK se-wilayah.
           </p>
         </div>
 
@@ -158,7 +209,7 @@ export function KomunitasProfilCharts({
               {sudahPaud}
             </span>
             <span className="text-xs font-bold text-emerald-800">
-              ({Math.round((sudahPaud / totalBalita) * 100)}%)
+              ({pctPaud}%)
             </span>
           </div>
           <span className="text-xs font-semibold text-emerald-700 block">
@@ -175,7 +226,7 @@ export function KomunitasProfilCharts({
               {ddtkSesuai}
             </span>
             <span className="text-xs font-bold text-blue-800">
-              ({Math.round((ddtkSesuai / totalBalita) * 100)}%)
+              ({pctDdtk}%)
             </span>
           </div>
           <span className="text-xs font-semibold text-blue-700 block">
@@ -220,67 +271,77 @@ export function KomunitasProfilCharts({
               </div>
             </div>
 
-            <div className="space-y-3 pt-1">
-              {/* 0-2 Tahun (Batita) */}
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between text-xs font-bold">
-                  <span className="text-slate-700">0–2 Tahun (Batita / TPA)</span>
-                  <span className="font-mono text-slate-900">
-                    {usia0to2} anak ({Math.round((usia0to2 / totalBalita) * 100)}%)
+            {totalBalita === 0 ? (
+              <div className="rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 p-6 text-center space-y-2">
+                <Baby className="h-8 w-8 text-slate-400 mx-auto" />
+                <p className="text-sm font-bold text-slate-700">Belum Ada Data Usia Anak</p>
+                <p className="text-xs text-slate-500 max-w-xs mx-auto">
+                  Tambahkan data balita di menu Data Anak untuk melihat sebaran kelompok umur dan rasio gender.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3 pt-1">
+                {/* 0-2 Tahun (Batita) */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between text-xs font-bold">
+                    <span className="text-slate-700">0–2 Tahun (Batita / TPA)</span>
+                    <span className="font-mono text-slate-900">
+                      {usia0to2} anak ({pct0to2}%)
+                    </span>
+                  </div>
+                  <div className="h-3.5 w-full overflow-hidden rounded-full bg-slate-100 p-0.5 border border-slate-200">
+                    <div
+                      className="h-full rounded-full bg-blue-600 transition-all duration-500"
+                      style={{ width: `${pct0to2}%` }}
+                    />
+                  </div>
+                </div>
+
+                {/* 3-4 Tahun (PAUD Awal / KB) */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between text-xs font-bold">
+                    <span className="text-slate-700">3–4 Tahun (Kelompok Bermain)</span>
+                    <span className="font-mono text-slate-900">
+                      {usia3to4} anak ({pct3to4}%)
+                    </span>
+                  </div>
+                  <div className="h-3.5 w-full overflow-hidden rounded-full bg-slate-100 p-0.5 border border-slate-200">
+                    <div
+                      className="h-full rounded-full bg-amber-500 transition-all duration-500"
+                      style={{ width: `${pct3to4}%` }}
+                    />
+                  </div>
+                </div>
+
+                {/* 5-6 Tahun (TK / Kesiapan SD) */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between text-xs font-bold">
+                    <span className="text-slate-700">5–6 Tahun (TK / Kesiapan SD)</span>
+                    <span className="font-mono text-slate-900">
+                      {usia5to6} anak ({pct5to6}%)
+                    </span>
+                  </div>
+                  <div className="h-3.5 w-full overflow-hidden rounded-full bg-slate-100 p-0.5 border border-slate-200">
+                    <div
+                      className="h-full rounded-full bg-emerald-600 transition-all duration-500"
+                      style={{ width: `${pct5to6}%` }}
+                    />
+                  </div>
+                </div>
+
+                {/* Rasio Jenis Kelamin */}
+                <div className="pt-2 flex items-center justify-between text-xs border-t border-slate-100 font-bold text-slate-600">
+                  <span className="flex items-center gap-1.5">
+                    <span className="inline-block h-2.5 w-2.5 rounded-full bg-blue-600" />
+                    Laki-laki: <strong className="text-slate-900 font-mono">{maleCount}</strong>
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <span className="inline-block h-2.5 w-2.5 rounded-full bg-rose-500" />
+                    Perempuan: <strong className="text-slate-900 font-mono">{femaleCount}</strong>
                   </span>
                 </div>
-                <div className="h-3.5 w-full overflow-hidden rounded-full bg-slate-100 p-0.5 border border-slate-200">
-                  <div
-                    className="h-full rounded-full bg-blue-600 transition-all duration-500"
-                    style={{ width: `${Math.round((usia0to2 / totalBalita) * 100)}%` }}
-                  />
-                </div>
               </div>
-
-              {/* 3-4 Tahun (PAUD Awal / KB) */}
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between text-xs font-bold">
-                  <span className="text-slate-700">3–4 Tahun (Kelompok Bermain)</span>
-                  <span className="font-mono text-slate-900">
-                    {usia3to4} anak ({Math.round((usia3to4 / totalBalita) * 100)}%)
-                  </span>
-                </div>
-                <div className="h-3.5 w-full overflow-hidden rounded-full bg-slate-100 p-0.5 border border-slate-200">
-                  <div
-                    className="h-full rounded-full bg-amber-500 transition-all duration-500"
-                    style={{ width: `${Math.round((usia3to4 / totalBalita) * 100)}%` }}
-                  />
-                </div>
-              </div>
-
-              {/* 5-6 Tahun (TK / Kesiapan SD) */}
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between text-xs font-bold">
-                  <span className="text-slate-700">5–6 Tahun (TK / Kesiapan SD)</span>
-                  <span className="font-mono text-slate-900">
-                    {usia5to6} anak ({Math.round((usia5to6 / totalBalita) * 100)}%)
-                  </span>
-                </div>
-                <div className="h-3.5 w-full overflow-hidden rounded-full bg-slate-100 p-0.5 border border-slate-200">
-                  <div
-                    className="h-full rounded-full bg-emerald-600 transition-all duration-500"
-                    style={{ width: `${Math.round((usia5to6 / totalBalita) * 100)}%` }}
-                  />
-                </div>
-              </div>
-
-              {/* Rasio Jenis Kelamin */}
-              <div className="pt-2 flex items-center justify-between text-xs border-t border-slate-100 font-bold text-slate-600">
-                <span className="flex items-center gap-1.5">
-                  <span className="inline-block h-2.5 w-2.5 rounded-full bg-blue-600" />
-                  Laki-laki: <strong className="text-slate-900 font-mono">{maleCount}</strong>
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <span className="inline-block h-2.5 w-2.5 rounded-full bg-rose-500" />
-                  Perempuan: <strong className="text-slate-900 font-mono">{femaleCount}</strong>
-                </span>
-              </div>
-            </div>
+            )}
           </div>
         )}
 
@@ -303,57 +364,67 @@ export function KomunitasProfilCharts({
               </div>
             </div>
 
-            <div className="space-y-3 pt-1">
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between text-xs font-bold">
-                  <span className="text-emerald-800">Sudah Bersekolah PAUD / TK</span>
-                  <span className="font-mono text-emerald-900">
-                    {sudahPaud} anak ({Math.round((sudahPaud / totalBalita) * 100)}%)
-                  </span>
-                </div>
-                <div className="h-3.5 w-full overflow-hidden rounded-full bg-slate-100 p-0.5 border border-slate-200">
-                  <div
-                    className="h-full rounded-full bg-emerald-600 transition-all duration-500"
-                    style={{ width: `${Math.round((sudahPaud / totalBalita) * 100)}%` }}
-                  />
-                </div>
+            {totalBalita === 0 ? (
+              <div className="rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 p-6 text-center space-y-2">
+                <GraduationCap className="h-8 w-8 text-slate-400 mx-auto" />
+                <p className="text-sm font-bold text-slate-700">Belum Ada Data Partisipasi PAUD</p>
+                <p className="text-xs text-slate-500 max-w-xs mx-auto">
+                  Status anak yang sudah ber-PAUD atau belum bersekolah akan otomatis dianalisis dari data anak terdaftar.
+                </p>
               </div>
+            ) : (
+              <div className="space-y-3 pt-1">
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between text-xs font-bold">
+                    <span className="text-emerald-800">Sudah Bersekolah PAUD / TK</span>
+                    <span className="font-mono text-emerald-900">
+                      {sudahPaud} anak ({pctPaud}%)
+                    </span>
+                  </div>
+                  <div className="h-3.5 w-full overflow-hidden rounded-full bg-slate-100 p-0.5 border border-slate-200">
+                    <div
+                      className="h-full rounded-full bg-emerald-600 transition-all duration-500"
+                      style={{ width: `${pctPaud}%` }}
+                    />
+                  </div>
+                </div>
 
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between text-xs font-bold">
-                  <span className="text-slate-700">Belum Bersekolah (Usia 0–2 Thn / Calon)</span>
-                  <span className="font-mono text-slate-900">
-                    {belumSekolah} anak ({Math.round((belumSekolah / totalBalita) * 100)}%)
-                  </span>
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between text-xs font-bold">
+                    <span className="text-slate-700">Belum Bersekolah (Usia 0–2 Thn / Calon)</span>
+                    <span className="font-mono text-slate-900">
+                      {belumSekolah} anak ({pctBelum}%)
+                    </span>
+                  </div>
+                  <div className="h-3.5 w-full overflow-hidden rounded-full bg-slate-100 p-0.5 border border-slate-200">
+                    <div
+                      className="h-full rounded-full bg-blue-500 transition-all duration-500"
+                      style={{ width: `${pctBelum}%` }}
+                    />
+                  </div>
                 </div>
-                <div className="h-3.5 w-full overflow-hidden rounded-full bg-slate-100 p-0.5 border border-slate-200">
-                  <div
-                    className="h-full rounded-full bg-blue-500 transition-all duration-500"
-                    style={{ width: `${Math.round((belumSekolah / totalBalita) * 100)}%` }}
-                  />
-                </div>
-              </div>
 
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between text-xs font-bold">
-                  <span className="text-amber-800">Potensi ATS (Perlu Difasilitasi)</span>
-                  <span className="font-mono text-amber-900">
-                    {potensiAts} anak ({Math.round((potensiAts / totalBalita) * 100)}%)
-                  </span>
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between text-xs font-bold">
+                    <span className="text-amber-800">Potensi ATS (Perlu Difasilitasi)</span>
+                    <span className="font-mono text-amber-900">
+                      {potensiAts} anak ({pctPotensiAts}%)
+                    </span>
+                  </div>
+                  <div className="h-3.5 w-full overflow-hidden rounded-full bg-slate-100 p-0.5 border border-slate-200">
+                    <div
+                      className="h-full rounded-full bg-amber-500 transition-all duration-500"
+                      style={{ width: `${pctPotensiAts}%` }}
+                    />
+                  </div>
                 </div>
-                <div className="h-3.5 w-full overflow-hidden rounded-full bg-slate-100 p-0.5 border border-slate-200">
-                  <div
-                    className="h-full rounded-full bg-amber-500 transition-all duration-500"
-                    style={{ width: `${Math.max(5, Math.round((potensiAts / totalBalita) * 100))}%` }}
-                  />
-                </div>
-              </div>
 
-              <div className="pt-2 text-xs font-medium text-slate-600 bg-slate-50 p-2.5 rounded-xl border border-slate-200 flex items-center gap-2">
-                <Sparkles className="h-4 w-4 text-emerald-600 shrink-0" />
-                <span>Seluruh satuan PAUD/TK, PKBM, &amp; SKB siap menerima pendaftaran anak.</span>
+                <div className="pt-2 text-xs font-medium text-slate-600 bg-slate-50 p-2.5 rounded-xl border border-slate-200 flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-emerald-600 shrink-0" />
+                  <span>Seluruh satuan PAUD/TK, PKBM, &amp; SKB siap menerima pendaftaran anak.</span>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         )}
 
@@ -376,37 +447,49 @@ export function KomunitasProfilCharts({
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 pt-1">
-              <div className="rounded-xl border-2 border-emerald-200 bg-emerald-50/60 p-3.5 text-center space-y-1">
-                <div className="flex items-center justify-center gap-1 text-emerald-800 font-bold text-xs">
-                  <CheckCircle2 className="h-3.5 w-3.5" />
-                  <span>Sesuai Usia (Normal)</span>
-                </div>
-                <div className="text-2xl font-black font-mono text-emerald-700">
-                  {ddtkSesuai}
-                </div>
-                <p className="text-xs font-medium text-emerald-800">
-                  Tumbuh Kembang Optimal
+            {totalBalita === 0 ? (
+              <div className="rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 p-6 text-center space-y-2">
+                <HeartPulse className="h-8 w-8 text-slate-400 mx-auto" />
+                <p className="text-sm font-bold text-slate-700">Belum Ada Riwayat DDTK</p>
+                <p className="text-xs text-slate-500 max-w-xs mx-auto">
+                  Pencatatan pengukuran berkala berat/tinggi badan balita oleh Kader Posyandu/Nakes akan terakumulasi di sini.
                 </p>
               </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-2 gap-3 pt-1">
+                  <div className="rounded-xl border-2 border-emerald-200 bg-emerald-50/60 p-3.5 text-center space-y-1">
+                    <div className="flex items-center justify-center gap-1 text-emerald-800 font-bold text-xs">
+                      <CheckCircle2 className="h-3.5 w-3.5" />
+                      <span>Sesuai Usia (Normal)</span>
+                    </div>
+                    <div className="text-2xl font-black font-mono text-emerald-700">
+                      {ddtkSesuai}
+                    </div>
+                    <p className="text-xs font-medium text-emerald-800">
+                      Tumbuh Kembang Optimal
+                    </p>
+                  </div>
 
-              <div className="rounded-xl border-2 border-amber-200 bg-amber-50/60 p-3.5 text-center space-y-1">
-                <div className="flex items-center justify-center gap-1 text-amber-900 font-bold text-xs">
-                  <AlertTriangle className="h-3.5 w-3.5" />
-                  <span>Pantauan Berkala</span>
+                  <div className="rounded-xl border-2 border-amber-200 bg-amber-50/60 p-3.5 text-center space-y-1">
+                    <div className="flex items-center justify-center gap-1 text-amber-900 font-bold text-xs">
+                      <AlertTriangle className="h-3.5 w-3.5" />
+                      <span>Pantauan Berkala</span>
+                    </div>
+                    <div className="text-2xl font-black font-mono text-amber-700">
+                      {ddtkPantau}
+                    </div>
+                    <p className="text-xs font-medium text-amber-900">
+                      Stimulasi &amp; Gizi
+                    </p>
+                  </div>
                 </div>
-                <div className="text-2xl font-black font-mono text-amber-700">
-                  {ddtkPantau}
-                </div>
-                <p className="text-xs font-medium text-amber-900">
-                  Stimulasi &amp; Gizi
-                </p>
-              </div>
-            </div>
 
-            <div className="text-xs font-medium text-slate-600 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
-              💡 Posyandu &amp; PAUD melakukan deteksi dini berkala untuk memastikan stimulasi motorik &amp; kognitif anak terpenuhi.
-            </div>
+                <div className="text-xs font-medium text-slate-600 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                  💡 Posyandu &amp; PAUD melakukan deteksi dini berkala untuk memastikan stimulasi motorik &amp; kognitif anak terpenuhi.
+                </div>
+              </>
+            )}
           </div>
         )}
 

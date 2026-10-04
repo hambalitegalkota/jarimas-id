@@ -20,7 +20,9 @@ import {
   getKomunitasDetail,
   getAnggotaKomunitas,
 } from "@/app/actions/komunitas";
+import { getDataAnakByKomunitas } from "@/app/actions/data-anak";
 import { getKabarFeed } from "@/app/actions/kabar";
+import { toValidUUID } from "@/lib/utils";
 import { KabarCard } from "@/components/kabar/kabar-card";
 import { CreateKabarModal } from "@/components/kabar/create-kabar-modal";
 import { KomunitasDetailClientView } from "./detail-client-view";
@@ -55,14 +57,29 @@ export default async function KomunitasDetailPage({
   // Ambil daftar anggota
   const { data: anggotaList } = await getAnggotaKomunitas(id);
 
-  // Ambil kabar feed untuk komunitas
+  // Ambil data anak aktual untuk visualisasi Profil Data & Charts real-time
+  const { data: dataAnakList } = await getDataAnakByKomunitas(id);
+
+  // Ambil kabar feed khusus untuk komunitas ini (membersihkan kabar dummy & postingan dari komunitas lain)
   const { data: allKabar } = await getKabarFeed();
-  const kabarKomunitas = allKabar.filter(
-    (k) =>
-      k.komunitas_id === id ||
-      k.konten.toLowerCase().includes(komunitas.nama.toLowerCase()) ||
-      k.visibilitas === "komunitas"
-  );
+  const dbKomunitasId = toValidUUID(id);
+  const cleanNama = (komunitas.nama || "").toLowerCase().trim();
+
+  const kabarKomunitas = (allKabar || []).filter((k) => {
+    // 1. Cocok langsung dengan ID komunitas
+    if (k.komunitas_id === id || k.komunitas_id === dbKomunitasId) {
+      return true;
+    }
+    // 2. Konten secara spesifik menyebutkan nama komunitas
+    if (
+      cleanNama.length > 3 &&
+      k.konten &&
+      k.konten.toLowerCase().includes(cleanNama)
+    ) {
+      return true;
+    }
+    return false;
+  });
 
   return (
     <div className="flex flex-col flex-1 px-4 py-8 sm:px-6 md:px-8 gap-6">
@@ -85,6 +102,7 @@ export default async function KomunitasDetailPage({
         currentSubtab={currentSubtab}
         anggotaList={anggotaList}
         kabarKomunitas={kabarKomunitas}
+        dataAnakList={dataAnakList || []}
       />
     </div>
   );

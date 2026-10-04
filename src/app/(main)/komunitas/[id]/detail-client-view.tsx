@@ -34,6 +34,7 @@ import type {
   KomunitasWithMembership,
   AnggotaKomunitasDetail,
   KabarItem,
+  DataAnakItem,
 } from "@/types/database";
 import { cn, hasFullProfilDataAccess } from "@/lib/utils";
 
@@ -44,6 +45,7 @@ interface KomunitasDetailClientViewProps {
   currentSubtab: string;
   anggotaList: AnggotaKomunitasDetail[];
   kabarKomunitas: KabarItem[];
+  dataAnakList?: DataAnakItem[];
 }
 
 export function KomunitasDetailClientView({
@@ -53,6 +55,7 @@ export function KomunitasDetailClientView({
   currentSubtab,
   anggotaList,
   kabarKomunitas,
+  dataAnakList = [],
 }: KomunitasDetailClientViewProps) {
   const [activeTab, setActiveTab] = useState(currentSubtab || "kabar");
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
@@ -388,7 +391,11 @@ export function KomunitasDetailClientView({
           )}
 
           {/* Floating Create Modal */}
-          <CreateKabarModal currentUserId={currentUserId} />
+          <CreateKabarModal
+            currentUserId={currentUserId}
+            komunitasId={komunitas.id}
+            komunitasNama={formattedTitle}
+          />
         </section>
       )}
 
@@ -518,6 +525,7 @@ export function KomunitasDetailClientView({
           {/* Visualisasi Grafik & Chart Statistik Wilayah */}
           <KomunitasProfilCharts
             komunitas={komunitas}
+            dataAnakList={dataAnakList}
             userRole={userPeran}
             isChartOnly={isChartOnly}
           />

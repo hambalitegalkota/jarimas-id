@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/utils/supabase/server";
 import { KabarSchema, KomentarSchema } from "@/lib/zod-schemas";
+import { toValidUUID } from "@/lib/utils";
 import type {
   KabarItem,
   KomentarKabar,
@@ -239,11 +240,17 @@ export async function createKabar(formData: FormData): Promise<{
     const konten = formData.get("konten")?.toString()?.trim() || "";
     const visibilitas = (formData.get("visibilitas")?.toString() as any) || "publik";
     const komentarDinonaktifkan = formData.get("komentar_dinonaktifkan") === "true";
+    const rawKomunitasId =
+      formData.get("komunitas_id")?.toString() ||
+      formData.get("komunitasId")?.toString() ||
+      null;
+    const komunitasId = rawKomunitasId ? toValidUUID(rawKomunitasId) : null;
 
     const validation = KabarSchema.safeParse({
       konten,
       visibilitas,
       komentar_dinonaktifkan: komentarDinonaktifkan,
+      komunitas_id: komunitasId,
     });
 
     if (!validation.success) {
@@ -281,22 +288,33 @@ export async function createKabar(formData: FormData): Promise<{
       postKonten = "<!--comments_disabled-->" + postKonten;
     }
 
-    const { error: insertError } = await supabase.from("kabar_jarimas").insert({
+    const payload: any = {
       user_id: user.id,
       konten: postKonten,
       visibilitas,
       komentar_dinonaktifkan: komentarDinonaktifkan,
       created_at: new Date().toISOString(),
-    });
+    };
+
+    if (komunitasId) {
+      payload.komunitas_id = komunitasId;
+    }
+
+    const { error: insertError } = await supabase.from("kabar_jarimas").insert(payload);
 
     if (insertError) {
       // Fallback jika kolom komentar_dinonaktifkan belum ada di schema cache
-      const { error: fallbackError } = await supabase.from("kabar_jarimas").insert({
+      const fallbackPayload: any = {
         user_id: user.id,
         konten: postKonten,
         visibilitas,
         created_at: new Date().toISOString(),
-      });
+      };
+      if (komunitasId) {
+        fallbackPayload.komunitas_id = komunitasId;
+      }
+
+      const { error: fallbackError } = await supabase.from("kabar_jarimas").insert(fallbackPayload);
 
       if (fallbackError) {
         return {
@@ -308,6 +326,12 @@ export async function createKabar(formData: FormData): Promise<{
 
     revalidatePath("/kabar");
     revalidatePath("/");
+    if (rawKomunitasId) {
+      revalidatePath(`/komunitas/${rawKomunitasId}`);
+    }
+    if (komunitasId && komunitasId !== rawKomunitasId) {
+      revalidatePath(`/komunitas/${komunitasId}`);
+    }
     return {
       success: true,
       message: "Kabar Anda berhasil dibagikan!",
