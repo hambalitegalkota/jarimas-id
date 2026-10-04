@@ -562,6 +562,13 @@ export async function addDdksRecord(formData: FormData): Promise<{
 export async function getDataAnakByKomunitas(komunitasId: string): Promise<{
   success: boolean;
   data: DataAnakItem[];
+  stats?: {
+    total: number;
+    approved: number;
+    pending: number;
+  };
+  canViewDetail?: boolean;
+  isAuthenticated?: boolean;
   canValidate: boolean;
   canEditDdks: boolean;
   canCreate: boolean;
@@ -581,6 +588,8 @@ export async function getDataAnakByKomunitas(komunitasId: string): Promise<{
     let canDelete = false;
     let isReadOnly = true;
     let userRole = "Pengunjung";
+    let isAuthenticated = false;
+    let canViewDetail = false;
 
     // 1. Ekstraksi metadata komunitas target
     let targetKomunitas: any = null;
@@ -607,6 +616,7 @@ export async function getDataAnakByKomunitas(komunitasId: string): Promise<{
       } = await supabase.auth.getUser();
 
       if (user) {
+        isAuthenticated = true;
         const { data: profile } = await supabase
           .from("profiles")
           .select("is_super_admin")
@@ -634,7 +644,11 @@ export async function getDataAnakByKomunitas(komunitasId: string): Promise<{
           canValidate = true;
           canEditDdks = true;
           isReadOnly = false;
+          canViewDetail = true;
         } else if (member && member.status === "approved") {
+          // Seluruh anggota resmi yang telah disetujui memiliki hak melihat rincian data anak
+          canViewDetail = true;
+
           if (targetJenis === "satuan_paud") {
             // Admin, Kepala Sekolah, Guru PAUD / Pendidik -> Full Access
             const isPaudStaff =
@@ -744,6 +758,9 @@ export async function getDataAnakByKomunitas(komunitasId: string): Promise<{
         success: false,
         message: "Gagal memuat data anak: " + childError.message,
         data: [],
+        stats: { total: 0, approved: 0, pending: 0 },
+        canViewDetail: false,
+        isAuthenticated,
         canValidate,
         canEditDdks,
         canCreate,
@@ -761,6 +778,9 @@ export async function getDataAnakByKomunitas(komunitasId: string): Promise<{
       return {
         success: true,
         data: [],
+        stats: { total: 0, approved: 0, pending: 0 },
+        canViewDetail,
+        isAuthenticated,
         canValidate,
         canEditDdks,
         canCreate,
@@ -834,14 +854,25 @@ export async function getDataAnakByKomunitas(komunitasId: string): Promise<{
         );
       });
 
+    const totalCount = items.length;
+    const approvedCount = items.filter((c) => c.status_approval === "approved").length;
+    const pendingCount = totalCount - approvedCount;
+
     return {
       success: true,
-      data: items,
+      data: canViewDetail ? items : [],
+      stats: {
+        total: totalCount,
+        approved: approvedCount,
+        pending: pendingCount,
+      },
+      canViewDetail,
+      isAuthenticated,
       canValidate,
       canEditDdks,
-      canCreate,
-      canEdit,
-      canDelete,
+      canCreate: canViewDetail ? canCreate : false,
+      canEdit: canViewDetail ? canEdit : false,
+      canDelete: canViewDetail ? canDelete : false,
       isReadOnly,
       userRole,
     };
@@ -851,6 +882,9 @@ export async function getDataAnakByKomunitas(komunitasId: string): Promise<{
       success: false,
       message: err.message || "Gagal memuat data anak.",
       data: [],
+      stats: { total: 0, approved: 0, pending: 0 },
+      canViewDetail: false,
+      isAuthenticated: false,
       canValidate: false,
       canEditDdks: false,
       canCreate: false,

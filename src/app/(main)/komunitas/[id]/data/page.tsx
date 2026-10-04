@@ -27,6 +27,9 @@ export default async function KomunitasDataAnakPage({
 
   const {
     data: childrenList,
+    stats,
+    canViewDetail,
+    isAuthenticated,
     canValidate,
     canEditDdks,
     canCreate,
@@ -71,6 +74,9 @@ export default async function KomunitasDataAnakPage({
       <DataAnakClientView
         komunitas={komunitas}
         initialChildren={childrenList}
+        stats={stats}
+        canViewDetail={canViewDetail}
+        isAuthenticated={isAuthenticated}
         canValidate={canValidate}
         canEditDdks={canEditDdks}
         canCreate={canCreate}

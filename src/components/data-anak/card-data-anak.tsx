@@ -354,7 +354,7 @@ export function CardDataAnak({
           </button>
 
           {/* Menu Edit Data & Keluar untuk Data Anak (Admin, Kepala Sekolah, Guru PAUD / Pengurus / Pembuat Data) */}
-          {(canEdit || canDelete || isPaud) && !canValidate && (
+          {(canEdit || canDelete || isPaud) && (
             <div className="flex items-center gap-2 shrink-0">
               {canEdit !== false && (
                 <button
