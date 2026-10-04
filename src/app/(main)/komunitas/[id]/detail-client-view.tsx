@@ -414,190 +414,6 @@ export function KomunitasDetailClientView({
       {/* Subtab: DAFTAR ANGGOTA */}
       {activeTab === "anggota" && (
         <section className="space-y-4 pb-16">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 sm:p-5 rounded-2xl border-2 border-slate-200 shadow-xs">
-            <div className="space-y-0.5">
-              <h3 className="text-base font-bold text-slate-900">
-                Daftar Anggota Komunitas
-              </h3>
-              <p className="text-sm text-slate-500 font-medium">
-                Total {approvedMembers.length} anggota aktif terdaftar
-              </p>
-            </div>
-
-            {canManageMembers && (
-              <Link
-                href={`/komunitas/${komunitas.id}/anggota`}
-                className="inline-flex min-h-[44px] h-11 items-center justify-center gap-2 rounded-xl bg-blue-700 hover:bg-blue-800 text-white px-5 text-sm font-bold shadow-xs transition-all active:scale-98 shrink-0 cursor-pointer"
-              >
-                <Settings2 className="h-4 w-4" />
-                <span>KELOLA ANGGOTA</span>
-              </Link>
-            )}
-          </div>
-
-          {approvedMembers.length === 0 ? (
-            <div className="rounded-2xl border-2 border-dashed border-slate-300 bg-white p-12 text-center text-sm font-semibold text-slate-500">
-              Belum ada anggota terdaftar secara daring
-            </div>
-          ) : (
-            <div className="space-y-2.5">
-              {approvedMembers.map((member) => {
-                const name = member.profiles?.nama_lengkap || "Warga Komunitas";
-                const initial = name.charAt(0).toUpperCase();
-
-                return (
-                  <div
-                    key={member.id}
-                    className="flex items-center justify-between rounded-2xl border-2 border-slate-200 bg-white p-4 shadow-xs"
-                  >
-                    <div className="flex items-center gap-3.5">
-                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 border-2 border-blue-200 text-blue-700 font-bold text-base">
-                        {initial}
-                      </div>
-                      <div>
-                        <h4 className="text-base font-bold text-slate-900">
-                          {name}
-                        </h4>
-                        <p className="text-sm font-semibold text-slate-500">
-                          {member.profiles?.email || "-"}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="rounded-xl bg-slate-100 px-3 py-1.5 text-xs font-bold text-slate-800 border border-slate-200">
-                        {member.peran}
-                      </span>
-                      {member.peran_diajukan && (
-                        <span className="rounded-xl bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-900 border border-amber-200">
-                          Diajukan: {member.peran_diajukan}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </section>
-      )}
-
-      {/* Subtab: PROFIL DATA */}
-      {activeTab === "data" && (
-        <section className="space-y-5 pb-16">
-          {/* Banner Hak Akses Penuh jika Penduduk / Penduduk Berdomisili Luar Kota */}
-          {hasFullAccess && isApprovedMember && isWargaKita && (
-            <div className="rounded-2xl border-2 border-emerald-200 bg-emerald-50/70 p-4 sm:p-5 flex items-start gap-3 shadow-xs">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-800 font-bold">
-                <ShieldCheck className="h-5 w-5" />
-              </div>
-              <div className="space-y-0.5">
-                <div className="flex flex-wrap items-center gap-2">
-                  <h4 className="text-sm sm:text-base font-bold text-emerald-950">
-                    Hak Akses Penuh: {userPeran.toUpperCase()}
-                  </h4>
-                  <span className="rounded-md px-2 py-0.5 text-xs font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300">
-                    AKSES SELURUH DATA
-                  </span>
-                </div>
-                <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">
-                  Sebagai <strong>{userPeran}</strong>, Anda memiliki hak akses penuh ke visualisasi Grafik &amp; Chart, rincian data anak &amp; DDTK, data ATS, penambahan data, dan pelaporan wilayah.
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Visualisasi Grafik & Chart Statistik Wilayah */}
-          <KomunitasProfilCharts
-            komunitas={komunitas}
-            dataAnakList={dataAnakList}
-            userRole={userPeran}
-            isChartOnly={isChartOnly}
-          />
-
-          {/* Elemen Rincian Data Anak & ATS (Hanya untuk Penduduk & Penduduk Berdomisili Luar Kota) */}
-          {hasFullAccess ? (
-            <div className="space-y-4">
-              <div className="border-t-2 border-slate-200 pt-4">
-                <h3 className="text-xs font-bold uppercase text-slate-600 tracking-wider mb-3">
-                  MANAJEMEN DATA &amp; DDTK
-                </h3>
-              </div>
-
-              {/* Card Direct to Data Anak & DDTK */}
-              <div className="rounded-2xl border-2 border-slate-200 bg-white p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
-                <div className="flex items-center gap-3.5">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-blue-50 border-2 border-blue-200 text-blue-700">
-                    <Baby className="h-6 w-6" />
-                  </div>
-                  <div className="space-y-1">
-                    <h4 className="text-base font-bold text-slate-900">
-                      Data Anak (0–6 Tahun) &amp; DDTK
-                    </h4>
-                    <p className="text-sm text-slate-600 leading-relaxed">
-                      Kelola pendaftaran balita, riwayat DDTK tumbuh kembang, dan validasi data.
-                    </p>
-                  </div>
-                </div>
-                <Link
-                  href={`/komunitas/${komunitas.id}/data`}
-                  className="inline-flex min-h-[48px] h-12 w-full sm:w-auto items-center justify-center gap-2 rounded-xl bg-blue-700 hover:bg-blue-800 px-6 text-base font-bold text-white transition-all shadow-xs shrink-0"
-                >
-                  <span>BUKA DATA</span>
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              </div>
-
-              {/* Card Direct to Data ATS (Anak Tidak Sekolah) */}
-              {komunitas.jenis !== "satuan_paud" && (
-                <div className="rounded-2xl border-2 border-slate-200 bg-white p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
-                  <div className="flex items-center gap-3.5">
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-50 border-2 border-amber-200 text-amber-800">
-                      <GraduationCap className="h-6 w-6" />
-                    </div>
-                    <div className="space-y-1">
-                      <h4 className="text-base font-bold text-slate-900">
-                        Data ATS (Anak Tidak Sekolah)
-                      </h4>
-                      <p className="text-sm text-slate-600 leading-relaxed">
-                        Pendataan Anak Tidak Sekolah, pemantauan alasan, dan rencana intervensi kembali bersekolah.
-                      </p>
-                    </div>
-                  </div>
-                  <Link
-                    href={`/komunitas/${komunitas.id}/ats`}
-                    className="inline-flex min-h-[48px] h-12 w-full sm:w-auto items-center justify-center gap-2 rounded-xl bg-amber-600 hover:bg-amber-700 px-6 text-base font-bold text-white transition-all shadow-xs shrink-0"
-                  >
-                    <span>BUKA DATA ATS</span>
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                </div>
-              )}
-            </div>
-          ) : (
-            /* Pesan Terkunci untuk Pengunjung / Pendatang */
-            <div className="rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 p-6 text-center space-y-3">
-              <div className="flex h-12 w-12 mx-auto items-center justify-center rounded-2xl bg-slate-200 text-slate-600">
-                <Lock className="h-6 w-6" />
-              </div>
-              <div className="space-y-1 max-w-md mx-auto">
-                <h4 className="text-base font-bold text-slate-900">
-                  Manajemen Data Terkunci
-                </h4>
-                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                  Akses rincian data anak dan pendataan ATS hanya dapat diakses oleh <strong>Penduduk</strong> dan <strong>Penduduk Berdomisili Luar Kota</strong>.
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsWargaOnboardingOpen(true)}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-700 hover:bg-blue-800 text-white font-bold text-xs transition-colors cursor-pointer"
-              >
-                <UserPlus className="h-4 w-4" />
-                <span>Bergabung Sekarang</span>
-              </button>
-            </div>
-          )}
-
           {/* Informasi Resmi & Operasional Wilayah */}
           <div className="rounded-2xl border-2 border-slate-200 bg-white p-5 sm:p-6 space-y-4 shadow-xs">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
@@ -877,6 +693,190 @@ export function KomunitasDetailClientView({
               )}
             </div>
           </div>
+
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 sm:p-5 rounded-2xl border-2 border-slate-200 shadow-xs">
+            <div className="space-y-0.5">
+              <h3 className="text-base font-bold text-slate-900">
+                Daftar Anggota Komunitas
+              </h3>
+              <p className="text-sm text-slate-500 font-medium">
+                Total {approvedMembers.length} anggota aktif terdaftar
+              </p>
+            </div>
+
+            {canManageMembers && (
+              <Link
+                href={`/komunitas/${komunitas.id}/anggota`}
+                className="inline-flex min-h-[44px] h-11 items-center justify-center gap-2 rounded-xl bg-blue-700 hover:bg-blue-800 text-white px-5 text-sm font-bold shadow-xs transition-all active:scale-98 shrink-0 cursor-pointer"
+              >
+                <Settings2 className="h-4 w-4" />
+                <span>KELOLA ANGGOTA</span>
+              </Link>
+            )}
+          </div>
+
+          {approvedMembers.length === 0 ? (
+            <div className="rounded-2xl border-2 border-dashed border-slate-300 bg-white p-12 text-center text-sm font-semibold text-slate-500">
+              Belum ada anggota terdaftar secara daring
+            </div>
+          ) : (
+            <div className="space-y-2.5">
+              {approvedMembers.map((member) => {
+                const name = member.profiles?.nama_lengkap || "Warga Komunitas";
+                const initial = name.charAt(0).toUpperCase();
+
+                return (
+                  <div
+                    key={member.id}
+                    className="flex items-center justify-between rounded-2xl border-2 border-slate-200 bg-white p-4 shadow-xs"
+                  >
+                    <div className="flex items-center gap-3.5">
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 border-2 border-blue-200 text-blue-700 font-bold text-base">
+                        {initial}
+                      </div>
+                      <div>
+                        <h4 className="text-base font-bold text-slate-900">
+                          {name}
+                        </h4>
+                        <p className="text-sm font-semibold text-slate-500">
+                          {member.profiles?.email || "-"}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="rounded-xl bg-slate-100 px-3 py-1.5 text-xs font-bold text-slate-800 border border-slate-200">
+                        {member.peran}
+                      </span>
+                      {member.peran_diajukan && (
+                        <span className="rounded-xl bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-900 border border-amber-200">
+                          Diajukan: {member.peran_diajukan}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* Subtab: PROFIL DATA */}
+      {activeTab === "data" && (
+        <section className="space-y-5 pb-16">
+          {/* Banner Hak Akses Penuh jika Penduduk / Penduduk Berdomisili Luar Kota */}
+          {hasFullAccess && isApprovedMember && isWargaKita && (
+            <div className="rounded-2xl border-2 border-emerald-200 bg-emerald-50/70 p-4 sm:p-5 flex items-start gap-3 shadow-xs">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-800 font-bold">
+                <ShieldCheck className="h-5 w-5" />
+              </div>
+              <div className="space-y-0.5">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h4 className="text-sm sm:text-base font-bold text-emerald-950">
+                    Hak Akses Penuh: {userPeran.toUpperCase()}
+                  </h4>
+                  <span className="rounded-md px-2 py-0.5 text-xs font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                    AKSES SELURUH DATA
+                  </span>
+                </div>
+                <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">
+                  Sebagai <strong>{userPeran}</strong>, Anda memiliki hak akses penuh ke visualisasi Grafik &amp; Chart, rincian data anak &amp; DDTK, data ATS, penambahan data, dan pelaporan wilayah.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Visualisasi Grafik & Chart Statistik Wilayah */}
+          <KomunitasProfilCharts
+            komunitas={komunitas}
+            dataAnakList={dataAnakList}
+            userRole={userPeran}
+            isChartOnly={isChartOnly}
+          />
+
+          {/* Elemen Rincian Data Anak & ATS (Hanya untuk Penduduk & Penduduk Berdomisili Luar Kota) */}
+          {hasFullAccess ? (
+            <div className="space-y-4">
+              <div className="border-t-2 border-slate-200 pt-4">
+                <h3 className="text-xs font-bold uppercase text-slate-600 tracking-wider mb-3">
+                  MANAJEMEN DATA &amp; DDTK
+                </h3>
+              </div>
+
+              {/* Card Direct to Data Anak & DDTK */}
+              <div className="rounded-2xl border-2 border-slate-200 bg-white p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
+                <div className="flex items-center gap-3.5">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-blue-50 border-2 border-blue-200 text-blue-700">
+                    <Baby className="h-6 w-6" />
+                  </div>
+                  <div className="space-y-1">
+                    <h4 className="text-base font-bold text-slate-900">
+                      Data Anak (0–6 Tahun) &amp; DDTK
+                    </h4>
+                    <p className="text-sm text-slate-600 leading-relaxed">
+                      Kelola pendaftaran balita, riwayat DDTK tumbuh kembang, dan validasi data.
+                    </p>
+                  </div>
+                </div>
+                <Link
+                  href={`/komunitas/${komunitas.id}/data`}
+                  className="inline-flex min-h-[48px] h-12 w-full sm:w-auto items-center justify-center gap-2 rounded-xl bg-blue-700 hover:bg-blue-800 px-6 text-base font-bold text-white transition-all shadow-xs shrink-0"
+                >
+                  <span>BUKA DATA</span>
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </div>
+
+              {/* Card Direct to Data ATS (Anak Tidak Sekolah) */}
+              {komunitas.jenis !== "satuan_paud" && (
+                <div className="rounded-2xl border-2 border-slate-200 bg-white p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
+                  <div className="flex items-center gap-3.5">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-50 border-2 border-amber-200 text-amber-800">
+                      <GraduationCap className="h-6 w-6" />
+                    </div>
+                    <div className="space-y-1">
+                      <h4 className="text-base font-bold text-slate-900">
+                        Data ATS (Anak Tidak Sekolah)
+                      </h4>
+                      <p className="text-sm text-slate-600 leading-relaxed">
+                        Pendataan Anak Tidak Sekolah, pemantauan alasan, dan rencana intervensi kembali bersekolah.
+                      </p>
+                    </div>
+                  </div>
+                  <Link
+                    href={`/komunitas/${komunitas.id}/ats`}
+                    className="inline-flex min-h-[48px] h-12 w-full sm:w-auto items-center justify-center gap-2 rounded-xl bg-amber-600 hover:bg-amber-700 px-6 text-base font-bold text-white transition-all shadow-xs shrink-0"
+                  >
+                    <span>BUKA DATA ATS</span>
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </div>
+              )}
+            </div>
+          ) : (
+            /* Pesan Terkunci untuk Pengunjung / Pendatang */
+            <div className="rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 p-6 text-center space-y-3">
+              <div className="flex h-12 w-12 mx-auto items-center justify-center rounded-2xl bg-slate-200 text-slate-600">
+                <Lock className="h-6 w-6" />
+              </div>
+              <div className="space-y-1 max-w-md mx-auto">
+                <h4 className="text-base font-bold text-slate-900">
+                  Manajemen Data Terkunci
+                </h4>
+                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  Akses rincian data anak dan pendataan ATS hanya dapat diakses oleh <strong>Penduduk</strong> dan <strong>Penduduk Berdomisili Luar Kota</strong>.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsWargaOnboardingOpen(true)}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-700 hover:bg-blue-800 text-white font-bold text-xs transition-colors cursor-pointer"
+              >
+                <UserPlus className="h-4 w-4" />
+                <span>Bergabung Sekarang</span>
+              </button>
+            </div>
+          )}
         </section>
       )}
 
