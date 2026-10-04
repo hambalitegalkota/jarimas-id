@@ -407,147 +407,149 @@ export default async function ProfilePage() {
         </section>
       )}
 
-      {/* VIEW: Komunitas Saya */}
-      <section className="space-y-4">
-        <div className="flex items-center justify-between px-1">
-          <div className="flex items-center gap-2">
-            <Building2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-            <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">
-              Komunitas Saya
-            </h2>
-          </div>
-          <span className="text-xs font-mono font-bold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2.5 py-0.5 rounded-full">
-            {totalCardCount} TERDAFTAR
-          </span>
-        </div>
-
-        {/* List Komunitas yang Diikuti */}
-        {totalCardCount === 0 ? (
-          <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-900 p-8 text-center space-y-4 shadow-xs">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl border-2 border-emerald-100 dark:border-emerald-900/40 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400">
-              <Compass className="h-7 w-7" />
+      {/* VIEW: Komunitas Saya (Hanya Ditampilkan untuk Pengguna / Pengurus Komunitas, Bukan Super Admin) */}
+      {!isSuperAdmin && (
+        <section className="space-y-4">
+          <div className="flex items-center justify-between px-1">
+            <div className="flex items-center gap-2">
+              <Building2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+              <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">
+                Komunitas Saya
+              </h2>
             </div>
-            <div className="space-y-1.5">
-              <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
-                Belum Bergabung dengan Komunitas
-              </h3>
-              <p className="text-sm text-slate-600 dark:text-slate-400 max-w-sm leading-relaxed">
-                Bergabunglah dengan Posyandu atau Komunitas setempat untuk memantau tumbuh kembang anak dan ATS.
-              </p>
-            </div>
-            <Link
-              href="/komunitas"
-              className="inline-flex min-h-[48px] w-full sm:w-auto items-center justify-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 px-6 text-base font-bold text-white transition-all shadow-sm active:scale-98"
-            >
-              <span>Jelajahi Komunitas</span>
-              <ArrowRight className="h-4 w-4" />
-            </Link>
+            <span className="text-xs font-mono font-bold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2.5 py-0.5 rounded-full">
+              {totalCardCount} TERDAFTAR
+            </span>
           </div>
-        ) : (
-          <div className="space-y-4">
-            {/* 1. Kartu Rangkuman Warga Kita (1 Kartu untuk Semua Jenjang, Interaktif) */}
-            {wargaKitaSummary && (
-              <UnifiedWargaCard
-                title={wargaKitaSummary.title}
-                lokasi={wargaKitaSummary.lokasi}
-                highestRole={wargaKitaSummary.highestRole}
-                highestStatus={wargaKitaSummary.highestStatus}
-                primaryKomunitasId={wargaKitaSummary.primaryKomunitasId}
-                tiers={wargaKitaSummary.tiers}
-              />
-            )}
 
-            {/* 2. Kartu Komunitas Lainnya (Posyandu, PAUD & Kesetaraan) */}
-            {nonWargaMemberships.map((item) => {
-              const kom = item.komunitas || {};
-              const status = item.status as "pending" | "approved" | "rejected";
-              let formattedKomNama = kom.nama || "Komunitas";
-              if (kom.jenis === "posyandu") {
-                const cleanName = (kom.nama || "").replace(/^(Posyandu\s*)+/gi, "").trim();
-                formattedKomNama = cleanName ? `Posyandu ${cleanName}` : "Posyandu";
-              }
+          {/* List Komunitas yang Diikuti */}
+          {totalCardCount === 0 ? (
+            <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-900 p-8 text-center space-y-4 shadow-xs">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl border-2 border-emerald-100 dark:border-emerald-900/40 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400">
+                <Compass className="h-7 w-7" />
+              </div>
+              <div className="space-y-1.5">
+                <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
+                  Belum Bergabung dengan Komunitas
+                </h3>
+                <p className="text-sm text-slate-600 dark:text-slate-400 max-w-sm leading-relaxed">
+                  Bergabunglah dengan Posyandu atau Komunitas setempat untuk memantau tumbuh kembang anak dan ATS.
+                </p>
+              </div>
+              <Link
+                href="/komunitas"
+                className="inline-flex min-h-[48px] w-full sm:w-auto items-center justify-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 px-6 text-base font-bold text-white transition-all shadow-sm active:scale-98"
+              >
+                <span>Jelajahi Komunitas</span>
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {/* 1. Kartu Rangkuman Warga Kita (1 Kartu untuk Semua Jenjang, Interaktif) */}
+              {wargaKitaSummary && (
+                <UnifiedWargaCard
+                  title={wargaKitaSummary.title}
+                  lokasi={wargaKitaSummary.lokasi}
+                  highestRole={wargaKitaSummary.highestRole}
+                  highestStatus={wargaKitaSummary.highestStatus}
+                  primaryKomunitasId={wargaKitaSummary.primaryKomunitasId}
+                  tiers={wargaKitaSummary.tiers}
+                />
+              )}
 
-              return (
-                <div
-                  key={item.id}
-                  className="rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 space-y-4 transition-all hover:border-emerald-400 dark:hover:border-emerald-600 shadow-xs"
-                >
-                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-                    <div className="space-y-1.5">
-                      <h4 className="font-bold text-lg text-slate-900 dark:text-slate-100">
-                        {formattedKomNama}
-                      </h4>
-                      <div className="flex flex-wrap items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-                        <span className="font-bold text-emerald-700 dark:text-emerald-400">
-                          {kom.jenis === "posyandu"
-                            ? "Posyandu"
-                            : kom.jenis === "satuan_paud"
-                            ? "Satuan PAUD"
-                            : kom.jenis || "Komunitas"}
-                        </span>
-                        <span>•</span>
-                        <span className="flex items-center gap-1">
-                          <MapPin className="h-4 w-4 text-slate-500" />
-                          {kom.lokasi || "Kota Tegal"}
-                        </span>
+              {/* 2. Kartu Komunitas Lainnya (Posyandu, PAUD & Kesetaraan) */}
+              {nonWargaMemberships.map((item) => {
+                const kom = item.komunitas || {};
+                const status = item.status as "pending" | "approved" | "rejected";
+                let formattedKomNama = kom.nama || "Komunitas";
+                if (kom.jenis === "posyandu") {
+                  const cleanName = (kom.nama || "").replace(/^(Posyandu\s*)+/gi, "").trim();
+                  formattedKomNama = cleanName ? `Posyandu ${cleanName}` : "Posyandu";
+                }
+
+                return (
+                  <div
+                    key={item.id}
+                    className="rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 space-y-4 transition-all hover:border-emerald-400 dark:hover:border-emerald-600 shadow-xs"
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                      <div className="space-y-1.5">
+                        <h4 className="font-bold text-lg text-slate-900 dark:text-slate-100">
+                          {formattedKomNama}
+                        </h4>
+                        <div className="flex flex-wrap items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                          <span className="font-bold text-emerald-700 dark:text-emerald-400">
+                            {kom.jenis === "posyandu"
+                              ? "Posyandu"
+                              : kom.jenis === "satuan_paud"
+                              ? "Satuan PAUD"
+                              : kom.jenis || "Komunitas"}
+                          </span>
+                          <span>•</span>
+                          <span className="flex items-center gap-1">
+                            <MapPin className="h-4 w-4 text-slate-500" />
+                            {kom.lokasi || "Kota Tegal"}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Status Badge */}
+                      <div className="shrink-0">
+                        {status === "approved" && (
+                          <span className="inline-flex items-center gap-1.5 rounded-full border-2 border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 px-3 py-1 text-xs font-bold text-emerald-700 dark:text-emerald-300">
+                            <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                            AKTIF ({item.peran})
+                          </span>
+                        )}
+                        {status === "pending" && (
+                          <span className="inline-flex items-center gap-1.5 rounded-full border-2 border-amber-500 bg-amber-50 dark:bg-amber-950/40 px-3 py-1 text-xs font-bold text-amber-700 dark:text-amber-300">
+                            <Clock className="h-4 w-4 text-amber-600" />
+                            MENUNGGU PERSETUJUAN ({item.peran})
+                          </span>
+                        )}
+                        {status === "rejected" && (
+                          <span className="inline-flex items-center gap-1.5 rounded-full border-2 border-rose-500 bg-rose-50 dark:bg-rose-950/40 px-3 py-1 text-xs font-bold text-rose-700 dark:text-rose-300">
+                            <XCircle className="h-4 w-4 text-rose-600" />
+                            DITOLAK
+                          </span>
+                        )}
                       </div>
                     </div>
 
-                    {/* Status Badge */}
-                    <div className="shrink-0">
-                      {status === "approved" && (
-                        <span className="inline-flex items-center gap-1.5 rounded-full border-2 border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 px-3 py-1 text-xs font-bold text-emerald-700 dark:text-emerald-300">
-                          <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-                          AKTIF ({item.peran})
-                        </span>
-                      )}
-                      {status === "pending" && (
-                        <span className="inline-flex items-center gap-1.5 rounded-full border-2 border-amber-500 bg-amber-50 dark:bg-amber-950/40 px-3 py-1 text-xs font-bold text-amber-700 dark:text-amber-300">
-                          <Clock className="h-4 w-4 text-amber-600" />
-                          MENUNGGU PERSETUJUAN ({item.peran})
-                        </span>
-                      )}
-                      {status === "rejected" && (
-                        <span className="inline-flex items-center gap-1.5 rounded-full border-2 border-rose-500 bg-rose-50 dark:bg-rose-950/40 px-3 py-1 text-xs font-bold text-rose-700 dark:text-rose-300">
-                          <XCircle className="h-4 w-4 text-rose-600" />
-                          DITOLAK
-                        </span>
-                      )}
+                    {kom.deskripsi && (
+                      <p className="text-sm text-slate-600 dark:text-slate-400 line-clamp-2 leading-relaxed">
+                        {kom.deskripsi}
+                      </p>
+                    )}
+
+                    <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
+                      <Link
+                        href={`/komunitas/${item.komunitas_id}`}
+                        className="inline-flex min-h-[48px] w-full items-center justify-center gap-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border-2 border-emerald-200 dark:border-emerald-800/60 px-4 text-base font-bold text-emerald-700 dark:text-emerald-300 transition-colors hover:bg-emerald-100 dark:hover:bg-emerald-900/50 active:scale-98"
+                      >
+                        <span>Buka Halaman Komunitas</span>
+                        <ArrowRight className="h-4 w-4" />
+                      </Link>
                     </div>
                   </div>
+                );
+              })}
 
-                  {kom.deskripsi && (
-                    <p className="text-sm text-slate-600 dark:text-slate-400 line-clamp-2 leading-relaxed">
-                      {kom.deskripsi}
-                    </p>
-                  )}
-
-                  <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
-                    <Link
-                      href={`/komunitas/${item.komunitas_id}`}
-                      className="inline-flex min-h-[48px] w-full items-center justify-center gap-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border-2 border-emerald-200 dark:border-emerald-800/60 px-4 text-base font-bold text-emerald-700 dark:text-emerald-300 transition-colors hover:bg-emerald-100 dark:hover:bg-emerald-900/50 active:scale-98"
-                    >
-                      <span>Buka Halaman Komunitas</span>
-                      <ArrowRight className="h-4 w-4" />
-                    </Link>
-                  </div>
-                </div>
-              );
-            })}
-
-            {/* Action Button: Explore More Communities */}
-            <div className="pt-2">
-              <Link
-                href="/komunitas"
-                className="flex min-h-[48px] w-full items-center justify-center gap-2 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 text-base font-bold text-slate-800 dark:text-slate-200 transition-all hover:border-emerald-400 dark:hover:border-emerald-600 hover:bg-emerald-50/40 dark:hover:bg-emerald-950/20 active:scale-98 shadow-xs"
-              >
-                <Compass className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-                <span>Jelajahi Komunitas Lainnya</span>
-              </Link>
+              {/* Action Button: Explore More Communities */}
+              <div className="pt-2">
+                <Link
+                  href="/komunitas"
+                  className="flex min-h-[48px] w-full items-center justify-center gap-2 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 text-base font-bold text-slate-800 dark:text-slate-200 transition-all hover:border-emerald-400 dark:hover:border-emerald-600 hover:bg-emerald-50/40 dark:hover:bg-emerald-950/20 active:scale-98 shadow-xs"
+                >
+                  <Compass className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                  <span>Jelajahi Komunitas Lainnya</span>
+                </Link>
+              </div>
             </div>
-          </div>
-        )}
-      </section>
+          )}
+        </section>
+      )}
     </div>
   );
 }
