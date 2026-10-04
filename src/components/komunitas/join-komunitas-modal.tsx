@@ -192,7 +192,7 @@ export function JoinKomunitasModal({
               </div>
 
               <p className="text-sm text-slate-600 leading-relaxed">
-                * Permohonan peran Anda akan diverifikasi oleh Pengurus / Kader aktif komunitas terkait sebelum status Anda dikonfirmasi.
+                * Anda akan langsung terdaftar di komunitas {komunitas.nama} sesuai peran yang dipilih.
               </p>
 
               {/* Submit Button */}
@@ -205,12 +205,12 @@ export function JoinKomunitasModal({
                   {isPending ? (
                     <>
                       <Loader2 className="h-5 w-5 animate-spin" />
-                      <span>Mengirim Permohonan...</span>
+                      <span>Memproses...</span>
                     </>
                   ) : (
                     <>
                       <UserPlus className="h-4 w-4" />
-                      <span>KIRIM PERMOHONAN ({selectedRole.toUpperCase()})</span>
+                      <span>GABUNG SEBAGAI {selectedRole.toUpperCase()}</span>
                     </>
                   )}
                 </button>

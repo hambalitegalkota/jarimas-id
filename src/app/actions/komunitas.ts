@@ -1313,15 +1313,18 @@ export async function requestJoinKomunitas({
       }
     }
 
+    const isWargaKita = seedItem?.jenis === "warga_kita";
+    const targetStatus = isWargaKita ? "pending" : "approved";
+
     if (existingMember) {
       const displayRole = formatPeranDisplay(existingMember.peran);
-      if (existingMember.status === "approved") {
+      if (existingMember.status === "approved" && existingMember.peran === dbRole) {
         return {
           success: false,
           message: `Anda sudah menjadi anggota aktif sebagai ${displayRole}.`,
         };
       }
-      if (existingMember.status === "pending") {
+      if (isWargaKita && existingMember.status === "pending") {
         return {
           success: false,
           message:
@@ -1329,12 +1332,12 @@ export async function requestJoinKomunitas({
         };
       }
 
-      // Jika status sebelumnya rejected, perbarui menjadi pending
+      // Perbarui status dan peran
       const { error: updateError } = await supabase
         .from("anggota_komunitas")
         .update({
           peran: dbRole,
-          status: "pending",
+          status: targetStatus,
           updated_at: new Date().toISOString(),
         })
         .eq("id", existingMember.id);
@@ -1348,7 +1351,7 @@ export async function requestJoinKomunitas({
           user_id: user.id,
           komunitas_id: dbKomunitasId,
           peran: dbRole,
-          status: "pending",
+          status: targetStatus,
           created_at: new Date().toISOString(),
         });
 
@@ -1361,8 +1364,9 @@ export async function requestJoinKomunitas({
 
     return {
       success: true,
-      message:
-        "Permohonan berhasil dikirim! Menunggu persetujuan Pengurus / Kader Komunitas.",
+      message: isWargaKita
+        ? "Permohonan berhasil dikirim! Menunggu persetujuan Pengurus Komunitas."
+        : `Berhasil bergabung sebagai ${formatPeranDisplay(dbRole)}!`,
     };
   } catch (err: any) {
     console.error("Error requestJoinKomunitas:", err);

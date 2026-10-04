@@ -255,22 +255,23 @@ export async function getPendingApprovals(): Promise<{
       };
     });
 
+    // Saring hanya untuk komunitas Warga Kita (karena sistem persetujuan berjenjang hanya berlaku untuk hierarki Warga Kita)
+    const wargaItems = allItems.filter(
+      (item) => item.komunitas?.jenis === "warga_kita"
+    );
+
     // 1. Primary Approvals:
     // - Jika Super Admin: Hanya tampilkan permohonan yang menjadi wewenang langsung Super Admin
-    //   (yaitu Admin Kecamatan & Posyandu / PAUD / Komunitas Umum)
-    // - Jika Community Admin: Hanya tampilkan yang memiliki hak akses approval sesuai tingkatannya
+    //   (yaitu Admin Kecamatan di Warga Kita)
+    // - Jika Community Admin: Hanya tampilkan yang memiliki hak akses approval sesuai tingkatannya di Warga Kita
     const primaryApprovals = isSuperAdmin
-      ? allItems.filter(
-          (item) =>
-            item.tierLevel === "Kecamatan" ||
-            item.komunitas?.jenis !== "warga_kita"
-        )
-      : allItems.filter((item) => item.canApprove);
+      ? wargaItems.filter((item) => item.tierLevel === "Kecamatan")
+      : wargaItems.filter((item) => item.canApprove);
 
     return {
       success: true,
       data: primaryApprovals,
-      allHierarchyItems: isSuperAdmin ? allItems : [],
+      allHierarchyItems: isSuperAdmin ? wargaItems : [],
       isSuperAdmin,
     };
   } catch (err: any) {

@@ -28,7 +28,7 @@ interface ApprovalListProps {
   isSuperAdmin?: boolean;
 }
 
-type FilterTier = "semua" | "admin_rt" | "admin_rw" | "admin_kel" | "admin_kec" | "warga" | "posyandu_paud";
+type FilterTier = "semua" | "admin_rt" | "admin_rw" | "admin_kel" | "admin_kec" | "warga";
 
 export function ApprovalList({
   initialApprovals,
@@ -90,7 +90,7 @@ export function ApprovalList({
     if (activeTier === "semua") return true;
 
     const isAdmin = isRoleAdmin(item.peran_diajukan || item.peran);
-    const jenis = item.komunitas?.jenis || "posyandu";
+    const jenis = item.komunitas?.jenis || "warga_kita";
 
     if (activeTier === "admin_rt") {
       return jenis === "warga_kita" && isAdmin && item.tierLevel === "RT";
@@ -106,9 +106,6 @@ export function ApprovalList({
     }
     if (activeTier === "warga") {
       return jenis === "warga_kita" && !isAdmin;
-    }
-    if (activeTier === "posyandu_paud") {
-      return jenis === "posyandu" || jenis === "satuan_paud";
     }
     return true;
   });
@@ -144,10 +141,6 @@ export function ApprovalList({
       (i) =>
         i.komunitas?.jenis === "warga_kita" &&
         !isRoleAdmin(i.peran_diajukan || i.peran)
-    ).length,
-    posyandu_paud: approvals.filter(
-      (i) =>
-        i.komunitas?.jenis === "posyandu" || i.komunitas?.jenis === "satuan_paud"
     ).length,
   };
 
@@ -300,23 +293,6 @@ export function ApprovalList({
             </button>
           )}
 
-          {counts.posyandu_paud > 0 && (
-            <button
-              type="button"
-              onClick={() => setActiveTier("posyandu_paud")}
-              className={cn(
-                "inline-flex shrink-0 items-center min-h-[44px] rounded-xl px-4 py-2 text-sm font-bold transition-all cursor-pointer gap-2",
-                activeTier === "posyandu_paud"
-                  ? "bg-emerald-600 text-white font-bold shadow-xs border-2 border-emerald-600"
-                  : "bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60"
-              )}
-            >
-              <span>Posyandu &amp; PAUD</span>
-              <span className={cn("rounded-full px-2 py-0.5 text-xs font-bold font-mono", activeTier === "posyandu_paud" ? "bg-emerald-700 text-white" : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300")}>
-                {counts.posyandu_paud}
-              </span>
-            </button>
-          )}
         </div>
       )}
 
