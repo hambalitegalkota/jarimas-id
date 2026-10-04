@@ -22,7 +22,13 @@ interface JoinKomunitasModalProps {
 }
 
 const ROLE_OPTIONS_BY_TYPE: Record<string, string[]> = {
-  warga_kita: ["Penduduk", "Pendatang", "Pengurus"],
+  warga_kita: [
+    "Penduduk",
+    "Pengurus",
+    "Admin Kelurahan",
+    "Pendatang",
+    "Pengunjung",
+  ],
   posyandu: [
     "Pengunjung",
     "Kader",

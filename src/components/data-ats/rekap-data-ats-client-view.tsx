@@ -906,14 +906,16 @@ export function RekapDataAtsClientView({ initialData }: RekapDataAtsClientViewPr
                           <span
                             className={cn(
                               "inline-block px-2.5 py-0.5 rounded-full font-black text-2xs font-mono uppercase",
-                              kel.totalAts >= 25
+                              kel.totalAts === 0
+                                ? "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
+                                : kel.totalAts >= 25
                                 ? "bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300"
                                 : kel.totalAts >= 15
                                 ? "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300"
                                 : "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
                             )}
                           >
-                            {kel.totalAts >= 25 ? "Prioritas Tinggi" : kel.totalAts >= 15 ? "Prioritas Sedang" : "Terkendali"}
+                            {kel.totalAts === 0 ? "0 ATS" : kel.totalAts >= 25 ? "Prioritas Tinggi" : kel.totalAts >= 15 ? "Prioritas Sedang" : "Terkendali"}
                           </span>
                         </td>
                       </tr>

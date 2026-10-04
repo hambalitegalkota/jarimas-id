@@ -440,6 +440,43 @@ export function ModalEditAts({
                 />
               </div>
 
+              {/* Kecamatan & Kelurahan */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-muted-foreground">
+                    Kecamatan *
+                  </label>
+                  <select
+                    value={kecamatan}
+                    onChange={(e) => handleKecamatanChange(e.target.value)}
+                    className="w-full h-9 rounded-md border border-border bg-card px-3 text-xs font-medium text-foreground focus:border-amber-500 focus:outline-hidden"
+                  >
+                    {DAFTAR_KECAMATAN_TEGAL.map((k) => (
+                      <option key={k} value={k}>
+                        Kec. {k}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-muted-foreground">
+                    Kelurahan *
+                  </label>
+                  <select
+                    value={kelurahan}
+                    onChange={(e) => setKelurahan(e.target.value)}
+                    className="w-full h-9 rounded-md border border-border bg-card px-3 text-xs font-medium text-foreground focus:border-amber-500 focus:outline-hidden"
+                  >
+                    {kelurahanOptions.map((kel) => (
+                      <option key={kel} value={kel}>
+                        Kel. {kel}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
               {/* RW dan RT */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">

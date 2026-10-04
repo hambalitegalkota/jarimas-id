@@ -982,14 +982,16 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
 
     const meta = extractKomunitasMetadata(targetKomunitas || { id: komunitasId });
 
-    // HANYA jenjang RT (memiliki RT dan RW) yang memiliki izin untuk memvalidasi Data ATS!
-    // Jenjang RW, Kelurahan, Kecamatan, dan Posyandu hanya untuk pemantauan/monitoring.
+    // Jenjang RT dan Posyandu memiliki wewenang untuk memvalidasi / memverifikasi Data ATS warga di wilayahnya
     const isRtCommunity = Boolean(
       meta.jenis === "warga_kita" &&
       ((meta.hasRt && meta.hasRw) ||
         (targetKomunitas?.rt && targetKomunitas?.rw))
     );
-    canValidate = isRtCommunity && (isSuperAdmin || canManage);
+    const isPosyanduCommunity = Boolean(
+      meta.jenis === "posyandu" || targetKomunitas?.jenis === "posyandu"
+    );
+    canValidate = (isRtCommunity || isPosyanduCommunity) && (isSuperAdmin || canManage);
 
     // 2. Ambil peta seluruh komunitas dari DB untuk resolusi fallback metadata
     const { data: allDbKom } = await supabase

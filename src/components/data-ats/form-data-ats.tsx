@@ -406,6 +406,43 @@ export function FormDataAts({
           />
         </div>
 
+        {/* Kecamatan & Kelurahan */}
+        <div className="flex flex-col sm:grid sm:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <label className="text-base font-bold text-slate-900 block">
+              Kecamatan <span className="text-red-500">*</span>
+            </label>
+            <select
+              value={kecamatan}
+              onChange={(e) => handleKecamatanChange(e.target.value)}
+              className="w-full min-h-[48px] h-12 rounded-xl border-2 border-slate-300 bg-white px-4 text-base font-semibold text-slate-900 focus:border-blue-600 focus:outline-hidden"
+            >
+              {DAFTAR_KECAMATAN_TEGAL.map((k) => (
+                <option key={k} value={k}>
+                  Kec. {k}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-base font-bold text-slate-900 block">
+              Kelurahan <span className="text-red-500">*</span>
+            </label>
+            <select
+              value={kelurahan}
+              onChange={(e) => setKelurahan(e.target.value)}
+              className="w-full min-h-[48px] h-12 rounded-xl border-2 border-slate-300 bg-white px-4 text-base font-semibold text-slate-900 focus:border-blue-600 focus:outline-hidden"
+            >
+              {kelurahanOptions.map((kel) => (
+                <option key={kel} value={kel}>
+                  Kel. {kel}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
         {/* RW dan RT */}
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-2">
