@@ -3005,4 +3005,322 @@ export async function deleteKomunitasAdminAction(komunitasId: string): Promise<{
   }
 }
 
+export interface KomunitasBerjenjangItem {
+  id: string;
+  nama: string;
+  jenis: string;
+  kecamatan: string;
+  kelurahan: string;
+  rw?: string | null;
+  rt?: string | null;
+  lokasi?: string;
+  jumlahAnggota: number;
+  kaderCount: number;
+  pengurusCount: number;
+  wargaCount: number;
+  dataAnakCount: number;
+}
+
+export interface KelurahanHierarchyGroup {
+  kelurahan: string;
+  totalKomunitas: number;
+  totalAnggota: number;
+  totalDataAnak: number;
+  komunitasList: KomunitasBerjenjangItem[];
+}
+
+export interface KecamatanHierarchyGroup {
+  kecamatan: string;
+  totalKomunitas: number;
+  totalAnggota: number;
+  totalDataAnak: number;
+  kelurahanList: KelurahanHierarchyGroup[];
+}
+
+export interface HierarchicalActiveKomunitasSummary {
+  totalKomunitasBeranggota: number;
+  totalSeluruhAnggota: number;
+  totalDataAnak: number;
+  byJenis: {
+    posyandu: { totalKomunitas: number; totalAnggota: number };
+    satuan_paud: { totalKomunitas: number; totalAnggota: number };
+    warga_kita: { totalKomunitas: number; totalAnggota: number };
+  };
+  kecamatanList: KecamatanHierarchyGroup[];
+}
+
+/**
+ * Server Action: Mengambil data hierarki berjenjang komunitas yang sudah memiliki anggota dan jumlahnya
+ */
+export async function getHierarchicalActiveKomunitasAction(): Promise<{
+  success: boolean;
+  data?: HierarchicalActiveKomunitasSummary;
+  message?: string;
+}> {
+  try {
+    const supabase = await createClient();
+
+    // 1. Ambil seluruh anggota_komunitas yang approved
+    const { data: rawMembers, error: memberErr } = await supabase
+      .from("anggota_komunitas")
+      .select("id, komunitas_id, peran, status")
+      .eq("status", "approved");
+
+    if (memberErr) {
+      throw memberErr;
+    }
+
+    if (!rawMembers || rawMembers.length === 0) {
+      return {
+        success: true,
+        data: {
+          totalKomunitasBeranggota: 0,
+          totalSeluruhAnggota: 0,
+          totalDataAnak: 0,
+          byJenis: {
+            posyandu: { totalKomunitas: 0, totalAnggota: 0 },
+            satuan_paud: { totalKomunitas: 0, totalAnggota: 0 },
+            warga_kita: { totalKomunitas: 0, totalAnggota: 0 },
+          },
+          kecamatanList: [],
+        },
+      };
+    }
+
+    // 2. Kumpulkan komunitas_id unik dan statistik peran
+    const komStatsMap: Record<
+      string,
+      {
+        total: number;
+        kader: number;
+        pengurus: number;
+        warga: number;
+      }
+    > = {};
+
+    for (const m of rawMembers) {
+      const kId = m.komunitas_id;
+      if (!kId) continue;
+      if (!komStatsMap[kId]) {
+        komStatsMap[kId] = { total: 0, kader: 0, pengurus: 0, warga: 0 };
+      }
+      komStatsMap[kId].total += 1;
+
+      const pLower = (m.peran || "").toLowerCase();
+      if (
+        pLower.includes("kader") ||
+        pLower.includes("medis") ||
+        pLower.includes("nakes") ||
+        pLower.includes("bidan")
+      ) {
+        komStatsMap[kId].kader += 1;
+      } else if (
+        pLower.includes("pengurus") ||
+        pLower.includes("admin") ||
+        pLower.includes("ketua") ||
+        pLower.includes("pengelola") ||
+        pLower.includes("pimpinan") ||
+        pLower.includes("kepala")
+      ) {
+        komStatsMap[kId].pengurus += 1;
+      } else {
+        komStatsMap[kId].warga += 1;
+      }
+    }
+
+    const activeKomIds = Object.keys(komStatsMap);
+
+    // 3. Ambil data anak per komunitas
+    const { data: rawChildren } = await supabase
+      .from("data_anak")
+      .select("komunitas_id");
+
+    const dataAnakCountMap: Record<string, number> = {};
+    if (rawChildren) {
+      for (const ch of rawChildren) {
+        if (ch.komunitas_id) {
+          dataAnakCountMap[ch.komunitas_id] =
+            (dataAnakCountMap[ch.komunitas_id] || 0) + 1;
+        }
+      }
+    }
+
+    // 4. Ambil detail komunitas dari tabel komunitas
+    const { data: dbKomList } = await supabase
+      .from("komunitas")
+      .select("id, nama, jenis, kecamatan, kelurahan, rw, rt, lokasi, deskripsi")
+      .in("id", activeKomIds);
+
+    const dbKomMap = new Map((dbKomList || []).map((k) => [k.id, k]));
+
+    // 5. Susun array KomunitasBerjenjangItem
+    const allActiveItems: KomunitasBerjenjangItem[] = [];
+    let totalPosyanduKom = 0;
+    let totalPosyanduAnggota = 0;
+    let totalPaudKom = 0;
+    let totalPaudAnggota = 0;
+    let totalWargaKom = 0;
+    let totalWargaAnggota = 0;
+    let totalGlobalDataAnak = 0;
+
+    for (const kId of activeKomIds) {
+      const stats = komStatsMap[kId];
+      let kom: any = dbKomMap.get(kId);
+
+      if (!kom) {
+        const seed = findOrGenerateKomunitasSeed(kId);
+        if (seed) {
+          kom = {
+            id: kId,
+            nama: seed.nama,
+            jenis: seed.jenis,
+            kecamatan: seed.kecamatan,
+            kelurahan: seed.kelurahan,
+            rw: seed.rw,
+            rt: seed.rt,
+            lokasi: seed.lokasi,
+            deskripsi: (seed as any)?.deskripsi || null,
+          };
+        }
+      }
+
+      const meta = extractKomunitasMetadata(kom || { id: kId });
+      let itemNama = kom?.nama || "Komunitas Tegal";
+      const itemJenis = kom?.jenis || "posyandu";
+      if (itemJenis === "posyandu") {
+        const coreName = extractCorePosyanduName(itemNama);
+        if (coreName) itemNama = `Posyandu ${coreName}`;
+      }
+
+      const rawKec = meta.kecamatan || kom?.kecamatan || "Kota Tegal";
+      const rawKel = meta.kelurahan || kom?.kelurahan || "Umum";
+      const childCount = dataAnakCountMap[kId] || 0;
+      totalGlobalDataAnak += childCount;
+
+      if (itemJenis === "posyandu") {
+        totalPosyanduKom += 1;
+        totalPosyanduAnggota += stats.total;
+      } else if (itemJenis === "satuan_paud") {
+        totalPaudKom += 1;
+        totalPaudAnggota += stats.total;
+      } else {
+        totalWargaKom += 1;
+        totalWargaAnggota += stats.total;
+      }
+
+      allActiveItems.push({
+        id: kId,
+        nama: itemNama,
+        jenis: itemJenis,
+        kecamatan: rawKec,
+        kelurahan: rawKel,
+        rw: kom?.rw || meta.rw || null,
+        rt: kom?.rt || meta.rt || null,
+        lokasi: kom?.lokasi || "Kota Tegal",
+        jumlahAnggota: stats.total,
+        kaderCount: stats.kader,
+        pengurusCount: stats.pengurus,
+        wargaCount: stats.warga,
+        dataAnakCount: childCount,
+      });
+    }
+
+    // 6. Urutkan item dari jumlah anggota terbanyak
+    allActiveItems.sort((a, b) => b.jumlahAnggota - a.jumlahAnggota);
+
+    // 7. Kelompokkan secara berjenjang (Kecamatan -> Kelurahan -> Komunitas)
+    const kecamatanMap: Record<string, Record<string, KomunitasBerjenjangItem[]>> = {};
+
+    for (const item of allActiveItems) {
+      const kec = item.kecamatan || "Kota Tegal";
+      const kel = item.kelurahan || "Umum";
+
+      if (!kecamatanMap[kec]) {
+        kecamatanMap[kec] = {};
+      }
+      if (!kecamatanMap[kec][kel]) {
+        kecamatanMap[kec][kel] = [];
+      }
+      kecamatanMap[kec][kel].push(item);
+    }
+
+    // Standar urutan 4 kecamatan Kota Tegal
+    const standardKecList = ["Tegal Timur", "Tegal Barat", "Tegal Selatan", "Margadana"];
+    const allFoundKecNames = Object.keys(kecamatanMap).sort((a, b) => {
+      const idxA = standardKecList.indexOf(a);
+      const idxB = standardKecList.indexOf(b);
+      if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+      if (idxA !== -1) return -1;
+      if (idxB !== -1) return 1;
+      return a.localeCompare(b);
+    });
+
+    const kecamatanHierarchy: KecamatanHierarchyGroup[] = allFoundKecNames.map(
+      (kecName) => {
+        const kelMap = kecamatanMap[kecName];
+        const kelNames = Object.keys(kelMap).sort((a, b) => a.localeCompare(b));
+
+        let kecTotalKom = 0;
+        let kecTotalAnggota = 0;
+        let kecTotalDataAnak = 0;
+
+        const kelurahanList: KelurahanHierarchyGroup[] = kelNames.map((kelName) => {
+          const list = kelMap[kelName];
+          const kelTotalKom = list.length;
+          const kelTotalAnggota = list.reduce(
+            (sum, it) => sum + it.jumlahAnggota,
+            0
+          );
+          const kelTotalDataAnak = list.reduce(
+            (sum, it) => sum + it.dataAnakCount,
+            0
+          );
+
+          kecTotalKom += kelTotalKom;
+          kecTotalAnggota += kelTotalAnggota;
+          kecTotalDataAnak += kelTotalDataAnak;
+
+          return {
+            kelurahan: kelName,
+            totalKomunitas: kelTotalKom,
+            totalAnggota: kelTotalAnggota,
+            totalDataAnak: kelTotalDataAnak,
+            komunitasList: list,
+          };
+        });
+
+        return {
+          kecamatan: kecName,
+          totalKomunitas: kecTotalKom,
+          totalAnggota: kecTotalAnggota,
+          totalDataAnak: kecTotalDataAnak,
+          kelurahanList,
+        };
+      }
+    );
+
+    return {
+      success: true,
+      data: {
+        totalKomunitasBeranggota: allActiveItems.length,
+        totalSeluruhAnggota: rawMembers.length,
+        totalDataAnak: totalGlobalDataAnak,
+        byJenis: {
+          posyandu: { totalKomunitas: totalPosyanduKom, totalAnggota: totalPosyanduAnggota },
+          satuan_paud: { totalKomunitas: totalPaudKom, totalAnggota: totalPaudAnggota },
+          warga_kita: { totalKomunitas: totalWargaKom, totalAnggota: totalWargaAnggota },
+        },
+        kecamatanList: kecamatanHierarchy,
+      },
+    };
+  } catch (err: any) {
+    console.error("Error getHierarchicalActiveKomunitasAction:", err);
+    return {
+      success: false,
+      message: err.message || "Gagal memuat hierarki komunitas beranggota.",
+    };
+  }
+}
+
+
 

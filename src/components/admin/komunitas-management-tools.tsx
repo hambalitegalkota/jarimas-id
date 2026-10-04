@@ -37,6 +37,7 @@ import {
   deleteKomunitasAdminAction,
   type KomunitasAuditSummary,
 } from "@/app/actions/komunitas";
+import { KomunitasBeranggotaHierarchy } from "./komunitas-beranggota-hierarchy";
 import type { KomunitasWithMembership } from "@/types/database";
 import { KOTA_TEGAL_DATA } from "@/lib/constants/tegal-data";
 
@@ -414,7 +415,10 @@ export function KomunitasManagementTools() {
         ) : null}
       </div>
 
-      {/* 2. SECTION DAFTAR & MANAJEMEN KOMUNITAS */}
+      {/* 2. SECTION PEMANTAUAN KOMUNITAS BERANGGOTA (STRUKTUR BERJENJANG) */}
+      <KomunitasBeranggotaHierarchy />
+
+      {/* 3. SECTION DAFTAR & MANAJEMEN KOMUNITAS */}
       <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-6 space-y-5 shadow-xs">
         {/* Controls: Search, Category, District, Sort */}
         <div className="space-y-3">
