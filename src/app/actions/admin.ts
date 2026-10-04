@@ -670,36 +670,58 @@ export async function cleanupAllDataAnakAction(): Promise<{
       };
     }
 
-    // 1. Hitung jumlah data anak sebelum dihapus
-    const { count: initialCount } = await supabase
+    const adminClient = createAdminClient();
+    const client = adminClient || supabase;
+
+    // 1. Ambil seluruh ID data anak yang ada di database
+    const { data: allChildren } = await client
       .from("data_anak")
-      .select("id", { count: "exact", head: true });
+      .select("id");
+
+    const childIds = (allChildren || []).map((c: any) => c.id).filter(Boolean);
 
     // 2. Hapus seluruh riwayat ddks_records
-    await supabase
-      .from("ddks_records")
-      .delete()
-      .neq("id", "00000000-0000-0000-0000-000000000000");
+    if (childIds.length > 0) {
+      await client
+        .from("ddks_records")
+        .delete()
+        .in("data_anak_id", childIds);
 
-    // 3. Hapus seluruh data_anak
-    const { error: delErr } = await supabase
-      .from("data_anak")
-      .delete()
-      .neq("id", "00000000-0000-0000-0000-000000000000");
+      // 3. Hapus seluruh data_anak berdasarkan childIds
+      const { error: delErr } = await client
+        .from("data_anak")
+        .delete()
+        .in("id", childIds);
 
-    if (delErr) {
-      throw delErr;
+      if (delErr) {
+        throw delErr;
+      }
+    } else {
+      await client.from("ddks_records").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+      await client.from("data_anak").delete().neq("id", "00000000-0000-0000-0000-000000000000");
     }
 
+    // Bersihkan juga orphaned ddks_records jika ada
+    try {
+      const { data: allDdks } = await client.from("ddks_records").select("id");
+      const ddksIds = (allDdks || []).map((d: any) => d.id).filter(Boolean);
+      if (ddksIds.length > 0) {
+        await client.from("ddks_records").delete().in("id", ddksIds);
+      }
+    } catch {}
+
+    revalidatePath("/data-anak");
+    revalidatePath("/data-ats");
     revalidatePath("/profil");
     revalidatePath("/komunitas");
     revalidatePath("/kabar");
     revalidatePath("/admin");
+    revalidatePath("/");
 
     return {
       success: true,
-      message: `Berhasil membersihkan ${initialCount || 0} Data Anak & seluruh riwayat DDTK uji coba! Database Data Anak kini bersih (0) dan siap untuk pemantauan data uji coba terbaru.`,
-      deletedCount: initialCount || 0,
+      message: `Berhasil membersihkan ${childIds.length} Data Anak (PAUD & ATS) & seluruh riwayat DDTK uji coba! Database Data Anak kini bersih (0) dan siap untuk pemantauan data uji coba terbaru.`,
+      deletedCount: childIds.length,
     };
   } catch (err: any) {
     console.error("Error cleanupAllDataAnakAction:", err);
@@ -729,30 +751,45 @@ export async function cleanupAllKaderAndAnggotaAction(): Promise<{
       };
     }
 
-    // 1. Hitung jumlah keanggotaan sebelum dihapus
-    const { count: initialCount } = await supabase
+    const adminClient = createAdminClient();
+    const client = adminClient || supabase;
+
+    // 1. Ambil seluruh ID anggota komunitas
+    const { data: allMembers } = await client
       .from("anggota_komunitas")
-      .select("id", { count: "exact", head: true });
+      .select("id");
+
+    const memberIds = (allMembers || []).map((m: any) => m.id).filter(Boolean);
 
     // 2. Hapus seluruh data keanggotaan komunitas uji coba
-    const { error: delErr } = await supabase
-      .from("anggota_komunitas")
-      .delete()
-      .neq("id", "00000000-0000-0000-0000-000000000000");
+    if (memberIds.length > 0) {
+      const { error: delErr } = await client
+        .from("anggota_komunitas")
+        .delete()
+        .in("id", memberIds);
 
-    if (delErr) {
-      throw delErr;
+      if (delErr) {
+        throw delErr;
+      }
+    } else {
+      await client
+        .from("anggota_komunitas")
+        .delete()
+        .neq("id", "00000000-0000-0000-0000-000000000000");
     }
 
+    revalidatePath("/data-anak");
+    revalidatePath("/data-ats");
     revalidatePath("/profil");
     revalidatePath("/komunitas");
     revalidatePath("/kabar");
     revalidatePath("/admin");
+    revalidatePath("/");
 
     return {
       success: true,
-      message: `Berhasil membersihkan ${initialCount || 0} data kader dan keanggotaan komunitas uji coba! Seluruh komunitas kini dalam status reset keanggotaan.`,
-      deletedCount: initialCount || 0,
+      message: `Berhasil membersihkan ${memberIds.length} data kader dan keanggotaan komunitas uji coba! Seluruh komunitas kini dalam status reset keanggotaan.`,
+      deletedCount: memberIds.length,
     };
   } catch (err: any) {
     console.error("Error cleanupAllKaderAndAnggotaAction:", err);
@@ -787,62 +824,101 @@ export async function cleanupAllTestDataAction(): Promise<{
       };
     }
 
+    const adminClient = createAdminClient();
+    const client = adminClient || supabase;
+
     // 1. Ambil profil non-super admin
-    const { data: nonAdminProfiles } = await supabase
+    const { data: nonAdminProfiles } = await client
       .from("profiles")
       .select("id")
       .or("is_super_admin.is.null,is_super_admin.eq.false");
 
     const nonAdminIds = (nonAdminProfiles || [])
-      .map((p) => p.id)
-      .filter((id) => id !== user.id);
+      .map((p: any) => p.id)
+      .filter((id: string) => id !== user.id);
 
     // 2. Bersihkan komentar & reaksi kabar
-    await supabase.from("reaksi_kabar").delete().neq("id", "00000000-0000-0000-0000-000000000000");
-    await supabase.from("komentar_kabar").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+    try {
+      const { data: allReactions } = await client.from("reaksi_kabar").select("id");
+      const reactionIds = (allReactions || []).map((r: any) => r.id).filter(Boolean);
+      if (reactionIds.length > 0) {
+        await client.from("reaksi_kabar").delete().in("id", reactionIds);
+      }
+    } catch {}
 
-    // 3. Bersihkan postingan kabar non-super admin atau uji coba
+    try {
+      const { data: allComments } = await client.from("komentar_kabar").select("id");
+      const commentIds = (allComments || []).map((c: any) => c.id).filter(Boolean);
+      if (commentIds.length > 0) {
+        await client.from("komentar_kabar").delete().in("id", commentIds);
+      }
+    } catch {}
+
+    // 3. Bersihkan postingan kabar non-super admin
     if (nonAdminIds.length > 0) {
-      await supabase.from("kabar_jarimas").delete().in("user_id", nonAdminIds);
+      await client.from("kabar_jarimas").delete().in("user_id", nonAdminIds);
     }
 
-    // 4. Bersihkan seluruh ddks_records & data_anak uji coba
-    const { count: childrenCount } = await supabase
-      .from("data_anak")
-      .select("id", { count: "exact", head: true });
+    // 4. Bersihkan seluruh ddks_records & data_anak uji coba (termasuk yang dibuat Super Admin)
+    const { data: allChildren } = await client.from("data_anak").select("id");
+    const childIds = (allChildren || []).map((c: any) => c.id).filter(Boolean);
 
-    await supabase.from("ddks_records").delete().neq("id", "00000000-0000-0000-0000-000000000000");
-    await supabase.from("data_anak").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+    if (childIds.length > 0) {
+      await client.from("ddks_records").delete().in("data_anak_id", childIds);
+      await client.from("data_anak").delete().in("id", childIds);
+    } else {
+      await client.from("ddks_records").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+      await client.from("data_anak").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+    }
 
-    // 5. Bersihkan seluruh anggota_komunitas uji coba (kader, pengurus, anggota)
-    const { count: membersCount } = await supabase
-      .from("anggota_komunitas")
-      .select("id", { count: "exact", head: true });
+    // Bersihkan juga orphaned ddks_records jika ada
+    try {
+      const { data: allDdks } = await client.from("ddks_records").select("id");
+      const ddksIds = (allDdks || []).map((d: any) => d.id).filter(Boolean);
+      if (ddksIds.length > 0) {
+        await client.from("ddks_records").delete().in("id", ddksIds);
+      }
+    } catch {}
 
-    await supabase.from("anggota_komunitas").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+    // 5. Bersihkan seluruh anggota_komunitas uji coba
+    const { data: allMembers } = await client.from("anggota_komunitas").select("id");
+    const memberIds = (allMembers || []).map((m: any) => m.id).filter(Boolean);
+
+    if (memberIds.length > 0) {
+      await client.from("anggota_komunitas").delete().in("id", memberIds);
+    } else {
+      await client.from("anggota_komunitas").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+    }
 
     // 6. Bersihkan data pesanan market jika ada
     try {
-      await supabase.from("market_pesanan").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+      const { data: allOrders } = await client.from("market_pesanan").select("id");
+      const orderIds = (allOrders || []).map((o: any) => o.id).filter(Boolean);
+      if (orderIds.length > 0) {
+        await client.from("market_pesanan").delete().in("id", orderIds);
+      }
     } catch {}
 
     // 7. Bersihkan tabel profiles milik pengguna non-super admin
     if (nonAdminIds.length > 0) {
-      await supabase.from("profiles").delete().in("id", nonAdminIds);
+      await client.from("profiles").delete().in("id", nonAdminIds);
     }
 
+    revalidatePath("/data-anak");
+    revalidatePath("/data-ats");
     revalidatePath("/profil");
     revalidatePath("/komunitas");
     revalidatePath("/kabar");
     revalidatePath("/admin");
+    revalidatePath("/");
 
     return {
       success: true,
-      message: `Pembersihan menyeluruh berhasil! Dihapus: ${childrenCount || 0} Data Anak & DDTK, ${membersCount || 0} Keanggotaan & Kader, serta ${nonAdminIds.length} Akun Non-Admin.`,
+      message: `Pembersihan menyeluruh berhasil! Dihapus: ${childIds.length} Data Anak & DDTK, ${memberIds.length} Keanggotaan & Kader, serta ${nonAdminIds.length} Akun Non-Admin.`,
       deletedCount: {
         users: nonAdminIds.length,
-        children: childrenCount || 0,
-        members: membersCount || 0,
+        children: childIds.length,
+        members: memberIds.length,
       },
     };
   } catch (err: any) {
@@ -873,8 +949,11 @@ export async function cleanupNonSuperAdminDataAction(): Promise<{
       };
     }
 
+    const adminClient = createAdminClient();
+    const client = adminClient || supabase;
+
     // 1. Ambil seluruh ID pengguna yang BUKAN Super Admin
-    const { data: nonAdminProfiles, error: fetchErr } = await supabase
+    const { data: nonAdminProfiles, error: fetchErr } = await client
       .from("profiles")
       .select("id")
       .or("is_super_admin.is.null,is_super_admin.eq.false");
@@ -887,8 +966,8 @@ export async function cleanupNonSuperAdminDataAction(): Promise<{
     }
 
     const nonAdminIds = (nonAdminProfiles || [])
-      .map((p) => p.id)
-      .filter((id) => id !== user.id);
+      .map((p: any) => p.id)
+      .filter((id: string) => id !== user.id);
 
     if (nonAdminIds.length === 0) {
       return {
@@ -899,37 +978,40 @@ export async function cleanupNonSuperAdminDataAction(): Promise<{
     }
 
     // 2. Bersihkan komentar & reaksi kabar milik user non-super admin
-    await supabase.from("reaksi_kabar").delete().in("user_id", nonAdminIds);
-    await supabase.from("komentar_kabar").delete().in("user_id", nonAdminIds);
+    try {
+      await client.from("reaksi_kabar").delete().in("user_id", nonAdminIds);
+      await client.from("komentar_kabar").delete().in("user_id", nonAdminIds);
+    } catch {}
 
     // 3. Bersihkan postingan kabar_jarimas yang dibuat oleh user non-super admin
-    await supabase.from("kabar_jarimas").delete().in("user_id", nonAdminIds);
+    try {
+      await client.from("kabar_jarimas").delete().in("user_id", nonAdminIds);
+    } catch {}
 
     // 4. Bersihkan keanggotaan komunitas non-super admin
-    await supabase.from("anggota_komunitas").delete().in("user_id", nonAdminIds);
+    try {
+      await client.from("anggota_komunitas").delete().in("user_id", nonAdminIds);
+    } catch {}
 
     // 5. Bersihkan data pesanan market non-super admin jika ada
     try {
-      await supabase.from("market_pesanan").delete().in("user_id", nonAdminIds);
-    } catch {
-      // Abaikan jika tabel market_pesanan belum ada
-    }
+      await client.from("market_pesanan").delete().in("user_id", nonAdminIds);
+    } catch {}
 
     // 6. Hapus data anak & ddks records yang diinput oleh user non-super admin
     try {
-      // Hapus data anak milik user non-super admin
-      const { data: userChildren } = await supabase
+      const { data: userChildren } = await client
         .from("data_anak")
         .select("id")
         .in("created_by", nonAdminIds);
 
-      const userChildrenIds = (userChildren || []).map((c) => c.id);
+      const userChildrenIds = (userChildren || []).map((c: any) => c.id);
       if (userChildrenIds.length > 0) {
-        await supabase.from("ddks_records").delete().in("data_anak_id", userChildrenIds);
-        await supabase.from("data_anak").delete().in("id", userChildrenIds);
+        await client.from("ddks_records").delete().in("data_anak_id", userChildrenIds);
+        await client.from("data_anak").delete().in("id", userChildrenIds);
       }
 
-      await supabase
+      await client
         .from("ddks_records")
         .delete()
         .in("recorded_by", nonAdminIds);
@@ -938,7 +1020,7 @@ export async function cleanupNonSuperAdminDataAction(): Promise<{
     }
 
     // 7. Bersihkan tabel profiles milik user non-super admin
-    const { error: deleteProfilesErr } = await supabase
+    const { error: deleteProfilesErr } = await client
       .from("profiles")
       .delete()
       .in("id", nonAdminIds);
@@ -947,10 +1029,13 @@ export async function cleanupNonSuperAdminDataAction(): Promise<{
       console.warn("Notice delete profiles:", deleteProfilesErr.message);
     }
 
+    revalidatePath("/data-anak");
+    revalidatePath("/data-ats");
     revalidatePath("/profil");
     revalidatePath("/komunitas");
     revalidatePath("/kabar");
     revalidatePath("/admin");
+    revalidatePath("/");
 
     return {
       success: true,

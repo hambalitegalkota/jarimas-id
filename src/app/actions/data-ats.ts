@@ -214,7 +214,13 @@ export async function createDataAts(formData: FormData): Promise<{
     }
 
     revalidatePath(`/komunitas/${komunitasId}/ats`);
+    revalidatePath(`/komunitas/${komunitasId}/data`);
     revalidatePath(`/komunitas/${komunitasId}`);
+    revalidatePath("/komunitas");
+    revalidatePath("/data-ats");
+    revalidatePath("/data-anak");
+    revalidatePath("/profil");
+    revalidatePath("/");
 
     return {
       success: true,
@@ -305,6 +311,10 @@ export async function validateDataAts(dataAtsId: string): Promise<{
     }
 
     revalidatePath("/komunitas");
+    revalidatePath("/data-ats");
+    revalidatePath("/data-anak");
+    revalidatePath("/profil");
+    revalidatePath("/");
     return {
       success: true,
       message: "Data ATS berhasil diverifikasi dan masuk dalam basis intervensi pendidikan.",
@@ -591,8 +601,13 @@ export async function updateDataAts(
     }
 
     revalidatePath(`/komunitas/${komunitasId}/ats`);
+    revalidatePath(`/komunitas/${komunitasId}/data`);
     revalidatePath(`/komunitas/${komunitasId}`);
     revalidatePath("/komunitas");
+    revalidatePath("/data-ats");
+    revalidatePath("/data-anak");
+    revalidatePath("/profil");
+    revalidatePath("/");
 
     const parsed = parseAtsDetails(updatedData.alasan_sekolah);
     const formattedItem: DataAtsItem = {
@@ -758,6 +773,11 @@ export async function kembaliBersekolah(
     revalidatePath(`/komunitas/${targetKomunitasId}/ats`);
     revalidatePath(`/komunitas/${targetKomunitasId}/data`);
     revalidatePath(`/komunitas/${targetKomunitasId}`);
+    revalidatePath("/komunitas");
+    revalidatePath("/data-ats");
+    revalidatePath("/data-anak");
+    revalidatePath("/profil");
+    revalidatePath("/");
 
     return {
       success: true,
@@ -874,6 +894,11 @@ export async function deleteDataAts(
     revalidatePath(`/komunitas/${targetKomunitasId}/ats`);
     revalidatePath(`/komunitas/${targetKomunitasId}/data`);
     revalidatePath(`/komunitas/${targetKomunitasId}`);
+    revalidatePath("/komunitas");
+    revalidatePath("/data-ats");
+    revalidatePath("/data-anak");
+    revalidatePath("/profil");
+    revalidatePath("/");
 
     return {
       success: true,

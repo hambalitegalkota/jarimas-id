@@ -267,6 +267,11 @@ export async function createDataAnak(formData: FormData): Promise<{
 
     revalidatePath(`/komunitas/${komunitasId}/data`);
     revalidatePath(`/komunitas/${komunitasId}`);
+    revalidatePath("/komunitas");
+    revalidatePath("/data-anak");
+    revalidatePath("/data-ats");
+    revalidatePath("/profil");
+    revalidatePath("/");
 
     return {
       success: true,
@@ -360,6 +365,10 @@ export async function validateDataAnak(dataAnakId: string): Promise<{
     }
 
     revalidatePath("/komunitas");
+    revalidatePath("/data-anak");
+    revalidatePath("/data-ats");
+    revalidatePath("/profil");
+    revalidatePath("/");
     return {
       success: true,
       message:
@@ -525,6 +534,10 @@ export async function addDdksRecord(formData: FormData): Promise<{
     }
 
     revalidatePath("/komunitas");
+    revalidatePath("/data-anak");
+    revalidatePath("/data-ats");
+    revalidatePath("/profil");
+    revalidatePath("/");
     return {
       success: true,
       message: "Catatan pengukuran DDKS berhasil disimpan!",
@@ -1070,6 +1083,10 @@ export async function updateDataAnak(
     revalidatePath(`/komunitas/${komunitasId}/data`);
     revalidatePath(`/komunitas/${komunitasId}`);
     revalidatePath("/komunitas");
+    revalidatePath("/data-anak");
+    revalidatePath("/data-ats");
+    revalidatePath("/profil");
+    revalidatePath("/");
 
     const parsedUpdated = parseDataAnakDetails(updatedChild.alasan_sekolah);
 
@@ -1227,6 +1244,10 @@ export async function keluarDataAnak(
     revalidatePath(`/komunitas/${komunitasId}/data`);
     revalidatePath(`/komunitas/${komunitasId}`);
     revalidatePath("/komunitas");
+    revalidatePath("/data-anak");
+    revalidatePath("/data-ats");
+    revalidatePath("/profil");
+    revalidatePath("/");
 
     return {
       success: true,
@@ -1237,6 +1258,122 @@ export async function keluarDataAnak(
     return {
       success: false,
       message: err.message || "Gagal memproses data anak keluar.",
+    };
+  }
+}
+
+/**
+ * Server Action: Menghapus Data Anak secara permanen
+ */
+export async function deleteDataAnak(
+  dataAnakId: string,
+  komunitasId?: string
+): Promise<{
+  success: boolean;
+  message: string;
+}> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return {
+        success: false,
+        message: "Silakan masuk terlebih dahulu untuk menghapus data anak.",
+      };
+    }
+
+    const { data: existingChild, error: fetchError } = await supabase
+      .from("data_anak")
+      .select("id, nama_lengkap, created_by, komunitas_id")
+      .eq("id", dataAnakId)
+      .maybeSingle();
+
+    if (fetchError || !existingChild) {
+      return {
+        success: false,
+        message: "Data anak tidak ditemukan atau sudah dihapus.",
+      };
+    }
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("is_super_admin")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    const isSuperAdmin = profile?.is_super_admin === true;
+    const isCreator = existingChild.created_by === user.id;
+
+    if (!isSuperAdmin && !isCreator) {
+      const { data: membership } = await supabase
+        .from("anggota_komunitas")
+        .select("peran, status")
+        .eq("user_id", user.id)
+        .eq("komunitas_id", existingChild.komunitas_id)
+        .eq("status", "approved")
+        .maybeSingle();
+
+      const roleLower = (membership?.peran || "").toLowerCase();
+      const isAuthorized =
+        roleLower.includes("kader") ||
+        roleLower.includes("pengurus") ||
+        roleLower.includes("guru") ||
+        roleLower.includes("admin") ||
+        roleLower.includes("pendidik");
+
+      if (!isAuthorized) {
+        return {
+          success: false,
+          message: "Akses ditolak: Anda tidak memiliki izin untuk menghapus data anak ini.",
+        };
+      }
+    }
+
+    // Hapus records DDKS terlebih dahulu
+    try {
+      await supabase
+        .from("ddks_records")
+        .delete()
+        .eq("data_anak_id", dataAnakId);
+    } catch (e) {
+      console.warn("Hapus ddks_records warning:", e);
+    }
+
+    // Hapus record data_anak
+    const { error: deleteError } = await supabase
+      .from("data_anak")
+      .delete()
+      .eq("id", dataAnakId);
+
+    if (deleteError) {
+      return {
+        success: false,
+        message: "Gagal menghapus data anak: " + deleteError.message,
+      };
+    }
+
+    const targetKomunitasId = komunitasId || existingChild.komunitas_id;
+    revalidatePath(`/komunitas/${targetKomunitasId}/data`);
+    revalidatePath(`/komunitas/${targetKomunitasId}`);
+    revalidatePath("/komunitas");
+    revalidatePath("/data-anak");
+    revalidatePath("/data-ats");
+    revalidatePath("/profil");
+    revalidatePath("/");
+
+    return {
+      success: true,
+      message: `Data anak ${existingChild.nama_lengkap} berhasil dihapus dari sistem.`,
+    };
+  } catch (err: any) {
+    console.error("Error deleteDataAnak:", err);
+    return {
+      success: false,
+      message: err.message || "Terjadi kendala saat menghapus data anak.",
     };
   }
 }
