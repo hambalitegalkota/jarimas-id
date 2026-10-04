@@ -363,7 +363,7 @@ export default async function HomePage() {
             </div>
 
             <Link
-              href="/komunitas?tab=posyandu"
+              href="/data-anak"
               className="inline-flex items-center gap-1.5 text-xs font-bold text-sky-700 dark:text-sky-400 hover:text-sky-800 underline pt-2"
             >
               <span>Pantau Pendataan Anak Usia Dini</span>
