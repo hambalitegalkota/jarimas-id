@@ -1,0 +1,21 @@
+import { Metadata } from "next";
+import { getRekapDataAtsAction } from "@/app/actions/rekap-data-ats";
+import { RekapDataAtsClientView } from "@/components/data-ats/rekap-data-ats-client-view";
+
+export const metadata: Metadata = {
+  title: "Hasil Pendataan Anak Tidak Sekolah (ATS) | JARIMAS-ID",
+  description:
+    "Pantau data hasil pendataan anak tidak sekolah (ATS) berjenjang tingkat Kota Tegal, Kecamatan, dan Kelurahan mencakup kategori putus sekolah, lulus tidak melanjutkan, belum pernah sekolah, kesiapan sekolah kembali, serta rekomendasi jalur intervensi PKBM dan SKB.",
+};
+
+export const dynamic = "force-dynamic";
+
+export default async function DataAtsRekapPage() {
+  const { data: rekapData } = await getRekapDataAtsAction();
+
+  return (
+    <main className="w-full min-h-screen bg-slate-50 dark:bg-slate-950 py-4 sm:py-6">
+      <RekapDataAtsClientView initialData={rekapData} />
+    </main>
+  );
+}

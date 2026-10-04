@@ -394,10 +394,10 @@ export default async function HomePage() {
             </div>
 
             <Link
-              href="/komunitas?tab=satuan_paud"
+              href="/data-ats"
               className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-700 dark:text-blue-400 hover:text-blue-800 underline pt-2"
             >
-              <span>Pelajari Mekanisme Pendataan ATS</span>
+              <span>Pantau Hasil Pendataan ATS</span>
               <ChevronRight className="h-4 w-4" />
             </Link>
           </div>

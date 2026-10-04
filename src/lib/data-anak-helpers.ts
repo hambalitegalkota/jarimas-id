@@ -494,3 +494,87 @@ export function isDataAnakMatchingKomunitas(
   return true;
 }
 
+export interface ParsedAtsDetails {
+  keinginan: "Masih Ada" | "Tidak Ada";
+  alasan: string;
+  keterangan: string;
+  alamat: string;
+  rt: string;
+  rw: string;
+  kelurahan: string;
+  kecamatan: string;
+  sekolahSebelumnya: string;
+  kelasTerakhir: string;
+}
+
+export function parseAtsDetails(
+  alasanSekolahRaw?: string | null,
+  fallbackKomunitas?: any
+): ParsedAtsDetails {
+  const raw = String(alasanSekolahRaw || "");
+  const komMeta = fallbackKomunitas ? extractKomunitasMetadata(fallbackKomunitas) : null;
+
+  let keinginan: "Masih Ada" | "Tidak Ada" = "Masih Ada";
+  let alasan = "Tidak ada biaya";
+  let keterangan = "";
+  let alamat = "";
+  let rt = komMeta?.rawRt ? String(komMeta.rawRt) : "";
+  let rw = komMeta?.rawRw ? String(komMeta.rawRw) : "";
+  let kelurahan = komMeta?.rawKel ? String(komMeta.rawKel) : "";
+  let kecamatan = komMeta?.rawKec ? String(komMeta.rawKec) : "";
+  let sekolahSebelumnya = "";
+  let kelasTerakhir = "";
+
+  const matchKeinginan = raw.match(/\[KEINGINAN\s*:\s*([^\]]+)\]/i);
+  if (matchKeinginan && matchKeinginan[1]) {
+    keinginan = matchKeinginan[1].trim() as "Masih Ada" | "Tidak Ada";
+  }
+
+  const matchAlasan = raw.match(/\[ALASAN\s*:\s*([^\]]+)\]/i);
+  if (matchAlasan && matchAlasan[1]) {
+    alasan = matchAlasan[1].trim();
+  } else if (raw && !raw.startsWith("[")) {
+    alasan = raw;
+  }
+
+  const matchAlamat = raw.match(/\[ALAMAT\s*:\s*([^\]]+)\]/i);
+  if (matchAlamat && matchAlamat[1]) alamat = matchAlamat[1].trim();
+
+  const matchRt = raw.match(/\[RT\s*:\s*([^\]]+)\]/i);
+  if (matchRt && matchRt[1]) rt = matchRt[1].trim();
+
+  const matchRw = raw.match(/\[RW\s*:\s*([^\]]+)\]/i);
+  if (matchRw && matchRw[1]) rw = matchRw[1].trim();
+
+  const matchKel = raw.match(/\[KEL(?:URAHAN)?\s*:\s*([^\]]+)\]/i);
+  if (matchKel && matchKel[1]) kelurahan = matchKel[1].trim();
+
+  const matchKec = raw.match(/\[KEC(?:AMATAN)?\s*:\s*([^\]]+)\]/i);
+  if (matchKec && matchKec[1]) kecamatan = matchKec[1].trim();
+
+  const matchSekolahAsal = raw.match(/\[SEKOLAH_ASAL\s*:\s*([^\]]+)\]/i);
+  if (matchSekolahAsal && matchSekolahAsal[1]) sekolahSebelumnya = matchSekolahAsal[1].trim();
+
+  const matchKelas = raw.match(/\[KELAS\s*:\s*([^\]]+)\]/i);
+  if (matchKelas && matchKelas[1]) kelasTerakhir = matchKelas[1].trim();
+
+  const matchKet = raw.match(/\[KET\s*:\s*([^\]]+)\]/i);
+  if (matchKet && matchKet[1]) {
+    keterangan = matchKet[1].trim();
+  }
+
+  return {
+    keinginan,
+    alasan,
+    keterangan,
+    alamat,
+    rt,
+    rw,
+    kelurahan,
+    kecamatan,
+    sekolahSebelumnya,
+    kelasTerakhir,
+  };
+}
+
+
