@@ -1224,6 +1224,8 @@ export async function getAnggotaKomunitas(komunitasId: string): Promise<{
 
 /**
  * Server Action: Mengajukan permintaan bergabung dengan komunitas
+ * Pengguna yang mengajukan peran (Pengunjung, Tenaga Medis, Tenaga Kesehatan, PLKB, PKK, Kader, dll)
+ * akan berstatus 'pending' dan memerlukan persetujuan dari Admin.
  */
 export async function requestJoinKomunitas({
   komunitasId,
@@ -1258,18 +1260,31 @@ export async function requestJoinKomunitas({
     }
 
     const dbKomunitasId = toValidUUID(komunitasId);
-    const dbRole = normalizeRoleForDb(peran);
+    const targetPeranDiajukan = formatPeranDisplay(peran.trim());
 
-    // Cek apakah sudah terdaftar sebelumnya
-    const { data: existingMember } = await supabase
-      .from("anggota_komunitas")
-      .select("id, status, peran")
-      .eq("user_id", user.id)
-      .eq("komunitas_id", dbKomunitasId)
-      .maybeSingle();
+    // Pastikan record komunitas ada di database
+    const seedItem = findOrGenerateKomunitasSeed(komunitasId);
+    if (seedItem) {
+      await supabase.from("komunitas").upsert(
+        {
+          id: dbKomunitasId,
+          nama: seedItem.nama,
+          nama_komunitas: seedItem.nama,
+          jenis: seedItem.jenis,
+          jenis_komunitas: seedItem.jenis,
+          kecamatan: seedItem.kecamatan || "Kota Tegal",
+          kelurahan: seedItem.kelurahan || "Semua Kelurahan",
+          rt: seedItem.rt || null,
+          rw: seedItem.rw || null,
+          lokasi: seedItem.lokasi,
+          deskripsi: seedItem.deskripsi,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "id" }
+      );
+    }
 
     // Pastikan jika komunitas Warga Kita, sertakan juga rantai hierarki (RW, Kelurahan, Kecamatan)
-    const seedItem = findOrGenerateKomunitasSeed(komunitasId);
     if (seedItem && seedItem.jenis === "warga_kita") {
       const hierarchyChain = getWargaHierarchyChain({
         kecamatan: seedItem.kecamatan,
@@ -1297,61 +1312,59 @@ export async function requestJoinKomunitas({
           },
           { onConflict: "id" }
         );
-
-        if (itemDbId !== dbKomunitasId) {
-          await supabase.from("anggota_komunitas").upsert(
-            {
-              user_id: user.id,
-              komunitas_id: itemDbId,
-              peran: dbRole,
-              status: "approved",
-              updated_at: new Date().toISOString(),
-            },
-            { onConflict: "user_id,komunitas_id" }
-          );
-        }
       }
     }
 
-    const isWargaKita = seedItem?.jenis === "warga_kita";
-    const targetStatus = isWargaKita ? "pending" : "approved";
+    // Cek apakah sudah terdaftar sebelumnya
+    const { data: existingMember } = await supabase
+      .from("anggota_komunitas")
+      .select("id, status, peran, peran_diajukan")
+      .eq("user_id", user.id)
+      .eq("komunitas_id", dbKomunitasId)
+      .maybeSingle();
 
     if (existingMember) {
-      const displayRole = formatPeranDisplay(existingMember.peran);
-      if (existingMember.status === "approved" && existingMember.peran === dbRole) {
+      if (
+        existingMember.status === "approved" &&
+        existingMember.peran.toLowerCase() === targetPeranDiajukan.toLowerCase() &&
+        !existingMember.peran_diajukan
+      ) {
         return {
           success: false,
-          message: `Anda sudah menjadi anggota aktif sebagai ${displayRole}.`,
-        };
-      }
-      if (isWargaKita && existingMember.status === "pending") {
-        return {
-          success: false,
-          message:
-            "Permohonan bergabung Anda sudah dikirim dan sedang menunggu verifikasi Pengurus/Kader.",
+          message: `Anda sudah menjadi anggota aktif sebagai ${formatPeranDisplay(existingMember.peran)}.`,
         };
       }
 
-      // Perbarui status dan peran
+      if (existingMember.status === "pending" || existingMember.peran_diajukan) {
+        const pendingRole = existingMember.peran_diajukan || existingMember.peran;
+        return {
+          success: false,
+          message: `Permohonan bergabung Anda sebagai ${formatPeranDisplay(pendingRole)} sedang menunggu persetujuan Admin/Pengurus.`,
+        };
+      }
+
+      // Perbarui status ke pending dan simpan peran_diajukan
       const { error: updateError } = await supabase
         .from("anggota_komunitas")
         .update({
-          peran: dbRole,
-          status: targetStatus,
+          peran: targetPeranDiajukan,
+          peran_diajukan: targetPeranDiajukan,
+          status: "pending",
           updated_at: new Date().toISOString(),
         })
         .eq("id", existingMember.id);
 
       if (updateError) throw updateError;
     } else {
-      // Buat pendaftaran baru
+      // Buat pendaftaran baru dengan status pending
       const { error: insertError } = await supabase
         .from("anggota_komunitas")
         .insert({
           user_id: user.id,
           komunitas_id: dbKomunitasId,
-          peran: dbRole,
-          status: targetStatus,
+          peran: targetPeranDiajukan,
+          peran_diajukan: targetPeranDiajukan,
+          status: "pending",
           created_at: new Date().toISOString(),
         });
 
@@ -1359,14 +1372,14 @@ export async function requestJoinKomunitas({
     }
 
     revalidatePath(`/komunitas/${komunitasId}`);
+    revalidatePath(`/komunitas/${dbKomunitasId}`);
     revalidatePath("/komunitas");
     revalidatePath("/profil");
+    revalidatePath("/admin/approval");
 
     return {
       success: true,
-      message: isWargaKita
-        ? "Permohonan berhasil dikirim! Menunggu persetujuan Pengurus Komunitas."
-        : `Berhasil bergabung sebagai ${formatPeranDisplay(dbRole)}!`,
+      message: `Permohonan bergabung sebagai ${targetPeranDiajukan} berhasil dikirim! Menunggu persetujuan Admin Komunitas.`,
     };
   } catch (err: any) {
     console.error("Error requestJoinKomunitas:", err);
@@ -3371,7 +3384,7 @@ export async function updateKomunitasInformasiOperasional({
     const isSuperAdmin = profile?.is_super_admin === true;
     const dbKomunitasId = toValidUUID(komunitasId);
 
-    // Cek wewenang admin di komunitas ini jika bukan Super Admin
+    // Cek wewenang kader di komunitas ini jika bukan Super Admin
     if (!isSuperAdmin) {
       const { data: membership } = await supabase
         .from("anggota_komunitas")
@@ -3381,11 +3394,16 @@ export async function updateKomunitasInformasiOperasional({
         .eq("status", "approved")
         .maybeSingle();
 
-      if (!membership || !isRoleAdmin(membership.peran)) {
+      const isKader =
+        membership?.status === "approved" &&
+        (membership.peran.toLowerCase().trim() === "kader" ||
+          membership.peran.toLowerCase().trim().includes("kader"));
+
+      if (!isKader) {
         return {
           success: false,
           message:
-            "Akses ditolak: Hanya Admin / Pengurus / Kader resmi yang berhak mengedit Informasi Resmi & Operasional.",
+            "Akses ditolak: Hanya Kader resmi yang berhak mengedit Informasi Resmi & Operasional.",
         };
       }
     }

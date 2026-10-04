@@ -83,6 +83,10 @@ export function KomunitasDetailClientView({
   const hasFullAccess = !isWargaKita || hasFullProfilDataAccess(userPeran, isAdminOrKader);
   const isChartOnly = isWargaKita && !hasFullAccess;
   const isPenduduk = userPeran === "Penduduk";
+  const isKader =
+    isApprovedMember &&
+    (userPeran.toLowerCase().trim() === "kader" ||
+      userPeran.toLowerCase().trim().includes("kader"));
 
   const parsedKontak = useMemo(
     () => parseKontakKomunitas(komunitasData.kontak),
@@ -426,12 +430,12 @@ export function KomunitasDetailClientView({
                 </p>
               </div>
 
-              {canManageMembers && (
+              {isKader && (
                 <button
                   type="button"
                   onClick={() => setIsEditOperasionalOpen(true)}
                   className="inline-flex min-h-[40px] h-10 items-center justify-center gap-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white px-4 text-xs font-bold shadow-xs transition-all active:scale-98 cursor-pointer shrink-0"
-                  title="Hanya Admin / Kader yang berhak mengedit informasi ini"
+                  title="Hanya Kader resmi yang berhak mengedit informasi ini"
                 >
                   <Pencil className="h-3.5 w-3.5" />
                   <span>Edit Informasi</span>

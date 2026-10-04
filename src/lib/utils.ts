@@ -106,6 +106,17 @@ export function formatPeranDisplay(peran?: string | null): string {
   }
   if (pLower === "pendatang") return "Pendatang";
   if (pLower === "pengunjung") return "Pengunjung";
+  if (pLower === "tenaga medis" || pLower === "medis") return "Tenaga Medis";
+  if (pLower === "tenaga kesehatan" || pLower === "nakes") return "Tenaga Kesehatan";
+  if (pLower === "plkb") return "PLKB";
+  if (pLower === "pkk") return "PKK";
+  if (pLower === "guru paud" || pLower === "guru") return "Guru PAUD";
+  if (pLower === "kepala sekolah" || pLower === "kepala paud") return "Kepala Sekolah";
+  if (pLower === "orangtua/wali murid" || pLower === "wali murid") return "Orangtua/Wali Murid";
+  if (pLower === "komite") return "Komite";
+  if (pLower === "alumni") return "Alumni";
+  if (pLower === "admin kelurahan") return "Admin Kelurahan";
+  if (pLower === "admin") return "Admin";
   return p.charAt(0).toUpperCase() + p.slice(1);
 }
 
