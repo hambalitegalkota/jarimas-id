@@ -254,6 +254,92 @@ export function canManageDataAnakInKomunitas(
   return { canCreate: false, canEdit: false, canDelete: false, isReadOnly: true };
 }
 
+import type { KontakKomunitasDetail, KaderBidangItem } from "@/types/database";
+
+/**
+ * Format nomor HP / WhatsApp menjadi tautan wa.me yang valid
+ */
+export function formatWhatsAppUrl(phone?: string | null, text?: string): string | null {
+  if (!phone) return null;
+  let clean = phone.replace(/\D/g, "");
+  if (!clean) return null;
+  if (clean.startsWith("0")) {
+    clean = "62" + clean.slice(1);
+  } else if (!clean.startsWith("62")) {
+    clean = "62" + clean;
+  }
+  const encodedText = text ? `?text=${encodeURIComponent(text)}` : "";
+  return `https://wa.me/${clean}${encodedText}`;
+}
+
+/**
+ * Mengurai string kontak komunitas menjadi objek KontakKomunitasDetail lengkap
+ */
+export function parseKontakKomunitas(rawKontak?: string | null): KontakKomunitasDetail {
+  const emptyKader = (): KaderBidangItem => ({ nama: "", wa: "" });
+  const result: KontakKomunitasDetail = {
+    utama: "",
+    kader_pendidikan: emptyKader(),
+    kader_kesehatan: emptyKader(),
+    kader_pekerjaan_umum: emptyKader(),
+    kader_perumahan_rakyat: emptyKader(),
+    kader_trantipbumlinmas: emptyKader(),
+    kader_sosial: emptyKader(),
+  };
+
+  if (!rawKontak) return result;
+
+  const trimmed = rawKontak.trim();
+  if (trimmed.startsWith("{") && trimmed.endsWith("}")) {
+    try {
+      const parsed = JSON.parse(trimmed);
+      result.utama = parsed.utama || parsed.telepon || "";
+      if (parsed.kader_pendidikan) {
+        result.kader_pendidikan = {
+          nama: parsed.kader_pendidikan.nama || "",
+          wa: parsed.kader_pendidikan.wa || "",
+        };
+      }
+      if (parsed.kader_kesehatan) {
+        result.kader_kesehatan = {
+          nama: parsed.kader_kesehatan.nama || "",
+          wa: parsed.kader_kesehatan.wa || "",
+        };
+      }
+      if (parsed.kader_pekerjaan_umum) {
+        result.kader_pekerjaan_umum = {
+          nama: parsed.kader_pekerjaan_umum.nama || "",
+          wa: parsed.kader_pekerjaan_umum.wa || "",
+        };
+      }
+      if (parsed.kader_perumahan_rakyat) {
+        result.kader_perumahan_rakyat = {
+          nama: parsed.kader_perumahan_rakyat.nama || "",
+          wa: parsed.kader_perumahan_rakyat.wa || "",
+        };
+      }
+      if (parsed.kader_trantipbumlinmas) {
+        result.kader_trantipbumlinmas = {
+          nama: parsed.kader_trantipbumlinmas.nama || "",
+          wa: parsed.kader_trantipbumlinmas.wa || "",
+        };
+      }
+      if (parsed.kader_sosial) {
+        result.kader_sosial = {
+          nama: parsed.kader_sosial.nama || "",
+          wa: parsed.kader_sosial.wa || "",
+        };
+      }
+      return result;
+    } catch {
+      // Fallback
+    }
+  }
+
+  result.utama = rawKontak;
+  return result;
+}
+
 
 
 

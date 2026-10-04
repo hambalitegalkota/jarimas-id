@@ -3326,5 +3326,114 @@ export async function getHierarchicalActiveKomunitasAction(): Promise<{
   }
 }
 
+import type { KontakKomunitasDetail } from "@/types/database";
+
+/**
+ * Server Action: Mengupdate Informasi Resmi & Operasional (Alamat Lokasi, Jadwal, Profil & Visi, dan Kontak Kader 6 Bidang)
+ * Khusus Super Admin atau Admin / Pengurus / Kader Resmi Komunitas Terkait
+ */
+export async function updateKomunitasInformasiOperasional({
+  komunitasId,
+  lokasi,
+  jadwal,
+  deskripsi,
+  kontakDetail,
+}: {
+  komunitasId: string;
+  lokasi?: string;
+  jadwal?: string;
+  deskripsi?: string;
+  kontakDetail: KontakKomunitasDetail;
+}): Promise<{
+  success: boolean;
+  message: string;
+}> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return {
+        success: false,
+        message: "Silakan masuk terlebih dahulu untuk memperbarui data.",
+      };
+    }
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("is_super_admin")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    const isSuperAdmin = profile?.is_super_admin === true;
+    const dbKomunitasId = toValidUUID(komunitasId);
+
+    // Cek wewenang admin di komunitas ini jika bukan Super Admin
+    if (!isSuperAdmin) {
+      const { data: membership } = await supabase
+        .from("anggota_komunitas")
+        .select("peran, status")
+        .eq("user_id", user.id)
+        .eq("komunitas_id", dbKomunitasId)
+        .eq("status", "approved")
+        .maybeSingle();
+
+      if (!membership || !isRoleAdmin(membership.peran)) {
+        return {
+          success: false,
+          message:
+            "Akses ditolak: Hanya Admin / Pengurus / Kader resmi yang berhak mengedit Informasi Resmi & Operasional.",
+        };
+      }
+    }
+
+    // Pastikan komunitas sudah ada di database atau buat fallback seed
+    const seedItem = findOrGenerateKomunitasSeed(komunitasId);
+    const serializedKontak = JSON.stringify(kontakDetail);
+
+    const updatePayload: Record<string, any> = {
+      id: dbKomunitasId,
+      nama: seedItem?.nama || "Komunitas",
+      nama_komunitas: seedItem?.nama || "Komunitas",
+      jenis: seedItem?.jenis || "posyandu",
+      jenis_komunitas: seedItem?.jenis || "posyandu",
+      kecamatan: seedItem?.kecamatan || "Kota Tegal",
+      kelurahan: seedItem?.kelurahan || "Semua Kelurahan",
+      lokasi: lokasi?.trim() || seedItem?.lokasi || "Kota Tegal",
+      jadwal: jadwal?.trim() || null,
+      deskripsi: deskripsi?.trim() || null,
+      kontak: serializedKontak,
+      updated_at: new Date().toISOString(),
+    };
+
+    const { error: upsertErr } = await supabase
+      .from("komunitas")
+      .upsert(updatePayload, { onConflict: "id" });
+
+    if (upsertErr) {
+      throw upsertErr;
+    }
+
+    revalidatePath(`/komunitas/${komunitasId}`);
+    revalidatePath(`/komunitas/${dbKomunitasId}`);
+    revalidatePath("/komunitas");
+    revalidatePath("/profil");
+
+    return {
+      success: true,
+      message: "Informasi Resmi & Operasional berhasil disimpan!",
+    };
+  } catch (err: any) {
+    console.error("Error updateKomunitasInformasiOperasional:", err);
+    return {
+      success: false,
+      message: err.message || "Gagal menyimpan informasi operasional.",
+    };
+  }
+}
+
 
 

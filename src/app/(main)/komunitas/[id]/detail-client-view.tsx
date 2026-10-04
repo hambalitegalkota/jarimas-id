@@ -23,9 +23,14 @@ import {
   X,
   Settings2,
   Lock,
+  Pencil,
+  Wrench,
+  Home,
+  HeartPulse,
 } from "lucide-react";
 import { JoinKomunitasModal } from "@/components/komunitas/join-komunitas-modal";
 import { WargaOnboardingModal } from "@/components/komunitas/warga-onboarding-modal";
+import { EditInformasiOperasionalModal } from "@/components/komunitas/edit-informasi-operasional-modal";
 import { KabarCard } from "@/components/kabar/kabar-card";
 import { CreateKabarModal } from "@/components/kabar/create-kabar-modal";
 import { KomunitasProfilCharts } from "@/components/komunitas/komunitas-profil-charts";
@@ -36,7 +41,7 @@ import type {
   KabarItem,
   DataAnakItem,
 } from "@/types/database";
-import { cn, hasFullProfilDataAccess } from "@/lib/utils";
+import { cn, hasFullProfilDataAccess, parseKontakKomunitas, formatWhatsAppUrl } from "@/lib/utils";
 
 interface KomunitasDetailClientViewProps {
   komunitas: KomunitasWithMembership;
@@ -57,10 +62,12 @@ export function KomunitasDetailClientView({
   kabarKomunitas,
   dataAnakList = [],
 }: KomunitasDetailClientViewProps) {
+  const [komunitasData, setKomunitasData] = useState(komunitas);
   const [activeTab, setActiveTab] = useState(currentSubtab || "kabar");
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
   const [membershipState, setMembershipState] = useState(komunitas.currentUserMembership);
   const [isWargaOnboardingOpen, setIsWargaOnboardingOpen] = useState(false);
+  const [isEditOperasionalOpen, setIsEditOperasionalOpen] = useState(false);
 
   // State untuk modal Ajukan Diri Sebagai Admin
   const [isApplyAdminOpen, setIsApplyAdminOpen] = useState(false);
@@ -72,14 +79,19 @@ export function KomunitasDetailClientView({
   const membership = membershipState;
   const isApprovedMember = membership?.status === "approved";
   const userPeran = membership?.peran || "Pengunjung";
-  const isWargaKita = komunitas.jenis === "warga_kita";
+  const isWargaKita = komunitasData.jenis === "warga_kita";
   const hasFullAccess = !isWargaKita || hasFullProfilDataAccess(userPeran, isAdminOrKader);
   const isChartOnly = isWargaKita && !hasFullAccess;
   const isPenduduk = userPeran === "Penduduk";
 
-  let formattedTitle = komunitas.nama;
-  if (komunitas.jenis === "posyandu") {
-    const cleanName = (komunitas.nama || "").replace(/^(Posyandu\s*)+/gi, "").trim();
+  const parsedKontak = useMemo(
+    () => parseKontakKomunitas(komunitasData.kontak),
+    [komunitasData.kontak]
+  );
+
+  let formattedTitle = komunitasData.nama;
+  if (komunitasData.jenis === "posyandu") {
+    const cleanName = (komunitasData.nama || "").replace(/^(Posyandu\s*)+/gi, "").trim();
     formattedTitle = cleanName ? `Posyandu ${cleanName}` : "Posyandu";
   }
 
@@ -588,52 +600,277 @@ export function KomunitasDetailClientView({
 
           {/* Informasi Resmi & Operasional Wilayah */}
           <div className="rounded-2xl border-2 border-slate-200 bg-white p-5 sm:p-6 space-y-4 shadow-xs">
-            <h3 className="text-base font-bold text-slate-900 uppercase tracking-wider">
-              Informasi Resmi &amp; Operasional
-            </h3>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
+              <div className="space-y-0.5">
+                <h3 className="text-base font-bold text-slate-900 uppercase tracking-wider">
+                  Informasi Resmi &amp; Operasional
+                </h3>
+                <p className="text-xs text-slate-500 font-medium">
+                  Informasi alamat lokasi, jadwal layanan, dan kontak resmi 6 bidang kader
+                </p>
+              </div>
+
+              {canManageMembers && (
+                <button
+                  type="button"
+                  onClick={() => setIsEditOperasionalOpen(true)}
+                  className="inline-flex min-h-[40px] h-10 items-center justify-center gap-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white px-4 text-xs font-bold shadow-xs transition-all active:scale-98 cursor-pointer shrink-0"
+                  title="Hanya Admin / Kader yang berhak mengedit informasi ini"
+                >
+                  <Pencil className="h-3.5 w-3.5" />
+                  <span>Edit Informasi</span>
+                </button>
+              )}
+            </div>
 
             <div className="space-y-3 text-sm">
+              {/* Alamat Lokasi */}
               <div className="flex items-start gap-3.5 p-4 rounded-xl bg-slate-50 border border-slate-200">
                 <MapPin className="h-5 w-5 text-slate-500 shrink-0 mt-0.5" />
                 <div className="space-y-0.5">
                   <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">ALAMAT LOKASI</span>
                   <p className="text-slate-900 font-semibold leading-relaxed">
-                    {komunitas.lokasi}
+                    {komunitasData.lokasi}
                   </p>
                 </div>
               </div>
 
-              {komunitas.jadwal && (
+              {/* Jadwal Layanan */}
+              {komunitasData.jadwal && (
                 <div className="flex items-start gap-3.5 p-4 rounded-xl bg-slate-50 border border-slate-200">
                   <Calendar className="h-5 w-5 text-blue-700 shrink-0 mt-0.5" />
                   <div className="space-y-0.5">
                     <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">JADWAL LAYANAN</span>
                     <p className="text-slate-900 font-semibold leading-relaxed">
-                      {komunitas.jadwal}
+                      {komunitasData.jadwal}
                     </p>
                   </div>
                 </div>
               )}
 
-              {komunitas.kontak && (
-                <div className="flex items-start gap-3.5 p-4 rounded-xl bg-slate-50 border border-slate-200">
-                  <Phone className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />
-                  <div className="space-y-0.5">
-                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">KONTAK RESMI</span>
-                    <p className="text-slate-900 font-semibold leading-relaxed">
-                      {komunitas.kontak}
+              {/* Kontak Resmi Utama */}
+              <div className="flex items-start gap-3.5 p-4 rounded-xl bg-slate-50 border border-slate-200">
+                <Phone className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />
+                <div className="space-y-1 w-full">
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">KONTAK RESMI UTAMA / SEKRETARIAT</span>
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <p className="text-slate-900 font-bold font-mono text-base">
+                      {parsedKontak.utama || komunitasData.kontak || "-"}
                     </p>
+                    {parsedKontak.utama && (
+                      <a
+                        href={formatWhatsAppUrl(parsedKontak.utama, `Halo Pengurus ${komunitasData.nama}, saya ingin menanyakan informasi layanan.`) || `tel:${parsedKontak.utama}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-2xs transition-all active:scale-95"
+                      >
+                        <Phone className="h-3.5 w-3.5" />
+                        <span>Hubungi WhatsApp</span>
+                      </a>
+                    )}
                   </div>
                 </div>
-              )}
+              </div>
 
-              {komunitas.deskripsi && (
+              {/* Kontak 6 Bidang Kader SPM (Permendagri No. 13 Tahun 2024) */}
+              <div className="rounded-2xl border-2 border-emerald-100 bg-emerald-50/40 p-4 sm:p-5 space-y-3.5">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="h-4 w-4 text-emerald-700" />
+                    <h4 className="text-xs sm:text-sm font-bold text-emerald-950 uppercase tracking-wider">
+                      Kontak Kader 6 Bidang SPM
+                    </h4>
+                  </div>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-900 border border-emerald-300">
+                    6 Bidang SPM
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {/* 1. Kader Bidang Pendidikan */}
+                  <div className="p-3.5 rounded-xl bg-white border border-blue-200 shadow-2xs space-y-2">
+                    <div className="flex items-center justify-between gap-1 text-xs">
+                      <span className="font-bold text-blue-900 flex items-center gap-1.5">
+                        <GraduationCap className="h-4 w-4 text-blue-600 shrink-0" />
+                        Kader Bidang Pendidikan
+                      </span>
+                    </div>
+                    <div className="space-y-0.5">
+                      <p className="text-xs font-bold text-slate-900">
+                        {parsedKontak.kader_pendidikan.nama || "Belum ditentukan"}
+                      </p>
+                      <p className="text-xs text-slate-500 font-mono">
+                        {parsedKontak.kader_pendidikan.wa || "No. WA belum terdaftar"}
+                      </p>
+                    </div>
+                    {parsedKontak.kader_pendidikan.wa && (
+                      <a
+                        href={formatWhatsAppUrl(parsedKontak.kader_pendidikan.wa, `Halo Kader Bidang Pendidikan ${komunitasData.nama}...`) || "#"}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex w-full items-center justify-center gap-1.5 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 font-bold text-xs transition-colors"
+                      >
+                        <Phone className="h-3 w-3 text-blue-600" />
+                        <span>Chat WhatsApp</span>
+                      </a>
+                    )}
+                  </div>
+
+                  {/* 2. Kader Bidang Kesehatan */}
+                  <div className="p-3.5 rounded-xl bg-white border border-emerald-200 shadow-2xs space-y-2">
+                    <div className="flex items-center justify-between gap-1 text-xs">
+                      <span className="font-bold text-emerald-900 flex items-center gap-1.5">
+                        <HeartPulse className="h-4 w-4 text-emerald-600 shrink-0" />
+                        Kader Bidang Kesehatan
+                      </span>
+                    </div>
+                    <div className="space-y-0.5">
+                      <p className="text-xs font-bold text-slate-900">
+                        {parsedKontak.kader_kesehatan.nama || "Belum ditentukan"}
+                      </p>
+                      <p className="text-xs text-slate-500 font-mono">
+                        {parsedKontak.kader_kesehatan.wa || "No. WA belum terdaftar"}
+                      </p>
+                    </div>
+                    {parsedKontak.kader_kesehatan.wa && (
+                      <a
+                        href={formatWhatsAppUrl(parsedKontak.kader_kesehatan.wa, `Halo Kader Bidang Kesehatan ${komunitasData.nama}...`) || "#"}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex w-full items-center justify-center gap-1.5 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 font-bold text-xs transition-colors"
+                      >
+                        <Phone className="h-3 w-3 text-emerald-600" />
+                        <span>Chat WhatsApp</span>
+                      </a>
+                    )}
+                  </div>
+
+                  {/* 3. Kader Bidang Pekerjaan Umum */}
+                  <div className="p-3.5 rounded-xl bg-white border border-amber-200 shadow-2xs space-y-2">
+                    <div className="flex items-center justify-between gap-1 text-xs">
+                      <span className="font-bold text-amber-900 flex items-center gap-1.5">
+                        <Wrench className="h-4 w-4 text-amber-600 shrink-0" />
+                        Kader Bidang Pekerjaan Umum
+                      </span>
+                    </div>
+                    <div className="space-y-0.5">
+                      <p className="text-xs font-bold text-slate-900">
+                        {parsedKontak.kader_pekerjaan_umum.nama || "Belum ditentukan"}
+                      </p>
+                      <p className="text-xs text-slate-500 font-mono">
+                        {parsedKontak.kader_pekerjaan_umum.wa || "No. WA belum terdaftar"}
+                      </p>
+                    </div>
+                    {parsedKontak.kader_pekerjaan_umum.wa && (
+                      <a
+                        href={formatWhatsAppUrl(parsedKontak.kader_pekerjaan_umum.wa, `Halo Kader Bidang Pekerjaan Umum ${komunitasData.nama}...`) || "#"}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex w-full items-center justify-center gap-1.5 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 font-bold text-xs transition-colors"
+                      >
+                        <Phone className="h-3 w-3 text-amber-600" />
+                        <span>Chat WhatsApp</span>
+                      </a>
+                    )}
+                  </div>
+
+                  {/* 4. Kader Bidang Perumahan Rakyat */}
+                  <div className="p-3.5 rounded-xl bg-white border border-cyan-200 shadow-2xs space-y-2">
+                    <div className="flex items-center justify-between gap-1 text-xs">
+                      <span className="font-bold text-cyan-900 flex items-center gap-1.5">
+                        <Home className="h-4 w-4 text-cyan-600 shrink-0" />
+                        Kader Bidang Perumahan Rakyat
+                      </span>
+                    </div>
+                    <div className="space-y-0.5">
+                      <p className="text-xs font-bold text-slate-900">
+                        {parsedKontak.kader_perumahan_rakyat.nama || "Belum ditentukan"}
+                      </p>
+                      <p className="text-xs text-slate-500 font-mono">
+                        {parsedKontak.kader_perumahan_rakyat.wa || "No. WA belum terdaftar"}
+                      </p>
+                    </div>
+                    {parsedKontak.kader_perumahan_rakyat.wa && (
+                      <a
+                        href={formatWhatsAppUrl(parsedKontak.kader_perumahan_rakyat.wa, `Halo Kader Bidang Perumahan Rakyat ${komunitasData.nama}...`) || "#"}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex w-full items-center justify-center gap-1.5 py-1.5 rounded-lg bg-cyan-50 hover:bg-cyan-100 text-cyan-800 border border-cyan-200 font-bold text-xs transition-colors"
+                      >
+                        <Phone className="h-3 w-3 text-cyan-600" />
+                        <span>Chat WhatsApp</span>
+                      </a>
+                    )}
+                  </div>
+
+                  {/* 5. Kader Bidang Trantipbumlinmas */}
+                  <div className="p-3.5 rounded-xl bg-white border border-purple-200 shadow-2xs space-y-2">
+                    <div className="flex items-center justify-between gap-1 text-xs">
+                      <span className="font-bold text-purple-900 flex items-center gap-1.5">
+                        <ShieldCheck className="h-4 w-4 text-purple-600 shrink-0" />
+                        Kader Bidang Trantipbumlinmas
+                      </span>
+                    </div>
+                    <div className="space-y-0.5">
+                      <p className="text-xs font-bold text-slate-900">
+                        {parsedKontak.kader_trantipbumlinmas.nama || "Belum ditentukan"}
+                      </p>
+                      <p className="text-xs text-slate-500 font-mono">
+                        {parsedKontak.kader_trantipbumlinmas.wa || "No. WA belum terdaftar"}
+                      </p>
+                    </div>
+                    {parsedKontak.kader_trantipbumlinmas.wa && (
+                      <a
+                        href={formatWhatsAppUrl(parsedKontak.kader_trantipbumlinmas.wa, `Halo Kader Bidang Trantipbumlinmas ${komunitasData.nama}...`) || "#"}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex w-full items-center justify-center gap-1.5 py-1.5 rounded-lg bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-200 font-bold text-xs transition-colors"
+                      >
+                        <Phone className="h-3 w-3 text-purple-600" />
+                        <span>Chat WhatsApp</span>
+                      </a>
+                    )}
+                  </div>
+
+                  {/* 6. Kader Bidang Sosial */}
+                  <div className="p-3.5 rounded-xl bg-white border border-rose-200 shadow-2xs space-y-2">
+                    <div className="flex items-center justify-between gap-1 text-xs">
+                      <span className="font-bold text-rose-900 flex items-center gap-1.5">
+                        <Users className="h-4 w-4 text-rose-600 shrink-0" />
+                        Kader Bidang Sosial
+                      </span>
+                    </div>
+                    <div className="space-y-0.5">
+                      <p className="text-xs font-bold text-slate-900">
+                        {parsedKontak.kader_sosial.nama || "Belum ditentukan"}
+                      </p>
+                      <p className="text-xs text-slate-500 font-mono">
+                        {parsedKontak.kader_sosial.wa || "No. WA belum terdaftar"}
+                      </p>
+                    </div>
+                    {parsedKontak.kader_sosial.wa && (
+                      <a
+                        href={formatWhatsAppUrl(parsedKontak.kader_sosial.wa, `Halo Kader Bidang Sosial ${komunitasData.nama}...`) || "#"}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex w-full items-center justify-center gap-1.5 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-800 border border-rose-200 font-bold text-xs transition-colors"
+                      >
+                        <Phone className="h-3 w-3 text-rose-600" />
+                        <span>Chat WhatsApp</span>
+                      </a>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Profil & Visi */}
+              {komunitasData.deskripsi && (
                 <div className="flex items-start gap-3.5 p-4 rounded-xl bg-slate-50 border border-slate-200">
                   <Info className="h-5 w-5 text-slate-500 shrink-0 mt-0.5" />
                   <div className="space-y-0.5">
                     <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">PROFIL &amp; VISI</span>
                     <p className="text-slate-900 font-medium leading-relaxed">
-                      {komunitas.deskripsi}
+                      {komunitasData.deskripsi}
                     </p>
                   </div>
                 </div>
@@ -750,9 +987,24 @@ export function KomunitasDetailClientView({
       {/* PopUp Minta Bergabung Posyandu / PAUD */}
       {isJoinModalOpen && (
         <JoinKomunitasModal
-          komunitas={komunitas}
+          komunitas={komunitasData}
           isOpen={isJoinModalOpen}
           onClose={() => setIsJoinModalOpen(false)}
+        />
+      )}
+
+      {/* Modal Edit Informasi Resmi & Operasional (Khusus Admin / Kader) */}
+      {isEditOperasionalOpen && (
+        <EditInformasiOperasionalModal
+          komunitas={komunitasData}
+          isOpen={isEditOperasionalOpen}
+          onClose={() => setIsEditOperasionalOpen(false)}
+          onSuccess={(updatedFields) => {
+            setKomunitasData((prev) => ({
+              ...prev,
+              ...updatedFields,
+            }));
+          }}
         />
       )}
     </div>

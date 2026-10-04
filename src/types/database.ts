@@ -15,6 +15,21 @@ export interface Profile {
   updated_at?: string;
 }
 
+export interface KaderBidangItem {
+  nama: string;
+  wa: string;
+}
+
+export interface KontakKomunitasDetail {
+  utama: string;
+  kader_pendidikan: KaderBidangItem;
+  kader_kesehatan: KaderBidangItem;
+  kader_pekerjaan_umum: KaderBidangItem;
+  kader_perumahan_rakyat: KaderBidangItem;
+  kader_trantipbumlinmas: KaderBidangItem;
+  kader_sosial: KaderBidangItem;
+}
+
 export interface Komunitas {
   id: string;
   nama: string;
@@ -27,6 +42,7 @@ export interface Komunitas {
   deskripsi?: string | null;
   logo_url?: string | null;
   kontak?: string | null;
+  kontak_detail?: KontakKomunitasDetail | null;
   jadwal?: string | null;
   created_at?: string;
   updated_at?: string;
