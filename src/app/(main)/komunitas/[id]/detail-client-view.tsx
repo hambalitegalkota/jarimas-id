@@ -472,34 +472,6 @@ export function KomunitasDetailClientView({
       {/* Subtab: PROFIL DATA */}
       {activeTab === "data" && (
         <section className="space-y-5 pb-16">
-          {/* Pesan Khusus Pengunjung / Pendatang sesuai Permintaan Pengguna */}
-          {(!hasFullAccess || !isApprovedMember) && isWargaKita && (
-            <div className="rounded-2xl border-2 border-amber-300 bg-amber-50 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs animate-in fade-in duration-200">
-              <div className="flex items-start gap-3.5">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-100 border-2 border-amber-200 text-amber-900 font-bold">
-                  <Info className="h-6 w-6" />
-                </div>
-                <div className="space-y-1">
-                  <h4 className="text-base font-black text-amber-950">
-                    Akses Data Komunitas Warga
-                  </h4>
-                  <p className="text-sm text-amber-900 leading-relaxed font-semibold">
-                    Pengunjung dapat melihat Grafik dan Chart Data Komunitas ini, Ingin berpartisipasi Klik Bergabung.
-                  </p>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setIsWargaOnboardingOpen(true)}
-                className="inline-flex min-h-[48px] h-12 items-center justify-center gap-2 rounded-xl bg-blue-700 hover:bg-blue-800 text-white px-6 text-base font-bold shadow-xs transition-all active:scale-98 shrink-0 cursor-pointer"
-              >
-                <UserPlus className="h-5 w-5" />
-                <span>Klik Bergabung</span>
-              </button>
-            </div>
-          )}
-
           {/* Banner Hak Akses Penuh jika Penduduk / Penduduk Berdomisili Luar Kota */}
           {hasFullAccess && isApprovedMember && isWargaKita && (
             <div className="rounded-2xl border-2 border-emerald-200 bg-emerald-50/70 p-4 sm:p-5 flex items-start gap-3 shadow-xs">
