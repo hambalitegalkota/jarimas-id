@@ -652,6 +652,209 @@ export async function rejectMemberRole(anggotaId: string): Promise<{
 }
 
 /**
+ * Server Action: Menghapus seluruh Data Anak & Riwayat Pengukuran DDTK Uji Coba
+ * Khusus Super Admin.
+ */
+export async function cleanupAllDataAnakAction(): Promise<{
+  success: boolean;
+  message: string;
+  deletedCount?: number;
+}> {
+  try {
+    const { supabase, isSuperAdmin } = await getAuthenticatedUserContext();
+
+    if (!isSuperAdmin) {
+      return {
+        success: false,
+        message: "Akses ditolak: Fitur pembersihan data hanya untuk Super Admin.",
+      };
+    }
+
+    // 1. Hitung jumlah data anak sebelum dihapus
+    const { count: initialCount } = await supabase
+      .from("data_anak")
+      .select("id", { count: "exact", head: true });
+
+    // 2. Hapus seluruh riwayat ddks_records
+    await supabase
+      .from("ddks_records")
+      .delete()
+      .neq("id", "00000000-0000-0000-0000-000000000000");
+
+    // 3. Hapus seluruh data_anak
+    const { error: delErr } = await supabase
+      .from("data_anak")
+      .delete()
+      .neq("id", "00000000-0000-0000-0000-000000000000");
+
+    if (delErr) {
+      throw delErr;
+    }
+
+    revalidatePath("/profil");
+    revalidatePath("/komunitas");
+    revalidatePath("/kabar");
+    revalidatePath("/admin");
+
+    return {
+      success: true,
+      message: `Berhasil membersihkan ${initialCount || 0} Data Anak & seluruh riwayat DDTK uji coba! Database Data Anak kini bersih (0) dan siap untuk pemantauan data uji coba terbaru.`,
+      deletedCount: initialCount || 0,
+    };
+  } catch (err: any) {
+    console.error("Error cleanupAllDataAnakAction:", err);
+    return {
+      success: false,
+      message: err.message || "Gagal membersihkan data anak.",
+    };
+  }
+}
+
+/**
+ * Server Action: Menghapus seluruh Data Kader & Keanggotaan Komunitas Uji Coba
+ * Khusus Super Admin.
+ */
+export async function cleanupAllKaderAndAnggotaAction(): Promise<{
+  success: boolean;
+  message: string;
+  deletedCount?: number;
+}> {
+  try {
+    const { supabase, isSuperAdmin } = await getAuthenticatedUserContext();
+
+    if (!isSuperAdmin) {
+      return {
+        success: false,
+        message: "Akses ditolak: Fitur pembersihan data hanya untuk Super Admin.",
+      };
+    }
+
+    // 1. Hitung jumlah keanggotaan sebelum dihapus
+    const { count: initialCount } = await supabase
+      .from("anggota_komunitas")
+      .select("id", { count: "exact", head: true });
+
+    // 2. Hapus seluruh data keanggotaan komunitas uji coba
+    const { error: delErr } = await supabase
+      .from("anggota_komunitas")
+      .delete()
+      .neq("id", "00000000-0000-0000-0000-000000000000");
+
+    if (delErr) {
+      throw delErr;
+    }
+
+    revalidatePath("/profil");
+    revalidatePath("/komunitas");
+    revalidatePath("/kabar");
+    revalidatePath("/admin");
+
+    return {
+      success: true,
+      message: `Berhasil membersihkan ${initialCount || 0} data kader dan keanggotaan komunitas uji coba! Seluruh komunitas kini dalam status reset keanggotaan.`,
+      deletedCount: initialCount || 0,
+    };
+  } catch (err: any) {
+    console.error("Error cleanupAllKaderAndAnggotaAction:", err);
+    return {
+      success: false,
+      message: err.message || "Gagal membersihkan data kader dan anggota komunitas.",
+    };
+  }
+}
+
+/**
+ * Server Action: Pembersihan Total Seluruh Data Uji Coba
+ * (Pengguna Non-Admin, Data Anak & DDTK, Kader & Anggota Komunitas, Postingan Kabar Test)
+ * Khusus Super Admin.
+ */
+export async function cleanupAllTestDataAction(): Promise<{
+  success: boolean;
+  message: string;
+  deletedCount?: {
+    users: number;
+    children: number;
+    members: number;
+  };
+}> {
+  try {
+    const { supabase, isSuperAdmin, user } = await getAuthenticatedUserContext();
+
+    if (!isSuperAdmin) {
+      return {
+        success: false,
+        message: "Akses ditolak: Fitur pembersihan data massal hanya untuk Super Admin.",
+      };
+    }
+
+    // 1. Ambil profil non-super admin
+    const { data: nonAdminProfiles } = await supabase
+      .from("profiles")
+      .select("id")
+      .or("is_super_admin.is.null,is_super_admin.eq.false");
+
+    const nonAdminIds = (nonAdminProfiles || [])
+      .map((p) => p.id)
+      .filter((id) => id !== user.id);
+
+    // 2. Bersihkan komentar & reaksi kabar
+    await supabase.from("reaksi_kabar").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+    await supabase.from("komentar_kabar").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+
+    // 3. Bersihkan postingan kabar non-super admin atau uji coba
+    if (nonAdminIds.length > 0) {
+      await supabase.from("kabar_jarimas").delete().in("user_id", nonAdminIds);
+    }
+
+    // 4. Bersihkan seluruh ddks_records & data_anak uji coba
+    const { count: childrenCount } = await supabase
+      .from("data_anak")
+      .select("id", { count: "exact", head: true });
+
+    await supabase.from("ddks_records").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+    await supabase.from("data_anak").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+
+    // 5. Bersihkan seluruh anggota_komunitas uji coba (kader, pengurus, anggota)
+    const { count: membersCount } = await supabase
+      .from("anggota_komunitas")
+      .select("id", { count: "exact", head: true });
+
+    await supabase.from("anggota_komunitas").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+
+    // 6. Bersihkan data pesanan market jika ada
+    try {
+      await supabase.from("market_pesanan").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+    } catch {}
+
+    // 7. Bersihkan tabel profiles milik pengguna non-super admin
+    if (nonAdminIds.length > 0) {
+      await supabase.from("profiles").delete().in("id", nonAdminIds);
+    }
+
+    revalidatePath("/profil");
+    revalidatePath("/komunitas");
+    revalidatePath("/kabar");
+    revalidatePath("/admin");
+
+    return {
+      success: true,
+      message: `Pembersihan menyeluruh berhasil! Dihapus: ${childrenCount || 0} Data Anak & DDTK, ${membersCount || 0} Keanggotaan & Kader, serta ${nonAdminIds.length} Akun Non-Admin.`,
+      deletedCount: {
+        users: nonAdminIds.length,
+        children: childrenCount || 0,
+        members: membersCount || 0,
+      },
+    };
+  } catch (err: any) {
+    console.error("Error cleanupAllTestDataAction:", err);
+    return {
+      success: false,
+      message: err.message || "Gagal melakukan pembersihan data menyeluruh.",
+    };
+  }
+}
+
+/**
  * Server Action: Menghapus semua data pengguna non-Super Admin (postingan, keanggotaan komunitas, reaksi, komentar, dan profile)
  * Khusus Super Admin terotentikasi.
  */
@@ -712,19 +915,26 @@ export async function cleanupNonSuperAdminDataAction(): Promise<{
       // Abaikan jika tabel market_pesanan belum ada
     }
 
-    // 6. Update data anak & ddks records yang diinput oleh user non-super admin
+    // 6. Hapus data anak & ddks records yang diinput oleh user non-super admin
     try {
-      await supabase
+      // Hapus data anak milik user non-super admin
+      const { data: userChildren } = await supabase
         .from("data_anak")
-        .update({ created_by: user.id, validated_by: user.id })
+        .select("id")
         .in("created_by", nonAdminIds);
+
+      const userChildrenIds = (userChildren || []).map((c) => c.id);
+      if (userChildrenIds.length > 0) {
+        await supabase.from("ddks_records").delete().in("data_anak_id", userChildrenIds);
+        await supabase.from("data_anak").delete().in("id", userChildrenIds);
+      }
 
       await supabase
         .from("ddks_records")
-        .update({ recorded_by: user.id })
+        .delete()
         .in("recorded_by", nonAdminIds);
-    } catch {
-      // Abaikan jika gagal update audit logs
+    } catch (cleanChildErr) {
+      console.warn("Notice clean child data of non-admin:", cleanChildErr);
     }
 
     // 7. Bersihkan tabel profiles milik user non-super admin
@@ -744,7 +954,7 @@ export async function cleanupNonSuperAdminDataAction(): Promise<{
 
     return {
       success: true,
-      message: `Berhasil membersihkan data ${nonAdminIds.length} pengguna non-Super Admin beserta postingan kabar dan keikutsertaan komunitasnya!`,
+      message: `Berhasil membersihkan data ${nonAdminIds.length} pengguna non-Super Admin beserta postingan kabar, data anak, dan keikutsertaan komunitasnya!`,
       deletedCount: nonAdminIds.length,
     };
   } catch (err: any) {
@@ -755,4 +965,5 @@ export async function cleanupNonSuperAdminDataAction(): Promise<{
     };
   }
 }
+
 
