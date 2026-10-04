@@ -922,7 +922,7 @@ export function ModalEditDataAnak({
             {/* Alasan Sekolah */}
             <div className="space-y-1.5">
               <label className="text-sm font-bold text-slate-900">
-                Alasan Mengikuti Pendidikan PAUD <span className="text-rose-600">*</span>
+                Alasan Mengikuti PAUD <span className="text-rose-600">*</span>
               </label>
               <select
                 value={alasanSekolah}

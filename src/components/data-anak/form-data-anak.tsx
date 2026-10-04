@@ -52,6 +52,7 @@ export const ALASAN_SEKOLAH_PAUD = [
   "Persiapan Ke SD",
   "Mengembangkan Keterampilan Sosial & Bahasa",
   "Semua Kerabat, Tetangga Seusia Sekolah PAUD",
+  "Orang Tua Bekerja",
 ];
 
 export const ALASAN_BELUM_SEKOLAH = [
@@ -938,7 +939,7 @@ export function FormDataAnak({
             {/* Alasan Sekolah (Dropdown Dinamis) */}
             <div className="space-y-2">
               <label className="text-base font-bold text-slate-900 leading-snug block">
-                Alasan Mengikuti Pendidikan PAUD <span className="text-rose-600">*</span>
+                Alasan Mengikuti PAUD <span className="text-rose-600">*</span>
               </label>
               <select
                 value={alasanSekolah}
