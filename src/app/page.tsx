@@ -25,6 +25,7 @@ import {
   Baby,
   Smile,
   Flame,
+  School,
 } from "lucide-react";
 import { createClient } from "@/utils/supabase/server";
 import { getMarketProduk } from "@/app/actions/market";
@@ -323,7 +324,7 @@ export default async function HomePage() {
       </section>
 
       {/* ========================================================= */}
-      {/* 4. 4 PILAR UTAMA EKOSISTEM JARIMAS-ID (BENTO GRID)        */}
+      {/* 4. 6 PILAR UTAMA EKOSISTEM JARIMAS-ID (BENTO GRID)        */}
       {/* ========================================================= */}
       <section className="space-y-4">
         <div className="space-y-1 text-center sm:text-left">
@@ -338,119 +339,189 @@ export default async function HomePage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {/* Bento Card 1: DDTK Posyandu */}
-          <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-4 shadow-xs hover:border-emerald-500/50 transition-colors">
-            <div className="flex items-center justify-between">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-600 text-white font-bold shadow-md shadow-emerald-500/20">
-                <HeartPulse className="h-6 w-6" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {/* Bento Card 1: Pendataan Anak Usia Dini (0 -6 Tahun) */}
+          <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-4 shadow-xs hover:border-sky-500/50 transition-colors flex flex-col justify-between">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-600 text-white font-bold shadow-md shadow-sky-500/20">
+                  <Baby className="h-6 w-6" />
+                </div>
+                <span className="text-[11px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-sky-50 text-sky-800 border border-sky-200">
+                  Data Balita &amp; PAUD
+                </span>
               </div>
-              <span className="text-[11px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
-                DDTK Posyandu
-              </span>
-            </div>
 
-            <div className="space-y-1.5">
-              <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
-                Pemantauan Tumbuh Kembang &amp; Antropometri
-              </h3>
-              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                Pencatatan berkala berat badan, tinggi badan, lingkar kepala, dan deteksi dini risiko stunting dengan kurva pertumbuhan standar WHO.
-              </p>
+              <div className="space-y-1.5">
+                <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
+                  Pendataan Anak Usia Dini (0 -6 Tahun)
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                  Pencatatan profil balita dan anak usia dini terintegrasi berbasis domisili dan KK untuk akses layanan Posyandu, pemantauan gizi, dan PAUD.
+                </p>
+              </div>
             </div>
 
             <Link
               href="/komunitas?tab=posyandu"
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-400 hover:text-emerald-800 underline"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-sky-700 dark:text-sky-400 hover:text-sky-800 underline pt-2"
             >
-              <span>Pantau di Komunitas Posyandu</span>
+              <span>Pantau Pendataan Anak Usia Dini</span>
               <ChevronRight className="h-4 w-4" />
             </Link>
           </div>
 
-          {/* Bento Card 2: ATS */}
-          <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-4 shadow-xs hover:border-blue-500/50 transition-colors">
-            <div className="flex items-center justify-between">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-600 text-white font-bold shadow-md shadow-blue-500/20">
-                <GraduationCap className="h-6 w-6" />
+          {/* Bento Card 2: Pendataan Anak Tidak Sekolah (ATS) */}
+          <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-4 shadow-xs hover:border-blue-500/50 transition-colors flex flex-col justify-between">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-600 text-white font-bold shadow-md shadow-blue-500/20">
+                  <GraduationCap className="h-6 w-6" />
+                </div>
+                <span className="text-[11px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-800 border border-blue-200">
+                  Pendidikan Anak
+                </span>
               </div>
-              <span className="text-[11px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-800 border border-blue-200">
-                Pendidikan Anak
-              </span>
-            </div>
 
-            <div className="space-y-1.5">
-              <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
-                Pendataan Anak Tidak Sekolah (ATS)
-              </h3>
-              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                Validasi data anak putus sekolah atau belum sekolah berjenjang (RT, RW, Kelurahan) untuk intervensi kembali bersekolah atau program kesetaraan.
-              </p>
+              <div className="space-y-1.5">
+                <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
+                  Pendataan Anak Tidak Sekolah (ATS)
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                  Validasi data anak putus sekolah atau belum sekolah berjenjang (RT, RW, Kelurahan) untuk intervensi kembali bersekolah atau program kesetaraan.
+                </p>
+              </div>
             </div>
 
             <Link
               href="/komunitas?tab=satuan_paud"
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-700 dark:text-blue-400 hover:text-blue-800 underline"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-700 dark:text-blue-400 hover:text-blue-800 underline pt-2"
             >
               <span>Pelajari Mekanisme Pendataan ATS</span>
               <ChevronRight className="h-4 w-4" />
             </Link>
           </div>
 
-          {/* Bento Card 3: Warga Kita 4 Tingkat */}
-          <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-4 shadow-xs hover:border-slate-400 transition-colors">
-            <div className="flex items-center justify-between">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-800 dark:bg-slate-700 text-white font-bold shadow-md shadow-slate-700/20">
-                <Building2 className="h-6 w-6" />
+          {/* Bento Card 3: Pemantauan Tumbuh Kembang & Antropometri */}
+          <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-4 shadow-xs hover:border-emerald-500/50 transition-colors flex flex-col justify-between">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-600 text-white font-bold shadow-md shadow-emerald-500/20">
+                  <HeartPulse className="h-6 w-6" />
+                </div>
+                <span className="text-[11px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
+                  DDTK Posyandu
+                </span>
               </div>
-              <span className="text-[11px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-800 border border-slate-200">
-                Domisili Warga
-              </span>
+
+              <div className="space-y-1.5">
+                <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
+                  Pemantauan Tumbuh Kembang &amp; Antropometri
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                  Pencatatan berkala berat badan, tinggi badan, lingkar kepala, dan deteksi dini risiko stunting dengan kurva pertumbuhan standar WHO.
+                </p>
+              </div>
             </div>
 
-            <div className="space-y-1.5">
-              <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
-                Komunitas Warga Kita
-              </h3>
-              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                Hierarki domisili cerdas yang otomatis menghubungkan akun warga ke RT, RW, Kelurahan, hingga Kecamatan tempat tinggal secara terverifikasi.
-              </p>
+            <Link
+              href="/komunitas?tab=posyandu"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-400 hover:text-emerald-800 underline pt-2"
+            >
+              <span>Pantau di Komunitas Posyandu</span>
+              <ChevronRight className="h-4 w-4" />
+            </Link>
+          </div>
+
+          {/* Bento Card 4: Komunitas Warga Kita */}
+          <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-4 shadow-xs hover:border-slate-400 transition-colors flex flex-col justify-between">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-800 dark:bg-slate-700 text-white font-bold shadow-md shadow-slate-700/20">
+                  <Building2 className="h-6 w-6" />
+                </div>
+                <span className="text-[11px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-800 border border-slate-200">
+                  Domisili Warga
+                </span>
+              </div>
+
+              <div className="space-y-1.5">
+                <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
+                  Komunitas Warga Kita
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                  Hierarki domisili cerdas yang otomatis menghubungkan akun warga ke RT, RW, Kelurahan, hingga Kecamatan tempat tinggal secara terverifikasi.
+                </p>
+              </div>
             </div>
 
             <Link
               href="/komunitas?tab=warga_kita"
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:text-slate-900 underline"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:text-slate-900 underline pt-2"
             >
               <span>Gabung dengan RT &amp; RW Anda</span>
               <ChevronRight className="h-4 w-4" />
             </Link>
           </div>
 
-          {/* Bento Card 4: Kabar & Forum Warga */}
-          <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-4 shadow-xs hover:border-emerald-500/50 transition-colors">
-            <div className="flex items-center justify-between">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-700 text-white font-bold shadow-md shadow-emerald-700/20">
-                <MessageSquare className="h-6 w-6" />
+          {/* Bento Card 5: Pendidikan Anak Usia Dini */}
+          <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-4 shadow-xs hover:border-amber-500/50 transition-colors flex flex-col justify-between">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-600 text-white font-bold shadow-md shadow-amber-500/20">
+                  <School className="h-6 w-6" />
+                </div>
+                <span className="text-[11px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200">
+                  Satuan PAUD &amp; PKBM
+                </span>
               </div>
-              <span className="text-[11px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
-                Forum Terbuka
-              </span>
+
+              <div className="space-y-1.5">
+                <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
+                  Pendidikan Anak Usi Dini
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                  Integrasi 219+ lembaga Satuan PAUD, TK, KB, SPS, TPA, dan PKBM se-Kota Tegal untuk pemerataan akses pembelajaran dini dan kesiapan bersekolah.
+                </p>
+              </div>
             </div>
 
-            <div className="space-y-1.5">
-              <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
-                Kabar Warga &amp; Edukasi Nutrisi
-              </h3>
-              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                Ruang berbagi informasi imunisasi posyandu, tanya jawab kesehatan anak, tips menu gizi seimbang, dan pengumuman lingkungan terkini.
-              </p>
+            <Link
+              href="/komunitas?tab=satuan_paud"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-700 dark:text-amber-400 hover:text-amber-800 underline pt-2"
+            >
+              <span>Eksplorasi Satuan PAUD &amp; PKBM</span>
+              <ChevronRight className="h-4 w-4" />
+            </Link>
+          </div>
+
+          {/* Bento Card 6: Kabar Warga & Berbagi Informasi */}
+          <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-4 shadow-xs hover:border-emerald-500/50 transition-colors flex flex-col justify-between">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-700 text-white font-bold shadow-md shadow-emerald-700/20">
+                  <MessageSquare className="h-6 w-6" />
+                </div>
+                <span className="text-[11px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
+                  Forum Terbuka
+                </span>
+              </div>
+
+              <div className="space-y-1.5">
+                <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
+                  Kabar Warga &amp; Berbagi Informasi
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                  Ruang berbagi informasi imunisasi posyandu, tanya jawab kesehatan anak, tips menu gizi seimbang, dan pengumuman lingkungan terkini.
+                </p>
+              </div>
             </div>
 
             <Link
               href="/kabar"
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-400 hover:text-emerald-800 underline"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-400 hover:text-emerald-800 underline pt-2"
             >
-              <span>Baca Kabar Terhangat Hari Ini</span>
+              <span>Baca Kabar &amp; Berbagi Informasi</span>
               <ChevronRight className="h-4 w-4" />
             </Link>
           </div>
