@@ -75,7 +75,7 @@ export function KomunitasCard({
     <>
       <div
         className={cn(
-          "rounded-2xl border-2 p-4 sm:p-5 space-y-3.5 shadow-xs transition-all hover:shadow-md bg-white dark:bg-slate-900",
+          "rounded-2xl border-2 p-3.5 sm:p-4 shadow-xs transition-all hover:shadow-md bg-white dark:bg-slate-900 flex flex-col sm:flex-row sm:items-center justify-between gap-3",
           komunitas.jenis === "warga_kita" &&
             "border-slate-200 dark:border-slate-800 hover:border-blue-500 dark:hover:border-blue-500",
           komunitas.jenis === "posyandu" &&
@@ -84,73 +84,91 @@ export function KomunitasCard({
             "border-slate-200 dark:border-slate-800 hover:border-indigo-500 dark:hover:border-indigo-500"
         )}
       >
-        {/* Header: Icon, Nama Posyandu / Komunitas, Alamat & Status */}
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex items-start gap-3.5 min-w-0">
-            <div
-              className={cn(
-                "flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl font-bold border-2 shadow-2xs",
-                komunitas.jenis === "warga_kita" &&
-                  "bg-blue-50 dark:bg-blue-950/50 text-blue-800 dark:text-blue-300 border-blue-200 dark:border-blue-800",
-                komunitas.jenis === "posyandu" &&
-                  "bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800",
-                komunitas.jenis === "satuan_paud" &&
-                  "bg-indigo-50 dark:bg-indigo-950/50 text-indigo-800 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800"
-              )}
-            >
-              {komunitas.jenis === "warga_kita" && <Users className="h-5 w-5" />}
-              {komunitas.jenis === "posyandu" && <Sparkles className="h-5 w-5" />}
-              {komunitas.jenis === "satuan_paud" && <Building2 className="h-5 w-5" />}
-            </div>
-
-            <div className="space-y-1 min-w-0">
-              <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100 leading-snug truncate">
-                {formattedTitle}
-              </h3>
-              <div className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400">
-                <MapPin className="h-3.5 w-3.5 text-slate-500 shrink-0" />
-                <span className="truncate">
-                  {komunitas.kelurahan && komunitas.kelurahan !== "Semua Kelurahan"
-                    ? `${komunitas.kelurahan}, ${komunitas.kecamatan || "Kota Tegal"}`
-                    : komunitas.kecamatan && komunitas.kecamatan !== "Kota Tegal"
-                    ? `Kecamatan ${komunitas.kecamatan}, Kota Tegal`
-                    : "Kota Tegal, Jawa Tengah"}
-                </span>
-              </div>
-            </div>
+        {/* Kiri: Icon, Nama Posyandu & Alamat */}
+        <div className="flex items-center gap-3 min-w-0 flex-1">
+          <div
+            className={cn(
+              "flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-2xl font-bold border-2 shadow-2xs",
+              komunitas.jenis === "warga_kita" &&
+                "bg-blue-50 dark:bg-blue-950/50 text-blue-800 dark:text-blue-300 border-blue-200 dark:border-blue-800",
+              komunitas.jenis === "posyandu" &&
+                "bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800",
+              komunitas.jenis === "satuan_paud" &&
+                "bg-indigo-50 dark:bg-indigo-950/50 text-indigo-800 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800"
+            )}
+          >
+            {komunitas.jenis === "warga_kita" && <Users className="h-5 w-5" />}
+            {komunitas.jenis === "posyandu" && <Sparkles className="h-5 w-5" />}
+            {komunitas.jenis === "satuan_paud" && <Building2 className="h-5 w-5" />}
           </div>
 
-          {/* Membership Status Badge jika sudah terdaftar */}
+          <div className="space-y-0.5 min-w-0 flex-1">
+            <div className="flex items-center gap-2">
+              <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-slate-100 leading-snug truncate">
+                {formattedTitle}
+              </h3>
+              {/* Membership Status Badge */}
+              {membership && (
+                <div className="shrink-0 hidden md:block">
+                  {membership.status === "approved" && (
+                    <span className="inline-flex items-center gap-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 text-[11px] font-bold text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
+                      <CheckCircle2 className="h-3 w-3 text-emerald-600" />
+                      <span>{membership.peran.toUpperCase()}</span>
+                    </span>
+                  )}
+                  {membership.status === "pending" && (
+                    <span className="inline-flex items-center gap-1 rounded-lg bg-amber-50 dark:bg-amber-950/50 px-2 py-0.5 text-[11px] font-bold text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-800">
+                      <Clock className="h-3 w-3 text-amber-600" />
+                      <span>PENDING</span>
+                    </span>
+                  )}
+                  {membership.status === "rejected" && (
+                    <span className="inline-flex items-center gap-1 rounded-lg bg-rose-50 dark:bg-rose-950/50 px-2 py-0.5 text-[11px] font-bold text-rose-900 dark:text-rose-300 border border-rose-300 dark:border-rose-800">
+                      <XCircle className="h-3 w-3 text-rose-600" />
+                      <span>DITOLAK</span>
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400">
+              <MapPin className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+              <span className="truncate">
+                {komunitas.kelurahan && komunitas.kelurahan !== "Semua Kelurahan"
+                  ? `${komunitas.kelurahan}, ${komunitas.kecamatan || "Kota Tegal"}`
+                  : komunitas.kecamatan && komunitas.kecamatan !== "Kota Tegal"
+                  ? `Kecamatan ${komunitas.kecamatan}, Kota Tegal`
+                  : "Kota Tegal, Jawa Tengah"}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Kanan: Tombol Kunjungi & Gabung (Sejajar dan Kompak) */}
+        <div className="flex items-center gap-2 shrink-0 self-end sm:self-center w-full sm:w-auto justify-end">
+          {/* Membership Status Badge di Mobile */}
           {membership && (
-            <div className="shrink-0">
+            <div className="shrink-0 md:hidden mr-auto">
               {membership.status === "approved" && (
-                <span className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 px-3 py-1.5 text-xs font-bold text-emerald-800 dark:text-emerald-300 border-2 border-emerald-300 dark:border-emerald-800">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                <span className="inline-flex items-center gap-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 px-2 py-1 text-[11px] font-bold text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
+                  <CheckCircle2 className="h-3 w-3 text-emerald-600" />
                   <span>{membership.peran.toUpperCase()}</span>
                 </span>
               )}
               {membership.status === "pending" && (
-                <span className="inline-flex items-center gap-1.5 rounded-xl bg-amber-50 dark:bg-amber-950/50 px-3 py-1.5 text-xs font-bold text-amber-900 dark:text-amber-300 border-2 border-amber-300 dark:border-amber-800">
-                  <Clock className="h-4 w-4 text-amber-600" />
+                <span className="inline-flex items-center gap-1 rounded-lg bg-amber-50 dark:bg-amber-950/50 px-2 py-1 text-[11px] font-bold text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-800">
+                  <Clock className="h-3 w-3 text-amber-600" />
                   <span>PENDING</span>
-                </span>
-              )}
-              {membership.status === "rejected" && (
-                <span className="inline-flex items-center gap-1.5 rounded-xl bg-rose-50 dark:bg-rose-950/50 px-3 py-1.5 text-xs font-bold text-rose-900 dark:text-rose-300 border-2 border-rose-300 dark:border-rose-800">
-                  <XCircle className="h-4 w-4 text-rose-600" />
-                  <span>DITOLAK</span>
                 </span>
               )}
             </div>
           )}
-        </div>
 
-        {/* Action Buttons Bar: Kunjungi & Gabung */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 pt-1.5 border-t border-slate-100 dark:border-slate-800">
           <Link
             href={`/komunitas/${komunitas.id}`}
             className={cn(
-              "group flex flex-1 min-h-[44px] items-center justify-center gap-2 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 text-sm font-extrabold text-slate-800 dark:text-slate-200 transition-all hover:bg-slate-50 dark:hover:bg-slate-700 shadow-2xs active:scale-[0.99]",
+              "group inline-flex min-h-[38px] h-9.5 items-center justify-center gap-1.5 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 text-xs font-extrabold text-slate-800 dark:text-slate-200 transition-all hover:bg-slate-50 dark:hover:bg-slate-700 shadow-2xs active:scale-95",
               isApprovedMember &&
                 (komunitas.jenis === "warga_kita"
                   ? "bg-blue-600 hover:bg-blue-700 text-white border-transparent"
@@ -158,7 +176,7 @@ export function KomunitasCard({
             )}
           >
             <span>Kunjungi</span>
-            <ArrowRight className="h-4 w-4 text-slate-500 dark:text-slate-400 group-hover:translate-x-0.5 transition-transform" />
+            <ArrowRight className="h-3.5 w-3.5 text-slate-500 dark:text-slate-400 group-hover:translate-x-0.5 transition-transform" />
           </Link>
 
           {!isApprovedMember && (
@@ -166,13 +184,13 @@ export function KomunitasCard({
               type="button"
               onClick={handleJoinClick}
               className={cn(
-                "flex flex-1 min-h-[44px] items-center justify-center gap-2 rounded-xl px-4 text-sm font-extrabold text-white transition-all shadow-2xs cursor-pointer active:scale-[0.99]",
+                "inline-flex min-h-[38px] h-9.5 items-center justify-center gap-1.5 rounded-xl px-3.5 text-xs font-extrabold text-white transition-all shadow-2xs cursor-pointer active:scale-95",
                 komunitas.jenis === "warga_kita"
                   ? "bg-blue-600 hover:bg-blue-700"
                   : "bg-emerald-600 hover:bg-emerald-700"
               )}
             >
-              <UserPlus className="h-4 w-4" />
+              <UserPlus className="h-3.5 w-3.5" />
               <span>Gabung</span>
             </button>
           )}
