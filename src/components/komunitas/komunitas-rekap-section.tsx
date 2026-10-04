@@ -27,7 +27,7 @@ export function KomunitasRekapSection({
   currentKecamatan = "semua",
   currentKelurahan = "semua",
 }: KomunitasRekapSectionProps) {
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
 
   const rekap = getKomunitasRekapData(currentTab);
 

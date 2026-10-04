@@ -46,10 +46,10 @@ export function KomunitasBeranggotaHierarchy() {
       const res = await getHierarchicalActiveKomunitasAction();
       if (res.success && res.data) {
         setData(res.data);
-        // Expand all kecamatan by default if there are items
+        // Collapse all kecamatan by default
         const initialExpand: Record<string, boolean> = {};
         res.data.kecamatanList.forEach((kec) => {
-          initialExpand[kec.kecamatan] = true;
+          initialExpand[kec.kecamatan] = false;
         });
         setExpandedKecamatans(initialExpand);
       } else {
