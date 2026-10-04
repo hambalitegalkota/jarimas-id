@@ -408,7 +408,7 @@ export function KomunitasSayaSection({
                       href={`/komunitas/${item.id}`}
                       className="group flex flex-1 min-h-[48px] h-12 items-center justify-center gap-2 rounded-xl border-2 border-slate-200 bg-white px-4 text-base font-bold text-slate-800 transition-colors hover:bg-slate-50"
                     >
-                      <span>Detail</span>
+                      <span>Kunjungi</span>
                       <ArrowRight className="h-4 w-4 text-slate-500 transition-transform group-hover:translate-x-1" />
                     </Link>
                     <span className="inline-flex items-center justify-center gap-1.5 px-4 min-h-[48px] h-12 rounded-xl bg-amber-50 border-2 border-amber-200 text-sm font-bold text-amber-900 shrink-0">
