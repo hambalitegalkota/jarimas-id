@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/utils/supabase/server";
 import { RegisterSchema, LoginSchema } from "@/lib/zod-schemas";
+import { sendJarimasWelcomeGreeting } from "@/app/actions/pertemanan";
 import type { AuthActionState } from "@/types/database";
 
 const NETWORK_ERROR_MESSAGE =
@@ -190,7 +191,7 @@ export async function loginUser(
       };
     }
 
-    const { error: signInError } = await supabase.auth.signInWithPassword({
+    const { data: authData, error: signInError } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
@@ -222,7 +223,28 @@ export async function loginUser(
       };
     }
 
+    // Kirim salam pembuka dari akun Jarimas setiap kali pengguna berhasil login
+    if (authData?.user) {
+      try {
+        const { data: prof } = await supabase
+          .from("profiles")
+          .select("nama_lengkap")
+          .eq("id", authData.user.id)
+          .maybeSingle();
+
+        const userName =
+          prof?.nama_lengkap ||
+          authData.user.user_metadata?.nama_lengkap ||
+          "";
+
+        await sendJarimasWelcomeGreeting(authData.user.id, userName);
+      } catch (greetErr) {
+        console.warn("Gagal mengirim salam pembuka Jarimas saat login:", greetErr);
+      }
+    }
+
     shouldRedirect = true;
+
   } catch (err: any) {
     if (
       err?.message === "NEXT_REDIRECT" ||

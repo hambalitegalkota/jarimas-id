@@ -80,6 +80,22 @@ ALTER TABLE public.pertemanan ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.pesan_pribadi ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.pesan_grup ENABLE ROW LEVEL SECURITY;
 
+-- 4.0 PROFIL RESMI AKUN JARIMAS (BOT / SISTEM PENGHUBUNG WARGA)
+INSERT INTO public.profiles (id, nama_lengkap, email, is_super_admin, avatar_url, updated_at)
+VALUES (
+  '00000000-0000-0000-0000-000000000001'::uuid,
+  'Jarimas',
+  'official@jarimas.id',
+  false,
+  NULL,
+  now()
+)
+ON CONFLICT (id) DO UPDATE SET
+  nama_lengkap = 'Jarimas',
+  email = 'official@jarimas.id',
+  is_super_admin = false,
+  updated_at = now();
+
 -- 4.1 Pertemanan Policies
 DROP POLICY IF EXISTS "Pengguna dapat melihat status pertemanan sendiri" ON public.pertemanan;
 CREATE POLICY "Pengguna dapat melihat status pertemanan sendiri" ON public.pertemanan FOR SELECT USING (
@@ -109,13 +125,15 @@ CREATE POLICY "Pengguna dapat membaca pesan yang dikirim atau diterima" ON publi
 
 DROP POLICY IF EXISTS "Pengguna dapat mengirim pesan" ON public.pesan_pribadi;
 CREATE POLICY "Pengguna dapat mengirim pesan" ON public.pesan_pribadi FOR INSERT WITH CHECK (
-  auth.uid() = sender_id
+  auth.uid() = sender_id OR
+  (sender_id = '00000000-0000-0000-0000-000000000001'::uuid AND auth.uid() = receiver_id)
 );
 
 DROP POLICY IF EXISTS "Penerima dapat mengubah status pesan terbaca" ON public.pesan_pribadi;
 CREATE POLICY "Penerima dapat mengubah status pesan terbaca" ON public.pesan_pribadi FOR UPDATE USING (
   auth.uid() = receiver_id
 );
+
 
 DROP POLICY IF EXISTS "Pengirim atau penerima dapat menghapus pesan" ON public.pesan_pribadi;
 CREATE POLICY "Pengirim atau penerima dapat menghapus pesan" ON public.pesan_pribadi FOR DELETE USING (

@@ -428,6 +428,84 @@ export async function respondFriendRequest(
   }
 }
 
+import {
+  JARIMAS_BOT_ID,
+  JARIMAS_BOT_NAME,
+} from "@/types/database";
+
+/**
+ * Helper: Memastikan profil bot / sistem resmi "Jarimas" tersedia di tabel profiles
+ */
+export async function ensureJarimasBotProfile(supabaseClient?: any): Promise<void> {
+  try {
+    const supabase = supabaseClient || (await createClient());
+    await supabase.from("profiles").upsert(
+      {
+        id: JARIMAS_BOT_ID,
+        nama_lengkap: JARIMAS_BOT_NAME,
+        email: "official@jarimas.id",
+        is_super_admin: false,
+        avatar_url: null,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "id" }
+    );
+  } catch (err) {
+    console.warn("Gagal memastikan profil bot Jarimas:", err);
+  }
+}
+
+/**
+ * Server Action: Mengirimkan salam pembuka dari akun resmi Jarimas kepada pengguna
+ * Format: "Selamat Datang (nama pengguna), tinggalkan pesan disini apabila ada yang perlu disampaikan, terimakasih sudah berkunjung :)"
+ */
+export async function sendJarimasWelcomeGreeting(
+  userId: string,
+  userName?: string
+): Promise<{ success: boolean; message?: string }> {
+  try {
+    if (!userId || userId === JARIMAS_BOT_ID) {
+      return { success: false, message: "User ID tidak valid." };
+    }
+
+    const supabase = await createClient();
+    await ensureJarimasBotProfile(supabase);
+
+    let cleanName = (userName || "").trim();
+    if (!cleanName) {
+      const { data: prof } = await supabase
+        .from("profiles")
+        .select("nama_lengkap")
+        .eq("id", userId)
+        .maybeSingle();
+      cleanName = prof?.nama_lengkap || "Warga";
+    }
+
+    const greetingText = `Selamat Datang ${cleanName}, tinggalkan pesan disini apabila ada yang perlu disampaikan, terimakasih sudah berkunjung :)`;
+
+    // Kirim pesan salam pembuka dari Jarimas ke user
+    const { error } = await supabase.from("pesan_pribadi").insert({
+      sender_id: JARIMAS_BOT_ID,
+      receiver_id: userId,
+      pesan: greetingText,
+      is_read: false,
+      created_at: new Date().toISOString(),
+    });
+
+    if (error) {
+      console.warn("Gagal insert salam pembuka Jarimas:", error.message);
+      return { success: false, message: error.message };
+    }
+
+    revalidatePath("/kabar");
+    revalidatePath("/");
+    return { success: true };
+  } catch (err: any) {
+    console.warn("Error sendJarimasWelcomeGreeting:", err);
+    return { success: false, message: err?.message };
+  }
+}
+
 /**
  * Server Action: Mengambil riwayat percakapan pribadi dengan pengguna target
  */
@@ -455,19 +533,32 @@ export async function getPrivateConversation(targetUserId: string): Promise<{
 
     const currentUserId = user.id;
 
-    // 1. Ambil data profil target (Kecualikan akun Super Admin)
-    const { data: targetProfile } = await supabase
-      .from("profiles")
-      .select("id, nama_lengkap, email, nomor_hp, avatar_url, is_super_admin")
-      .eq("id", targetUserId)
-      .maybeSingle();
-
-    if (targetProfile?.is_super_admin) {
-      return {
-        success: false,
-        message: "Percakapan dengan akun Super Admin tidak tersedia.",
-        messages: [],
+    // 1. Ambil data profil target (Kecualikan akun Super Admin, kecuali akun resmi Jarimas)
+    let targetProfile: any = null;
+    if (targetUserId === JARIMAS_BOT_ID) {
+      await ensureJarimasBotProfile(supabase);
+      targetProfile = {
+        id: JARIMAS_BOT_ID,
+        nama_lengkap: JARIMAS_BOT_NAME,
+        email: "official@jarimas.id",
+        is_super_admin: false,
+        avatar_url: null,
       };
+    } else {
+      const { data: prof } = await supabase
+        .from("profiles")
+        .select("id, nama_lengkap, email, nomor_hp, avatar_url, is_super_admin")
+        .eq("id", targetUserId)
+        .maybeSingle();
+
+      if (prof?.is_super_admin) {
+        return {
+          success: false,
+          message: "Percakapan dengan akun Super Admin tidak tersedia.",
+          messages: [],
+        };
+      }
+      targetProfile = prof;
     }
 
     // 2. Ambil riwayat pesan antara kedua pengguna
@@ -567,18 +658,22 @@ export async function sendPrivateMessage(params: {
       };
     }
 
-    // Periksa apakah penerima adalah Super Admin
-    const { data: targetProfile } = await supabase
-      .from("profiles")
-      .select("id, is_super_admin")
-      .eq("id", receiverId)
-      .maybeSingle();
+    // Periksa apakah penerima adalah Super Admin (Kecuali jika akun resmi Jarimas)
+    if (receiverId !== JARIMAS_BOT_ID) {
+      const { data: targetProfile } = await supabase
+        .from("profiles")
+        .select("id, is_super_admin")
+        .eq("id", receiverId)
+        .maybeSingle();
 
-    if (targetProfile?.is_super_admin) {
-      return {
-        success: false,
-        message: "Pesan tidak dapat dikirim ke akun Super Admin.",
-      };
+      if (targetProfile?.is_super_admin) {
+        return {
+          success: false,
+          message: "Pesan tidak dapat dikirim ke akun Super Admin.",
+        };
+      }
+    } else {
+      await ensureJarimasBotProfile(supabase);
     }
 
     const { data: inserted, error: insertErr } = await supabase
@@ -620,6 +715,7 @@ export async function sendPrivateMessage(params: {
     };
   }
 }
+
 
 /**
  * Server Action: Mengambil daftar percakapan terbaru (Inbox 1-on-1 Direct Chat)
@@ -690,7 +786,40 @@ export async function getRecentConversations(): Promise<{
     });
 
     const partnerIds = Object.keys(partnerMap);
-    if (partnerIds.length === 0) {
+    if (partnerIds.length === 0 || (!partnerMap[JARIMAS_BOT_ID] && currentUserId !== JARIMAS_BOT_ID)) {
+      // Kirim salam pembuka jika belum ada percakapan dengan Jarimas
+      if (!partnerMap[JARIMAS_BOT_ID] && currentUserId !== JARIMAS_BOT_ID) {
+        await sendJarimasWelcomeGreeting(currentUserId);
+      }
+      if (partnerIds.length === 0) {
+        // Re-query setelah insert salam pembuka pertama
+        const { data: updatedMessages } = await supabase
+          .from("pesan_pribadi")
+          .select("id, sender_id, receiver_id, pesan, is_read, created_at")
+          .or(`sender_id.eq.${currentUserId},receiver_id.eq.${currentUserId}`)
+          .order("created_at", { ascending: false });
+
+        if (updatedMessages && updatedMessages.length > 0) {
+          updatedMessages.forEach((msg) => {
+            const partnerId = msg.sender_id === currentUserId ? msg.receiver_id : msg.sender_id;
+            if (!partnerMap[partnerId]) {
+              partnerMap[partnerId] = {
+                lastMessage: msg.pesan,
+                lastMessageAt: msg.created_at,
+                unreadCount: 0,
+                isLastMessageMine: msg.sender_id === currentUserId,
+              };
+            }
+            if (msg.receiver_id === currentUserId && !msg.is_read) {
+              partnerMap[partnerId].unreadCount += 1;
+            }
+          });
+        }
+      }
+    }
+
+    const finalPartnerIds = Object.keys(partnerMap);
+    if (finalPartnerIds.length === 0) {
       return {
         success: true,
         conversations: [],
@@ -698,14 +827,27 @@ export async function getRecentConversations(): Promise<{
       };
     }
 
-    // Ambil profil seluruh partner (KECUALIKAN akun Super Admin)
+    // Ambil profil seluruh partner (KECUALIKAN akun Super Admin, kecuali akun bot resmi Jarimas)
     const { data: profiles } = await supabase
       .from("profiles")
       .select("id, nama_lengkap, email, avatar_url, is_super_admin")
-      .in("id", partnerIds)
-      .or("is_super_admin.is.null,is_super_admin.eq.false");
+      .in("id", finalPartnerIds)
+      .or(`id.eq.${JARIMAS_BOT_ID},is_super_admin.is.null,is_super_admin.eq.false`);
 
-    const nonAdminProfiles = (profiles || []).filter((p) => p.is_super_admin !== true);
+    let nonAdminProfiles = (profiles || []).filter(
+      (p) => p.id === JARIMAS_BOT_ID || p.is_super_admin !== true
+    );
+
+    // Pastikan profil Jarimas ada di list
+    if (partnerMap[JARIMAS_BOT_ID] && !nonAdminProfiles.some((p) => p.id === JARIMAS_BOT_ID)) {
+      nonAdminProfiles.push({
+        id: JARIMAS_BOT_ID,
+        nama_lengkap: JARIMAS_BOT_NAME,
+        email: "official@jarimas.id",
+        is_super_admin: false,
+        avatar_url: null,
+      });
+    }
 
     // Ambil pertemanan untuk partner
     const { data: friendships } = await supabase
@@ -725,8 +867,9 @@ export async function getRecentConversations(): Promise<{
       (p) => {
         const info = partnerMap[p.id];
         const f = fMap[p.id];
+        const isJarimasBot = p.id === JARIMAS_BOT_ID;
         let friendshipStatus: import("@/types/database").RecentConversationItem["friendshipStatus"] =
-          "none";
+          isJarimasBot ? "accepted" : "none";
 
         if (f) {
           if (f.status === "accepted") friendshipStatus = "accepted";
@@ -737,9 +880,10 @@ export async function getRecentConversations(): Promise<{
 
         return {
           partnerId: p.id,
-          partnerName: p.nama_lengkap || "Warga Jarimas",
+          partnerName: isJarimasBot ? JARIMAS_BOT_NAME : (p.nama_lengkap || "Warga Jarimas"),
           partnerAvatar: p.avatar_url,
-          partnerRole: "Warga",
+          partnerRole: isJarimasBot ? "Layanan Resmi" : "Warga",
+          partnerCommunity: isJarimasBot ? "Sistem Informasi & Bantuan Warga" : undefined,
           lastMessage: info?.lastMessage || "",
           lastMessageAt: info?.lastMessageAt || new Date().toISOString(),
           unreadCount: info?.unreadCount || 0,
@@ -754,6 +898,7 @@ export async function getRecentConversations(): Promise<{
     conversations.sort(
       (a, b) => new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime()
     );
+
 
     return {
       success: true,

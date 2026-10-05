@@ -19,10 +19,12 @@ import {
 } from "lucide-react";
 import { ChatDrawerModal } from "@/components/warga/chat-drawer-modal";
 import { GroupChatModal } from "./group-chat-modal";
-import type {
+import {
   RecentConversationItem,
   GrupChatRoom,
   RegisteredUserItem,
+  JARIMAS_BOT_ID,
+  JARIMAS_BOT_NAME,
 } from "@/types/database";
 
 interface PercakapanHubSectionProps {
@@ -85,8 +87,17 @@ export function PercakapanHubSection({
       );
     });
 
-
   const handleOpenDirectChatFromPartnerId = (partnerId: string) => {
+    if (partnerId === JARIMAS_BOT_ID) {
+      setSelectedDirectUser({
+        id: JARIMAS_BOT_ID,
+        nama_lengkap: JARIMAS_BOT_NAME,
+        is_super_admin: false,
+        created_at: new Date().toISOString(),
+      });
+      return;
+    }
+
     const foundUser = allUsers.find((u) => u.id === partnerId);
     if (foundUser) {
       setSelectedDirectUser(foundUser);

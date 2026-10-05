@@ -16,7 +16,12 @@ import {
 } from "lucide-react";
 import { getPrivateConversation, sendPrivateMessage } from "@/app/actions/pertemanan";
 import { createClient } from "@/utils/supabase/client";
-import type { PesanPribadi, RegisteredUserItem } from "@/types/database";
+import {
+  type PesanPribadi,
+  type RegisteredUserItem,
+  JARIMAS_BOT_ID,
+  JARIMAS_BOT_NAME,
+} from "@/types/database";
 
 interface ChatDrawerModalProps {
   isOpen: boolean;
@@ -31,6 +36,7 @@ const QUICK_GREETINGS = [
   "Salam sehat Kader Posyandu 🩺",
   "Bisa koordinasi terkait warga RT/RW? 🏘️",
 ];
+
 
 export function ChatDrawerModal({
   isOpen,
@@ -204,6 +210,8 @@ export function ChatDrawerModal({
     inputRef.current?.focus();
   };
 
+  const isJarimasBot =
+    targetUser.id === JARIMAS_BOT_ID || targetUser.nama_lengkap === JARIMAS_BOT_NAME;
   const initial = targetUser.nama_lengkap.charAt(0).toUpperCase() || "W";
   const primaryCommunity = targetUser.komunitas_list?.[0];
 
@@ -222,7 +230,9 @@ export function ChatDrawerModal({
             {/* User Avatar */}
             <div className="relative shrink-0">
               <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-tr from-emerald-600 via-teal-600 to-emerald-800 text-white font-black text-base shadow-sm border border-white dark:border-slate-800">
-                {targetUser.avatar_url ? (
+                {isJarimasBot ? (
+                  <Sparkles className="h-6 w-6 text-amber-300 animate-pulse" />
+                ) : targetUser.avatar_url ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={targetUser.avatar_url}
@@ -242,15 +252,24 @@ export function ChatDrawerModal({
                 <h3 className="text-sm sm:text-base font-black text-slate-900 dark:text-slate-100 truncate">
                   {targetUser.nama_lengkap}
                 </h3>
-                {targetUser.is_super_admin && (
+                {isJarimasBot ? (
+                  <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/80 px-2 py-0.5 text-[9px] font-black text-emerald-900 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700">
+                    <Sparkles className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
+                    Akun Resmi
+                  </span>
+                ) : targetUser.is_super_admin ? (
                   <span className="inline-flex items-center gap-0.5 rounded-full bg-amber-100 dark:bg-amber-950/80 px-2 py-0.5 text-[9px] font-black text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-700">
                     <ShieldCheck className="h-3 w-3 text-amber-600" />
                     Admin
                   </span>
-                )}
+                ) : null}
               </div>
               <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
-                {primaryCommunity ? (
+                {isJarimasBot ? (
+                  <span className="text-emerald-600 dark:text-emerald-400 font-semibold">
+                    Layanan & Pusat Informasi Warga Jarimas
+                  </span>
+                ) : primaryCommunity ? (
                   <span>
                     {primaryCommunity.peran} • {primaryCommunity.nama}
                   </span>
@@ -260,6 +279,7 @@ export function ChatDrawerModal({
               </p>
             </div>
           </div>
+
 
           {/* Close Button */}
           <button
@@ -401,10 +421,15 @@ export function ChatDrawerModal({
             type="text"
             value={inputMessage}
             onChange={(e) => setInputMessage(e.target.value)}
-            placeholder={`Ketik pesan untuk ${targetUser.nama_lengkap.split(" ")[0]}...`}
+            placeholder={
+              isJarimasBot
+                ? "Tinggalkan pesan untuk Jarimas di sini..."
+                : `Ketik pesan untuk ${targetUser.nama_lengkap.split(" ")[0]}...`
+            }
             className="flex-1 min-h-[42px] rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3.5 text-xs sm:text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
             disabled={isSending}
           />
+
 
           <button
             type="submit"
