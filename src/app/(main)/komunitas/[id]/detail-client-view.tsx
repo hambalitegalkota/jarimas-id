@@ -82,7 +82,10 @@ export function KomunitasDetailClientView({
   const isWargaKita = komunitasData.jenis === "warga_kita";
   const hasFullAccess = !isWargaKita || hasFullProfilDataAccess(userPeran, isAdminOrKader);
   const isChartOnly = isWargaKita && !hasFullAccess;
-  const isPenduduk = userPeran === "Penduduk";
+  const isPenduduk =
+    isApprovedMember &&
+    (userPeran === "Penduduk" ||
+      (membership?.berdomisili === true && membership?.kk_terdaftar === true));
   const isKader =
     isApprovedMember &&
     (userPeran.toLowerCase().trim() === "kader" ||
@@ -296,7 +299,7 @@ export function KomunitasDetailClientView({
         </section>
       )}
 
-      {/* ALERT JIKA BELUM MEMILIKI ADMIN (HANYA PADA WARGA KITA & HANYA PENDUDUK YANG BERHAK MENGAJUKAN ADMIN) */}
+      {/* ALERT JIKA BELUM MEMILIKI ADMIN (HANYA PADA WARGA KITA & HANYA PENDUDUK YANG SUDAH BERGABUNG YANG BERHAK MENGAJUKAN ADMIN) */}
       {!komunitas.hasAdmin && isWargaKita && (
         <section className="rounded-2xl border-2 border-amber-200 bg-amber-50/70 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
           <div className="flex items-start gap-3.5">
@@ -308,14 +311,34 @@ export function KomunitasDetailClientView({
                 Komunitas Belum Memiliki Admin / Pengurus
               </h4>
               <p className="text-sm text-slate-700 leading-relaxed">
-                {isPenduduk
-                  ? "Sebagai Penduduk, Anda berhak mengajukan diri untuk menjadi Admin/Pengurus resmi kepada Admin di tingkat atasnya secara berjenjang."
-                  : "Komunitas ini belum memiliki Admin resmi. Pengajuan Admin hanya dapat diajukan oleh Penduduk resmi (KK & Domisili di Kota Tegal)."}
+                {isApprovedMember && isPenduduk ? (
+                  membership?.peran_diajukan ? (
+                    <span className="font-semibold text-emerald-800">
+                      Permohonan Anda sebagai Admin sedang menunggu verifikasi dan persetujuan Super Admin / Admin hierarki tingkat atas. (Tidak ada proses otomatisasi).
+                    </span>
+                  ) : (
+                    "Sebagai anggota berstatus Penduduk, Anda berhak mengajukan permohonan menjadi Admin/Pengurus resmi kepada Admin tingkat atas (melalui verifikasi manual, tanpa proses otomatisasi)."
+                  )
+                ) : isApprovedMember ? (
+                  "Pengajuan Admin hanya dapat diajukan oleh anggota dengan status Penduduk resmi (KK & Domisili di Kota Tegal)."
+                ) : (
+                  "Anda harus bergabung menjadi anggota komunitas ini terlebih dahulu sebelum dapat mengajukan diri sebagai Admin/Pengurus."
+                )}
               </p>
             </div>
           </div>
 
-          {isPenduduk && (
+          {/* Action Button: Tergantung status gabung */}
+          {!isApprovedMember ? (
+            <button
+              type="button"
+              onClick={() => setIsWargaOnboardingOpen(true)}
+              className="inline-flex min-h-[44px] h-11 items-center justify-center gap-2 rounded-xl bg-blue-700 hover:bg-blue-800 text-white px-5 text-sm font-bold shadow-xs transition-all active:scale-98 shrink-0 cursor-pointer"
+            >
+              <UserPlus className="h-4 w-4" />
+              <span>Gabung Komunitas Dulu</span>
+            </button>
+          ) : isPenduduk && !membership?.peran_diajukan ? (
             <button
               type="button"
               onClick={() => {
@@ -325,12 +348,17 @@ export function KomunitasDetailClientView({
                 }
                 setIsApplyAdminOpen(true);
               }}
-              className="inline-flex min-h-[48px] h-12 items-center justify-center gap-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white px-5 text-base font-bold shadow-xs transition-all active:scale-98 shrink-0 cursor-pointer"
+              className="inline-flex min-h-[44px] h-11 items-center justify-center gap-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white px-5 text-sm font-bold shadow-xs transition-all active:scale-98 shrink-0 cursor-pointer"
             >
-              <ShieldCheck className="h-5 w-5" />
+              <ShieldCheck className="h-4 w-4" />
               <span>Ajukan Diri Sebagai Admin</span>
             </button>
-          )}
+          ) : membership?.peran_diajukan ? (
+            <span className="inline-flex items-center gap-1.5 rounded-xl bg-amber-100 px-3.5 py-2 text-xs font-bold text-amber-900 border border-amber-300 shrink-0">
+              <Clock className="h-4 w-4 text-amber-700" />
+              <span>Menunggu Persetujuan</span>
+            </span>
+          ) : null}
         </section>
       )}
 

@@ -24,8 +24,6 @@ interface JoinKomunitasModalProps {
 const ROLE_OPTIONS_BY_TYPE: Record<string, string[]> = {
   warga_kita: [
     "Penduduk",
-    "Pengurus",
-    "Admin Kelurahan",
     "Pendatang",
     "Pengunjung",
   ],
@@ -38,9 +36,8 @@ const ROLE_OPTIONS_BY_TYPE: Record<string, string[]> = {
     "PKK",
   ],
   satuan_paud: [
-    "Admin",
-    "Kepala Sekolah",
     "Guru PAUD",
+    "Kepala Sekolah",
     "Orangtua/Wali Murid",
     "Komite",
     "Alumni",

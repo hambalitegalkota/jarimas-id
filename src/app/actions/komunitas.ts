@@ -1465,7 +1465,11 @@ export async function joinKomunitasWargaWithSurvey({
     }
 
     if (peran && peran.trim()) {
-      identifiedRole = peran.trim();
+      const cleanPeran = peran.trim();
+      // TIDAK ADA PROSES OTOMATISASI ADMIN: Peran Admin/Pengurus tidak dapat ditetapkan otomatis saat onboarding/survey
+      if (!isRoleAdmin(cleanPeran)) {
+        identifiedRole = cleanPeran;
+      }
     }
 
     const activePeran = identifiedRole;
@@ -1620,8 +1624,12 @@ export async function joinKomunitasWargaWithSurvey({
 }
 
 /**
- * Server Action: Mengajukan diri sebagai Admin / Pengurus Komunitas Warga (jika belum ada admin)
- * Aturan: Setiap pengguna hanya boleh mengajukan permohonan menjadi Admin untuk satu komunitas saja di Komunitas Warga Kita.
+ * Server Action: Mengajukan diri sebagai Admin / Pengurus Komunitas (jika belum ada admin)
+ * Aturan Ketat:
+ * 1. Pengguna WAJIB sudah bergabung dan berstatus 'approved' sebagai anggota komunitas yang bersangkutan.
+ * 2. Tidak ada proses otomatisasi untuk menjadi Admin. Permohonan hanya mengisi 'peran_diajukan' dan menunggu persetujuan manual.
+ * 3. Untuk Komunitas Warga Kita: Hanya anggota berstatus 'Penduduk' (KK & Domisili Kota Tegal) yang berhak mengajukan diri.
+ * 4. Setiap pengguna hanya boleh mengajukan permohonan menjadi Admin untuk satu komunitas saja.
  */
 export async function applyForAdminKomunitas({
   komunitasId,
@@ -1645,7 +1653,7 @@ export async function applyForAdminKomunitas({
     if (authError || !user) {
       return {
         success: false,
-        message: "Silakan masuk terlebih dahulu untuk mengajukan diri sebagai admin.",
+        message: "Silakan masuk terlebih dahulu untuk mengajukan permohonan admin.",
       };
     }
 
@@ -1690,29 +1698,57 @@ export async function applyForAdminKomunitas({
       );
     }
 
-    // Hanya Penduduk yang berhak mengajukan diri sebagai Admin pada Komunitas Warga Kita
-    if (seed?.jenis === "warga_kita") {
-      const { data: userMember } = await supabase
-        .from("anggota_komunitas")
-        .select("peran, berdomisili, kk_terdaftar")
-        .eq("user_id", user.id)
-        .eq("komunitas_id", dbKomunitasId)
-        .maybeSingle();
+    // 1. SYARAT WAJIB 1: Pengguna HARUS SUDAH BERGABUNG dan berstatus 'approved' di komunitas ini
+    const { data: existingMember } = await supabase
+      .from("anggota_komunitas")
+      .select("id, peran, status, peran_diajukan, berdomisili, kk_terdaftar")
+      .eq("user_id", user.id)
+      .eq("komunitas_id", dbKomunitasId)
+      .maybeSingle();
 
+    if (!existingMember || existingMember.status !== "approved") {
+      return {
+        success: false,
+        message:
+          "Akses ditolak: Anda harus bergabung dan disetujui sebagai anggota aktif komunitas ini terlebih dahulu sebelum dapat mengajukan diri sebagai Admin/Pengurus.",
+      };
+    }
+
+    // Jika pengguna sudah menjadi Admin aktif di komunitas ini
+    if (isRoleAdmin(existingMember.peran)) {
+      return {
+        success: false,
+        message: `Anda sudah berstatus sebagai ${formatPeranDisplay(existingMember.peran)} resmi di komunitas ini.`,
+      };
+    }
+
+    // Jika permohonan admin sedang dalam status pending
+    if (
+      existingMember.peran_diajukan &&
+      isRoleAdmin(existingMember.peran_diajukan)
+    ) {
+      return {
+        success: false,
+        message: `Permohonan Anda sebagai ${formatPeranDisplay(existingMember.peran_diajukan)} sedang menunggu persetujuan Super Admin / Admin hierarki tingkat atas.`,
+      };
+    }
+
+    // 2. SYARAT WAJIB 2: Untuk Komunitas Warga Kita, hanya anggota berstatus 'Penduduk' yang berhak mengajukan diri
+    if (seed?.jenis === "warga_kita") {
       const isUserPenduduk =
-        userMember?.peran?.toLowerCase() === "penduduk" ||
-        (userMember?.berdomisili === true && userMember?.kk_terdaftar === true);
+        existingMember.peran?.toLowerCase() === "penduduk" ||
+        (existingMember.berdomisili === true && existingMember.kk_terdaftar === true);
 
       if (!isUserPenduduk) {
         return {
           success: false,
           message:
-            "Hanya warga dengan status Penduduk (KK & Domisili di Kota Tegal) yang berhak mengajukan permohonan sebagai Admin.",
+            "Hanya anggota aktif dengan status Penduduk (KK & Domisili di Kota Tegal) yang berhak mengajukan permohonan sebagai Admin/Pengurus.",
         };
       }
     }
 
-    // Cek apakah komunitas tujuan sudah memiliki Admin aktif (Satu Komunitas Satu Admin)
+    // 3. Cek apakah komunitas tujuan sudah memiliki Admin aktif (Satu Komunitas Satu Admin)
     let candidateKomIds = [dbKomunitasId];
     if (seed) {
       const { data: siblingKoms } = await supabase
@@ -1777,7 +1813,7 @@ export async function applyForAdminKomunitas({
       };
     }
 
-    // ATURAN 1 KOMUNITAS: Bersihkan permohonan admin di komunitas warga_kita lainnya untuk user ini
+    // 4. ATURAN 1 KOMUNITAS: Bersihkan permohonan admin di komunitas warga_kita lainnya untuk user ini
     try {
       const { data: userOtherAdminApps } = await supabase
         .from("anggota_komunitas")
@@ -1799,49 +1835,36 @@ export async function applyForAdminKomunitas({
       console.warn("Notice resetting other admin applications:", cleanErr);
     }
 
-    // Upsert anggota_komunitas dengan peran_diajukan = 'Pengurus'
-    const { data: existing } = await supabase
+    // 5. TIDAK ADA PROSES OTOMATISASI:
+    // Kolom 'peran' pengguna TETAP peran anggota yang berlaku (TIDAK BERUBAH MENJADI ADMIN OTOMATIS).
+    // Hanya mengisi kolom 'peran_diajukan' dan menunggu verifikasi serta persetujuan manual Super Admin / Admin Hierarki.
+    const targetAdminRole =
+      seed?.jenis === "warga_kita"
+        ? "Pengurus"
+        : seed?.jenis === "posyandu"
+        ? "Kader"
+        : "Admin";
+
+    const { error: updateErr } = await supabase
       .from("anggota_komunitas")
-      .select("id, peran, status")
-      .eq("user_id", user.id)
-      .eq("komunitas_id", dbKomunitasId)
-      .maybeSingle();
+      .update({
+        peran_diajukan: targetAdminRole,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", existingMember.id);
 
-    if (existing) {
-      const { error: updateErr } = await supabase
-        .from("anggota_komunitas")
-        .update({
-          peran_diajukan: "Pengurus",
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", existing.id);
-
-      if (updateErr) throw updateErr;
-    } else {
-      const { error: insertErr } = await supabase
-        .from("anggota_komunitas")
-        .insert({
-          user_id: user.id,
-          komunitas_id: dbKomunitasId,
-          peran: "Pengunjung",
-          peran_diajukan: "Pengurus",
-          status: "approved",
-          created_at: new Date().toISOString(),
-        });
-
-      if (insertErr) throw insertErr;
-    }
+    if (updateErr) throw updateErr;
 
     // Hitung pesan hierarkis sesuai tingkat komunitas
     let approverMessage =
-      "Pengajuan Admin telah dikirim dan menunggu persetujuan Super Admin.";
+      "Permohonan Admin telah dikirim dan menunggu persetujuan Super Admin.";
     if (seed) {
       const { targetApproverTitle, tierLevel } = computeTierAndApprover(
         seed,
-        "Pengurus",
-        "Pengunjung"
+        targetAdminRole,
+        existingMember.peran
       );
-      approverMessage = `Pengajuan Anda sebagai Admin ${tierLevel} telah dikirim dan menunggu verifikasi ${targetApproverTitle}.`;
+      approverMessage = `Permohonan Anda sebagai Admin ${tierLevel} telah dikirim dan menunggu verifikasi ${targetApproverTitle} (tidak ada proses otomatisasi).`;
     }
 
     revalidatePath(`/komunitas/${komunitasId}`);
@@ -1857,7 +1880,7 @@ export async function applyForAdminKomunitas({
     console.error("Error applyForAdminKomunitas:", err);
     return {
       success: false,
-      message: err.message || "Gagal mengajukan diri sebagai admin.",
+      message: err.message || "Gagal mengajukan permohonan sebagai admin.",
     };
   }
 }
