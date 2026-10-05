@@ -554,11 +554,19 @@ export async function sendPrivateMessage(params: {
       .single();
 
     if (insertErr) {
+      const isTableMissing =
+        insertErr.message?.includes("does not exist") ||
+        insertErr.code === "42P01";
       return {
         success: false,
-        message: "Gagal mengirim pesan: " + insertErr.message,
+        message: isTableMissing
+          ? "Tabel database 'pesan_pribadi' belum dibuat di Supabase. Silakan jalankan skrip SQL migration di Supabase SQL Editor."
+          : "Gagal mengirim pesan: " + insertErr.message,
       };
     }
+
+    revalidatePath("/kabar");
+    revalidatePath("/");
 
     return {
       success: true,
@@ -980,11 +988,18 @@ export async function sendGroupMessage(params: {
       .single();
 
     if (insertErr) {
+      const isTableMissing =
+        insertErr.message?.includes("does not exist") ||
+        insertErr.code === "42P01";
       return {
         success: false,
-        message: "Gagal mengirim pesan grup: " + insertErr.message,
+        message: isTableMissing
+          ? "Tabel database 'pesan_grup' belum dibuat di Supabase. Silakan jalankan skrip SQL migration di Supabase SQL Editor."
+          : "Gagal mengirim pesan grup: " + insertErr.message,
       };
     }
+
+    revalidatePath("/kabar");
 
     return {
       success: true,

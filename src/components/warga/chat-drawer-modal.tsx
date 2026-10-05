@@ -41,6 +41,7 @@ export function ChatDrawerModal({
   const [inputMessage, setInputMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSending, setIsSending] = useState(false);
+  const [sendError, setSendError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -109,6 +110,8 @@ export function ChatDrawerModal({
     const text = inputMessage.trim();
     if (!text || isSending) return;
 
+    setSendError(null);
+
     // Optimistic UI insert
     const tempId = "temp-" + Date.now();
     const optimisticMsg: PesanPribadi = {
@@ -136,9 +139,17 @@ export function ChatDrawerModal({
         setMessages((prev) =>
           prev.map((m) => (m.id === tempId ? res.data! : m))
         );
+      } else {
+        // Rollback dan tampilkan error
+        setMessages((prev) => prev.filter((m) => m.id !== tempId));
+        setInputMessage(text);
+        setSendError(res.message || "Gagal mengirim pesan ke server.");
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Gagal mengirim pesan:", err);
+      setMessages((prev) => prev.filter((m) => m.id !== tempId));
+      setInputMessage(text);
+      setSendError(err?.message || "Terjadi kesalahan jaringan.");
     } finally {
       setIsSending(false);
     }
@@ -215,6 +226,20 @@ export function ChatDrawerModal({
             <X className="h-5 w-5" />
           </button>
         </div>
+
+        {/* Error Alert Banner */}
+        {sendError && (
+          <div className="mx-4 mt-3 p-3 rounded-2xl bg-rose-50 dark:bg-rose-950/80 border border-rose-200 dark:border-rose-800 text-xs font-bold text-rose-800 dark:text-rose-200 flex items-center justify-between gap-2 shrink-0 animate-in fade-in">
+            <span>⚠️ {sendError}</span>
+            <button
+              type="button"
+              onClick={() => setSendError(null)}
+              className="text-xs font-bold text-rose-600 hover:text-rose-800 underline"
+            >
+              Tutup
+            </button>
+          </div>
+        )}
 
         {/* ========================================================= */}
         {/* MESSAGES BODY                                             */}
