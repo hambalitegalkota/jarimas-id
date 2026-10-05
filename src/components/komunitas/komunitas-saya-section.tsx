@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import {
   Users,
@@ -13,12 +14,17 @@ import {
   UserCheck,
   Calendar,
   LogIn,
+  LogOut,
+  AlertTriangle,
+  X,
+  Loader2,
 } from "lucide-react";
 import type { UserJoinedKomunitas } from "@/types/database";
-import { cn, isRoleAdmin, toValidUUID } from "@/lib/utils";
+import { cn, isRoleAdmin, toValidUUID, formatPeranDisplay } from "@/lib/utils";
 import { UnifiedWargaCard, type WargaTierItem } from "@/components/komunitas/unified-warga-card";
 import { extractKomunitasMetadata } from "@/lib/admin-helpers";
 import { getWargaHierarchyChain, slugify } from "@/lib/constants/tegal-data";
+import { leaveKomunitas } from "@/app/actions/komunitas";
 
 interface KomunitasSayaSectionProps {
   userJoinedList: UserJoinedKomunitas[];
@@ -29,6 +35,44 @@ export function KomunitasSayaSection({
   userJoinedList,
   currentUserId,
 }: KomunitasSayaSectionProps) {
+  const [joinedList, setJoinedList] = useState<UserJoinedKomunitas[]>(userJoinedList);
+  const [leaveTarget, setLeaveTarget] = useState<UserJoinedKomunitas | null>(null);
+  const [isLeaving, setIsLeaving] = useState(false);
+  const [feedback, setFeedback] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
+
+  const handleConfirmLeave = async () => {
+    if (!leaveTarget) return;
+    setIsLeaving(true);
+    setFeedback(null);
+
+    try {
+      const res = await leaveKomunitas({ komunitasId: leaveTarget.id });
+      if (res.success) {
+        setJoinedList((prev) => prev.filter((item) => item.id !== leaveTarget.id && item.membershipId !== leaveTarget.membershipId));
+        setFeedback({
+          type: "success",
+          message: res.message || "Berhasil keluar dari komunitas.",
+        });
+        setLeaveTarget(null);
+      } else {
+        setFeedback({
+          type: "error",
+          message: res.message || "Gagal keluar dari komunitas.",
+        });
+      }
+    } catch (err: any) {
+      setFeedback({
+        type: "error",
+        message: err.message || "Terjadi kesalahan.",
+      });
+    } finally {
+      setIsLeaving(false);
+    }
+  };
+
   // Jika user belum login, tampilkan banner ajakan login
   if (!currentUserId) {
     return (
@@ -59,7 +103,7 @@ export function KomunitasSayaSection({
   }
 
   // Jika user sudah login tapi belum bergabung ke komunitas manapun
-  if (userJoinedList.length === 0) {
+  if (joinedList.length === 0) {
     return (
       <div className="rounded-2xl border-2 border-dashed border-slate-300 bg-white p-6 sm:p-8 space-y-3 text-center">
         <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 border-2 border-blue-200 text-blue-700 mx-auto">
@@ -78,10 +122,10 @@ export function KomunitasSayaSection({
   }
 
   // Pisahkan Komunitas Warga Kita dan Komunitas Lainnya
-  const wargaKitaItems = userJoinedList.filter(
+  const wargaKitaItems = joinedList.filter(
     (item) => item.jenis === "warga_kita"
   );
-  const otherItems = userJoinedList.filter(
+  const otherItems = joinedList.filter(
     (item) => item.jenis !== "warga_kita"
   );
 
@@ -338,12 +382,12 @@ export function KomunitasSayaSection({
                     )}
                   </div>
 
-                  {/* Status & Peran Badge */}
-                  <div className="shrink-0">
+                  {/* Status & Peran Badge & Tombol Keluar */}
+                  <div className="flex items-center gap-1.5 shrink-0">
                     {isApproved && (
                       <span className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-800 border-2 border-emerald-300">
                         <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-                        <span>{item.peran.toUpperCase()}</span>
+                        <span>{formatPeranDisplay(item.peran).toUpperCase()}</span>
                       </span>
                     )}
                     {isPending && (
@@ -358,6 +402,16 @@ export function KomunitasSayaSection({
                         <span>DITOLAK</span>
                       </span>
                     )}
+
+                    {/* Tombol Keluar Komunitas */}
+                    <button
+                      type="button"
+                      onClick={() => setLeaveTarget(item)}
+                      className="p-1.5 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-200 transition-all cursor-pointer"
+                      title={`Keluar dari ${formattedTitle}`}
+                    >
+                      <LogOut className="h-4 w-4" />
+                    </button>
                   </div>
                 </div>
 
@@ -422,6 +476,88 @@ export function KomunitasSayaSection({
           );
         })}
       </div>
+
+      {/* Modal Konfirmasi Keluar Komunitas dari Komunitas Saya */}
+      {leaveTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 animate-in fade-in">
+          <div className="w-full max-w-md rounded-2xl border-2 border-slate-200 bg-white p-6 shadow-2xl space-y-5 animate-in zoom-in-95">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-rose-50 border-2 border-rose-200 text-rose-600">
+                  <AlertTriangle className="h-6 w-6" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-slate-900">
+                    Keluar Komunitas?
+                  </h3>
+                  <p className="text-xs font-semibold text-slate-500">
+                    Konfirmasi Keanggotaan
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => !isLeaving && setLeaveTarget(null)}
+                disabled={isLeaving}
+                className="rounded-xl p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="space-y-3 text-sm text-slate-600">
+              <p>
+                Apakah Anda yakin ingin keluar dan berhenti bergabung dari komunitas berikut?
+              </p>
+              <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+                <p className="font-bold text-slate-900 text-base">
+                  {leaveTarget.nama}
+                </p>
+                <div className="flex items-center justify-between text-xs font-semibold text-slate-500">
+                  <span>{leaveTarget.kelurahan || "Tegal"}, {leaveTarget.kecamatan || "Kota Tegal"}</span>
+                  <span className="font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-md">
+                    {formatPeranDisplay(leaveTarget.peran)}
+                  </span>
+                </div>
+              </div>
+              {leaveTarget.jenis === "warga_kita" && (
+                <p className="text-xs text-rose-600 font-semibold leading-relaxed">
+                  * Keluar dari komunitas RT akan otomatis menghapus keterhubungan di jenjang RW, Kelurahan, dan Kecamatan.
+                </p>
+              )}
+            </div>
+
+            <div className="flex items-center gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setLeaveTarget(null)}
+                disabled={isLeaving}
+                className="flex-1 h-11 rounded-xl border-2 border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-bold text-sm transition-all disabled:opacity-50 cursor-pointer"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmLeave}
+                disabled={isLeaving}
+                className="flex-1 h-11 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-sm shadow-xs transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+              >
+                {isLeaving ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>Memproses...</span>
+                  </>
+                ) : (
+                  <>
+                    <LogOut className="h-4 w-4" />
+                    <span>Ya, Keluar</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

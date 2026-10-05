@@ -27,6 +27,11 @@ import {
   Wrench,
   Home,
   HeartPulse,
+  LogOut,
+  UserMinus,
+  UserX,
+  AlertTriangle,
+  ChevronDown,
 } from "lucide-react";
 import { JoinKomunitasModal } from "@/components/komunitas/join-komunitas-modal";
 import { WargaOnboardingModal } from "@/components/komunitas/warga-onboarding-modal";
@@ -34,14 +39,19 @@ import { EditInformasiOperasionalModal } from "@/components/komunitas/edit-infor
 import { KabarCard } from "@/components/kabar/kabar-card";
 import { CreateKabarModal } from "@/components/kabar/create-kabar-modal";
 import { KomunitasProfilCharts } from "@/components/komunitas/komunitas-profil-charts";
-import { applyForAdminKomunitas } from "@/app/actions/komunitas";
+import {
+  applyForAdminKomunitas,
+  leaveKomunitas,
+  resignAdminKomunitas,
+  kickMemberByAdmin,
+} from "@/app/actions/komunitas";
 import type {
   KomunitasWithMembership,
   AnggotaKomunitasDetail,
   KabarItem,
   DataAnakItem,
 } from "@/types/database";
-import { cn, hasFullProfilDataAccess, parseKontakKomunitas, formatWhatsAppUrl } from "@/lib/utils";
+import { cn, hasFullProfilDataAccess, parseKontakKomunitas, formatWhatsAppUrl, formatPeranDisplay, isRoleAdmin } from "@/lib/utils";
 
 interface KomunitasDetailClientViewProps {
   komunitas: KomunitasWithMembership;
@@ -76,6 +86,17 @@ export function KomunitasDetailClientView({
   const [adminFeedback, setAdminFeedback] = useState<string | null>(null);
   const [isSubmittingAdmin, startSubmitAdmin] = useTransition();
 
+  // State untuk Kelola Keanggotaan (Keluar, Berhenti Admin, Kick Member)
+  const [anggotaState, setAnggotaState] = useState<AnggotaKomunitasDetail[]>(anggotaList);
+  const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false);
+  const [isResignModalOpen, setIsResignModalOpen] = useState(false);
+  const [kickTargetMember, setKickTargetMember] = useState<AnggotaKomunitasDetail | null>(null);
+  const [actionLoading, setActionLoading] = useState(false);
+  const [actionFeedback, setActionFeedback] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
+
   const membership = membershipState;
   const isApprovedMember = membership?.status === "approved";
   const userPeran = membership?.peran || "Pengunjung";
@@ -90,6 +111,8 @@ export function KomunitasDetailClientView({
     isApprovedMember &&
     (userPeran.toLowerCase().trim() === "kader" ||
       userPeran.toLowerCase().trim().includes("kader"));
+  const isUserAdmin = isApprovedMember && isRoleAdmin(userPeran);
+  const isUserPendingAdmin = Boolean(membership?.peran_diajukan && isRoleAdmin(membership.peran_diajukan));
 
   const parsedKontak = useMemo(
     () => parseKontakKomunitas(komunitasData.kontak),
@@ -102,7 +125,91 @@ export function KomunitasDetailClientView({
     formattedTitle = cleanName ? `Posyandu ${cleanName}` : "Posyandu";
   }
 
-  const approvedMembers = anggotaList.filter((m) => m.status === "approved");
+  const approvedMembers = anggotaState.filter((m) => m.status === "approved");
+
+  const handleLeave = async () => {
+    setActionLoading(true);
+    setActionFeedback(null);
+    try {
+      const res = await leaveKomunitas({ komunitasId: komunitas.id });
+      if (res.success) {
+        setActionFeedback({ type: "success", message: res.message });
+        setMembershipState(null);
+        setKomunitasData((prev) => ({
+          ...prev,
+          jumlah_anggota: Math.max(0, prev.jumlah_anggota - 1),
+        }));
+        setAnggotaState((prev) => prev.filter((m) => m.user_id !== currentUserId));
+        setTimeout(() => {
+          setIsLeaveModalOpen(false);
+          window.location.reload();
+        }, 1500);
+      } else {
+        setActionFeedback({ type: "error", message: res.message });
+      }
+    } catch (err: any) {
+      setActionFeedback({ type: "error", message: err.message || "Gagal keluar dari komunitas." });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleResign = async () => {
+    setActionLoading(true);
+    setActionFeedback(null);
+    try {
+      const res = await resignAdminKomunitas({ komunitasId: komunitas.id });
+      if (res.success) {
+        setActionFeedback({ type: "success", message: res.message });
+        setMembershipState((prev) =>
+          prev
+            ? {
+                ...prev,
+                peran: isWargaKita ? "Penduduk" : "Pengunjung",
+                peran_diajukan: null,
+              }
+            : null
+        );
+        setTimeout(() => {
+          setIsResignModalOpen(false);
+          window.location.reload();
+        }, 1500);
+      } else {
+        setActionFeedback({ type: "error", message: res.message });
+      }
+    } catch (err: any) {
+      setActionFeedback({ type: "error", message: err.message || "Gagal memproses permohonan." });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleKickMember = async () => {
+    if (!kickTargetMember) return;
+    setActionLoading(true);
+    setActionFeedback(null);
+    try {
+      const res = await kickMemberByAdmin({
+        membershipId: kickTargetMember.id,
+        komunitasId: komunitas.id,
+      });
+      if (res.success) {
+        setActionFeedback({ type: "success", message: res.message });
+        setAnggotaState((prev) => prev.filter((m) => m.id !== kickTargetMember.id));
+        setKomunitasData((prev) => ({
+          ...prev,
+          jumlah_anggota: Math.max(0, prev.jumlah_anggota - 1),
+        }));
+        setKickTargetMember(null);
+      } else {
+        setActionFeedback({ type: "error", message: res.message });
+      }
+    } catch (err: any) {
+      setActionFeedback({ type: "error", message: err.message || "Gagal mengeluarkan anggota." });
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
   // Otorisasi Kelola Anggota
   const canManageMembers = useMemo(() => {
@@ -239,13 +346,55 @@ export function KomunitasDetailClientView({
             </div>
           </div>
 
-          {/* Status Badge User */}
-          <div className="shrink-0">
+          {/* Status Badge & Aksi Keanggotaan User */}
+          <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2 shrink-0">
             {isApprovedMember ? (
-              <span className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-800 border-2 border-emerald-300">
-                <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-                <span>{userPeran.toUpperCase()}</span>
-              </span>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-800 border-2 border-emerald-300">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                  <span>{formatPeranDisplay(userPeran).toUpperCase()}</span>
+                </span>
+
+                {/* Tombol Berhenti Jadi Admin jika user adalah Admin */}
+                {isUserAdmin && (
+                  <button
+                    type="button"
+                    onClick={() => setIsResignModalOpen(true)}
+                    className="inline-flex items-center gap-1.5 rounded-xl border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 px-3 py-1.5 text-xs font-bold shadow-2xs transition-all active:scale-98 cursor-pointer"
+                    title="Berhenti dari jabatan Admin komunitas"
+                  >
+                    <UserMinus className="h-3.5 w-3.5 text-amber-700" />
+                    <span className="hidden sm:inline">Lepas Admin</span>
+                  </button>
+                )}
+
+                {/* Tombol Keluar Komunitas */}
+                <button
+                  type="button"
+                  onClick={() => setIsLeaveModalOpen(true)}
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 px-3 py-1.5 text-xs font-bold shadow-2xs transition-all active:scale-98 cursor-pointer"
+                  title="Keluar dari komunitas ini"
+                >
+                  <LogOut className="h-3.5 w-3.5 text-rose-600" />
+                  <span className="hidden sm:inline">Keluar</span>
+                </button>
+              </div>
+            ) : membership?.status === "pending" || membership?.peran_diajukan ? (
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 rounded-xl bg-amber-50 px-3 py-1.5 text-xs font-bold text-amber-900 border-2 border-amber-300">
+                  <Clock className="h-4 w-4 text-amber-600" />
+                  <span>MENUNGGU</span>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setIsResignModalOpen(true)}
+                  className="inline-flex items-center gap-1 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 px-2.5 py-1.5 text-xs font-bold shadow-2xs transition-all cursor-pointer"
+                  title="Batalkan permohonan keanggotaan/admin"
+                >
+                  <X className="h-3.5 w-3.5 text-slate-500" />
+                  <span>Batal</span>
+                </button>
+              </div>
             ) : (
               <button
                 type="button"
@@ -758,33 +907,57 @@ export function KomunitasDetailClientView({
               {approvedMembers.map((member) => {
                 const name = member.profiles?.nama_lengkap || "Warga Komunitas";
                 const initial = name.charAt(0).toUpperCase();
+                const isMe = currentUserId && member.user_id === currentUserId;
+                const isTargetSuperAdmin = (member.profiles as any)?.is_super_admin === true;
+                const canKickThisMember = canManageMembers && !isMe && !isTargetSuperAdmin;
 
                 return (
                   <div
                     key={member.id}
-                    className="flex items-center justify-between rounded-2xl border-2 border-slate-200 bg-white p-4 shadow-xs"
+                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border-2 border-slate-200 bg-white p-4 shadow-xs"
                   >
-                    <div className="flex items-center gap-3.5">
+                    <div className="flex items-center gap-3.5 min-w-0">
                       <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 border-2 border-blue-200 text-blue-700 font-bold text-base">
                         {initial}
                       </div>
-                      <div>
-                        <h4 className="text-base font-bold text-slate-900">
-                          {name}
-                        </h4>
-                        <p className="text-sm font-semibold text-slate-500">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <h4 className="text-base font-bold text-slate-900 truncate">
+                            {name}
+                          </h4>
+                          {isMe && (
+                            <span className="text-[10px] font-extrabold bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded-md">
+                              ANDA
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-sm font-semibold text-slate-500 truncate">
                           {member.profiles?.email || "-"}
                         </p>
                       </div>
                     </div>
-                    <div className="flex flex-wrap items-center gap-2">
+
+                    <div className="flex flex-wrap items-center gap-2 shrink-0">
                       <span className="rounded-xl bg-slate-100 px-3 py-1.5 text-xs font-bold text-slate-800 border border-slate-200">
-                        {member.peran}
+                        {formatPeranDisplay(member.peran)}
                       </span>
                       {member.peran_diajukan && (
                         <span className="rounded-xl bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-900 border border-amber-200">
-                          Diajukan: {member.peran_diajukan}
+                          Diajukan: {formatPeranDisplay(member.peran_diajukan)}
                         </span>
+                      )}
+
+                      {/* Tombol Keluarkan Anggota oleh Pengurus */}
+                      {canKickThisMember && (
+                        <button
+                          type="button"
+                          onClick={() => setKickTargetMember(member)}
+                          className="inline-flex items-center gap-1.5 rounded-xl border border-rose-300 bg-rose-50 hover:bg-rose-100 text-rose-700 px-3 py-1.5 text-xs font-bold shadow-2xs transition-all active:scale-98 cursor-pointer"
+                          title={`Keluarkan ${name} dari komunitas`}
+                        >
+                          <UserX className="h-3.5 w-3.5 text-rose-600" />
+                          <span>Keluarkan</span>
+                        </button>
                       )}
                     </div>
                   </div>
@@ -1040,6 +1213,261 @@ export function KomunitasDetailClientView({
             }));
           }}
         />
+      )}
+
+      {/* Modal Konfirmasi Keluar Komunitas */}
+      {isLeaveModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 animate-in fade-in">
+          <div className="w-full max-w-md rounded-2xl border-2 border-slate-200 bg-white p-6 shadow-2xl space-y-5 animate-in zoom-in-95">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-rose-50 border-2 border-rose-200 text-rose-600">
+                  <LogOut className="h-6 w-6" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-slate-900">
+                    Keluar dari Komunitas?
+                  </h3>
+                  <p className="text-xs font-semibold text-slate-500">
+                    {formattedTitle}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => !actionLoading && setIsLeaveModalOpen(false)}
+                disabled={actionLoading}
+                className="rounded-xl p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {actionFeedback && (
+              <div
+                className={`p-3 rounded-xl border text-xs font-bold ${
+                  actionFeedback.type === "success"
+                    ? "border-emerald-300 bg-emerald-50 text-emerald-800"
+                    : "border-rose-300 bg-rose-50 text-rose-800"
+                }`}
+              >
+                {actionFeedback.message}
+              </div>
+            )}
+
+            <div className="space-y-3 text-sm text-slate-600">
+              <p>
+                Apakah Anda yakin ingin keluar dan tidak bergabung lagi di <strong>{formattedTitle}</strong>?
+              </p>
+              {isWargaKita && (
+                <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 font-medium leading-relaxed">
+                  Perhatian: Keluar dari komunitas RT Warga Kita akan otomatis melepaskan keterhubungan domisili Anda pada tingkatan RW, Kelurahan, dan Kecamatan terkait.
+                </div>
+              )}
+            </div>
+
+            <div className="flex items-center gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setIsLeaveModalOpen(false)}
+                disabled={actionLoading}
+                className="flex-1 h-11 rounded-xl border-2 border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-bold text-sm transition-all disabled:opacity-50 cursor-pointer"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={handleLeave}
+                disabled={actionLoading}
+                className="flex-1 h-11 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-sm shadow-xs transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+              >
+                {actionLoading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>Memproses...</span>
+                  </>
+                ) : (
+                  <>
+                    <LogOut className="h-4 w-4" />
+                    <span>Ya, Keluar</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Konfirmasi Berhenti Jadi Admin / Batalkan Pengajuan Admin */}
+      {isResignModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 animate-in fade-in">
+          <div className="w-full max-w-md rounded-2xl border-2 border-slate-200 bg-white p-6 shadow-2xl space-y-5 animate-in zoom-in-95">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-50 border-2 border-amber-200 text-amber-700">
+                  <UserMinus className="h-6 w-6" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-slate-900">
+                    {isUserAdmin ? "Berhenti Menjadi Admin?" : "Batalkan Permohonan?"}
+                  </h3>
+                  <p className="text-xs font-semibold text-slate-500">
+                    {formattedTitle}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => !actionLoading && setIsResignModalOpen(false)}
+                disabled={actionLoading}
+                className="rounded-xl p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {actionFeedback && (
+              <div
+                className={`p-3 rounded-xl border text-xs font-bold ${
+                  actionFeedback.type === "success"
+                    ? "border-emerald-300 bg-emerald-50 text-emerald-800"
+                    : "border-rose-300 bg-rose-50 text-rose-800"
+                }`}
+              >
+                {actionFeedback.message}
+              </div>
+            )}
+
+            <div className="space-y-3 text-sm text-slate-600">
+              <p>
+                {isUserAdmin
+                  ? "Apakah Anda yakin ingin berhenti dari status Admin/Pengurus resmi di komunitas ini? Peran Anda akan dikembalikan menjadi warga/anggota biasa."
+                  : "Apakah Anda yakin ingin membatalkan permohonan keanggotaan/pengajuan Admin ini?"}
+              </p>
+            </div>
+
+            <div className="flex items-center gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setIsResignModalOpen(false)}
+                disabled={actionLoading}
+                className="flex-1 h-11 rounded-xl border-2 border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-bold text-sm transition-all disabled:opacity-50 cursor-pointer"
+              >
+                Tutup
+              </button>
+              <button
+                type="button"
+                onClick={handleResign}
+                disabled={actionLoading}
+                className="flex-1 h-11 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-sm shadow-xs transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+              >
+                {actionLoading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>Memproses...</span>
+                  </>
+                ) : (
+                  <>
+                    <UserMinus className="h-4 w-4" />
+                    <span>{isUserAdmin ? "Ya, Lepas Admin" : "Ya, Batalkan"}</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Konfirmasi Keluarkan Anggota (Khusus Admin) */}
+      {kickTargetMember && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 animate-in fade-in">
+          <div className="w-full max-w-md rounded-2xl border-2 border-slate-200 bg-white p-6 shadow-2xl space-y-5 animate-in zoom-in-95">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-rose-50 border-2 border-rose-200 text-rose-600">
+                  <AlertTriangle className="h-6 w-6" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-slate-900">
+                    Keluarkan Anggota?
+                  </h3>
+                  <p className="text-xs font-semibold text-slate-500">
+                    Konfirmasi Tindakan Pengurus
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => !actionLoading && setKickTargetMember(null)}
+                disabled={actionLoading}
+                className="rounded-xl p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {actionFeedback && (
+              <div
+                className={`p-3 rounded-xl border text-xs font-bold ${
+                  actionFeedback.type === "success"
+                    ? "border-emerald-300 bg-emerald-50 text-emerald-800"
+                    : "border-rose-300 bg-rose-50 text-rose-800"
+                }`}
+              >
+                {actionFeedback.message}
+              </div>
+            )}
+
+            <div className="space-y-3 text-sm text-slate-600">
+              <p>
+                Apakah Anda yakin ingin mengeluarkan anggota berikut dari <strong>{formattedTitle}</strong>?
+              </p>
+              <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+                <p className="font-bold text-slate-900 text-base">
+                  {kickTargetMember.profiles?.nama_lengkap || "Pengguna"}
+                </p>
+                <div className="flex items-center justify-between text-xs font-semibold text-slate-500">
+                  <span>{kickTargetMember.profiles?.email || "-"}</span>
+                  <span className="font-bold text-slate-700 bg-slate-200/80 px-2 py-0.5 rounded-md">
+                    {formatPeranDisplay(kickTargetMember.peran)}
+                  </span>
+                </div>
+              </div>
+              <p className="text-xs text-rose-600 font-semibold leading-relaxed">
+                * Pengguna yang dikeluarkan akan kehilangan akses ke data dan aktivitas internal komunitas ini sampai bergabung kembali.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setKickTargetMember(null)}
+                disabled={actionLoading}
+                className="flex-1 h-11 rounded-xl border-2 border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-bold text-sm transition-all disabled:opacity-50 cursor-pointer"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={handleKickMember}
+                disabled={actionLoading}
+                className="flex-1 h-11 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-sm shadow-xs transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+              >
+                {actionLoading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>Memproses...</span>
+                  </>
+                ) : (
+                  <>
+                    <UserX className="h-4 w-4" />
+                    <span>Ya, Keluarkan</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

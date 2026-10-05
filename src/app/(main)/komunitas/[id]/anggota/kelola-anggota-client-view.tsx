@@ -11,10 +11,14 @@ import {
   AlertCircle,
   CheckCircle2,
   Users,
+  UserX,
+  AlertTriangle,
+  X,
 } from "lucide-react";
 import {
   approveAnggotaByAdmin,
   rejectAnggotaByAdmin,
+  kickMemberByAdmin,
 } from "@/app/actions/komunitas";
 import type { AnggotaKomunitasDetail } from "@/types/database";
 import { cn, formatPeranDisplay } from "@/lib/utils";
@@ -36,6 +40,8 @@ export function KelolaAnggotaClientView({
     message: string;
   } | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [kickTargetMember, setKickTargetMember] = useState<AnggotaKomunitasDetail | null>(null);
+  const [isKicking, setIsKicking] = useState(false);
 
   const pendingMembers = members.filter(
     (m) =>
@@ -100,6 +106,40 @@ export function KelolaAnggotaClientView({
       }
       setLoadingId(null);
     });
+  };
+
+  const handleConfirmKick = async () => {
+    if (!kickTargetMember) return;
+    setIsKicking(true);
+    setFeedback(null);
+
+    try {
+      const res = await kickMemberByAdmin({
+        membershipId: kickTargetMember.id,
+        komunitasId,
+      });
+
+      if (res.success) {
+        setMembers((prev) => prev.filter((m) => m.id !== kickTargetMember.id));
+        setFeedback({
+          type: "success",
+          message: res.message || `Anggota berhasil dikeluarkan dari komunitas.`,
+        });
+        setKickTargetMember(null);
+      } else {
+        setFeedback({
+          type: "error",
+          message: res.message || "Gagal mengeluarkan anggota.",
+        });
+      }
+    } catch (err: any) {
+      setFeedback({
+        type: "error",
+        message: err.message || "Terjadi kesalahan saat mengeluarkan anggota.",
+      });
+    } finally {
+      setIsKicking(false);
+    }
   };
 
   return (
@@ -263,26 +303,120 @@ export function KelolaAnggotaClientView({
               return (
                 <div
                   key={member.id}
-                  className="flex items-center justify-between rounded-lg border border-border bg-card p-3.5"
+                  className="flex items-center justify-between gap-3 rounded-lg border border-border bg-card p-3.5"
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
                     <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-border bg-muted text-foreground font-mono font-bold text-xs">
                       {initial}
                     </div>
-                    <div>
-                      <h4 className="text-sm font-bold text-foreground">
+                    <div className="min-w-0">
+                      <h4 className="text-sm font-bold text-foreground truncate">
                         {name}
                       </h4>
-                      <p className="text-xs font-mono text-muted-foreground">{email}</p>
+                      <p className="text-xs font-mono text-muted-foreground truncate">{email}</p>
                     </div>
                   </div>
-                  <span className="rounded-md bg-emerald-500/10 px-2.5 py-1 text-xs font-mono text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
-                    {formatPeranDisplay(member.peran).toUpperCase()}
-                  </span>
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="rounded-md bg-emerald-500/10 px-2.5 py-1 text-xs font-mono text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+                      {formatPeranDisplay(member.peran).toUpperCase()}
+                    </span>
+
+                    {/* Tombol Keluarkan Anggota oleh Admin */}
+                    <button
+                      type="button"
+                      onClick={() => setKickTargetMember(member)}
+                      className="inline-flex h-8 items-center gap-1 rounded-md border border-destructive/30 bg-destructive/5 hover:bg-destructive/15 text-destructive px-2.5 text-xs font-mono font-semibold transition-all cursor-pointer"
+                      title={`Keluarkan ${name} dari komunitas`}
+                    >
+                      <UserX className="h-3.5 w-3.5" />
+                      <span className="hidden sm:inline">Keluarkan</span>
+                    </button>
+                  </div>
                 </div>
               );
             })
           )}
+        </div>
+      )}
+
+      {/* Modal Konfirmasi Keluarkan Anggota */}
+      {kickTargetMember && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 animate-in fade-in">
+          <div className="w-full max-w-md rounded-2xl border-2 border-slate-200 bg-white p-6 shadow-2xl space-y-5 animate-in zoom-in-95">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-rose-50 border-2 border-rose-200 text-rose-600">
+                  <AlertTriangle className="h-6 w-6" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-slate-900">
+                    Keluarkan Anggota?
+                  </h3>
+                  <p className="text-xs font-semibold text-slate-500">
+                    Konfirmasi Tindakan Pengurus
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => !isKicking && setKickTargetMember(null)}
+                disabled={isKicking}
+                className="rounded-xl p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="space-y-3 text-sm text-slate-600">
+              <p>
+                Apakah Anda yakin ingin mengeluarkan anggota berikut dari komunitas ini?
+              </p>
+              <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+                <p className="font-bold text-slate-900 text-base">
+                  {kickTargetMember.profiles?.nama_lengkap || "Pengguna"}
+                </p>
+                <div className="flex items-center justify-between text-xs font-semibold text-slate-500">
+                  <span>{kickTargetMember.profiles?.email || "-"}</span>
+                  <span className="font-bold text-slate-700 bg-slate-200/80 px-2 py-0.5 rounded-md">
+                    {formatPeranDisplay(kickTargetMember.peran)}
+                  </span>
+                </div>
+              </div>
+              <p className="text-xs text-rose-600 font-semibold leading-relaxed">
+                * Pengguna yang dikeluarkan akan kehilangan akses ke grup dan data internal komunitas ini sampai bergabung kembali.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setKickTargetMember(null)}
+                disabled={isKicking}
+                className="flex-1 h-11 rounded-xl border-2 border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-bold text-sm transition-all disabled:opacity-50 cursor-pointer"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmKick}
+                disabled={isKicking}
+                className="flex-1 h-11 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-sm shadow-xs transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+              >
+                {isKicking ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>Memproses...</span>
+                  </>
+                ) : (
+                  <>
+                    <UserX className="h-4 w-4" />
+                    <span>Ya, Keluarkan</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

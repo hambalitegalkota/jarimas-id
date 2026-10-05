@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/utils/supabase/server";
+import { createClient, createAdminClient } from "@/utils/supabase/server";
 import {
   RAW_POSYANDU_TEGAL,
   SEED_POSYANDU_TEGAL,
@@ -1908,6 +1908,318 @@ export async function rejectMembership(membershipId: string): Promise<{
 // Aliases for compatibility
 export const approveAnggotaByAdmin = approveMembership;
 export const rejectAnggotaByAdmin = rejectMembership;
+
+/**
+ * Server Action: Pengguna keluar atau tidak bergabung lagi di komunitas (Leave Community)
+ */
+export async function leaveKomunitas({
+  komunitasId,
+}: {
+  komunitasId: string;
+}): Promise<{
+  success: boolean;
+  message: string;
+}> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return {
+        success: false,
+        message: "Silakan masuk terlebih dahulu untuk keluar dari komunitas.",
+      };
+    }
+
+    const dbKomunitasId = toValidUUID(komunitasId);
+
+    // Ambil data komunitas untuk cek apakah warga_kita (hierarki cascade)
+    const { data: kom } = await supabase
+      .from("komunitas")
+      .select("id, jenis, kecamatan, kelurahan, rw, rt")
+      .eq("id", dbKomunitasId)
+      .maybeSingle();
+
+    const seed = kom || findOrGenerateKomunitasSeed(komunitasId);
+
+    // Hapus keanggotaan
+    const { error: delErr } = await supabase
+      .from("anggota_komunitas")
+      .delete()
+      .eq("user_id", user.id)
+      .eq("komunitas_id", dbKomunitasId);
+
+    if (delErr) {
+      throw delErr;
+    }
+
+    // Jika jenis warga_kita dan pengguna keluar dari hierarki wilayah RT, hapus juga keterhubungan di RW/Kel/Kecamatan
+    if (seed?.jenis === "warga_kita" && seed.rt) {
+      const hierarchyChain = getWargaHierarchyChain({
+        kecamatan: seed.kecamatan,
+        kelurahan: seed.kelurahan,
+        rw: seed.rw,
+        rt: seed.rt,
+      });
+
+      const chainIds = hierarchyChain.map((h) => toValidUUID(h.id));
+      if (chainIds.length > 0) {
+        await supabase
+          .from("anggota_komunitas")
+          .delete()
+          .eq("user_id", user.id)
+          .in("komunitas_id", chainIds);
+      }
+    }
+
+    revalidatePath("/komunitas");
+    revalidatePath(`/komunitas/${komunitasId}`);
+    revalidatePath(`/komunitas/${dbKomunitasId}`);
+    revalidatePath("/profil");
+
+    return {
+      success: true,
+      message: "Anda telah berhasil keluar dari komunitas ini.",
+    };
+  } catch (err: any) {
+    console.error("Error leaveKomunitas:", err);
+    return {
+      success: false,
+      message: err.message || "Gagal keluar dari komunitas.",
+    };
+  }
+}
+
+/**
+ * Server Action: Pengguna berhenti menjadi Admin / Pengurus komunitas atau membatalkan permohonan admin
+ */
+export async function resignAdminKomunitas({
+  komunitasId,
+}: {
+  komunitasId: string;
+}): Promise<{
+  success: boolean;
+  message: string;
+}> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return {
+        success: false,
+        message: "Silakan masuk terlebih dahulu.",
+      };
+    }
+
+    const dbKomunitasId = toValidUUID(komunitasId);
+
+    // Ambil data keanggotaan pengguna
+    const { data: myMember } = await supabase
+      .from("anggota_komunitas")
+      .select("id, peran, peran_diajukan, status, berdomisili, kk_terdaftar")
+      .eq("user_id", user.id)
+      .eq("komunitas_id", dbKomunitasId)
+      .maybeSingle();
+
+    if (!myMember) {
+      return {
+        success: false,
+        message: "Anda belum terdaftar sebagai anggota pada komunitas ini.",
+      };
+    }
+
+    // Ambil info komunitas
+    const { data: targetKom } = await supabase
+      .from("komunitas")
+      .select("id, jenis")
+      .eq("id", dbKomunitasId)
+      .maybeSingle();
+
+    const seed = targetKom || findOrGenerateKomunitasSeed(komunitasId);
+
+    // Tentukan peran anggota biasa fallback
+    let fallbackRole = "Pengunjung";
+    if (seed?.jenis === "warga_kita") {
+      fallbackRole =
+        myMember.berdomisili && myMember.kk_terdaftar
+          ? "Penduduk"
+          : myMember.kk_terdaftar
+          ? "Penduduk Berdomisili Luar Kota"
+          : myMember.berdomisili
+          ? "Pendatang"
+          : "Pengunjung";
+    } else if (seed?.jenis === "posyandu") {
+      fallbackRole = "Pengunjung";
+    } else {
+      fallbackRole = "Pengunjung";
+    }
+
+    // Jika pengguna adalah Admin aktif: turunkan ke fallbackRole dan peran_diajukan = null
+    // Jika pengguna sedang pending pengajuan admin: bersihkan peran_diajukan = null
+    const { error: updateErr } = await supabase
+      .from("anggota_komunitas")
+      .update({
+        peran: isRoleAdmin(myMember.peran) ? fallbackRole : myMember.peran,
+        peran_diajukan: null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", myMember.id);
+
+    if (updateErr) throw updateErr;
+
+    revalidatePath("/komunitas");
+    revalidatePath(`/komunitas/${komunitasId}`);
+    revalidatePath(`/komunitas/${dbKomunitasId}`);
+    revalidatePath("/profil");
+    revalidatePath("/admin/approval");
+
+    const msg = isRoleAdmin(myMember.peran)
+      ? `Anda telah berhenti dari jabatan Admin dan kembali menjadi ${formatPeranDisplay(fallbackRole)}.`
+      : "Permohonan pengajuan Admin berhasil dibatalkan.";
+
+    return {
+      success: true,
+      message: msg,
+    };
+  } catch (err: any) {
+    console.error("Error resignAdminKomunitas:", err);
+    return {
+      success: false,
+      message: err.message || "Gagal memproses permohonan berhenti menjadi admin.",
+    };
+  }
+}
+
+/**
+ * Server Action: Admin/Pengurus atau Super Admin menghentikan keanggotaan atau mengeluarkan pengguna dari komunitas
+ */
+export async function kickMemberByAdmin({
+  membershipId,
+  komunitasId,
+}: {
+  membershipId: string;
+  komunitasId: string;
+}): Promise<{
+  success: boolean;
+  message: string;
+}> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return {
+        success: false,
+        message: "Silakan login terlebih dahulu.",
+      };
+    }
+
+    const dbKomunitasId = toValidUUID(komunitasId);
+
+    // Cek profil pemanggil apakah Super Admin
+    const { data: myProfile } = await supabase
+      .from("profiles")
+      .select("is_super_admin")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    const isSuperAdmin = myProfile?.is_super_admin === true;
+
+    // Cek keanggotaan pemanggil apakah Admin di komunitas ini
+    let hasAdminAuth = isSuperAdmin;
+    if (!hasAdminAuth) {
+      const { data: myMembership } = await supabase
+        .from("anggota_komunitas")
+        .select("peran, status")
+        .eq("user_id", user.id)
+        .eq("komunitas_id", dbKomunitasId)
+        .eq("status", "approved")
+        .maybeSingle();
+
+      if (myMembership && isRoleAdmin(myMembership.peran)) {
+        hasAdminAuth = true;
+      }
+    }
+
+    if (!hasAdminAuth) {
+      return {
+        success: false,
+        message:
+          "Akses ditolak: Hanya Admin/Pengurus resmi atau Super Admin yang berhak mengeluarkan anggota dari komunitas.",
+      };
+    }
+
+    // Ambil data anggota target yang akan dikeluarkan
+    const { data: targetMember } = await supabase
+      .from("anggota_komunitas")
+      .select("id, user_id, komunitas_id, peran, profiles (nama_lengkap, is_super_admin)")
+      .eq("id", membershipId)
+      .maybeSingle();
+
+    if (!targetMember) {
+      return {
+        success: false,
+        message: "Data anggota tidak ditemukan.",
+      };
+    }
+
+    // Cegah mengeluarkan akun Super Admin
+    if ((targetMember.profiles as any)?.is_super_admin === true) {
+      return {
+        success: false,
+        message: "Tidak dapat mengeluarkan akun Super Admin.",
+      };
+    }
+
+    const targetName =
+      (targetMember.profiles as any)?.nama_lengkap || "Pengguna";
+
+    // Hapus data keanggotaan target
+    const adminClient = createAdminClient();
+    const writeClient = adminClient || supabase;
+
+    const { error: delErr } = await writeClient
+      .from("anggota_komunitas")
+      .delete()
+      .eq("id", membershipId);
+
+    if (delErr) {
+      // Fallback: update status ke rejected jika RLS batasi delete
+      await writeClient
+        .from("anggota_komunitas")
+        .update({ status: "rejected", updated_at: new Date().toISOString() })
+        .eq("id", membershipId);
+    }
+
+    revalidatePath("/komunitas");
+    revalidatePath(`/komunitas/${komunitasId}`);
+    revalidatePath(`/komunitas/${dbKomunitasId}`);
+    revalidatePath(`/komunitas/${komunitasId}/anggota`);
+    revalidatePath(`/komunitas/${dbKomunitasId}/anggota`);
+    revalidatePath("/admin/approval");
+
+    return {
+      success: true,
+      message: `Keanggotaan ${targetName} telah berhasil dihentikan / dikeluarkan dari komunitas.`,
+    };
+  } catch (err: any) {
+    console.error("Error kickMemberByAdmin:", err);
+    return {
+      success: false,
+      message: err.message || "Gagal mengeluarkan anggota dari komunitas.",
+    };
+  }
+}
 
 /**
  * Server Action: Memperbarui peran anggota komunitas
