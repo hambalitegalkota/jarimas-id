@@ -26,10 +26,14 @@ import {
   Smile,
   Flame,
   School,
+  HeartHandshake,
 } from "lucide-react";
 import { createClient } from "@/utils/supabase/server";
 import { getMarketProduk } from "@/app/actions/market";
 import { getKabarFeed } from "@/app/actions/kabar";
+import { getRegisteredUsers } from "@/app/actions/pertemanan";
+import { RegisteredUsersSection } from "@/components/warga/registered-users-section";
+import { WargaLockedCard } from "@/components/warga/warga-locked-card";
 import { formatRupiah } from "@/lib/utils";
 import { SHOW_MARKET_FEATURE } from "@/components/layout/bottom-nav";
 import type { MarketProduk } from "@/types/database";
@@ -117,6 +121,10 @@ export default async function HomePage() {
     filterVisibilitas: "semua",
   });
   const topKabarItems = (recentKabar || []).slice(0, 2);
+
+  // 4. Ambil daftar pengguna terdaftar untuk fitur Pertemanan & Percakapan Pribadi
+  const registeredUsersResult = await getRegisteredUsers();
+
 
   return (
     <div className="flex flex-col flex-1 px-4 py-4 sm:px-6 md:px-8 gap-6 sm:gap-10 max-w-5xl mx-auto w-full pb-24">
@@ -214,6 +222,16 @@ export default async function HomePage() {
           </div>
           <span>Kabar Warga</span>
         </Link>
+
+        <a
+          href="#warga-terdaftar"
+          className="flex-1 min-w-max inline-flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-2xl bg-teal-50/80 dark:bg-teal-950/30 border-2 border-teal-200 dark:border-teal-800/80 hover:border-teal-500 text-teal-950 dark:text-teal-200 text-xs font-extrabold whitespace-nowrap transition-all shadow-2xs shrink-0 sm:shrink active:scale-95 text-center"
+        >
+          <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-teal-700 text-white font-bold shrink-0">
+            <HeartHandshake className="h-3.5 w-3.5" />
+          </div>
+          <span>Warga &amp; Teman</span>
+        </a>
 
         <Link
           href="/komunitas?tab=satuan_paud"
@@ -622,7 +640,22 @@ export default async function HomePage() {
       </section>
 
       {/* ========================================================= */}
-      {/* 6. FEATURED SPOTLIGHT: JARIMAS MARKET (CONDITIONAL)       */}
+      {/* 6. DAFTAR WARGA & PENGGUNA TERDAFTAR (PERTEMANAN & CHAT) */}
+      {/* ========================================================= */}
+      {registeredUsersResult.isAuthenticated ? (
+        <RegisteredUsersSection
+          initialUsers={registeredUsersResult.users}
+          totalCount={registeredUsersResult.totalCount}
+          totalFriendsCount={registeredUsersResult.totalFriendsCount}
+          totalPendingRequestsCount={registeredUsersResult.totalPendingRequestsCount}
+          currentUserId={registeredUsersResult.currentUserId || null}
+        />
+      ) : (
+        <WargaLockedCard totalUsersCount={registeredUsersResult.totalCount} />
+      )}
+
+      {/* ========================================================= */}
+      {/* 7. FEATURED SPOTLIGHT: JARIMAS MARKET (CONDITIONAL)       */}
       {/* ========================================================= */}
       {SHOW_MARKET_FEATURE && (
         <section className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-gradient-to-br from-slate-50 via-white to-emerald-50/20 dark:from-slate-900 dark:via-slate-900 dark:to-slate-900 p-5 sm:p-7 space-y-6 shadow-sm">

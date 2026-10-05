@@ -470,3 +470,67 @@ export interface MarketPesanan {
   } | null;
 }
 
+// ==============================================================================
+// Tipe Data Fitur Pertemanan & Percakapan Pribadi (Chat)
+// ==============================================================================
+export type StatusPertemanan = "pending" | "accepted" | "rejected" | "blocked";
+
+export interface Pertemanan {
+  id: string;
+  user_id: string;
+  friend_id: string;
+  status: StatusPertemanan;
+  requested_by: string;
+  created_at: string;
+  updated_at?: string;
+  friend_profile?: Profile | null;
+  user_profile?: Profile | null;
+}
+
+export interface PesanPribadi {
+  id: string;
+  sender_id: string;
+  receiver_id: string;
+  pesan: string;
+  is_read: boolean;
+  created_at: string;
+  updated_at?: string;
+  sender_profile?: Profile | null;
+  receiver_profile?: Profile | null;
+}
+
+export interface UserKomunitasAffiliation {
+  id: string;
+  nama: string;
+  jenis: string;
+  peran: string;
+  kecamatan?: string;
+  kelurahan?: string;
+  rw?: string | null;
+  rt?: string | null;
+}
+
+export interface RegisteredUserItem {
+  id: string;
+  nama_lengkap: string;
+  email?: string | null;
+  nomor_hp?: string | null;
+  avatar_url?: string | null;
+  is_super_admin: boolean;
+  created_at: string;
+  komunitas_list?: UserKomunitasAffiliation[];
+  friendship_status?: "none" | "pending_sent" | "pending_received" | "accepted" | "self";
+  friendship_id?: string | null;
+  unread_messages_count?: number;
+}
+
+export interface GetRegisteredUsersResult {
+  isAuthenticated: boolean;
+  currentUserId?: string | null;
+  users: RegisteredUserItem[];
+  totalCount: number;
+  totalFriendsCount: number;
+  totalPendingRequestsCount: number;
+}
+
+

@@ -884,3 +884,98 @@ WHERE NOT EXISTS (
   WHERE nama = 'Paket Suplemen MPASI & Taburia Multivitamin Balita Sehat'
      OR nama_produk = 'Paket Suplemen MPASI & Taburia Multivitamin Balita Sehat'
 );
+
+-- ==============================================================================
+-- 10. TABEL PERTEMANAN & PERCAKAPAN PRIBADI (DIRECT MESSAGING / CHAT)
+-- ==============================================================================
+CREATE TABLE IF NOT EXISTS public.pertemanan (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  friend_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  status TEXT NOT NULL DEFAULT 'pending', -- 'pending' | 'accepted' | 'rejected' | 'blocked'
+  requested_by UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CONSTRAINT unique_user_friend_pair UNIQUE (user_id, friend_id),
+  CONSTRAINT check_different_users CHECK (user_id <> friend_id)
+);
+
+ALTER TABLE public.pertemanan ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE;
+ALTER TABLE public.pertemanan ADD COLUMN IF NOT EXISTS friend_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE;
+ALTER TABLE public.pertemanan ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'pending';
+ALTER TABLE public.pertemanan ADD COLUMN IF NOT EXISTS requested_by UUID REFERENCES public.profiles(id) ON DELETE CASCADE;
+ALTER TABLE public.pertemanan ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT now();
+ALTER TABLE public.pertemanan ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT now();
+
+CREATE INDEX IF NOT EXISTS idx_pertemanan_user ON public.pertemanan(user_id);
+CREATE INDEX IF NOT EXISTS idx_pertemanan_friend ON public.pertemanan(friend_id);
+CREATE INDEX IF NOT EXISTS idx_pertemanan_status ON public.pertemanan(status);
+
+CREATE TABLE IF NOT EXISTS public.pesan_pribadi (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  sender_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  receiver_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  pesan TEXT NOT NULL DEFAULT '',
+  is_read BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CONSTRAINT check_different_chat_users CHECK (sender_id <> receiver_id)
+);
+
+ALTER TABLE public.pesan_pribadi ADD COLUMN IF NOT EXISTS sender_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE;
+ALTER TABLE public.pesan_pribadi ADD COLUMN IF NOT EXISTS receiver_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE;
+ALTER TABLE public.pesan_pribadi ADD COLUMN IF NOT EXISTS pesan TEXT NOT NULL DEFAULT '';
+ALTER TABLE public.pesan_pribadi ADD COLUMN IF NOT EXISTS is_read BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE public.pesan_pribadi ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT now();
+ALTER TABLE public.pesan_pribadi ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT now();
+
+CREATE INDEX IF NOT EXISTS idx_pesan_sender ON public.pesan_pribadi(sender_id);
+CREATE INDEX IF NOT EXISTS idx_pesan_receiver ON public.pesan_pribadi(receiver_id);
+CREATE INDEX IF NOT EXISTS idx_pesan_created_at ON public.pesan_pribadi(created_at ASC);
+
+-- 10.1 RLS Pertemanan
+ALTER TABLE public.pertemanan ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Pengguna dapat melihat status pertemanan sendiri" ON public.pertemanan;
+CREATE POLICY "Pengguna dapat melihat status pertemanan sendiri" ON public.pertemanan FOR SELECT USING (
+  auth.uid() = user_id OR auth.uid() = friend_id
+);
+
+DROP POLICY IF EXISTS "Pengguna dapat membuat permintaan pertemanan" ON public.pertemanan;
+CREATE POLICY "Pengguna dapat membuat permintaan pertemanan" ON public.pertemanan FOR INSERT WITH CHECK (
+  auth.uid() = user_id OR auth.uid() = requested_by
+);
+
+DROP POLICY IF EXISTS "Pengguna terkait dapat mengubah status pertemanan" ON public.pertemanan;
+CREATE POLICY "Pengguna terkait dapat mengubah status pertemanan" ON public.pertemanan FOR UPDATE USING (
+  auth.uid() = user_id OR auth.uid() = friend_id
+);
+
+DROP POLICY IF EXISTS "Pengguna terkait dapat menghapus pertemanan" ON public.pertemanan;
+CREATE POLICY "Pengguna terkait dapat menghapus pertemanan" ON public.pertemanan FOR DELETE USING (
+  auth.uid() = user_id OR auth.uid() = friend_id
+);
+
+-- 10.2 RLS Pesan Pribadi
+ALTER TABLE public.pesan_pribadi ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Pengguna dapat membaca pesan yang dikirim atau diterima" ON public.pesan_pribadi;
+CREATE POLICY "Pengguna dapat membaca pesan yang dikirim atau diterima" ON public.pesan_pribadi FOR SELECT USING (
+  auth.uid() = sender_id OR auth.uid() = receiver_id
+);
+
+DROP POLICY IF EXISTS "Pengguna dapat mengirim pesan" ON public.pesan_pribadi;
+CREATE POLICY "Pengguna dapat mengirim pesan" ON public.pesan_pribadi FOR INSERT WITH CHECK (
+  auth.uid() = sender_id
+);
+
+DROP POLICY IF EXISTS "Penerima dapat mengubah status pesan terbaca" ON public.pesan_pribadi;
+CREATE POLICY "Penerima dapat mengubah status pesan terbaca" ON public.pesan_pribadi FOR UPDATE USING (
+  auth.uid() = receiver_id
+);
+
+DROP POLICY IF EXISTS "Pengirim atau penerima dapat menghapus pesan" ON public.pesan_pribadi;
+CREATE POLICY "Pengirim atau penerima dapat menghapus pesan" ON public.pesan_pribadi FOR DELETE USING (
+  auth.uid() = sender_id OR auth.uid() = receiver_id
+);
+
