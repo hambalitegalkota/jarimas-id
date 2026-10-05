@@ -853,7 +853,7 @@ export function KomunitasDetailClientView({
                     href={`/komunitas/${komunitas.id}/ats`}
                     className="inline-flex min-h-[48px] h-12 w-full sm:w-auto items-center justify-center gap-2 rounded-xl bg-amber-600 hover:bg-amber-700 px-6 text-base font-bold text-white transition-all shadow-xs shrink-0"
                   >
-                    <span>BUKA DATA ATS</span>
+                    <span>BUKA DATA</span>
                     <ArrowRight className="h-4 w-4" />
                   </Link>
                 </div>
