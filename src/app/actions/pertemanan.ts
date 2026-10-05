@@ -39,13 +39,16 @@ export async function getRegisteredUsers(params?: {
 
     const currentUserId = user.id;
 
-    // 2. Ambil semua profil pengguna yang terdaftar
+    // 2. Ambil semua profil pengguna yang terdaftar (Kecualikan akun Super Admin)
     const { data: profiles, error: profileErr } = await supabase
       .from("profiles")
       .select("id, nama_lengkap, email, nomor_hp, avatar_url, is_super_admin, created_at")
+      .or("is_super_admin.is.null,is_super_admin.eq.false")
       .order("created_at", { ascending: false });
 
-    if (profileErr || !profiles) {
+    const nonAdminProfiles = (profiles || []).filter((p) => p.is_super_admin !== true);
+
+    if (profileErr || !nonAdminProfiles) {
       console.warn("Gagal mengambil profiles:", profileErr);
       return {
         isAuthenticated: true,
@@ -157,8 +160,8 @@ export async function getRegisteredUsers(params?: {
       // Graceful fallback jika tabel pesan_pribadi belum dibuat
     }
 
-    // 6. Susun dan mapping daftar pengguna terdaftar lengkap
-    let mappedUsers: RegisteredUserItem[] = profiles.map((p) => {
+    // 6. Susun dan mapping daftar pengguna terdaftar lengkap (tanpa super admin)
+    let mappedUsers: RegisteredUserItem[] = nonAdminProfiles.map((p) => {
       let friendship_status: RegisteredUserItem["friendship_status"] = "none";
       let friendship_id: string | null = null;
 
@@ -181,7 +184,7 @@ export async function getRegisteredUsers(params?: {
         email: p.email,
         nomor_hp: p.nomor_hp,
         avatar_url: p.avatar_url,
-        is_super_admin: p.is_super_admin === true,
+        is_super_admin: false,
         created_at: p.created_at || new Date().toISOString(),
         komunitas_list: communityMap[p.id] || [],
         friendship_status,
@@ -218,7 +221,7 @@ export async function getRegisteredUsers(params?: {
       isAuthenticated: true,
       currentUserId,
       users: mappedUsers,
-      totalCount: profiles.length,
+      totalCount: nonAdminProfiles.length,
       totalFriendsCount,
       totalPendingRequestsCount,
     };
@@ -261,6 +264,20 @@ export async function sendFriendRequest(targetUserId: string): Promise<{
       return {
         success: false,
         message: "Anda tidak dapat menambahkan diri sendiri sebagai teman.",
+      };
+    }
+
+    // Cek apakah target adalah Super Admin
+    const { data: targetProfile } = await supabase
+      .from("profiles")
+      .select("id, is_super_admin")
+      .eq("id", targetUserId)
+      .maybeSingle();
+
+    if (targetProfile?.is_super_admin) {
+      return {
+        success: false,
+        message: "Akun Super Admin tidak dapat ditambahkan sebagai teman.",
       };
     }
 
@@ -438,12 +455,20 @@ export async function getPrivateConversation(targetUserId: string): Promise<{
 
     const currentUserId = user.id;
 
-    // 1. Ambil data profil target
+    // 1. Ambil data profil target (Kecualikan akun Super Admin)
     const { data: targetProfile } = await supabase
       .from("profiles")
       .select("id, nama_lengkap, email, nomor_hp, avatar_url, is_super_admin")
       .eq("id", targetUserId)
       .maybeSingle();
+
+    if (targetProfile?.is_super_admin) {
+      return {
+        success: false,
+        message: "Percakapan dengan akun Super Admin tidak tersedia.",
+        messages: [],
+      };
+    }
 
     // 2. Ambil riwayat pesan antara kedua pengguna
     const { data: rawMessages, error: msgErr } = await supabase
@@ -539,6 +564,20 @@ export async function sendPrivateMessage(params: {
       return {
         success: false,
         message: "Anda tidak dapat mengirim pesan ke diri sendiri.",
+      };
+    }
+
+    // Periksa apakah penerima adalah Super Admin
+    const { data: targetProfile } = await supabase
+      .from("profiles")
+      .select("id, is_super_admin")
+      .eq("id", receiverId)
+      .maybeSingle();
+
+    if (targetProfile?.is_super_admin) {
+      return {
+        success: false,
+        message: "Pesan tidak dapat dikirim ke akun Super Admin.",
       };
     }
 
@@ -659,11 +698,14 @@ export async function getRecentConversations(): Promise<{
       };
     }
 
-    // Ambil profil seluruh partner
+    // Ambil profil seluruh partner (KECUALIKAN akun Super Admin)
     const { data: profiles } = await supabase
       .from("profiles")
       .select("id, nama_lengkap, email, avatar_url, is_super_admin")
-      .in("id", partnerIds);
+      .in("id", partnerIds)
+      .or("is_super_admin.is.null,is_super_admin.eq.false");
+
+    const nonAdminProfiles = (profiles || []).filter((p) => p.is_super_admin !== true);
 
     // Ambil pertemanan untuk partner
     const { data: friendships } = await supabase
@@ -679,7 +721,7 @@ export async function getRecentConversations(): Promise<{
       });
     }
 
-    const conversations: import("@/types/database").RecentConversationItem[] = (profiles || []).map(
+    const conversations: import("@/types/database").RecentConversationItem[] = nonAdminProfiles.map(
       (p) => {
         const info = partnerMap[p.id];
         const f = fMap[p.id];
@@ -697,11 +739,11 @@ export async function getRecentConversations(): Promise<{
           partnerId: p.id,
           partnerName: p.nama_lengkap || "Warga Jarimas",
           partnerAvatar: p.avatar_url,
-          partnerRole: p.is_super_admin ? "Super Admin" : "Warga",
-          lastMessage: info.lastMessage,
-          lastMessageAt: info.lastMessageAt,
-          unreadCount: info.unreadCount,
-          isLastMessageMine: info.isLastMessageMine,
+          partnerRole: "Warga",
+          lastMessage: info?.lastMessage || "",
+          lastMessageAt: info?.lastMessageAt || new Date().toISOString(),
+          unreadCount: info?.unreadCount || 0,
+          isLastMessageMine: info?.isLastMessageMine || false,
           friendshipStatus,
           friendshipId: f?.id || null,
         };
@@ -727,6 +769,7 @@ export async function getRecentConversations(): Promise<{
     };
   }
 }
+
 
 /**
  * Server Action: Mengambil daftar ruang obrolan grup komunitas

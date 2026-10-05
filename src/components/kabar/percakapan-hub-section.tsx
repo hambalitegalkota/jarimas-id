@@ -47,16 +47,18 @@ export function PercakapanHubSection({
   // Total unread pesan pribadi
   const totalUnreadDirect = conversations.reduce((acc, c) => acc + c.unreadCount, 0);
 
-  // Filter 1-on-1 Conversations
-  const filteredConversations = conversations.filter((c) => {
-    if (!searchQuery.trim()) return true;
-    const q = searchQuery.toLowerCase().trim();
-    return (
-      c.partnerName.toLowerCase().includes(q) ||
-      c.lastMessage.toLowerCase().includes(q) ||
-      c.partnerCommunity?.toLowerCase().includes(q)
-    );
-  });
+  // Filter 1-on-1 Conversations (Kecualikan Super Admin)
+  const filteredConversations = conversations
+    .filter((c) => c.partnerRole !== "Super Admin")
+    .filter((c) => {
+      if (!searchQuery.trim()) return true;
+      const q = searchQuery.toLowerCase().trim();
+      return (
+        c.partnerName.toLowerCase().includes(q) ||
+        c.lastMessage.toLowerCase().includes(q) ||
+        c.partnerCommunity?.toLowerCase().includes(q)
+      );
+    });
 
   // Filter Group Chat Rooms
   const filteredRooms = rooms.filter((r) => {
@@ -70,17 +72,19 @@ export function PercakapanHubSection({
     );
   });
 
-  // Filter New Chat Citizen Candidates (excluding current user)
-  const candidateCitizens = allUsers.filter((u) => {
-    if (u.id === currentUserId) return false;
-    if (!searchQuery.trim()) return true;
-    const q = searchQuery.toLowerCase().trim();
-    return (
-      u.nama_lengkap.toLowerCase().includes(q) ||
-      u.email?.toLowerCase().includes(q) ||
-      u.komunitas_list?.some((c) => c.nama.toLowerCase().includes(q))
-    );
-  });
+  // Filter New Chat Citizen Candidates (excluding current user & super admin)
+  const candidateCitizens = allUsers
+    .filter((u) => u.id !== currentUserId && !u.is_super_admin)
+    .filter((u) => {
+      if (!searchQuery.trim()) return true;
+      const q = searchQuery.toLowerCase().trim();
+      return (
+        u.nama_lengkap.toLowerCase().includes(q) ||
+        u.email?.toLowerCase().includes(q) ||
+        u.komunitas_list?.some((c) => c.nama.toLowerCase().includes(q))
+      );
+    });
+
 
   const handleOpenDirectChatFromPartnerId = (partnerId: string) => {
     const foundUser = allUsers.find((u) => u.id === partnerId);
