@@ -139,7 +139,12 @@ CREATE POLICY "Pengirim atau Admin dapat menghapus pesan grup" ON public.pesan_g
   EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND is_super_admin = true)
 );
 
--- 5. AKTIFKAN SUPABASE REALTIME REPLICATION (SANGAT DIANJURKAN)
+-- 5. HAK AKSES ROLE (PERMISSIONS & GRANTS)
+GRANT ALL ON TABLE public.pertemanan TO postgres, authenticated, service_role, anon;
+GRANT ALL ON TABLE public.pesan_pribadi TO postgres, authenticated, service_role, anon;
+GRANT ALL ON TABLE public.pesan_grup TO postgres, authenticated, service_role, anon;
+
+-- 6. AKTIFKAN SUPABASE REALTIME REPLICATION (SANGAT DIANJURKAN)
 DO $$
 BEGIN
   BEGIN
@@ -152,3 +157,7 @@ BEGIN
     ALTER PUBLICATION supabase_realtime ADD TABLE public.pertemanan;
   EXCEPTION WHEN OTHERS THEN NULL; END;
 END $$;
+
+-- 7. REFRESH / RELOAD SCHEMA CACHE POSTGREST
+NOTIFY pgrst, 'reload schema';
+

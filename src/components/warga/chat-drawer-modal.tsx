@@ -15,6 +15,7 @@ import {
   Heart,
 } from "lucide-react";
 import { getPrivateConversation, sendPrivateMessage } from "@/app/actions/pertemanan";
+import { createClient } from "@/utils/supabase/client";
 import type { PesanPribadi, RegisteredUserItem } from "@/types/database";
 
 interface ChatDrawerModalProps {
@@ -78,9 +79,44 @@ export function ChatDrawerModal({
       inputRef.current?.focus();
     }, 200);
 
-    // Polling ringan setiap 4 detik untuk pesan baru selama chat terbuka
+    // 1. Supabase Realtime Subscription (Pesan Masuk Instan)
+    let channel: any = null;
+    try {
+      const supabase = createClient();
+      channel = supabase
+        .channel(`chat_personal_${currentUserId || "anon"}_${targetUser.id}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "INSERT",
+            schema: "public",
+            table: "pesan_pribadi",
+          },
+          (payload: any) => {
+            const newMsg = payload.new as PesanPribadi;
+            if (
+              (newMsg.sender_id === targetUser.id && newMsg.receiver_id === currentUserId) ||
+              (newMsg.sender_id === currentUserId && newMsg.receiver_id === targetUser.id)
+            ) {
+              setMessages((prev) => {
+                // Hindari duplikat dari optimistic UI
+                if (prev.some((m) => m.id === newMsg.id || (m.id.startsWith("temp-") && m.pesan === newMsg.pesan))) {
+                  return prev.map((m) => (m.pesan === newMsg.pesan && m.id.startsWith("temp-") ? newMsg : m));
+                }
+                setTimeout(() => scrollToBottom("smooth"), 100);
+                return [...prev, newMsg];
+              });
+            }
+          }
+        )
+        .subscribe();
+    } catch (realtimeErr) {
+      console.warn("Realtime not available, falling back to polling:", realtimeErr);
+    }
+
+    // 2. Polling ringan cadangan (hanya berjalan saat tab browser aktif / tidak hidden)
     const interval = setInterval(async () => {
-      if (!targetUser) return;
+      if (!targetUser || (typeof document !== "undefined" && document.hidden)) return;
       try {
         const res = await getPrivateConversation(targetUser.id);
         if (res.success && res.messages) {
@@ -95,13 +131,21 @@ export function ChatDrawerModal({
       } catch {
         // Abaikan polling error
       }
-    }, 4000);
+    }, 6000);
 
     return () => {
       isMounted = false;
       clearInterval(interval);
+      if (channel) {
+        try {
+          const supabase = createClient();
+          supabase.removeChannel(channel);
+        } catch {
+          // Cleanup
+        }
+      }
     };
-  }, [isOpen, targetUser]);
+  }, [isOpen, targetUser, currentUserId]);
 
   if (!isOpen || !targetUser) return null;
 

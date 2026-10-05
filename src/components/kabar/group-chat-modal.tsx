@@ -14,6 +14,7 @@ import {
   Check,
 } from "lucide-react";
 import { getGroupMessages, sendGroupMessage } from "@/app/actions/pertemanan";
+import { createClient } from "@/utils/supabase/client";
 import type { PesanGrup, GrupChatRoom } from "@/types/database";
 
 interface GroupChatModalProps {
@@ -74,9 +75,38 @@ export function GroupChatModal({
       inputRef.current?.focus();
     }, 200);
 
-    // Polling ringan setiap 4 detik saat modal grup terbuka
+    // 1. Supabase Realtime Subscription (Pesan Grup Masuk Instan)
+    let channel: any = null;
+    try {
+      const supabase = createClient();
+      channel = supabase
+        .channel(`chat_group_${room.id}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "INSERT",
+            schema: "public",
+            table: "pesan_grup",
+            filter: `komunitas_id=eq.${room.id}`,
+          },
+          async () => {
+            // Segera fetch pesan grup terupdate
+            if (!isMounted) return;
+            const res = await getGroupMessages(room.id);
+            if (isMounted && res.success && res.messages) {
+              setMessages(res.messages);
+              setTimeout(() => scrollToBottom("smooth"), 100);
+            }
+          }
+        )
+        .subscribe();
+    } catch (realtimeErr) {
+      console.warn("Realtime group chat not available:", realtimeErr);
+    }
+
+    // 2. Polling ringan cadangan (hanya saat tab browser aktif)
     const interval = setInterval(async () => {
-      if (!room) return;
+      if (!room || (typeof document !== "undefined" && document.hidden)) return;
       try {
         const res = await getGroupMessages(room.id);
         if (res.success && res.messages) {
@@ -91,11 +121,19 @@ export function GroupChatModal({
       } catch {
         // Ignored
       }
-    }, 4000);
+    }, 6000);
 
     return () => {
       isMounted = false;
       clearInterval(interval);
+      if (channel) {
+        try {
+          const supabase = createClient();
+          supabase.removeChannel(channel);
+        } catch {
+          // Cleanup
+        }
+      }
     };
   }, [isOpen, room]);
 
