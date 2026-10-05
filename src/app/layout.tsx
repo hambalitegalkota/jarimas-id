@@ -3,6 +3,7 @@ import { Plus_Jakarta_Sans, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { BottomNav } from "@/components/layout/bottom-nav";
 import { ThemeProvider } from "@/components/theme-provider";
+import { GlobalMessageNotificationProvider } from "@/components/notifications/global-message-notification-provider";
 
 const jakartaSans = Plus_Jakarta_Sans({
   variable: "--font-sans",
@@ -74,10 +75,12 @@ export default function RootLayout({
           enableSystem={false}
           disableTransitionOnChange
         >
-          <main className="flex-1 w-full max-w-md mx-auto sm:max-w-xl md:max-w-3xl lg:max-w-5xl flex flex-col">
-            {children}
-          </main>
-          <BottomNav />
+          <GlobalMessageNotificationProvider>
+            <main className="flex-1 w-full max-w-md mx-auto sm:max-w-xl md:max-w-3xl lg:max-w-5xl flex flex-col">
+              {children}
+            </main>
+            <BottomNav />
+          </GlobalMessageNotificationProvider>
         </ThemeProvider>
       </body>
     </html>

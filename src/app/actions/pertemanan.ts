@@ -8,6 +8,7 @@ import type {
   UserKomunitasAffiliation,
   PesanPribadi,
   Profile,
+  IncomingMessageNotificationItem,
 } from "@/types/database";
 
 /**
@@ -1202,4 +1203,281 @@ export async function sendGroupMessage(params: {
     };
   }
 }
+
+/**
+ * Server Action: Mengambil ringkasan pesan masuk belum terbaca untuk Global Notification System
+ */
+export async function getUnreadMessagesSummary(): Promise<{
+  success: boolean;
+  totalUnread: number;
+  currentUserId?: string | null;
+  unreadList: IncomingMessageNotificationItem[];
+}> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return {
+        success: true,
+        totalUnread: 0,
+        currentUserId: null,
+        unreadList: [],
+      };
+    }
+
+    const currentUserId = user.id;
+
+    // Ambil pesan pribadi yang belum dibaca (is_read = false) untuk user saat ini
+    const { data: unreadRows, error } = await supabase
+      .from("pesan_pribadi")
+      .select("id, sender_id, receiver_id, pesan, created_at, is_read")
+      .eq("receiver_id", currentUserId)
+      .eq("is_read", false)
+      .order("created_at", { ascending: false })
+      .limit(30);
+
+    if (error || !unreadRows || unreadRows.length === 0) {
+      return {
+        success: true,
+        totalUnread: 0,
+        currentUserId,
+        unreadList: [],
+      };
+    }
+
+    const totalUnread = unreadRows.length;
+    const senderIds = Array.from(new Set(unreadRows.map((r) => r.sender_id)));
+
+    // Fetch sender profiles
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("id, nama_lengkap, email, nomor_hp, avatar_url, is_super_admin")
+      .in("id", senderIds);
+
+    const profileMap: Record<string, any> = {};
+    if (profiles) {
+      profiles.forEach((p) => {
+        profileMap[p.id] = p;
+      });
+    }
+
+    // Pastikan Bot Jarimas
+    if (senderIds.includes(JARIMAS_BOT_ID) && !profileMap[JARIMAS_BOT_ID]) {
+      profileMap[JARIMAS_BOT_ID] = {
+        id: JARIMAS_BOT_ID,
+        nama_lengkap: JARIMAS_BOT_NAME,
+        email: "official@jarimas.id",
+        is_super_admin: false,
+        avatar_url: null,
+      };
+    }
+
+    // Fetch affiliations for senders
+    const { data: affiliations } = await supabase
+      .from("anggota_komunitas")
+      .select(`
+        user_id,
+        peran,
+        komunitas (
+          id,
+          nama,
+          jenis
+        )
+      `)
+      .in("user_id", senderIds)
+      .eq("status", "approved");
+
+    const affMap: Record<string, string> = {};
+    if (affiliations) {
+      affiliations.forEach((a: any) => {
+        if (a.user_id && a.komunitas?.nama && !affMap[a.user_id]) {
+          affMap[a.user_id] = `${a.peran || "Anggota"} ${a.komunitas.nama}`;
+        }
+      });
+    }
+
+    const unreadList: IncomingMessageNotificationItem[] = unreadRows.map((row) => {
+      const isBot = row.sender_id === JARIMAS_BOT_ID;
+      const prof = profileMap[row.sender_id];
+      const senderName = isBot
+        ? JARIMAS_BOT_NAME
+        : (prof?.nama_lengkap || "Warga Jarimas");
+      const senderRole = isBot
+        ? "Layanan Resmi"
+        : (affMap[row.sender_id] || "Warga");
+
+      return {
+        id: row.id,
+        senderId: row.sender_id,
+        senderName,
+        senderAvatar: prof?.avatar_url || null,
+        senderRole,
+        senderCommunity: isBot ? "Pusat Bantuan & Notifikasi Warga" : affMap[row.sender_id],
+        pesan: row.pesan,
+        createdAt: row.created_at,
+        partnerUser: {
+          id: row.sender_id,
+          nama_lengkap: senderName,
+          email: prof?.email || null,
+          nomor_hp: prof?.nomor_hp || null,
+          avatar_url: prof?.avatar_url || null,
+          is_super_admin: false,
+          created_at: row.created_at,
+          friendship_status: isBot ? "accepted" : "none",
+        },
+      };
+    });
+
+    return {
+      success: true,
+      totalUnread,
+      currentUserId,
+      unreadList,
+    };
+  } catch (err: any) {
+    console.error("Error getUnreadMessagesSummary:", err);
+    return {
+      success: false,
+      totalUnread: 0,
+      unreadList: [],
+    };
+  }
+}
+
+/**
+ * Server Action: Mengambil profil lengkap user target untuk instant open chat modal
+ */
+export async function getUserProfileForChat(targetUserId: string): Promise<{
+  success: boolean;
+  user: RegisteredUserItem | null;
+}> {
+  try {
+    const supabase = await createClient();
+
+    if (targetUserId === JARIMAS_BOT_ID) {
+      await ensureJarimasBotProfile(supabase);
+      return {
+        success: true,
+        user: {
+          id: JARIMAS_BOT_ID,
+          nama_lengkap: JARIMAS_BOT_NAME,
+          email: "official@jarimas.id",
+          nomor_hp: null,
+          avatar_url: null,
+          is_super_admin: false,
+          created_at: new Date().toISOString(),
+          komunitas_list: [
+            {
+              id: "jarimas-official",
+              nama: "Pusat Layanan & Bantuan Jarimas",
+              jenis: "warga_kita",
+              peran: "Layanan Resmi",
+            },
+          ],
+          friendship_status: "accepted",
+        },
+      };
+    }
+
+    const { data: prof, error } = await supabase
+      .from("profiles")
+      .select("id, nama_lengkap, email, nomor_hp, avatar_url, is_super_admin, created_at")
+      .eq("id", targetUserId)
+      .maybeSingle();
+
+    if (error || !prof) {
+      return { success: false, user: null };
+    }
+
+    // Ambil komunitas
+    const { data: affiliations } = await supabase
+      .from("anggota_komunitas")
+      .select(`
+        peran,
+        komunitas (
+          id,
+          nama,
+          jenis,
+          kecamatan,
+          kelurahan,
+          rw,
+          rt
+        )
+      `)
+      .eq("user_id", targetUserId)
+      .eq("status", "approved");
+
+    const komunitasList: UserKomunitasAffiliation[] = (affiliations || [])
+      .filter((a: any) => a.komunitas)
+      .map((a: any) => ({
+        id: a.komunitas.id,
+        nama: a.komunitas.nama || "Komunitas",
+        jenis: a.komunitas.jenis || "warga_kita",
+        peran: a.peran || "Anggota",
+        kecamatan: a.komunitas.kecamatan,
+        kelurahan: a.komunitas.kelurahan,
+        rw: a.komunitas.rw,
+        rt: a.komunitas.rt,
+      }));
+
+    return {
+      success: true,
+      user: {
+        id: prof.id,
+        nama_lengkap: prof.nama_lengkap || "Warga",
+        email: prof.email,
+        nomor_hp: prof.nomor_hp,
+        avatar_url: prof.avatar_url,
+        is_super_admin: false,
+        created_at: prof.created_at || new Date().toISOString(),
+        komunitas_list: komunitasList,
+        friendship_status: "accepted",
+      },
+    };
+  } catch (err: any) {
+    console.error("Error getUserProfileForChat:", err);
+    return { success: false, user: null };
+  }
+}
+
+/**
+ * Server Action: Menandai seluruh pesan dari pengirim tertentu sebagai terbaca
+ */
+export async function markConversationAsRead(senderId: string): Promise<{
+  success: boolean;
+  message?: string;
+}> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { success: false, message: "Belum login." };
+    }
+
+    const { error } = await supabase
+      .from("pesan_pribadi")
+      .update({ is_read: true })
+      .eq("sender_id", senderId)
+      .eq("receiver_id", user.id)
+      .eq("is_read", false);
+
+    if (error) {
+      return { success: false, message: error.message };
+    }
+
+    revalidatePath("/kabar");
+    revalidatePath("/");
+    return { success: true };
+  } catch (err: any) {
+    console.error("Error markConversationAsRead:", err);
+    return { success: false, message: err?.message };
+  }
+}
+
 

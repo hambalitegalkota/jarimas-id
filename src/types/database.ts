@@ -579,5 +579,18 @@ export interface RecentConversationItem {
   friendshipId?: string | null;
 }
 
+export interface IncomingMessageNotificationItem {
+  id: string;
+  senderId: string;
+  senderName: string;
+  senderAvatar?: string | null;
+  senderRole?: string;
+  senderCommunity?: string;
+  pesan: string;
+  createdAt: string;
+  partnerUser?: RegisteredUserItem | null;
+}
+
+
 
 

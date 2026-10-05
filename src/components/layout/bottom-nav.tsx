@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, Users, ShoppingBag, MessageSquare, User } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useGlobalMessageNotification } from "@/components/notifications/global-message-notification-provider";
 
 interface NavItem {
   label: string;
@@ -16,45 +17,47 @@ interface NavItem {
 // Flag status fitur Market (Set ke `true` jika fitur Market siap diluncurkan ke publik)
 export const SHOW_MARKET_FEATURE = true;
 
-const NAV_ITEMS: NavItem[] = [
-  {
-    label: "Beranda",
-    href: "/",
-    icon: Home,
-    isActive: (pathname: string) => pathname === "/",
-  },
-  {
-    label: "Komunitas",
-    href: "/komunitas",
-    icon: Users,
-    isActive: (pathname: string) => pathname.startsWith("/komunitas"),
-  },
-  ...(SHOW_MARKET_FEATURE
-    ? [
-        {
-          label: "Market",
-          href: "/market",
-          icon: ShoppingBag,
-          isActive: (pathname: string) => pathname.startsWith("/market"),
-        },
-      ]
-    : []),
-  {
-    label: "Kabar",
-    href: "/kabar",
-    icon: MessageSquare,
-    isActive: (pathname: string) => pathname.startsWith("/kabar"),
-  },
-  {
-    label: "Profil",
-    href: "/profil",
-    icon: User,
-    isActive: (pathname: string) => pathname.startsWith("/profil"),
-  },
-];
-
 export function BottomNav() {
   const pathname = usePathname();
+  const { totalUnreadCount } = useGlobalMessageNotification();
+
+  const NAV_ITEMS: NavItem[] = [
+    {
+      label: "Beranda",
+      href: "/",
+      icon: Home,
+      isActive: (pathname: string) => pathname === "/",
+    },
+    {
+      label: "Komunitas",
+      href: "/komunitas",
+      icon: Users,
+      isActive: (pathname: string) => pathname.startsWith("/komunitas"),
+    },
+    ...(SHOW_MARKET_FEATURE
+      ? [
+          {
+            label: "Market",
+            href: "/market",
+            icon: ShoppingBag,
+            isActive: (pathname: string) => pathname.startsWith("/market"),
+          },
+        ]
+      : []),
+    {
+      label: "Kabar",
+      href: "/kabar",
+      icon: MessageSquare,
+      badge: totalUnreadCount > 0 ? (totalUnreadCount > 99 ? "99+" : totalUnreadCount) : undefined,
+      isActive: (pathname: string) => pathname.startsWith("/kabar"),
+    },
+    {
+      label: "Profil",
+      href: "/profil",
+      icon: User,
+      isActive: (pathname: string) => pathname.startsWith("/profil"),
+    },
+  ];
 
   // Jangan render navbar di halaman auth fullscreen tertentu jika diperlukan
   const hideOnPaths = ["/login", "/register"];
@@ -102,7 +105,7 @@ export function BottomNav() {
                   )}
                 />
                 {item.badge && (
-                  <span className="absolute -right-2.5 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-emerald-600 px-1 text-[10px] font-bold text-white font-mono shadow-xs">
+                  <span className="absolute -right-2.5 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-emerald-600 px-1 text-[10px] font-bold text-white font-mono shadow-md ring-2 ring-white dark:ring-slate-900 animate-pulse">
                     {item.badge}
                   </span>
                 )}
