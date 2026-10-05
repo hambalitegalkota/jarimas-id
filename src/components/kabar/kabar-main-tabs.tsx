@@ -4,6 +4,7 @@ import { useTransition } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { MessageSquare, Users, MessageCircle, Sparkles, HeartHandshake } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useGlobalMessageNotification } from "@/components/notifications/global-message-notification-provider";
 
 interface KabarMainTabsProps {
   currentTab: "kabar" | "percakapan" | "warga";
@@ -22,6 +23,9 @@ export function KabarMainTabs({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
+  const { totalUnreadCount } = useGlobalMessageNotification();
+
+  const effectiveUnread = totalUnreadCount > 0 ? totalUnreadCount : totalUnreadChat;
 
   const handleTabChange = (newTab: "kabar" | "percakapan" | "warga") => {
     const params = new URLSearchParams(searchParams.toString());
@@ -75,7 +79,7 @@ export function KabarMainTabs({
         onClick={() => handleTabChange("percakapan")}
         disabled={isPending}
         className={cn(
-          "flex-1 inline-flex min-h-[46px] items-center justify-center gap-2 rounded-xl sm:rounded-2xl px-3 py-2 text-xs sm:text-sm font-black transition-all cursor-pointer active:scale-98 text-center",
+          "flex-1 inline-flex min-h-[46px] items-center justify-center gap-2 rounded-xl sm:rounded-2xl px-3 py-2 text-xs sm:text-sm font-black transition-all cursor-pointer active:scale-98 text-center relative",
           currentTab === "percakapan"
             ? "bg-emerald-700 text-white shadow-md shadow-emerald-700/20"
             : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800"
@@ -83,9 +87,11 @@ export function KabarMainTabs({
       >
         <MessageCircle className="h-4 w-4 shrink-0" />
         <span>Percakapan</span>
-        {totalUnreadChat > 0 ? (
-          <span className="rounded-full bg-amber-400 text-slate-950 px-1.5 py-0.2 text-[10px] font-mono font-black animate-pulse">
-            {totalUnreadChat}
+        {effectiveUnread > 0 ? (
+          <span className="relative flex items-center justify-center">
+            <span className="rounded-full bg-rose-500 text-white px-2 py-0.5 text-[10px] font-mono font-black shadow-xs ring-1 ring-white/50 animate-pulse">
+              {effectiveUnread > 99 ? "99+" : effectiveUnread}
+            </span>
           </span>
         ) : (
           <span

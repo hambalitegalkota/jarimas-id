@@ -180,7 +180,7 @@ export function GlobalMessageNotificationProvider({
         partnerUser: senderInfo || {
           id: newMsg.sender_id,
           nama_lengkap: senderName,
-          avatar_url: senderInfo?.avatar_url || null,
+          avatar_url: null,
           is_super_admin: false,
           created_at: new Date().toISOString(),
         },
@@ -242,7 +242,7 @@ export function GlobalMessageNotificationProvider({
         );
         authSub = authListener.data.subscription;
 
-        // 3. Supabase Realtime Subscription untuk pesan pribadi masuk
+        // 3. Supabase Realtime Subscription untuk pesan pribadi masuk & perubahan status pesan
         if (user) {
           channel = supabase
             .channel(`global_message_notifications_${user.id}`)
@@ -260,6 +260,45 @@ export function GlobalMessageNotificationProvider({
                 }
               }
             )
+            .on(
+              "postgres_changes",
+              {
+                event: "UPDATE",
+                schema: "public",
+                table: "pesan_pribadi",
+              },
+              (payload: any) => {
+                const updatedMsg = payload.new as PesanPribadi;
+                if (
+                  updatedMsg &&
+                  (updatedMsg.receiver_id === user.id || updatedMsg.sender_id === user.id)
+                ) {
+                  refreshUnreadCount();
+                }
+              }
+            )
+            .on(
+              "postgres_changes",
+              {
+                event: "DELETE",
+                schema: "public",
+                table: "pesan_pribadi",
+              },
+              () => {
+                refreshUnreadCount();
+              }
+            )
+            .on(
+              "postgres_changes",
+              {
+                event: "INSERT",
+                schema: "public",
+                table: "pesan_grup",
+              },
+              () => {
+                refreshUnreadCount();
+              }
+            )
             .subscribe();
         }
       } catch (err) {
@@ -274,9 +313,24 @@ export function GlobalMessageNotificationProvider({
       if (typeof document !== "undefined" && !document.hidden && currentUserId) {
         refreshUnreadCount();
       }
-    }, 12000);
+    }, 10000);
 
-    // 5. Visibility change handler
+    // 5. Cross-tab Broadcast Channel synchronization
+    let broadcastChannel: BroadcastChannel | null = null;
+    if (typeof window !== "undefined" && "BroadcastChannel" in window) {
+      try {
+        broadcastChannel = new BroadcastChannel("jarimas_unread_sync");
+        broadcastChannel.onmessage = (event) => {
+          if (event.data?.type === "REFRESH_UNREAD") {
+            refreshUnreadCount();
+          }
+        };
+      } catch {
+        // Fallback
+      }
+    }
+
+    // 6. Visibility change handler
     const handleVisibilityChange = () => {
       if (typeof document !== "undefined" && !document.hidden) {
         refreshUnreadCount();
@@ -288,6 +342,13 @@ export function GlobalMessageNotificationProvider({
       isMounted = false;
       clearInterval(interval);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
+      if (broadcastChannel) {
+        try {
+          broadcastChannel.close();
+        } catch {
+          // Cleanup
+        }
+      }
       if (authSub) authSub.unsubscribe();
       if (channel) {
         try {

@@ -11,6 +11,7 @@ interface NavItem {
   href: string;
   icon: React.ComponentType<{ className?: string }>;
   badge?: string | number;
+  badgeVariant?: "danger" | "emerald" | "amber";
   isActive: (pathname: string) => boolean;
 }
 
@@ -48,7 +49,13 @@ export function BottomNav() {
       label: "Kabar",
       href: "/kabar",
       icon: MessageSquare,
-      badge: totalUnreadCount > 0 ? (totalUnreadCount > 99 ? "99+" : totalUnreadCount) : undefined,
+      badge:
+        totalUnreadCount > 0
+          ? totalUnreadCount > 99
+            ? "99+"
+            : totalUnreadCount
+          : undefined,
+      badgeVariant: "danger",
       isActive: (pathname: string) => pathname.startsWith("/kabar"),
     },
     {
@@ -76,6 +83,7 @@ export function BottomNav() {
         {NAV_ITEMS.map((item) => {
           const active = item.isActive(pathname);
           const Icon = item.icon;
+          const hasBadge = item.badge !== undefined && item.badge !== null && item.badge !== 0;
 
           return (
             <Link
@@ -86,6 +94,8 @@ export function BottomNav() {
                 "group relative flex h-full flex-1 flex-col items-center justify-center gap-1 px-1 py-1.5 transition-all outline-none",
                 active
                   ? "text-emerald-700 dark:text-emerald-400 font-extrabold"
+                  : hasBadge
+                  ? "text-slate-700 dark:text-slate-200 font-bold"
                   : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 font-medium"
               )}
             >
@@ -94,19 +104,29 @@ export function BottomNav() {
                 <span className="absolute top-0 h-1 w-10 bg-emerald-600 dark:bg-emerald-400 rounded-full shadow-xs shadow-emerald-500/50" />
               )}
 
-              {/* Icon Container */}
+              {/* Icon Container with Radiant Badge */}
               <div className="relative flex items-center justify-center">
                 <Icon
                   className={cn(
                     "h-5 w-5 sm:h-6 sm:w-6 transition-all",
                     active
                       ? "text-emerald-700 dark:text-emerald-400 stroke-[2.5px] scale-105"
+                      : hasBadge
+                      ? "text-slate-800 dark:text-slate-100 stroke-[2.2px]"
                       : "text-slate-500 dark:text-slate-400 stroke-[2px]"
                   )}
                 />
-                {item.badge && (
-                  <span className="absolute -right-2.5 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-emerald-600 px-1 text-[10px] font-bold text-white font-mono shadow-md ring-2 ring-white dark:ring-slate-900 animate-pulse">
-                    {item.badge}
+
+                {/* Prominent High-Visibility Notification Badge */}
+                {hasBadge && (
+                  <span className="absolute -top-1.5 -right-3 flex items-center justify-center pointer-events-none z-10">
+                    {/* Animated Ping Radar Wave */}
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-500 opacity-75" />
+
+                    {/* Gradient Notification Pill */}
+                    <span className="relative flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-gradient-to-r from-rose-500 via-rose-600 to-red-600 px-1 text-[10px] font-black text-white font-mono shadow-md shadow-rose-500/40 ring-2 ring-white dark:ring-slate-900 leading-none">
+                      {item.badge}
+                    </span>
                   </span>
                 )}
               </div>
@@ -114,13 +134,18 @@ export function BottomNav() {
               {/* Label Text */}
               <span
                 className={cn(
-                  "text-[11px] sm:text-xs tracking-tight transition-colors",
+                  "text-[11px] sm:text-xs tracking-tight transition-colors flex items-center gap-1",
                   active
                     ? "text-emerald-700 dark:text-emerald-400 font-black"
+                    : hasBadge
+                    ? "text-rose-600 dark:text-rose-400 font-black"
                     : "text-slate-500 dark:text-slate-400 font-semibold"
                 )}
               >
                 {item.label}
+                {hasBadge && !active && (
+                  <span className="h-1.5 w-1.5 rounded-full bg-rose-500 animate-pulse sm:hidden" />
+                )}
               </span>
             </Link>
           );
@@ -131,3 +156,4 @@ export function BottomNav() {
 }
 
 export default BottomNav;
+
