@@ -533,4 +533,48 @@ export interface GetRegisteredUsersResult {
   totalPendingRequestsCount: number;
 }
 
+export interface PesanGrup {
+  id: string;
+  komunitas_id: string;
+  user_id: string;
+  pesan: string;
+  created_at: string;
+  updated_at?: string;
+  profiles?: Profile | null;
+}
+
+export interface GrupChatRoom {
+  id: string;
+  nama: string;
+  jenis: string;
+  deskripsi?: string | null;
+  logo_url?: string | null;
+  kecamatan?: string;
+  kelurahan?: string;
+  rw?: string | null;
+  rt?: string | null;
+  jumlah_anggota: number;
+  last_message?: {
+    pesan: string;
+    sender_name: string;
+    created_at: string;
+  } | null;
+  is_member?: boolean;
+}
+
+export interface RecentConversationItem {
+  partnerId: string;
+  partnerName: string;
+  partnerAvatar?: string | null;
+  partnerRole?: string;
+  partnerCommunity?: string;
+  lastMessage: string;
+  lastMessageAt: string;
+  unreadCount: number;
+  isLastMessageMine: boolean;
+  friendshipStatus?: "none" | "pending_sent" | "pending_received" | "accepted" | "self";
+  friendshipId?: string | null;
+}
+
+
 

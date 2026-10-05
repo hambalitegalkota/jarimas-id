@@ -979,3 +979,44 @@ CREATE POLICY "Pengirim atau penerima dapat menghapus pesan" ON public.pesan_pri
   auth.uid() = sender_id OR auth.uid() = receiver_id
 );
 
+-- ==============================================================================
+-- 10.3 TABEL PESAN GRUP KOMUNITAS (GROUP CHAT)
+-- ==============================================================================
+CREATE TABLE IF NOT EXISTS public.pesan_grup (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  komunitas_id UUID NOT NULL REFERENCES public.komunitas(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  pesan TEXT NOT NULL DEFAULT '',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+ALTER TABLE public.pesan_grup ADD COLUMN IF NOT EXISTS komunitas_id UUID REFERENCES public.komunitas(id) ON DELETE CASCADE;
+ALTER TABLE public.pesan_grup ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE;
+ALTER TABLE public.pesan_grup ADD COLUMN IF NOT EXISTS pesan TEXT NOT NULL DEFAULT '';
+ALTER TABLE public.pesan_grup ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT now();
+ALTER TABLE public.pesan_grup ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT now();
+
+CREATE INDEX IF NOT EXISTS idx_pesan_grup_komunitas ON public.pesan_grup(komunitas_id);
+CREATE INDEX IF NOT EXISTS idx_pesan_grup_user ON public.pesan_grup(user_id);
+CREATE INDEX IF NOT EXISTS idx_pesan_grup_created_at ON public.pesan_grup(created_at ASC);
+
+ALTER TABLE public.pesan_grup ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Pengguna dapat membaca pesan grup" ON public.pesan_grup;
+CREATE POLICY "Pengguna dapat membaca pesan grup" ON public.pesan_grup FOR SELECT USING (
+  auth.uid() IS NOT NULL
+);
+
+DROP POLICY IF EXISTS "Pengguna terautentikasi dapat mengirim pesan grup" ON public.pesan_grup;
+CREATE POLICY "Pengguna terautentikasi dapat mengirim pesan grup" ON public.pesan_grup FOR INSERT WITH CHECK (
+  auth.uid() = user_id
+);
+
+DROP POLICY IF EXISTS "Pengirim atau Admin dapat menghapus pesan grup" ON public.pesan_grup;
+CREATE POLICY "Pengirim atau Admin dapat menghapus pesan grup" ON public.pesan_grup FOR DELETE USING (
+  auth.uid() = user_id OR
+  EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND is_super_admin = true)
+);
+
+

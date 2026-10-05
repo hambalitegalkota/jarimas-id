@@ -573,3 +573,430 @@ export async function sendPrivateMessage(params: {
     };
   }
 }
+
+/**
+ * Server Action: Mengambil daftar percakapan terbaru (Inbox 1-on-1 Direct Chat)
+ */
+export async function getRecentConversations(): Promise<{
+  success: boolean;
+  message?: string;
+  conversations: import("@/types/database").RecentConversationItem[];
+  currentUserId?: string | null;
+}> {
+  try {
+    const supabase = await createClient();
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return {
+        success: false,
+        message: "Silakan masuk terlebih dahulu.",
+        conversations: [],
+        currentUserId: null,
+      };
+    }
+
+    const currentUserId = user.id;
+
+    // Ambil semua pesan yang melibatkan user saat ini
+    const { data: messages, error } = await supabase
+      .from("pesan_pribadi")
+      .select("id, sender_id, receiver_id, pesan, is_read, created_at")
+      .or(`sender_id.eq.${currentUserId},receiver_id.eq.${currentUserId}`)
+      .order("created_at", { ascending: false });
+
+    if (error || !messages) {
+      return {
+        success: true,
+        conversations: [],
+        currentUserId,
+      };
+    }
+
+    // Kelompokkan per partner
+    const partnerMap: Record<
+      string,
+      {
+        lastMessage: string;
+        lastMessageAt: string;
+        unreadCount: number;
+        isLastMessageMine: boolean;
+      }
+    > = {};
+
+    messages.forEach((msg) => {
+      const partnerId = msg.sender_id === currentUserId ? msg.receiver_id : msg.sender_id;
+      if (!partnerMap[partnerId]) {
+        partnerMap[partnerId] = {
+          lastMessage: msg.pesan,
+          lastMessageAt: msg.created_at,
+          unreadCount: 0,
+          isLastMessageMine: msg.sender_id === currentUserId,
+        };
+      }
+      if (msg.receiver_id === currentUserId && !msg.is_read) {
+        partnerMap[partnerId].unreadCount += 1;
+      }
+    });
+
+    const partnerIds = Object.keys(partnerMap);
+    if (partnerIds.length === 0) {
+      return {
+        success: true,
+        conversations: [],
+        currentUserId,
+      };
+    }
+
+    // Ambil profil seluruh partner
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("id, nama_lengkap, email, avatar_url, is_super_admin")
+      .in("id", partnerIds);
+
+    // Ambil pertemanan untuk partner
+    const { data: friendships } = await supabase
+      .from("pertemanan")
+      .select("id, user_id, friend_id, status, requested_by")
+      .or(`user_id.eq.${currentUserId},friend_id.eq.${currentUserId}`);
+
+    const fMap: Record<string, { id: string; status: string; requested_by: string }> = {};
+    if (friendships) {
+      friendships.forEach((f) => {
+        const other = f.user_id === currentUserId ? f.friend_id : f.user_id;
+        fMap[other] = { id: f.id, status: f.status, requested_by: f.requested_by };
+      });
+    }
+
+    const conversations: import("@/types/database").RecentConversationItem[] = (profiles || []).map(
+      (p) => {
+        const info = partnerMap[p.id];
+        const f = fMap[p.id];
+        let friendshipStatus: import("@/types/database").RecentConversationItem["friendshipStatus"] =
+          "none";
+
+        if (f) {
+          if (f.status === "accepted") friendshipStatus = "accepted";
+          else if (f.status === "pending") {
+            friendshipStatus = f.requested_by === currentUserId ? "pending_sent" : "pending_received";
+          }
+        }
+
+        return {
+          partnerId: p.id,
+          partnerName: p.nama_lengkap || "Warga Jarimas",
+          partnerAvatar: p.avatar_url,
+          partnerRole: p.is_super_admin ? "Super Admin" : "Warga",
+          lastMessage: info.lastMessage,
+          lastMessageAt: info.lastMessageAt,
+          unreadCount: info.unreadCount,
+          isLastMessageMine: info.isLastMessageMine,
+          friendshipStatus,
+          friendshipId: f?.id || null,
+        };
+      }
+    );
+
+    // Urutkan berdasarkan waktu pesan terakhir menurun
+    conversations.sort(
+      (a, b) => new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime()
+    );
+
+    return {
+      success: true,
+      conversations,
+      currentUserId,
+    };
+  } catch (err: any) {
+    console.error("Error getRecentConversations:", err);
+    return {
+      success: false,
+      message: err?.message || "Gagal memuat percakapan terbaru.",
+      conversations: [],
+    };
+  }
+}
+
+/**
+ * Server Action: Mengambil daftar ruang obrolan grup komunitas
+ */
+export async function getGroupChatRooms(): Promise<{
+  success: boolean;
+  message?: string;
+  rooms: import("@/types/database").GrupChatRoom[];
+  currentUserId?: string | null;
+}> {
+  try {
+    const supabase = await createClient();
+
+    let currentUserId: string | null = null;
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (user) currentUserId = user.id;
+    } catch {
+      // Tamu
+    }
+
+    // Ambil komunitas aktif
+    const { data: communities, error } = await supabase
+      .from("komunitas")
+      .select(`
+        id,
+        nama,
+        jenis,
+        deskripsi,
+        logo_url,
+        kecamatan,
+        kelurahan,
+        rw,
+        rt
+      `)
+      .order("nama", { ascending: true })
+      .limit(30);
+
+    if (error || !communities) {
+      return {
+        success: true,
+        rooms: [],
+        currentUserId,
+      };
+    }
+
+    // Ambil jumlah anggota masing-masing komunitas
+    const { data: memberCounts } = await supabase
+      .from("anggota_komunitas")
+      .select("komunitas_id, user_id, status")
+      .eq("status", "approved");
+
+    const countMap: Record<string, number> = {};
+    const myMembershipSet = new Set<string>();
+
+    if (memberCounts) {
+      memberCounts.forEach((m) => {
+        countMap[m.komunitas_id] = (countMap[m.komunitas_id] || 0) + 1;
+        if (currentUserId && m.user_id === currentUserId) {
+          myMembershipSet.add(m.komunitas_id);
+        }
+      });
+    }
+
+    // Ambil pesan terakhir grup jika ada
+    let lastMsgMap: Record<string, { pesan: string; sender_name: string; created_at: string }> = {};
+    try {
+      const { data: lastMessages } = await supabase
+        .from("pesan_grup")
+        .select(`
+          komunitas_id,
+          pesan,
+          created_at,
+          profiles (
+            nama_lengkap
+          )
+        `)
+        .order("created_at", { ascending: false });
+
+      if (lastMessages) {
+        lastMessages.forEach((lm: any) => {
+          if (!lastMsgMap[lm.komunitas_id]) {
+            lastMsgMap[lm.komunitas_id] = {
+              pesan: lm.pesan,
+              sender_name: lm.profiles?.nama_lengkap || "Warga",
+              created_at: lm.created_at,
+            };
+          }
+        });
+      }
+    } catch {
+      // Fallback
+    }
+
+    const rooms: import("@/types/database").GrupChatRoom[] = communities.map((c) => ({
+      id: c.id,
+      nama: c.nama || "Grup Komunitas",
+      jenis: c.jenis || "warga_kita",
+      deskripsi: c.deskripsi,
+      logo_url: c.logo_url,
+      kecamatan: c.kecamatan,
+      kelurahan: c.kelurahan,
+      rw: c.rw,
+      rt: c.rt,
+      jumlah_anggota: countMap[c.id] || 0,
+      last_message: lastMsgMap[c.id] || null,
+      is_member: myMembershipSet.has(c.id),
+    }));
+
+    return {
+      success: true,
+      rooms,
+      currentUserId,
+    };
+  } catch (err: any) {
+    console.error("Error getGroupChatRooms:", err);
+    return {
+      success: false,
+      message: err?.message || "Gagal memuat grup komunitas.",
+      rooms: [],
+    };
+  }
+}
+
+/**
+ * Server Action: Mengambil riwayat pesan grup komunitas
+ */
+export async function getGroupMessages(komunitasId: string): Promise<{
+  success: boolean;
+  message?: string;
+  messages: import("@/types/database").PesanGrup[];
+  komunitas?: import("@/types/database").Komunitas | null;
+  currentUserId?: string | null;
+}> {
+  try {
+    const supabase = await createClient();
+
+    let currentUserId: string | null = null;
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (user) currentUserId = user.id;
+    } catch {
+      // Tamu
+    }
+
+    // Ambil data info komunitas
+    const { data: community } = await supabase
+      .from("komunitas")
+      .select("id, nama, jenis, kecamatan, kelurahan, rw, rt, logo_url, deskripsi")
+      .eq("id", komunitasId)
+      .maybeSingle();
+
+    // Ambil riwayat pesan grup
+    const { data: rawMessages, error } = await supabase
+      .from("pesan_grup")
+      .select(`
+        id,
+        komunitas_id,
+        user_id,
+        pesan,
+        created_at,
+        updated_at,
+        profiles (
+          id,
+          nama_lengkap,
+          avatar_url,
+          is_super_admin
+        )
+      `)
+      .eq("komunitas_id", komunitasId)
+      .order("created_at", { ascending: true })
+      .limit(100);
+
+    if (error) {
+      console.warn("Gagal getGroupMessages:", error);
+      return {
+        success: true,
+        messages: [],
+        komunitas: community as any,
+        currentUserId,
+      };
+    }
+
+    return {
+      success: true,
+      messages: (rawMessages || []) as any,
+      komunitas: community as any,
+      currentUserId,
+    };
+  } catch (err: any) {
+    console.error("Error getGroupMessages:", err);
+    return {
+      success: false,
+      message: err?.message || "Gagal mengambil pesan grup.",
+      messages: [],
+    };
+  }
+}
+
+/**
+ * Server Action: Mengirim pesan ke grup komunitas
+ */
+export async function sendGroupMessage(params: {
+  komunitasId: string;
+  pesan: string;
+}): Promise<{
+  success: boolean;
+  message: string;
+  data?: import("@/types/database").PesanGrup;
+}> {
+  try {
+    const { komunitasId, pesan } = params;
+    const cleanPesan = (pesan || "").trim();
+
+    if (!cleanPesan) {
+      return {
+        success: false,
+        message: "Pesan grup tidak boleh kosong.",
+      };
+    }
+
+    const supabase = await createClient();
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return {
+        success: false,
+        message: "Silakan masuk terlebih dahulu untuk mengirim pesan ke grup.",
+      };
+    }
+
+    const { data: inserted, error: insertErr } = await supabase
+      .from("pesan_grup")
+      .insert({
+        komunitas_id: komunitasId,
+        user_id: user.id,
+        pesan: cleanPesan,
+      })
+      .select(`
+        id,
+        komunitas_id,
+        user_id,
+        pesan,
+        created_at,
+        profiles (
+          id,
+          nama_lengkap,
+          avatar_url,
+          is_super_admin
+        )
+      `)
+      .single();
+
+    if (insertErr) {
+      return {
+        success: false,
+        message: "Gagal mengirim pesan grup: " + insertErr.message,
+      };
+    }
+
+    return {
+      success: true,
+      message: "Pesan grup terkirim.",
+      data: inserted as any,
+    };
+  } catch (err: any) {
+    console.error("Error sendGroupMessage:", err);
+    return {
+      success: false,
+      message: err?.message || "Terjadi kesalahan saat mengirim pesan ke grup.",
+    };
+  }
+}
+
