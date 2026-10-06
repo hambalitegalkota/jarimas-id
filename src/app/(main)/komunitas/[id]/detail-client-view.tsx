@@ -39,6 +39,8 @@ import { EditInformasiOperasionalModal } from "@/components/komunitas/edit-infor
 import { KabarCard } from "@/components/kabar/kabar-card";
 import { CreateKabarModal } from "@/components/kabar/create-kabar-modal";
 import { KomunitasProfilCharts } from "@/components/komunitas/komunitas-profil-charts";
+import { LaporanKaderSpmFormCard } from "@/components/komunitas/laporan-kader-spm-form-card";
+import { RekapLaporanKaderWilayahCard } from "@/components/komunitas/rekap-laporan-kader-wilayah-card";
 import {
   applyForAdminKomunitas,
   leaveKomunitas,
@@ -132,6 +134,11 @@ export function KomunitasDetailClientView({
     const cleanName = (komunitasData.nama || "").replace(/^(Posyandu\s*)+/gi, "").trim();
     formattedTitle = cleanName ? `Posyandu ${cleanName}` : "Posyandu";
   }
+
+  const myProfileName = useMemo(() => {
+    const me = anggotaState.find((m) => m.user_id === currentUserId);
+    return me?.profiles?.nama_lengkap || "Kader Posyandu";
+  }, [anggotaState, currentUserId]);
 
   const approvedMembers = anggotaState.filter((m) => m.status === "approved");
 
@@ -999,6 +1006,28 @@ export function KomunitasDetailClientView({
                 </p>
               </div>
             </div>
+          )}
+
+          {/* ========================================================= */}
+          {/* LAPORAN KADER POSYANDU 6 BIDANG SPM                       */}
+          {/* ========================================================= */}
+          {/* 1. Komunitas Posyandu: Formulir Input & Riwayat Laporan */}
+          {komunitasData.jenis === "posyandu" && (
+            <LaporanKaderSpmFormCard
+              komunitas={komunitasData}
+              currentUserId={currentUserId}
+              userName={myProfileName}
+              isAdminOrKader={isAdminOrKader}
+            />
+          )}
+
+          {/* 2. Komunitas Kelurahan, Kecamatan, dan Kota Tegal: Rekap Laporan Wilayah */}
+          {komunitasData.jenis === "warga_kita" && isAdminOrKader && (
+            <RekapLaporanKaderWilayahCard
+              komunitas={komunitasData}
+              isAdminOrKader={isAdminOrKader}
+              currentUserId={currentUserId}
+            />
           )}
 
           {/* Visualisasi Grafik & Chart Statistik Wilayah */}

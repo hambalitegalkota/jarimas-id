@@ -23,6 +23,51 @@ export interface KaderBidangItem {
   wa: string;
 }
 
+export type BidangSpmType =
+  | "Pendidikan"
+  | "Kesehatan"
+  | "Pekerjaan Umum"
+  | "Perumahan Rakyat"
+  | "Trantibum Linmas"
+  | "Sosial";
+
+export type JenisKegiatanLaporan =
+  | "Pendataan"
+  | "Verifikasi dan Validasi"
+  | "Penyuluhan, Edukasi dan Motivasi"
+  | "Penyaluran Aspirasi";
+
+export interface LaporanKaderSpmItem {
+  id: string;
+  komunitas_id: string;
+  user_id: string;
+  posyandu_nama: string;
+  kelurahan: string;
+  kecamatan: string;
+  kota: string;
+  bidang: BidangSpmType | string;
+  bulan: string;
+  tahun: number;
+  tanggal_laporan: string;
+  nama_kader: string;
+  nomor_hp_kader?: string | null;
+  jenis_kegiatan: (JenisKegiatanLaporan | string)[];
+  narasi_pendataan?: string | null;
+  narasi_verifikasi_validasi?: string | null;
+  narasi_penyuluhan_edukasi?: string | null;
+  narasi_penyaluran_aspirasi?: string | null;
+  status: "draft" | "terkirim" | "diverifikasi" | string;
+  catatan_admin?: string | null;
+  created_at: string;
+  updated_at?: string;
+  profiles?: {
+    id: string;
+    nama_lengkap: string;
+    email?: string;
+    avatar_url?: string | null;
+  } | null;
+}
+
 export interface KontakKomunitasDetail {
   utama: string;
   kader_pendidikan: KaderBidangItem;
