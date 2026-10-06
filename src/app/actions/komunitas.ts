@@ -3846,5 +3846,355 @@ export async function updateKomunitasInformasiOperasional({
   }
 }
 
+export interface PaudKomunitasMemberSummary {
+  id: string;
+  rawId: string;
+  nama: string;
+  npsn?: string;
+  jenisInstitusi: string;
+  kecamatan: string;
+  kelurahan: string;
+  lokasi: string;
+  kontak?: string;
+  jadwal?: string;
+  deskripsi?: string;
+  totalAnggota: number;
+  jumlahKepalaSekolah: number;
+  jumlahGuru: number;
+  jumlahOrangTua: number;
+  jumlahKomite: number;
+  jumlahLainnya: number;
+  statusKeanggotaan: "sudah_beranggota" | "belum_beranggota";
+  adminName?: string | null;
+  adminRole?: string | null;
+  sampleMembers?: {
+    id: string;
+    nama: string;
+    peran: string;
+    avatar_url?: string | null;
+  }[];
+}
+
+export interface PaudKomunitasRekapTableData {
+  summary: {
+    totalLembaga: number;
+    totalSudahBeranggota: number;
+    totalBelumBeranggota: number;
+    totalSeluruhAnggota: number;
+    totalKepalaSekolah: number;
+    totalGuru: number;
+    totalOrangTua: number;
+    totalKomite: number;
+    totalLainnya: number;
+    byJenisInstitusi: Record<
+      string,
+      { totalLembaga: number; sudahBeranggota: number; totalAnggota: number }
+    >;
+    byKecamatan: Record<
+      string,
+      { totalLembaga: number; sudahBeranggota: number; totalAnggota: number }
+    >;
+  };
+  items: PaudKomunitasMemberSummary[];
+}
+
+/**
+ * Server Action: Mengambil data tabel rekap keanggotaan 219 Satuan PAUD & PKBM Kota Tegal
+ * dengan rincian peran (Kepala Sekolah, Guru PAUD, Orang Tua, Komite, dll) serta status keanggotaan.
+ */
+export async function getPaudKomunitasRekapTableAction(): Promise<{
+  success: boolean;
+  message?: string;
+  data?: PaudKomunitasRekapTableData;
+}> {
+  try {
+    const supabase = await createClient();
+
+    // 1. Ambil seluruh anggota_komunitas yang approved
+    const { data: rawMembers, error: memberErr } = await supabase
+      .from("anggota_komunitas")
+      .select("id, komunitas_id, user_id, peran, status, created_at")
+      .eq("status", "approved");
+
+    if (memberErr) {
+      console.warn("Query anggota_komunitas error:", memberErr.message);
+    }
+
+    const membersList = rawMembers || [];
+
+    // 2. Ambil profile user terkait
+    const userIds = Array.from(
+      new Set(membersList.map((m) => m.user_id).filter(Boolean))
+    );
+    const { data: profilesData } =
+      userIds.length > 0
+        ? await supabase
+            .from("profiles")
+            .select("id, nama_lengkap, email, avatar_url")
+            .in("id", userIds)
+        : { data: [] };
+
+    const profileMap = new Map<string, any>(
+      (profilesData || []).map((p: any) => [p.id, p])
+    );
+
+    // 3. Ambil data komunitas di DB jika ada
+    const { data: dbPaudKomunitas } = await supabase
+      .from("komunitas")
+      .select("id, nama, jenis, kecamatan, kelurahan, lokasi, kontak, jadwal, deskripsi")
+      .eq("jenis", "satuan_paud");
+
+    // 4. Kumpulkan anggota berdasarkan komunitas_id
+    const membersByKomId: Record<string, any[]> = {};
+    membersList.forEach((m) => {
+      const kId = m.komunitas_id;
+      if (!kId) return;
+      if (!membersByKomId[kId]) {
+        membersByKomId[kId] = [];
+      }
+      membersByKomId[kId].push(m);
+    });
+
+    // 5. Agregasi setiap 219 Master Satuan PAUD & PKBM
+    const summaryByJenis: Record<
+      string,
+      { totalLembaga: number; sudahBeranggota: number; totalAnggota: number }
+    > = {};
+    const summaryByKec: Record<
+      string,
+      { totalLembaga: number; sudahBeranggota: number; totalAnggota: number }
+    > = {};
+
+    const items: PaudKomunitasMemberSummary[] = RAW_PAUD_PKBM_TEGAL.map(
+      (item) => {
+        const rawId = item.id || `kom-paud-${slugify(item.kecamatan)}-${slugify(item.kelurahan)}-${slugify(item.nama)}`;
+        const validId = toValidUUID(rawId);
+
+        // Kumpulkan candidate IDs yang mungkin match
+        const matchingDbKoms = (dbPaudKomunitas || []).filter((k: any) => {
+          const kNama = (k.nama || "").toLowerCase().trim();
+          const itNama = item.nama.toLowerCase().trim();
+          return (
+            kNama === itNama &&
+            (k.kecamatan || "").toLowerCase().trim() ===
+              item.kecamatan.toLowerCase().trim()
+          );
+        });
+
+        const candidateIds = new Set<string>([
+          rawId,
+          validId,
+          item.id || "",
+          ...matchingDbKoms.map((k: any) => k.id),
+        ]);
+
+        // Temukan seluruh anggota yang terdaftar di kandidat ID ini
+        const matchedMembers: any[] = [];
+        const seenMemberIds = new Set<string>();
+
+        candidateIds.forEach((cid) => {
+          if (!cid) return;
+          const group = membersByKomId[cid] || [];
+          group.forEach((gm) => {
+            if (!seenMemberIds.has(gm.id)) {
+              seenMemberIds.add(gm.id);
+              matchedMembers.push(gm);
+            }
+          });
+        });
+
+        // Hitung rincian peran
+        let jumlahKepalaSekolah = 0;
+        let jumlahGuru = 0;
+        let jumlahOrangTua = 0;
+        let jumlahKomite = 0;
+        let jumlahLainnya = 0;
+        let adminName: string | null = null;
+        let adminRole: string | null = null;
+
+        const sampleMembers: {
+          id: string;
+          nama: string;
+          peran: string;
+          avatar_url?: string | null;
+        }[] = [];
+
+        matchedMembers.forEach((m) => {
+          const prof = profileMap.get(m.user_id);
+          const name =
+            prof?.nama_lengkap || prof?.email || "Anggota Terdaftar";
+          const pLower = (m.peran || "").toLowerCase().trim();
+
+          if (
+            pLower.includes("kepala") ||
+            pLower.includes("pimpinan") ||
+            pLower.includes("pengelola") ||
+            pLower.includes("direktur")
+          ) {
+            jumlahKepalaSekolah += 1;
+            if (!adminName) {
+              adminName = name;
+              adminRole = m.peran;
+            }
+          } else if (
+            pLower.includes("guru") ||
+            pLower.includes("pendidik") ||
+            pLower.includes("tutor") ||
+            pLower.includes("pengajar") ||
+            pLower.includes("fasilitator")
+          ) {
+            jumlahGuru += 1;
+          } else if (
+            pLower.includes("orangtua") ||
+            pLower.includes("orang tua") ||
+            pLower.includes("wali") ||
+            pLower.includes("ayah") ||
+            pLower.includes("ibu") ||
+            pLower.includes("bunda")
+          ) {
+            jumlahOrangTua += 1;
+          } else if (pLower.includes("komite")) {
+            jumlahKomite += 1;
+          } else {
+            jumlahLainnya += 1;
+            if (
+              !adminName &&
+              (pLower.includes("admin") || pLower.includes("pengurus"))
+            ) {
+              adminName = name;
+              adminRole = m.peran;
+            }
+          }
+
+          if (sampleMembers.length < 8) {
+            sampleMembers.push({
+              id: m.id,
+              nama: name,
+              peran: m.peran || "Anggota",
+              avatar_url: prof?.avatar_url || null,
+            });
+          }
+        });
+
+        const totalAnggota = matchedMembers.length;
+        const statusKeanggotaan: "sudah_beranggota" | "belum_beranggota" =
+          totalAnggota > 0 ? "sudah_beranggota" : "belum_beranggota";
+
+        // Tentukan jenis institusi
+        let jenisInstitusi = item.jenis_institusi || "PAUD";
+        if (!item.jenis_institusi) {
+          const upperNama = item.nama.toUpperCase();
+          if (upperNama.startsWith("TK ")) jenisInstitusi = "TK";
+          else if (upperNama.startsWith("KB ")) jenisInstitusi = "KB";
+          else if (upperNama.startsWith("RA ")) jenisInstitusi = "RA";
+          else if (upperNama.startsWith("PKBM ")) jenisInstitusi = "PKBM";
+          else if (upperNama.startsWith("TPA ")) jenisInstitusi = "TPA";
+          else if (upperNama.startsWith("SPS ") || upperNama.startsWith("POS PAUD")) jenisInstitusi = "SPS";
+          else if (upperNama.startsWith("SKB ")) jenisInstitusi = "SKB";
+        }
+
+        // Agregasi per jenis
+        if (!summaryByJenis[jenisInstitusi]) {
+          summaryByJenis[jenisInstitusi] = {
+            totalLembaga: 0,
+            sudahBeranggota: 0,
+            totalAnggota: 0,
+          };
+        }
+        summaryByJenis[jenisInstitusi].totalLembaga += 1;
+        if (totalAnggota > 0) {
+          summaryByJenis[jenisInstitusi].sudahBeranggota += 1;
+          summaryByJenis[jenisInstitusi].totalAnggota += totalAnggota;
+        }
+
+        // Agregasi per kecamatan
+        const kec = item.kecamatan || "Kota Tegal";
+        if (!summaryByKec[kec]) {
+          summaryByKec[kec] = {
+            totalLembaga: 0,
+            sudahBeranggota: 0,
+            totalAnggota: 0,
+          };
+        }
+        summaryByKec[kec].totalLembaga += 1;
+        if (totalAnggota > 0) {
+          summaryByKec[kec].sudahBeranggota += 1;
+          summaryByKec[kec].totalAnggota += totalAnggota;
+        }
+
+        return {
+          id: validId,
+          rawId,
+          nama: item.nama,
+          npsn: item.npsn,
+          jenisInstitusi,
+          kecamatan: item.kecamatan,
+          kelurahan: item.kelurahan,
+          lokasi: item.lokasi || `${item.kelurahan}, ${item.kecamatan}, Kota Tegal`,
+          kontak: item.kontak,
+          jadwal: item.jadwal,
+          deskripsi: item.deskripsi,
+          totalAnggota,
+          jumlahKepalaSekolah,
+          jumlahGuru,
+          jumlahOrangTua,
+          jumlahKomite,
+          jumlahLainnya,
+          statusKeanggotaan,
+          adminName,
+          adminRole,
+          sampleMembers,
+        };
+      }
+    );
+
+    // Hitung total ringkasan global
+    const totalLembaga = items.length;
+    const totalSudahBeranggota = items.filter(
+      (i) => i.statusKeanggotaan === "sudah_beranggota"
+    ).length;
+    const totalBelumBeranggota = totalLembaga - totalSudahBeranggota;
+    const totalSeluruhAnggota = items.reduce(
+      (sum, i) => sum + i.totalAnggota,
+      0
+    );
+    const totalKepalaSekolah = items.reduce(
+      (sum, i) => sum + i.jumlahKepalaSekolah,
+      0
+    );
+    const totalGuru = items.reduce((sum, i) => sum + i.jumlahGuru, 0);
+    const totalOrangTua = items.reduce((sum, i) => sum + i.jumlahOrangTua, 0);
+    const totalKomite = items.reduce((sum, i) => sum + i.jumlahKomite, 0);
+    const totalLainnya = items.reduce((sum, i) => sum + i.jumlahLainnya, 0);
+
+    return {
+      success: true,
+      data: {
+        summary: {
+          totalLembaga,
+          totalSudahBeranggota,
+          totalBelumBeranggota,
+          totalSeluruhAnggota,
+          totalKepalaSekolah,
+          totalGuru,
+          totalOrangTua,
+          totalKomite,
+          totalLainnya,
+          byJenisInstitusi: summaryByJenis,
+          byKecamatan: summaryByKec,
+        },
+        items,
+      },
+    };
+  } catch (err: any) {
+    console.error("Error getPaudKomunitasRekapTableAction:", err);
+    return {
+      success: false,
+      message: err.message || "Gagal memuat rekap tabel komunitas PAUD & PKBM.",
+    };
+  }
+}
+
+
 
 

@@ -16,6 +16,7 @@ import { getKomunitasList } from "@/app/actions/komunitas";
 import { KomunitasFilter } from "@/components/komunitas/komunitas-filter";
 import { KomunitasCard } from "@/components/komunitas/komunitas-card";
 import { KomunitasRekapSection } from "@/components/komunitas/komunitas-rekap-section";
+import { PaudKomunitasTableRekapSection } from "@/components/komunitas/paud-komunitas-table-rekap-section";
 import type { JenisKomunitas } from "@/types/database";
 
 interface KomunitasPageProps {
@@ -177,6 +178,16 @@ export default async function KomunitasPage({
         currentKecamatan={currentKecamatan}
         currentKelurahan={currentKelurahan}
       />
+
+      {/* ========================================================= */}
+      {/* 2.6. KHUSUS TAB PAUD: TABEL KOMUNITAS BERDASARKAN ANGGOTA */}
+      {/* ========================================================= */}
+      {currentTab === "satuan_paud" && (
+        <PaudKomunitasTableRekapSection
+          initialKecamatan={currentKecamatan}
+          initialKelurahan={currentKelurahan}
+        />
+      )}
 
       {/* ========================================================= */}
       {/* 3. FILTER DROPDOWN & SEARCH WILAYAH                       */}
