@@ -114,6 +114,14 @@ export function KomunitasDetailClientView({
   const isUserAdmin = isApprovedMember && isRoleAdmin(userPeran);
   const isUserPendingAdmin = Boolean(membership?.peran_diajukan && isRoleAdmin(membership.peran_diajukan));
 
+  // Otorisasi Edit Informasi Resmi & Operasional (Super Admin, Admin Hierarki, Admin Langsung, Pengurus, Kader, dll.)
+  const canEditOperasional = useMemo(() => {
+    if (isAdminOrKader) return true;
+    if (!currentUserId) return false;
+    if (!isApprovedMember) return false;
+    return isRoleAdmin(userPeran) || isKader;
+  }, [isAdminOrKader, currentUserId, isApprovedMember, userPeran, isKader]);
+
   const parsedKontak = useMemo(
     () => parseKontakKomunitas(komunitasData.kontak),
     [komunitasData.kontak]
@@ -609,12 +617,12 @@ export function KomunitasDetailClientView({
                 </p>
               </div>
 
-              {isKader && (
+              {canEditOperasional && (
                 <button
                   type="button"
                   onClick={() => setIsEditOperasionalOpen(true)}
                   className="inline-flex min-h-[40px] h-10 items-center justify-center gap-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white px-4 text-xs font-bold shadow-xs transition-all active:scale-98 cursor-pointer shrink-0"
-                  title="Hanya Kader resmi yang berhak mengedit informasi ini"
+                  title="Edit Informasi Resmi & Operasional Komunitas"
                 >
                   <Pencil className="h-3.5 w-3.5" />
                   <span>Edit Informasi</span>

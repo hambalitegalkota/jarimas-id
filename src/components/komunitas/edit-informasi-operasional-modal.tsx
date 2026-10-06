@@ -155,11 +155,11 @@ export function EditInformasiOperasionalModal({
                   Edit Informasi Resmi &amp; Operasional
                 </h3>
                 <span className="text-xs font-bold px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 border border-emerald-200">
-                  KADER ONLY
+                  ADMIN, PENGURUS &amp; KADER
                 </span>
               </div>
               <p className="text-xs text-slate-500 font-semibold line-clamp-1">
-                Khusus Kader Resmi: {komunitas.nama}
+                Kelola Informasi Resmi: {komunitas.nama}
               </p>
             </div>
           </div>

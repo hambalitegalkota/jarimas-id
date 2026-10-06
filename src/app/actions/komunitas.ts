@@ -3719,9 +3719,10 @@ export async function updateKomunitasInformasiOperasional({
     const isSuperAdmin = profile?.is_super_admin === true;
     const dbKomunitasId = toValidUUID(komunitasId);
 
-    // Cek wewenang kader di komunitas ini jika bukan Super Admin
-    if (!isSuperAdmin) {
-      const { data: membership } = await supabase
+    // Cek wewenang Admin, Pengurus, Kader jika bukan Super Admin
+    let hasAdminAuth = isSuperAdmin;
+    if (!hasAdminAuth) {
+      const { data: myMembership } = await supabase
         .from("anggota_komunitas")
         .select("peran, status")
         .eq("user_id", user.id)
@@ -3729,18 +3730,75 @@ export async function updateKomunitasInformasiOperasional({
         .eq("status", "approved")
         .maybeSingle();
 
-      const isKader =
-        membership?.status === "approved" &&
-        (membership.peran.toLowerCase().trim() === "kader" ||
-          membership.peran.toLowerCase().trim().includes("kader"));
-
-      if (!isKader) {
-        return {
-          success: false,
-          message:
-            "Akses ditolak: Hanya Kader resmi yang berhak mengedit Informasi Resmi & Operasional.",
-        };
+      if (myMembership && isRoleAdmin(myMembership.peran)) {
+        hasAdminAuth = true;
       }
+
+      // Cek hierarki admin wilayah (Admin RT/RW/Kelurahan/Kecamatan/Kota)
+      if (!hasAdminAuth) {
+        const { data: userAdminMemberships } = await supabase
+          .from("anggota_komunitas")
+          .select("komunitas_id, peran, status")
+          .eq("user_id", user.id)
+          .eq("status", "approved");
+
+        const approvedAdminMemberships = (userAdminMemberships || []).filter((m) =>
+          isRoleAdmin(m.peran)
+        );
+
+        if (approvedAdminMemberships.length > 0) {
+          const { data: targetKom } = await supabase
+            .from("komunitas")
+            .select("*")
+            .eq("id", dbKomunitasId)
+            .maybeSingle();
+
+          const targetData = targetKom || findOrGenerateKomunitasSeed(komunitasId);
+          if (targetData) {
+            const pageMeta = extractKomunitasMetadata(targetData);
+
+            const { data: allKomunitas } = await supabase
+              .from("komunitas")
+              .select("id, nama, jenis, kecamatan, kelurahan, rw, rt");
+
+            const komMap = new Map((allKomunitas || []).map((k) => [k.id, k]));
+
+            for (const ca of approvedAdminMemberships) {
+              const caKom = komMap.get(ca.komunitas_id) || findOrGenerateKomunitasSeed(ca.komunitas_id);
+              const caMeta = extractKomunitasMetadata(caKom || { id: ca.komunitas_id });
+
+              // Admin Kota / Kecamatan
+              if (caMeta.kec === pageMeta.kec && !caMeta.hasKel && !caMeta.hasRw && !caMeta.hasRt) {
+                hasAdminAuth = true;
+                break;
+              }
+              // Admin Kelurahan
+              if (caMeta.kec === pageMeta.kec && caMeta.kel === pageMeta.kel && !caMeta.hasRw && !caMeta.hasRt) {
+                hasAdminAuth = true;
+                break;
+              }
+              // Admin RW
+              if (caMeta.kec === pageMeta.kec && caMeta.kel === pageMeta.kel && caMeta.rw === pageMeta.rw && !caMeta.hasRt) {
+                hasAdminAuth = true;
+                break;
+              }
+              // Admin RT
+              if (caMeta.kec === pageMeta.kec && caMeta.kel === pageMeta.kel && caMeta.rw === pageMeta.rw && caMeta.rt === pageMeta.rt) {
+                hasAdminAuth = true;
+                break;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    if (!hasAdminAuth) {
+      return {
+        success: false,
+        message:
+          "Akses ditolak: Hanya Admin, Pengurus, Kader resmi atau Super Admin yang berhak mengedit Informasi Resmi & Operasional.",
+      };
     }
 
     // Pastikan komunitas sudah ada di database atau buat fallback seed
