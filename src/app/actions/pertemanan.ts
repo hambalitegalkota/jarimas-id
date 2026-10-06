@@ -13,6 +13,8 @@ import type {
 
 /**
  * Mengambil daftar pengguna yang telah registrasi di Jarimas-ID.
+ * - Pengguna reguler: HANYA menampilkan akun pengguna yang satu komunitas / bergabung dalam komunitas yang sama.
+ * - Super Admin: Dapat melihat seluruh pengguna yang telah registrasi.
  * Fitur ini HANYA dapat diakses oleh pengguna yang sudah terautentikasi (login).
  */
 export async function getRegisteredUsers(params?: {
@@ -30,44 +32,42 @@ export async function getRegisteredUsers(params?: {
     if (!user) {
       return {
         isAuthenticated: false,
+        isSuperAdmin: false,
         currentUserId: null,
         users: [],
         totalCount: 0,
         totalFriendsCount: 0,
         totalPendingRequestsCount: 0,
+        userCommunitiesCount: 0,
       };
     }
 
     const currentUserId = user.id;
 
-    // 2. Ambil semua profil pengguna yang terdaftar (Kecualikan akun Super Admin)
-    const { data: profiles, error: profileErr } = await supabase
-      .from("profiles")
-      .select("id, nama_lengkap, email, nomor_hp, avatar_url, is_super_admin, created_at")
-      .or("is_super_admin.is.null,is_super_admin.eq.false")
-      .order("created_at", { ascending: false });
-
-    const nonAdminProfiles = (profiles || []).filter((p) => p.is_super_admin !== true);
-
-    if (profileErr || !nonAdminProfiles) {
-      console.warn("Gagal mengambil profiles:", profileErr);
-      return {
-        isAuthenticated: true,
-        currentUserId,
-        users: [],
-        totalCount: 0,
-        totalFriendsCount: 0,
-        totalPendingRequestsCount: 0,
-      };
+    // 2. Periksa status Super Admin pengguna saat ini
+    let isSuperAdmin = false;
+    try {
+      const { data: currentUserProfile } = await supabase
+        .from("profiles")
+        .select("id, is_super_admin")
+        .eq("id", currentUserId)
+        .maybeSingle();
+      isSuperAdmin = currentUserProfile?.is_super_admin === true;
+    } catch {
+      // Abaikan jika pengecekan profil terkendala
     }
 
-    // 3. Ambil data keanggotaan komunitas seluruh pengguna untuk badge identitas
+    // 3. Ambil data keanggotaan komunitas seluruh pengguna untuk badge identitas & filter satu komunitas
     let communityMap: Record<string, UserKomunitasAffiliation[]> = {};
+    const myCommunityIds = new Set<string>();
+    const sameCommunityUserIds = new Set<string>();
+
     try {
       const { data: memberships } = await supabase
         .from("anggota_komunitas")
         .select(`
           user_id,
+          komunitas_id,
           peran,
           status,
           komunitas (
@@ -83,6 +83,7 @@ export async function getRegisteredUsers(params?: {
         .eq("status", "approved");
 
       if (memberships) {
+        // Petakan keanggotaan per user & catat komunitas user saat ini
         memberships.forEach((m: any) => {
           if (!m.user_id || !m.komunitas) return;
           if (!communityMap[m.user_id]) {
@@ -98,13 +99,57 @@ export async function getRegisteredUsers(params?: {
             rw: m.komunitas.rw,
             rt: m.komunitas.rt,
           });
+
+          if (m.user_id === currentUserId && m.komunitas_id) {
+            myCommunityIds.add(m.komunitas_id);
+          }
+        });
+
+        // Kumpulkan ID pengguna yang berada di komunitas yang sama dengan user saat ini
+        memberships.forEach((m: any) => {
+          if (m.user_id && m.komunitas_id && myCommunityIds.has(m.komunitas_id)) {
+            sameCommunityUserIds.add(m.user_id);
+          }
         });
       }
     } catch (commErr) {
       console.warn("Gagal memetakan komunitas user:", commErr);
     }
 
-    // 4. Ambil relasi pertemanan yang melibatkan user saat ini
+    // 4. Ambil profil pengguna sesuai hak akses:
+    // - Super Admin: Mengambil semua profil terdaftar
+    // - User Reguler: HANYA mengambil profil pengguna yang satu komunitas
+    let targetProfiles: any[] = [];
+    if (isSuperAdmin) {
+      const { data: profiles, error: profileErr } = await supabase
+        .from("profiles")
+        .select("id, nama_lengkap, email, nomor_hp, avatar_url, is_super_admin, created_at")
+        .order("created_at", { ascending: false });
+
+      if (profileErr) {
+        console.warn("Gagal mengambil profiles untuk super admin:", profileErr);
+      }
+      targetProfiles = profiles || [];
+    } else {
+      if (myCommunityIds.size > 0 && sameCommunityUserIds.size > 0) {
+        const userIdsToFetch = Array.from(sameCommunityUserIds);
+        const { data: profiles, error: profileErr } = await supabase
+          .from("profiles")
+          .select("id, nama_lengkap, email, nomor_hp, avatar_url, is_super_admin, created_at")
+          .in("id", userIdsToFetch)
+          .order("created_at", { ascending: false });
+
+        if (profileErr) {
+          console.warn("Gagal mengambil profiles satu komunitas:", profileErr);
+        }
+        targetProfiles = profiles || [];
+      } else {
+        // User belum bergabung di komunitas manapun, targetProfiles kosong
+        targetProfiles = [];
+      }
+    }
+
+    // 5. Ambil relasi pertemanan yang melibatkan user saat ini
     let friendshipsMap: Record<
       string,
       {
@@ -143,7 +188,7 @@ export async function getRegisteredUsers(params?: {
       // Graceful fallback jika tabel pertemanan belum dibuat
     }
 
-    // 5. Ambil jumlah pesan belum terbaca untuk user saat ini
+    // 6. Ambil jumlah pesan belum terbaca untuk user saat ini
     let unreadMap: Record<string, number> = {};
     try {
       const { data: unreadList } = await supabase
@@ -161,8 +206,8 @@ export async function getRegisteredUsers(params?: {
       // Graceful fallback jika tabel pesan_pribadi belum dibuat
     }
 
-    // 6. Susun dan mapping daftar pengguna terdaftar lengkap (tanpa super admin)
-    let mappedUsers: RegisteredUserItem[] = nonAdminProfiles.map((p) => {
+    // 7. Susun dan mapping daftar pengguna terdaftar
+    let mappedUsers: RegisteredUserItem[] = targetProfiles.map((p) => {
       let friendship_status: RegisteredUserItem["friendship_status"] = "none";
       let friendship_id: string | null = null;
 
@@ -185,7 +230,7 @@ export async function getRegisteredUsers(params?: {
         email: p.email,
         nomor_hp: p.nomor_hp,
         avatar_url: p.avatar_url,
-        is_super_admin: false,
+        is_super_admin: p.is_super_admin === true,
         created_at: p.created_at || new Date().toISOString(),
         komunitas_list: communityMap[p.id] || [],
         friendship_status,
@@ -194,7 +239,7 @@ export async function getRegisteredUsers(params?: {
       };
     });
 
-    // 7. Filter berdasarkan pencarian jika ada
+    // 8. Filter berdasarkan pencarian jika ada
     if (params?.searchQuery) {
       const q = params.searchQuery.toLowerCase().trim();
       mappedUsers = mappedUsers.filter((u) => {
@@ -211,30 +256,37 @@ export async function getRegisteredUsers(params?: {
       });
     }
 
-    // 8. Filter berdasarkan tab
+    // 9. Filter berdasarkan tab
     if (params?.tab === "teman") {
       mappedUsers = mappedUsers.filter((u) => u.friendship_status === "accepted");
     } else if (params?.tab === "permintaan") {
       mappedUsers = mappedUsers.filter((u) => u.friendship_status === "pending_received");
     }
 
+    // Hitung total orang lain (kecuali diri sendiri)
+    const otherUsersCount = targetProfiles.filter((p) => p.id !== currentUserId).length;
+
     return {
       isAuthenticated: true,
+      isSuperAdmin,
       currentUserId,
       users: mappedUsers,
-      totalCount: nonAdminProfiles.length,
+      totalCount: otherUsersCount,
       totalFriendsCount,
       totalPendingRequestsCount,
+      userCommunitiesCount: myCommunityIds.size,
     };
   } catch (err) {
     console.error("Error pada getRegisteredUsers:", err);
     return {
       isAuthenticated: false,
+      isSuperAdmin: false,
       currentUserId: null,
       users: [],
       totalCount: 0,
       totalFriendsCount: 0,
       totalPendingRequestsCount: 0,
+      userCommunitiesCount: 0,
     };
   }
 }
@@ -268,18 +320,52 @@ export async function sendFriendRequest(targetUserId: string): Promise<{
       };
     }
 
-    // Cek apakah target adalah Super Admin
+    // Periksa hak akses Super Admin
+    let isCurrentSuperAdmin = false;
+    try {
+      const { data: myProfile } = await supabase
+        .from("profiles")
+        .select("id, is_super_admin")
+        .eq("id", user.id)
+        .maybeSingle();
+      isCurrentSuperAdmin = myProfile?.is_super_admin === true;
+    } catch {
+      // Abaikan
+    }
+
     const { data: targetProfile } = await supabase
       .from("profiles")
       .select("id, is_super_admin")
       .eq("id", targetUserId)
       .maybeSingle();
 
-    if (targetProfile?.is_super_admin) {
-      return {
-        success: false,
-        message: "Akun Super Admin tidak dapat ditambahkan sebagai teman.",
-      };
+    const isTargetSuperAdmin = targetProfile?.is_super_admin === true;
+
+    // Jika bukan super admin dan target bukan super admin, validasi kesamaan komunitas
+    if (!isCurrentSuperAdmin && !isTargetSuperAdmin) {
+      const { data: myComms } = await supabase
+        .from("anggota_komunitas")
+        .select("komunitas_id")
+        .eq("user_id", user.id)
+        .eq("status", "approved");
+
+      const myCommIds = (myComms || []).map((c: any) => c.komunitas_id);
+
+      const { data: targetComms } = await supabase
+        .from("anggota_komunitas")
+        .select("komunitas_id")
+        .eq("user_id", targetUserId)
+        .eq("status", "approved");
+
+      const targetCommIds = new Set((targetComms || []).map((c: any) => c.komunitas_id));
+      const sharesCommunity = myCommIds.some((id: string) => targetCommIds.has(id));
+
+      if (!sharesCommunity) {
+        return {
+          success: false,
+          message: "Anda hanya dapat menambahkan teman yang berada dalam komunitas yang sama.",
+        };
+      }
     }
 
     // Cek apakah sudah ada pertemanan yang tersimpan
@@ -534,7 +620,7 @@ export async function getPrivateConversation(targetUserId: string): Promise<{
 
     const currentUserId = user.id;
 
-    // 1. Ambil data profil target (Kecualikan akun Super Admin, kecuali akun resmi Jarimas)
+    // 1. Ambil data profil target (Mendukung Akun Resmi Jarimas, Super Admin, dan Warga)
     let targetProfile: any = null;
     if (targetUserId === JARIMAS_BOT_ID) {
       await ensureJarimasBotProfile(supabase);
@@ -552,13 +638,6 @@ export async function getPrivateConversation(targetUserId: string): Promise<{
         .eq("id", targetUserId)
         .maybeSingle();
 
-      if (prof?.is_super_admin) {
-        return {
-          success: false,
-          message: "Percakapan dengan akun Super Admin tidak tersedia.",
-          messages: [],
-        };
-      }
       targetProfile = prof;
     }
 
@@ -619,6 +698,8 @@ export async function getPrivateConversation(targetUserId: string): Promise<{
 
 /**
  * Server Action: Mengirim pesan pribadi ke pengguna lain
+ * - Super Admin dapat mengirim pesan ke siapa saja.
+ * - Pengguna reguler dapat mengirim pesan ke sesama anggota komunitas yang sama, ke Super Admin, atau ke Bot Jarimas.
  */
 export async function sendPrivateMessage(params: {
   receiverId: string;
@@ -659,22 +740,57 @@ export async function sendPrivateMessage(params: {
       };
     }
 
-    // Periksa apakah penerima adalah Super Admin (Kecuali jika akun resmi Jarimas)
-    if (receiverId !== JARIMAS_BOT_ID) {
+    // Periksa status Super Admin pengirim dan penerima
+    let isCurrentSuperAdmin = false;
+    try {
+      const { data: myProfile } = await supabase
+        .from("profiles")
+        .select("id, is_super_admin")
+        .eq("id", user.id)
+        .maybeSingle();
+      isCurrentSuperAdmin = myProfile?.is_super_admin === true;
+    } catch {
+      // Abaikan
+    }
+
+    let isTargetSuperAdmin = false;
+    if (receiverId === JARIMAS_BOT_ID) {
+      await ensureJarimasBotProfile(supabase);
+    } else {
       const { data: targetProfile } = await supabase
         .from("profiles")
         .select("id, is_super_admin")
         .eq("id", receiverId)
         .maybeSingle();
+      isTargetSuperAdmin = targetProfile?.is_super_admin === true;
+    }
 
-      if (targetProfile?.is_super_admin) {
+    // Jika bukan Super Admin, penerima bukan Super Admin, dan bukan Bot Jarimas:
+    // Pastikan keduanya tergabung dalam setidaknya 1 komunitas yang sama
+    if (!isCurrentSuperAdmin && !isTargetSuperAdmin && receiverId !== JARIMAS_BOT_ID) {
+      const { data: myComms } = await supabase
+        .from("anggota_komunitas")
+        .select("komunitas_id")
+        .eq("user_id", user.id)
+        .eq("status", "approved");
+
+      const myCommIds = (myComms || []).map((c: any) => c.komunitas_id);
+
+      const { data: targetComms } = await supabase
+        .from("anggota_komunitas")
+        .select("komunitas_id")
+        .eq("user_id", receiverId)
+        .eq("status", "approved");
+
+      const targetCommIds = new Set((targetComms || []).map((c: any) => c.komunitas_id));
+      const sharesCommunity = myCommIds.some((id: string) => targetCommIds.has(id));
+
+      if (!sharesCommunity) {
         return {
           success: false,
-          message: "Pesan tidak dapat dikirim ke akun Super Admin.",
+          message: "Anda hanya dapat mengirim pesan ke sesama warga satu komunitas.",
         };
       }
-    } else {
-      await ensureJarimasBotProfile(supabase);
     }
 
     const { data: inserted, error: insertErr } = await supabase
@@ -716,7 +832,6 @@ export async function sendPrivateMessage(params: {
     };
   }
 }
-
 
 /**
  * Server Action: Mengambil daftar percakapan terbaru (Inbox 1-on-1 Direct Chat)
@@ -828,25 +943,49 @@ export async function getRecentConversations(): Promise<{
       };
     }
 
-    // Ambil profil seluruh partner (KECUALIKAN akun Super Admin, kecuali akun bot resmi Jarimas)
+    // Ambil profil seluruh partner (Termasuk Super Admin dan Akun resmi Jarimas)
     const { data: profiles } = await supabase
       .from("profiles")
       .select("id, nama_lengkap, email, avatar_url, is_super_admin")
-      .in("id", finalPartnerIds)
-      .or(`id.eq.${JARIMAS_BOT_ID},is_super_admin.is.null,is_super_admin.eq.false`);
+      .in("id", finalPartnerIds);
 
-    let nonAdminProfiles = (profiles || []).filter(
-      (p) => p.id === JARIMAS_BOT_ID || p.is_super_admin !== true
-    );
+    let allPartnerProfiles = [...(profiles || [])];
 
     // Pastikan profil Jarimas ada di list
-    if (partnerMap[JARIMAS_BOT_ID] && !nonAdminProfiles.some((p) => p.id === JARIMAS_BOT_ID)) {
-      nonAdminProfiles.push({
+    if (partnerMap[JARIMAS_BOT_ID] && !allPartnerProfiles.some((p) => p.id === JARIMAS_BOT_ID)) {
+      allPartnerProfiles.push({
         id: JARIMAS_BOT_ID,
         nama_lengkap: JARIMAS_BOT_NAME,
         email: "official@jarimas.id",
         is_super_admin: false,
         avatar_url: null,
+      });
+    }
+
+    // Ambil afiliasi komunitas partner untuk identitas peran yang akurat
+    const { data: partnerAffiliations } = await supabase
+      .from("anggota_komunitas")
+      .select(`
+        user_id,
+        peran,
+        komunitas (
+          id,
+          nama,
+          jenis
+        )
+      `)
+      .in("user_id", finalPartnerIds)
+      .eq("status", "approved");
+
+    const partnerCommMap: Record<string, { role: string; commName: string }> = {};
+    if (partnerAffiliations) {
+      partnerAffiliations.forEach((a: any) => {
+        if (a.user_id && a.komunitas?.nama && !partnerCommMap[a.user_id]) {
+          partnerCommMap[a.user_id] = {
+            role: a.peran || "Anggota",
+            commName: a.komunitas.nama,
+          };
+        }
       });
     }
 
@@ -864,11 +1003,12 @@ export async function getRecentConversations(): Promise<{
       });
     }
 
-    const conversations: import("@/types/database").RecentConversationItem[] = nonAdminProfiles.map(
+    const conversations: import("@/types/database").RecentConversationItem[] = allPartnerProfiles.map(
       (p) => {
         const info = partnerMap[p.id];
         const f = fMap[p.id];
         const isJarimasBot = p.id === JARIMAS_BOT_ID;
+        const commInfo = partnerCommMap[p.id];
         let friendshipStatus: import("@/types/database").RecentConversationItem["friendshipStatus"] =
           isJarimasBot ? "accepted" : "none";
 
@@ -879,12 +1019,26 @@ export async function getRecentConversations(): Promise<{
           }
         }
 
+        let partnerRole = "Warga";
+        let partnerCommunity: string | undefined = undefined;
+
+        if (isJarimasBot) {
+          partnerRole = "Layanan Resmi";
+          partnerCommunity = "Sistem Informasi & Bantuan Warga";
+        } else if (p.is_super_admin) {
+          partnerRole = "Super Admin";
+          partnerCommunity = "Administrator Utama Jarimas";
+        } else if (commInfo) {
+          partnerRole = commInfo.role;
+          partnerCommunity = commInfo.commName;
+        }
+
         return {
           partnerId: p.id,
           partnerName: isJarimasBot ? JARIMAS_BOT_NAME : (p.nama_lengkap || "Warga Jarimas"),
           partnerAvatar: p.avatar_url,
-          partnerRole: isJarimasBot ? "Layanan Resmi" : "Warga",
-          partnerCommunity: isJarimasBot ? "Sistem Informasi & Bantuan Warga" : undefined,
+          partnerRole,
+          partnerCommunity,
           lastMessage: info?.lastMessage || "",
           lastMessageAt: info?.lastMessageAt || new Date().toISOString(),
           unreadCount: info?.unreadCount || 0,
@@ -899,7 +1053,6 @@ export async function getRecentConversations(): Promise<{
     conversations.sort(
       (a, b) => new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime()
     );
-
 
     return {
       success: true,
@@ -916,9 +1069,10 @@ export async function getRecentConversations(): Promise<{
   }
 }
 
-
 /**
  * Server Action: Mengambil daftar ruang obrolan grup komunitas
+ * - Super Admin: Melihat seluruh ruang obrolan grup komunitas.
+ * - Pengguna reguler: HANYA melihat ruang obrolan grup dari komunitas yang telah diikuti (status approved).
  */
 export async function getGroupChatRooms(): Promise<{
   success: boolean;
@@ -930,11 +1084,20 @@ export async function getGroupChatRooms(): Promise<{
     const supabase = await createClient();
 
     let currentUserId: string | null = null;
+    let isSuperAdmin = false;
     try {
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      if (user) currentUserId = user.id;
+      if (user) {
+        currentUserId = user.id;
+        const { data: prof } = await supabase
+          .from("profiles")
+          .select("is_super_admin")
+          .eq("id", user.id)
+          .maybeSingle();
+        isSuperAdmin = prof?.is_super_admin === true;
+      }
     } catch {
       // Tamu
     }
@@ -954,7 +1117,7 @@ export async function getGroupChatRooms(): Promise<{
         rt
       `)
       .order("nama", { ascending: true })
-      .limit(30);
+      .limit(50);
 
     if (error || !communities) {
       return {
@@ -964,7 +1127,7 @@ export async function getGroupChatRooms(): Promise<{
       };
     }
 
-    // Ambil jumlah anggota masing-masing komunitas
+    // Ambil jumlah anggota masing-masing komunitas & keanggotaan user saat ini
     const { data: memberCounts } = await supabase
       .from("anggota_komunitas")
       .select("komunitas_id, user_id, status")
@@ -980,6 +1143,14 @@ export async function getGroupChatRooms(): Promise<{
           myMembershipSet.add(m.komunitas_id);
         }
       });
+    }
+
+    // Filter komunitas yang relevan:
+    // Super Admin: seluruh komunitas
+    // User reguler: HANYA komunitas yang telah diikuti (approved)
+    let relevantCommunities = communities;
+    if (!isSuperAdmin) {
+      relevantCommunities = communities.filter((c) => myMembershipSet.has(c.id));
     }
 
     // Ambil pesan terakhir grup jika ada
@@ -1012,7 +1183,7 @@ export async function getGroupChatRooms(): Promise<{
       // Fallback
     }
 
-    const rooms: import("@/types/database").GrupChatRoom[] = communities.map((c) => ({
+    const rooms: import("@/types/database").GrupChatRoom[] = relevantCommunities.map((c) => ({
       id: c.id,
       nama: c.nama || "Grup Komunitas",
       jenis: c.jenis || "warga_kita",
@@ -1152,6 +1323,36 @@ export async function sendGroupMessage(params: {
         success: false,
         message: "Silakan masuk terlebih dahulu untuk mengirim pesan ke grup.",
       };
+    }
+
+    // Periksa status Super Admin atau keanggotaan komunitas
+    let isSuperAdmin = false;
+    try {
+      const { data: prof } = await supabase
+        .from("profiles")
+        .select("is_super_admin")
+        .eq("id", user.id)
+        .maybeSingle();
+      isSuperAdmin = prof?.is_super_admin === true;
+    } catch {
+      // Abaikan
+    }
+
+    if (!isSuperAdmin) {
+      const { data: membership } = await supabase
+        .from("anggota_komunitas")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("komunitas_id", komunitasId)
+        .eq("status", "approved")
+        .maybeSingle();
+
+      if (!membership) {
+        return {
+          success: false,
+          message: "Anda hanya dapat mengirim pesan ke grup komunitas yang telah Anda ikuti.",
+        };
+      }
     }
 
     const { data: inserted, error: insertErr } = await supabase
@@ -1477,6 +1678,89 @@ export async function markConversationAsRead(senderId: string): Promise<{
   } catch (err: any) {
     console.error("Error markConversationAsRead:", err);
     return { success: false, message: err?.message };
+  }
+}
+
+/**
+ * Server Action: Mengambil ringkasan rekapitulasi partisipasi warga:
+ * 1. Jumlah warga yang telah registrasi di Jarimas-ID
+ * 2. Jumlah warga yang telah tergabung dalam Komunitas Posyandu
+ * 3. Jumlah warga yang telah tergabung dalam Komunitas PAUD (Satuan PAUD)
+ */
+export async function getRekapitulasiWargaKomunitas(): Promise<
+  import("@/types/database").RekapitulasiWargaKomunitasResult
+> {
+  try {
+    const supabase = await createClient();
+
+    // 1. Total Pengguna yang telah registrasi (Kecualikan bot resmi Jarimas)
+    const { count: userCount, error: userErr } = await supabase
+      .from("profiles")
+      .select("id", { count: "exact", head: true })
+      .neq("id", JARIMAS_BOT_ID);
+
+    if (userErr) {
+      console.warn("Gagal menghitung profiles registrasi:", userErr.message);
+    }
+
+    // 2. Ambil seluruh data keanggotaan komunitas yang berstatus approved
+    const { data: memberships, error: memErr } = await supabase
+      .from("anggota_komunitas")
+      .select(`
+        user_id,
+        komunitas_id,
+        status,
+        komunitas (
+          id,
+          jenis
+        )
+      `)
+      .eq("status", "approved");
+
+    if (memErr) {
+      console.warn("Gagal mengambil keanggotaan komunitas:", memErr.message);
+    }
+
+    const posyanduUserSet = new Set<string>();
+    const paudUserSet = new Set<string>();
+    const wargaKitaUserSet = new Set<string>();
+    const posyanduIdSet = new Set<string>();
+    const paudIdSet = new Set<string>();
+
+    if (memberships) {
+      memberships.forEach((m: any) => {
+        if (!m.user_id || !m.komunitas) return;
+        const jenis = m.komunitas.jenis;
+        if (jenis === "posyandu") {
+          posyanduUserSet.add(m.user_id);
+          if (m.komunitas.id) posyanduIdSet.add(m.komunitas.id);
+        } else if (jenis === "satuan_paud") {
+          paudUserSet.add(m.user_id);
+          if (m.komunitas.id) paudIdSet.add(m.komunitas.id);
+        } else {
+          wargaKitaUserSet.add(m.user_id);
+        }
+      });
+    }
+
+    return {
+      totalRegisteredUsers: userCount || 0,
+      totalWargaPosyandu: posyanduUserSet.size,
+      totalWargaPaud: paudUserSet.size,
+      totalKomunitasPosyandu: posyanduIdSet.size,
+      totalKomunitasPaud: paudIdSet.size,
+      totalWargaWargaKita: wargaKitaUserSet.size,
+    };
+  } catch (err) {
+    console.error("Error getRekapitulasiWargaKomunitas:", err);
+    return {
+      totalRegisteredUsers: 0,
+      totalWargaPosyandu: 0,
+      totalWargaPaud: 0,
+      totalKomunitasPosyandu: 0,
+      totalKomunitasPaud: 0,
+      totalWargaWargaKita: 0,
+    };
   }
 }
 

@@ -33,9 +33,7 @@ export function DaftarWargaKabarSection({
   initialUsers,
   currentUserId,
 }: DaftarWargaKabarSectionProps) {
-  const [users, setUsers] = useState<RegisteredUserItem[]>(() =>
-    initialUsers.filter((u) => !u.is_super_admin)
-  );
+  const [users, setUsers] = useState<RegisteredUserItem[]>(initialUsers);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedChatUser, setSelectedChatUser] = useState<RegisteredUserItem | null>(null);
   const [loadingActionUserId, setLoadingActionUserId] = useState<string | null>(null);
@@ -43,10 +41,9 @@ export function DaftarWargaKabarSection({
 
   // Filter pencarian
   const filterList = (list: RegisteredUserItem[]) => {
-    const nonAdminList = list.filter((u) => !u.is_super_admin);
-    if (!searchQuery.trim()) return nonAdminList;
+    if (!searchQuery.trim()) return list;
     const q = searchQuery.toLowerCase().trim();
-    return nonAdminList.filter((u) => {
+    return list.filter((u) => {
       const matchName = u.nama_lengkap.toLowerCase().includes(q);
       const matchEmail = u.email?.toLowerCase().includes(q);
       const matchCommunity = u.komunitas_list?.some(
@@ -62,15 +59,15 @@ export function DaftarWargaKabarSection({
 
   // Kategori 1: Teman Saya (Sudah berteman)
   const myFriends = filterList(
-    users.filter((u) => u.id !== currentUserId && !u.is_super_admin && u.friendship_status === "accepted")
+    users.filter((u) => u.id !== currentUserId && u.friendship_status === "accepted")
   );
 
   // Kategori 2: Permintaan Pertemanan
   const incomingRequests = filterList(
-    users.filter((u) => u.id !== currentUserId && !u.is_super_admin && u.friendship_status === "pending_received")
+    users.filter((u) => u.id !== currentUserId && u.friendship_status === "pending_received")
   );
   const outgoingRequests = filterList(
-    users.filter((u) => u.id !== currentUserId && !u.is_super_admin && u.friendship_status === "pending_sent")
+    users.filter((u) => u.id !== currentUserId && u.friendship_status === "pending_sent")
   );
 
   // Kategori 3: Warga Lainnya (Belum berteman)
@@ -78,7 +75,6 @@ export function DaftarWargaKabarSection({
     users.filter(
       (u) =>
         u.id !== currentUserId &&
-        !u.is_super_admin &&
         u.friendship_status !== "accepted" &&
         u.friendship_status !== "pending_received" &&
         u.friendship_status !== "pending_sent"

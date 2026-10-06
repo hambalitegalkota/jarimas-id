@@ -49,18 +49,16 @@ export function PercakapanHubSection({
   // Total unread pesan pribadi
   const totalUnreadDirect = conversations.reduce((acc, c) => acc + c.unreadCount, 0);
 
-  // Filter 1-on-1 Conversations (Kecualikan Super Admin)
-  const filteredConversations = conversations
-    .filter((c) => c.partnerRole !== "Super Admin")
-    .filter((c) => {
-      if (!searchQuery.trim()) return true;
-      const q = searchQuery.toLowerCase().trim();
-      return (
-        c.partnerName.toLowerCase().includes(q) ||
-        c.lastMessage.toLowerCase().includes(q) ||
-        c.partnerCommunity?.toLowerCase().includes(q)
-      );
-    });
+  // Filter 1-on-1 Conversations
+  const filteredConversations = conversations.filter((c) => {
+    if (!searchQuery.trim()) return true;
+    const q = searchQuery.toLowerCase().trim();
+    return (
+      c.partnerName.toLowerCase().includes(q) ||
+      c.lastMessage.toLowerCase().includes(q) ||
+      c.partnerCommunity?.toLowerCase().includes(q)
+    );
+  });
 
   // Filter Group Chat Rooms
   const filteredRooms = rooms.filter((r) => {
@@ -74,9 +72,9 @@ export function PercakapanHubSection({
     );
   });
 
-  // Filter New Chat Citizen Candidates (excluding current user & super admin)
+  // Filter New Chat Citizen Candidates (excluding current user)
   const candidateCitizens = allUsers
-    .filter((u) => u.id !== currentUserId && !u.is_super_admin)
+    .filter((u) => u.id !== currentUserId)
     .filter((u) => {
       if (!searchQuery.trim()) return true;
       const q = searchQuery.toLowerCase().trim();
@@ -102,11 +100,12 @@ export function PercakapanHubSection({
     if (foundUser) {
       setSelectedDirectUser(foundUser);
     } else {
-      // Fallback
+      const conv = conversations.find((c) => c.partnerId === partnerId);
       setSelectedDirectUser({
         id: partnerId,
-        nama_lengkap: "Warga Jarimas",
-        is_super_admin: false,
+        nama_lengkap: conv?.partnerName || "Warga Jarimas",
+        avatar_url: conv?.partnerAvatar || null,
+        is_super_admin: conv?.partnerRole === "Super Admin",
         created_at: new Date().toISOString(),
       });
     }
@@ -220,40 +219,46 @@ export function PercakapanHubSection({
                 </span>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 max-h-60 overflow-y-auto pr-1">
-                {candidateCitizens.map((userItem) => (
-                  <button
-                    key={userItem.id}
-                    type="button"
-                    onClick={() => {
-                      setSelectedDirectUser(userItem);
-                      setShowNewChatSelector(false);
-                    }}
-                    className="flex items-center gap-2.5 p-2.5 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-emerald-500 bg-slate-50/50 dark:bg-slate-800/40 hover:bg-emerald-50/40 dark:hover:bg-emerald-950/40 text-left transition-all cursor-pointer group"
-                  >
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-600 text-white font-bold text-xs">
-                      {userItem.avatar_url ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={userItem.avatar_url}
-                          alt={userItem.nama_lengkap}
-                          className="h-full w-full rounded-xl object-cover"
-                        />
-                      ) : (
-                        <span>{userItem.nama_lengkap.charAt(0).toUpperCase()}</span>
-                      )}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <h5 className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate group-hover:text-emerald-700">
-                        {userItem.nama_lengkap}
-                      </h5>
-                      <p className="text-[10px] text-slate-400 truncate">
-                        {userItem.komunitas_list?.[0]?.nama || "Warga Kota Tegal"}
-                      </p>
-                    </div>
-                  </button>
-                ))}
-              </div>
+              {candidateCitizens.length === 0 ? (
+                <div className="p-5 text-center text-xs text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800">
+                  Belum ada kontak satu komunitas yang ditemukan. Bergabunglah dengan komunitas Posyandu, Satuan PAUD, atau Forum RT/RW untuk mulai menjalin percakapan.
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 max-h-60 overflow-y-auto pr-1">
+                  {candidateCitizens.map((userItem) => (
+                    <button
+                      key={userItem.id}
+                      type="button"
+                      onClick={() => {
+                        setSelectedDirectUser(userItem);
+                        setShowNewChatSelector(false);
+                      }}
+                      className="flex items-center gap-2.5 p-2.5 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-emerald-500 bg-slate-50/50 dark:bg-slate-800/40 hover:bg-emerald-50/40 dark:hover:bg-emerald-950/40 text-left transition-all cursor-pointer group"
+                    >
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-600 text-white font-bold text-xs">
+                        {userItem.avatar_url ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={userItem.avatar_url}
+                            alt={userItem.nama_lengkap}
+                            className="h-full w-full rounded-xl object-cover"
+                          />
+                        ) : (
+                          <span>{userItem.nama_lengkap.charAt(0).toUpperCase()}</span>
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h5 className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate group-hover:text-emerald-700">
+                          {userItem.nama_lengkap}
+                        </h5>
+                        <p className="text-[10px] text-slate-400 truncate">
+                          {userItem.komunitas_list?.[0]?.nama || "Warga Kota Tegal"}
+                        </p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 

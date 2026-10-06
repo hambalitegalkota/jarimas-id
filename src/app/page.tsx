@@ -31,9 +31,8 @@ import {
 import { createClient } from "@/utils/supabase/server";
 import { getMarketProduk } from "@/app/actions/market";
 import { getKabarFeed } from "@/app/actions/kabar";
-import { getRegisteredUsers } from "@/app/actions/pertemanan";
-import { RegisteredUsersSection } from "@/components/warga/registered-users-section";
-import { WargaLockedCard } from "@/components/warga/warga-locked-card";
+import { getRekapitulasiWargaKomunitas } from "@/app/actions/pertemanan";
+import { WargaRekapitulasiSection } from "@/components/warga/warga-rekapitulasi-section";
 import { formatRupiah } from "@/lib/utils";
 import { SHOW_MARKET_FEATURE } from "@/components/layout/bottom-nav";
 import type { MarketProduk } from "@/types/database";
@@ -122,8 +121,8 @@ export default async function HomePage() {
   });
   const topKabarItems = (recentKabar || []).slice(0, 2);
 
-  // 4. Ambil daftar pengguna terdaftar untuk fitur Pertemanan & Percakapan Pribadi
-  const registeredUsersResult = await getRegisteredUsers();
+  // 4. Ambil ringkasan rekapitulasi partisipasi warga & komunitas
+  const rekapWargaKomunitas = await getRekapitulasiWargaKomunitas();
 
 
   return (
@@ -640,19 +639,12 @@ export default async function HomePage() {
       </section>
 
       {/* ========================================================= */}
-      {/* 6. DAFTAR WARGA & PENGGUNA TERDAFTAR (PERTEMANAN & CHAT) */}
+      {/* 6. REKAPITULASI WARGA & JEJARING KOMUNITAS               */}
       {/* ========================================================= */}
-      {registeredUsersResult.isAuthenticated ? (
-        <RegisteredUsersSection
-          initialUsers={registeredUsersResult.users}
-          totalCount={registeredUsersResult.totalCount}
-          totalFriendsCount={registeredUsersResult.totalFriendsCount}
-          totalPendingRequestsCount={registeredUsersResult.totalPendingRequestsCount}
-          currentUserId={registeredUsersResult.currentUserId || null}
-        />
-      ) : (
-        <WargaLockedCard totalUsersCount={registeredUsersResult.totalCount} />
-      )}
+      <WargaRekapitulasiSection
+        rekap={rekapWargaKomunitas}
+        isAuthenticated={!!user}
+      />
 
       {/* ========================================================= */}
       {/* 7. FEATURED SPOTLIGHT: JARIMAS MARKET (CONDITIONAL)       */}

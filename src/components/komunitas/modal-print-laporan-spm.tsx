@@ -107,11 +107,9 @@ export function ModalPrintLaporanSpm({
           >
             {/* 1. KOP SURAT RESMI POSYANDU KOTA TEGAL */}
             <div className="text-center space-y-1 pb-3 border-b-4 border-double border-slate-900 mb-5">
-              <h2 className="text-sm sm:text-base font-black uppercase tracking-wider font-sans text-slate-950">
-                PEMERINTAH KOTA TEGAL
-              </h2>
+
               <h1 className="text-base sm:text-lg font-black uppercase tracking-wide font-sans text-blue-900">
-                POS PELAYANAN TERPADU (POSYANDU) {laporan.posyandu_nama.toUpperCase()}
+                POS PELAYANAN TERPADU - {laporan.posyandu_nama.toUpperCase()}
               </h1>
               <p className="text-[11px] sm:text-xs font-sans text-slate-700">
                 Kelurahan {laporan.kelurahan}, Kecamatan {laporan.kecamatan}, Kota Tegal, Jawa Tengah

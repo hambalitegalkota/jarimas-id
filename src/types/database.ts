@@ -574,11 +574,13 @@ export interface RegisteredUserItem {
 
 export interface GetRegisteredUsersResult {
   isAuthenticated: boolean;
+  isSuperAdmin?: boolean;
   currentUserId?: string | null;
   users: RegisteredUserItem[];
   totalCount: number;
   totalFriendsCount: number;
   totalPendingRequestsCount: number;
+  userCommunitiesCount?: number;
 }
 
 export interface PesanGrup {
@@ -634,6 +636,15 @@ export interface IncomingMessageNotificationItem {
   pesan: string;
   createdAt: string;
   partnerUser?: RegisteredUserItem | null;
+}
+
+export interface RekapitulasiWargaKomunitasResult {
+  totalRegisteredUsers: number;
+  totalWargaPosyandu: number;
+  totalWargaPaud: number;
+  totalKomunitasPosyandu: number;
+  totalKomunitasPaud: number;
+  totalWargaWargaKita?: number;
 }
 
 

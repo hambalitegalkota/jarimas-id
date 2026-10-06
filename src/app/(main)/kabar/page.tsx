@@ -105,15 +105,21 @@ export default async function KabarPage({ searchParams }: KabarPageProps) {
                 ? "Kabar Jarimas"
                 : currentTab === "percakapan"
                 ? "Pusat Percakapan Warga"
-                : "Daftar Warga & Teman"}
+                : isSuperAdmin
+                ? "Daftar Warga Terdaftar (Super Admin)"
+                : "Daftar Warga Satu Komunitas"}
             </h1>
 
             <p className="text-xs sm:text-sm text-slate-300 max-w-xl leading-relaxed">
               {currentTab === "kabar"
                 ? "Ruang interaksi publik seputar jadwal penimbangan posyandu, edukasi nutrisi gizi balita, dan info penting lingkungan RT/RW se-Kota Tegal."
                 : currentTab === "percakapan"
-                ? "Kirim pesan langsung ke sesama warga atau berdiskusi di grup komunitas Posyandu, Satuan PAUD, dan forum RT/RW."
-                : "Temukan teman, pantau permintaan pertemanan, dan perluas jejaring silaturahmi dengan warga terverifikasi."}
+                ? isSuperAdmin
+                  ? "Kirim pesan langsung ke siapa saja atau berdiskusi di seluruh ruang obrolan grup komunitas."
+                  : "Kirim pesan langsung ke sesama warga satu komunitas atau berdiskusi di grup komunitas yang Anda ikuti."
+                : isSuperAdmin
+                ? "Melihat dan mengelola seluruh akun pengguna yang telah melakukan registrasi di sistem Jarimas-ID."
+                : "Temukan teman, pantau permintaan pertemanan, dan perluas jejaring dengan sesama warga yang berada di komunitas yang sama."}
             </p>
           </div>
 
@@ -132,7 +138,9 @@ export default async function KabarPage({ searchParams }: KabarPageProps) {
                     ? "Kabar Aktif"
                     : currentTab === "percakapan"
                     ? "Obrolan"
-                    : "Warga"}
+                    : isSuperAdmin
+                    ? "Semua Warga"
+                    : "Warga Komunitas"}
                 </span>
               </div>
             </div>
@@ -146,8 +154,12 @@ export default async function KabarPage({ searchParams }: KabarPageProps) {
             {currentTab === "kabar"
               ? "Bagikan kabar atau tips kesehatan dengan menekan tombol buat postingan di pojok bawah."
               : currentTab === "percakapan"
-              ? "Percakapan terenkripsi aman antar warga terdaftar dan kader komunitas."
-              : "Daftar warga dibagi berdasarkan teman yang sudah terhubung dan rekomendasi warga."}
+              ? isSuperAdmin
+                ? "Akses Super Admin: Anda dapat melakukan percakapan dengan siapa saja yang terdaftar."
+                : "Percakapan terenkripsi aman antar warga yang berada dalam satu komunitas."
+              : isSuperAdmin
+              ? "Akses Super Admin: Menampilkan seluruh pengguna yang telah registrasi di Jarimas-ID."
+              : "Hanya menampilkan akun pengguna yang bergabung dalam komunitas yang sama dengan Anda."}
           </span>
         </div>
       </section>
