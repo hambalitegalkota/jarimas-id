@@ -30,12 +30,19 @@ import type {
   AtsCategoryBreakdown,
   AtsJenjangAsalBreakdown,
 } from "@/app/actions/rekap-data-ats";
+import { KartuDaftarNamaAtsRekap } from "./kartu-daftar-nama-ats-rekap";
 
 interface RekapDataAtsClientViewProps {
   initialData: RekapDataAtsResult;
+  canAccessDaftarNamaAts?: boolean;
+  userPeran?: string;
 }
 
-export function RekapDataAtsClientView({ initialData }: RekapDataAtsClientViewProps) {
+export function RekapDataAtsClientView({
+  initialData,
+  canAccessDaftarNamaAts = false,
+  userPeran,
+}: RekapDataAtsClientViewProps) {
   // State Filter Berjenjang
   const [selectedTingkat, setSelectedTingkat] = useState<"kota" | "kecamatan" | "kelurahan">("kota");
   const [selectedKecamatan, setSelectedKecamatan] = useState<string>("Tegal Timur");
@@ -607,6 +614,23 @@ export function RekapDataAtsClientView({ initialData }: RekapDataAtsClientViewPr
               </div>
             </div>
           </div>
+
+          {/* KARTU DAFTAR ANAK TIDAK SEKOLAH (ATS) - KHUSUS ADMIN KOMUNITAS & SUPER ADMIN */}
+          <KartuDaftarNamaAtsRekap
+            tingkat={selectedTingkat}
+            selectedKecamatan={selectedKecamatan}
+            selectedKelurahan={selectedKelurahan}
+            currentWilayahNama={
+              selectedTingkat === "kota"
+                ? "Seluruh Kota Tegal"
+                : selectedTingkat === "kecamatan"
+                ? `Kec. ${selectedKecamatan}`
+                : `Kel. ${selectedKelurahan}`
+            }
+            totalAts={currentWilayahData.totalAts}
+            canAccess={canAccessDaftarNamaAts}
+            userPeran={userPeran}
+          />
         </div>
       )}
 

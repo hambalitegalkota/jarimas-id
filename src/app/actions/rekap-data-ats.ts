@@ -1,12 +1,39 @@
 "use server";
 
 import { createClient } from "@/utils/supabase/server";
-import { KOTA_TEGAL_DATA } from "@/lib/constants/tegal-data";
+import { KOTA_TEGAL_DATA, findOrGenerateKomunitasSeed } from "@/lib/constants/tegal-data";
 import {
   isDataAtsRecord,
   normalizeWilayah,
   parseAtsDetails,
 } from "@/lib/data-anak-helpers";
+import { checkUserRekapAdminAccess } from "@/app/actions/rekap-data-anak";
+
+export interface DaftarNamaAtsItem {
+  id: string;
+  namaLengkap: string;
+  tanggalLahir?: string | null;
+  usia: number | string;
+  jenisKelamin: "L" | "P";
+  namaOrangtua: string;
+  nomorHp: string;
+  tinggalBersama: string;
+  kategoriAts: "Putus Sekolah (DO)" | "Lulus Tidak Melanjutkan (LTM)" | "Belum Pernah Sekolah (BPS)";
+  keinginanSekolah: "Masih Ada" | "Tidak Ada";
+  alasanTidakSekolah: string;
+  sekolahSebelumnya: string;
+  kelasTerakhir: string;
+  keterangan: string;
+  alamat: string;
+  rt: string;
+  rw: string;
+  kelurahan: string;
+  kecamatan: string;
+  statusApproval: string;
+  komunitasId: string;
+  komunitasNama: string;
+  createdAt: string;
+}
 
 export interface AtsCategoryBreakdown {
   putusSekolah: number; // DO (Drop Out)
@@ -465,6 +492,177 @@ export async function getRekapDataAtsAction(): Promise<{
         lastUpdated: new Date().toISOString(),
         totalLiveRecords: 0,
       },
+    };
+  }
+}
+
+/**
+ * Server Action: Mengambil Daftar Lengkap Anak Tidak Sekolah (ATS) untuk Admin Komunitas & Super Admin
+ */
+export async function getDaftarNamaAtsRekapAction(params: {
+  tingkat: "kota" | "kecamatan" | "kelurahan";
+  kecamatan?: string;
+  kelurahan?: string;
+  kategoriAts?: string;
+  keinginan?: string;
+  search?: string;
+}): Promise<{
+  success: boolean;
+  message?: string;
+  data: DaftarNamaAtsItem[];
+  total: number;
+}> {
+  try {
+    const authStatus = await checkUserRekapAdminAccess();
+    if (!authStatus.canAccess) {
+      return {
+        success: false,
+        message: "Akses Ditolak: Fitur Daftar Anak Tidak Sekolah hanya dapat diakses oleh Admin Komunitas dan Super Admin.",
+        data: [],
+        total: 0,
+      };
+    }
+
+    const supabase = await createClient();
+
+    // 1. Ambil seluruh komunitas untuk pemetaan nama & metadata
+    const { data: allKom } = await supabase
+      .from("komunitas")
+      .select("id, nama, jenis, kecamatan, kelurahan, rw, rt");
+    const komMap = new Map((allKom || []).map((k: any) => [k.id, k]));
+
+    // 2. Query data_anak
+    const { data: dbChildren, error: fetchErr } = await supabase
+      .from("data_anak")
+      .select(`
+        id,
+        nama_lengkap,
+        tanggal_lahir,
+        jenis_kelamin,
+        nama_orangtua,
+        nomor_hp,
+        tinggal_bersama,
+        is_sekolah,
+        nama_sekolah,
+        alasan_sekolah,
+        komunitas_id,
+        status_approval,
+        created_at
+      `)
+      .order("created_at", { ascending: false });
+
+    if (fetchErr) {
+      return {
+        success: false,
+        message: fetchErr.message,
+        data: [],
+        total: 0,
+      };
+    }
+
+    // Filter ketat: Hanya baris data ATS
+    const validLiveAts = (dbChildren || []).filter((c) => isDataAtsRecord(c));
+    const resultList: DaftarNamaAtsItem[] = [];
+
+    for (const child of validLiveAts) {
+      const kom = komMap.get(child.komunitas_id) || findOrGenerateKomunitasSeed(child.komunitas_id);
+      const parsed = parseAtsDetails(child.alasan_sekolah, kom);
+      const age = calculateAgeFromBirthDate(child.tanggal_lahir);
+
+      const itemKec = normalizeWilayah(parsed.kecamatan || kom?.kecamatan || "");
+      const itemKel = normalizeWilayah(parsed.kelurahan || kom?.kelurahan || "");
+
+      // Filter Tingkat Wilayah
+      if (params.tingkat === "kecamatan" && params.kecamatan) {
+        const targetKec = normalizeWilayah(params.kecamatan);
+        if (!itemKec.includes(targetKec) && !targetKec.includes(itemKec)) {
+          continue;
+        }
+      } else if (params.tingkat === "kelurahan" && params.kelurahan) {
+        const targetKel = normalizeWilayah(params.kelurahan);
+        if (!itemKel.includes(targetKel) && !targetKel.includes(itemKel)) {
+          continue;
+        }
+      }
+
+      // Kategori ATS: Putus Sekolah / Lulus Tidak Melanjutkan / Belum Pernah Sekolah
+      const rawAsal = (parsed.sekolahSebelumnya || "").toLowerCase();
+      let kategoriAts: "Putus Sekolah (DO)" | "Lulus Tidak Melanjutkan (LTM)" | "Belum Pernah Sekolah (BPS)" = "Belum Pernah Sekolah (BPS)";
+      if (rawAsal.includes("smp") || rawAsal.includes("mts") || rawAsal.includes("sma") || rawAsal.includes("smk") || rawAsal.includes("ma")) {
+        kategoriAts = "Putus Sekolah (DO)";
+      } else if (rawAsal.includes("sd") || rawAsal.includes("mi")) {
+        kategoriAts = "Lulus Tidak Melanjutkan (LTM)";
+      }
+
+      // Filter Kategori
+      if (params.kategoriAts && params.kategoriAts !== "semua") {
+        if (params.kategoriAts === "do" && kategoriAts !== "Putus Sekolah (DO)") continue;
+        if (params.kategoriAts === "ltm" && kategoriAts !== "Lulus Tidak Melanjutkan (LTM)") continue;
+        if (params.kategoriAts === "bps" && kategoriAts !== "Belum Pernah Sekolah (BPS)") continue;
+      }
+
+      // Filter Keinginan
+      const isIngin = (parsed.keinginan || "Masih Ada").toLowerCase().includes("masih");
+      if (params.keinginan && params.keinginan !== "semua") {
+        if (params.keinginan === "ingin" && !isIngin) continue;
+        if (params.keinginan === "tidak" && isIngin) continue;
+      }
+
+      // Filter Search
+      if (params.search && params.search.trim()) {
+        const q = params.search.toLowerCase().trim();
+        const matchName = (child.nama_lengkap || "").toLowerCase().includes(q);
+        const matchParent = (child.nama_orangtua || "").toLowerCase().includes(q);
+        const matchSchool = (parsed.sekolahSebelumnya || "").toLowerCase().includes(q);
+        const matchReason = (parsed.alasan || "").toLowerCase().includes(q);
+        const matchKel = itemKel.includes(q);
+        const matchAddr = (parsed.alamat || "").toLowerCase().includes(q);
+        if (!matchName && !matchParent && !matchSchool && !matchReason && !matchKel && !matchAddr) {
+          continue;
+        }
+      }
+
+      const gender = (child.jenis_kelamin || "L").toUpperCase() === "P" ? "P" : "L";
+
+      resultList.push({
+        id: child.id,
+        namaLengkap: child.nama_lengkap || "Tanpa Nama",
+        tanggalLahir: child.tanggal_lahir,
+        usia: age,
+        jenisKelamin: gender,
+        namaOrangtua: child.nama_orangtua || "-",
+        nomorHp: child.nomor_hp || "-",
+        tinggalBersama: child.tinggal_bersama || "Orang Tua",
+        kategoriAts,
+        keinginanSekolah: isIngin ? "Masih Ada" : "Tidak Ada",
+        alasanTidakSekolah: parsed.alasan || "Tidak ada biaya",
+        sekolahSebelumnya: parsed.sekolahSebelumnya || "-",
+        kelasTerakhir: parsed.kelasTerakhir || "-",
+        keterangan: parsed.keterangan || "",
+        alamat: parsed.alamat || "",
+        rt: parsed.rt || "01",
+        rw: parsed.rw || "01",
+        kelurahan: parsed.kelurahan || "Randugunting",
+        kecamatan: parsed.kecamatan || "Tegal Selatan",
+        statusApproval: child.status_approval || "approved",
+        komunitasId: child.komunitas_id,
+        komunitasNama: kom?.nama || "Komunitas",
+        createdAt: child.created_at || new Date().toISOString(),
+      });
+    }
+
+    return {
+      success: true,
+      data: resultList,
+      total: resultList.length,
+    };
+  } catch (err: any) {
+    console.error("Error getDaftarNamaAtsRekapAction:", err);
+    return {
+      success: false,
+      message: err.message || "Gagal memuat daftar nama ATS.",
+      data: [],
+      total: 0,
     };
   }
 }

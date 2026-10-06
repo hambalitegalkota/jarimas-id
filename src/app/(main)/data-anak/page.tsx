@@ -1,5 +1,8 @@
 import { Metadata } from "next";
-import { getRekapDataAnakUsiaDiniAction } from "@/app/actions/rekap-data-anak";
+import {
+  getRekapDataAnakUsiaDiniAction,
+  checkUserRekapAdminAccess,
+} from "@/app/actions/rekap-data-anak";
 import { RekapDataAnakClientView } from "@/components/data-anak/rekap-data-anak-client-view";
 
 export const metadata: Metadata = {
@@ -11,11 +14,18 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function DataAnakRekapPage() {
-  const { data: rekapData } = await getRekapDataAnakUsiaDiniAction();
+  const [{ data: rekapData }, authAccess] = await Promise.all([
+    getRekapDataAnakUsiaDiniAction(),
+    checkUserRekapAdminAccess(),
+  ]);
 
   return (
     <main className="w-full min-h-screen bg-slate-50 dark:bg-slate-950 py-4 sm:py-6">
-      <RekapDataAnakClientView initialData={rekapData} />
+      <RekapDataAnakClientView
+        initialData={rekapData}
+        canAccessDaftarNamaAnak={authAccess.canAccess}
+        userPeran={authAccess.userPeran}
+      />
     </main>
   );
 }

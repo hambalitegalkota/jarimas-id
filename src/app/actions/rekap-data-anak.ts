@@ -1,12 +1,43 @@
 "use server";
 
 import { createClient } from "@/utils/supabase/server";
-import { KOTA_TEGAL_DATA } from "@/lib/constants/tegal-data";
+import { KOTA_TEGAL_DATA, findOrGenerateKomunitasSeed } from "@/lib/constants/tegal-data";
 import {
   parseDataAnakDetails,
   isDataAtsRecord,
   normalizeWilayah,
 } from "@/lib/data-anak-helpers";
+
+export interface DaftarNamaAnakItem {
+  id: string;
+  namaLengkap: string;
+  tanggalLahir?: string | null;
+  usia: number;
+  jenisKelamin: "L" | "P";
+  namaOrangtua: string;
+  nomorHp: string;
+  tinggalBersama: string;
+  isSekolah: boolean;
+  namaSekolah: string;
+  kategoriSekolah?: string;
+  alasan: string;
+  kkKabupaten: string;
+  kkKecamatan: string;
+  kkKelurahan: string;
+  kkRw: string;
+  kkRt: string;
+  kkJalan: string;
+  domisiliKabupaten: string;
+  domisiliKecamatan: string;
+  domisiliKelurahan: string;
+  domisiliRw: string;
+  domisiliRt: string;
+  domisiliJalan: string;
+  statusApproval: string;
+  komunitasId: string;
+  komunitasNama: string;
+  createdAt: string;
+}
 
 export interface SchoolTypeBreakdown {
   tk: number;
@@ -502,6 +533,245 @@ export async function getRekapDataAnakUsiaDiniAction(): Promise<{
         lastUpdated: new Date().toISOString(),
         totalLiveRecords: 0,
       },
+    };
+  }
+}
+
+/**
+ * Server Action: Mengecek Hak Akses Pengguna (Admin Komunitas / Super Admin) untuk melihat Daftar Nama Anak
+ */
+export async function checkUserRekapAdminAccess(): Promise<{
+  canAccess: boolean;
+  isSuperAdmin: boolean;
+  isAdminKomunitas: boolean;
+  userPeran?: string;
+  userName?: string;
+}> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return { canAccess: false, isSuperAdmin: false, isAdminKomunitas: false };
+    }
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("id, is_super_admin, nama_lengkap")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    const isSuperAdmin = profile?.is_super_admin === true;
+    if (isSuperAdmin) {
+      return {
+        canAccess: true,
+        isSuperAdmin: true,
+        isAdminKomunitas: true,
+        userPeran: "Super Admin",
+        userName: profile?.nama_lengkap || "Super Admin",
+      };
+    }
+
+    // Cek keanggotaan admin komunitas aktif
+    const { data: memberships } = await supabase
+      .from("anggota_komunitas")
+      .select("peran, status")
+      .eq("user_id", user.id)
+      .eq("status", "approved");
+
+    const hasAdminRole = (memberships || []).some((m) => {
+      const p = (m.peran || "").toLowerCase();
+      return (
+        p.includes("admin") ||
+        p.includes("pengurus") ||
+        p.includes("kader") ||
+        p.includes("ketua") ||
+        p.includes("pengelola") ||
+        p.includes("pimpinan") ||
+        p.includes("kepala") ||
+        p.includes("guru") ||
+        p.includes("pendidik") ||
+        p.includes("tutor") ||
+        p.includes("tenaga medis") ||
+        p.includes("tenaga kesehatan") ||
+        p.includes("plkb") ||
+        p.includes("pkk")
+      );
+    });
+
+    return {
+      canAccess: hasAdminRole,
+      isSuperAdmin: false,
+      isAdminKomunitas: hasAdminRole,
+      userPeran: hasAdminRole ? "Admin Komunitas" : "Anggota",
+      userName: profile?.nama_lengkap || "Pengguna",
+    };
+  } catch {
+    return { canAccess: false, isSuperAdmin: false, isAdminKomunitas: false };
+  }
+}
+
+/**
+ * Server Action: Mengambil Daftar Lengkap Nama Anak Usia Dini untuk Admin Komunitas & Super Admin
+ */
+export async function getDaftarNamaAnakRekapAction(params: {
+  tingkat: "kota" | "kecamatan" | "kelurahan";
+  kecamatan?: string;
+  kelurahan?: string;
+  kategori?: "semua" | "bersekolah" | "tidak_sekolah";
+  search?: string;
+}): Promise<{
+  success: boolean;
+  message?: string;
+  data: DaftarNamaAnakItem[];
+  total: number;
+}> {
+  try {
+    const authStatus = await checkUserRekapAdminAccess();
+    if (!authStatus.canAccess) {
+      return {
+        success: false,
+        message: "Akses Ditolak: Fitur Daftar Nama Anak hanya dapat diakses oleh Admin Komunitas dan Super Admin.",
+        data: [],
+        total: 0,
+      };
+    }
+
+    const supabase = await createClient();
+
+    // 1. Ambil seluruh komunitas untuk pemetaan nama & metadata
+    const { data: allKom } = await supabase
+      .from("komunitas")
+      .select("id, nama, jenis, kecamatan, kelurahan, rw, rt");
+    const komMap = new Map((allKom || []).map((k: any) => [k.id, k]));
+
+    // 2. Query data_anak
+    const { data: dbChildren, error: fetchErr } = await supabase
+      .from("data_anak")
+      .select(`
+        id,
+        nama_lengkap,
+        tanggal_lahir,
+        jenis_kelamin,
+        nama_orangtua,
+        nomor_hp,
+        tinggal_bersama,
+        is_sekolah,
+        nama_sekolah,
+        alasan_sekolah,
+        komunitas_id,
+        status_approval,
+        created_at
+      `)
+      .order("created_at", { ascending: false });
+
+    if (fetchErr) {
+      return {
+        success: false,
+        message: fetchErr.message,
+        data: [],
+        total: 0,
+      };
+    }
+
+    // Filter ketat: Bukan data ATS
+    const validLiveChildren = (dbChildren || []).filter((c) => !isDataAtsRecord(c));
+    const resultList: DaftarNamaAnakItem[] = [];
+
+    for (const child of validLiveChildren) {
+      const kom = komMap.get(child.komunitas_id) || findOrGenerateKomunitasSeed(child.komunitas_id);
+      const parsed = parseDataAnakDetails(child.alasan_sekolah, kom);
+      const age = calculateAgeFromBirthDate(child.tanggal_lahir);
+      const isSekolah =
+        child.is_sekolah === true ||
+        Boolean(child.nama_sekolah && !child.nama_sekolah.toLowerCase().includes("belum"));
+
+      const itemKec = normalizeWilayah(parsed.domisiliKecamatan || parsed.kkKecamatan || kom?.kecamatan || "");
+      const itemKel = normalizeWilayah(parsed.domisiliKelurahan || parsed.kkKelurahan || kom?.kelurahan || "");
+
+      // Filter Tingkat Wilayah
+      if (params.tingkat === "kecamatan" && params.kecamatan) {
+        const targetKec = normalizeWilayah(params.kecamatan);
+        if (!itemKec.includes(targetKec) && !targetKec.includes(itemKec)) {
+          continue;
+        }
+      } else if (params.tingkat === "kelurahan" && params.kelurahan) {
+        const targetKel = normalizeWilayah(params.kelurahan);
+        if (!itemKel.includes(targetKel) && !targetKel.includes(itemKel)) {
+          continue;
+        }
+      }
+
+      // Filter Kategori (Bersekolah / Belum Bersekolah)
+      if (params.kategori === "bersekolah" && !isSekolah) {
+        continue;
+      }
+      if (params.kategori === "tidak_sekolah" && isSekolah) {
+        continue;
+      }
+
+      // Filter Search
+      if (params.search && params.search.trim()) {
+        const q = params.search.toLowerCase().trim();
+        const matchName = (child.nama_lengkap || "").toLowerCase().includes(q);
+        const matchParent = (child.nama_orangtua || "").toLowerCase().includes(q);
+        const matchSchool = (child.nama_sekolah || "").toLowerCase().includes(q);
+        const matchReason = (parsed.alasan || "").toLowerCase().includes(q);
+        const matchKel = itemKel.includes(q);
+        if (!matchName && !matchParent && !matchSchool && !matchReason && !matchKel) {
+          continue;
+        }
+      }
+
+      const gender = (child.jenis_kelamin || "L").toUpperCase() === "P" ? "P" : "L";
+
+      resultList.push({
+        id: child.id,
+        namaLengkap: child.nama_lengkap || "Tanpa Nama",
+        tanggalLahir: child.tanggal_lahir,
+        usia: age,
+        jenisKelamin: gender,
+        namaOrangtua: child.nama_orangtua || "-",
+        nomorHp: child.nomor_hp || "-",
+        tinggalBersama: child.tinggal_bersama || "Orang Tua",
+        isSekolah,
+        namaSekolah: child.nama_sekolah || (isSekolah ? "Satuan PAUD" : "-"),
+        kategoriSekolah: isSekolah ? classifySchoolType(child.nama_sekolah) : undefined,
+        alasan: parsed.alasan || (isSekolah ? "Stimulasi & Pendidikan Usia Dini" : "Belum Cukup Usia / Masih Balita"),
+        kkKabupaten: parsed.kkKabupaten || "Kota Tegal",
+        kkKecamatan: parsed.kkKecamatan || "Tegal Timur",
+        kkKelurahan: parsed.kkKelurahan || "Kejambon",
+        kkRw: parsed.kkRw || "01",
+        kkRt: parsed.kkRt || "01",
+        kkJalan: parsed.kkJalan || "",
+        domisiliKabupaten: parsed.domisiliKabupaten || "Kota Tegal",
+        domisiliKecamatan: parsed.domisiliKecamatan || "Tegal Timur",
+        domisiliKelurahan: parsed.domisiliKelurahan || "Kejambon",
+        domisiliRw: parsed.domisiliRw || "01",
+        domisiliRt: parsed.domisiliRt || "01",
+        domisiliJalan: parsed.domisiliJalan || "",
+        statusApproval: child.status_approval || "approved",
+        komunitasId: child.komunitas_id,
+        komunitasNama: kom?.nama || "Komunitas",
+        createdAt: child.created_at || new Date().toISOString(),
+      });
+    }
+
+    return {
+      success: true,
+      data: resultList,
+      total: resultList.length,
+    };
+  } catch (err: any) {
+    console.error("Error getDaftarNamaAnakRekapAction:", err);
+    return {
+      success: false,
+      message: err.message || "Gagal memuat daftar nama anak.",
+      data: [],
+      total: 0,
     };
   }
 }

@@ -33,9 +33,12 @@ import type {
   SchoolTypeBreakdown,
   ReasonCount,
 } from "@/app/actions/rekap-data-anak";
+import { KartuDaftarNamaAnakRekap } from "./kartu-daftar-nama-anak-rekap";
 
 interface RekapDataAnakClientViewProps {
   initialData: RekapDataAnakUsiaDiniResult;
+  canAccessDaftarNamaAnak?: boolean;
+  userPeran?: string;
 }
 
 const JENJANG_COLORS: Record<keyof SchoolTypeBreakdown, { bg: string; text: string; fill: string; border: string; label: string }> = {
@@ -48,7 +51,11 @@ const JENJANG_COLORS: Record<keyof SchoolTypeBreakdown, { bg: string; text: stri
   pkbm: { bg: "bg-teal-500", text: "text-teal-700 dark:text-teal-400", fill: "#0d9488", border: "border-teal-300", label: "PKBM (Pendidikan Kesetaraan)" },
 };
 
-export function RekapDataAnakClientView({ initialData }: RekapDataAnakClientViewProps) {
+export function RekapDataAnakClientView({
+  initialData,
+  canAccessDaftarNamaAnak = false,
+  userPeran,
+}: RekapDataAnakClientViewProps) {
   // State Filter Berjenjang
   const [selectedTingkat, setSelectedTingkat] = useState<"kota" | "kecamatan" | "kelurahan">("kota");
   const [selectedKecamatan, setSelectedKecamatan] = useState<string>("Tegal Timur");
@@ -651,6 +658,18 @@ export function RekapDataAnakClientView({ initialData }: RekapDataAnakClientView
               ))}
             </div>
           </div>
+
+          {/* KARTU DAFTAR NAMA ANAK BERSEKOLAH (KHUSUS ADMIN KOMUNITAS & SUPER ADMIN) */}
+          <KartuDaftarNamaAnakRekap
+            kategori="bersekolah"
+            tingkat={selectedTingkat}
+            selectedKecamatan={selectedKecamatan}
+            selectedKelurahan={selectedKelurahan}
+            currentWilayahNama={currentWilayahData.nama}
+            totalCount={currentWilayahData.totalBersekolah}
+            canAccess={canAccessDaftarNamaAnak}
+            userPeran={userPeran}
+          />
         </div>
       )}
 
@@ -795,6 +814,18 @@ export function RekapDataAnakClientView({ initialData }: RekapDataAnakClientView
               </div>
             </div>
           </div>
+
+          {/* KARTU DAFTAR NAMA ANAK BELUM BERSEKOLAH (KHUSUS ADMIN KOMUNITAS & SUPER ADMIN) */}
+          <KartuDaftarNamaAnakRekap
+            kategori="tidak_sekolah"
+            tingkat={selectedTingkat}
+            selectedKecamatan={selectedKecamatan}
+            selectedKelurahan={selectedKelurahan}
+            currentWilayahNama={currentWilayahData.nama}
+            totalCount={currentWilayahData.totalTidakBersekolah}
+            canAccess={canAccessDaftarNamaAnak}
+            userPeran={userPeran}
+          />
         </div>
       )}
 
