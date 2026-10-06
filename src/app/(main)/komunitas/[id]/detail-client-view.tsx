@@ -52,6 +52,7 @@ import type {
   AnggotaKomunitasDetail,
   KabarItem,
   DataAnakItem,
+  DataAtsItem,
 } from "@/types/database";
 import { cn, hasFullProfilDataAccess, parseKontakKomunitas, formatWhatsAppUrl, formatPeranDisplay, isRoleAdmin } from "@/lib/utils";
 
@@ -63,6 +64,7 @@ interface KomunitasDetailClientViewProps {
   anggotaList: AnggotaKomunitasDetail[];
   kabarKomunitas: KabarItem[];
   dataAnakList?: DataAnakItem[];
+  dataAtsList?: DataAtsItem[];
 }
 
 export function KomunitasDetailClientView({
@@ -73,6 +75,7 @@ export function KomunitasDetailClientView({
   anggotaList,
   kabarKomunitas,
   dataAnakList = [],
+  dataAtsList = [],
 }: KomunitasDetailClientViewProps) {
   const [komunitasData, setKomunitasData] = useState(komunitas);
   const [activeTab, setActiveTab] = useState(currentSubtab || "kabar");
@@ -471,8 +474,8 @@ export function KomunitasDetailClientView({
         </section>
       )}
 
-      {/* ALERT JIKA BELUM MEMILIKI ADMIN (HANYA UNTUK PENGGUNA YANG SUDAH LOGIN & PADA WARGA KITA) */}
-      {Boolean(currentUserId) && !komunitas.hasAdmin && isWargaKita && (
+      {/* ALERT JIKA BELUM MEMILIKI ADMIN (HANYA UNTUK PENGGUNA YANG SUDAH LOGIN & SUDAH BERGABUNG SEBAGAI ANGGOTA PADA WARGA KITA) */}
+      {Boolean(currentUserId) && isApprovedMember && !komunitas.hasAdmin && isWargaKita && (
         <section className="rounded-2xl border-2 border-amber-200 bg-amber-50/70 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
           <div className="flex items-start gap-3.5">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-900">
@@ -483,7 +486,7 @@ export function KomunitasDetailClientView({
                 Komunitas Belum Memiliki Admin / Pengurus
               </h4>
               <p className="text-sm text-slate-700 leading-relaxed">
-                {isApprovedMember && isPenduduk ? (
+                {isPenduduk ? (
                   membership?.peran_diajukan ? (
                     <span className="font-semibold text-emerald-800">
                       Permohonan Anda sebagai Admin sedang menunggu verifikasi dan persetujuan Super Admin / Admin hierarki tingkat atas. (Tidak ada proses otomatisasi).
@@ -491,35 +494,18 @@ export function KomunitasDetailClientView({
                   ) : (
                     "Sebagai anggota berstatus Penduduk, Anda berhak mengajukan permohonan menjadi Admin/Pengurus resmi kepada Admin tingkat atas (melalui verifikasi manual, tanpa proses otomatisasi)."
                   )
-                ) : isApprovedMember ? (
-                  "Pengajuan Admin hanya dapat diajukan oleh anggota dengan status Penduduk resmi (KK & Domisili di Kota Tegal)."
                 ) : (
-                  "Anda harus bergabung menjadi anggota komunitas ini terlebih dahulu sebelum dapat mengajukan diri sebagai Admin/Pengurus."
+                  "Pengajuan Admin hanya dapat diajukan oleh anggota dengan status Penduduk resmi (KK & Domisili di Kota Tegal)."
                 )}
               </p>
             </div>
           </div>
 
-          {/* Action Button: Tergantung status gabung */}
-          {!isApprovedMember ? (
+          {/* Action Button: Pengajuan Admin jika berstatus Penduduk */}
+          {isPenduduk && !membership?.peran_diajukan ? (
             <button
               type="button"
-              onClick={() => setIsWargaOnboardingOpen(true)}
-              className="inline-flex min-h-[44px] h-11 items-center justify-center gap-2 rounded-xl bg-blue-700 hover:bg-blue-800 text-white px-5 text-sm font-bold shadow-xs transition-all active:scale-98 shrink-0 cursor-pointer"
-            >
-              <UserPlus className="h-4 w-4" />
-              <span>Gabung Komunitas Dulu</span>
-            </button>
-          ) : isPenduduk && !membership?.peran_diajukan ? (
-            <button
-              type="button"
-              onClick={() => {
-                if (!currentUserId) {
-                  window.location.href = `/login?redirectTo=/komunitas/${komunitas.id}`;
-                  return;
-                }
-                setIsApplyAdminOpen(true);
-              }}
+              onClick={() => setIsApplyAdminOpen(true)}
               className="inline-flex min-h-[44px] h-11 items-center justify-center gap-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white px-5 text-sm font-bold shadow-xs transition-all active:scale-98 shrink-0 cursor-pointer"
             >
               <ShieldCheck className="h-4 w-4" />
@@ -1042,6 +1028,7 @@ export function KomunitasDetailClientView({
           <KomunitasProfilCharts
             komunitas={komunitas}
             dataAnakList={dataAnakList}
+            dataAtsList={dataAtsList}
             userRole={userPeran}
             isChartOnly={isChartOnly}
           />

@@ -17,6 +17,8 @@ import {
   Building2,
   School,
   BookOpen,
+  Lock,
+  ShieldCheck,
 } from "lucide-react";
 import { createDataAts } from "@/app/actions/data-ats";
 import {
@@ -79,12 +81,30 @@ export function FormDataAts({
     komunitas || { id: komunitasId, nama: komunitasNama }
   );
   const initialKecamatan =
-    meta.rawKec && meta.rawKec !== "Kota Tegal"
+    meta.rawKec && meta.rawKec !== "Kota Tegal" && meta.rawKec !== "Semua Kecamatan"
       ? meta.rawKec
       : "Tegal Selatan";
-  const initialKelurahan = meta.rawKel || "Randugunting";
+  const initialKelurahan =
+    meta.rawKel && meta.rawKel !== "Semua Kelurahan" && meta.rawKel !== "Semua"
+      ? meta.rawKel
+      : (getKelurahanByKecamatan(initialKecamatan)[0] || "Randugunting");
   const initialRw = meta.rawRw || "01";
   const initialRt = meta.rawRt || "01";
+
+  // Status Terkunci Sesuai Wilayah Komunitas
+  const isLockedKecamatan = Boolean(
+    meta.rawKec &&
+      meta.rawKec !== "Kota Tegal" &&
+      meta.rawKec !== "Semua Kecamatan"
+  );
+  const isLockedKelurahan = Boolean(
+    meta.hasKel &&
+      meta.rawKel &&
+      meta.rawKel !== "Semua Kelurahan" &&
+      meta.rawKel !== "Semua"
+  );
+  const isLockedRw = Boolean(meta.hasRw && meta.rawRw);
+  const isLockedRt = Boolean(meta.hasRt && meta.rawRt);
 
   const [kecamatan, setKecamatan] = useState(initialKecamatan);
   const [kelurahan, setKelurahan] = useState(initialKelurahan);
@@ -111,9 +131,12 @@ export function FormDataAts({
   );
   const [keterangan, setKeterangan] = useState("");
 
-  const kelurahanOptions = getKelurahanByKecamatan(kecamatan);
+  const kelurahanOptions = isLockedKelurahan
+    ? [initialKelurahan]
+    : getKelurahanByKecamatan(kecamatan);
 
   const handleKecamatanChange = (newKec: string) => {
+    if (isLockedKecamatan) return;
     setKecamatan(newKec);
     const kels = getKelurahanByKecamatan(newKec);
     if (kels.length > 0) {
@@ -200,44 +223,86 @@ export function FormDataAts({
             </div>
             <span>Wilayah Pendataan ATS</span>
           </div>
-          <span className="text-xs font-bold px-3 py-1 rounded-full bg-slate-100 text-slate-800 border border-slate-300">
-            Kota Tegal
-          </span>
+          <div className="flex items-center gap-1.5">
+            {(isLockedKecamatan || isLockedKelurahan) && (
+              <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-300 flex items-center gap-1">
+                <Lock className="h-3 w-3 text-emerald-600" />
+                <span>Terkunci Wilayah Komunitas</span>
+              </span>
+            )}
+            <span className="text-xs font-bold px-3 py-1 rounded-full bg-slate-100 text-slate-800 border border-slate-300">
+              Kota Tegal
+            </span>
+          </div>
         </div>
 
         <div className="flex flex-col gap-4">
           <div className="space-y-1.5">
-            <label className="text-base font-bold text-slate-800">
-              Kecamatan
-            </label>
-            <select
-              value={kecamatan}
-              onChange={(e) => handleKecamatanChange(e.target.value)}
-              className="w-full min-h-[48px] h-12 bg-slate-50 border-2 border-slate-300 rounded-xl px-4 text-base font-medium text-slate-900 focus:border-blue-600 focus:bg-white focus:outline-hidden"
-            >
-              {DAFTAR_KECAMATAN_TEGAL.map((kec) => (
-                <option key={kec} value={kec}>
-                  Kecamatan {kec}
-                </option>
-              ))}
-            </select>
+            <div className="flex items-center justify-between">
+              <label className="text-base font-bold text-slate-800">
+                Kecamatan
+              </label>
+              {isLockedKecamatan && (
+                <span className="text-xs font-semibold text-slate-500 flex items-center gap-1">
+                  <Lock className="h-3 w-3 text-slate-400" />
+                  <span>Terkunci Sesuai Komunitas</span>
+                </span>
+              )}
+            </div>
+            {isLockedKecamatan ? (
+              <div className="flex items-center justify-between min-h-[48px] h-12 bg-slate-100 border-2 border-slate-300 rounded-xl px-4 text-base font-bold text-slate-800 cursor-not-allowed select-none">
+                <span>Kecamatan {kecamatan}</span>
+                <span className="text-xs font-bold px-2.5 py-0.5 rounded-md bg-slate-200 text-slate-700">
+                  Terkunci
+                </span>
+              </div>
+            ) : (
+              <select
+                value={kecamatan}
+                onChange={(e) => handleKecamatanChange(e.target.value)}
+                className="w-full min-h-[48px] h-12 bg-slate-50 border-2 border-slate-300 rounded-xl px-4 text-base font-medium text-slate-900 focus:border-blue-600 focus:bg-white focus:outline-hidden cursor-pointer"
+              >
+                {DAFTAR_KECAMATAN_TEGAL.map((kec) => (
+                  <option key={kec} value={kec}>
+                    Kecamatan {kec}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-base font-bold text-slate-800">
-              Kelurahan
-            </label>
-            <select
-              value={kelurahan}
-              onChange={(e) => setKelurahan(e.target.value)}
-              className="w-full min-h-[48px] h-12 bg-slate-50 border-2 border-slate-300 rounded-xl px-4 text-base font-medium text-slate-900 focus:border-blue-600 focus:bg-white focus:outline-hidden"
-            >
-              {kelurahanOptions.map((kel) => (
-                <option key={kel} value={kel}>
-                  Kelurahan {kel}
-                </option>
-              ))}
-            </select>
+            <div className="flex items-center justify-between">
+              <label className="text-base font-bold text-slate-800">
+                Kelurahan
+              </label>
+              {isLockedKelurahan && (
+                <span className="text-xs font-semibold text-slate-500 flex items-center gap-1">
+                  <Lock className="h-3 w-3 text-slate-400" />
+                  <span>Terkunci Sesuai Komunitas</span>
+                </span>
+              )}
+            </div>
+            {isLockedKelurahan ? (
+              <div className="flex items-center justify-between min-h-[48px] h-12 bg-slate-100 border-2 border-slate-300 rounded-xl px-4 text-base font-bold text-slate-800 cursor-not-allowed select-none">
+                <span>Kelurahan {kelurahan}</span>
+                <span className="text-xs font-bold px-2.5 py-0.5 rounded-md bg-slate-200 text-slate-700">
+                  Terkunci
+                </span>
+              </div>
+            ) : (
+              <select
+                value={kelurahan}
+                onChange={(e) => setKelurahan(e.target.value)}
+                className="w-full min-h-[48px] h-12 bg-slate-50 border-2 border-slate-300 rounded-xl px-4 text-base font-medium text-slate-900 focus:border-blue-600 focus:bg-white focus:outline-hidden cursor-pointer"
+              >
+                {kelurahanOptions.map((kel) => (
+                  <option key={kel} value={kel}>
+                    Kelurahan {kel}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
         </div>
       </div>
@@ -412,34 +477,54 @@ export function FormDataAts({
             <label className="text-base font-bold text-slate-900 block">
               Kecamatan <span className="text-red-500">*</span>
             </label>
-            <select
-              value={kecamatan}
-              onChange={(e) => handleKecamatanChange(e.target.value)}
-              className="w-full min-h-[48px] h-12 rounded-xl border-2 border-slate-300 bg-white px-4 text-base font-semibold text-slate-900 focus:border-blue-600 focus:outline-hidden"
-            >
-              {DAFTAR_KECAMATAN_TEGAL.map((k) => (
-                <option key={k} value={k}>
-                  Kec. {k}
-                </option>
-              ))}
-            </select>
+            {isLockedKecamatan ? (
+              <div className="flex items-center justify-between min-h-[48px] h-12 bg-slate-100 border-2 border-slate-300 rounded-xl px-4 text-base font-bold text-slate-800 cursor-not-allowed select-none">
+                <span>Kec. {kecamatan}</span>
+                <span className="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded bg-slate-200 text-slate-700">
+                  <Lock className="h-3 w-3" />
+                  <span>Terkunci</span>
+                </span>
+              </div>
+            ) : (
+              <select
+                value={kecamatan}
+                onChange={(e) => handleKecamatanChange(e.target.value)}
+                className="w-full min-h-[48px] h-12 rounded-xl border-2 border-slate-300 bg-white px-4 text-base font-semibold text-slate-900 focus:border-blue-600 focus:outline-hidden cursor-pointer"
+              >
+                {DAFTAR_KECAMATAN_TEGAL.map((k) => (
+                  <option key={k} value={k}>
+                    Kec. {k}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
 
           <div className="space-y-2">
             <label className="text-base font-bold text-slate-900 block">
               Kelurahan <span className="text-red-500">*</span>
             </label>
-            <select
-              value={kelurahan}
-              onChange={(e) => setKelurahan(e.target.value)}
-              className="w-full min-h-[48px] h-12 rounded-xl border-2 border-slate-300 bg-white px-4 text-base font-semibold text-slate-900 focus:border-blue-600 focus:outline-hidden"
-            >
-              {kelurahanOptions.map((kel) => (
-                <option key={kel} value={kel}>
-                  Kel. {kel}
-                </option>
-              ))}
-            </select>
+            {isLockedKelurahan ? (
+              <div className="flex items-center justify-between min-h-[48px] h-12 bg-slate-100 border-2 border-slate-300 rounded-xl px-4 text-base font-bold text-slate-800 cursor-not-allowed select-none">
+                <span>Kel. {kelurahan}</span>
+                <span className="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded bg-slate-200 text-slate-700">
+                  <Lock className="h-3 w-3" />
+                  <span>Terkunci</span>
+                </span>
+              </div>
+            ) : (
+              <select
+                value={kelurahan}
+                onChange={(e) => setKelurahan(e.target.value)}
+                className="w-full min-h-[48px] h-12 rounded-xl border-2 border-slate-300 bg-white px-4 text-base font-semibold text-slate-900 focus:border-blue-600 focus:outline-hidden cursor-pointer"
+              >
+                {kelurahanOptions.map((kel) => (
+                  <option key={kel} value={kel}>
+                    Kel. {kel}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
         </div>
 
@@ -449,34 +534,52 @@ export function FormDataAts({
             <label className="text-base font-bold text-slate-900 block">
               RW <span className="text-red-500">*</span>
             </label>
-            <select
-              value={rw}
-              onChange={(e) => setRw(e.target.value)}
-              className="w-full min-h-[48px] h-12 rounded-xl border-2 border-slate-300 bg-white px-4 text-base font-semibold text-slate-900 focus:border-blue-600 focus:outline-hidden"
-            >
-              {DAFTAR_RW_TEGAL.map((r) => (
-                <option key={r} value={r}>
-                  RW {r}
-                </option>
-              ))}
-            </select>
+            {isLockedRw ? (
+              <div className="flex items-center justify-between min-h-[48px] h-12 bg-slate-100 border-2 border-slate-300 rounded-xl px-4 text-base font-bold text-slate-800 cursor-not-allowed select-none">
+                <span>RW {rw}</span>
+                <span className="inline-flex items-center gap-1 text-xs font-bold px-1.5 py-0.5 rounded bg-slate-200 text-slate-700">
+                  <Lock className="h-3 w-3" />
+                </span>
+              </div>
+            ) : (
+              <select
+                value={rw}
+                onChange={(e) => setRw(e.target.value)}
+                className="w-full min-h-[48px] h-12 rounded-xl border-2 border-slate-300 bg-white px-4 text-base font-semibold text-slate-900 focus:border-blue-600 focus:outline-hidden cursor-pointer"
+              >
+                {DAFTAR_RW_TEGAL.map((r) => (
+                  <option key={r} value={r}>
+                    RW {r}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
 
           <div className="space-y-2">
             <label className="text-base font-bold text-slate-900 block">
               RT <span className="text-red-500">*</span>
             </label>
-            <select
-              value={rt}
-              onChange={(e) => setRt(e.target.value)}
-              className="w-full min-h-[48px] h-12 rounded-xl border-2 border-slate-300 bg-white px-4 text-base font-semibold text-slate-900 focus:border-blue-600 focus:outline-hidden"
-            >
-              {DAFTAR_RT_TEGAL.map((t) => (
-                <option key={t} value={t}>
-                  RT {t}
-                </option>
-              ))}
-            </select>
+            {isLockedRt ? (
+              <div className="flex items-center justify-between min-h-[48px] h-12 bg-slate-100 border-2 border-slate-300 rounded-xl px-4 text-base font-bold text-slate-800 cursor-not-allowed select-none">
+                <span>RT {rt}</span>
+                <span className="inline-flex items-center gap-1 text-xs font-bold px-1.5 py-0.5 rounded bg-slate-200 text-slate-700">
+                  <Lock className="h-3 w-3" />
+                </span>
+              </div>
+            ) : (
+              <select
+                value={rt}
+                onChange={(e) => setRt(e.target.value)}
+                className="w-full min-h-[48px] h-12 rounded-xl border-2 border-slate-300 bg-white px-4 text-base font-semibold text-slate-900 focus:border-blue-600 focus:outline-hidden cursor-pointer"
+              >
+                {DAFTAR_RT_TEGAL.map((t) => (
+                  <option key={t} value={t}>
+                    RT {t}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
         </div>
 

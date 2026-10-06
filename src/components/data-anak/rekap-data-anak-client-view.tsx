@@ -451,7 +451,7 @@ export function RekapDataAnakClientView({ initialData }: RekapDataAnakClientView
               </div>
               <div>
                 <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-slate-100">
-                  Rincian Data Anak Bersekolah PAUD / TK / Kesetaraan
+                  Rekapitulasi Data Anak Bersekolah PAUD
                 </h2>
                 <p className="text-xs text-slate-500 font-medium">
                   Sebaran satuan pendidikan TK, RA, KB, SPS, TPA, SKB, PKBM, jenis kelamin, kelompok umur, dan alasan bersekolah.
@@ -666,7 +666,7 @@ export function RekapDataAnakClientView({ initialData }: RekapDataAnakClientView
               </div>
               <div>
                 <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-slate-100">
-                  Rincian Data Anak Belum / Tidak Bersekolah
+                  Rekapitulasi Data Anak Belum Bersekolah PAUD
                 </h2>
                 <p className="text-xs text-slate-500 font-medium">
                   Analisis sebaran umur, jenis kelamin, serta faktor penyebab belum mengikuti pendidikan formal PAUD.

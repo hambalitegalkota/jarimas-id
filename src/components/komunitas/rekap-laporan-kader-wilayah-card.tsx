@@ -66,6 +66,8 @@ const BULAN_LIST = [
   "Desember",
 ];
 
+const TAHUN_OPTIONS = [2025, 2026, 2027, 2028, 2029, 2030];
+
 export function RekapLaporanKaderWilayahCard({
   komunitas,
   isAdminOrKader,
@@ -348,9 +350,11 @@ export function RekapLaporanKaderWilayahCard({
                   onChange={(e) => setSelectedTahun(Number(e.target.value))}
                   className="w-full py-2 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
                 >
-                  <option value={2026}>Tahun 2026</option>
-                  <option value={2025}>Tahun 2025</option>
-                  <option value={2027}>Tahun 2027</option>
+                  {TAHUN_OPTIONS.map((year) => (
+                    <option key={year} value={year}>
+                      Tahun {year}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>

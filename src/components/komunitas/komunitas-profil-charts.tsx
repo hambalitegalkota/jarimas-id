@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import {
   BarChart3,
   PieChart,
@@ -13,13 +14,17 @@ import {
   CheckCircle2,
   AlertTriangle,
   HeartPulse,
+  ArrowRight,
+  Clock,
+  BookOpen,
 } from "lucide-react";
-import type { KomunitasWithMembership, DataAnakItem } from "@/types/database";
+import type { KomunitasWithMembership, DataAnakItem, DataAtsItem } from "@/types/database";
 import { cn } from "@/lib/utils";
 
 interface KomunitasProfilChartsProps {
   komunitas: KomunitasWithMembership;
   dataAnakList?: DataAnakItem[];
+  dataAtsList?: DataAtsItem[];
   userRole?: string;
   isChartOnly?: boolean;
 }
@@ -27,14 +32,16 @@ interface KomunitasProfilChartsProps {
 export function KomunitasProfilCharts({
   komunitas,
   dataAnakList = [],
+  dataAtsList = [],
   userRole = "Pengunjung",
   isChartOnly = false,
 }: KomunitasProfilChartsProps) {
-  const [activeChartFilter, setActiveChartFilter] = useState<"semua" | "usia" | "paud" | "ddtk">("semua");
+  const [activeChartFilter, setActiveChartFilter] = useState<"semua" | "usia" | "paud" | "ats" | "ddtk">("semua");
 
-  // Perhitungan data agregat 100% NYATA berbasis data_anak aktual
+  // Perhitungan data agregat 100% NYATA berbasis data_anak & data_ats aktual
   const totalWarga = komunitas.jumlah_anggota || 0;
   const totalBalita = dataAnakList.length;
+  const totalAts = dataAtsList.length;
 
   let usia0to2 = 0;
   let usia3to4 = 0;
@@ -94,13 +101,34 @@ export function KomunitasProfilCharts({
     }
   });
 
+  // Statistik ATS Khusus
+  let atsApproved = 0;
+  let atsPending = 0;
+  let atsInginSekolah = 0;
+  let atsTidakIngin = 0;
+
+  dataAtsList.forEach((ats) => {
+    if (ats.status_approval === "approved") {
+      atsApproved++;
+    } else {
+      atsPending++;
+    }
+
+    if (ats.keinginan_sekolah === "Masih Ada") {
+      atsInginSekolah++;
+    } else {
+      atsTidakIngin++;
+    }
+  });
+
+  const combinedAtsCount = totalAts > 0 ? totalAts : potensiAts;
   const pctPaud = totalBalita > 0 ? Math.round((sudahPaud / totalBalita) * 100) : 0;
   const pctDdtk = totalBalita > 0 ? Math.round((ddtkSesuai / totalBalita) * 100) : 0;
   const pct0to2 = totalBalita > 0 ? Math.round((usia0to2 / totalBalita) * 100) : 0;
   const pct3to4 = totalBalita > 0 ? Math.round((usia3to4 / totalBalita) * 100) : 0;
   const pct5to6 = totalBalita > 0 ? Math.round((usia5to6 / totalBalita) * 100) : 0;
   const pctBelum = totalBalita > 0 ? Math.round((belumSekolah / totalBalita) * 100) : 0;
-  const pctPotensiAts = totalBalita > 0 ? Math.round((potensiAts / totalBalita) * 100) : 0;
+  const pctPotensiAts = totalBalita > 0 ? Math.round((combinedAtsCount / totalBalita) * 100) : 0;
 
   let displayKomNama = komunitas.nama;
   if (komunitas.jenis === "posyandu") {
@@ -126,7 +154,7 @@ export function KomunitasProfilCharts({
             <span>Grafik &amp; Chart Statistik Komunitas</span>
           </h3>
           <p className="text-xs sm:text-sm text-slate-600 font-medium">
-            Pratinjau data anak (0–6 tahun), partisipasi PAUD, dan pemantauan DDTK se-wilayah.
+            Rekapitulasi data anak usia dini (0–6 tahun), partisipasi PAUD, pemantauan DDTK, dan pendataan ATS se-wilayah.
           </p>
         </div>
 
@@ -167,6 +195,18 @@ export function KomunitasProfilCharts({
             )}
           >
             Partisipasi PAUD
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveChartFilter("ats")}
+            className={cn(
+              "px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer",
+              activeChartFilter === "ats"
+                ? "bg-white text-amber-700 shadow-xs border border-slate-200 font-black"
+                : "text-slate-600 hover:text-slate-900"
+            )}
+          >
+            Data ATS
           </button>
           <button
             type="button"
@@ -236,16 +276,18 @@ export function KomunitasProfilCharts({
 
         <div className="rounded-2xl border-2 border-amber-200 bg-amber-50/50 p-4 space-y-1 shadow-xs">
           <span className="text-xs font-bold text-amber-900 uppercase tracking-wider block">
-            POTENSI INTERVENSI
+            ANAK TIDAK SEKOLAH &amp; ATS
           </span>
           <div className="flex items-baseline gap-2">
             <span className="text-2xl sm:text-3xl font-black font-mono text-amber-700">
-              {potensiAts}
+              {combinedAtsCount}
             </span>
-            <span className="text-xs font-bold text-amber-800">Anak</span>
+            <span className="text-xs font-bold text-amber-800">
+              {totalAts > 0 ? "Anak ATS Terdata" : "Anak"}
+            </span>
           </div>
           <span className="text-xs font-semibold text-amber-900 block">
-            Pendampingan PAUD
+            {totalAts > 0 ? "Data ATS Terverifikasi" : "Pendampingan PAUD / ATS"}
           </span>
         </div>
       </div>
@@ -493,7 +535,79 @@ export function KomunitasProfilCharts({
           </div>
         )}
 
-        {/* Chart 4: Komposisi Peran Komunitas Warga */}
+        {/* Chart 4: Statistik Anak Tidak Sekolah (ATS) */}
+        {(activeChartFilter === "semua" || activeChartFilter === "ats") && komunitas.jenis !== "satuan_paud" && (
+          <div className="rounded-2xl border-2 border-amber-200 bg-white p-5 space-y-4 shadow-xs">
+            <div className="flex items-center justify-between border-b-2 border-amber-100 pb-3">
+              <div className="flex items-center gap-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-100 text-amber-800">
+                  <GraduationCap className="h-4 w-4" />
+                </div>
+                <div>
+                  <h4 className="text-sm sm:text-base font-bold text-slate-900">
+                    Statistik Anak Tidak Sekolah (ATS)
+                  </h4>
+                  <p className="text-xs text-slate-500 font-medium">
+                    Hasil pendataan &amp; verifikasi anak tidak sekolah di wilayah
+                  </p>
+                </div>
+              </div>
+
+              {/* Status Badge */}
+              <span className="text-xs font-bold px-2.5 py-0.5 rounded-md bg-amber-100 text-amber-900 border border-amber-300">
+                {totalAts} Terdata
+              </span>
+            </div>
+
+            {totalAts === 0 ? (
+              <div className="rounded-xl border-2 border-dashed border-amber-200 bg-amber-50/40 p-6 text-center space-y-2">
+                <GraduationCap className="h-8 w-8 text-amber-600 mx-auto" />
+                <p className="text-sm font-bold text-slate-800">Tidak Ada Kasus ATS Terdata</p>
+                <p className="text-xs text-slate-600 max-w-xs mx-auto">
+                  {potensiAts > 0
+                    ? `Terdeteksi ${potensiAts} anak usia 4–6 tahun belum terdaftar di PAUD/TK (Potensi ATS).`
+                    : "Seluruh anak di wilayah ini terpantau telah mendapatkan akses pendidikan atau belum usia wajib."}
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3 pt-1">
+                <div className="grid grid-cols-2 gap-2.5">
+                  <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-center space-y-0.5">
+                    <span className="text-[11px] font-bold text-emerald-800 block">TERVERIFIKASI RT</span>
+                    <span className="text-xl font-black font-mono text-emerald-700">{atsApproved}</span>
+                    <span className="text-[10px] text-emerald-600 font-semibold block">Validitas Sesuai</span>
+                  </div>
+                  <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-center space-y-0.5">
+                    <span className="text-[11px] font-bold text-amber-900 block">MENUNGGU VERIFIKASI</span>
+                    <span className="text-xl font-black font-mono text-amber-700">{atsPending}</span>
+                    <span className="text-[10px] text-amber-700 font-semibold block">Proses Verifikasi</span>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5 pt-1">
+                  <div className="flex items-center justify-between text-xs font-bold">
+                    <span className="text-slate-700">Minat Ingin Kembali Bersekolah</span>
+                    <span className="font-mono text-emerald-800">
+                      {atsInginSekolah} dari {totalAts} anak ({totalAts > 0 ? Math.round((atsInginSekolah / totalAts) * 100) : 0}%)
+                    </span>
+                  </div>
+                  <div className="h-3 w-full overflow-hidden rounded-full bg-slate-100 p-0.5 border border-slate-200">
+                    <div
+                      className="h-full rounded-full bg-emerald-600 transition-all duration-500"
+                      style={{ width: `${totalAts > 0 ? Math.round((atsInginSekolah / totalAts) * 100) : 0}%` }}
+                    />
+                  </div>
+                </div>
+
+                <div className="text-xs text-slate-600 bg-amber-50/70 p-2.5 rounded-xl border border-amber-200 flex items-center justify-between">
+                  <span>💡 Rekomendasi intervensi disalurkan ke PKBM / SKB Kota Tegal.</span>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Chart 5: Komposisi Peran Komunitas Warga */}
         {activeChartFilter === "semua" && komunitas.jenis === "warga_kita" && (
           <div className="rounded-2xl border-2 border-slate-200 bg-white p-5 space-y-4 shadow-xs">
             <div className="flex items-center justify-between border-b-2 border-slate-100 pb-3">

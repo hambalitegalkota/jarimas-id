@@ -19,6 +19,7 @@ import {
   Building2,
   School,
   BookOpen,
+  Lock,
 } from "lucide-react";
 import { updateDataAts } from "@/app/actions/data-ats";
 import {
@@ -33,6 +34,7 @@ import {
   DAFTAR_RW_TEGAL,
   DAFTAR_RT_TEGAL,
 } from "@/lib/constants/tegal-data";
+import { extractKomunitasMetadata } from "@/lib/admin-helpers";
 import { KELAS_TERAKHIR_OPTIONS } from "./form-data-ats";
 import { cn } from "@/lib/utils";
 
@@ -91,11 +93,31 @@ export function ModalEditAts({
     message: string;
   } | null>(null);
 
-  // Wilayah Warga
-  const [kecamatan, setKecamatan] = useState(ats.kecamatan || "Tegal Selatan");
-  const [kelurahan, setKelurahan] = useState(ats.kelurahan || "Randugunting");
-  const [rt, setRt] = useState(ats.rt || "01");
-  const [rw, setRw] = useState(ats.rw || "01");
+  // Wilayah Warga & Metadata Komunitas
+  const meta = extractKomunitasMetadata({ id: komunitasId, nama: komunitasNama });
+  const isLockedKecamatan = Boolean(
+    meta.rawKec &&
+      meta.rawKec !== "Kota Tegal" &&
+      meta.rawKec !== "Semua Kecamatan"
+  );
+  const isLockedKelurahan = Boolean(
+    meta.hasKel &&
+      meta.rawKel &&
+      meta.rawKel !== "Semua Kelurahan" &&
+      meta.rawKel !== "Semua"
+  );
+  const isLockedRw = Boolean(meta.hasRw && meta.rawRw);
+  const isLockedRt = Boolean(meta.hasRt && meta.rawRt);
+
+  const initialKec = isLockedKecamatan ? meta.rawKec : (ats.kecamatan || "Tegal Selatan");
+  const initialKel = isLockedKelurahan ? meta.rawKel : (ats.kelurahan || "Randugunting");
+  const initialRw = isLockedRw ? meta.rawRw : (ats.rw || "01");
+  const initialRt = isLockedRt ? meta.rawRt : (ats.rt || "01");
+
+  const [kecamatan, setKecamatan] = useState(initialKec);
+  const [kelurahan, setKelurahan] = useState(initialKel);
+  const [rt, setRt] = useState(initialRt);
+  const [rw, setRw] = useState(initialRw);
   const [alamat, setAlamat] = useState(ats.alamat || "");
 
   // Form Fields
@@ -127,9 +149,12 @@ export function ModalEditAts({
   );
   const [keterangan, setKeterangan] = useState(ats.keterangan || "");
 
-  const kelurahanOptions = getKelurahanByKecamatan(kecamatan);
+  const kelurahanOptions = isLockedKelurahan
+    ? [initialKel]
+    : getKelurahanByKecamatan(kecamatan);
 
   const handleKecamatanChange = (newKec: string) => {
+    if (isLockedKecamatan) return;
     setKecamatan(newKec);
     const kels = getKelurahanByKecamatan(newKec);
     if (kels.length > 0) {
@@ -253,38 +278,60 @@ export function ModalEditAts({
                   <MapPin className="h-3.5 w-3.5" />
                   <span>Wilayah Domisili Anak</span>
                 </div>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                  Kota Tegal
-                </span>
+                <div className="flex items-center gap-1.5">
+                  {(isLockedKecamatan || isLockedKelurahan) && (
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
+                      <Lock className="h-2.5 w-2.5" />
+                      <span>Terkunci</span>
+                    </span>
+                  )}
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                    Kota Tegal
+                  </span>
+                </div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-mono">
-                <div className="flex items-center gap-1 text-muted-foreground">
+                <div className="flex items-center justify-between gap-1 text-muted-foreground bg-background/50 border border-border rounded px-2.5 py-1.5">
                   <span className="font-semibold text-foreground">Kecamatan:</span>
-                  <select
-                    value={kecamatan}
-                    onChange={(e) => handleKecamatanChange(e.target.value)}
-                    className="bg-background border border-border rounded px-2 py-1 text-xs text-foreground focus:border-amber-500 focus:outline-hidden"
-                  >
-                    {DAFTAR_KECAMATAN_TEGAL.map((kec) => (
-                      <option key={kec} value={kec}>
-                        {kec}
-                      </option>
-                    ))}
-                  </select>
+                  {isLockedKecamatan ? (
+                    <span className="font-bold text-foreground flex items-center gap-1">
+                      <span>{kecamatan}</span>
+                      <Lock className="h-3 w-3 text-amber-500" />
+                    </span>
+                  ) : (
+                    <select
+                      value={kecamatan}
+                      onChange={(e) => handleKecamatanChange(e.target.value)}
+                      className="bg-background border border-border rounded px-2 py-0.5 text-xs text-foreground focus:border-amber-500 focus:outline-hidden"
+                    >
+                      {DAFTAR_KECAMATAN_TEGAL.map((kec) => (
+                        <option key={kec} value={kec}>
+                          {kec}
+                        </option>
+                      ))}
+                    </select>
+                  )}
                 </div>
-                <div className="flex items-center gap-1 text-muted-foreground">
+                <div className="flex items-center justify-between gap-1 text-muted-foreground bg-background/50 border border-border rounded px-2.5 py-1.5">
                   <span className="font-semibold text-foreground">Kelurahan:</span>
-                  <select
-                    value={kelurahan}
-                    onChange={(e) => setKelurahan(e.target.value)}
-                    className="bg-background border border-border rounded px-2 py-1 text-xs text-foreground focus:border-amber-500 focus:outline-hidden"
-                  >
-                    {kelurahanOptions.map((kel) => (
-                      <option key={kel} value={kel}>
-                        {kel}
-                      </option>
-                    ))}
-                  </select>
+                  {isLockedKelurahan ? (
+                    <span className="font-bold text-foreground flex items-center gap-1">
+                      <span>{kelurahan}</span>
+                      <Lock className="h-3 w-3 text-amber-500" />
+                    </span>
+                  ) : (
+                    <select
+                      value={kelurahan}
+                      onChange={(e) => setKelurahan(e.target.value)}
+                      className="bg-background border border-border rounded px-2 py-0.5 text-xs text-foreground focus:border-amber-500 focus:outline-hidden"
+                    >
+                      {kelurahanOptions.map((kel) => (
+                        <option key={kel} value={kel}>
+                          {kel}
+                        </option>
+                      ))}
+                    </select>
+                  )}
                 </div>
               </div>
             </div>
@@ -446,34 +493,48 @@ export function ModalEditAts({
                   <label className="text-xs font-medium text-muted-foreground">
                     Kecamatan *
                   </label>
-                  <select
-                    value={kecamatan}
-                    onChange={(e) => handleKecamatanChange(e.target.value)}
-                    className="w-full h-9 rounded-md border border-border bg-card px-3 text-xs font-medium text-foreground focus:border-amber-500 focus:outline-hidden"
-                  >
-                    {DAFTAR_KECAMATAN_TEGAL.map((k) => (
-                      <option key={k} value={k}>
-                        Kec. {k}
-                      </option>
-                    ))}
-                  </select>
+                  {isLockedKecamatan ? (
+                    <div className="flex items-center justify-between h-9 rounded-md border border-border bg-muted/40 px-3 text-xs font-bold text-foreground cursor-not-allowed select-none">
+                      <span>Kec. {kecamatan}</span>
+                      <Lock className="h-3 w-3 text-muted-foreground" />
+                    </div>
+                  ) : (
+                    <select
+                      value={kecamatan}
+                      onChange={(e) => handleKecamatanChange(e.target.value)}
+                      className="w-full h-9 rounded-md border border-border bg-card px-3 text-xs font-medium text-foreground focus:border-amber-500 focus:outline-hidden"
+                    >
+                      {DAFTAR_KECAMATAN_TEGAL.map((k) => (
+                        <option key={k} value={k}>
+                          Kec. {k}
+                        </option>
+                      ))}
+                    </select>
+                  )}
                 </div>
 
                 <div className="space-y-1.5">
                   <label className="text-xs font-medium text-muted-foreground">
                     Kelurahan *
                   </label>
-                  <select
-                    value={kelurahan}
-                    onChange={(e) => setKelurahan(e.target.value)}
-                    className="w-full h-9 rounded-md border border-border bg-card px-3 text-xs font-medium text-foreground focus:border-amber-500 focus:outline-hidden"
-                  >
-                    {kelurahanOptions.map((kel) => (
-                      <option key={kel} value={kel}>
-                        Kel. {kel}
-                      </option>
-                    ))}
-                  </select>
+                  {isLockedKelurahan ? (
+                    <div className="flex items-center justify-between h-9 rounded-md border border-border bg-muted/40 px-3 text-xs font-bold text-foreground cursor-not-allowed select-none">
+                      <span>Kel. {kelurahan}</span>
+                      <Lock className="h-3 w-3 text-muted-foreground" />
+                    </div>
+                  ) : (
+                    <select
+                      value={kelurahan}
+                      onChange={(e) => setKelurahan(e.target.value)}
+                      className="w-full h-9 rounded-md border border-border bg-card px-3 text-xs font-medium text-foreground focus:border-amber-500 focus:outline-hidden"
+                    >
+                      {kelurahanOptions.map((kel) => (
+                        <option key={kel} value={kel}>
+                          Kel. {kel}
+                        </option>
+                      ))}
+                    </select>
+                  )}
                 </div>
               </div>
 
@@ -483,34 +544,48 @@ export function ModalEditAts({
                   <label className="text-xs font-medium text-muted-foreground">
                     RW *
                   </label>
-                  <select
-                    value={rw}
-                    onChange={(e) => setRw(e.target.value)}
-                    className="w-full h-9 rounded-md border border-border bg-card px-3 text-xs font-medium text-foreground focus:border-amber-500 focus:outline-hidden"
-                  >
-                    {DAFTAR_RW_TEGAL.map((r) => (
-                      <option key={r} value={r}>
-                        RW {r}
-                      </option>
-                    ))}
-                  </select>
+                  {isLockedRw ? (
+                    <div className="flex items-center justify-between h-9 rounded-md border border-border bg-muted/40 px-3 text-xs font-bold text-foreground cursor-not-allowed select-none">
+                      <span>RW {rw}</span>
+                      <Lock className="h-3 w-3 text-muted-foreground" />
+                    </div>
+                  ) : (
+                    <select
+                      value={rw}
+                      onChange={(e) => setRw(e.target.value)}
+                      className="w-full h-9 rounded-md border border-border bg-card px-3 text-xs font-medium text-foreground focus:border-amber-500 focus:outline-hidden"
+                    >
+                      {DAFTAR_RW_TEGAL.map((r) => (
+                        <option key={r} value={r}>
+                          RW {r}
+                        </option>
+                      ))}
+                    </select>
+                  )}
                 </div>
 
                 <div className="space-y-1.5">
                   <label className="text-xs font-medium text-muted-foreground">
                     RT *
                   </label>
-                  <select
-                    value={rt}
-                    onChange={(e) => setRt(e.target.value)}
-                    className="w-full h-9 rounded-md border border-border bg-card px-3 text-xs font-medium text-foreground focus:border-amber-500 focus:outline-hidden"
-                  >
-                    {DAFTAR_RT_TEGAL.map((t) => (
-                      <option key={t} value={t}>
-                        RT {t}
-                      </option>
-                    ))}
-                  </select>
+                  {isLockedRt ? (
+                    <div className="flex items-center justify-between h-9 rounded-md border border-border bg-muted/40 px-3 text-xs font-bold text-foreground cursor-not-allowed select-none">
+                      <span>RT {rt}</span>
+                      <Lock className="h-3 w-3 text-muted-foreground" />
+                    </div>
+                  ) : (
+                    <select
+                      value={rt}
+                      onChange={(e) => setRt(e.target.value)}
+                      className="w-full h-9 rounded-md border border-border bg-card px-3 text-xs font-medium text-foreground focus:border-amber-500 focus:outline-hidden"
+                    >
+                      {DAFTAR_RT_TEGAL.map((t) => (
+                        <option key={t} value={t}>
+                          RT {t}
+                        </option>
+                      ))}
+                    </select>
+                  )}
                 </div>
               </div>
 

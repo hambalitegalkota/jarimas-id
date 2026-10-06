@@ -860,7 +860,7 @@ export async function getDataAnakByKomunitas(komunitasId: string): Promise<{
 
     return {
       success: true,
-      data: canViewDetail ? items : [],
+      data: items,
       stats: {
         total: totalCount,
         approved: approvedCount,

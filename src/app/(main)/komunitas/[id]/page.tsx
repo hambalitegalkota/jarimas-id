@@ -21,6 +21,7 @@ import {
   getAnggotaKomunitas,
 } from "@/app/actions/komunitas";
 import { getDataAnakByKomunitas } from "@/app/actions/data-anak";
+import { getDataAtsByKomunitas } from "@/app/actions/data-ats";
 import { getKabarFeed } from "@/app/actions/kabar";
 import { toValidUUID } from "@/lib/utils";
 import { KabarCard } from "@/components/kabar/kabar-card";
@@ -59,6 +60,9 @@ export default async function KomunitasDetailPage({
 
   // Ambil data anak aktual untuk visualisasi Profil Data & Charts real-time
   const { data: dataAnakList } = await getDataAnakByKomunitas(id);
+
+  // Ambil data ATS aktual untuk visualisasi Profil Data & Charts real-time
+  const { data: dataAtsList } = await getDataAtsByKomunitas(id);
 
   // Ambil kabar feed khusus untuk komunitas ini (membersihkan kabar dummy & postingan dari komunitas lain)
   const { data: allKabar } = await getKabarFeed();
@@ -103,6 +107,7 @@ export default async function KomunitasDetailPage({
         anggotaList={anggotaList}
         kabarKomunitas={kabarKomunitas}
         dataAnakList={dataAnakList || []}
+        dataAtsList={dataAtsList || []}
       />
     </div>
   );
