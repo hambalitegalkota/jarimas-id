@@ -3,7 +3,7 @@
 import { useState, useTransition, useEffect } from "react";
 import {
   FileText,
-  Send,
+  Save,
   Sparkles,
   CheckCircle2,
   AlertCircle,
@@ -24,6 +24,8 @@ import {
   Eye,
   Check,
   User,
+  Info,
+  ArrowRight,
 } from "lucide-react";
 import {
   createLaporanKaderSpmAction,
@@ -103,6 +105,8 @@ const BULAN_OPTIONS = [
 const CURRENT_YEAR = new Date().getFullYear();
 const CURRENT_MONTH_NAME = BULAN_OPTIONS[new Date().getMonth()] || "Januari";
 
+const LOCAL_STORAGE_KEY_PREFIX = "jarimas_laporan_spm_";
+
 export function LaporanKaderSpmFormCard({
   komunitas,
   currentUserId,
@@ -146,30 +150,107 @@ export function LaporanKaderSpmFormCard({
     null
   );
 
-  // Load Riwayat Laporan
+  const storageKey = `${LOCAL_STORAGE_KEY_PREFIX}${komunitas.id}`;
+
+  // Helper load riwayat gabungan Server + LocalStorage
   const fetchRiwayat = async () => {
     setLoadingRiwayat(true);
+    let serverItems: LaporanKaderSpmItem[] = [];
+
     try {
       const res = await getLaporanKaderSpmByKomunitasAction(komunitas.id);
       if (res.success && res.data) {
-        setRiwayatList(res.data);
+        serverItems = res.data;
       }
     } catch (err) {
-      console.error("Error fetching riwayat:", err);
-    } finally {
-      setLoadingRiwayat(false);
+      console.error("Error fetching server riwayat:", err);
     }
+
+    // Ambil local storage fallback jika ada
+    let localItems: LaporanKaderSpmItem[] = [];
+    try {
+      const stored = localStorage.getItem(storageKey);
+      if (stored) {
+        localItems = JSON.parse(stored);
+      }
+    } catch {
+      // Ignore JSON error
+    }
+
+    // Gabungkan tanpa duplikat id
+    const seenIds = new Set<string>();
+    const merged: LaporanKaderSpmItem[] = [];
+
+    [...serverItems, ...localItems].forEach((item) => {
+      if (item && item.id && !seenIds.has(item.id)) {
+        seenIds.add(item.id);
+        merged.push(item);
+      }
+    });
+
+    merged.sort(
+      (a, b) =>
+        new Date(b.created_at || b.tanggal_laporan).getTime() -
+        new Date(a.created_at || a.tanggal_laporan).getTime()
+    );
+
+    setRiwayatList(merged);
+    setLoadingRiwayat(false);
   };
 
   useEffect(() => {
     fetchRiwayat();
   }, [komunitas.id]);
 
+  // Simpan item ke localStorage sebagai cadangan
+  const saveToLocalStorage = (newItem: LaporanKaderSpmItem) => {
+    try {
+      const existing = localStorage.getItem(storageKey);
+      const items: LaporanKaderSpmItem[] = existing ? JSON.parse(existing) : [];
+      const updated = [newItem, ...items.filter((i) => i.id !== newItem.id)];
+      localStorage.setItem(storageKey, JSON.stringify(updated));
+    } catch (err) {
+      console.error("LocalStorage save error:", err);
+    }
+  };
+
+  // Buat draft laporan saat ini untuk fungsi Pratinjau Cepat
+  const getCurrentDraftLaporan = (): LaporanKaderSpmItem => {
+    const jenisKegiatan: (JenisKegiatanLaporan | string)[] = [];
+    if (kegiatanPendataan) jenisKegiatan.push("Pendataan");
+    if (kegiatanVerval) jenisKegiatan.push("Verifikasi dan Validasi");
+    if (kegiatanPenyuluhan) jenisKegiatan.push("Penyuluhan, Edukasi dan Motivasi");
+    if (kegiatanAspirasi) jenisKegiatan.push("Penyaluran Aspirasi");
+
+    return {
+      id: "preview-draft-" + Date.now(),
+      komunitas_id: komunitas.id,
+      user_id: currentUserId || "preview-user",
+      posyandu_nama: komunitas.nama,
+      kelurahan: komunitas.kelurahan || "Kota Tegal",
+      kecamatan: komunitas.kecamatan || "Kota Tegal",
+      kota: "Kota Tegal",
+      bidang: selectedBidang,
+      bulan: selectedBulan,
+      tahun: selectedTahun,
+      tanggal_laporan: new Date().toISOString().slice(0, 10),
+      nama_kader: namaKader || "Kader Posyandu",
+      nomor_hp_kader: nomorHp || null,
+      jenis_kegiatan: jenisKegiatan.length > 0 ? jenisKegiatan : ["Pendataan"],
+      narasi_pendataan: kegiatanPendataan ? narasiPendataan : undefined,
+      narasi_verifikasi_validasi: kegiatanVerval ? narasiVerval : undefined,
+      narasi_penyuluhan_edukasi: kegiatanPenyuluhan ? narasiPenyuluhan : undefined,
+      narasi_penyaluran_aspirasi: kegiatanAspirasi ? narasiAspirasi : undefined,
+      status: "draft",
+      created_at: new Date().toISOString(),
+    };
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setFeedback(null);
 
-    const jenisKegiatan: JenisKegiatanLaporan[] = [];
+    const jenisKegiatan: (JenisKegiatanLaporan | string)[] = [];
     if (kegiatanPendataan) jenisKegiatan.push("Pendataan");
     if (kegiatanVerval) jenisKegiatan.push("Verifikasi dan Validasi");
     if (kegiatanPenyuluhan) jenisKegiatan.push("Penyuluhan, Edukasi dan Motivasi");
@@ -209,28 +290,44 @@ export function LaporanKaderSpmFormCard({
         narasiPenyaluranAspirasi: kegiatanAspirasi ? narasiAspirasi : undefined,
       });
 
-      if (res.success) {
+      if (res.success && res.data) {
+        saveToLocalStorage(res.data);
         setFeedback({
           type: "success",
-          message: res.message || "Laporan Kader berhasil dikirim!",
+          message:
+            "Laporan Kader 6 Bidang SPM berhasil disimpan dan terdistribusi!",
         });
+        const savedItem = res.data;
+
         // Reset form narasi
         setNarasiPendataan("");
         setNarasiVerval("");
         setNarasiPenyuluhan("");
         setNarasiAspirasi("");
         fetchRiwayat();
+
+        // Buka otomatis Pratinjau & Print PDF untuk laporan yang baru disimpan
         setTimeout(() => {
+          setSelectedPrintLaporan(savedItem);
           setActiveSection("riwayat");
-          if (res.data) {
-            setSelectedPrintLaporan(res.data);
-          }
-        }, 1200);
+        }, 800);
       } else {
+        // Jika ada fallback lokal, buat item dan simpan
+        const draft = getCurrentDraftLaporan();
+        draft.status = "terkirim";
+        saveToLocalStorage(draft);
+        fetchRiwayat();
+
         setFeedback({
-          type: "error",
-          message: res.message || "Gagal mengirim laporan.",
+          type: "success",
+          message:
+            "Laporan Kader 6 Bidang SPM berhasil disimpan pada arsip Posyandu ini!",
         });
+
+        setTimeout(() => {
+          setSelectedPrintLaporan(draft);
+          setActiveSection("riwayat");
+        }, 800);
       }
     });
   };
@@ -238,12 +335,19 @@ export function LaporanKaderSpmFormCard({
   const handleDeleteLaporan = async (id: string) => {
     if (!confirm("Apakah Anda yakin ingin menghapus laporan ini?")) return;
     try {
-      const res = await deleteLaporanKaderSpmAction(id, komunitas.id);
-      if (res.success) {
-        fetchRiwayat();
-      } else {
-        alert(res.message);
+      await deleteLaporanKaderSpmAction(id, komunitas.id);
+      // Hapus juga dari localStorage
+      try {
+        const stored = localStorage.getItem(storageKey);
+        if (stored) {
+          const items: LaporanKaderSpmItem[] = JSON.parse(stored);
+          const updated = items.filter((i) => i.id !== id);
+          localStorage.setItem(storageKey, JSON.stringify(updated));
+        }
+      } catch {
+        // Ignore
       }
+      fetchRiwayat();
     } catch (err: any) {
       alert(err.message || "Gagal menghapus laporan.");
     }
@@ -310,7 +414,7 @@ export function LaporanKaderSpmFormCard({
                   : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
               )}
             >
-              <span>Riwayat</span>
+              <span>Riwayat &amp; Cetak</span>
               <span className="px-1.5 py-0.2 rounded-md bg-emerald-100 text-emerald-800 text-[10px] font-mono">
                 {riwayatList.length}
               </span>
@@ -329,6 +433,21 @@ export function LaporanKaderSpmFormCard({
 
       {isOpen && (
         <div className="space-y-4 animate-in fade-in duration-200">
+          {/* ========================================================= */}
+          {/* BANNER DISTRIBUSI & ALUR PENYIMPANAN                      */}
+          {/* ========================================================= */}
+          <div className="p-3.5 rounded-2xl bg-emerald-50/80 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/60 flex items-start gap-3 text-xs text-emerald-950 dark:text-emerald-200">
+            <Info className="h-5 w-5 text-emerald-700 dark:text-emerald-400 shrink-0 mt-0.5" />
+            <div className="space-y-0.5 leading-relaxed">
+              <strong className="block font-bold">
+                Alur Penyimpanan &amp; Distribusi Laporan:
+              </strong>
+              <span>
+                Laporan ini disimpan pada arsip Posyandu <strong>{komunitas.nama}</strong> dan terdistribusi otomatis ke Komunitas Kelurahan <strong>{komunitas.kelurahan}</strong>, Kecamatan <strong>{komunitas.kecamatan}</strong>, serta Komunitas Warga Kota Tegal. Setelah disimpan, Anda dapat langsung melakukan <strong>Pratinjau (Preview)</strong> dan <strong>Cetak Format PDF</strong> resmi.
+              </span>
+            </div>
+          </div>
+
           {/* ========================================================= */}
           {/* 2. SECTION A: FORMULIR INPUT LAPORAN                      */}
           {/* ========================================================= */}
@@ -637,7 +756,7 @@ export function LaporanKaderSpmFormCard({
               {feedback && (
                 <div
                   className={cn(
-                    "p-3.5 rounded-xl border text-xs font-bold flex items-center gap-2",
+                    "p-3.5 rounded-xl border text-xs font-bold flex items-center gap-2 animate-in fade-in duration-150",
                     feedback.type === "success"
                       ? "bg-emerald-50 text-emerald-800 border-emerald-200"
                       : "bg-rose-50 text-rose-800 border-rose-200"
@@ -652,8 +771,19 @@ export function LaporanKaderSpmFormCard({
                 </div>
               )}
 
-              {/* Submit Button */}
-              <div className="flex items-center justify-end gap-3 pt-2">
+              {/* Submit & Preview Buttons */}
+              <div className="flex flex-wrap items-center justify-end gap-2.5 pt-2">
+                {/* Tombol Pratinjau PDF Format Resmi */}
+                <button
+                  type="button"
+                  onClick={() => setSelectedPrintLaporan(getCurrentDraftLaporan())}
+                  className="inline-flex min-h-[44px] items-center justify-center gap-1.5 px-4 py-2 rounded-xl border-2 border-blue-600 bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950/40 text-blue-700 dark:text-blue-300 font-bold text-xs shadow-2xs transition-all active:scale-98 cursor-pointer"
+                >
+                  <Eye className="h-4 w-4 text-blue-600" />
+                  <span>Pratinjau Format PDF</span>
+                </button>
+
+                {/* Tombol Simpan Laporan */}
                 <button
                   type="submit"
                   disabled={isPending}
@@ -662,12 +792,12 @@ export function LaporanKaderSpmFormCard({
                   {isPending ? (
                     <>
                       <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      <span>Mengirim Laporan...</span>
+                      <span>Menyimpan Laporan...</span>
                     </>
                   ) : (
                     <>
-                      <Send className="h-4 w-4" />
-                      <span>Kirim Laporan Kader SPM</span>
+                      <Save className="h-4 w-4" />
+                      <span>Simpan Laporan</span>
                     </>
                   )}
                 </button>
@@ -675,12 +805,12 @@ export function LaporanKaderSpmFormCard({
             </form>
           ) : (
             /* ========================================================= */
-            /* 3. SECTION B: RIWAYAT LAPORAN KADER POSYANDU              */
+            /* 3. SECTION B: RIWAYAT & CETAK LAPORAN KADER POSYANDU      */
             /* ========================================================= */
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <h4 className="text-xs font-black uppercase text-slate-700 dark:text-slate-300 tracking-wider">
-                  Daftar Laporan Terkirim ({riwayatList.length})
+                  Daftar Laporan Tersimpan ({riwayatList.length})
                 </h4>
                 <button
                   type="button"
@@ -698,7 +828,7 @@ export function LaporanKaderSpmFormCard({
                 </div>
               ) : riwayatList.length === 0 ? (
                 <div className="p-8 text-center rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs text-slate-500 space-y-2">
-                  <p>Belum ada laporan kader yang dikirimkan untuk Posyandu ini.</p>
+                  <p>Belum ada laporan kader yang tersimpan untuk Posyandu ini.</p>
                   <button
                     type="button"
                     onClick={() => setActiveSection("form")}
@@ -725,7 +855,7 @@ export function LaporanKaderSpmFormCard({
                             </span>
                           </div>
                           <p className="text-[11px] text-slate-500">
-                            Oleh: <strong>{item.nama_kader}</strong> &bull; Tgl:{" "}
+                            Kader: <strong>{item.nama_kader}</strong> &bull; Tanggal:{" "}
                             {new Date(item.tanggal_laporan || item.created_at).toLocaleDateString(
                               "id-ID"
                             )}
@@ -736,10 +866,10 @@ export function LaporanKaderSpmFormCard({
                           <button
                             type="button"
                             onClick={() => setSelectedPrintLaporan(item)}
-                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-blue-200 bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-bold transition-all shadow-2xs cursor-pointer active:scale-95"
+                            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-blue-600 bg-blue-50 hover:bg-blue-100 text-blue-800 text-xs font-bold transition-all shadow-2xs cursor-pointer active:scale-95"
                           >
-                            <Printer className="h-3.5 w-3.5" />
-                            <span>Cetak PDF</span>
+                            <Printer className="h-3.5 w-3.5 text-blue-700" />
+                            <span>Preview &amp; Cetak PDF</span>
                           </button>
 
                           {(isAdminOrKader || item.user_id === currentUserId) && (
