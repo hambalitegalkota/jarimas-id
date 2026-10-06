@@ -53,7 +53,7 @@ export function PaudKomunitasTableRekapSection({
   const [loading, setLoading] = useState<boolean>(true);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [isOpen, setIsOpen] = useState<boolean>(true);
+  const [isOpen, setIsOpen] = useState<boolean>(false);
 
   // Filter States
   const [activeStatusTab, setActiveStatusTab] = useState<
@@ -402,25 +402,35 @@ export function PaudKomunitasTableRekapSection({
   };
 
   return (
-    <section className="rounded-3xl border-2 border-indigo-200/90 dark:border-indigo-800/80 bg-gradient-to-br from-indigo-50/70 via-white to-purple-50/40 dark:from-slate-900 dark:via-slate-900 dark:to-indigo-950/30 p-4 sm:p-6 shadow-md transition-all space-y-5">
+    <section
+      className={cn(
+        "rounded-2xl sm:rounded-3xl border-2 border-indigo-200/90 dark:border-indigo-800/80 bg-gradient-to-br from-indigo-50/70 via-white to-purple-50/40 dark:from-slate-900 dark:via-slate-900 dark:to-indigo-950/30 p-4 sm:p-5 shadow-xs transition-all",
+        isOpen ? "space-y-5 shadow-md" : "space-y-0"
+      )}
+    >
       {/* ========================================================= */}
       {/* 1. HEADER SECTION & CONTROLS                              */}
       {/* ========================================================= */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-indigo-100 dark:border-slate-800 pb-4">
-        <div className="flex items-start sm:items-center gap-3.5">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow-sm border border-indigo-500">
-            <GraduationCap className="h-6 w-6" />
+      <div
+        className={cn(
+          "flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 transition-all",
+          isOpen ? "border-b border-indigo-100 dark:border-slate-800 pb-3.5" : ""
+        )}
+      >
+        <div className="flex items-start sm:items-center gap-3">
+          <div className="flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow-2xs border border-indigo-500">
+            <GraduationCap className="h-5 w-5 sm:h-6 sm:w-6" />
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <h2 className="text-base sm:text-lg font-black text-slate-900 dark:text-slate-100 tracking-tight">
+              <h2 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">
                 Tabel Komunitas Satuan PAUD &amp; PKBM
               </h2>
               <span className="inline-flex items-center gap-1 rounded-full bg-indigo-600 text-white text-[11px] font-black px-2.5 py-0.5 shadow-2xs">
                 {data?.summary.totalLembaga || 219} Lembaga
               </span>
             </div>
-            <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5 leading-relaxed">
+            <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed">
               Pantau rincian keanggotaan berdasarkan peran (Kepala Sekolah, Guru PAUD, Orang Tua/Wali &amp; Komite).
             </p>
           </div>
@@ -428,54 +438,58 @@ export function PaudKomunitasTableRekapSection({
 
         {/* Action Buttons Top Right */}
         <div className="flex items-center gap-2 self-end sm:self-auto flex-wrap">
-          <button
-            type="button"
-            onClick={() => fetchData(true)}
-            disabled={isRefreshing || loading}
-            title="Muat Ulang Data"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300 transition-all shadow-2xs cursor-pointer active:scale-95 disabled:opacity-50"
-          >
-            <RotateCw
-              className={cn("h-3.5 w-3.5", isRefreshing && "animate-spin text-indigo-600")}
-            />
-            <span className="hidden sm:inline">Perbarui</span>
-          </button>
+          {isOpen && (
+            <>
+              <button
+                type="button"
+                onClick={() => fetchData(true)}
+                disabled={isRefreshing || loading}
+                title="Muat Ulang Data"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300 transition-all shadow-2xs cursor-pointer active:scale-95 disabled:opacity-50"
+              >
+                <RotateCw
+                  className={cn("h-3.5 w-3.5", isRefreshing && "animate-spin text-indigo-600")}
+                />
+                <span className="hidden sm:inline">Perbarui</span>
+              </button>
 
-          <button
-            type="button"
-            onClick={handleExportCSV}
-            title="Download CSV"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300 transition-all shadow-2xs cursor-pointer active:scale-95"
-          >
-            <Download className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
-            <span className="hidden sm:inline">Export CSV</span>
-          </button>
+              <button
+                type="button"
+                onClick={handleExportCSV}
+                title="Download CSV"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300 transition-all shadow-2xs cursor-pointer active:scale-95"
+              >
+                <Download className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
+                <span className="hidden sm:inline">Export CSV</span>
+              </button>
 
-          <button
-            type="button"
-            onClick={handleCopySummary}
-            title="Salin Ringkasan Teks"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300 transition-all shadow-2xs cursor-pointer active:scale-95"
-          >
-            {copySuccess ? (
-              <>
-                <Check className="h-3.5 w-3.5 text-emerald-600" />
-                <span className="text-emerald-600 font-bold">Tersalin!</span>
-              </>
-            ) : (
-              <>
-                <Copy className="h-3.5 w-3.5 text-slate-500" />
-                <span className="hidden sm:inline">Salin Info</span>
-              </>
-            )}
-          </button>
+              <button
+                type="button"
+                onClick={handleCopySummary}
+                title="Salin Ringkasan Teks"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300 transition-all shadow-2xs cursor-pointer active:scale-95"
+              >
+                {copySuccess ? (
+                  <>
+                    <Check className="h-3.5 w-3.5 text-emerald-600" />
+                    <span className="text-emerald-600 font-bold">Tersalin!</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="h-3.5 w-3.5 text-slate-500" />
+                    <span className="hidden sm:inline">Salin Info</span>
+                  </>
+                )}
+              </button>
+            </>
+          )}
 
           <button
             type="button"
             onClick={() => setIsOpen(!isOpen)}
-            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 text-xs font-bold text-indigo-700 dark:text-indigo-300 transition-all shadow-2xs cursor-pointer active:scale-95"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-white dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 text-xs font-bold text-indigo-700 dark:text-indigo-300 transition-all shadow-2xs cursor-pointer active:scale-95"
           >
-            <span>{isOpen ? "Sembunyikan" : "Tampilkan"}</span>
+            <span>{isOpen ? "Sembunyikan Tabel" : "Lihat Tabel Rincian"}</span>
             {isOpen ? (
               <ChevronUp className="h-3.5 w-3.5" />
             ) : (
