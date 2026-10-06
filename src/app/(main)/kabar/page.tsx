@@ -233,6 +233,7 @@ export default async function KabarPage({ searchParams }: KabarPageProps) {
               rooms={groupRoomsResult.rooms || []}
               allUsers={registeredUsersResult.users || []}
               currentUserId={currentUserId}
+              isSuperAdmin={isSuperAdmin}
             />
           )}
         </div>

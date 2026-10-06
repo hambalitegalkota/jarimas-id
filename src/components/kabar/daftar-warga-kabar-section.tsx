@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { sendFriendRequest, respondFriendRequest } from "@/app/actions/pertemanan";
 import { ChatDrawerModal } from "@/components/warga/chat-drawer-modal";
+import { useGlobalMessageNotification } from "@/components/notifications/global-message-notification-provider";
 import type { RegisteredUserItem } from "@/types/database";
 
 interface DaftarWargaKabarSectionProps {
@@ -33,27 +34,39 @@ export function DaftarWargaKabarSection({
   initialUsers,
   currentUserId,
 }: DaftarWargaKabarSectionProps) {
+  const { onlineUserIds } = useGlobalMessageNotification();
   const [users, setUsers] = useState<RegisteredUserItem[]>(initialUsers);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedChatUser, setSelectedChatUser] = useState<RegisteredUserItem | null>(null);
   const [loadingActionUserId, setLoadingActionUserId] = useState<string | null>(null);
   const [actionFeedback, setActionFeedback] = useState<string | null>(null);
 
-  // Filter pencarian
+  // Filter pencarian & Prioritaskan pengguna online di posisi teratas
   const filterList = (list: RegisteredUserItem[]) => {
-    if (!searchQuery.trim()) return list;
-    const q = searchQuery.toLowerCase().trim();
-    return list.filter((u) => {
-      const matchName = u.nama_lengkap.toLowerCase().includes(q);
-      const matchEmail = u.email?.toLowerCase().includes(q);
-      const matchCommunity = u.komunitas_list?.some(
-        (c) =>
-          c.nama.toLowerCase().includes(q) ||
-          c.peran.toLowerCase().includes(q) ||
-          c.kecamatan?.toLowerCase().includes(q) ||
-          c.kelurahan?.toLowerCase().includes(q)
-      );
-      return matchName || matchEmail || matchCommunity;
+    let filtered = list;
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      filtered = list.filter((u) => {
+        const matchName = u.nama_lengkap.toLowerCase().includes(q);
+        const matchEmail = u.email?.toLowerCase().includes(q);
+        const matchCommunity = u.komunitas_list?.some(
+          (c) =>
+            c.nama.toLowerCase().includes(q) ||
+            c.peran.toLowerCase().includes(q) ||
+            c.kecamatan?.toLowerCase().includes(q) ||
+            c.kelurahan?.toLowerCase().includes(q)
+        );
+        return matchName || matchEmail || matchCommunity;
+      });
+    }
+
+    return [...filtered].sort((a, b) => {
+      const aOnline = onlineUserIds.has(a.id) ? 1 : 0;
+      const bOnline = onlineUserIds.has(b.id) ? 1 : 0;
+      if (aOnline !== bOnline) {
+        return bOnline - aOnline;
+      }
+      return a.nama_lengkap.localeCompare(b.nama_lengkap, "id-ID");
     });
   };
 
@@ -189,12 +202,17 @@ export function DaftarWargaKabarSection({
 
   const renderUserCard = (userItem: RegisteredUserItem) => {
     const initial = userItem.nama_lengkap.charAt(0).toUpperCase();
+    const isOnline = onlineUserIds.has(userItem.id);
     const isLoading = loadingActionUserId === userItem.id;
 
     return (
       <div
         key={userItem.id}
-        className="flex flex-col justify-between p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-emerald-500/60 transition-all shadow-2xs"
+        className={`flex flex-col justify-between p-4 rounded-2xl border-2 transition-all shadow-2xs ${
+          isOnline
+            ? "border-emerald-400 dark:border-emerald-600 bg-emerald-50/40 dark:bg-emerald-950/20 hover:border-emerald-500 ring-1 ring-emerald-400/20"
+            : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-emerald-500/60"
+        }`}
       >
         <div className="space-y-3">
           {/* Header Card */}
@@ -212,7 +230,16 @@ export function DaftarWargaKabarSection({
                   <span>{initial}</span>
                 )}
               </div>
-              <span className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-emerald-500 border-2 border-white dark:border-slate-900 ring-1 ring-emerald-400" />
+
+              {/* Glowing Online Indicator */}
+              {isOnline ? (
+                <span className="absolute -bottom-1 -right-1 flex h-4 w-4">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-4 w-4 bg-emerald-500 border-2 border-white dark:border-slate-900" />
+                </span>
+              ) : (
+                <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-slate-300 dark:bg-slate-600 border-2 border-white dark:border-slate-900" />
+              )}
             </div>
 
             <div className="min-w-0 flex-1">
@@ -220,6 +247,11 @@ export function DaftarWargaKabarSection({
                 <h4 className="text-sm font-black text-slate-900 dark:text-slate-100 truncate">
                   {userItem.nama_lengkap}
                 </h4>
+                {isOnline && (
+                  <span className="rounded-full bg-emerald-100 dark:bg-emerald-950/80 border border-emerald-300 dark:border-emerald-700 px-1.5 py-0.2 text-[8px] font-black text-emerald-800 dark:text-emerald-300 uppercase shrink-0 animate-pulse">
+                    Online
+                  </span>
+                )}
                 {userItem.is_super_admin && (
                   <span className="rounded-full bg-amber-100 dark:bg-amber-950/80 px-1.5 py-0.2 text-[9px] font-black text-amber-900 dark:text-amber-300 border border-amber-300">
                     Admin
@@ -227,11 +259,16 @@ export function DaftarWargaKabarSection({
                 )}
               </div>
               <span className="text-[10px] text-slate-400 block">
-                Bergabung{" "}
-                {new Date(userItem.created_at).toLocaleDateString("id-ID", {
-                  month: "short",
-                  year: "numeric",
-                })}
+                {isOnline ? (
+                  <span className="text-emerald-700 dark:text-emerald-400 font-bold">
+                    🟢 Sedang Aktif di Web
+                  </span>
+                ) : (
+                  `Bergabung ${new Date(userItem.created_at).toLocaleDateString("id-ID", {
+                    month: "short",
+                    year: "numeric",
+                  })}`
+                )}
               </span>
             </div>
           </div>

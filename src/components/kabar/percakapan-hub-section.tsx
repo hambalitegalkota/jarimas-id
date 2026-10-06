@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { ChatDrawerModal } from "@/components/warga/chat-drawer-modal";
 import { GroupChatModal } from "./group-chat-modal";
+import { useGlobalMessageNotification } from "@/components/notifications/global-message-notification-provider";
 import {
   RecentConversationItem,
   GrupChatRoom,
@@ -32,6 +33,7 @@ interface PercakapanHubSectionProps {
   rooms: GrupChatRoom[];
   allUsers: RegisteredUserItem[];
   currentUserId: string | null;
+  isSuperAdmin?: boolean;
 }
 
 export function PercakapanHubSection({
@@ -39,7 +41,9 @@ export function PercakapanHubSection({
   rooms,
   allUsers,
   currentUserId,
+  isSuperAdmin = false,
 }: PercakapanHubSectionProps) {
+  const { onlineUserIds, isUserOnline } = useGlobalMessageNotification();
   const [subTab, setSubTab] = useState<"pribadi" | "grup">("pribadi");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedDirectUser, setSelectedDirectUser] = useState<RegisteredUserItem | null>(null);
@@ -72,7 +76,7 @@ export function PercakapanHubSection({
     );
   });
 
-  // Filter New Chat Citizen Candidates (excluding current user)
+  // Filter New Chat Citizen Candidates (excluding current user) & Urutkan Pengguna Aktif di Posisi Atas
   const candidateCitizens = allUsers
     .filter((u) => u.id !== currentUserId)
     .filter((u) => {
@@ -83,7 +87,20 @@ export function PercakapanHubSection({
         u.email?.toLowerCase().includes(q) ||
         u.komunitas_list?.some((c) => c.nama.toLowerCase().includes(q))
       );
+    })
+    .sort((a, b) => {
+      // Prioritaskan pengguna yang sedang aktif online di web di barisan paling atas
+      const aOnline = onlineUserIds.has(a.id) ? 1 : 0;
+      const bOnline = onlineUserIds.has(b.id) ? 1 : 0;
+      if (aOnline !== bOnline) {
+        return bOnline - aOnline;
+      }
+      return a.nama_lengkap.localeCompare(b.nama_lengkap, "id-ID");
     });
+
+  const onlineCandidatesCount = candidateCitizens.filter((u) =>
+    onlineUserIds.has(u.id)
+  ).length;
 
   const handleOpenDirectChatFromPartnerId = (partnerId: string) => {
     if (partnerId === JARIMAS_BOT_ID) {
@@ -209,14 +226,54 @@ export function PercakapanHubSection({
 
           {/* New Chat Contact Selector Grid (if opened) */}
           {showNewChatSelector && (
-            <div className="p-4 rounded-3xl border-2 border-emerald-300 dark:border-emerald-800 bg-white dark:bg-slate-900 space-y-3 animate-in fade-in slide-in-from-top-2">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-black text-slate-900 dark:text-slate-100">
-                  PILIH WARGA / KADER UNTUK MEMULAI CHAT
+            <div className="p-4 sm:p-5 rounded-3xl border-2 border-emerald-400/80 dark:border-emerald-700 bg-white dark:bg-slate-900 space-y-3.5 shadow-md shadow-emerald-500/5 animate-in fade-in slide-in-from-top-2">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-2.5">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-xs font-black text-slate-900 dark:text-slate-100 uppercase tracking-wide">
+                    PILIH WARGA / KADER UNTUK MEMULAI CHAT
+                  </span>
+                  {onlineCandidatesCount > 0 && (
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 dark:bg-emerald-950/90 border border-emerald-300 dark:border-emerald-700 px-2.5 py-0.5 text-[10px] font-black text-emerald-800 dark:text-emerald-300 shadow-2xs">
+                      <span className="relative flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                      </span>
+                      <span>{onlineCandidatesCount} Sedang Aktif di Web</span>
+                    </span>
+                  )}
+                </div>
+                <span className="text-[11px] font-bold text-slate-400">
+                  {candidateCitizens.length} Kontak Tersedia
                 </span>
-                <span className="text-[11px] text-slate-400">
-                  {candidateCitizens.length} Kontak
-                </span>
+              </div>
+
+              {/* Notifikasi Deteksi Pengunjung Aktif Realtime */}
+              <div className="flex items-start sm:items-center gap-3 p-3 rounded-2xl bg-gradient-to-r from-emerald-500/15 via-teal-500/10 to-emerald-500/5 border border-emerald-300 dark:border-emerald-800/80 text-xs text-slate-800 dark:text-slate-200">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-emerald-600 text-white font-black text-xs shadow-xs">
+                  <span className="relative flex h-3 w-3">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-200 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-white" />
+                  </span>
+                </div>
+                <div className="min-w-0 flex-1 space-y-0.5">
+                  <p className="font-black text-slate-900 dark:text-slate-100 flex items-center gap-1.5 flex-wrap">
+                    <span>Deteksi Pengunjung Aktif Realtime</span>
+                    {onlineCandidatesCount > 0 ? (
+                      <span className="text-emerald-700 dark:text-emerald-400 font-extrabold text-[11px]">
+                        • {onlineCandidatesCount} warga sedang online saat ini
+                      </span>
+                    ) : (
+                      <span className="text-slate-500 dark:text-slate-400 font-normal text-[11px]">
+                        • Siap mendeteksi warga yang sedang membuka web
+                      </span>
+                    )}
+                  </p>
+                  <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-snug">
+                    {onlineCandidatesCount > 0
+                      ? "Pengguna yang sedang aktif mengunjungi website ditandai dengan lingkaran hijau bercahaya dan ditempatkan otomatis pada barisan paling atas."
+                      : "Daftar diurutkan otomatis dengan memprioritaskan akun yang aktif. Belum ada pengguna lain yang sedang online saat ini."}
+                  </p>
+                </div>
               </div>
 
               {candidateCitizens.length === 0 ? (
@@ -224,39 +281,75 @@ export function PercakapanHubSection({
                   Belum ada kontak satu komunitas yang ditemukan. Bergabunglah dengan komunitas Posyandu, Satuan PAUD, atau Forum RT/RW untuk mulai menjalin percakapan.
                 </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 max-h-60 overflow-y-auto pr-1">
-                  {candidateCitizens.map((userItem) => (
-                    <button
-                      key={userItem.id}
-                      type="button"
-                      onClick={() => {
-                        setSelectedDirectUser(userItem);
-                        setShowNewChatSelector(false);
-                      }}
-                      className="flex items-center gap-2.5 p-2.5 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-emerald-500 bg-slate-50/50 dark:bg-slate-800/40 hover:bg-emerald-50/40 dark:hover:bg-emerald-950/40 text-left transition-all cursor-pointer group"
-                    >
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-600 text-white font-bold text-xs">
-                        {userItem.avatar_url ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={userItem.avatar_url}
-                            alt={userItem.nama_lengkap}
-                            className="h-full w-full rounded-xl object-cover"
-                          />
-                        ) : (
-                          <span>{userItem.nama_lengkap.charAt(0).toUpperCase()}</span>
-                        )}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <h5 className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate group-hover:text-emerald-700">
-                          {userItem.nama_lengkap}
-                        </h5>
-                        <p className="text-[10px] text-slate-400 truncate">
-                          {userItem.komunitas_list?.[0]?.nama || "Warga Kota Tegal"}
-                        </p>
-                      </div>
-                    </button>
-                  ))}
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 max-h-72 overflow-y-auto pr-1">
+                  {candidateCitizens.map((userItem) => {
+                    const isOnline = onlineUserIds.has(userItem.id);
+                    return (
+                      <button
+                        key={userItem.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedDirectUser(userItem);
+                          setShowNewChatSelector(false);
+                        }}
+                        className={`flex items-center gap-2.5 p-3 rounded-2xl border text-left transition-all cursor-pointer group relative ${
+                          isOnline
+                            ? "border-emerald-400 dark:border-emerald-600 bg-emerald-50/80 dark:bg-emerald-950/40 hover:bg-emerald-100/80 dark:hover:bg-emerald-900/50 shadow-xs ring-1 ring-emerald-400/40"
+                            : "border-slate-200 dark:border-slate-800 hover:border-emerald-500 bg-slate-50/50 dark:bg-slate-800/40 hover:bg-emerald-50/40 dark:hover:bg-emerald-950/40"
+                        }`}
+                      >
+                        {/* Avatar & Online status indicator */}
+                        <div className="relative shrink-0">
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-600 text-white font-bold text-xs shadow-xs">
+                            {userItem.avatar_url ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img
+                                src={userItem.avatar_url}
+                                alt={userItem.nama_lengkap}
+                                className="h-full w-full rounded-xl object-cover"
+                              />
+                            ) : (
+                              <span>{userItem.nama_lengkap.charAt(0).toUpperCase()}</span>
+                            )}
+                          </div>
+
+                          {/* Glowing Animated Online Dot */}
+                          {isOnline ? (
+                            <span className="absolute -bottom-1 -right-1 flex h-3.5 w-3.5">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                              <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500 border-2 border-white dark:border-slate-900" />
+                            </span>
+                          ) : (
+                            <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-slate-300 dark:bg-slate-600 border-2 border-white dark:border-slate-900" />
+                          )}
+                        </div>
+
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center justify-between gap-1">
+                            <h5 className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate group-hover:text-emerald-700 dark:group-hover:text-emerald-300">
+                              {userItem.nama_lengkap}
+                            </h5>
+                            {isOnline && (
+                              <span className="rounded-full bg-emerald-600 text-white px-1.5 py-0.2 text-[8px] font-black tracking-wider shrink-0 uppercase shadow-2xs animate-pulse">
+                                Online
+                              </span>
+                            )}
+                          </div>
+                          <p
+                            className={`text-[10px] truncate ${
+                              isOnline
+                                ? "text-emerald-700 dark:text-emerald-400 font-semibold"
+                                : "text-slate-400"
+                            }`}
+                          >
+                            {isOnline
+                              ? "🟢 Sedang Aktif di Web"
+                              : userItem.komunitas_list?.[0]?.nama || "Warga Kota Tegal"}
+                          </p>
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -281,6 +374,7 @@ export function PercakapanHubSection({
             <div className="space-y-2">
               {filteredConversations.map((c) => {
                 const initial = c.partnerName.charAt(0).toUpperCase();
+                const isPartnerOnline = isUserOnline(c.partnerId);
                 const timeStr = new Date(c.lastMessageAt).toLocaleDateString("id-ID", {
                   hour: "2-digit",
                   minute: "2-digit",
@@ -296,7 +390,7 @@ export function PercakapanHubSection({
                     className="w-full flex items-center justify-between p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-800 hover:border-emerald-500 bg-white dark:bg-slate-900 hover:bg-emerald-50/20 dark:hover:bg-slate-800/70 transition-all cursor-pointer text-left shadow-2xs group"
                   >
                     <div className="flex items-center gap-3.5 min-w-0 flex-1">
-                      {/* Avatar */}
+                      {/* Avatar with Live Indicator */}
                       <div className="relative shrink-0">
                         <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-tr from-emerald-600 via-teal-600 to-emerald-800 text-white font-black text-base shadow-sm border border-white dark:border-slate-800">
                           {c.partnerAvatar ? (
@@ -310,15 +404,31 @@ export function PercakapanHubSection({
                             <span>{initial}</span>
                           )}
                         </div>
-                        <span className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-emerald-500 border-2 border-white dark:border-slate-900 ring-1 ring-emerald-400" />
+
+                        {/* Glowing Online indicator if partner is active */}
+                        {isPartnerOnline ? (
+                          <span className="absolute -bottom-0.5 -right-0.5 flex h-4 w-4">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                            <span className="relative inline-flex rounded-full h-4 w-4 bg-emerald-500 border-2 border-white dark:border-slate-900" />
+                          </span>
+                        ) : (
+                          <span className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-slate-300 dark:bg-slate-600 border-2 border-white dark:border-slate-900" />
+                        )}
                       </div>
 
                       {/* Partner Name & Last Message */}
                       <div className="min-w-0 flex-1 space-y-0.5">
                         <div className="flex items-center justify-between gap-2">
-                          <h4 className="text-sm font-black text-slate-900 dark:text-slate-100 truncate group-hover:text-emerald-700 transition-colors">
-                            {c.partnerName}
-                          </h4>
+                          <div className="flex items-center gap-1.5 min-w-0">
+                            <h4 className="text-sm font-black text-slate-900 dark:text-slate-100 truncate group-hover:text-emerald-700 transition-colors">
+                              {c.partnerName}
+                            </h4>
+                            {isPartnerOnline && (
+                              <span className="rounded-full bg-emerald-100 dark:bg-emerald-950/80 border border-emerald-300 dark:border-emerald-700 px-1.5 py-0.2 text-[9px] font-black text-emerald-800 dark:text-emerald-300 shrink-0">
+                                Online
+                              </span>
+                            )}
+                          </div>
                           <span className="text-[10px] text-slate-400 font-mono shrink-0">
                             {timeStr}
                           </span>

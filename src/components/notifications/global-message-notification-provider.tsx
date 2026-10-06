@@ -26,6 +26,7 @@ import type {
   RegisteredUserItem,
   PesanPribadi,
 } from "@/types/database";
+import { JARIMAS_BOT_ID } from "@/types/database";
 import { FloatingMessageNotificationBanner } from "./floating-message-notification-banner";
 import { FloatingUnreadDock } from "./floating-unread-dock";
 import { ChatDrawerModal } from "@/components/warga/chat-drawer-modal";
@@ -39,6 +40,9 @@ interface GlobalMessageNotificationContextType {
   isPillDismissed: boolean;
   isChatDrawerOpen: boolean;
   activeChatTarget: RegisteredUserItem | null;
+  onlineUserIds: Set<string>;
+  totalOnlineCount: number;
+  isUserOnline: (userId: string) => boolean;
   openChatWithUser: (userOrId: RegisteredUserItem | string) => Promise<void>;
   closeChatDrawer: () => void;
   dismissActiveNotification: () => void;
@@ -74,6 +78,9 @@ export function GlobalMessageNotificationProvider({
     useState<IncomingMessageNotificationItem | null>(null);
   const [isMuted, setIsMuted] = useState<boolean>(false);
   const [isPillDismissed, setIsPillDismissed] = useState<boolean>(false);
+
+  // Realtime Active Online Users State
+  const [onlineUserIds, setOnlineUserIds] = useState<Set<string>>(new Set());
 
   // Global Chat Modal State
   const [isChatDrawerOpen, setIsChatDrawerOpen] = useState(false);
@@ -200,6 +207,7 @@ export function GlobalMessageNotificationProvider({
   // Inisialisasi Auth & Supabase Realtime Listener
   useEffect(() => {
     let channel: any = null;
+    let presenceChannel: any = null;
     let authSub: any = null;
     let isMounted = true;
 
@@ -221,6 +229,7 @@ export function GlobalMessageNotificationProvider({
             setTotalUnreadCount(0);
             setUnreadList([]);
             setActiveNotification(null);
+            setOnlineUserIds(new Set());
           }
         }
 
@@ -236,6 +245,7 @@ export function GlobalMessageNotificationProvider({
               setTotalUnreadCount(0);
               setUnreadList([]);
               setActiveNotification(null);
+              setOnlineUserIds(new Set());
               stopTabTitleFlash();
             }
           }
@@ -300,6 +310,53 @@ export function GlobalMessageNotificationProvider({
               }
             )
             .subscribe();
+
+          // 4. Supabase Realtime Presence Channel untuk deteksi pengguna yang sedang aktif di web
+          presenceChannel = supabase.channel("online_citizens_presence", {
+            config: {
+              presence: {
+                key: user.id,
+              },
+            },
+          });
+
+          presenceChannel
+            .on("presence", { event: "sync" }, () => {
+              if (!isMounted) return;
+              const state = presenceChannel.presenceState();
+              const keys = Object.keys(state).filter(
+                (k) => k && k !== "undefined" && k !== "null"
+              );
+              setOnlineUserIds(new Set(keys));
+            })
+            .on("presence", { event: "join" }, ({ key }: any) => {
+              if (!isMounted) return;
+              if (key && key !== "undefined" && key !== "null") {
+                setOnlineUserIds((prev) => new Set([...prev, key]));
+              }
+            })
+            .on("presence", { event: "leave" }, ({ key }: any) => {
+              if (!isMounted) return;
+              if (key) {
+                setOnlineUserIds((prev) => {
+                  const next = new Set(prev);
+                  next.delete(key);
+                  return next;
+                });
+              }
+            })
+            .subscribe(async (status: string) => {
+              if (status === "SUBSCRIBED" && isMounted) {
+                try {
+                  await presenceChannel.track({
+                    user_id: user.id,
+                    online_at: new Date().toISOString(),
+                  });
+                } catch (trackErr) {
+                  console.warn("Realtime presence track notice:", trackErr);
+                }
+              }
+            });
         }
       } catch (err) {
         console.warn("Realtime notification initialization error:", err);
@@ -308,14 +365,14 @@ export function GlobalMessageNotificationProvider({
 
     init();
 
-    // 4. Polling sinkronisasi ringan saat tab aktif
+    // 5. Polling sinkronisasi ringan saat tab aktif
     const interval = setInterval(() => {
       if (typeof document !== "undefined" && !document.hidden && currentUserId) {
         refreshUnreadCount();
       }
     }, 10000);
 
-    // 5. Cross-tab Broadcast Channel synchronization
+    // 6. Cross-tab Broadcast Channel synchronization
     let broadcastChannel: BroadcastChannel | null = null;
     if (typeof window !== "undefined" && "BroadcastChannel" in window) {
       try {
@@ -330,7 +387,7 @@ export function GlobalMessageNotificationProvider({
       }
     }
 
-    // 6. Visibility change handler
+    // 7. Visibility change handler
     const handleVisibilityChange = () => {
       if (typeof document !== "undefined" && !document.hidden) {
         refreshUnreadCount();
@@ -358,8 +415,28 @@ export function GlobalMessageNotificationProvider({
           // Cleanup
         }
       }
+      if (presenceChannel) {
+        try {
+          const supabase = createClient();
+          supabase.removeChannel(presenceChannel);
+        } catch {
+          // Cleanup
+        }
+      }
     };
   }, [currentUserId, handleIncomingMessage, refreshUnreadCount]);
+
+  // Online status helper
+  const isUserOnline = useCallback(
+    (userId: string) => {
+      if (!userId) return false;
+      if (userId === JARIMAS_BOT_ID) return true; // Bot 24/7 selalu online
+      return onlineUserIds.has(userId);
+    },
+    [onlineUserIds]
+  );
+
+  const totalOnlineCount = onlineUserIds.size;
 
   // Dismiss floating banner
   const dismissActiveNotification = useCallback(() => {
@@ -459,6 +536,9 @@ export function GlobalMessageNotificationProvider({
         isPillDismissed,
         isChatDrawerOpen,
         activeChatTarget,
+        onlineUserIds,
+        totalOnlineCount,
+        isUserOnline,
         openChatWithUser,
         closeChatDrawer,
         dismissActiveNotification,

@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { getPrivateConversation, sendPrivateMessage } from "@/app/actions/pertemanan";
 import { createClient } from "@/utils/supabase/client";
+import { useGlobalMessageNotification } from "@/components/notifications/global-message-notification-provider";
 import {
   type PesanPribadi,
   type RegisteredUserItem,
@@ -44,6 +45,17 @@ export function ChatDrawerModal({
   targetUser,
   currentUserId,
 }: ChatDrawerModalProps) {
+  let isOnline = false;
+  try {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const notifContext = useGlobalMessageNotification();
+    if (notifContext && targetUser?.id) {
+      isOnline = notifContext.isUserOnline(targetUser.id);
+    }
+  } catch {
+    // Fallback if rendered outside context
+  }
+
   const [messages, setMessages] = useState<PesanPribadi[]>([]);
   const [inputMessage, setInputMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -243,7 +255,15 @@ export function ChatDrawerModal({
                   <span>{initial}</span>
                 )}
               </div>
-              <span className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-emerald-500 border-2 border-white dark:border-slate-900 ring-1 ring-emerald-400" />
+              {/* Glowing live online indicator */}
+              {isOnline ? (
+                <span className="absolute -bottom-0.5 -right-0.5 flex h-4 w-4">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-4 w-4 bg-emerald-500 border-2 border-white dark:border-slate-900" />
+                </span>
+              ) : (
+                <span className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-slate-300 dark:bg-slate-600 border-2 border-white dark:border-slate-900" />
+              )}
             </div>
 
             {/* User Name & Info */}
@@ -252,6 +272,11 @@ export function ChatDrawerModal({
                 <h3 className="text-sm sm:text-base font-black text-slate-900 dark:text-slate-100 truncate">
                   {targetUser.nama_lengkap}
                 </h3>
+                {isOnline && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 dark:bg-emerald-950/80 px-2 py-0.5 text-[9px] font-black text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700 animate-pulse">
+                    🟢 Online
+                  </span>
+                )}
                 {isJarimasBot ? (
                   <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/80 px-2 py-0.5 text-[9px] font-black text-emerald-900 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700">
                     <Sparkles className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
@@ -268,6 +293,10 @@ export function ChatDrawerModal({
                 {isJarimasBot ? (
                   <span className="text-emerald-600 dark:text-emerald-400 font-semibold">
                     Layanan & Pusat Informasi Warga Jarimas
+                  </span>
+                ) : isOnline ? (
+                  <span className="text-emerald-700 dark:text-emerald-400 font-bold">
+                    Sedang aktif mengunjungi website saat ini
                   </span>
                 ) : primaryCommunity ? (
                   <span>
