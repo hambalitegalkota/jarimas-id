@@ -903,8 +903,6 @@ export function PaudKomunitasTableRekapSection({
                         <th className="py-3 px-2.5 text-center" title="Alumni, Pengunjung, Pengurus Lainnya">
                           Lainnya
                         </th>
-                        <th className="py-3 px-3 text-center">Status</th>
-                        <th className="py-3 px-3 text-center">Aksi</th>
                       </tr>
                     </thead>
 
@@ -1051,31 +1049,6 @@ export function PaudKomunitasTableRekapSection({
                                 </span>
                               )}
                             </td>
-
-                            {/* Status Keanggotaan */}
-                            <td className="py-3.5 px-3 text-center">
-                              {hasMembers ? (
-                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 font-bold text-[11px]">
-                                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                                  <span>Beranggota</span>
-                                </span>
-                              ) : (
-                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 font-semibold text-[11px]">
-                                  <span>Belum Ada</span>
-                                </span>
-                              )}
-                            </td>
-
-                            {/* Aksi */}
-                            <td className="py-3.5 px-3 text-center">
-                              <Link
-                                href={`/komunitas/${item.id}`}
-                                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-white dark:bg-slate-800 hover:bg-indigo-600 hover:text-white dark:hover:bg-indigo-600 text-indigo-700 dark:text-indigo-300 font-bold text-xs transition-all shadow-2xs active:scale-95"
-                              >
-                                <span>Kunjungi</span>
-                                <ExternalLink className="h-3 w-3" />
-                              </Link>
-                            </td>
                           </tr>
                         );
                       })}
@@ -1085,7 +1058,12 @@ export function PaudKomunitasTableRekapSection({
                     <tfoot className="bg-slate-100 dark:bg-slate-800/90 font-black text-slate-900 dark:text-slate-100 border-t-2 border-slate-300 dark:border-slate-700 text-xs">
                       <tr>
                         <td colSpan={2} className="py-3 px-4">
-                          TOTAL ({filteredItems.length} Lembaga Difilter)
+                          <div className="flex items-center justify-between gap-2 flex-wrap">
+                            <span>TOTAL ({filteredItems.length} Lembaga Difilter)</span>
+                            <span className="text-[11px] font-semibold text-slate-500">
+                              {filteredSummary.sudahBeranggota} Beranggota &bull; {filteredSummary.belumBeranggota} Belum
+                            </span>
+                          </div>
                         </td>
                         <td className="py-3 px-3 text-center font-mono text-emerald-700 dark:text-emerald-400 text-sm">
                           {filteredSummary.totalAnggota}
@@ -1104,9 +1082,6 @@ export function PaudKomunitasTableRekapSection({
                         </td>
                         <td className="py-3 px-2.5 text-center font-mono text-slate-700 dark:text-slate-300">
                           {filteredSummary.totalLainnya}
-                        </td>
-                        <td colSpan={2} className="py-3 px-3 text-right text-[11px] text-slate-500">
-                          {filteredSummary.sudahBeranggota} Beranggota &bull; {filteredSummary.belumBeranggota} Belum
                         </td>
                       </tr>
                     </tfoot>

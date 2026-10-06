@@ -471,8 +471,8 @@ export function KomunitasDetailClientView({
         </section>
       )}
 
-      {/* ALERT JIKA BELUM MEMILIKI ADMIN (HANYA PADA WARGA KITA & HANYA PENDUDUK YANG SUDAH BERGABUNG YANG BERHAK MENGAJUKAN ADMIN) */}
-      {!komunitas.hasAdmin && isWargaKita && (
+      {/* ALERT JIKA BELUM MEMILIKI ADMIN (HANYA UNTUK PENGGUNA YANG SUDAH LOGIN & PADA WARGA KITA) */}
+      {Boolean(currentUserId) && !komunitas.hasAdmin && isWargaKita && (
         <section className="rounded-2xl border-2 border-amber-200 bg-amber-50/70 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
           <div className="flex items-start gap-3.5">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-900">
