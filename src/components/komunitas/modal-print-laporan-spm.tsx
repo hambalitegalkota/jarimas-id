@@ -123,7 +123,7 @@ export function ModalPrintLaporanSpm({
               </h3>
               <p className="text-xs font-sans font-bold text-slate-700">
                 Periode Bulan: <span className="uppercase text-blue-900">{laporan.bulan} {laporan.tahun}</span> &bull; Bidang:{" "}
-                <span className="text-blue-900">Kader Bidang {laporan.bidang}</span>
+                <span className="text-blue-900"> {laporan.bidang}</span>
               </p>
             </div>
 
@@ -238,7 +238,7 @@ export function ModalPrintLaporanSpm({
                   <div>
                     <p className="font-semibold text-slate-600">Mengetahui,</p>
                     <p className="font-bold text-slate-900">
-                      Pengurus Posyandu / Kelurahan
+                      Ketua Posyandu / Kelurahan
                     </p>
                   </div>
                   <div>

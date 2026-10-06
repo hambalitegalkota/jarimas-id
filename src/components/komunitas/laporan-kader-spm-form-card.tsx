@@ -199,8 +199,10 @@ export function LaporanKaderSpmFormCard({
   };
 
   useEffect(() => {
-    fetchRiwayat();
-  }, [komunitas.id]);
+    if (currentUserId && isAdminOrKader) {
+      fetchRiwayat();
+    }
+  }, [komunitas.id, currentUserId, isAdminOrKader]);
 
   // Simpan item ke localStorage sebagai cadangan
   const saveToLocalStorage = (newItem: LaporanKaderSpmItem) => {
@@ -359,6 +361,11 @@ export function LaporanKaderSpmFormCard({
     month: "long",
     year: "numeric",
   });
+
+  // Hanya Admin / Pengurus dan Kader Komunitas Posyandu yang bersangkutan yang dapat melihat & menginput
+  if (!currentUserId || !isAdminOrKader) {
+    return null;
+  }
 
   return (
     <section className="rounded-3xl border-2 border-emerald-300/80 dark:border-emerald-800/80 bg-gradient-to-br from-emerald-50/60 via-white to-teal-50/40 dark:from-slate-900 dark:via-slate-900 dark:to-emerald-950/20 p-4 sm:p-6 shadow-sm space-y-5 transition-all">

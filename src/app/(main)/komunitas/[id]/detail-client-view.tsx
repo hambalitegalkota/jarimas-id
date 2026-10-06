@@ -124,6 +124,14 @@ export function KomunitasDetailClientView({
     return isRoleAdmin(userPeran) || isKader;
   }, [isAdminOrKader, currentUserId, isApprovedMember, userPeran, isKader]);
 
+  // Otorisasi Akses Laporan Kader Posyandu 6 Bidang SPM:
+  // Hanya Admin / Pengurus dan Kader Komunitas Posyandu yang bersangkutan (serta Super Admin & Admin Wilayah yang menaunginya)
+  const canAccessLaporanPosyandu = useMemo(() => {
+    if (!currentUserId) return false;
+    if (isAdminOrKader) return true;
+    return isApprovedMember && (isUserAdmin || isKader);
+  }, [isAdminOrKader, currentUserId, isApprovedMember, isUserAdmin, isKader]);
+
   const parsedKontak = useMemo(
     () => parseKontakKomunitas(komunitasData.kontak),
     [komunitasData.kontak]
@@ -1011,13 +1019,13 @@ export function KomunitasDetailClientView({
           {/* ========================================================= */}
           {/* LAPORAN KADER POSYANDU 6 BIDANG SPM                       */}
           {/* ========================================================= */}
-          {/* 1. Komunitas Posyandu: Formulir Input & Riwayat Laporan */}
-          {komunitasData.jenis === "posyandu" && (
+          {/* 1. Komunitas Posyandu: Formulir Input & Riwayat Laporan (Khusus Admin / Pengurus & Kader) */}
+          {komunitasData.jenis === "posyandu" && canAccessLaporanPosyandu && (
             <LaporanKaderSpmFormCard
               komunitas={komunitasData}
               currentUserId={currentUserId}
               userName={myProfileName}
-              isAdminOrKader={isAdminOrKader}
+              isAdminOrKader={canAccessLaporanPosyandu}
             />
           )}
 

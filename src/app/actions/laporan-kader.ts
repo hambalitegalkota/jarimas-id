@@ -75,6 +75,39 @@ export async function createLaporanKaderSpmAction(
     const reportYear = payload.tahun || new Date().getFullYear();
     const generatedId = crypto.randomUUID();
 
+    // 1.5. Validasi Otorisasi: Hanya Admin / Pengurus dan Kader Komunitas Posyandu yang bersangkutan
+    const { data: prof } = await supabase
+      .from("profiles")
+      .select("is_super_admin")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    const isSuperAdmin = prof?.is_super_admin === true;
+
+    if (!isSuperAdmin) {
+      const { data: memberships } = await supabase
+        .from("anggota_komunitas")
+        .select("komunitas_id, peran, status")
+        .eq("user_id", user.id)
+        .eq("status", "approved");
+
+      const hasAccess = (memberships || []).some((m: any) => {
+        const isTargetKom =
+          m.komunitas_id === dbKomunitasId ||
+          m.komunitas_id === payload.komunitasId;
+        const isAdminRole = isRoleAdmin(m.peran);
+        return (isTargetKom && isAdminRole) || isAdminRole;
+      });
+
+      if (!hasAccess) {
+        return {
+          success: false,
+          message:
+            "Akses ditolak: Laporan Kader 6 Bidang SPM hanya dapat diinput oleh Admin / Pengurus dan Kader Posyandu yang bersangkutan.",
+        };
+      }
+    }
+
     // 2. Ambil profile pengguna
     const { data: profile } = await supabase
       .from("profiles")
@@ -187,6 +220,48 @@ export async function getLaporanKaderSpmByKomunitasAction(
   try {
     const supabase = await createClient();
     const dbKomunitasId = toValidUUID(komunitasId);
+
+    // Validasi pengguna login dan wewenang admin/kader
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return {
+        success: true,
+        data: [],
+      };
+    }
+
+    const { data: prof } = await supabase
+      .from("profiles")
+      .select("is_super_admin")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    const isSuperAdmin = prof?.is_super_admin === true;
+
+    if (!isSuperAdmin) {
+      const { data: memberships } = await supabase
+        .from("anggota_komunitas")
+        .select("komunitas_id, peran, status")
+        .eq("user_id", user.id)
+        .eq("status", "approved");
+
+      const hasAccess = (memberships || []).some((m: any) => {
+        const isTargetKom =
+          m.komunitas_id === dbKomunitasId || m.komunitas_id === komunitasId;
+        const isAdminRole = isRoleAdmin(m.peran);
+        return (isTargetKom && isAdminRole) || isAdminRole;
+      });
+
+      if (!hasAccess) {
+        return {
+          success: true,
+          data: [],
+        };
+      }
+    }
 
     const { data, error } = await supabase
       .from("laporan_kader_spm")
@@ -385,6 +460,42 @@ export async function deleteLaporanKaderSpmAction(
         success: false,
         message: "Silakan login terlebih dahulu untuk menghapus laporan.",
       };
+    }
+
+    const { data: prof } = await supabase
+      .from("profiles")
+      .select("is_super_admin")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    const isSuperAdmin = prof?.is_super_admin === true;
+
+    // Cek apakah user adalah pembuat laporan atau admin/pengurus
+    const { data: existingReport } = await supabase
+      .from("laporan_kader_spm")
+      .select("user_id, komunitas_id")
+      .eq("id", laporanId)
+      .maybeSingle();
+
+    if (existingReport && existingReport.user_id !== user.id && !isSuperAdmin) {
+      const { data: memberships } = await supabase
+        .from("anggota_komunitas")
+        .select("peran, status")
+        .eq("user_id", user.id)
+        .eq("komunitas_id", existingReport.komunitas_id)
+        .eq("status", "approved");
+
+      const isKomAdmin = (memberships || []).some((m: any) =>
+        isRoleAdmin(m.peran)
+      );
+
+      if (!isKomAdmin) {
+        return {
+          success: false,
+          message:
+            "Akses ditolak: Anda tidak memiliki wewenang untuk menghapus laporan ini.",
+        };
+      }
     }
 
     const { error: delErr } = await supabase
