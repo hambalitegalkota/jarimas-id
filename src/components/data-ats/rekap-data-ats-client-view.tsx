@@ -461,25 +461,6 @@ export function RekapDataAtsClientView({
                   </div>
                 ))}
               </div>
-
-              <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-2">
-                <span className="text-2xs font-black text-slate-400 uppercase tracking-wider block">
-                  STRUKTUR KATEGORI ATS
-                </span>
-                <div className="h-4 w-full flex rounded-xl overflow-hidden shadow-inner">
-                  {kategoriEntries.map((item) => {
-                    if (item.pct <= 0) return null;
-                    return (
-                      <div
-                        key={item.key}
-                        className={cn("h-full transition-all", item.color)}
-                        style={{ width: `${item.pct}%` }}
-                        title={`${item.label}: ${item.count} (${item.pct}%)`}
-                      />
-                    );
-                  })}
-                </div>
-              </div>
             </div>
 
             {/* 5.2 Keinginan Bersekolah Kembali & Rasio Gender */}
