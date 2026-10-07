@@ -73,10 +73,10 @@ export async function updateSession(request: NextRequest) {
       return NextResponse.redirect(url);
     }
 
-    // Redirect ke halaman utama jika user sudah login tapi mengakses login/register
-    if (user && isAuthRoute) {
+    // Redirect ke halaman profil jika user sudah login tapi mengakses login/register atau beranda (root)
+    if (user && (isAuthRoute || pathname === "/")) {
       const url = request.nextUrl.clone();
-      url.pathname = "/";
+      url.pathname = "/profil";
       return NextResponse.redirect(url);
     }
   } catch (error) {

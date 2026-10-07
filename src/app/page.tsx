@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { redirect } from "next/navigation";
 import {
   HeartPulse,
   GraduationCap,
@@ -92,20 +93,16 @@ const FALLBACK_SHOWCASE_PRODUCTS: MarketProduk[] = [
 export default async function HomePage() {
   const supabase = await createClient();
 
-  // 1. Ambil session user aktif
+  // 1. Ambil session user aktif - Jika sudah login, langsung diarahkan ke halaman profil
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  let profile = null;
   if (user) {
-    const { data: userProfile } = await supabase
-      .from("profiles")
-      .select("nama_lengkap, is_super_admin")
-      .eq("id", user.id)
-      .maybeSingle();
-    profile = userProfile;
+    redirect("/profil");
   }
+
+  let profile = null;
 
   // 2. Ambil data produk resmi dari Jarimas Market
   const { data: dbProducts } = await getMarketProduk();
