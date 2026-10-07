@@ -195,7 +195,7 @@ export function computeTierAndApprover(
       return {
         tierLevel: "RT",
         targetApproverTitle: isAdmin
-          ? `Admin RW ${meta.rw}`
+          ? `Admin RW ${meta.rw} / Kelurahan / Kecamatan`
           : `Admin RT ${meta.rt}`,
       };
     }
@@ -205,7 +205,7 @@ export function computeTierAndApprover(
       return {
         tierLevel: "RW",
         targetApproverTitle: isAdmin
-          ? `Admin Kelurahan ${meta.rawKel || "Terkait"}`
+          ? `Admin Kelurahan ${meta.rawKel || "Terkait"} / Kecamatan`
           : `Admin RW ${meta.rw}`,
       };
     }
@@ -224,9 +224,7 @@ export function computeTierAndApprover(
     if (meta.rawKec && meta.rawKec !== "Kota Tegal") {
       return {
         tierLevel: "Kecamatan",
-        targetApproverTitle: isAdmin
-          ? "Admin Kota Tegal"
-          : `Admin Kecamatan ${meta.rawKec}`,
+        targetApproverTitle: "Super Admin / Admin Kota Tegal",
       };
     }
 
@@ -263,15 +261,12 @@ export function computeTierAndApprover(
 
 /**
  * Memeriksa apakah user saat ini memiliki wewenang untuk menyetujui/menolak permohonan tertentu
- * Aturan Bersih Hierarkis Satu Tingkat Langsung:
- * - Pengajuan Admin RT -> HANYA disetujui oleh Admin RW di atasnya
- * - Pengajuan Admin RW -> HANYA disetujui oleh Admin Kelurahan di atasnya
- * - Pengajuan Admin Kelurahan -> HANYA disetujui oleh Admin Kecamatan di atasnya
- * - Pengajuan Admin Kecamatan -> HANYA disetujui oleh Super Admin
- * - Permohonan Warga RT -> HANYA disetujui oleh Admin RT bersangkutan
- * - Permohonan Warga RW -> HANYA disetujui oleh Admin RW bersangkutan
- * - Permohonan Warga Kelurahan -> HANYA disetujui oleh Admin Kelurahan bersangkutan
- * - Permohonan Warga Kecamatan -> HANYA disetujui oleh Admin Kecamatan bersangkutan
+ * Aturan Hierarkis:
+ * - Admin Kecamatan: Berhak menyetujui permohonan Admin & Warga di tingkat Kelurahan, RW, dan RT dalam kecamatannya
+ * - Admin Kelurahan: Berhak menyetujui permohonan Admin & Warga di tingkat RW dan RT dalam kelurahannya
+ * - Admin RW: Berhak menyetujui permohonan Admin & Warga di tingkat RT dalam RW-nya
+ * - Admin RT: Berhak menyetujui pendaftaran Warga di tingkat RT-nya
+ * - Super Admin / Admin Kota: Berhak menyetujui seluruh tingkatan (Kecamatan, Kelurahan, RW, RT, Posyandu, Satuan PAUD)
  */
 export function checkUserCanApproveItem({
   isSuperAdmin,
@@ -308,53 +303,85 @@ export function checkUserCanApproveItem({
 
   if (targetMeta.jenis === "warga_kita") {
     if (isAdminApp) {
-      // 1. Pengajuan Admin RT -> HANYA Admin RW di atasnya
-      // (Target memiliki RT dan RW, Approver adalah Admin RW pada Kelurahan & RW yang sama)
+      // 1. Pengajuan Admin RT -> Dapat disetujui oleh:
+      //    - Admin RW di atasnya (RW yang sama)
+      //    - Admin Kelurahan di atasnya (Kelurahan yang sama)
+      //    - Admin Kecamatan di atasnya (Kecamatan yang sama)
       if (targetMeta.hasRt && targetMeta.hasRw) {
         return userAdminKomunitas.some((uKom) => {
           const u = extractKomunitasMetadata(uKom);
           if (u.jenis !== "warga_kita") return false;
-          if (u.hasRt) return false; // Bukan Admin RW jika punya RT
-          if (!u.hasRw) return false; // Harus Admin RW
 
-          const kelMatch = !targetMeta.hasKel || !u.hasKel || u.kel === targetMeta.kel;
-          const rwMatch = u.rw === targetMeta.rw;
+          const targetKec = targetMeta.kec || normalizeStr(KELURAHAN_TO_KECAMATAN_MAP[targetMeta.kel]);
+          const kecMatch = Boolean(u.kec && targetKec && u.kec === targetKec);
 
-          return rwMatch && kelMatch;
+          // A. Admin RW di atasnya
+          if (u.hasRw && !u.hasRt) {
+            const rwMatch = u.rw === targetMeta.rw;
+            const kelMatch = !targetMeta.hasKel || !u.hasKel || u.kel === targetMeta.kel;
+            if (rwMatch && kelMatch) return true;
+          }
+
+          // B. Admin Kelurahan di atasnya
+          if (u.hasKel && !u.hasRw && !u.hasRt) {
+            if (u.kel === targetMeta.kel) return true;
+          }
+
+          // C. Admin Kecamatan di atasnya
+          if (u.kec && !u.hasKel && !u.hasRw && !u.hasRt) {
+            if (kecMatch) return true;
+          }
+
+          return false;
         });
       }
 
-      // 2. Pengajuan Admin RW -> HANYA Admin Kelurahan di atasnya
-      // (Target memiliki RW tanpa RT, Approver adalah Admin Kelurahan pada Kelurahan yang sama)
+      // 2. Pengajuan Admin RW -> Dapat disetujui oleh:
+      //    - Admin Kelurahan di atasnya (Kelurahan yang sama)
+      //    - Admin Kecamatan di atasnya (Kecamatan yang sama)
       if (targetMeta.hasRw && !targetMeta.hasRt) {
         return userAdminKomunitas.some((uKom) => {
           const u = extractKomunitasMetadata(uKom);
           if (u.jenis !== "warga_kita") return false;
-          if (u.hasRt || u.hasRw) return false; // Harus Admin Kelurahan (tanpa RW dan RT)
-          if (!u.hasKel) return false; // Harus memiliki kelurahan
 
-          const kelMatch = u.kel === targetMeta.kel;
-          return kelMatch;
+          const targetKec = targetMeta.kec || normalizeStr(KELURAHAN_TO_KECAMATAN_MAP[targetMeta.kel]);
+          const kecMatch = Boolean(u.kec && targetKec && u.kec === targetKec);
+
+          // A. Admin Kelurahan di atasnya
+          if (u.hasKel && !u.hasRw && !u.hasRt) {
+            if (u.kel === targetMeta.kel) return true;
+          }
+
+          // B. Admin Kecamatan di atasnya
+          if (u.kec && !u.hasKel && !u.hasRw && !u.hasRt) {
+            if (kecMatch) return true;
+          }
+
+          return false;
         });
       }
 
-      // 3. Pengajuan Admin Kelurahan -> HANYA Admin Kecamatan di atasnya
-      // (Target memiliki Kelurahan tanpa RW/RT, Approver adalah Admin Kecamatan pada Kecamatan yang sama)
+      // 3. Pengajuan Admin Kelurahan -> Dapat disetujui oleh:
+      //    - Admin Kecamatan di atasnya (Kecamatan yang sama)
       if (targetMeta.hasKel && !targetMeta.hasRw && !targetMeta.hasRt) {
         return userAdminKomunitas.some((uKom) => {
           const u = extractKomunitasMetadata(uKom);
           if (u.jenis !== "warga_kita") return false;
-          if (u.hasRt || u.hasRw || u.hasKel) return false; // Harus Admin Kecamatan murni (tanpa Kel/RW/RT)
 
           const targetKec = targetMeta.kec || normalizeStr(KELURAHAN_TO_KECAMATAN_MAP[targetMeta.kel]);
-          const uKec = u.kec;
+          const kecMatch = Boolean(u.kec && targetKec && u.kec === targetKec);
 
-          return Boolean(uKec && targetKec && uKec === targetKec);
+          // Admin Kecamatan di atasnya
+          if (u.kec && !u.hasKel && !u.hasRw && !u.hasRt) {
+            return kecMatch;
+          }
+
+          return false;
         });
       }
 
       // 4. Pengajuan Admin Kecamatan -> HANYA Super Admin yang bisa approve
-      return false;
+      return isSuperAdmin;
     } else {
       // Regular Member role (Penduduk, Pendatang, Pengunjung, dll)
       return userAdminKomunitas.some((uKom) => {
@@ -363,37 +390,36 @@ export function checkUserCanApproveItem({
         const u = extractKomunitasMetadata(uKom);
         if (u.jenis !== "warga_kita") return false;
 
+        const targetKec = targetMeta.kec || normalizeStr(KELURAHAN_TO_KECAMATAN_MAP[targetMeta.kel]);
+        const kecMatch = Boolean(u.kec && targetKec && u.kec === targetKec);
+
         // Permohonan di RT
         if (targetMeta.hasRt && targetMeta.hasRw) {
-          return (
-            u.rw === targetMeta.rw &&
-            u.rt === targetMeta.rt &&
-            (!targetMeta.hasKel || !u.hasKel || u.kel === targetMeta.kel)
-          );
+          if (u.rt === targetMeta.rt && u.rw === targetMeta.rw && (!targetMeta.hasKel || !u.hasKel || u.kel === targetMeta.kel)) return true;
+          if (u.hasRw && !u.hasRt && u.rw === targetMeta.rw && (!targetMeta.hasKel || !u.hasKel || u.kel === targetMeta.kel)) return true;
+          if (u.hasKel && !u.hasRw && !u.hasRt && u.kel === targetMeta.kel) return true;
+          if (u.kec && !u.hasKel && !u.hasRw && !u.hasRt && kecMatch) return true;
         }
+
         // Permohonan di RW
         if (targetMeta.hasRw && !targetMeta.hasRt) {
-          return (
-            u.rw === targetMeta.rw &&
-            !u.hasRt &&
-            (!targetMeta.hasKel || !u.hasKel || u.kel === targetMeta.kel)
-          );
+          if (u.rw === targetMeta.rw && !u.hasRt && (!targetMeta.hasKel || !u.hasKel || u.kel === targetMeta.kel)) return true;
+          if (u.hasKel && !u.hasRw && !u.hasRt && u.kel === targetMeta.kel) return true;
+          if (u.kec && !u.hasKel && !u.hasRw && !u.hasRt && kecMatch) return true;
         }
+
         // Permohonan di Kelurahan
         if (targetMeta.hasKel && !targetMeta.hasRw && !targetMeta.hasRt) {
-          return (
-            u.kel === targetMeta.kel &&
-            !u.hasRw &&
-            !u.hasRt
-          );
+          if (u.kel === targetMeta.kel && !u.hasRw && !u.hasRt) return true;
+          if (u.kec && !u.hasKel && !u.hasRw && !u.hasRt && kecMatch) return true;
         }
+
         // Permohonan di Kecamatan
-        return (
-          u.kec === targetMeta.kec &&
-          !u.hasKel &&
-          !u.hasRw &&
-          !u.hasRt
-        );
+        if (targetMeta.rawKec && !targetMeta.hasKel && !targetMeta.hasRw && !targetMeta.hasRt) {
+          if (u.kec === targetMeta.kec && !u.hasKel && !u.hasRw && !u.hasRt) return true;
+        }
+
+        return false;
       });
     }
   }
