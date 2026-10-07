@@ -25,6 +25,7 @@ import {
   ALASAN_TIDAK_SEKOLAH_LIST,
   type AlasanTidakSekolah,
   USIA_ATS_OPTIONS,
+  JENJANG_SEKOLAH_ASAL_OPTIONS,
 } from "@/types/database";
 import {
   DAFTAR_KECAMATAN_TEGAL,
@@ -121,6 +122,7 @@ export function FormDataAts({
   const [tinggalBersama, setTinggalBersama] = useState("Orang Tua");
 
   // Riwayat Pendidikan Sebelumnya
+  const [jenjangAsal, setJenjangAsal] = useState<string>(JENJANG_SEKOLAH_ASAL_OPTIONS[0]);
   const [sekolahSebelumnya, setSekolahSebelumnya] = useState("");
   const [kelasTerakhir, setKelasTerakhir] = useState<string>(KELAS_TERAKHIR_OPTIONS[0]);
 
@@ -166,6 +168,7 @@ export function FormDataAts({
     formData.append("kecamatan", kecamatan);
 
     // Sekolah Sebelumnya & Kelas Terakhir
+    formData.append("jenjangAsal", jenjangAsal);
     formData.append("sekolahSebelumnya", sekolahSebelumnya);
     formData.append("kelasTerakhir", kelasTerakhir);
 
@@ -360,7 +363,7 @@ export function FormDataAts({
                 </option>
                 {USIA_ATS_OPTIONS.map((opt) => (
                   <option key={opt} value={opt}>
-                    {opt === "24>" ? "24> (Lebih dari 24 Tahun)" : `${opt} Tahun`}
+                    {opt === "25>" ? "25> (Lebih dari 25 Tahun)" : `${opt} Tahun`}
                   </option>
                 ))}
               </select>
@@ -583,38 +586,58 @@ export function FormDataAts({
           </div>
         </div>
 
-        {/* SEKOLAH SEBELUMNYA & KELAS TERAKHIR */}
-        <div className="flex flex-col sm:grid sm:grid-cols-2 gap-4 pt-3 border-t-2 border-slate-100">
+        {/* JENJANG SEKOLAH ASAL, SEKOLAH SEBELUMNYA & KELAS TERAKHIR */}
+        <div className="space-y-4 pt-3 border-t-2 border-slate-100">
           <div className="space-y-2">
             <label className="text-base font-bold text-slate-900 flex items-center gap-2">
-              <School className="h-5 w-5 text-slate-600" />
-              <span>Sekolah Sebelumnya</span>
-            </label>
-            <input
-              type="text"
-              value={sekolahSebelumnya}
-              onChange={(e) => setSekolahSebelumnya(e.target.value)}
-              placeholder="Contoh: SDN 3 Kejambon / Belum Pernah"
-              className="w-full min-h-[52px] h-13 rounded-xl border-2 border-slate-300 bg-white px-4 text-base text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:outline-hidden"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-base font-bold text-slate-900 flex items-center gap-2">
-              <BookOpen className="h-5 w-5 text-slate-600" />
-              <span>Kelas Terakhir Berhenti</span>
+              <GraduationCap className="h-5 w-5 text-blue-600" />
+              <span>Jenjang Sekolah Sebelumnya / Asal <span className="text-red-500">*</span></span>
             </label>
             <select
-              value={kelasTerakhir}
-              onChange={(e) => setKelasTerakhir(e.target.value)}
-              className="w-full min-h-[52px] h-13 rounded-xl border-2 border-slate-300 bg-white px-4 text-base font-medium text-slate-900 focus:border-blue-600 focus:outline-hidden"
+              value={jenjangAsal}
+              onChange={(e) => setJenjangAsal(e.target.value)}
+              className="w-full min-h-[52px] h-13 rounded-xl border-2 border-slate-300 bg-white px-4 text-base font-semibold text-slate-900 focus:border-blue-600 focus:outline-hidden cursor-pointer"
             >
-              {KELAS_TERAKHIR_OPTIONS.map((kls) => (
-                <option key={kls} value={kls}>
-                  {kls}
+              {JENJANG_SEKOLAH_ASAL_OPTIONS.map((opt) => (
+                <option key={opt} value={opt}>
+                  {opt}
                 </option>
               ))}
             </select>
+          </div>
+
+          <div className="flex flex-col sm:grid sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-base font-bold text-slate-900 flex items-center gap-2">
+                <School className="h-5 w-5 text-slate-600" />
+                <span>Nama Sekolah Sebelumnya (Opsional)</span>
+              </label>
+              <input
+                type="text"
+                value={sekolahSebelumnya}
+                onChange={(e) => setSekolahSebelumnya(e.target.value)}
+                placeholder="Contoh: SDN 3 Kejambon"
+                className="w-full min-h-[52px] h-13 rounded-xl border-2 border-slate-300 bg-white px-4 text-base text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:outline-hidden"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-base font-bold text-slate-900 flex items-center gap-2">
+                <BookOpen className="h-5 w-5 text-slate-600" />
+                <span>Kelas Terakhir Berhenti</span>
+              </label>
+              <select
+                value={kelasTerakhir}
+                onChange={(e) => setKelasTerakhir(e.target.value)}
+                className="w-full min-h-[52px] h-13 rounded-xl border-2 border-slate-300 bg-white px-4 text-base font-medium text-slate-900 focus:border-blue-600 focus:outline-hidden cursor-pointer"
+              >
+                {KELAS_TERAKHIR_OPTIONS.map((kls) => (
+                  <option key={kls} value={kls}>
+                    {kls}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
         </div>
       </div>

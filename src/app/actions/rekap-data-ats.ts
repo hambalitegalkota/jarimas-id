@@ -53,19 +53,20 @@ export interface AtsGenderBreakdown {
 }
 
 export interface AtsJenjangAsalBreakdown {
-  belumSekolah: number;
-  paudTk: number;
-  sdMi: number;
-  smpMts: number;
-  smaSmk: number;
+  belumSekolah: number; // Belum Pernah Bersekolah
+  sdPutus: number;      // SD / MI / Paket A Putus Sekolah / DO
+  sdLulus: number;      // SD / MI / Paket A Lulus Tidak Melanjutkan
+  smpPutus: number;     // SMP / MTs / Paket B Putus Sekolah / DO
+  smpLulus: number;     // SMP / MTs / Paket B Lulus Tidak Melanjutkan
+  smaPutus: number;     // SMA / SMK / MA / Paket C Putus Sekolah
 }
 
 export interface AtsAgeGroupBreakdown {
-  age4_6: number;   // 4-6 tahun (Pra-SD)
-  age7_12: number;  // 7-12 tahun (Usia Wajib Belajar SD)
-  age13_15: number; // 13-15 tahun (Usia Wajib Belajar SMP)
-  age16_18: number; // 16-18 tahun (Usia Wajib Belajar SMA/SMK)
-  ageAbove18: number; // >18 tahun (Usia Dewasa / Kesetaraan Paket C)
+  age7_12: number;   // 7 - 12 Tahun
+  age12_15: number;  // 12 - 15 Tahun
+  age15_18: number;  // 15 - 18 Tahun
+  age18_24: number;  // 18 - 24 Tahun
+  age25Plus: number; // 25 >
 }
 
 export interface AtsReasonCount {
@@ -121,6 +122,111 @@ const DAFTAR_ALASAN_ATS = [
   "Alasan lainnya",
 ];
 
+export function classifyJenjangAsal(rawAsal?: string, rawKelas?: string): {
+  key: keyof AtsJenjangAsalBreakdown;
+  label: string;
+  kategori: "Putus Sekolah (DO)" | "Lulus Tidak Melanjutkan (LTM)" | "Belum Pernah Sekolah (BPS)";
+} {
+  const s = `${rawAsal || ""} ${rawKelas || ""}`.toLowerCase();
+
+  // 1. Belum pernah bersekolah
+  if (
+    s.includes("belum") ||
+    s.includes("bps") ||
+    s.includes("paud") ||
+    s.includes("tk") ||
+    s.includes("tidak pernah")
+  ) {
+    return {
+      key: "belumSekolah",
+      label: "Belum Pernah Bersekolah",
+      kategori: "Belum Pernah Sekolah (BPS)",
+    };
+  }
+
+  // 2. SMA / SMK / MA / Paket C Putus Sekolah
+  if (
+    s.includes("sma") ||
+    s.includes("smk") ||
+    s.includes("ma") ||
+    s.includes("paket c") ||
+    s.includes("kelas 10") ||
+    s.includes("kelas 11") ||
+    s.includes("kelas 12")
+  ) {
+    return {
+      key: "smaPutus",
+      label: "SMA / SMK / MA / Paket C Putus Sekolah",
+      kategori: "Putus Sekolah (DO)",
+    };
+  }
+
+  // 3. SMP / MTs / Paket B
+  if (
+    s.includes("smp") ||
+    s.includes("mts") ||
+    s.includes("paket b") ||
+    s.includes("kelas 7") ||
+    s.includes("kelas 8") ||
+    s.includes("kelas 9")
+  ) {
+    if (
+      s.includes("lulus") ||
+      s.includes("ltm") ||
+      s.includes("tidak lanjut") ||
+      s.includes("tidak melanjutkan")
+    ) {
+      return {
+        key: "smpLulus",
+        label: "SMP / MTs / Paket B Lulus Tidak Melanjutkan",
+        kategori: "Lulus Tidak Melanjutkan (LTM)",
+      };
+    }
+    return {
+      key: "smpPutus",
+      label: "SMP / MTs / Paket B Putus Sekolah / DO",
+      kategori: "Putus Sekolah (DO)",
+    };
+  }
+
+  // 4. SD / MI / Paket A
+  if (
+    s.includes("sd") ||
+    s.includes("mi") ||
+    s.includes("paket a") ||
+    s.includes("kelas 1") ||
+    s.includes("kelas 2") ||
+    s.includes("kelas 3") ||
+    s.includes("kelas 4") ||
+    s.includes("kelas 5") ||
+    s.includes("kelas 6")
+  ) {
+    if (
+      s.includes("lulus") ||
+      s.includes("ltm") ||
+      s.includes("tidak lanjut") ||
+      s.includes("tidak melanjutkan")
+    ) {
+      return {
+        key: "sdLulus",
+        label: "SD / MI / Paket A Lulus Tidak Melanjutkan",
+        kategori: "Lulus Tidak Melanjutkan (LTM)",
+      };
+    }
+    return {
+      key: "sdPutus",
+      label: "SD / MI / Paket A Putus Sekolah / DO",
+      kategori: "Putus Sekolah (DO)",
+    };
+  }
+
+  return {
+    key: "belumSekolah",
+    label: "Belum Pernah Bersekolah",
+    kategori: "Belum Pernah Sekolah (BPS)",
+  };
+}
+
 function calculateAgeFromBirthDate(birthDateStr?: string | null): number {
   if (!birthDateStr) return 14;
   const birth = new Date(birthDateStr);
@@ -131,7 +237,7 @@ function calculateAgeFromBirthDate(birthDateStr?: string | null): number {
   if (m < 0 || (m === 0 && now.getDate() < birth.getDate())) {
     age--;
   }
-  return Math.max(4, Math.min(25, age));
+  return Math.max(4, Math.min(30, age));
 }
 
 function normalizeReasonAts(raw?: string | null): string {
@@ -173,8 +279,8 @@ function createEmptyRekapWilayahAts(id: string, nama: string, tingkat: "kota" | 
     kategori: { putusSekolah: 0, lulusTidakLanjut: 0, belumPernahSekolah: 0 },
     keinginan: { masihAda: 0, tidakAda: 0 },
     gender: { lakiLaki: 0, perempuan: 0, total: 0 },
-    jenjangAsal: { belumSekolah: 0, paudTk: 0, sdMi: 0, smpMts: 0, smaSmk: 0 },
-    usia: { age4_6: 0, age7_12: 0, age13_15: 0, age16_18: 0, ageAbove18: 0 },
+    jenjangAsal: { belumSekolah: 0, sdPutus: 0, sdLulus: 0, smpPutus: 0, smpLulus: 0, smaPutus: 0 },
+    usia: { age7_12: 0, age12_15: 0, age15_18: 0, age18_24: 0, age25Plus: 0 },
     alasanList: DAFTAR_ALASAN_ATS.map((alasan) => ({ alasan, jumlah: 0, persentase: 0 })),
     rekomendasiList: [
       {
@@ -311,30 +417,25 @@ export async function getRekapDataAtsAction(): Promise<{
           }
 
           // Kategori & Jenjang Asal
-          const rawAsal = (parsed.sekolahSebelumnya || "").toLowerCase();
-          if (rawAsal.includes("smp") || rawAsal.includes("mts")) {
-            targetKelItem.jenjangAsal.smpMts += 1;
+          const classified = classifyJenjangAsal(
+            parsed.jenjangAsal || parsed.sekolahSebelumnya,
+            parsed.kelasTerakhir
+          );
+          targetKelItem.jenjangAsal[classified.key] += 1;
+          if (classified.kategori === "Putus Sekolah (DO)") {
             targetKelItem.kategori.putusSekolah += 1;
-          } else if (rawAsal.includes("sma") || rawAsal.includes("smk") || rawAsal.includes("ma")) {
-            targetKelItem.jenjangAsal.smaSmk += 1;
-            targetKelItem.kategori.putusSekolah += 1;
-          } else if (rawAsal.includes("sd") || rawAsal.includes("mi")) {
-            targetKelItem.jenjangAsal.sdMi += 1;
+          } else if (classified.kategori === "Lulus Tidak Melanjutkan (LTM)") {
             targetKelItem.kategori.lulusTidakLanjut += 1;
-          } else if (rawAsal.includes("paud") || rawAsal.includes("tk")) {
-            targetKelItem.jenjangAsal.paudTk += 1;
-            targetKelItem.kategori.belumPernahSekolah += 1;
           } else {
-            targetKelItem.jenjangAsal.belumSekolah += 1;
             targetKelItem.kategori.belumPernahSekolah += 1;
           }
 
           // Usia
-          if (age <= 6) targetKelItem.usia.age4_6 += 1;
-          else if (age <= 12) targetKelItem.usia.age7_12 += 1;
-          else if (age <= 15) targetKelItem.usia.age13_15 += 1;
-          else if (age <= 18) targetKelItem.usia.age16_18 += 1;
-          else targetKelItem.usia.ageAbove18 += 1;
+          if (age <= 12) targetKelItem.usia.age7_12 += 1;
+          else if (age <= 15) targetKelItem.usia.age12_15 += 1;
+          else if (age <= 18) targetKelItem.usia.age15_18 += 1;
+          else if (age <= 24) targetKelItem.usia.age18_24 += 1;
+          else targetKelItem.usia.age25Plus += 1;
 
           // Alasan
           const normReason = normalizeReasonAts(parsed.alasan);
@@ -378,17 +479,18 @@ export async function getRekapDataAtsAction(): Promise<{
 
         // Jenjang Asal
         kecItem.jenjangAsal.belumSekolah += kel.jenjangAsal.belumSekolah;
-        kecItem.jenjangAsal.paudTk += kel.jenjangAsal.paudTk;
-        kecItem.jenjangAsal.sdMi += kel.jenjangAsal.sdMi;
-        kecItem.jenjangAsal.smpMts += kel.jenjangAsal.smpMts;
-        kecItem.jenjangAsal.smaSmk += kel.jenjangAsal.smaSmk;
+        kecItem.jenjangAsal.sdPutus += kel.jenjangAsal.sdPutus;
+        kecItem.jenjangAsal.sdLulus += kel.jenjangAsal.sdLulus;
+        kecItem.jenjangAsal.smpPutus += kel.jenjangAsal.smpPutus;
+        kecItem.jenjangAsal.smpLulus += kel.jenjangAsal.smpLulus;
+        kecItem.jenjangAsal.smaPutus += kel.jenjangAsal.smaPutus;
 
         // Usia
-        kecItem.usia.age4_6 += kel.usia.age4_6;
         kecItem.usia.age7_12 += kel.usia.age7_12;
-        kecItem.usia.age13_15 += kel.usia.age13_15;
-        kecItem.usia.age16_18 += kel.usia.age16_18;
-        kecItem.usia.ageAbove18 += kel.usia.ageAbove18;
+        kecItem.usia.age12_15 += kel.usia.age12_15;
+        kecItem.usia.age15_18 += kel.usia.age15_18;
+        kecItem.usia.age18_24 += kel.usia.age18_24;
+        kecItem.usia.age25Plus += kel.usia.age25Plus;
 
         // Alasan
         kel.alasanList.forEach((r, idx) => {
@@ -433,16 +535,17 @@ export async function getRekapDataAtsAction(): Promise<{
       kotaItem.gender.total += kec.gender.total;
 
       kotaItem.jenjangAsal.belumSekolah += kec.jenjangAsal.belumSekolah;
-      kotaItem.jenjangAsal.paudTk += kec.jenjangAsal.paudTk;
-      kotaItem.jenjangAsal.sdMi += kec.jenjangAsal.sdMi;
-      kotaItem.jenjangAsal.smpMts += kec.jenjangAsal.smpMts;
-      kotaItem.jenjangAsal.smaSmk += kec.jenjangAsal.smaSmk;
+      kotaItem.jenjangAsal.sdPutus += kec.jenjangAsal.sdPutus;
+      kotaItem.jenjangAsal.sdLulus += kec.jenjangAsal.sdLulus;
+      kotaItem.jenjangAsal.smpPutus += kec.jenjangAsal.smpPutus;
+      kotaItem.jenjangAsal.smpLulus += kec.jenjangAsal.smpLulus;
+      kotaItem.jenjangAsal.smaPutus += kec.jenjangAsal.smaPutus;
 
-      kotaItem.usia.age4_6 += kec.usia.age4_6;
       kotaItem.usia.age7_12 += kec.usia.age7_12;
-      kotaItem.usia.age13_15 += kec.usia.age13_15;
-      kotaItem.usia.age16_18 += kec.usia.age16_18;
-      kotaItem.usia.ageAbove18 += kec.usia.ageAbove18;
+      kotaItem.usia.age12_15 += kec.usia.age12_15;
+      kotaItem.usia.age15_18 += kec.usia.age15_18;
+      kotaItem.usia.age18_24 += kec.usia.age18_24;
+      kotaItem.usia.age25Plus += kec.usia.age25Plus;
 
       kec.alasanList.forEach((r, idx) => {
         kotaItem.alasanList[idx].jumlah += r.jumlah;
@@ -586,13 +689,11 @@ export async function getDaftarNamaAtsRekapAction(params: {
       }
 
       // Kategori ATS: Putus Sekolah / Lulus Tidak Melanjutkan / Belum Pernah Sekolah
-      const rawAsal = (parsed.sekolahSebelumnya || "").toLowerCase();
-      let kategoriAts: "Putus Sekolah (DO)" | "Lulus Tidak Melanjutkan (LTM)" | "Belum Pernah Sekolah (BPS)" = "Belum Pernah Sekolah (BPS)";
-      if (rawAsal.includes("smp") || rawAsal.includes("mts") || rawAsal.includes("sma") || rawAsal.includes("smk") || rawAsal.includes("ma")) {
-        kategoriAts = "Putus Sekolah (DO)";
-      } else if (rawAsal.includes("sd") || rawAsal.includes("mi")) {
-        kategoriAts = "Lulus Tidak Melanjutkan (LTM)";
-      }
+      const classified = classifyJenjangAsal(
+        parsed.jenjangAsal || parsed.sekolahSebelumnya,
+        parsed.kelasTerakhir
+      );
+      const kategoriAts = classified.kategori;
 
       // Filter Kategori
       if (params.kategoriAts && params.kategoriAts !== "semua") {

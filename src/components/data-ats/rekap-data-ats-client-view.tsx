@@ -122,11 +122,12 @@ export function RekapDataAtsClientView({
     const j = currentWilayahData.jenjangAsal;
     const total = currentWilayahData.totalAts || 1;
     return [
-      { label: "SMP / MTs (Putus Tingkat SMP)", count: j.smpMts, pct: Math.round((j.smpMts / total) * 100), color: "bg-indigo-600" },
-      { label: "SD / MI (Putus / Lulus Tidak Lanjut)", count: j.sdMi, pct: Math.round((j.sdMi / total) * 100), color: "bg-blue-600" },
-      { label: "SMA / SMK / MA (Putus Tingkat SMA)", count: j.smaSmk, pct: Math.round((j.smaSmk / total) * 100), color: "bg-teal-600" },
-      { label: "Belum Pernah Sekolah (Usia Sekolah)", count: j.belumSekolah, pct: Math.round((j.belumSekolah / total) * 100), color: "bg-rose-500" },
-      { label: "PAUD / TK (Putus Sebelum SD)", count: j.paudTk, pct: Math.round((j.paudTk / total) * 100), color: "bg-amber-500" },
+      { label: "Belum Pernah Bersekolah", count: j.belumSekolah, pct: Math.round((j.belumSekolah / total) * 100), color: "bg-blue-600" },
+      { label: "SD / MI / Paket A Putus Sekolah / DO", count: j.sdPutus, pct: Math.round((j.sdPutus / total) * 100), color: "bg-rose-500" },
+      { label: "SD / MI / Paket A Lulus Tidak Melanjutkan", count: j.sdLulus, pct: Math.round((j.sdLulus / total) * 100), color: "bg-amber-500" },
+      { label: "SMP / MTs / Paket B Putus Sekolah / DO", count: j.smpPutus, pct: Math.round((j.smpPutus / total) * 100), color: "bg-rose-600" },
+      { label: "SMP / MTs / Paket B Lulus Tidak Melanjutkan", count: j.smpLulus, pct: Math.round((j.smpLulus / total) * 100), color: "bg-amber-600" },
+      { label: "SMA / SMK / MA / Paket C Putus Sekolah", count: j.smaPutus, pct: Math.round((j.smaPutus / total) * 100), color: "bg-teal-600" },
     ];
   }, [currentWilayahData]);
 
@@ -700,17 +701,17 @@ export function RekapDataAtsClientView({
                   </h3>
                 </div>
                 <span className="text-2xs font-bold text-slate-500 uppercase">
-                  Rentang 4–&gt;18 Tahun
+                  Rentang 7 - 25+ Tahun
                 </span>
               </div>
 
               <div className="space-y-3">
                 {[
-                  { label: "4–6 Tahun (Usia Pra-SD / Perlu Intervensi PAUD)", count: currentWilayahData.usia.age4_6, color: "bg-teal-500" },
-                  { label: "7–12 Tahun (Usia Wajib Belajar SD / MI)", count: currentWilayahData.usia.age7_12, color: "bg-blue-500" },
-                  { label: "13–15 Tahun (Usia Wajib Belajar SMP / MTs)", count: currentWilayahData.usia.age13_15, color: "bg-indigo-600" },
-                  { label: "16–18 Tahun (Usia Wajib Belajar SMA / SMK)", count: currentWilayahData.usia.age16_18, color: "bg-amber-500" },
-                  { label: ">18 Tahun (Usia Dewasa / Kesetaraan Paket C)", count: currentWilayahData.usia.ageAbove18, color: "bg-rose-500" },
+                  { label: "7 - 12 Tahun", count: currentWilayahData.usia.age7_12, color: "bg-blue-500" },
+                  { label: "12 - 15 Tahun", count: currentWilayahData.usia.age12_15, color: "bg-indigo-600" },
+                  { label: "15 - 18 Tahun", count: currentWilayahData.usia.age15_18, color: "bg-teal-600" },
+                  { label: "18 - 24 Tahun", count: currentWilayahData.usia.age18_24, color: "bg-amber-500" },
+                  { label: "25 >", count: currentWilayahData.usia.age25Plus, color: "bg-rose-500" },
                 ].map((uRow, idx) => {
                   const pct = Math.round((uRow.count / (currentWilayahData.totalAts || 1)) * 100);
                   return (

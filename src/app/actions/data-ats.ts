@@ -25,7 +25,7 @@ function parseUsiaToDate(usiaStr?: string | null, tanggalLahirStr?: string | nul
   const day = String(now.getDate()).padStart(2, "0");
 
   const raw = (usiaStr || tanggalLahirStr || "0").toString().trim();
-  if (raw === "24>" || raw === ">24" || raw.includes(">")) {
+  if (raw === "25>" || raw === ">25" || raw === "24>" || raw === ">24" || raw.includes(">")) {
     return `${currentYear - 25}-01-01`;
   }
 
@@ -90,6 +90,7 @@ export async function createDataAts(formData: FormData): Promise<{
     const rw = formData.get("rw")?.toString()?.trim() || "";
     const kelurahan = formData.get("kelurahan")?.toString()?.trim() || "Randugunting";
     const kecamatan = formData.get("kecamatan")?.toString()?.trim() || "Tegal Selatan";
+    const jenjangAsal = formData.get("jenjangAsal")?.toString()?.trim() || "";
     const sekolahSebelumnya = formData.get("sekolahSebelumnya")?.toString()?.trim() || "";
     const kelasTerakhir = formData.get("kelasTerakhir")?.toString()?.trim() || "";
 
@@ -112,6 +113,7 @@ export async function createDataAts(formData: FormData): Promise<{
       rw,
       kelurahan,
       kecamatan,
+      jenjangAsal,
       sekolahSebelumnya,
       kelasTerakhir,
       keinginanSekolah,
@@ -134,6 +136,7 @@ export async function createDataAts(formData: FormData): Promise<{
     if (rw) formattedAlasan += ` [RW:${rw}]`;
     if (kelurahan) formattedAlasan += ` [KEL:${kelurahan}]`;
     if (kecamatan) formattedAlasan += ` [KEC:${kecamatan}]`;
+    if (jenjangAsal) formattedAlasan += ` [JENJANG_ASAL:${jenjangAsal}]`;
     if (sekolahSebelumnya) formattedAlasan += ` [SEKOLAH_ASAL:${sekolahSebelumnya}]`;
     if (kelasTerakhir) formattedAlasan += ` [KELAS:${kelasTerakhir}]`;
     if (keterangan) formattedAlasan += ` [KET:${keterangan}]`;
@@ -357,6 +360,7 @@ function parseAtsDetails(alasanSekolahRaw?: string | null, fallbackKomunitas?: a
   rw: string;
   kelurahan: string;
   kecamatan: string;
+  jenjangAsal: string;
   sekolahSebelumnya: string;
   kelasTerakhir: string;
 } {
@@ -371,6 +375,7 @@ function parseAtsDetails(alasanSekolahRaw?: string | null, fallbackKomunitas?: a
   let rw = komMeta?.rawRw ? String(komMeta.rawRw) : "";
   let kelurahan = komMeta?.rawKel ? String(komMeta.rawKel) : "";
   let kecamatan = komMeta?.rawKec ? String(komMeta.rawKec) : "";
+  let jenjangAsal = "";
   let sekolahSebelumnya = "";
   let kelasTerakhir = "";
 
@@ -401,6 +406,9 @@ function parseAtsDetails(alasanSekolahRaw?: string | null, fallbackKomunitas?: a
   const matchKec = raw.match(/\[KEC(?:AMATAN)?\s*:\s*([^\]]+)\]/i);
   if (matchKec && matchKec[1]) kecamatan = matchKec[1].trim();
 
+  const matchJenjangAsal = raw.match(/\[JENJANG_ASAL\s*:\s*([^\]]+)\]/i);
+  if (matchJenjangAsal && matchJenjangAsal[1]) jenjangAsal = matchJenjangAsal[1].trim();
+
   const matchSekolahAsal = raw.match(/\[SEKOLAH_ASAL\s*:\s*([^\]]+)\]/i);
   if (matchSekolahAsal && matchSekolahAsal[1]) sekolahSebelumnya = matchSekolahAsal[1].trim();
 
@@ -412,6 +420,10 @@ function parseAtsDetails(alasanSekolahRaw?: string | null, fallbackKomunitas?: a
     keterangan = matchKet[1].trim();
   }
 
+  if (!jenjangAsal && sekolahSebelumnya) {
+    jenjangAsal = sekolahSebelumnya;
+  }
+
   return {
     keinginan,
     alasan,
@@ -421,6 +433,7 @@ function parseAtsDetails(alasanSekolahRaw?: string | null, fallbackKomunitas?: a
     rw,
     kelurahan,
     kecamatan,
+    jenjangAsal,
     sekolahSebelumnya,
     kelasTerakhir,
   };
@@ -519,6 +532,7 @@ export async function updateDataAts(
     const rw = formData.get("rw")?.toString()?.trim() || "";
     const kelurahan = formData.get("kelurahan")?.toString()?.trim() || "Randugunting";
     const kecamatan = formData.get("kecamatan")?.toString()?.trim() || "Tegal Selatan";
+    const jenjangAsal = formData.get("jenjangAsal")?.toString()?.trim() || "";
     const sekolahSebelumnya = formData.get("sekolahSebelumnya")?.toString()?.trim() || "";
     const kelasTerakhir = formData.get("kelasTerakhir")?.toString()?.trim() || "";
 
@@ -543,6 +557,7 @@ export async function updateDataAts(
       rw,
       kelurahan,
       kecamatan,
+      jenjangAsal,
       sekolahSebelumnya,
       kelasTerakhir,
       keinginanSekolah,
@@ -565,6 +580,7 @@ export async function updateDataAts(
     if (rw) formattedAlasan += ` [RW:${rw}]`;
     if (kelurahan) formattedAlasan += ` [KEL:${kelurahan}]`;
     if (kecamatan) formattedAlasan += ` [KEC:${kecamatan}]`;
+    if (jenjangAsal) formattedAlasan += ` [JENJANG_ASAL:${jenjangAsal}]`;
     if (sekolahSebelumnya) formattedAlasan += ` [SEKOLAH_ASAL:${sekolahSebelumnya}]`;
     if (kelasTerakhir) formattedAlasan += ` [KELAS:${kelasTerakhir}]`;
     if (keterangan) formattedAlasan += ` [KET:${keterangan}]`;
@@ -623,6 +639,7 @@ export async function updateDataAts(
       rw: parsed.rw,
       kelurahan: parsed.kelurahan,
       kecamatan: parsed.kecamatan,
+      jenjang_asal: parsed.jenjangAsal,
       sekolah_sebelumnya: parsed.sekolahSebelumnya,
       kelas_terakhir: parsed.kelasTerakhir,
       keinginan_sekolah: parsed.keinginan,
@@ -1086,6 +1103,7 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
           rw: parsed.rw,
           kelurahan: parsed.kelurahan,
           kecamatan: parsed.kecamatan,
+          jenjang_asal: parsed.jenjangAsal,
           sekolah_sebelumnya: parsed.sekolahSebelumnya,
           kelas_terakhir: parsed.kelasTerakhir,
           keinginan_sekolah: parsed.keinginan,

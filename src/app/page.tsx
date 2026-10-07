@@ -149,26 +149,13 @@ export default async function HomePage() {
 
         {/* Right Auth / Profile Button */}
         <div className="flex items-center gap-2 shrink-0">
-          {user ? (
-            <Link
-              href="/profil"
-              className="inline-flex min-h-[40px] items-center gap-2 rounded-xl border-2 border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/40 px-3.5 py-1.5 text-xs font-bold text-emerald-800 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-all cursor-pointer active:scale-98 shadow-2xs"
-            >
-              <div className="h-2 w-2 rounded-full bg-emerald-500 animate-ping" />
-              <span className="hidden sm:inline">
-                {profile?.nama_lengkap || "Profil Saya"}
-              </span>
-              <span className="sm:hidden">Profil</span>
-            </Link>
-          ) : (
-            <Link
-              href="/login"
-              className="inline-flex min-h-[40px] items-center gap-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 px-4 py-1.5 text-xs font-bold text-white transition-all cursor-pointer active:scale-98 shadow-xs"
-            >
-              <span>Masuk</span>
-              <ArrowRight className="h-3.5 w-3.5" />
-            </Link>
-          )}
+          <Link
+            href="/login"
+            className="inline-flex min-h-[40px] items-center gap-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 px-4 py-1.5 text-xs font-bold text-white transition-all cursor-pointer active:scale-98 shadow-xs"
+          >
+            <span>Masuk</span>
+            <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
         </div>
       </header>
 

@@ -26,6 +26,7 @@ import {
   ALASAN_TIDAK_SEKOLAH_LIST,
   type AlasanTidakSekolah,
   USIA_ATS_OPTIONS,
+  JENJANG_SEKOLAH_ASAL_OPTIONS,
   type DataAtsItem,
 } from "@/types/database";
 import {
@@ -50,8 +51,8 @@ interface ModalEditAtsProps {
 function getUsiaFromBirthDate(birthDateString?: string | null): string {
   if (!birthDateString) return "10";
   const str = birthDateString.trim();
-  if (str === "24>" || str === ">24" || str.includes(">")) {
-    return "24>";
+  if (str === "25>" || str === ">25" || str === "24>" || str === ">24" || str.includes(">")) {
+    return "25>";
   }
   if (/^\d+$/.test(str)) {
     return str;
@@ -71,7 +72,7 @@ function getUsiaFromBirthDate(birthDateString?: string | null): string {
     if (months < 0 || (months === 0 && now.getDate() < birthDate.getDate())) {
       years--;
     }
-    if (years >= 25) return "24>";
+    if (years >= 25) return "25>";
     if (years < 0) return "0";
     return String(years);
   } catch {
@@ -133,6 +134,15 @@ export function ModalEditAts({
   );
 
   // Riwayat Pendidikan Sebelumnya
+  const [jenjangAsal, setJenjangAsal] = useState<string>(() => {
+    if (ats.jenjang_asal && JENJANG_SEKOLAH_ASAL_OPTIONS.includes(ats.jenjang_asal as any)) {
+      return ats.jenjang_asal;
+    }
+    if (ats.sekolah_sebelumnya && JENJANG_SEKOLAH_ASAL_OPTIONS.includes(ats.sekolah_sebelumnya as any)) {
+      return ats.sekolah_sebelumnya;
+    }
+    return JENJANG_SEKOLAH_ASAL_OPTIONS[0];
+  });
   const [sekolahSebelumnya, setSekolahSebelumnya] = useState(
     ats.sekolah_sebelumnya || ""
   );
@@ -188,6 +198,7 @@ export function ModalEditAts({
     formData.append("kecamatan", kecamatan);
 
     // Sekolah Sebelumnya & Kelas Terakhir
+    formData.append("jenjangAsal", jenjangAsal);
     formData.append("sekolahSebelumnya", sekolahSebelumnya);
     formData.append("kelasTerakhir", kelasTerakhir);
 
@@ -376,7 +387,7 @@ export function ModalEditAts({
                     >
                       {USIA_ATS_OPTIONS.map((opt) => (
                         <option key={opt} value={opt}>
-                          {opt === "24>" ? "24> (Lebih dari 24 Tahun)" : `${opt} Tahun`}
+                          {opt === "25>" ? "25> (Lebih dari 25 Tahun)" : `${opt} Tahun`}
                         </option>
                       ))}
                     </select>
@@ -589,38 +600,58 @@ export function ModalEditAts({
                 </div>
               </div>
 
-              {/* SEKOLAH SEBELUMNYA & KELAS TERAKHIR */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-border">
+              {/* JENJANG SEKOLAH ASAL, SEKOLAH SEBELUMNYA & KELAS TERAKHIR */}
+              <div className="space-y-3 pt-2 border-t border-border">
                 <div className="space-y-1.5">
                   <label className="text-xs font-medium text-muted-foreground flex items-center gap-1">
-                    <School className="h-3.5 w-3.5 text-muted-foreground" />
-                    <span>Sekolah Sebelumnya</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={sekolahSebelumnya}
-                    onChange={(e) => setSekolahSebelumnya(e.target.value)}
-                    placeholder="Nama Sekolah Sebelumnya"
-                    className="w-full h-9 rounded-md border border-border bg-card px-3 text-xs text-foreground placeholder:text-muted-foreground focus:border-amber-500 focus:outline-hidden"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-muted-foreground flex items-center gap-1">
-                    <BookOpen className="h-3.5 w-3.5 text-muted-foreground" />
-                    <span>Kelas Terakhir Saat Berhenti</span>
+                    <GraduationCap className="h-3.5 w-3.5 text-amber-500" />
+                    <span>Jenjang Sekolah Sebelumnya / Asal *</span>
                   </label>
                   <select
-                    value={kelasTerakhir}
-                    onChange={(e) => setKelasTerakhir(e.target.value)}
-                    className="w-full h-9 rounded-md border border-border bg-card px-3 text-xs font-medium text-foreground focus:border-amber-500 focus:outline-hidden"
+                    value={jenjangAsal}
+                    onChange={(e) => setJenjangAsal(e.target.value)}
+                    className="w-full h-9 rounded-md border border-border bg-card px-3 text-xs font-semibold text-foreground focus:border-amber-500 focus:outline-hidden"
                   >
-                    {KELAS_TERAKHIR_OPTIONS.map((kls) => (
-                      <option key={kls} value={kls}>
-                        {kls}
+                    {JENJANG_SEKOLAH_ASAL_OPTIONS.map((opt) => (
+                      <option key={opt} value={opt}>
+                        {opt}
                       </option>
                     ))}
                   </select>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-muted-foreground flex items-center gap-1">
+                      <School className="h-3.5 w-3.5 text-muted-foreground" />
+                      <span>Nama Sekolah Sebelumnya (Opsional)</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={sekolahSebelumnya}
+                      onChange={(e) => setSekolahSebelumnya(e.target.value)}
+                      placeholder="Contoh: SDN 3 Kejambon"
+                      className="w-full h-9 rounded-md border border-border bg-card px-3 text-xs text-foreground placeholder:text-muted-foreground focus:border-amber-500 focus:outline-hidden"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-muted-foreground flex items-center gap-1">
+                      <BookOpen className="h-3.5 w-3.5 text-muted-foreground" />
+                      <span>Kelas Terakhir Saat Berhenti</span>
+                    </label>
+                    <select
+                      value={kelasTerakhir}
+                      onChange={(e) => setKelasTerakhir(e.target.value)}
+                      className="w-full h-9 rounded-md border border-border bg-card px-3 text-xs font-medium text-foreground focus:border-amber-500 focus:outline-hidden"
+                    >
+                      {KELAS_TERAKHIR_OPTIONS.map((kls) => (
+                        <option key={kls} value={kls}>
+                          {kls}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               </div>
             </div>

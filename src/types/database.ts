@@ -242,9 +242,21 @@ export const USIA_OPTIONS = [
 
 export type UsiaOption = typeof USIA_OPTIONS[number];
 
-// Opsi Usia khusus Data ATS (dimulai dari usia wajib sekolah SD 8 tahun ke atas s/d >24 tahun)
-// Usia 0 sampai 6 tahun dialokasikan khusus pada Data Anak (Balita & PAUD)
+// Opsi Jenjang Sekolah Sebelumnya / Asal untuk Data ATS
+export const JENJANG_SEKOLAH_ASAL_OPTIONS = [
+  "Belum Pernah Bersekolah",
+  "SD / MI / Paket A Putus Sekolah / DO",
+  "SD / MI / Paket A Lulus Tidak Melanjutkan",
+  "SMP / MTs / Paket B Putus Sekolah / DO",
+  "SMP / MTs / Paket B Lulus Tidak Melanjutkan",
+  "SMA / SMK / MA / Paket C Putus Sekolah",
+] as const;
+
+export type JenjangSekolahAsalOption = typeof JENJANG_SEKOLAH_ASAL_OPTIONS[number];
+
+// Opsi Usia khusus Data ATS (dimulai dari usia wajib belajar 7 tahun ke atas s/d 25>)
 export const USIA_ATS_OPTIONS = [
+  "7",
   "8",
   "9",
   "10",
@@ -262,7 +274,8 @@ export const USIA_ATS_OPTIONS = [
   "22",
   "23",
   "24",
-  "24>",
+  "25",
+  "25>",
 ] as const;
 
 export type UsiaAtsOption = typeof USIA_ATS_OPTIONS[number];
@@ -346,6 +359,7 @@ export interface DataAtsItem {
   kelurahan?: string | null;
   kecamatan?: string | null;
   sekolah_sebelumnya?: string | null;
+  jenjang_asal?: string | null;
   kelas_terakhir?: string | null;
   keinginan_sekolah: "Masih Ada" | "Tidak Ada";
   alasan_tidak_sekolah: AlasanTidakSekolah;

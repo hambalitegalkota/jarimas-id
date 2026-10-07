@@ -503,6 +503,7 @@ export interface ParsedAtsDetails {
   rw: string;
   kelurahan: string;
   kecamatan: string;
+  jenjangAsal: string;
   sekolahSebelumnya: string;
   kelasTerakhir: string;
 }
@@ -522,6 +523,7 @@ export function parseAtsDetails(
   let rw = komMeta?.rawRw ? String(komMeta.rawRw) : "";
   let kelurahan = komMeta?.rawKel ? String(komMeta.rawKel) : "";
   let kecamatan = komMeta?.rawKec ? String(komMeta.rawKec) : "";
+  let jenjangAsal = "";
   let sekolahSebelumnya = "";
   let kelasTerakhir = "";
 
@@ -552,6 +554,9 @@ export function parseAtsDetails(
   const matchKec = raw.match(/\[KEC(?:AMATAN)?\s*:\s*([^\]]+)\]/i);
   if (matchKec && matchKec[1]) kecamatan = matchKec[1].trim();
 
+  const matchJenjangAsal = raw.match(/\[JENJANG_ASAL\s*:\s*([^\]]+)\]/i);
+  if (matchJenjangAsal && matchJenjangAsal[1]) jenjangAsal = matchJenjangAsal[1].trim();
+
   const matchSekolahAsal = raw.match(/\[SEKOLAH_ASAL\s*:\s*([^\]]+)\]/i);
   if (matchSekolahAsal && matchSekolahAsal[1]) sekolahSebelumnya = matchSekolahAsal[1].trim();
 
@@ -563,6 +568,11 @@ export function parseAtsDetails(
     keterangan = matchKet[1].trim();
   }
 
+  // Fallback: jika jenjangAsal belum ada, gunakan sekolahSebelumnya jika itu merupakan opsi jenjang
+  if (!jenjangAsal && sekolahSebelumnya) {
+    jenjangAsal = sekolahSebelumnya;
+  }
+
   return {
     keinginan,
     alasan,
@@ -572,6 +582,7 @@ export function parseAtsDetails(
     rw,
     kelurahan,
     kecamatan,
+    jenjangAsal,
     sekolahSebelumnya,
     kelasTerakhir,
   };

@@ -246,6 +246,12 @@ export const DataAtsSchema = z.object({
     .optional()
     .nullable()
     .or(z.literal("")),
+  jenjangAsal: z
+    .string()
+    .trim()
+    .optional()
+    .nullable()
+    .or(z.literal("")),
   sekolahSebelumnya: z
     .string()
     .trim()

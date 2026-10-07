@@ -41,8 +41,8 @@ interface CardDataAtsProps {
 function calculateAge(birthDateString: string): string {
   if (!birthDateString) return "-";
   const str = birthDateString.trim();
-  if (str === "24>" || str === ">24" || str.includes(">")) {
-    return "> 24 Tahun";
+  if (str === "25>" || str === ">25" || str === "24>" || str === ">24" || str.includes(">")) {
+    return "> 25 Tahun";
   }
   if (/^\d+$/.test(str)) {
     return `${str} Tahun`;
@@ -68,7 +68,7 @@ function calculateAge(birthDateString: string): string {
     }
 
     if (years >= 25) {
-      return "> 24 Tahun";
+      return "> 25 Tahun";
     }
     if (years === 0 && months === 0) {
       return "0 Tahun";
