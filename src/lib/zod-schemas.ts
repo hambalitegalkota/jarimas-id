@@ -209,9 +209,14 @@ export const DataAtsSchema = z.object({
   nomorHp: z
     .string()
     .trim()
-    .min(10, "Nomor HP minimal 10 digit")
-    .max(16, "Nomor HP maksimal 16 digit")
-    .regex(/^(\+62|62|0)[0-9]{8,14}$/, "Format nomor HP tidak valid (contoh: 081234567890)"),
+    .optional()
+    .nullable()
+    .or(z.literal(""))
+    .refine((val) => {
+      if (!val || val.trim() === "" || val === "-" || val === "0") return true;
+      const digits = val.replace(/\D/g, "");
+      return digits.length >= 7 && digits.length <= 16;
+    }, "Format nomor HP tidak valid (minimal 8-15 digit)"),
   tinggalBersama: z
     .string()
     .trim()

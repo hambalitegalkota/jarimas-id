@@ -82,7 +82,7 @@ export async function createDataAts(formData: FormData): Promise<{
     const tanggalLahir = parseUsiaToDate(usia, tanggalLahirInput);
     const jenisKelamin = formData.get("jenisKelamin")?.toString() || "L";
     const namaOrangtua = formData.get("namaOrangtua")?.toString() || "";
-    const nomorHp = formData.get("nomorHp")?.toString() || "";
+    const nomorHp = (formData.get("nomorHp")?.toString() || "").trim();
     const tinggalBersama = formData.get("tinggalBersama")?.toString() || "Orang Tua";
 
     // Alamat, RT/RW, Wilayah & Riwayat Sekolah
@@ -130,6 +130,47 @@ export async function createDataAts(formData: FormData): Promise<{
       };
     }
 
+    // Pastikan profile user ada di tabel public.profiles untuk foreign key
+    const { data: profileCheck } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (!profileCheck) {
+      await supabase.from("profiles").upsert({
+        id: user.id,
+        nama_lengkap: user.user_metadata?.nama_lengkap || user.user_metadata?.name || user.email?.split("@")[0] || "Pengguna",
+        email: user.email,
+        updated_at: new Date().toISOString(),
+      });
+    }
+
+    // Pastikan komunitas ada di tabel public.komunitas untuk foreign key
+    const validKomId = toValidUUID(komunitasId);
+    const { data: dbKomCheck } = await supabase
+      .from("komunitas")
+      .select("id")
+      .eq("id", validKomId)
+      .maybeSingle();
+
+    if (!dbKomCheck) {
+      const seedItem = findOrGenerateKomunitasSeed(komunitasId);
+      await supabase.from("komunitas").upsert({
+        id: validKomId,
+        nama: komunitasNama || seedItem?.nama || "Komunitas Warga",
+        nama_komunitas: komunitasNama || seedItem?.nama || "Komunitas Warga",
+        jenis: seedItem?.jenis || "warga_kita",
+        jenis_komunitas: seedItem?.jenis || "warga_kita",
+        kecamatan: kecamatan || seedItem?.kecamatan || "Tegal Selatan",
+        kelurahan: kelurahan || seedItem?.kelurahan || "Randugunting",
+        rw: rw || seedItem?.rw || "01",
+        rt: rt || seedItem?.rt || "01",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
+    }
+
     // Format alasan_sekolah string untuk interoperabilitas database
     let formattedAlasan = `[KEINGINAN:${keinginanSekolah}] [ALASAN:${alasanTidakSekolah}]`;
     if (alamat) formattedAlasan += ` [ALAMAT:${alamat}]`;
@@ -154,7 +195,7 @@ export async function createDataAts(formData: FormData): Promise<{
       is_sekolah: false,
       nama_sekolah: "ATS - Anak Tidak Sekolah",
       alasan_sekolah: formattedAlasan,
-      komunitas_id: toValidUUID(komunitasId),
+      komunitas_id: validKomId,
       status_approval: "pending",
       created_by: user.id,
       created_at: new Date().toISOString(),

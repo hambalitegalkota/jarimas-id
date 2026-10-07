@@ -198,14 +198,12 @@ export function FormDataAts({
         setSekolahSebelumnya("");
         setKeterangan("");
 
-        // Panggil onSuccess dengan data ATS yang baru dibuat
-        setTimeout(() => {
-          onSuccess?.(res.data);
-        }, 400);
+        // Segera panggil onSuccess dengan data ATS yang baru dibuat
+        onSuccess?.(res.data);
       } else {
         setFeedback({
           type: "error",
-          message: res.message || "Gagal menyimpan data ATS.",
+          message: res.message || "Gagal menyimpan data ATS. Silakan periksa kembali input formulir.",
         });
       }
     });
@@ -794,7 +792,14 @@ export function FormDataAts({
       </div>
 
       {/* Submit Button (Full Width Mobile Bottom Anchored) */}
-      <div className="pt-2 pb-6">
+      <div className="pt-2 pb-6 space-y-3">
+        {feedback && feedback.type === "error" && (
+          <div className="flex items-center gap-2.5 rounded-xl border-2 border-red-600 bg-red-50 p-3.5 text-sm font-bold text-red-900 shadow-sm animate-in fade-in">
+            <AlertCircle className="h-5 w-5 text-red-600 shrink-0" />
+            <span className="leading-snug">{feedback.message}</span>
+          </div>
+        )}
+
         <button
           type="submit"
           disabled={isPending}
