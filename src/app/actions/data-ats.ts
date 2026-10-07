@@ -247,29 +247,29 @@ export async function createDataAts(formData: FormData): Promise<{
     const parsed = parseAtsDetails(insertedChild.alasan_sekolah);
     const formattedItem: DataAtsItem = {
       id: insertedChild.id,
-      nama_lengkap: insertedChild.nama_lengkap,
-      tanggal_lahir: insertedChild.tanggal_lahir,
-      jenis_kelamin: insertedChild.jenis_kelamin,
-      nama_orangtua: insertedChild.nama_orangtua,
-      nomor_hp: insertedChild.nomor_hp,
-      tinggal_bersama: insertedChild.tinggal_bersama || "Orang Tua",
-      alamat: parsed.alamat,
-      rt: parsed.rt,
-      rw: parsed.rw,
-      kelurahan: parsed.kelurahan,
-      kecamatan: parsed.kecamatan,
-      jenjang_asal: parsed.jenjangAsal,
-      sekolah_sebelumnya: parsed.sekolahSebelumnya,
-      kelas_terakhir: parsed.kelasTerakhir,
-      keinginan_sekolah: parsed.keinginan,
-      alasan_tidak_sekolah: parsed.alasan,
-      keterangan: parsed.keterangan,
-      komunitas_id: insertedChild.komunitas_id,
+      nama_lengkap: insertedChild.nama_lengkap || namaLengkap,
+      tanggal_lahir: insertedChild.tanggal_lahir || tanggalLahir,
+      jenis_kelamin: (insertedChild.jenis_kelamin as any) || jenisKelamin,
+      nama_orangtua: insertedChild.nama_orangtua || namaOrangtua,
+      nomor_hp: insertedChild.nomor_hp || nomorHp,
+      tinggal_bersama: insertedChild.tinggal_bersama || tinggalBersama || "Orang Tua",
+      alamat: parsed.alamat || alamat,
+      rt: parsed.rt || rt,
+      rw: parsed.rw || rw,
+      kelurahan: parsed.kelurahan || kelurahan,
+      kecamatan: parsed.kecamatan || kecamatan,
+      jenjang_asal: parsed.jenjangAsal || jenjangAsal,
+      sekolah_sebelumnya: parsed.sekolahSebelumnya || sekolahSebelumnya,
+      kelas_terakhir: parsed.kelasTerakhir || kelasTerakhir,
+      keinginan_sekolah: (parsed.keinginan as any) || keinginanSekolah,
+      alasan_tidak_sekolah: (parsed.alasan as any) || alasanTidakSekolah,
+      keterangan: parsed.keterangan || keterangan,
+      komunitas_id: insertedChild.komunitas_id || komunitasId,
       status_approval: (insertedChild.status_approval as any) || "pending",
-      validated_by: insertedChild.validated_by,
-      validated_at: insertedChild.validated_at,
-      created_by: insertedChild.created_by,
-      created_at: insertedChild.created_at,
+      validated_by: insertedChild.validated_by || null,
+      validated_at: insertedChild.validated_at || null,
+      created_by: insertedChild.created_by || user.id,
+      created_at: insertedChild.created_at || new Date().toISOString(),
       latest_ddtk: null,
       ddtk_history: [],
     };
@@ -1091,37 +1091,72 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
       .select("id, nama, jenis, kecamatan, kelurahan, rw, rt");
     const dbKomMap = new Map((allDbKom || []).map((k: any) => [k.id, k]));
 
-    // 3. Query data ATS dari data_anak dengan filter is_sekolah = false
-    const { data: dbChildren, error: childError } = await supabase
-      .from("data_anak")
-      .select(`
-        id,
-        nama_lengkap,
-        tanggal_lahir,
-        jenis_kelamin,
-        nama_orangtua,
-        nomor_hp,
-        tinggal_bersama,
-        jarak_rumah_km,
-        is_sekolah,
-        nama_sekolah,
-        alasan_sekolah,
-        komunitas_id,
-        status_approval,
-        validated_by,
-        validated_at,
-        created_by,
-        created_at,
-        ddks_records (*)
-      `)
-      .eq("is_sekolah", false)
-      .order("created_at", { ascending: false });
+    // 3. Query data ATS dari data_anak
+    let dbChildren: any[] | null = null;
+    try {
+      const { data, error: childError } = await supabase
+        .from("data_anak")
+        .select(`
+          id,
+          nama_lengkap,
+          tanggal_lahir,
+          jenis_kelamin,
+          nama_orangtua,
+          nomor_hp,
+          tinggal_bersama,
+          jarak_rumah_km,
+          is_sekolah,
+          nama_sekolah,
+          alasan_sekolah,
+          komunitas_id,
+          status_approval,
+          validated_by,
+          validated_at,
+          created_by,
+          created_at,
+          ddks_records (*)
+        `)
+        .order("created_at", { ascending: false });
 
-    if (childError) {
-      console.warn("Query data_ats error:", childError.message);
+      if (childError) {
+        console.warn("Query data_ats with relation error:", childError.message);
+      } else {
+        dbChildren = data;
+      }
+    } catch (e) {
+      console.warn("Exception querying data_anak with relation:", e);
     }
 
-    const rows = (dbChildren || []).filter((row: any) => isDataAtsRecord(row));
+    if (!dbChildren) {
+      const { data: fallbackData } = await supabase
+        .from("data_anak")
+        .select(`
+          id,
+          nama_lengkap,
+          tanggal_lahir,
+          jenis_kelamin,
+          nama_orangtua,
+          nomor_hp,
+          tinggal_bersama,
+          jarak_rumah_km,
+          is_sekolah,
+          nama_sekolah,
+          alasan_sekolah,
+          komunitas_id,
+          status_approval,
+          validated_by,
+          validated_at,
+          created_by,
+          created_at
+        `)
+        .order("created_at", { ascending: false });
+
+      dbChildren = fallbackData || [];
+    }
+
+    const rows = (dbChildren || []).filter(
+      (row: any) => isDataAtsRecord(row) && row.is_sekolah !== true
+    );
     const validKomId = toValidUUID(komunitasId);
 
     const items: DataAtsItem[] = rows
@@ -1170,8 +1205,12 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
         };
       })
       .filter((item) => {
-        // Jika cocok langsung dengan ID komunitas
-        if (item.komunitas_id === validKomId || item.komunitas_id === komunitasId) {
+        // Jika cocok langsung dengan ID komunitas atau UUID
+        if (
+          item.komunitas_id === validKomId ||
+          item.komunitas_id === komunitasId ||
+          toValidUUID(item.komunitas_id) === validKomId
+        ) {
           return true;
         }
 

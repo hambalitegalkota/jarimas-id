@@ -115,17 +115,19 @@ export function DataAtsClientView({
   });
 
   const filteredAts = atsList.filter((c) => {
+    const q = searchQuery.toLowerCase().trim();
     const matchesSearch =
-      c.nama_lengkap.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c.nama_orangtua.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c.alasan_tidak_sekolah.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (c.kelurahan && c.kelurahan.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (c.alamat && c.alamat.toLowerCase().includes(searchQuery.toLowerCase()));
+      !q ||
+      (c.nama_lengkap || "").toLowerCase().includes(q) ||
+      (c.nama_orangtua || "").toLowerCase().includes(q) ||
+      (c.alasan_tidak_sekolah || "").toLowerCase().includes(q) ||
+      (c.kelurahan || "").toLowerCase().includes(q) ||
+      (c.alamat || "").toLowerCase().includes(q);
 
     const matchesJenjang =
       selectedJenjang === "semua" || getJenjangAts(c).id === selectedJenjang;
 
-    const childKeinginan = c.keinginan_sekolah === "Tidak Ada" ? "Tidak Ada" : "Masih Ada";
+    const childKeinginan = (c.keinginan_sekolah || "").toLowerCase().includes("tidak") ? "Tidak Ada" : "Masih Ada";
     const matchesKeinginan =
       selectedKeinginan === "semua" || childKeinginan === selectedKeinginan;
 
@@ -147,7 +149,11 @@ export function DataAtsClientView({
   };
 
   useEffect(() => {
-    setAtsList(initialAts);
+    setAtsList((prev) => {
+      const initialIds = new Set((initialAts || []).map((item) => item.id));
+      const newlyAddedLocally = prev.filter((item) => !initialIds.has(item.id));
+      return [...newlyAddedLocally, ...(initialAts || [])];
+    });
   }, [initialAts]);
 
   const handleAddItem = (newItem?: DataAtsItem) => {
@@ -156,6 +162,11 @@ export function DataAtsClientView({
       if (statusFilter === "approved") {
         setStatusFilter("semua");
       }
+      setSelectedJenjang("semua");
+      setSelectedKeinginan("semua");
+      setSelectedAlasan("semua");
+      setSearchQuery("");
+
       setAtsList((prev) => [newItem, ...prev.filter((item) => item.id !== newItem.id)]);
       showToast(`Data ATS ${newItem.nama_lengkap} berhasil didaftarkan dan langsung masuk ke daftar.`);
     } else {
