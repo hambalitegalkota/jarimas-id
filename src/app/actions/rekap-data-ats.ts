@@ -122,7 +122,7 @@ const DAFTAR_ALASAN_ATS = [
   "Alasan lainnya",
 ];
 
-export function classifyJenjangAsal(rawAsal?: string, rawKelas?: string): {
+function classifyJenjangAsal(rawAsal?: string, rawKelas?: string): {
   key: keyof AtsJenjangAsalBreakdown;
   label: string;
   kategori: "Putus Sekolah (DO)" | "Lulus Tidak Melanjutkan (LTM)" | "Belum Pernah Sekolah (BPS)";
