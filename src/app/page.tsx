@@ -1,6 +1,5 @@
 import Link from "next/link";
 import Image from "next/image";
-import { redirect } from "next/navigation";
 import {
   HeartPulse,
   GraduationCap,
@@ -93,16 +92,20 @@ const FALLBACK_SHOWCASE_PRODUCTS: MarketProduk[] = [
 export default async function HomePage() {
   const supabase = await createClient();
 
-  // 1. Ambil session user aktif - Jika sudah login, langsung diarahkan ke halaman profil
+  // 1. Ambil session user aktif & data profil jika sedang login
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (user) {
-    redirect("/profil");
-  }
-
   let profile = null;
+  if (user) {
+    const { data } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", user.id)
+      .single();
+    profile = data;
+  }
 
   // 2. Ambil data produk resmi dari Jarimas Market
   const { data: dbProducts } = await getMarketProduk();
@@ -149,13 +152,26 @@ export default async function HomePage() {
 
         {/* Right Auth / Profile Button */}
         <div className="flex items-center gap-2 shrink-0">
-          <Link
-            href="/login"
-            className="inline-flex min-h-[40px] items-center gap-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 px-4 py-1.5 text-xs font-bold text-white transition-all cursor-pointer active:scale-98 shadow-xs"
-          >
-            <span>Masuk</span>
-            <ArrowRight className="h-3.5 w-3.5" />
-          </Link>
+          {user ? (
+            <Link
+              href="/profil"
+              className="inline-flex min-h-[40px] items-center gap-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border-2 border-emerald-300 dark:border-emerald-700 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 px-3.5 py-1.5 text-xs font-bold text-emerald-900 dark:text-emerald-200 transition-all cursor-pointer active:scale-98 shadow-2xs"
+            >
+              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-600 text-white font-extrabold text-[11px]">
+                {(profile?.nama_lengkap || user.email || "U").charAt(0).toUpperCase()}
+              </div>
+              <span className="hidden sm:inline truncate max-w-[120px]">{profile?.nama_lengkap || "Profil Saya"}</span>
+              <span className="sm:hidden">Profil</span>
+            </Link>
+          ) : (
+            <Link
+              href="/login"
+              className="inline-flex min-h-[40px] items-center gap-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 px-4 py-1.5 text-xs font-bold text-white transition-all cursor-pointer active:scale-98 shadow-xs"
+            >
+              <span>Masuk</span>
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          )}
         </div>
       </header>
 

@@ -278,7 +278,7 @@ export async function loginUser(
 
   if (shouldRedirect) {
     revalidatePath("/", "layout");
-    redirect("/profil");
+    redirect("/");
   }
 
   return { success: false, message: "" };
