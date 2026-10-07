@@ -34,14 +34,17 @@ import {
   DAFTAR_RT_TEGAL,
 } from "@/lib/constants/tegal-data";
 import { extractKomunitasMetadata } from "@/lib/admin-helpers";
-import type { KomunitasWithMembership } from "@/types/database";
+import type {
+  KomunitasWithMembership,
+  DataAtsItem,
+} from "@/types/database";
 import { cn } from "@/lib/utils";
 
 interface FormDataAtsProps {
   komunitasId: string;
   komunitasNama: string;
   komunitas?: KomunitasWithMembership;
-  onSuccess?: () => void;
+  onSuccess?: (newItem?: DataAtsItem) => void;
 }
 
 export const KELAS_TERAKHIR_OPTIONS = [
@@ -184,9 +187,21 @@ export function FormDataAts({
           type: "success",
           message: res.message || "Data ATS berhasil disimpan!",
         });
+        // Reset form input fields
+        setNamaLengkap("");
+        setUsia("10");
+        setJenisKelamin("L");
+        setNamaOrangtua("");
+        setNomorHp("");
+        setTinggalBersama("Orang Tua");
+        setAlamat("");
+        setSekolahSebelumnya("");
+        setKeterangan("");
+
+        // Panggil onSuccess dengan data ATS yang baru dibuat
         setTimeout(() => {
-          onSuccess?.();
-        }, 800);
+          onSuccess?.(res.data);
+        }, 400);
       } else {
         setFeedback({
           type: "error",

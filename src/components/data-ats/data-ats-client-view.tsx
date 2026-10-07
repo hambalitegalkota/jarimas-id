@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import {
   GraduationCap,
   Plus,
@@ -48,6 +49,7 @@ export function DataAtsClientView({
   currentUserId = null,
   isSuperAdmin = false,
 }: DataAtsClientViewProps) {
+  const router = useRouter();
   const [atsList, setAtsList] = useState<DataAtsItem[]>(initialAts);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -142,6 +144,24 @@ export function DataAtsClientView({
     setTimeout(() => {
       setFeedbackToast((prev) => (prev?.message === message ? null : prev));
     }, 5000);
+  };
+
+  useEffect(() => {
+    setAtsList(initialAts);
+  }, [initialAts]);
+
+  const handleAddItem = (newItem?: DataAtsItem) => {
+    setIsAddModalOpen(false);
+    if (newItem) {
+      if (statusFilter === "approved") {
+        setStatusFilter("semua");
+      }
+      setAtsList((prev) => [newItem, ...prev.filter((item) => item.id !== newItem.id)]);
+      showToast(`Data ATS ${newItem.nama_lengkap} berhasil didaftarkan dan langsung masuk ke daftar.`);
+    } else {
+      showToast("Data ATS berhasil didaftarkan.");
+    }
+    router.refresh();
   };
 
   const handleUpdateItem = (updatedItem: DataAtsItem) => {
@@ -795,10 +815,7 @@ export function DataAtsClientView({
                 komunitasId={komunitas.id}
                 komunitasNama={komunitas.nama}
                 komunitas={komunitas}
-                onSuccess={() => {
-                  setIsAddModalOpen(false);
-                  window.location.reload();
-                }}
+                onSuccess={handleAddItem}
               />
             </div>
           </div>

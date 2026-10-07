@@ -42,6 +42,7 @@ export async function createDataAts(formData: FormData): Promise<{
   success: boolean;
   message: string;
   dataId?: string;
+  data?: DataAtsItem;
 }> {
   try {
     const supabase = await createClient();
@@ -162,7 +163,25 @@ export async function createDataAts(formData: FormData): Promise<{
     const { data: insertedChild, error: insertError } = await supabase
       .from("data_anak")
       .insert(atsPayload)
-      .select("id")
+      .select(`
+        id,
+        nama_lengkap,
+        tanggal_lahir,
+        jenis_kelamin,
+        nama_orangtua,
+        nomor_hp,
+        tinggal_bersama,
+        jarak_rumah_km,
+        is_sekolah,
+        nama_sekolah,
+        alasan_sekolah,
+        komunitas_id,
+        status_approval,
+        validated_by,
+        validated_at,
+        created_by,
+        created_at
+      `)
       .single();
 
     if (insertError || !insertedChild) {
@@ -225,10 +244,41 @@ export async function createDataAts(formData: FormData): Promise<{
     revalidatePath("/profil");
     revalidatePath("/");
 
+    const parsed = parseAtsDetails(insertedChild.alasan_sekolah);
+    const formattedItem: DataAtsItem = {
+      id: insertedChild.id,
+      nama_lengkap: insertedChild.nama_lengkap,
+      tanggal_lahir: insertedChild.tanggal_lahir,
+      jenis_kelamin: insertedChild.jenis_kelamin,
+      nama_orangtua: insertedChild.nama_orangtua,
+      nomor_hp: insertedChild.nomor_hp,
+      tinggal_bersama: insertedChild.tinggal_bersama || "Orang Tua",
+      alamat: parsed.alamat,
+      rt: parsed.rt,
+      rw: parsed.rw,
+      kelurahan: parsed.kelurahan,
+      kecamatan: parsed.kecamatan,
+      jenjang_asal: parsed.jenjangAsal,
+      sekolah_sebelumnya: parsed.sekolahSebelumnya,
+      kelas_terakhir: parsed.kelasTerakhir,
+      keinginan_sekolah: parsed.keinginan,
+      alasan_tidak_sekolah: parsed.alasan,
+      keterangan: parsed.keterangan,
+      komunitas_id: insertedChild.komunitas_id,
+      status_approval: (insertedChild.status_approval as any) || "pending",
+      validated_by: insertedChild.validated_by,
+      validated_at: insertedChild.validated_at,
+      created_by: insertedChild.created_by,
+      created_at: insertedChild.created_at,
+      latest_ddtk: null,
+      ddtk_history: [],
+    };
+
     return {
       success: true,
       message: "Data Anak Tidak Sekolah (ATS) berhasil didaftarkan dan menunggu verifikasi.",
       dataId: newChildId,
+      data: formattedItem,
     };
   } catch (err: any) {
     console.error("Error createDataAts:", err);
