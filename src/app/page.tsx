@@ -262,7 +262,7 @@ export default async function HomePage() {
           <div className="space-y-3 max-w-2xl">
             <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-[32px] font-black tracking-tight leading-snug">
               Wujudkan Masa Depan Anak Kota Tegal {" "}
-              <span className="text-emerald-400 underline decoration-emerald-500 decoration-wavy decoration-2">
+              <span className="text-emerald-400">
                 Sehat &amp; Berdaya
               </span>
             </h1>
@@ -306,10 +306,10 @@ export default async function HomePage() {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-4 border-t border-white/15">
             <div className="rounded-xl bg-white/5 backdrop-blur-xs p-3 border border-white/10">
               <span className="text-lg sm:text-xl font-black text-emerald-400 block font-mono">
-                4 Wilayah
+                4 Kecamatan
               </span>
               <span className="text-xs text-slate-300 font-medium">
-                Kecamatan Tegal
+                Kota Tegal
               </span>
             </div>
             <div className="rounded-xl bg-white/5 backdrop-blur-xs p-3 border border-white/10">
