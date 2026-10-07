@@ -170,11 +170,10 @@ export function CheckoutClientView({
                 {/* Nomor HP/WA */}
                 <div className="space-y-2">
                   <label className="text-sm sm:text-base font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                    <Phone className="h-4 w-4 text-blue-600" /> Nomor WhatsApp / HP *
+                    <Phone className="h-4 w-4 text-blue-600" /> Nomor WhatsApp / HP <span className="text-xs font-normal text-slate-500 dark:text-slate-400">(Opsional)</span>
                   </label>
                   <input
                     type="tel"
-                    required
                     placeholder="Contoh: 081234567890"
                     value={nomorHp}
                     onChange={(e) => setNomorHp(e.target.value)}

@@ -749,7 +749,7 @@ export function LaporanKaderSpmFormCard({
                     </div>
                     <div>
                       <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-0.5">
-                        No. HP / WhatsApp
+                        No. HP / WhatsApp (Opsional)
                       </label>
                       <input
                         type="text"

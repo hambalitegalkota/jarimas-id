@@ -456,13 +456,12 @@ export function ModalEditDataAnak({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               <div className="space-y-1.5">
                 <label className="text-sm font-bold text-slate-900">
-                  Nomor HP / WhatsApp <span className="text-rose-600">*</span>
+                  Nomor HP / WhatsApp <span className="text-xs font-normal text-slate-500">(Opsional)</span>
                 </label>
                 <div className="relative">
                   <Phone className="pointer-events-none absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
                   <input
                     type="tel"
-                    required
                     value={nomorHp}
                     onChange={(e) => setNomorHp(e.target.value)}
                     placeholder="081234567890"

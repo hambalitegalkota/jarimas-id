@@ -74,9 +74,9 @@ export const DataAnakSchema = z.object({
   nomorHp: z
     .string()
     .trim()
-    .min(10, "Nomor HP minimal 10 digit")
-    .max(16, "Nomor HP maksimal 16 digit")
-    .regex(/^(\+62|62|0)[0-9]{8,14}$/, "Format nomor HP tidak valid (contoh: 081234567890)"),
+    .optional()
+    .nullable()
+    .or(z.literal("")),
   tinggalBersama: z
     .string()
     .trim()
@@ -211,12 +211,7 @@ export const DataAtsSchema = z.object({
     .trim()
     .optional()
     .nullable()
-    .or(z.literal(""))
-    .refine((val) => {
-      if (!val || val.trim() === "" || val === "-" || val === "0") return true;
-      const digits = val.replace(/\D/g, "");
-      return digits.length >= 7 && digits.length <= 16;
-    }, "Format nomor HP tidak valid (minimal 8-15 digit)"),
+    .or(z.literal("")),
   tinggalBersama: z
     .string()
     .trim()
@@ -365,9 +360,9 @@ export const PesananSchema = z.object({
   nomorHp: z
     .string()
     .trim()
-    .min(10, "Nomor HP minimal 10 digit")
-    .max(16, "Nomor HP maksimal 16 digit")
-    .regex(/^(\+62|62|0)[0-9]{8,14}$/, "Format nomor HP tidak valid (contoh: 081234567890)"),
+    .optional()
+    .nullable()
+    .or(z.literal("")),
   alamatLengkap: z
     .string()
     .trim()

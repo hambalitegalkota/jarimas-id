@@ -1306,11 +1306,10 @@ export function KomunitasDetailClientView({
             <form onSubmit={handleApplyAdmin} className="space-y-3.5 text-xs">
               <div>
                 <label className="block font-bold text-slate-700 mb-1">
-                  Nomor WhatsApp / HP Aktif <span className="text-rose-500">*</span>
+                  Nomor WhatsApp / HP Aktif <span className="text-slate-400 font-normal">(Opsional)</span>
                 </label>
                 <input
                   type="tel"
-                  required
                   value={adminHp}
                   onChange={(e) => setAdminHp(e.target.value)}
                   placeholder="Contoh: 08123456789"

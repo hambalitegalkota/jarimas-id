@@ -434,13 +434,12 @@ export function FormDataAts({
 
           <div className="space-y-2">
             <label className="text-base font-bold text-slate-900 block">
-              Nomor WhatsApp / HP <span className="text-red-500">*</span>
+              Nomor WhatsApp / HP <span className="text-xs font-normal text-slate-500">(Opsional)</span>
             </label>
             <div className="relative">
               <Phone className="pointer-events-none absolute left-4 top-4 h-5 w-5 text-slate-500" />
               <input
                 type="tel"
-                required
                 value={nomorHp}
                 onChange={(e) => setNomorHp(e.target.value)}
                 placeholder="081234567890"

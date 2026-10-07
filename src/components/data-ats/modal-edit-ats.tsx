@@ -445,13 +445,12 @@ export function ModalEditAts({
 
                 <div className="space-y-1.5">
                   <label className="text-xs font-medium text-muted-foreground">
-                    Nomor WhatsApp / HP *
+                    Nomor WhatsApp / HP (Opsional)
                   </label>
                   <div className="relative">
                     <Phone className="pointer-events-none absolute left-3 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
                     <input
                       type="tel"
-                      required
                       value={nomorHp}
                       onChange={(e) => setNomorHp(e.target.value)}
                       placeholder="081234567890"
