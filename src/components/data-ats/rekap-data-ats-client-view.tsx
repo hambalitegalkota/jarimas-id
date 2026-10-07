@@ -569,23 +569,6 @@ export function RekapDataAtsClientView({
               </div>
             </div>
           </div>
-
-          {/* KARTU DAFTAR ANAK TIDAK SEKOLAH (ATS) - KHUSUS ADMIN KOMUNITAS & SUPER ADMIN */}
-          <KartuDaftarNamaAtsRekap
-            tingkat={selectedTingkat}
-            selectedKecamatan={selectedKecamatan}
-            selectedKelurahan={selectedKelurahan}
-            currentWilayahNama={
-              selectedTingkat === "kota"
-                ? "Seluruh Kota Tegal"
-                : selectedTingkat === "kecamatan"
-                ? `Kec. ${selectedKecamatan}`
-                : `Kel. ${selectedKelurahan}`
-            }
-            totalAts={currentWilayahData.totalAts}
-            canAccess={canAccessDaftarNamaAts}
-            userPeran={userPeran}
-          />
         </div>
       )}
 
@@ -848,6 +831,25 @@ export function RekapDataAtsClientView({
           </div>
         </div>
       )}
+
+      {/* ========================================================= */}
+      {/* 8.5 KARTU DAFTAR ANAK TIDAK SEKOLAH (ATS)                 */}
+      {/* ========================================================= */}
+      <KartuDaftarNamaAtsRekap
+        tingkat={selectedTingkat}
+        selectedKecamatan={selectedKecamatan}
+        selectedKelurahan={selectedKelurahan}
+        currentWilayahNama={
+          selectedTingkat === "kota"
+            ? "Seluruh Kota Tegal"
+            : selectedTingkat === "kecamatan"
+            ? `Kec. ${selectedKecamatan}`
+            : `Kel. ${selectedKelurahan}`
+        }
+        totalAts={currentWilayahData.totalAts}
+        canAccess={canAccessDaftarNamaAts}
+        userPeran={userPeran}
+      />
 
       {/* ========================================================= */}
       {/* 9. FOOTER CALL-TO-ACTION & LINK TO ATS / PKBM             */}
