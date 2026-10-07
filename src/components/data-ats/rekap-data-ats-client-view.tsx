@@ -388,13 +388,53 @@ export function RekapDataAtsClientView({
               <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
                 <div className="flex items-center gap-2">
                   <BarChart3 className="h-5 w-5 text-blue-600" />
-                  <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-slate-100">
-                    Distribusi Kategori ATS
-                  </h3>
+                  <div>
+                    <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-slate-100">
+                      Distribusi Kategori ATS
+                    </h3>
+                    <p className="text-2xs text-slate-500 font-medium">
+                      Total Data ATS: <strong className="text-slate-900 dark:text-slate-100 font-bold">{currentWilayahData.totalAts} Anak</strong>
+                    </p>
+                  </div>
                 </div>
-                <span className="text-2xs font-bold text-slate-500 uppercase">
-                  DO • LTM • BPS
-                </span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs font-black px-2.5 py-1 rounded-xl bg-blue-100 dark:bg-blue-950/60 text-blue-800 dark:text-blue-300 border border-blue-300 dark:border-blue-700 font-mono shadow-2xs">
+                    Total: {currentWilayahData.totalAts} Anak
+                  </span>
+                  <span className="text-2xs font-bold text-slate-500 uppercase hidden sm:inline">
+                    DO • LTM • BPS
+                  </span>
+                </div>
+              </div>
+
+              {/* Rasio Gender ATS (Laki-laki & Perempuan) */}
+              <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-2">
+                <div className="flex items-center justify-between text-xs font-extrabold">
+                  <span className="text-sky-700 dark:text-sky-400 flex items-center gap-1.5">
+                    <span className="h-2.5 w-2.5 rounded-full bg-sky-500" />
+                    Laki-laki: {currentWilayahData.gender.lakiLaki} Anak (
+                    {Math.round((currentWilayahData.gender.lakiLaki / (currentWilayahData.totalAts || 1)) * 100)}%)
+                  </span>
+                  <span className="text-rose-600 dark:text-rose-400 flex items-center gap-1.5">
+                    <span className="h-2.5 w-2.5 rounded-full bg-rose-500" />
+                    Perempuan: {currentWilayahData.gender.perempuan} Anak (
+                    {Math.round((currentWilayahData.gender.perempuan / (currentWilayahData.totalAts || 1)) * 100)}%)
+                  </span>
+                </div>
+                <div className="h-2.5 w-full flex rounded-full overflow-hidden bg-slate-200 dark:bg-slate-700">
+                  <div
+                    className="bg-sky-500 h-full transition-all"
+                    style={{
+                      width: `${Math.round((currentWilayahData.gender.lakiLaki / (currentWilayahData.totalAts || 1)) * 100)}%`,
+                    }}
+                  />
+                  <div
+                    className="bg-rose-500 h-full transition-all"
+                    style={{
+                      width: `${Math.round((currentWilayahData.gender.perempuan / (currentWilayahData.totalAts || 1)) * 100)}%`,
+                    }}
+                  />
+                </div>
               </div>
 
               <div className="space-y-4">
@@ -447,13 +487,23 @@ export function RekapDataAtsClientView({
               <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="h-5 w-5 text-emerald-600" />
-                  <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-slate-100">
-                    Keinginan Bersekolah &amp; Rasio Gender
-                  </h3>
+                  <div>
+                    <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-slate-100">
+                      Keinginan Bersekolah &amp; Rasio Gender
+                    </h3>
+                    <p className="text-2xs text-slate-500 font-medium">
+                      Total Data ATS: <strong className="text-slate-900 dark:text-slate-100 font-bold">{currentWilayahData.totalAts} Anak</strong>
+                    </p>
+                  </div>
                 </div>
-                <span className="text-2xs font-bold text-slate-500 uppercase">
-                  Kesiapan Intervensi
-                </span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs font-black px-2.5 py-1 rounded-xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700 font-mono shadow-2xs">
+                    Total: {currentWilayahData.totalAts} Anak
+                  </span>
+                  <span className="text-2xs font-bold text-slate-500 uppercase hidden sm:inline">
+                    Kesiapan Intervensi
+                  </span>
+                </div>
               </div>
 
               {/* Keinginan Kembali Bersekolah Cards */}
