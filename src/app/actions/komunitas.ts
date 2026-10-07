@@ -1005,24 +1005,6 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
       const prof = chainProfileMap.get(directAdmin.user_id);
       adminName = prof?.nama_lengkap || "Pengurus Terdaftar";
       adminRole = formatPeranDisplay(directAdmin.peran);
-    } else if (hierarchyAdmins) {
-      if (pageMeta.hasRt && hierarchyAdmins.rt?.hasAdmin) {
-        hasAdmin = true;
-        adminName = hierarchyAdmins.rt.adminName;
-        adminRole = "Admin RT";
-      } else if (pageMeta.hasRw && hierarchyAdmins.rw?.hasAdmin) {
-        hasAdmin = true;
-        adminName = hierarchyAdmins.rw.adminName;
-        adminRole = "Admin RW";
-      } else if (pageMeta.hasKel && hierarchyAdmins.kelurahan?.hasAdmin) {
-        hasAdmin = true;
-        adminName = hierarchyAdmins.kelurahan.adminName;
-        adminRole = "Admin Kelurahan";
-      } else if (hierarchyAdmins.kecamatan?.hasAdmin) {
-        hasAdmin = true;
-        adminName = hierarchyAdmins.kecamatan.adminName;
-        adminRole = "Admin Kecamatan";
-      }
     }
 
     // 7. Hitung status keanggotaan user saat ini & wewenang Admin
@@ -1030,30 +1012,6 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
     let currentUserMembership = null;
 
     if (currentUserId) {
-      // Cek apakah user adalah Admin yang disetujui di komunitas ini atau di tingkat wilayah yang menaunginya
-      const adminEntryForUser = approvedAdmins.find((ca) => {
-        if (ca.user_id !== currentUserId) return false;
-        if (ca.komunitas_id === dbKomunitasId || ca.komunitas_id === komunitasId) return true;
-
-        const caKom = dbKomMap.get(ca.komunitas_id) || findOrGenerateKomunitasSeed(ca.komunitas_id);
-        const caMeta = extractKomunitasMetadata(caKom || { id: ca.komunitas_id });
-
-        // Admin Kecamatan
-        if (caMeta.kec === pageMeta.kec && !caMeta.hasKel && !caMeta.hasRw && !caMeta.hasRt) return true;
-        // Admin Kelurahan
-        if (caMeta.kec === pageMeta.kec && caMeta.kel === pageMeta.kel && !caMeta.hasRw && !caMeta.hasRt) return true;
-        // Admin RW
-        if (caMeta.kec === pageMeta.kec && caMeta.kel === pageMeta.kel && caMeta.rw === pageMeta.rw && !caMeta.hasRt) return true;
-        // Admin RT
-        if (caMeta.kec === pageMeta.kec && caMeta.kel === pageMeta.kel && caMeta.rw === pageMeta.rw && caMeta.rt === pageMeta.rt) return true;
-
-        return false;
-      });
-
-      if (adminEntryForUser) {
-        isPengurusOrKader = true;
-      }
-
       // Cari record keanggotaan langsung pada komunitas ini
       const directMember =
         userMembershipsMap[dbKomunitasId] ||
@@ -1071,31 +1029,17 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
 
       if (directMember) {
         const isApprovedAdmin = isRoleAdmin(directMember.peran);
-        if (isApprovedAdmin || isPengurusOrKader) {
+        if (isApprovedAdmin) {
           isPengurusOrKader = true;
         }
 
         currentUserMembership = {
           id: directMember.id,
           status: directMember.status as MembershipStatus,
-          peran: isPengurusOrKader
-            ? isApprovedAdmin
-              ? directMember.peran
-              : "Pengurus"
-            : directMember.peran,
-          // PENTING: Jika pengguna telah menjadi Admin wilayah ini, bersihkan peran_diajukan agar tidak muncul "MENUNGGU PERSETUJUAN ADMIN"
-          peran_diajukan: isPengurusOrKader
-            ? null
-            : directMember.peran_diajukan || null,
+          peran: directMember.peran,
+          peran_diajukan: directMember.peran_diajukan || null,
           berdomisili: directMember.berdomisili ?? undefined,
           kk_terdaftar: directMember.kk_terdaftar ?? undefined,
-        };
-      } else if (isPengurusOrKader) {
-        currentUserMembership = {
-          id: `admin-${currentUserId}`,
-          status: "approved" as MembershipStatus,
-          peran: "Pengurus",
-          peran_diajukan: null,
         };
       }
     }
