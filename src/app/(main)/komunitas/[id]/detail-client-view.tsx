@@ -317,9 +317,43 @@ export function KomunitasDetailClientView({
       }
     });
   };
-  const detailAccordionCategories = [
+  type DetailCategory =
+    | {
+        id: "kabar" | "anggota" | "data";
+        type: "accordion";
+        title: string;
+        subtitle: string;
+        badgeText: string;
+        icon: React.ComponentType<{ className?: string }>;
+        activeColorBg: string;
+        badgeColor: string;
+        hoverBorder: string;
+        hoverBg: string;
+        iconColor: string;
+        iconBg: string;
+      }
+    | {
+        id: "data_anak" | "data_ats";
+        type: "link";
+        href: string;
+        title: string;
+        subtitle: string;
+        badgeText: string;
+        icon: React.ComponentType<{ className?: string }>;
+        hoverBorder: string;
+        hoverBg: string;
+        iconColor: string;
+        iconBg: string;
+        arrowBg: string;
+        arrowHoverBg: string;
+        arrowColor: string;
+        textHoverColor: string;
+      };
+
+  const detailAccordionCategories: DetailCategory[] = [
     {
       id: "kabar",
+      type: "accordion",
       title: "Kabar Komunitas",
       subtitle: "Pengumuman dan diskusi interaktif anggota komunitas",
       badgeText: `${kabarKomunitas.length} Kabar`,
@@ -333,6 +367,7 @@ export function KomunitasDetailClientView({
     },
     {
       id: "anggota",
+      type: "accordion",
       title: "Daftar Anggota & Informasi Operasional",
       subtitle: "Informasi operasional, struktur pengurus dan 6 bidang kader",
       badgeText: `${anggotaState.filter((m) => m.status === "approved").length} Anggota`,
@@ -346,6 +381,7 @@ export function KomunitasDetailClientView({
     },
     {
       id: "data",
+      type: "accordion",
       title: "Profil Data & Rekapitulasi",
       subtitle: "Data agregat balita, ATS, dan grafik capaian komunitas",
       badgeText: "Data Agregat",
@@ -357,6 +393,44 @@ export function KomunitasDetailClientView({
       iconColor: "text-indigo-600 dark:text-indigo-400",
       iconBg: "bg-indigo-100 dark:bg-indigo-950",
     },
+    {
+      id: "data_anak",
+      type: "link",
+      href: `/komunitas/${komunitas.id}/data`,
+      title: "Data Anak (0–6 Tahun) & DDTK",
+      subtitle: "Kelola pendaftaran balita, riwayat DDTK tumbuh kembang, dan validasi data",
+      badgeText: `${dataAnakList.length} Balita / Anak`,
+      icon: Baby,
+      hoverBorder: "hover:border-blue-400 dark:hover:border-blue-600",
+      hoverBg: "hover:bg-blue-50/50 dark:hover:bg-blue-950/20",
+      iconColor: "text-blue-600 dark:text-blue-400",
+      iconBg: "bg-blue-100 dark:bg-blue-950",
+      arrowBg: "bg-slate-100 dark:bg-slate-800",
+      arrowHoverBg: "group-hover:bg-blue-600 group-hover:text-white dark:group-hover:bg-blue-600",
+      arrowColor: "text-slate-500 dark:text-slate-400",
+      textHoverColor: "group-hover:text-blue-600 dark:group-hover:text-blue-400",
+    },
+    ...(komunitas.jenis !== "satuan_paud"
+      ? [
+          {
+            id: "data_ats" as const,
+            type: "link" as const,
+            href: `/komunitas/${komunitas.id}/ats`,
+            title: "Data ATS (Anak Tidak Sekolah)",
+            subtitle: "Pendataan Anak Tidak Sekolah, pemantauan alasan, dan rencana intervensi kembali bersekolah",
+            badgeText: `${dataAtsList.length} Kasus ATS`,
+            icon: GraduationCap,
+            hoverBorder: "hover:border-amber-400 dark:hover:border-amber-600",
+            hoverBg: "hover:bg-amber-50/50 dark:hover:bg-amber-950/20",
+            iconColor: "text-amber-600 dark:text-amber-400",
+            iconBg: "bg-amber-100 dark:bg-amber-950",
+            arrowBg: "bg-slate-100 dark:bg-slate-800",
+            arrowHoverBg: "group-hover:bg-amber-600 group-hover:text-white dark:group-hover:bg-amber-600",
+            arrowColor: "text-slate-500 dark:text-slate-400",
+            textHoverColor: "group-hover:text-amber-600 dark:group-hover:text-amber-400",
+          },
+        ]
+      : []),
   ];
 
   const sortedDetailCategories = [
@@ -569,6 +643,97 @@ export function KomunitasDetailClientView({
       {/* 2. COLLAPSIBLE / ACCORDION SUB-TABS KOMUNITAS */}
       <div className="space-y-3.5 transition-all duration-500 ease-in-out">
         {sortedDetailCategories.map((cat) => {
+          if (cat.type === "link") {
+            const Icon = cat.icon;
+            if (hasFullAccess) {
+              return (
+                <div
+                  key={cat.id}
+                  className={`rounded-3xl border-2 transition-all duration-500 overflow-hidden border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xs hover:shadow-xs ${cat.hoverBorder}`}
+                >
+                  <Link
+                    href={cat.href}
+                    className={`w-full flex items-center justify-between gap-3 p-4 sm:p-5 text-slate-800 dark:text-slate-100 transition-all cursor-pointer group ${cat.hoverBg} text-left`}
+                  >
+                    <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                      <div
+                        className={`flex h-11 w-11 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-2xl ${cat.iconBg} ${cat.iconColor} group-hover:scale-105 transition-transform shadow-2xs`}
+                      >
+                        <Icon className="h-6 w-6" />
+                      </div>
+                      <div className="space-y-0.5 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h2 className={`text-base sm:text-lg font-black tracking-tight text-slate-900 dark:text-slate-100 ${cat.textHoverColor} transition-colors`}>
+                            {cat.title}
+                          </h2>
+                          <span className="text-2xs font-bold px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+                            {cat.badgeText}
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 font-medium line-clamp-1">
+                          {cat.subtitle}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className={`hidden sm:inline-block text-xs font-bold text-slate-400 ${cat.textHoverColor} transition-colors`}>
+                        Buka Data
+                      </span>
+                      <div className={`h-8 w-8 sm:h-9 sm:w-9 rounded-xl ${cat.arrowBg} ${cat.arrowHoverBg} flex items-center justify-center ${cat.arrowColor} transition-all duration-300 shadow-2xs`}>
+                        <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5 transform group-hover:translate-x-0.5 transition-transform duration-300" />
+                      </div>
+                    </div>
+                  </Link>
+                </div>
+              );
+            } else {
+              return (
+                <div
+                  key={cat.id}
+                  className="rounded-3xl border-2 transition-all duration-500 overflow-hidden border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xs hover:shadow-xs hover:border-slate-300 dark:hover:border-slate-700"
+                >
+                  <button
+                    type="button"
+                    onClick={() => setIsWargaOnboardingOpen(true)}
+                    className="w-full flex items-center justify-between gap-3 p-4 sm:p-5 text-slate-800 dark:text-slate-100 transition-all cursor-pointer group hover:bg-slate-50/60 dark:hover:bg-slate-800/30 text-left"
+                  >
+                    <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                      <div
+                        className={`flex h-11 w-11 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-2xl ${cat.iconBg} ${cat.iconColor} opacity-70 group-hover:opacity-100 group-hover:scale-105 transition-all shadow-2xs`}
+                      >
+                        <Icon className="h-6 w-6" />
+                      </div>
+                      <div className="space-y-0.5 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h2 className="text-base sm:text-lg font-black tracking-tight text-slate-900 dark:text-slate-100 group-hover:text-blue-600 transition-colors">
+                            {cat.title}
+                          </h2>
+                          <span className="inline-flex items-center gap-1 text-2xs font-extrabold px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200">
+                            <Lock className="h-3 w-3 text-amber-600" />
+                            Khusus Penduduk
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 font-medium line-clamp-1">
+                          {cat.subtitle}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="hidden sm:inline-block text-xs font-bold text-amber-700 group-hover:text-amber-800 transition-colors">
+                        Buka Akses
+                      </span>
+                      <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-xl bg-amber-50 dark:bg-amber-950/50 group-hover:bg-amber-600 group-hover:text-white flex items-center justify-center text-amber-600 dark:text-amber-400 transition-all duration-300 shadow-2xs">
+                        <Lock className="h-4 w-4 transform group-hover:scale-110 transition-transform duration-300" />
+                      </div>
+                    </div>
+                  </button>
+                </div>
+              );
+            }
+          }
+
           const isOpen = activeTab === cat.id;
           const Icon = cat.icon;
 
@@ -1129,90 +1294,6 @@ export function KomunitasDetailClientView({
             userRole={userPeran}
             isChartOnly={isChartOnly}
           />
-
-          {/* Elemen Rincian Data Anak & ATS (Hanya untuk Penduduk & Penduduk Berdomisili Luar Kota) */}
-          {hasFullAccess ? (
-            <div className="space-y-4">
-              <div className="border-t-2 border-slate-200 pt-4">
-                <h3 className="text-xs font-bold uppercase text-slate-600 tracking-wider mb-3">
-                  MANAJEMEN DATA &amp; DDTK
-                </h3>
-              </div>
-
-              {/* Card Direct to Data Anak & DDTK */}
-              <div className="rounded-2xl border-2 border-slate-200 bg-white p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
-                <div className="flex items-center gap-3.5">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-blue-50 border-2 border-blue-200 text-blue-700">
-                    <Baby className="h-6 w-6" />
-                  </div>
-                  <div className="space-y-1">
-                    <h4 className="text-base font-bold text-slate-900">
-                      Data Anak (0–6 Tahun) &amp; DDTK
-                    </h4>
-                    <p className="text-sm text-slate-600 leading-relaxed">
-                      Kelola pendaftaran balita, riwayat DDTK tumbuh kembang, dan validasi data.
-                    </p>
-                  </div>
-                </div>
-                <Link
-                  href={`/komunitas/${komunitas.id}/data`}
-                  className="inline-flex min-h-[48px] h-12 w-full sm:w-auto items-center justify-center gap-2 rounded-xl bg-blue-700 hover:bg-blue-800 px-6 text-base font-bold text-white transition-all shadow-xs shrink-0"
-                >
-                  <span>BUKA DATA</span>
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              </div>
-
-              {/* Card Direct to Data ATS (Anak Tidak Sekolah) */}
-              {komunitas.jenis !== "satuan_paud" && (
-                <div className="rounded-2xl border-2 border-slate-200 bg-white p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
-                  <div className="flex items-center gap-3.5">
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-50 border-2 border-amber-200 text-amber-800">
-                      <GraduationCap className="h-6 w-6" />
-                    </div>
-                    <div className="space-y-1">
-                      <h4 className="text-base font-bold text-slate-900">
-                        Data ATS (Anak Tidak Sekolah)
-                      </h4>
-                      <p className="text-sm text-slate-600 leading-relaxed">
-                        Pendataan Anak Tidak Sekolah, pemantauan alasan, dan rencana intervensi kembali bersekolah.
-                      </p>
-                    </div>
-                  </div>
-                  <Link
-                    href={`/komunitas/${komunitas.id}/ats`}
-                    className="inline-flex min-h-[48px] h-12 w-full sm:w-auto items-center justify-center gap-2 rounded-xl bg-amber-600 hover:bg-amber-700 px-6 text-base font-bold text-white transition-all shadow-xs shrink-0"
-                  >
-                    <span>BUKA DATA</span>
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                </div>
-              )}
-            </div>
-          ) : (
-            /* Pesan Terkunci untuk Pengunjung / Pendatang */
-            <div className="rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 p-6 text-center space-y-3">
-              <div className="flex h-12 w-12 mx-auto items-center justify-center rounded-2xl bg-slate-200 text-slate-600">
-                <Lock className="h-6 w-6" />
-              </div>
-              <div className="space-y-1 max-w-md mx-auto">
-                <h4 className="text-base font-bold text-slate-900">
-                  Manajemen Data Terkunci
-                </h4>
-                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                  Akses rincian data anak dan pendataan ATS hanya dapat diakses oleh <strong>Penduduk</strong> dan <strong>Penduduk Berdomisili Luar Kota</strong>.
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsWargaOnboardingOpen(true)}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-700 hover:bg-blue-800 text-white font-bold text-xs transition-colors cursor-pointer"
-              >
-                <UserPlus className="h-4 w-4" />
-                <span>Bergabung Sekarang</span>
-              </button>
-            </div>
-          )}
         </section>
       )}
                 </div>
