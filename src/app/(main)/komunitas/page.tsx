@@ -37,7 +37,7 @@ export default async function KomunitasPage({
   searchParams,
 }: KomunitasPageProps) {
   const resolvedParams = await searchParams;
-  const currentTab = (resolvedParams.tab as JenisKomunitas) || "posyandu";
+  const currentTab = resolvedParams.tab ? (resolvedParams.tab as JenisKomunitas) : null;
   const currentSearch = resolvedParams.search?.trim() || "";
   const currentKecamatan = resolvedParams.kecamatan || "semua";
   const currentKelurahan = resolvedParams.kelurahan || "semua";
@@ -47,7 +47,7 @@ export default async function KomunitasPage({
   const pageSize = 20;
 
   const komunitasResult = await getKomunitasList({
-    jenis: currentTab,
+    jenis: currentTab || "semua",
     kecamatan: currentKecamatan,
     kelurahan: currentKelurahan,
     rw: currentRw,
@@ -138,18 +138,24 @@ export default async function KomunitasPage({
     },
   ];
 
+  // Urutkan kategori: Kartu yang terbuka posisinya akan berpindah di posisi paling bawah
+  const sortedCategories = [
+    ...accordionCategories.filter((c) => c.id !== currentTab),
+    ...(currentTab ? accordionCategories.filter((c) => c.id === currentTab) : []),
+  ];
+
   // Render konten di dalam Accordion yang aktif
-  const renderActiveAccordionContent = () => (
+  const renderActiveAccordionContent = (activeCatId: JenisKomunitas) => (
     <div className="space-y-6 pt-2">
       {/* 1. REKAP JUMLAH KOMUNITAS PER KECAMATAN & KELURAHAN */}
       <KomunitasRekapSection
-        currentTab={currentTab}
+        currentTab={activeCatId}
         currentKecamatan={currentKecamatan}
         currentKelurahan={currentKelurahan}
       />
 
       {/* 2. KHUSUS TAB PAUD: TABEL KOMUNITAS BERDASARKAN ANGGOTA */}
-      {currentTab === "satuan_paud" && (
+      {activeCatId === "satuan_paud" && (
         <PaudKomunitasTableRekapSection
           initialKecamatan={currentKecamatan}
           initialKelurahan={currentKelurahan}
@@ -159,7 +165,7 @@ export default async function KomunitasPage({
       {/* 3. FILTER DROPDOWN & SEARCH WILAYAH */}
       <Suspense fallback={<div className="min-h-[100px] animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-800" />}>
         <KomunitasFilter
-          currentTab={currentTab}
+          currentTab={activeCatId}
           currentSearch={currentSearch}
           currentKecamatan={currentKecamatan}
           currentKelurahan={currentKelurahan}
@@ -313,15 +319,15 @@ export default async function KomunitasPage({
       {/* ========================================================= */}
       {/* 2. COLLAPSIBLE / ACCORDION KATEGORI KOMUNITAS            */}
       {/* ========================================================= */}
-      <div className="space-y-3.5">
-        {accordionCategories.map((cat) => {
+      <div className="space-y-3.5 transition-all duration-500 ease-in-out">
+        {sortedCategories.map((cat) => {
           const isOpen = currentTab === cat.id;
           const Icon = cat.icon;
 
           return (
             <div
               key={cat.id}
-              className={`rounded-3xl border-2 transition-all duration-300 overflow-hidden ${
+              className={`rounded-3xl border-2 transition-all duration-500 overflow-hidden ${
                 isOpen
                   ? `border-slate-300 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/40 p-2 sm:p-3 shadow-md`
                   : `border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xs hover:shadow-xs ${cat.hoverBorder}`
@@ -329,11 +335,13 @@ export default async function KomunitasPage({
             >
               {/* Accordion Header / Trigger */}
               {isOpen ? (
-                <div
-                  className={`flex items-center justify-between gap-3 p-4 sm:p-5 rounded-2xl text-white ${cat.activeColorBg} shadow-sm`}
+                <Link
+                  href="/komunitas"
+                  title="Klik untuk menutup bagian ini"
+                  className={`flex items-center justify-between gap-3 p-4 sm:p-5 rounded-2xl text-white ${cat.activeColorBg} shadow-sm cursor-pointer transition-all hover:opacity-95 group`}
                 >
                   <div className="flex items-center gap-3 sm:gap-4 min-w-0">
-                    <div className="flex h-11 w-11 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-2xl bg-white/20 text-white backdrop-blur-xs shadow-2xs">
+                    <div className="flex h-11 w-11 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-2xl bg-white/20 text-white backdrop-blur-xs shadow-2xs group-hover:scale-105 transition-transform">
                       <Icon className="h-6 w-6" />
                     </div>
                     <div className="space-y-0.5 min-w-0">
@@ -358,11 +366,14 @@ export default async function KomunitasPage({
                   </div>
 
                   <div className="flex items-center gap-2 shrink-0">
-                    <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-xl bg-white/20 flex items-center justify-center text-white backdrop-blur-xs">
+                    <span className="hidden sm:inline-block text-xs font-bold text-white/90 group-hover:text-white transition-colors">
+                      Tutup Bagian
+                    </span>
+                    <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-xl bg-white/20 flex items-center justify-center text-white backdrop-blur-xs group-hover:bg-white/30 transition-colors">
                       <ChevronDown className="h-5 w-5 transform rotate-180 transition-transform duration-300" />
                     </div>
                   </div>
-                </div>
+                </Link>
               ) : (
                 <Link
                   href={createTabUrl(cat.id)}
@@ -403,7 +414,7 @@ export default async function KomunitasPage({
               {/* Accordion Body Content */}
               {isOpen && (
                 <div className="p-2 sm:p-4 animate-in fade-in-50 duration-300">
-                  {renderActiveAccordionContent()}
+                  {renderActiveAccordionContent(cat.id)}
                 </div>
               )}
             </div>
