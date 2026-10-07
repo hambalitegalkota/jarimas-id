@@ -39,9 +39,10 @@ export function UnifiedWargaCard({
   tiers,
   className,
 }: UnifiedWargaCardProps) {
-  // Default selected tier: RT jika ada, jika tidak yang pertama tersedia dengan komunitasId
+  // Default selected tier: RT jika ada, jika tidak yang pertama tersedia dengan wilayah terdaftar
   const initialTier =
-    tiers.find((t) => t.komunitasId && t.label === "RT") ||
+    tiers.find((t) => t.komunitasId && t.label === "RT" && t.wilayah !== "-") ||
+    tiers.find((t) => t.komunitasId && t.wilayah !== "-") ||
     tiers.find((t) => t.komunitasId) ||
     tiers[0];
 

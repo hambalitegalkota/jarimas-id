@@ -1518,6 +1518,19 @@ export async function joinKomunitasWargaWithSurvey({
         dbItemKomId === toValidUUID(komunitasId) ||
         (!targetMembership && item.rt === finalRt);
 
+      // Cek apakah user sudah memiliki peran admin aktif di komunitas ini agar tidak tertimpa
+      const { data: existingItemMember } = await supabase
+        .from("anggota_komunitas")
+        .select("peran")
+        .eq("user_id", user.id)
+        .eq("komunitas_id", dbItemKomId)
+        .maybeSingle();
+
+      const itemRole =
+        existingItemMember && isRoleAdmin(existingItemMember.peran)
+          ? existingItemMember.peran
+          : activePeran;
+
       // Upsert anggota_komunitas record
       const { data: mData } = await supabase
         .from("anggota_komunitas")
@@ -1525,7 +1538,7 @@ export async function joinKomunitasWargaWithSurvey({
           {
             user_id: user.id,
             komunitas_id: dbItemKomId,
-            peran: activePeran,
+            peran: itemRole,
             peran_diajukan: null,
             status: "approved",
             berdomisili: berdomisili,

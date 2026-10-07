@@ -141,13 +141,42 @@ export function WargaOnboardingModal({
 
     setErrorMessage(null);
     startTransition(async () => {
+      // Tentukan wilayah sasaran berdasarkan pilihan domisili (atau KK jika domisili di luar Kota Tegal)
+      const targetKecamatan =
+        effectiveDomisiliType === "kota_tegal"
+          ? effectiveDomisiliKecamatan
+          : kkType === "kota_tegal"
+          ? kkKecamatan
+          : komunitas.kecamatan;
+
+      const targetKelurahan =
+        effectiveDomisiliType === "kota_tegal"
+          ? effectiveDomisiliKelurahan
+          : kkType === "kota_tegal"
+          ? kkKelurahan
+          : komunitas.kelurahan;
+
+      const targetRw =
+        effectiveDomisiliType === "kota_tegal"
+          ? effectiveDomisiliRw
+          : kkType === "kota_tegal"
+          ? kkRw
+          : komunitas.rw;
+
+      const targetRt =
+        effectiveDomisiliType === "kota_tegal"
+          ? effectiveDomisiliRt
+          : kkType === "kota_tegal"
+          ? kkRt
+          : komunitas.rt;
+
       const res = await joinKomunitasWargaWithSurvey({
         komunitasId: komunitas.id,
         nama: komunitas.nama,
-        kecamatan: komunitas.kecamatan,
-        kelurahan: komunitas.kelurahan,
-        rw: komunitas.rw,
-        rt: komunitas.rt,
+        kecamatan: targetKecamatan,
+        kelurahan: targetKelurahan,
+        rw: targetRw,
+        rt: targetRt,
         lokasi: komunitas.lokasi,
         deskripsi: komunitas.deskripsi,
         berdomisili: effectiveDomisiliType === "kota_tegal",

@@ -1242,6 +1242,26 @@ export function findOrGenerateKomunitasSeed(
 }
 
 /**
+ * Mencari nama Kecamatan berdasarkan nama Kelurahan di Kota Tegal
+ */
+export function findKecamatanByKelurahan(kelurahanName?: string | null): string | null {
+  if (!kelurahanName) return null;
+  const cleanKel = kelurahanName
+    .toLowerCase()
+    .replace(/^(kelurahan|kel\.)\s+/i, "")
+    .trim();
+
+  for (const [kecName, kecData] of Object.entries(KOTA_TEGAL_DATA)) {
+    for (const kName of Object.keys(kecData.kelurahan)) {
+      if (kName.toLowerCase() === cleanKel) {
+        return kecName;
+      }
+    }
+  }
+  return null;
+}
+
+/**
  * Mengambil rantai hierarki Warga Kita dari tingkat Kecamatan, Kelurahan, RW, hingga RT.
  * Digunakan agar saat user bergabung ke 1 RT, otomatis bergabung ke RW, Kelurahan, dan Kecamatan di atasnya.
  */
@@ -1272,25 +1292,38 @@ export function getWargaHierarchyChain(params: {
   };
   chain.push(kotaItem);
 
-  if (!kecamatan || kecamatan === "semua" || kecamatan === "Kota Tegal") {
+  let targetKecamatan = kecamatan;
+  if (
+    (!targetKecamatan || targetKecamatan === "semua" || targetKecamatan === "Kota Tegal") &&
+    kelurahan &&
+    kelurahan !== "semua" &&
+    kelurahan !== "Semua Kelurahan"
+  ) {
+    const foundKec = findKecamatanByKelurahan(kelurahan);
+    if (foundKec) {
+      targetKecamatan = foundKec;
+    }
+  }
+
+  if (!targetKecamatan || targetKecamatan === "semua" || targetKecamatan === "Kota Tegal") {
     return chain;
   }
 
-  const kecSlug = slugify(kecamatan);
+  const kecSlug = slugify(targetKecamatan);
 
   // 1. Tingkat Kecamatan
   const kecId = `kom-warga-${kecSlug}`;
   const kecItem = findOrGenerateKomunitasSeed(kecId) || {
     id: kecId,
-    nama: `Warga Kecamatan: ${kecamatan}`,
+    nama: `Warga Kecamatan: ${targetKecamatan}`,
     jenis: "warga_kita",
-    kecamatan: kecamatan,
+    kecamatan: targetKecamatan,
     kelurahan: "Semua Kelurahan",
     rt: "",
     rw: "",
-    lokasi: `Kecamatan ${kecamatan}, Kota Tegal`,
-    deskripsi: `Komunitas paguyuban warga se-Kecamatan ${kecamatan}, Kota Tegal.`,
-    kontak: `Sekretariat Kecamatan ${kecamatan}`,
+    lokasi: `Kecamatan ${targetKecamatan}, Kota Tegal`,
+    deskripsi: `Komunitas paguyuban warga se-Kecamatan ${targetKecamatan}, Kota Tegal.`,
+    kontak: `Sekretariat Kecamatan ${targetKecamatan}`,
     jadwal: "Pertemuan Komunitas Warga Tingkat Kecamatan",
   };
   chain.push(kecItem);
@@ -1301,14 +1334,14 @@ export function getWargaHierarchyChain(params: {
     const kelId = `kom-warga-${kecSlug}-${kelSlug}`;
     const kelItem = findOrGenerateKomunitasSeed(kelId) || {
       id: kelId,
-      nama: `Warga Kelurahan: ${kelurahan}, Kecamatan: ${kecamatan}`,
+      nama: `Warga Kelurahan: ${kelurahan}, Kecamatan: ${targetKecamatan}`,
       jenis: "warga_kita",
-      kecamatan: kecamatan,
+      kecamatan: targetKecamatan,
       kelurahan: kelurahan,
       rt: "",
       rw: "",
-      lokasi: `Kantor Kelurahan ${kelurahan}, Kecamatan ${kecamatan}, Kota Tegal`,
-      deskripsi: `Komunitas seluruh warga di wilayah Kelurahan ${kelurahan}, Kecamatan ${kecamatan}, Kota Tegal.`,
+      lokasi: `Kantor Kelurahan ${kelurahan}, Kecamatan ${targetKecamatan}, Kota Tegal`,
+      deskripsi: `Komunitas seluruh warga di wilayah Kelurahan ${kelurahan}, Kecamatan ${targetKecamatan}, Kota Tegal.`,
       kontak: `Sekretariat Kelurahan ${kelurahan}`,
       jadwal: "Forum Komunikasi Warga Kelurahan",
     };
@@ -1320,14 +1353,14 @@ export function getWargaHierarchyChain(params: {
       const rwId = `kom-warga-${kecSlug}-${kelSlug}-rw${cleanRw}`;
       const rwItem = findOrGenerateKomunitasSeed(rwId) || {
         id: rwId,
-        nama: `Warga RW: ${cleanRw}, Kelurahan: ${kelurahan}, Kecamatan: ${kecamatan}`,
+        nama: `Warga RW: ${cleanRw}, Kelurahan: ${kelurahan}, Kecamatan: ${targetKecamatan}`,
         jenis: "warga_kita",
-        kecamatan: kecamatan,
+        kecamatan: targetKecamatan,
         kelurahan: kelurahan,
         rt: "",
         rw: cleanRw,
-        lokasi: `Balai RW ${cleanRw}, Kelurahan ${kelurahan}, Kecamatan ${kecamatan}, Kota Tegal`,
-        deskripsi: `Komunitas rukun warga tingkat RW ${cleanRw} Kelurahan ${kelurahan}, Kecamatan ${kecamatan}, Kota Tegal.`,
+        lokasi: `Balai RW ${cleanRw}, Kelurahan ${kelurahan}, Kecamatan ${targetKecamatan}, Kota Tegal`,
+        deskripsi: `Komunitas rukun warga tingkat RW ${cleanRw} Kelurahan ${kelurahan}, Kecamatan ${targetKecamatan}, Kota Tegal.`,
         kontak: `Pengurus RW ${cleanRw}`,
         jadwal: "Rembug RW dan Pertemuan Warga Bulanan",
       };
@@ -1339,14 +1372,14 @@ export function getWargaHierarchyChain(params: {
         const rtId = `kom-warga-${kecSlug}-${kelSlug}-rw${cleanRw}-rt${cleanRt}`;
         const rtItem = findOrGenerateKomunitasSeed(rtId) || {
           id: rtId,
-          nama: `Warga RT: ${cleanRt}, RW: ${cleanRw}, Kelurahan: ${kelurahan}, Kecamatan: ${kecamatan}`,
+          nama: `Warga RT: ${cleanRt}, RW: ${cleanRw}, Kelurahan: ${kelurahan}, Kecamatan: ${targetKecamatan}`,
           jenis: "warga_kita",
-          kecamatan: kecamatan,
+          kecamatan: targetKecamatan,
           kelurahan: kelurahan,
           rt: cleanRt,
           rw: cleanRw,
-          lokasi: `Lingkungan RT ${cleanRt} / RW ${cleanRw}, Kelurahan ${kelurahan}, Kecamatan ${kecamatan}, Kota Tegal`,
-          deskripsi: `Komunitas paguyuban rukun tetangga warga RT ${cleanRt} RW ${cleanRw} Kelurahan ${kelurahan}, Kecamatan ${kecamatan}, Kota Tegal.`,
+          lokasi: `Lingkungan RT ${cleanRt} / RW ${cleanRw}, Kelurahan ${kelurahan}, Kecamatan ${targetKecamatan}, Kota Tegal`,
+          deskripsi: `Komunitas paguyuban rukun tetangga warga RT ${cleanRt} RW ${cleanRw} Kelurahan ${kelurahan}, Kecamatan ${targetKecamatan}, Kota Tegal.`,
           kontak: `Pengurus RT ${cleanRt} / RW ${cleanRw}`,
           jadwal: "Pertemuan Rutin Warga Setiap Bulan",
         };

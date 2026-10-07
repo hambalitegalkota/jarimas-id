@@ -24,7 +24,7 @@ import { KomunitasManagementTools } from "@/components/admin/komunitas-managemen
 import { KecamatanMonitoringAccordion } from "@/components/admin/kecamatan-monitoring-accordion";
 import { formatPeranDisplay, isRoleAdmin, toValidUUID } from "@/lib/utils";
 import { extractKomunitasMetadata } from "@/lib/admin-helpers";
-import { getWargaHierarchyChain, slugify } from "@/lib/constants/tegal-data";
+import { getWargaHierarchyChain, findKecamatanByKelurahan, slugify } from "@/lib/constants/tegal-data";
 import { UserCheck, Users } from "lucide-react";
 import { UnifiedWargaCard, type WargaTierItem } from "@/components/komunitas/unified-warga-card";
 import type { PendingApprovalItem, AnggotaKomunitas } from "@/types/database";
@@ -142,44 +142,54 @@ export default async function ProfilePage() {
     let rwItem: (typeof wargaKitaMemberships)[0] | undefined;
     let kelItem: (typeof wargaKitaMemberships)[0] | undefined;
     let kecItem: (typeof wargaKitaMemberships)[0] | undefined;
+    let kotaItem: (typeof wargaKitaMemberships)[0] | undefined;
 
     for (const item of wargaKitaMemberships) {
       const meta = extractKomunitasMetadata(item.komunitas);
       if (meta.hasRt) {
-        rtItem = item;
+        if (!rtItem || isRoleAdmin(item.raw_peran)) rtItem = item;
       } else if (meta.hasRw) {
-        rwItem = item;
+        if (!rwItem || isRoleAdmin(item.raw_peran)) rwItem = item;
       } else if (meta.hasKel) {
-        kelItem = item;
+        if (!kelItem || isRoleAdmin(item.raw_peran)) kelItem = item;
+      } else if (meta.rawKec && meta.rawKec !== "Kota Tegal") {
+        if (!kecItem || isRoleAdmin(item.raw_peran)) kecItem = item;
       } else {
-        kecItem = item;
+        if (!kotaItem || isRoleAdmin(item.raw_peran)) kotaItem = item;
       }
     }
 
-    const refMeta = extractKomunitasMetadata(
-      rtItem?.komunitas ||
-        rwItem?.komunitas ||
-        kelItem?.komunitas ||
-        kecItem?.komunitas ||
-        wargaKitaMemberships[0].komunitas
-    );
+    // Prioritaskan metadata dari level terdalam (RT -> RW -> Kelurahan -> Kecamatan -> Kota)
+    const primaryAnchor =
+      rtItem || rwItem || kelItem || kecItem || kotaItem || wargaKitaMemberships[0];
+    const anchorMeta = extractKomunitasMetadata(primaryAnchor.komunitas);
 
     const rt = rtItem
       ? extractKomunitasMetadata(rtItem.komunitas).rt
-      : refMeta.rt;
+      : anchorMeta.hasRt
+      ? anchorMeta.rt
+      : "";
+
     const rw = rwItem
       ? extractKomunitasMetadata(rwItem.komunitas).rw
       : rtItem
       ? extractKomunitasMetadata(rtItem.komunitas).rw
-      : refMeta.rw;
-    const kel = kelItem
+      : anchorMeta.hasRw
+      ? anchorMeta.rw
+      : "";
+
+    const rawKelVal = kelItem
       ? extractKomunitasMetadata(kelItem.komunitas).rawKel
       : rwItem
       ? extractKomunitasMetadata(rwItem.komunitas).rawKel
       : rtItem
       ? extractKomunitasMetadata(rtItem.komunitas).rawKel
-      : refMeta.rawKel;
-    const kec = kecItem
+      : anchorMeta.hasKel
+      ? anchorMeta.rawKel
+      : "";
+    const kel = rawKelVal && rawKelVal !== "Semua Kelurahan" ? rawKelVal : "";
+
+    let kec = kecItem
       ? extractKomunitasMetadata(kecItem.komunitas).rawKec
       : kelItem
       ? extractKomunitasMetadata(kelItem.komunitas).rawKec
@@ -187,19 +197,27 @@ export default async function ProfilePage() {
       ? extractKomunitasMetadata(rwItem.komunitas).rawKec
       : rtItem
       ? extractKomunitasMetadata(rtItem.komunitas).rawKec
-      : refMeta.rawKec || "Kota Tegal";
+      : anchorMeta.rawKec !== "Kota Tegal"
+      ? anchorMeta.rawKec
+      : "";
+
+    if ((!kec || kec === "Kota Tegal") && kel) {
+      const foundKec = findKecamatanByKelurahan(kel);
+      if (foundKec) kec = foundKec;
+    }
+    if (!kec) kec = "Kota Tegal";
 
     // Dapatkan rantai hierarki deterministik 4 tingkat
     const hierarchyChain = getWargaHierarchyChain({
-      kecamatan: kec,
-      kelurahan: kel,
-      rw: rw,
-      rt: rt,
+      kecamatan: kec !== "Kota Tegal" ? kec : undefined,
+      kelurahan: kel || undefined,
+      rw: rw || undefined,
+      rt: rt || undefined,
     });
 
     const chainKec = hierarchyChain.find((c) => {
       const m = extractKomunitasMetadata(c);
-      return !m.hasKel && !m.hasRw && !m.hasRt;
+      return !m.hasKel && !m.hasRw && !m.hasRt && m.rawKec !== "Kota Tegal";
     });
     const chainKel = hierarchyChain.find((c) => {
       const m = extractKomunitasMetadata(c);
@@ -215,28 +233,28 @@ export default async function ProfilePage() {
     });
 
     // Fallback ID deterministik jika komunitas_id belum tersimpan di memberships
-    const fallbackKecId = kec ? toValidUUID(`kom-warga-${slugify(kec)}`) : undefined;
-    const fallbackKelId = kec && kel ? toValidUUID(`kom-warga-${slugify(kec)}-${slugify(kel)}`) : undefined;
-    const fallbackRwId = kec && kel && rw ? toValidUUID(`kom-warga-${slugify(kec)}-${slugify(kel)}-rw${rw.replace(/\D/g, "").padStart(2, "0")}`) : undefined;
-    const fallbackRtId = kec && kel && rw && rt ? toValidUUID(`kom-warga-${slugify(kec)}-${slugify(kel)}-rw${rw.replace(/\D/g, "").padStart(2, "0")}-rt${rt.replace(/\D/g, "").padStart(2, "0")}`) : undefined;
+    const fallbackKecId = kec && kec !== "Kota Tegal" ? toValidUUID(`kom-warga-${slugify(kec)}`) : undefined;
+    const fallbackKelId = kec && kec !== "Kota Tegal" && kel ? toValidUUID(`kom-warga-${slugify(kec)}-${slugify(kel)}`) : undefined;
+    const fallbackRwId = kec && kec !== "Kota Tegal" && kel && rw ? toValidUUID(`kom-warga-${slugify(kec)}-${slugify(kel)}-rw${rw.replace(/\D/g, "").padStart(2, "0")}`) : undefined;
+    const fallbackRtId = kec && kec !== "Kota Tegal" && kel && rw && rt ? toValidUUID(`kom-warga-${slugify(kec)}-${slugify(kel)}-rw${rw.replace(/\D/g, "").padStart(2, "0")}-rt${rt.replace(/\D/g, "").padStart(2, "0")}`) : undefined;
 
     const rtKomId = rtItem?.komunitas_id || (chainRt ? toValidUUID(chainRt.id) : fallbackRtId);
     const rwKomId = rwItem?.komunitas_id || (chainRw ? toValidUUID(chainRw.id) : fallbackRwId);
     const kelKomId = kelItem?.komunitas_id || (chainKel ? toValidUUID(chainKel.id) : fallbackKelId);
     const kecKomId = kecItem?.komunitas_id || (chainKec ? toValidUUID(chainKec.id) : fallbackKecId);
 
-    let formattedTitle = "Domisili Warga Kita";
+    let formattedTitle = "Warga Kota Tegal";
     if (rt && rw && kel) {
       formattedTitle = `Warga RT ${rt} / RW ${rw}, Kel. ${kel}`;
     } else if (rw && kel) {
       formattedTitle = `Warga RW ${rw}, Kel. ${kel}`;
     } else if (kel) {
       formattedTitle = `Warga Kelurahan ${kel}`;
-    } else if (kec) {
+    } else if (kec && kec !== "Kota Tegal") {
       formattedTitle = `Warga Kecamatan ${kec}`;
     }
 
-    // Tentukan peran tertinggi untuk badge utama
+    // Tentukan peran tertinggi untuk badge utama (Pengurus jika ada, atau Penduduk)
     let highestRole = "Penduduk";
     let highestStatus: "approved" | "pending" | "rejected" = "approved";
 
@@ -252,6 +270,9 @@ export default async function ProfilePage() {
     } else if (kecItem && isRoleAdmin(kecItem.raw_peran)) {
       highestRole = kecItem.peran;
       highestStatus = kecItem.status;
+    } else if (kotaItem && isRoleAdmin(kotaItem.raw_peran)) {
+      highestRole = kotaItem.peran;
+      highestStatus = kotaItem.status;
     } else {
       const approvedItem = wargaKitaMemberships.find(
         (i) => i.status === "approved"
@@ -270,7 +291,7 @@ export default async function ProfilePage() {
 
     wargaKitaSummary = {
       title: formattedTitle,
-      lokasi: `${kel ? `Kel. ${kel}, ` : ""}Kec. ${kec}, Kota Tegal`,
+      lokasi: `${kel ? `Kel. ${kel}, ` : ""}${kec !== "Kota Tegal" ? `Kec. ${kec}, ` : ""}Kota Tegal`,
       highestRole,
       highestStatus,
       primaryKomunitasId,
@@ -279,29 +300,29 @@ export default async function ProfilePage() {
           label: "RT" as const,
           wilayah: rt ? `RT ${rt}` : "-",
           komunitasId: rtKomId,
-          peran: rtItem?.peran || "Penduduk",
-          status: rtItem?.status || "approved",
+          peran: rtItem?.peran || (rt ? "Penduduk" : undefined),
+          status: rtItem?.status || (rt ? "approved" : undefined),
         },
         {
           label: "RW" as const,
           wilayah: rw ? `RW ${rw}` : "-",
           komunitasId: rwKomId,
-          peran: rwItem?.peran || "Penduduk",
-          status: rwItem?.status || "approved",
+          peran: rwItem?.peran || (rw ? "Penduduk" : undefined),
+          status: rwItem?.status || (rw ? "approved" : undefined),
         },
         {
           label: "Kelurahan" as const,
           wilayah: kel ? `Kel. ${kel}` : "-",
           komunitasId: kelKomId,
-          peran: kelItem?.peran || "Penduduk",
-          status: kelItem?.status || "approved",
+          peran: kelItem?.peran || (kel ? "Penduduk" : undefined),
+          status: kelItem?.status || (kel ? "approved" : undefined),
         },
         {
           label: "Kecamatan" as const,
-          wilayah: kec ? `Kec. ${kec}` : "-",
+          wilayah: kec && kec !== "Kota Tegal" ? `Kec. ${kec}` : "Kec. Kota Tegal",
           komunitasId: kecKomId,
-          peran: kecItem?.peran || "Penduduk",
-          status: kecItem?.status || "approved",
+          peran: kecItem?.peran || kotaItem?.peran || "Penduduk",
+          status: kecItem?.status || kotaItem?.status || "approved",
         },
       ],
     };
