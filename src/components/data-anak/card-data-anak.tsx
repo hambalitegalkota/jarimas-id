@@ -430,25 +430,6 @@ export function CardDataAnak({
             )}
           </div>
         </div>
-
-        {/* Bottom Center Toggle Handle Pill */}
-        <div className="flex justify-center -mb-1 pt-1 print:hidden">
-          <button
-            type="button"
-            onClick={() => setIsExpanded(!isExpanded)}
-            className="group inline-flex items-center gap-1.5 rounded-full border-2 border-slate-200 bg-slate-50 hover:bg-slate-100 hover:border-slate-300 px-3.5 py-1 text-xs font-bold text-slate-600 transition-all active:scale-95 cursor-pointer shadow-2xs"
-            title={isExpanded ? "Sembunyikan detail rincian" : "Tampilkan detail rincian"}
-          >
-            <span className="text-[11px] font-semibold text-slate-500 group-hover:text-slate-700">
-              {isExpanded ? "Sembunyikan Detail" : "Tampilkan Detail Lengkap"}
-            </span>
-            {isExpanded ? (
-              <ChevronUp className="h-3.5 w-3.5 text-slate-500 group-hover:text-slate-800 transition-transform" />
-            ) : (
-              <ChevronDown className="h-3.5 w-3.5 text-slate-500 group-hover:text-slate-800 transition-transform" />
-            )}
-          </button>
-        </div>
       </div>
 
       {/* DDKS Drawer */}
