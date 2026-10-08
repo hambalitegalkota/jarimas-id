@@ -501,112 +501,140 @@ export function KartuDaftarNamaAtsRekap({
 
               {/* Mobile Card List */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:hidden gap-3">
-                {filteredData.map((item, idx) => {
-                  const isL = item.jenisKelamin === "L";
-                  const isIngin = item.keinginanSekolah.includes("Masih");
-
-                  return (
-                    <div
-                      key={item.id}
-                      className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 space-y-3 shadow-xs"
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex items-center gap-2.5">
-                          <div
-                            className={cn(
-                              "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl font-bold text-white text-xs",
-                              isL ? "bg-blue-600" : "bg-rose-600"
-                            )}
-                          >
-                            {item.namaLengkap.charAt(0).toUpperCase()}
-                          </div>
-                          <div>
-                            <h4 className="font-bold text-slate-900 dark:text-slate-100 text-sm line-clamp-1">
-                              {item.namaLengkap}
-                            </h4>
-                            <div className="flex items-center gap-1.5 text-[11px] text-slate-500">
-                              <span className="font-semibold text-slate-700 dark:text-slate-300">
-                                Usia {item.usia} Thn
-                              </span>
-                              <span>•</span>
-                              <span>{isL ? "Laki-laki" : "Perempuan"}</span>
-                            </div>
-                          </div>
-                        </div>
-                        <span className="text-xs font-mono font-bold text-slate-400">
-                          #{idx + 1}
-                        </span>
-                      </div>
-
-                      {/* Info Status / Kategori ATS */}
-                      <div className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 space-y-1.5">
-                        <div className="flex items-center justify-between">
-                          <span
-                            className={cn(
-                              "px-2 py-0.5 rounded text-[10px] font-extrabold",
-                              item.kategoriAts.includes("DO") || item.kategoriAts.includes("Putus")
-                                ? "bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300"
-                                : item.kategoriAts.includes("LTM") || item.kategoriAts.includes("Lulus")
-                                ? "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300"
-                                : "bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300"
-                            )}
-                          >
-                            {item.kategoriAts}
-                          </span>
-                          <span
-                            className={cn(
-                              "text-[10px] font-bold",
-                              isIngin ? "text-emerald-600 dark:text-emerald-400" : "text-slate-500"
-                            )}
-                          >
-                            {isIngin ? "✓ Ingin Sekolah" : "✗ Belum Ingin"}
-                          </span>
-                        </div>
-                        <div className="text-xs font-medium text-slate-700 dark:text-slate-300">
-                          <strong>Faktor:</strong> {item.alasanTidakSekolah}
-                        </div>
-                        {item.sekolahSebelumnya && item.sekolahSebelumnya !== "-" && (
-                          <div className="text-[11px] text-slate-500">
-                            Sekolah Asal: {item.sekolahSebelumnya} ({item.kelasTerakhir})
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Info Orang Tua & Domisili */}
-                      <div className="space-y-1 text-xs text-slate-600 dark:text-slate-400">
-                        <div className="flex items-center justify-between">
-                          <span className="text-slate-500">Orang Tua / Wali:</span>
-                          <span className="font-semibold text-slate-800 dark:text-slate-200">
-                            {item.namaOrangtua}
-                          </span>
-                        </div>
-                        {item.nomorHp && item.nomorHp !== "-" && (
-                          <div className="flex items-center justify-between">
-                            <span className="text-slate-500">WhatsApp:</span>
-                            <a
-                              href={`https://wa.me/${item.nomorHp.replace(/\D/g, "").replace(/^0/, "62")}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="font-mono text-emerald-600 dark:text-emerald-400 font-bold hover:underline"
-                            >
-                              {item.nomorHp}
-                            </a>
-                          </div>
-                        )}
-                        <div className="flex items-start justify-between gap-2 pt-1 border-t border-slate-200/60 dark:border-slate-800">
-                          <span className="text-slate-500 shrink-0">Alamat:</span>
-                          <span className="text-right text-[11px] text-slate-700 dark:text-slate-300 line-clamp-2">
-                            {item.alamat ? `${item.alamat}, ` : ""}
-                            RT {item.rt || "01"}/RW {item.rw || "01"}, Kel. {item.kelurahan}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
+                {filteredData.map((item, idx) => (
+                  <DaftarNamaAtsMobileCardItem key={item.id} item={item} idx={idx} />
+                ))}
               </div>
             </>
           )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function DaftarNamaAtsMobileCardItem({
+  item,
+  idx,
+}: {
+  item: DaftarNamaAtsItem;
+  idx: number;
+}) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const isL = item.jenisKelamin === "L";
+  const isIngin = item.keinginanSekolah.includes("Masih");
+
+  return (
+    <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 space-y-3 shadow-xs transition-all">
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex items-center gap-2.5">
+          <div
+            className={cn(
+              "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl font-bold text-white text-xs",
+              isL ? "bg-blue-600" : "bg-rose-600"
+            )}
+          >
+            {item.namaLengkap.charAt(0).toUpperCase()}
+          </div>
+          <div>
+            <h4 className="font-bold text-slate-900 dark:text-slate-100 text-sm line-clamp-1">
+              {item.namaLengkap}
+            </h4>
+            <div className="flex items-center gap-1.5 text-[11px] text-slate-500">
+              <span className="font-semibold text-slate-700 dark:text-slate-300">
+                Usia {item.usia} Thn
+              </span>
+              <span>•</span>
+              <span>{isL ? "Laki-laki" : "Perempuan"}</span>
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center gap-1.5 shrink-0">
+          <span className="text-xs font-mono font-bold text-slate-400">
+            #{idx + 1}
+          </span>
+          <button
+            type="button"
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="flex items-center gap-1 px-2 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[11px] font-bold hover:bg-slate-100 transition-colors cursor-pointer"
+            title={isExpanded ? "Sembunyikan Detail" : "Tampilkan Detail"}
+          >
+            <span>{isExpanded ? "Tutup" : "Detail"}</span>
+            {isExpanded ? (
+              <ChevronUp className="h-3.5 w-3.5" />
+            ) : (
+              <ChevronDown className="h-3.5 w-3.5" />
+            )}
+          </button>
+        </div>
+      </div>
+
+      {/* Detail Konten (Disembunyikan secara default) */}
+      {isExpanded && (
+        <div className="space-y-3 pt-2 border-t border-slate-200/60 dark:border-slate-800 animate-in fade-in duration-150">
+          {/* Info Status / Kategori ATS */}
+          <div className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 space-y-1.5">
+            <div className="flex items-center justify-between">
+              <span
+                className={cn(
+                  "px-2 py-0.5 rounded text-[10px] font-extrabold",
+                  item.kategoriAts.includes("DO") || item.kategoriAts.includes("Putus")
+                    ? "bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300"
+                    : item.kategoriAts.includes("LTM") || item.kategoriAts.includes("Lulus")
+                    ? "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300"
+                    : "bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300"
+                )}
+              >
+                {item.kategoriAts}
+              </span>
+              <span
+                className={cn(
+                  "text-[10px] font-bold",
+                  isIngin ? "text-emerald-600 dark:text-emerald-400" : "text-slate-500"
+                )}
+              >
+                {isIngin ? "✓ Ingin Sekolah" : "✗ Belum Ingin"}
+              </span>
+            </div>
+            <div className="text-xs font-medium text-slate-700 dark:text-slate-300">
+              <strong>Faktor:</strong> {item.alasanTidakSekolah}
+            </div>
+            {item.sekolahSebelumnya && item.sekolahSebelumnya !== "-" && (
+              <div className="text-[11px] text-slate-500">
+                Sekolah Asal: {item.sekolahSebelumnya} ({item.kelasTerakhir})
+              </div>
+            )}
+          </div>
+
+          {/* Info Orang Tua & Domisili */}
+          <div className="space-y-1 text-xs text-slate-600 dark:text-slate-400">
+            <div className="flex items-center justify-between">
+              <span className="text-slate-500">Orang Tua / Wali:</span>
+              <span className="font-semibold text-slate-800 dark:text-slate-200">
+                {item.namaOrangtua}
+              </span>
+            </div>
+            {item.nomorHp && item.nomorHp !== "-" && (
+              <div className="flex items-center justify-between">
+                <span className="text-slate-500">WhatsApp:</span>
+                <a
+                  href={`https://wa.me/${item.nomorHp.replace(/\D/g, "").replace(/^0/, "62")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-mono text-emerald-600 dark:text-emerald-400 font-bold hover:underline"
+                >
+                  {item.nomorHp}
+                </a>
+              </div>
+            )}
+            <div className="flex items-start justify-between gap-2 pt-1 border-t border-slate-200/60 dark:border-slate-800">
+              <span className="text-slate-500 shrink-0">Alamat:</span>
+              <span className="text-right text-[11px] text-slate-700 dark:text-slate-300 line-clamp-2">
+                {item.alamat ? `${item.alamat}, ` : ""}
+                RT {item.rt || "01"}/RW {item.rw || "01"}, Kel. {item.kelurahan}
+              </span>
+            </div>
+          </div>
         </div>
       )}
     </div>

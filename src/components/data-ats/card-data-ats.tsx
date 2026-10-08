@@ -15,6 +15,8 @@ import {
   MapPin,
   School,
   BookOpen,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { validateDataAts } from "@/app/actions/data-ats";
 import { ModalKembaliBersekolah } from "./modal-kembali-bersekolah";
@@ -98,6 +100,7 @@ export function CardDataAts({
   onKembaliSekolah,
 }: CardDataAtsProps) {
   const [currentAts, setCurrentAts] = useState<DataAtsItem>(ats);
+  const [isExpanded, setIsExpanded] = useState<boolean>(false);
   const [isPendingValidate, startValidateTransition] = useTransition();
 
   // Modal States
@@ -160,7 +163,12 @@ export function CardDataAts({
     <>
       <div className="overflow-hidden rounded-2xl border-2 border-slate-200 bg-white p-5 sm:p-6 space-y-4 transition-all hover:border-blue-400 shadow-xs break-inside-avoid print:bg-white print:border-gray-300 print:text-black print:shadow-none">
         {/* Header: Nama Anak, Jenjang, & Status Approval */}
-        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 border-b-2 border-slate-100 pb-4">
+        <div
+          className={cn(
+            "flex flex-col sm:flex-row sm:items-start justify-between gap-3 transition-all",
+            isExpanded ? "border-b-2 border-slate-100 pb-4" : "pb-0"
+          )}
+        >
           <div className="flex items-start gap-3.5">
             <div
               className={cn(
@@ -211,7 +219,7 @@ export function CardDataAts({
             </div>
           </div>
 
-          {/* Status Badge */}
+          {/* Status Badge & Toggle Button */}
           <div className="flex items-center gap-2 self-start shrink-0">
             {isApproved ? (
               <span className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-800 border-2 border-emerald-300">
@@ -224,169 +232,212 @@ export function CardDataAts({
                 <span>MENUNGGU</span>
               </span>
             )}
-          </div>
-        </div>
 
-        {/* Info Grid: Orang Tua / Wali & Alamat Domisili */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-sm">
-          {/* Orang Tua / Wali */}
-          <div className="flex items-center gap-2.5 rounded-xl bg-slate-50 border border-slate-200 p-3 min-w-0">
-            <User className="h-4 w-4 text-slate-500 shrink-0" />
-            <span className="text-slate-500 font-bold text-xs shrink-0">WALI:</span>
-            <span
-              className="font-bold text-slate-900 truncate"
-              title={`${currentAts.nama_orangtua} (${currentAts.tinggal_bersama})`}
-            >
-              {currentAts.nama_orangtua} ({currentAts.tinggal_bersama})
-            </span>
-          </div>
-
-          {/* Alamat Domisili */}
-          <div className="flex items-center gap-2.5 rounded-xl bg-slate-50 border border-slate-200 p-3 min-w-0">
-            <MapPin className="h-4 w-4 text-blue-600 shrink-0" />
-            <span className="text-slate-500 font-bold text-xs shrink-0">ALAMAT:</span>
-            <span
-              className="font-semibold text-slate-800 truncate"
-              title={alamatLengkap || "-"}
-            >
-              {alamatLengkap || "-"}
-            </span>
-          </div>
-        </div>
-
-        {/* Info Grid: Keinginan Sekolah & Alasan Tidak Sekolah */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-sm">
-          {/* Keinginan Sekolah */}
-          <div className="flex items-center gap-2.5 rounded-xl bg-slate-50 border border-slate-200 p-3 min-w-0">
-            <HelpCircle className="h-4 w-4 text-blue-600 shrink-0" />
-            <span className="text-slate-500 font-bold text-xs shrink-0">MINAT:</span>
-            <span
+            {/* Toggle Sembunyikan / Tampilkan */}
+            <button
+              type="button"
+              onClick={() => setIsExpanded(!isExpanded)}
+              aria-expanded={isExpanded}
               className={cn(
-                "font-bold truncate px-2 py-0.5 rounded-lg text-xs",
-                currentAts.keinginan_sekolah === "Masih Ada"
-                  ? "bg-emerald-100 text-emerald-900 border border-emerald-300"
-                  : "bg-amber-100 text-amber-900 border border-amber-300"
+                "inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold transition-all active:scale-95 cursor-pointer border-2 print:hidden",
+                isExpanded
+                  ? "border-slate-300 bg-slate-100 hover:bg-slate-200 text-slate-700"
+                  : "border-blue-300 bg-blue-50 hover:bg-blue-100 text-blue-800"
               )}
+              title={isExpanded ? "Sembunyikan Detail Kartu" : "Tampilkan Detail Kartu"}
             >
-              {currentAts.keinginan_sekolah}
-            </span>
-          </div>
-
-          {/* Alasan Tidak Sekolah */}
-          <div className="flex items-center gap-2.5 rounded-xl bg-slate-50 border border-slate-200 p-3 min-w-0">
-            <AlertCircle className="h-4 w-4 text-amber-600 shrink-0" />
-            <span className="text-slate-500 font-bold text-xs shrink-0">ALASAN:</span>
-            <span
-              className="font-bold text-slate-900 truncate"
-              title={currentAts.alasan_tidak_sekolah}
-            >
-              {currentAts.alasan_tidak_sekolah}
-            </span>
+              <span>{isExpanded ? "Sembunyikan" : "Tampilkan"}</span>
+              {isExpanded ? (
+                <ChevronUp className="h-4 w-4 shrink-0" />
+              ) : (
+                <ChevronDown className="h-4 w-4 shrink-0" />
+              )}
+            </button>
           </div>
         </div>
 
-        {/* Keterangan Alasan Tambahan jika ada */}
-        {currentAts.keterangan && (
-          <div className="rounded-xl bg-slate-50 border border-slate-200 p-3.5 text-sm text-slate-700 flex items-start gap-2.5">
-            <span className="text-xs font-bold text-blue-700 shrink-0 bg-blue-100 px-2 py-0.5 rounded">KET</span>
-            <p className="leading-relaxed italic">&ldquo;{currentAts.keterangan}&rdquo;</p>
-          </div>
-        )}
-
-        {/* Riwayat Sekolah Sebelumnya & Kelas Terakhir */}
-        {(currentAts.sekolah_sebelumnya || currentAts.kelas_terakhir) && (
+        {/* Collapsible Detail Section (Disembunyikan secara default, tetap tampil saat dicetak) */}
+        <div className={cn("space-y-4 pt-1", !isExpanded && "hidden print:block")}>
+          {/* Info Grid: Orang Tua / Wali & Alamat Domisili */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-sm">
-            {currentAts.sekolah_sebelumnya && (
-              <div className="flex items-center gap-2.5 rounded-xl bg-slate-50 border border-slate-200 p-3 min-w-0">
-                <School className="h-4 w-4 text-slate-500 shrink-0" />
-                <span className="text-slate-500 font-bold text-xs shrink-0">SEKOLAH:</span>
-                <span
-                  className="font-bold text-slate-900 truncate"
-                  title={currentAts.sekolah_sebelumnya}
-                >
-                  {currentAts.sekolah_sebelumnya}
-                </span>
-              </div>
-            )}
-            {currentAts.kelas_terakhir && (
-              <div className="flex items-center gap-2.5 rounded-xl bg-slate-50 border border-slate-200 p-3 min-w-0">
-                <BookOpen className="h-4 w-4 text-slate-500 shrink-0" />
-                <span className="text-slate-500 font-bold text-xs shrink-0">KELAS:</span>
-                <span
-                  className="font-bold text-slate-900 truncate"
-                  title={currentAts.kelas_terakhir}
-                >
-                  {currentAts.kelas_terakhir}
-                </span>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Action Buttons Bar: VALIDASI, KEMBALI BERSEKOLAH, EDIT, HAPUS (Min 48px Height Tap Targets) */}
-        {((!isApproved && canValidate) || canPerformActions) && (
-          <div className="grid grid-cols-1 sm:flex sm:items-center gap-2.5 pt-3 border-t-2 border-slate-100 w-full print:hidden">
-            {/* 1. Tombol Validasi (jika status masih pending) */}
-            {!isApproved && canValidate && (
-              <button
-                type="button"
-                onClick={handleValidate}
-                disabled={isPendingValidate}
-                className="flex-1 min-h-[48px] h-12 flex items-center justify-center gap-2 rounded-xl bg-amber-600 hover:bg-amber-700 active:scale-[0.98] px-4 text-sm font-bold text-white transition-all shadow-sm disabled:opacity-50 cursor-pointer"
-                title="Validasi Data ATS"
+            {/* Orang Tua / Wali */}
+            <div className="flex items-center gap-2.5 rounded-xl bg-slate-50 border border-slate-200 p-3 min-w-0">
+              <User className="h-4 w-4 text-slate-500 shrink-0" />
+              <span className="text-slate-500 font-bold text-xs shrink-0">WALI:</span>
+              <span
+                className="font-bold text-slate-900 truncate"
+                title={`${currentAts.nama_orangtua} (${currentAts.tinggal_bersama})`}
               >
-                {isPendingValidate ? (
-                  <Loader2 className="h-4 w-4 shrink-0 animate-spin" />
-                ) : (
-                  <>
-                    <ShieldCheck className="h-4 w-4 shrink-0" />
-                    <span>VALIDASI ATS</span>
-                  </>
-                )}
-              </button>
-            )}
+                {currentAts.nama_orangtua} ({currentAts.tinggal_bersama})
+              </span>
+            </div>
 
-            {/* 2. KEMBALI BERSEKOLAH, EDIT, HAPUS */}
-            {canPerformActions && (
-              <>
-                {/* 2. KEMBALI BERSEKOLAH (Tombol Utama) */}
+            {/* Alamat Domisili */}
+            <div className="flex items-center gap-2.5 rounded-xl bg-slate-50 border border-slate-200 p-3 min-w-0">
+              <MapPin className="h-4 w-4 text-blue-600 shrink-0" />
+              <span className="text-slate-500 font-bold text-xs shrink-0">ALAMAT:</span>
+              <span
+                className="font-semibold text-slate-800 truncate"
+                title={alamatLengkap || "-"}
+              >
+                {alamatLengkap || "-"}
+              </span>
+            </div>
+          </div>
+
+          {/* Info Grid: Keinginan Sekolah & Alasan Tidak Sekolah */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-sm">
+            {/* Keinginan Sekolah */}
+            <div className="flex items-center gap-2.5 rounded-xl bg-slate-50 border border-slate-200 p-3 min-w-0">
+              <HelpCircle className="h-4 w-4 text-blue-600 shrink-0" />
+              <span className="text-slate-500 font-bold text-xs shrink-0">MINAT:</span>
+              <span
+                className={cn(
+                  "font-bold truncate px-2 py-0.5 rounded-lg text-xs",
+                  currentAts.keinginan_sekolah === "Masih Ada"
+                    ? "bg-emerald-100 text-emerald-900 border border-emerald-300"
+                    : "bg-amber-100 text-amber-900 border border-amber-300"
+                )}
+              >
+                {currentAts.keinginan_sekolah}
+              </span>
+            </div>
+
+            {/* Alasan Tidak Sekolah */}
+            <div className="flex items-center gap-2.5 rounded-xl bg-slate-50 border border-slate-200 p-3 min-w-0">
+              <AlertCircle className="h-4 w-4 text-amber-600 shrink-0" />
+              <span className="text-slate-500 font-bold text-xs shrink-0">ALASAN:</span>
+              <span
+                className="font-bold text-slate-900 truncate"
+                title={currentAts.alasan_tidak_sekolah}
+              >
+                {currentAts.alasan_tidak_sekolah}
+              </span>
+            </div>
+          </div>
+
+          {/* Keterangan Alasan Tambahan jika ada */}
+          {currentAts.keterangan && (
+            <div className="rounded-xl bg-slate-50 border border-slate-200 p-3.5 text-sm text-slate-700 flex items-start gap-2.5">
+              <span className="text-xs font-bold text-blue-700 shrink-0 bg-blue-100 px-2 py-0.5 rounded">KET</span>
+              <p className="leading-relaxed italic">&ldquo;{currentAts.keterangan}&rdquo;</p>
+            </div>
+          )}
+
+          {/* Riwayat Sekolah Sebelumnya & Kelas Terakhir */}
+          {(currentAts.sekolah_sebelumnya || currentAts.kelas_terakhir) && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-sm">
+              {currentAts.sekolah_sebelumnya && (
+                <div className="flex items-center gap-2.5 rounded-xl bg-slate-50 border border-slate-200 p-3 min-w-0">
+                  <School className="h-4 w-4 text-slate-500 shrink-0" />
+                  <span className="text-slate-500 font-bold text-xs shrink-0">SEKOLAH:</span>
+                  <span
+                    className="font-bold text-slate-900 truncate"
+                    title={currentAts.sekolah_sebelumnya}
+                  >
+                    {currentAts.sekolah_sebelumnya}
+                  </span>
+                </div>
+              )}
+              {currentAts.kelas_terakhir && (
+                <div className="flex items-center gap-2.5 rounded-xl bg-slate-50 border border-slate-200 p-3 min-w-0">
+                  <BookOpen className="h-4 w-4 text-slate-500 shrink-0" />
+                  <span className="text-slate-500 font-bold text-xs shrink-0">KELAS:</span>
+                  <span
+                    className="font-bold text-slate-900 truncate"
+                    title={currentAts.kelas_terakhir}
+                  >
+                    {currentAts.kelas_terakhir}
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Action Buttons Bar: VALIDASI, KEMBALI BERSEKOLAH, EDIT, HAPUS (Min 48px Height Tap Targets) */}
+          {((!isApproved && canValidate) || canPerformActions) && (
+            <div className="grid grid-cols-1 sm:flex sm:items-center gap-2.5 pt-3 border-t-2 border-slate-100 w-full print:hidden">
+              {/* 1. Tombol Validasi (jika status masih pending) */}
+              {!isApproved && canValidate && (
                 <button
                   type="button"
-                  onClick={() => setIsKembaliSekolahOpen(true)}
-                  className="flex-1 min-h-[48px] h-12 flex items-center justify-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] px-4 text-sm font-bold text-white transition-all shadow-sm cursor-pointer"
-                  title="Catat Kembali Bersekolah"
+                  onClick={handleValidate}
+                  disabled={isPendingValidate}
+                  className="flex-1 min-h-[48px] h-12 flex items-center justify-center gap-2 rounded-xl bg-amber-600 hover:bg-amber-700 active:scale-[0.98] px-4 text-sm font-bold text-white transition-all shadow-sm disabled:opacity-50 cursor-pointer"
+                  title="Validasi Data ATS"
                 >
-                  <GraduationCap className="h-4 w-4 shrink-0" />
-                  <span>BERSEKOLAH</span>
+                  {isPendingValidate ? (
+                    <Loader2 className="h-4 w-4 shrink-0 animate-spin" />
+                  ) : (
+                    <>
+                      <ShieldCheck className="h-4 w-4 shrink-0" />
+                      <span>VALIDASI ATS</span>
+                    </>
+                  )}
                 </button>
+              )}
 
-                <div className="flex items-center gap-2">
-                  {/* 3. EDIT ATS */}
+              {/* 2. KEMBALI BERSEKOLAH, EDIT, HAPUS */}
+              {canPerformActions && (
+                <>
+                  {/* 2. KEMBALI BERSEKOLAH (Tombol Utama) */}
                   <button
                     type="button"
-                    onClick={() => setIsEditOpen(true)}
-                    className="flex-1 min-h-[48px] h-12 flex items-center justify-center gap-2 rounded-xl border-2 border-slate-300 bg-white hover:bg-slate-100 px-4 text-sm font-bold text-slate-800 transition-all cursor-pointer"
-                    title="Edit Data ATS"
+                    onClick={() => setIsKembaliSekolahOpen(true)}
+                    className="flex-1 min-h-[48px] h-12 flex items-center justify-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] px-4 text-sm font-bold text-white transition-all shadow-sm cursor-pointer"
+                    title="Catat Kembali Bersekolah"
                   >
-                    <Pencil className="h-4 w-4 shrink-0 text-slate-700" />
-                    <span>EDIT</span>
+                    <GraduationCap className="h-4 w-4 shrink-0" />
+                    <span>BERSEKOLAH</span>
                   </button>
 
-                  {/* 4. HAPUS ATS */}
-                  <button
-                    type="button"
-                    onClick={() => setIsDeleteOpen(true)}
-                    className="min-h-[48px] h-12 flex items-center justify-center gap-2 rounded-xl border-2 border-red-200 bg-red-50 hover:bg-red-100 text-red-700 px-4 text-sm font-bold transition-all cursor-pointer"
-                    title="Hapus Data ATS"
-                  >
-                    <Trash2 className="h-4 w-4 shrink-0 text-red-600" />
-                    <span>HAPUS</span>
-                  </button>
-                </div>
-              </>
+                  <div className="flex items-center gap-2">
+                    {/* 3. EDIT ATS */}
+                    <button
+                      type="button"
+                      onClick={() => setIsEditOpen(true)}
+                      className="flex-1 min-h-[48px] h-12 flex items-center justify-center gap-2 rounded-xl border-2 border-slate-300 bg-white hover:bg-slate-100 px-4 text-sm font-bold text-slate-800 transition-all cursor-pointer"
+                      title="Edit Data ATS"
+                    >
+                      <Pencil className="h-4 w-4 shrink-0 text-slate-700" />
+                      <span>EDIT</span>
+                    </button>
+
+                    {/* 4. HAPUS ATS */}
+                    <button
+                      type="button"
+                      onClick={() => setIsDeleteOpen(true)}
+                      className="min-h-[48px] h-12 flex items-center justify-center gap-2 rounded-xl border-2 border-red-200 bg-red-50 hover:bg-red-100 text-red-700 px-4 text-sm font-bold transition-all cursor-pointer"
+                      title="Hapus Data ATS"
+                    >
+                      <Trash2 className="h-4 w-4 shrink-0 text-red-600" />
+                      <span>HAPUS</span>
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Bottom Center Toggle Handle Pill */}
+        <div className="flex justify-center -mb-1 pt-1 print:hidden">
+          <button
+            type="button"
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="group inline-flex items-center gap-1.5 rounded-full border-2 border-slate-200 bg-slate-50 hover:bg-slate-100 hover:border-slate-300 px-3.5 py-1 text-xs font-bold text-slate-600 transition-all active:scale-95 cursor-pointer shadow-2xs"
+            title={isExpanded ? "Sembunyikan detail rincian" : "Tampilkan detail rincian"}
+          >
+            <span className="text-[11px] font-semibold text-slate-500 group-hover:text-slate-700">
+              {isExpanded ? "Sembunyikan Detail" : "Tampilkan Detail Lengkap"}
+            </span>
+            {isExpanded ? (
+              <ChevronUp className="h-3.5 w-3.5 text-slate-500 group-hover:text-slate-800 transition-transform" />
+            ) : (
+              <ChevronDown className="h-3.5 w-3.5 text-slate-500 group-hover:text-slate-800 transition-transform" />
             )}
-          </div>
-        )}
+          </button>
+        </div>
       </div>
 
       {/* Modal Kembali Bersekolah */}
