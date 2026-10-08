@@ -559,7 +559,7 @@ export function ModalEditAts({
                     onChange={(e) => setRw(e.target.value)}
                     className="w-full h-9 rounded-md border border-border bg-card px-3 text-xs font-medium text-foreground focus:border-amber-500 focus:outline-hidden cursor-pointer"
                   >
-                    <option value="Belum Tahu">Belum Tahu (Semua RW)</option>
+                    <option value="Belum Tahu">Belum Tahu</option>
                     {DAFTAR_RW_TEGAL.map((r) => (
                       <option key={r} value={r}>
                         RW {r}
@@ -577,7 +577,7 @@ export function ModalEditAts({
                     onChange={(e) => setRt(e.target.value)}
                     className="w-full h-9 rounded-md border border-border bg-card px-3 text-xs font-medium text-foreground focus:border-amber-500 focus:outline-hidden cursor-pointer"
                   >
-                    <option value="Belum Tahu">Belum Tahu (Semua RT)</option>
+                    <option value="Belum Tahu">Belum Tahu</option>
                     {DAFTAR_RT_TEGAL.map((t) => (
                       <option key={t} value={t}>
                         RT {t}

@@ -601,11 +601,11 @@ export function FormDataAnak({
                 </div>
               </div>
 
-              {/* RW (17) & RT (17) KK */}
+              {/* RW (15) & RT (15) KK */}
               <div className="grid grid-cols-2 gap-3.5">
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold uppercase tracking-wider text-slate-700">
-                    RW Sesuai KK (01–17) <span className="text-rose-600">*</span>
+                    RW Sesuai KK (01–15) <span className="text-rose-600">*</span>
                   </label>
                   <select
                     value={kkRw}
@@ -622,7 +622,7 @@ export function FormDataAnak({
 
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold uppercase tracking-wider text-slate-700">
-                    RT Sesuai KK (01–17) <span className="text-rose-600">*</span>
+                    RT Sesuai KK (01–15) <span className="text-rose-600">*</span>
                   </label>
                   <select
                     value={kkRt}
@@ -806,11 +806,11 @@ export function FormDataAnak({
                     </div>
                   </div>
 
-                  {/* RW (17) & RT (17) Domisili */}
+                  {/* RW (15) & RT (15) Domisili */}
                   <div className="grid grid-cols-2 gap-3.5">
                     <div className="space-y-1.5">
                       <label className="text-xs font-bold uppercase tracking-wider text-slate-700">
-                        RW Domisili (01–17) <span className="text-rose-600">*</span>
+                        RW Domisili (01–15) <span className="text-rose-600">*</span>
                       </label>
                       <select
                         value={domisiliRw}
@@ -827,7 +827,7 @@ export function FormDataAnak({
 
                     <div className="space-y-1.5">
                       <label className="text-xs font-bold uppercase tracking-wider text-slate-700">
-                        RT Domisili (01–17) <span className="text-rose-600">*</span>
+                        RT Domisili (01–15) <span className="text-rose-600">*</span>
                       </label>
                       <select
                         value={domisiliRt}

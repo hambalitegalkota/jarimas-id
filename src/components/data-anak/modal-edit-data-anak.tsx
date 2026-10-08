@@ -616,7 +616,7 @@ export function ModalEditDataAnak({
                 <div className="grid grid-cols-2 gap-3.5">
                   <div className="space-y-1.5">
                     <label className="text-xs font-bold uppercase tracking-wider text-slate-700">
-                      RW KK (01–17) <span className="text-rose-600">*</span>
+                      RW KK (01–15) <span className="text-rose-600">*</span>
                     </label>
                     <select
                       value={kkRw}
@@ -633,7 +633,7 @@ export function ModalEditDataAnak({
 
                   <div className="space-y-1.5">
                     <label className="text-xs font-bold uppercase tracking-wider text-slate-700">
-                      RT KK (01–17) <span className="text-rose-600">*</span>
+                      RT KK (01–15) <span className="text-rose-600">*</span>
                     </label>
                     <select
                       value={kkRt}
@@ -818,7 +818,7 @@ export function ModalEditDataAnak({
                     <div className="grid grid-cols-2 gap-3.5">
                       <div className="space-y-1.5">
                         <label className="text-xs font-bold uppercase tracking-wider text-slate-700">
-                          RW Domisili (01–17) <span className="text-rose-600">*</span>
+                          RW Domisili (01–15) <span className="text-rose-600">*</span>
                         </label>
                         <select
                           value={domisiliRw}
@@ -835,7 +835,7 @@ export function ModalEditDataAnak({
 
                       <div className="space-y-1.5">
                         <label className="text-xs font-bold uppercase tracking-wider text-slate-700">
-                          RT Domisili (01–17) <span className="text-rose-600">*</span>
+                          RT Domisili (01–15) <span className="text-rose-600">*</span>
                         </label>
                         <select
                           value={domisiliRt}

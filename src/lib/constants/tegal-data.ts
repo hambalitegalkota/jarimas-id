@@ -657,11 +657,11 @@ export const KOTA_TEGAL_DATA: Record<string, KecamatanData> = {
 
 export const DAFTAR_KECAMATAN_TEGAL = Object.keys(KOTA_TEGAL_DATA);
 
-export const DAFTAR_RW_TEGAL = Array.from({ length: 17 }, (_, i) =>
+export const DAFTAR_RW_TEGAL = Array.from({ length: 15 }, (_, i) =>
   String(i + 1).padStart(2, "0")
 );
 
-export const DAFTAR_RT_TEGAL = Array.from({ length: 17 }, (_, i) =>
+export const DAFTAR_RT_TEGAL = Array.from({ length: 15 }, (_, i) =>
   String(i + 1).padStart(2, "0")
 );
 
@@ -935,8 +935,8 @@ export function generateWargaKomunitasHierarchy({
       },
     ];
 
-    // Sertakan 17 Komunitas RT di bawah RW ini (RT 01 s/d RT 17)
-    for (let i = 1; i <= 17; i++) {
+    // Sertakan 15 Komunitas RT di bawah RW ini (RT 01 s/d RT 15)
+    for (let i = 1; i <= 15; i++) {
       const rtStr = String(i).padStart(2, "0");
       items.push({
         id: `kom-warga-${slugify(kecamatan!)}-${slugify(kelurahan!)}-rw${cleanRw}-rt${rtStr}`,
@@ -975,8 +975,8 @@ export function generateWargaKomunitasHierarchy({
       },
     ];
 
-    // Sertakan 17 Komunitas RW di bawah Kelurahan ini (RW 01 s/d RW 17)
-    for (let r = 1; r <= 17; r++) {
+    // Sertakan 15 Komunitas RW di bawah Kelurahan ini (RW 01 s/d RW 15)
+    for (let r = 1; r <= 15; r++) {
       const rwStr = String(r).padStart(2, "0");
       items.push({
         id: `kom-warga-${slugify(kecamatan!)}-${slugify(kelurahan!)}-rw${rwStr}`,
@@ -1135,7 +1135,7 @@ export function findOrGenerateKomunitasSeed(
     };
   }
 
-  // Cek seluruh kemungkinan hierarki Warga Kota Tegal (Kecamatan, Kelurahan, RW 1..17, RT 1..17)
+  // Cek seluruh kemungkinan hierarki Warga Kota Tegal (Kecamatan, Kelurahan, RW 1..15, RT 1..15)
   for (const [kecName, kecData] of Object.entries(KOTA_TEGAL_DATA)) {
     const kecSlug = slugify(kecName);
 
@@ -1186,8 +1186,8 @@ export function findOrGenerateKomunitasSeed(
         };
       }
 
-      // 3. Cocokkan Tingkat RW (RW 01 s/d RW 17)
-      for (let r = 1; r <= 17; r++) {
+      // 3. Cocokkan Tingkat RW (RW 01 s/d RW 15)
+      for (let r = 1; r <= 15; r++) {
         const rwStr = String(r).padStart(2, "0");
         const rwId = `kom-warga-${kecSlug}-${kelSlug}-rw${rwStr}`;
         if (
@@ -1210,8 +1210,8 @@ export function findOrGenerateKomunitasSeed(
           };
         }
 
-        // 4. Cocokkan Tingkat RT (RT 01 s/d RT 17)
-        for (let t = 1; t <= 17; t++) {
+        // 4. Cocokkan Tingkat RT (RT 01 s/d RT 15)
+        for (let t = 1; t <= 15; t++) {
           const rtStr = String(t).padStart(2, "0");
           const rtId = `kom-warga-${kecSlug}-${kelSlug}-rw${rwStr}-rt${rtStr}`;
           if (

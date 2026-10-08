@@ -554,7 +554,7 @@ export function FormDataAts({
               onChange={(e) => setRw(e.target.value)}
               className="w-full min-h-[48px] h-12 rounded-xl border-2 border-slate-300 bg-white px-4 text-base font-semibold text-slate-900 focus:border-blue-600 focus:outline-hidden cursor-pointer"
             >
-              <option value="Belum Tahu">Belum Tahu (Semua RW)</option>
+              <option value="Belum Tahu">Belum Tahu</option>
               {DAFTAR_RW_TEGAL.map((r) => (
                 <option key={r} value={r}>
                   RW {r}
@@ -572,7 +572,7 @@ export function FormDataAts({
               onChange={(e) => setRt(e.target.value)}
               className="w-full min-h-[48px] h-12 rounded-xl border-2 border-slate-300 bg-white px-4 text-base font-semibold text-slate-900 focus:border-blue-600 focus:outline-hidden cursor-pointer"
             >
-              <option value="Belum Tahu">Belum Tahu (Semua RT)</option>
+              <option value="Belum Tahu">Belum Tahu</option>
               {DAFTAR_RT_TEGAL.map((t) => (
                 <option key={t} value={t}>
                   RT {t}
