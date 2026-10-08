@@ -15,11 +15,9 @@ import {
   LogIn,
   UserPlus,
   ArrowRight,
-  FileSpreadsheet,
 } from "lucide-react";
 import { CardDataAnak } from "@/components/data-anak/card-data-anak";
 import { FormDataAnak } from "@/components/data-anak/form-data-anak";
-import { ModalImportDataAnak } from "@/components/data-anak/modal-import-data-anak";
 import type { KomunitasWithMembership, DataAnakItem } from "@/types/database";
 import { cn } from "@/lib/utils";
 
@@ -58,7 +56,6 @@ export function DataAnakClientView({
 }: DataAnakClientViewProps) {
   const [childrenList, setChildrenList] = useState<DataAnakItem[]>(initialChildren);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
   const effectiveRole = userRole || komunitas.currentUserMembership?.peran || "Pengunjung";
@@ -166,26 +163,13 @@ export function DataAnakClientView({
             </div>
 
             {canCreate && (
-              <div className="flex items-center gap-2 shrink-0">
-                <button
-                  type="button"
-                  onClick={() => setIsImportModalOpen(true)}
-                  className="flex min-h-[50px] h-13 items-center justify-center gap-2 rounded-2xl bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white px-5 text-sm sm:text-base font-bold shadow-md transition-all shrink-0 cursor-pointer"
-                  title="Tambah banyak data anak sekaligus menggunakan file Excel (.xlsx)"
-                >
-                  <FileSpreadsheet className="h-5 w-5" />
-                  <span>UPLOAD EXCEL</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setIsAddModalOpen(true)}
-                  className="flex min-h-[50px] h-13 items-center justify-center gap-2 rounded-2xl bg-blue-700 hover:bg-blue-800 active:scale-[0.98] text-white px-5 sm:px-6 text-sm sm:text-base font-bold shadow-md transition-all shrink-0 cursor-pointer"
-                >
-                  <Plus className="h-5 w-5" />
-                  <span>TAMBAH DATA ANAK</span>
-                </button>
-              </div>
+              <button
+                onClick={() => setIsAddModalOpen(true)}
+                className="flex min-h-[50px] h-13 items-center justify-center gap-2 rounded-2xl bg-blue-700 hover:bg-blue-800 active:scale-[0.98] text-white px-6 text-base font-bold shadow-md transition-all shrink-0 cursor-pointer"
+              >
+                <Plus className="h-5 w-5" />
+                <span>TAMBAH DATA ANAK</span>
+              </button>
             )}
           </div>
 
@@ -354,22 +338,6 @@ export function DataAnakClientView({
             </div>
           </div>
         </div>
-      )}
-
-      {/* 6. MODAL IMPORT BULK DATA ANAK VIA EXCEL */}
-      {isImportModalOpen && canCreate && canViewDetail && (
-        <ModalImportDataAnak
-          isOpen={isImportModalOpen}
-          komunitasId={komunitas.id}
-          komunitasNama={komunitas.nama}
-          jenisKomunitas={komunitas.jenis}
-          komunitas={komunitas}
-          onClose={() => setIsImportModalOpen(false)}
-          onSuccess={(count) => {
-            setIsImportModalOpen(false);
-            window.location.reload();
-          }}
-        />
       )}
     </div>
   );
