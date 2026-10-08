@@ -519,8 +519,8 @@ export function parseAtsDetails(
   let alasan = "Tidak ada biaya";
   let keterangan = "";
   let alamat = "";
-  let rt = komMeta?.rawRt ? String(komMeta.rawRt) : "";
-  let rw = komMeta?.rawRw ? String(komMeta.rawRw) : "";
+  let rt = komMeta?.rawRt ? String(komMeta.rawRt) : "Belum Tahu";
+  let rw = komMeta?.rawRw ? String(komMeta.rawRw) : "Belum Tahu";
   let kelurahan = komMeta?.rawKel ? String(komMeta.rawKel) : "";
   let kecamatan = komMeta?.rawKec ? String(komMeta.rawKec) : "";
   let jenjangAsal = "";

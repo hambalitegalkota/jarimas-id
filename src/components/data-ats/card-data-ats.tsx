@@ -149,10 +149,29 @@ export function CardDataAts({
   };
 
   // Format Wilayah & Alamat
+  const rawRw = currentAts.rw ? String(currentAts.rw).trim() : "";
+  const rawRt = currentAts.rt ? String(currentAts.rt).trim() : "";
+  const isRwBelumTahu = !rawRw || rawRw === "Belum Tahu" || rawRw.toLowerCase().includes("belum") || rawRw === "-" || rawRw === "0";
+  const isRtBelumTahu = !rawRt || rawRt === "Belum Tahu" || rawRt.toLowerCase().includes("belum") || rawRt === "-" || rawRt === "0";
+
+  const rtRwHeaderStr = isRwBelumTahu && isRtBelumTahu
+    ? "RT/RW Belum Tahu, "
+    : isRwBelumTahu
+    ? `RT ${rawRt} (RW Belum Tahu), `
+    : isRtBelumTahu
+    ? `RW ${rawRw} (RT Belum Tahu), `
+    : `RT ${rawRt}/RW ${rawRw}, `;
+
+  const rtRwAlamatStr = isRwBelumTahu && isRtBelumTahu
+    ? "RT/RW Belum Tahu"
+    : [
+        !isRtBelumTahu ? `RT ${rawRt}` : "RT Belum Tahu",
+        !isRwBelumTahu ? `RW ${rawRw}` : "RW Belum Tahu",
+      ].filter(Boolean).join(", ");
+
   const alamatLengkap = [
     currentAts.alamat,
-    currentAts.rt ? `RT ${currentAts.rt}` : "",
-    currentAts.rw ? `RW ${currentAts.rw}` : "",
+    rtRwAlamatStr,
     currentAts.kelurahan ? `Kel. ${currentAts.kelurahan}` : "",
     currentAts.kecamatan ? `Kec. ${currentAts.kecamatan}` : "",
   ]
@@ -209,9 +228,7 @@ export function CardDataAts({
                   <>
                     <span>•</span>
                     <span className="text-blue-800 font-bold">
-                      {currentAts.rt ? `RT ${currentAts.rt}` : ""}
-                      {currentAts.rw ? `/RW ${currentAts.rw}, ` : " "}
-                      Kel. {currentAts.kelurahan}
+                      {rtRwHeaderStr}Kel. {currentAts.kelurahan}
                     </span>
                   </>
                 )}

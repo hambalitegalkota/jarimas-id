@@ -107,13 +107,13 @@ export function ModalEditAts({
       meta.rawKel !== "Semua Kelurahan" &&
       meta.rawKel !== "Semua"
   );
-  const isLockedRw = Boolean(meta.hasRw && meta.rawRw);
-  const isLockedRt = Boolean(meta.hasRt && meta.rawRt);
+  const isLockedRw = false;
+  const isLockedRt = false;
 
   const initialKec = isLockedKecamatan ? meta.rawKec : (ats.kecamatan || "Tegal Selatan");
   const initialKel = isLockedKelurahan ? meta.rawKel : (ats.kelurahan || "Randugunting");
-  const initialRw = isLockedRw ? meta.rawRw : (ats.rw || "01");
-  const initialRt = isLockedRt ? meta.rawRt : (ats.rt || "01");
+  const initialRw = ats.rw || meta.rawRw || "Belum Tahu";
+  const initialRt = ats.rt || meta.rawRt || "Belum Tahu";
 
   const [kecamatan, setKecamatan] = useState(initialKec);
   const [kelurahan, setKelurahan] = useState(initialKel);
@@ -554,48 +554,36 @@ export function ModalEditAts({
                   <label className="text-xs font-medium text-muted-foreground">
                     RW *
                   </label>
-                  {isLockedRw ? (
-                    <div className="flex items-center justify-between h-9 rounded-md border border-border bg-muted/40 px-3 text-xs font-bold text-foreground cursor-not-allowed select-none">
-                      <span>RW {rw}</span>
-                      <Lock className="h-3 w-3 text-muted-foreground" />
-                    </div>
-                  ) : (
-                    <select
-                      value={rw}
-                      onChange={(e) => setRw(e.target.value)}
-                      className="w-full h-9 rounded-md border border-border bg-card px-3 text-xs font-medium text-foreground focus:border-amber-500 focus:outline-hidden"
-                    >
-                      {DAFTAR_RW_TEGAL.map((r) => (
-                        <option key={r} value={r}>
-                          RW {r}
-                        </option>
-                      ))}
-                    </select>
-                  )}
+                  <select
+                    value={rw}
+                    onChange={(e) => setRw(e.target.value)}
+                    className="w-full h-9 rounded-md border border-border bg-card px-3 text-xs font-medium text-foreground focus:border-amber-500 focus:outline-hidden cursor-pointer"
+                  >
+                    <option value="Belum Tahu">Belum Tahu (Semua RW)</option>
+                    {DAFTAR_RW_TEGAL.map((r) => (
+                      <option key={r} value={r}>
+                        RW {r}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 <div className="space-y-1.5">
                   <label className="text-xs font-medium text-muted-foreground">
                     RT *
                   </label>
-                  {isLockedRt ? (
-                    <div className="flex items-center justify-between h-9 rounded-md border border-border bg-muted/40 px-3 text-xs font-bold text-foreground cursor-not-allowed select-none">
-                      <span>RT {rt}</span>
-                      <Lock className="h-3 w-3 text-muted-foreground" />
-                    </div>
-                  ) : (
-                    <select
-                      value={rt}
-                      onChange={(e) => setRt(e.target.value)}
-                      className="w-full h-9 rounded-md border border-border bg-card px-3 text-xs font-medium text-foreground focus:border-amber-500 focus:outline-hidden"
-                    >
-                      {DAFTAR_RT_TEGAL.map((t) => (
-                        <option key={t} value={t}>
-                          RT {t}
-                        </option>
-                      ))}
-                    </select>
-                  )}
+                  <select
+                    value={rt}
+                    onChange={(e) => setRt(e.target.value)}
+                    className="w-full h-9 rounded-md border border-border bg-card px-3 text-xs font-medium text-foreground focus:border-amber-500 focus:outline-hidden cursor-pointer"
+                  >
+                    <option value="Belum Tahu">Belum Tahu (Semua RT)</option>
+                    {DAFTAR_RT_TEGAL.map((t) => (
+                      <option key={t} value={t}>
+                        RT {t}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
 

@@ -92,10 +92,10 @@ export function FormDataAts({
     meta.rawKel && meta.rawKel !== "Semua Kelurahan" && meta.rawKel !== "Semua"
       ? meta.rawKel
       : (getKelurahanByKecamatan(initialKecamatan)[0] || "Randugunting");
-  const initialRw = meta.rawRw || "01";
-  const initialRt = meta.rawRt || "01";
+  const initialRw = meta.rawRw || "Belum Tahu";
+  const initialRt = meta.rawRt || "Belum Tahu";
 
-  // Status Terkunci Sesuai Wilayah Komunitas
+  // Status Terkunci Sesuai Wilayah Komunitas (Hanya Kecamatan & Kelurahan yang terkunci sesuai wilayah komunitas, RW & RT selalu terbuka untuk pendataan ATS)
   const isLockedKecamatan = Boolean(
     meta.rawKec &&
       meta.rawKec !== "Kota Tegal" &&
@@ -107,8 +107,8 @@ export function FormDataAts({
       meta.rawKel !== "Semua Kelurahan" &&
       meta.rawKel !== "Semua"
   );
-  const isLockedRw = Boolean(meta.hasRw && meta.rawRw);
-  const isLockedRt = Boolean(meta.hasRt && meta.rawRt);
+  const isLockedRw = false;
+  const isLockedRt = false;
 
   const [kecamatan, setKecamatan] = useState(initialKecamatan);
   const [kelurahan, setKelurahan] = useState(initialKelurahan);
@@ -549,52 +549,36 @@ export function FormDataAts({
             <label className="text-base font-bold text-slate-900 block">
               RW <span className="text-red-500">*</span>
             </label>
-            {isLockedRw ? (
-              <div className="flex items-center justify-between min-h-[48px] h-12 bg-slate-100 border-2 border-slate-300 rounded-xl px-4 text-base font-bold text-slate-800 cursor-not-allowed select-none">
-                <span>RW {rw}</span>
-                <span className="inline-flex items-center gap-1 text-xs font-bold px-1.5 py-0.5 rounded bg-slate-200 text-slate-700">
-                  <Lock className="h-3 w-3" />
-                </span>
-              </div>
-            ) : (
-              <select
-                value={rw}
-                onChange={(e) => setRw(e.target.value)}
-                className="w-full min-h-[48px] h-12 rounded-xl border-2 border-slate-300 bg-white px-4 text-base font-semibold text-slate-900 focus:border-blue-600 focus:outline-hidden cursor-pointer"
-              >
-                {DAFTAR_RW_TEGAL.map((r) => (
-                  <option key={r} value={r}>
-                    RW {r}
-                  </option>
-                ))}
-              </select>
-            )}
+            <select
+              value={rw}
+              onChange={(e) => setRw(e.target.value)}
+              className="w-full min-h-[48px] h-12 rounded-xl border-2 border-slate-300 bg-white px-4 text-base font-semibold text-slate-900 focus:border-blue-600 focus:outline-hidden cursor-pointer"
+            >
+              <option value="Belum Tahu">Belum Tahu (Semua RW)</option>
+              {DAFTAR_RW_TEGAL.map((r) => (
+                <option key={r} value={r}>
+                  RW {r}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div className="space-y-2">
             <label className="text-base font-bold text-slate-900 block">
               RT <span className="text-red-500">*</span>
             </label>
-            {isLockedRt ? (
-              <div className="flex items-center justify-between min-h-[48px] h-12 bg-slate-100 border-2 border-slate-300 rounded-xl px-4 text-base font-bold text-slate-800 cursor-not-allowed select-none">
-                <span>RT {rt}</span>
-                <span className="inline-flex items-center gap-1 text-xs font-bold px-1.5 py-0.5 rounded bg-slate-200 text-slate-700">
-                  <Lock className="h-3 w-3" />
-                </span>
-              </div>
-            ) : (
-              <select
-                value={rt}
-                onChange={(e) => setRt(e.target.value)}
-                className="w-full min-h-[48px] h-12 rounded-xl border-2 border-slate-300 bg-white px-4 text-base font-semibold text-slate-900 focus:border-blue-600 focus:outline-hidden cursor-pointer"
-              >
-                {DAFTAR_RT_TEGAL.map((t) => (
-                  <option key={t} value={t}>
-                    RT {t}
-                  </option>
-                ))}
-              </select>
-            )}
+            <select
+              value={rt}
+              onChange={(e) => setRt(e.target.value)}
+              className="w-full min-h-[48px] h-12 rounded-xl border-2 border-slate-300 bg-white px-4 text-base font-semibold text-slate-900 focus:border-blue-600 focus:outline-hidden cursor-pointer"
+            >
+              <option value="Belum Tahu">Belum Tahu (Semua RT)</option>
+              {DAFTAR_RT_TEGAL.map((t) => (
+                <option key={t} value={t}>
+                  RT {t}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
 

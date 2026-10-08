@@ -462,8 +462,8 @@ function parseAtsDetails(alasanSekolahRaw?: string | null, fallbackKomunitas?: a
   let alasan: AlasanTidakSekolah = "Tidak ada biaya";
   let keterangan = "";
   let alamat = "";
-  let rt = komMeta?.rawRt ? String(komMeta.rawRt) : "";
-  let rw = komMeta?.rawRw ? String(komMeta.rawRw) : "";
+  let rt = komMeta?.rawRt ? String(komMeta.rawRt) : "Belum Tahu";
+  let rw = komMeta?.rawRw ? String(komMeta.rawRw) : "Belum Tahu";
   let kelurahan = komMeta?.rawKel ? String(komMeta.rawKel) : "";
   let kecamatan = komMeta?.rawKec ? String(komMeta.rawKec) : "";
   let jenjangAsal = "";
@@ -580,21 +580,23 @@ export async function updateDataAts(
     const isCreator = existingChild.created_by === user.id;
 
     if (!isSuperAdmin && !isCreator) {
-      const { data: membership } = await supabase
+      const { data: memberships } = await supabase
         .from("anggota_komunitas")
         .select("peran, status")
         .eq("user_id", user.id)
-        .eq("komunitas_id", existingChild.komunitas_id)
-        .eq("status", "approved")
-        .maybeSingle();
+        .eq("status", "approved");
 
-      const roleLower = (membership?.peran || "").toLowerCase();
-      const isAuthorized =
-        roleLower.includes("kader") ||
-        roleLower.includes("pengurus") ||
-        roleLower.includes("nakes") ||
-        roleLower.includes("medis") ||
-        roleLower.includes("admin");
+      const isAuthorized = (memberships || []).some((m: any) => {
+        const roleLower = (m?.peran || "").toLowerCase();
+        return (
+          roleLower.includes("kader") ||
+          roleLower.includes("pengurus") ||
+          roleLower.includes("nakes") ||
+          roleLower.includes("medis") ||
+          roleLower.includes("admin") ||
+          roleLower.includes("ketua")
+        );
+      });
 
       if (!isAuthorized) {
         return {
@@ -1246,15 +1248,6 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
         };
       })
       .filter((item) => {
-        // Jika cocok langsung dengan ID komunitas atau UUID
-        if (
-          item.komunitas_id === validKomId ||
-          item.komunitas_id === komunitasId ||
-          toValidUUID(item.komunitas_id) === validKomId
-        ) {
-          return true;
-        }
-
         const itemKec = normalizeWilayah(item.kecamatan);
         const itemKel = normalizeWilayah(item.kelurahan);
         const itemRw = normalizeRtRwNum(item.rw);
@@ -1265,7 +1258,26 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
         const targetRw = normalizeRtRwNum(meta.rawRw);
         const targetRt = normalizeRtRwNum(meta.rawRt);
 
-        // 0. Komunitas Posyandu: Tampilkan seluruh data Anak ATS di Kelurahan tempat Posyandu berada (Sama persis dengan Komunitas Warga Kelurahan)
+        const rawItemRw = (item.rw || "").trim().toLowerCase();
+        const rawItemRt = (item.rt || "").trim().toLowerCase();
+
+        const isRwBelumTahu =
+          !itemRw ||
+          !rawItemRw ||
+          rawItemRw.includes("belum") ||
+          rawItemRw === "-" ||
+          rawItemRw === "0" ||
+          rawItemRw === "00";
+
+        const isRtBelumTahu =
+          !itemRt ||
+          !rawItemRt ||
+          rawItemRt.includes("belum") ||
+          rawItemRt === "-" ||
+          rawItemRt === "0" ||
+          rawItemRt === "00";
+
+        // 0. Komunitas Posyandu: Tampilkan seluruh data Anak ATS di Kelurahan tempat Posyandu berada
         if (meta.jenis === "posyandu" || targetKomunitas?.jenis === "posyandu") {
           const matchKel =
             !targetKel ||
@@ -1282,10 +1294,8 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
           return matchKel && matchKec;
         }
 
-        // 1. Komunitas RT: Hanya tampilkan data Anak ATS di RT tersebut
+        // 1. Komunitas RT: Tampilkan data jika RT cocok, ATAU jika RW/RT Belum Tahu di Kelurahan yang sama
         if (meta.hasRt && meta.hasRw) {
-          const matchRw = itemRw === targetRw;
-          const matchRt = itemRt === targetRt;
           const matchKel =
             !targetKel ||
             !itemKel ||
@@ -1299,12 +1309,29 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
             itemKec.includes(targetKec) ||
             targetKec.includes(itemKec);
 
-          return matchRw && matchRt && matchKel && matchKec;
+          if (!matchKel || !matchKec) return false;
+
+          // Jika RW Belum Tahu, otomatis terdistribusi ke semua RW & RT di Kelurahan ini
+          if (isRwBelumTahu) {
+            return true;
+          }
+
+          // Jika RW spesifik tetapi tidak sama dengan RW komunitas ini, jangan tampilkan
+          if (itemRw !== targetRw) {
+            return false;
+          }
+
+          // Jika RW sama dan RT Belum Tahu, terdistribusi ke semua RT dalam RW ini
+          if (isRtBelumTahu) {
+            return true;
+          }
+
+          // Jika RW sama dan RT spesifik, hanya tampilkan jika RT sama persis
+          return itemRt === targetRt;
         }
 
-        // 2. Komunitas RW: Hanya tampilkan data Anak ATS di RW tersebut (mencakup semua RT di RW itu)
+        // 2. Komunitas RW: Tampilkan data jika RW cocok, ATAU jika RW Belum Tahu di Kelurahan yang sama
         if (meta.hasRw && !meta.hasRt) {
-          const matchRw = itemRw === targetRw;
           const matchKel =
             !targetKel ||
             !itemKel ||
@@ -1318,10 +1345,18 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
             itemKec.includes(targetKec) ||
             targetKec.includes(itemKec);
 
-          return matchRw && matchKel && matchKec;
+          if (!matchKel || !matchKec) return false;
+
+          // Jika RW Belum Tahu, otomatis terdistribusi ke semua RW di Kelurahan ini
+          if (isRwBelumTahu) {
+            return true;
+          }
+
+          // Hanya tampilkan jika RW sama persis
+          return itemRw === targetRw;
         }
 
-        // 3. Komunitas Kelurahan: Hanya tampilkan data Anak ATS di Kelurahan tersebut (mencakup semua RW & RT di Kelurahan itu)
+        // 3. Komunitas Kelurahan: Tampilkan seluruh data Anak ATS di Kelurahan tersebut
         if (meta.hasKel && !meta.hasRw && !meta.hasRt) {
           const matchKel =
             itemKel === targetKel ||
@@ -1337,7 +1372,7 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
           return matchKel && matchKec;
         }
 
-        // 4. Komunitas Kecamatan: Hanya tampilkan data Anak ATS di Kecamatan tersebut (mencakup semua Kelurahan, RW & RT se-Kecamatan)
+        // 4. Komunitas Kecamatan: Tampilkan data Anak ATS di Kecamatan tersebut
         if (targetKec && targetKec !== "kota tegal" && targetKec !== "semua") {
           return (
             itemKec === targetKec ||
@@ -1346,6 +1381,7 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
           );
         }
 
+        // Fallback untuk komunitas tingkat kota
         return true;
       });
 

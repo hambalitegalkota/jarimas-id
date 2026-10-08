@@ -472,7 +472,13 @@ export function KartuDaftarNamaAtsRekap({
                                 {item.alamat || "Alamat belum tercatat lengkap"}
                               </div>
                               <div className="text-slate-500 font-mono text-[10px]">
-                                RT {item.rt || "01"} / RW {item.rw || "01"} • Kel. {item.kelurahan}
+                                {item.rt === "Belum Tahu" && item.rw === "Belum Tahu"
+                                  ? "RT/RW Belum Tahu"
+                                  : item.rw === "Belum Tahu"
+                                  ? `RT ${item.rt} (RW Belum Tahu)`
+                                  : item.rt === "Belum Tahu"
+                                  ? `RW ${item.rw} (RT Belum Tahu)`
+                                  : `RT ${item.rt || "-"} / RW ${item.rw || "-"}`} • Kel. {item.kelurahan}
                               </div>
                               <div className="text-slate-400 text-[10px]">
                                 Kec. {item.kecamatan}
@@ -631,7 +637,13 @@ function DaftarNamaAtsMobileCardItem({
               <span className="text-slate-500 shrink-0">Alamat:</span>
               <span className="text-right text-[11px] text-slate-700 dark:text-slate-300 line-clamp-2">
                 {item.alamat ? `${item.alamat}, ` : ""}
-                RT {item.rt || "01"}/RW {item.rw || "01"}, Kel. {item.kelurahan}
+                {item.rt === "Belum Tahu" && item.rw === "Belum Tahu"
+                  ? "RT/RW Belum Tahu"
+                  : item.rw === "Belum Tahu"
+                  ? `RT ${item.rt} (RW Belum Tahu)`
+                  : item.rt === "Belum Tahu"
+                  ? `RW ${item.rw} (RT Belum Tahu)`
+                  : `RT ${item.rt || "-"}/RW ${item.rw || "-"}`}, Kel. {item.kelurahan}
               </span>
             </div>
           </div>
