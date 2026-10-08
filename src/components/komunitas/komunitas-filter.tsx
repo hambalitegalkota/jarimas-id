@@ -16,6 +16,7 @@ import {
   DAFTAR_KECAMATAN_TEGAL,
   DAFTAR_RW_TEGAL,
   DAFTAR_RT_TEGAL,
+  DAFTAR_BENTUK_PENDIDIKAN,
   getKelurahanByKecamatan,
 } from "@/lib/constants/tegal-data";
 import { cn } from "@/lib/utils";
@@ -27,6 +28,7 @@ interface KomunitasFilterProps {
   currentKelurahan?: string;
   currentRw?: string;
   currentRt?: string;
+  currentBentuk?: string;
 }
 
 export function KomunitasFilter({
@@ -36,6 +38,7 @@ export function KomunitasFilter({
   currentKelurahan = "semua",
   currentRw = "semua",
   currentRt = "semua",
+  currentBentuk = "semua",
 }: KomunitasFilterProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -141,6 +144,17 @@ export function KomunitasFilter({
     });
   };
 
+  const handleBentukChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const val = e.target.value;
+    updateUrlParams((params) => {
+      if (val === "semua") {
+        params.delete("bentuk");
+      } else {
+        params.set("bentuk", val);
+      }
+    });
+  };
+
   const handleRwChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const val = e.target.value;
     updateUrlParams((params) => {
@@ -171,6 +185,7 @@ export function KomunitasFilter({
     }
     updateUrlParams((params) => {
       params.delete("search");
+      params.delete("bentuk");
       params.delete("kecamatan");
       params.delete("kelurahan");
       params.delete("rw");
@@ -182,6 +197,7 @@ export function KomunitasFilter({
     Boolean(currentSearch) ||
     currentKecamatan !== "semua" ||
     currentKelurahan !== "semua" ||
+    (activeTab === "satuan_paud" && currentBentuk !== "semua") ||
     (isWargaKita && (currentRw !== "semua" || currentRt !== "semua"));
 
   const searchPlaceholder = isWargaKita
@@ -250,7 +266,7 @@ export function KomunitasFilter({
         <div className="flex items-center justify-between px-0.5">
           <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-600">
             <Filter className="h-3.5 w-3.5 text-slate-500" />
-            <span>Filter Wilayah</span>
+            <span>Filter Wilayah &amp; Kategori</span>
           </div>
 
           {hasFilter && (
@@ -268,9 +284,39 @@ export function KomunitasFilter({
         <div
           className={cn(
             "grid gap-3",
-            isWargaKita ? "grid-cols-2 sm:grid-cols-4" : "grid-cols-1 sm:grid-cols-2"
+            isWargaKita
+              ? "grid-cols-2 sm:grid-cols-4"
+              : activeTab === "satuan_paud"
+              ? "grid-cols-1 sm:grid-cols-3"
+              : "grid-cols-1 sm:grid-cols-2"
           )}
         >
+          {/* Filter Bentuk Satuan Pendidikan (Khusus Satuan PAUD) */}
+          {activeTab === "satuan_paud" && (
+            <div className="space-y-1">
+              <label className="text-[11px] font-bold uppercase text-slate-500 block">
+                Bentuk Satuan
+              </label>
+              <div className="relative">
+                <select
+                  value={currentBentuk}
+                  onChange={handleBentukChange}
+                  disabled={isPending}
+                  className="w-full min-h-[44px] h-11 rounded-xl border-2 border-indigo-200 bg-white px-3 text-xs sm:text-sm font-bold text-indigo-900 focus:border-indigo-600 focus:outline-none disabled:opacity-60 cursor-pointer"
+                >
+                  <option value="semua">Semua Bentuk (219)</option>
+                  <option value="TK">TK - Taman Kanak-Kanak (75)</option>
+                  <option value="KB">KB - Kelompok Bermain (58)</option>
+                  <option value="SPS">SPS - Pos PAUD / SPS (51)</option>
+                  <option value="RA">RA - Raudhatul Athfal (18)</option>
+                  <option value="PKBM">PKBM - Pusat Kegiatan Belajar (12)</option>
+                  <option value="TPA">TPA - Taman Penitipan Anak (4)</option>
+                  <option value="SKB">SKB - Sanggar Kegiatan Belajar (1)</option>
+                </select>
+              </div>
+            </div>
+          )}
+
           {/* Filter Kecamatan */}
           <div className="space-y-1">
             <label className="text-[11px] font-bold uppercase text-slate-500 block">

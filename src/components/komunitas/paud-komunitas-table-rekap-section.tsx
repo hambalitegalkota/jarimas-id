@@ -43,11 +43,13 @@ import { cn } from "@/lib/utils";
 interface PaudKomunitasTableRekapSectionProps {
   initialKecamatan?: string;
   initialKelurahan?: string;
+  initialBentuk?: string;
 }
 
 export function PaudKomunitasTableRekapSection({
   initialKecamatan = "semua",
   initialKelurahan = "semua",
+  initialBentuk = "semua",
 }: PaudKomunitasTableRekapSectionProps) {
   const [data, setData] = useState<PaudKomunitasRekapTableData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -65,8 +67,20 @@ export function PaudKomunitasTableRekapSection({
   const [selectedKelurahan, setSelectedKelurahan] =
     useState<string>(initialKelurahan);
   const [selectedJenisInstitusi, setSelectedJenisInstitusi] =
-    useState<string>("semua");
+    useState<string>(initialBentuk);
   const [sortBy, setSortBy] = useState<string>("anggota_desc");
+
+  useEffect(() => {
+    if (initialKecamatan) setSelectedKecamatan(initialKecamatan);
+  }, [initialKecamatan]);
+
+  useEffect(() => {
+    if (initialKelurahan) setSelectedKelurahan(initialKelurahan);
+  }, [initialKelurahan]);
+
+  useEffect(() => {
+    if (initialBentuk) setSelectedJenisInstitusi(initialBentuk);
+  }, [initialBentuk]);
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState<number>(1);

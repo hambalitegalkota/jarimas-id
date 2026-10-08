@@ -2423,6 +2423,8 @@ function buildPaudMasterSeed(): MasterKomunitasSeedItem[] {
       id,
       nama: item.nama,
       jenis: "satuan_paud",
+      jenis_institusi: item.jenis_institusi,
+      npsn: item.npsn,
       kecamatan: item.kecamatan,
       kelurahan: item.kelurahan,
       rt,

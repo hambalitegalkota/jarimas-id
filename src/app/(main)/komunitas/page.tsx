@@ -29,6 +29,7 @@ interface KomunitasPageProps {
     kelurahan?: string;
     rw?: string;
     rt?: string;
+    bentuk?: string;
     page?: string;
   }>;
 }
@@ -41,6 +42,7 @@ export default async function KomunitasPage({
   const currentSearch = resolvedParams.search?.trim() || "";
   const currentKecamatan = resolvedParams.kecamatan || "semua";
   const currentKelurahan = resolvedParams.kelurahan || "semua";
+  const currentBentuk = currentTab === "satuan_paud" ? resolvedParams.bentuk || "semua" : "semua";
   const currentRw = currentTab === "warga_kita" ? resolvedParams.rw || "semua" : "semua";
   const currentRt = currentTab === "warga_kita" ? resolvedParams.rt || "semua" : "semua";
   const currentPage = Math.max(1, Number(resolvedParams.page) || 1);
@@ -52,6 +54,7 @@ export default async function KomunitasPage({
     kelurahan: currentKelurahan,
     rw: currentRw,
     rt: currentRt,
+    bentuk: currentBentuk,
     searchQuery: currentSearch,
     page: currentPage,
     limit: pageSize,
@@ -64,6 +67,7 @@ export default async function KomunitasPage({
     const params = new URLSearchParams();
     if (currentTab) params.set("tab", currentTab);
     if (currentSearch) params.set("search", currentSearch);
+    if (currentBentuk !== "semua") params.set("bentuk", currentBentuk);
     if (currentKecamatan !== "semua") params.set("kecamatan", currentKecamatan);
     if (currentKelurahan !== "semua") params.set("kelurahan", currentKelurahan);
     if (currentTab === "warga_kita") {
@@ -79,6 +83,7 @@ export default async function KomunitasPage({
     const params = new URLSearchParams();
     params.set("tab", targetTab);
     if (currentSearch) params.set("search", currentSearch);
+    if (targetTab === "satuan_paud" && currentBentuk !== "semua") params.set("bentuk", currentBentuk);
     if (currentKecamatan !== "semua") params.set("kecamatan", currentKecamatan);
     if (currentKelurahan !== "semua") params.set("kelurahan", currentKelurahan);
     if (targetTab === "warga_kita") {
@@ -147,11 +152,12 @@ export default async function KomunitasPage({
   // Render konten di dalam Accordion yang aktif
   const renderActiveAccordionContent = (activeCatId: JenisKomunitas) => (
     <div className="space-y-6 pt-2">
-      {/* 1. REKAP JUMLAH KOMUNITAS PER KECAMATAN & KELURAHAN */}
+      {/* 1. REKAP JUMLAH KOMUNITAS PER KECAMATAN & KELURAHAN BESERTA BENTUK SATUAN */}
       <KomunitasRekapSection
         currentTab={activeCatId}
         currentKecamatan={currentKecamatan}
         currentKelurahan={currentKelurahan}
+        currentBentuk={currentBentuk}
       />
 
       {/* 2. KHUSUS TAB PAUD: TABEL KOMUNITAS BERDASARKAN ANGGOTA */}
@@ -159,6 +165,7 @@ export default async function KomunitasPage({
         <PaudKomunitasTableRekapSection
           initialKecamatan={currentKecamatan}
           initialKelurahan={currentKelurahan}
+          initialBentuk={currentBentuk}
         />
       )}
 
@@ -171,6 +178,7 @@ export default async function KomunitasPage({
           currentKelurahan={currentKelurahan}
           currentRw={currentRw}
           currentRt={currentRt}
+          currentBentuk={currentBentuk}
         />
       </Suspense>
 

@@ -82,6 +82,8 @@ export interface Komunitas {
   id: string;
   nama: string;
   jenis: JenisKomunitas | string;
+  jenis_institusi?: "TK" | "KB" | "RA" | "SPS" | "TPA" | "PKBM" | "SKB" | string;
+  npsn?: string;
   kecamatan?: string;
   kelurahan?: string;
   rt?: string | null;

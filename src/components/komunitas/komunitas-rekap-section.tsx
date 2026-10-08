@@ -12,24 +12,55 @@ import {
   BarChart3,
   CheckCircle2,
   Building2,
+  School,
+  BookOpen,
+  Baby,
+  HeartHandshake,
+  Layers,
+  X,
 } from "lucide-react";
 import type { JenisKomunitas } from "@/types/database";
-import { getKomunitasRekapData } from "@/lib/constants/tegal-data";
+import {
+  getKomunitasRekapData,
+  getBentukPendidikanRekap,
+  DAFTAR_BENTUK_PENDIDIKAN,
+  type BentukPendidikanType,
+} from "@/lib/constants/tegal-data";
+import { cn } from "@/lib/utils";
 
 interface KomunitasRekapSectionProps {
   currentTab: JenisKomunitas;
   currentKecamatan?: string;
   currentKelurahan?: string;
+  currentBentuk?: string;
 }
 
 export function KomunitasRekapSection({
   currentTab,
   currentKecamatan = "semua",
   currentKelurahan = "semua",
+  currentBentuk = "semua",
 }: KomunitasRekapSectionProps) {
-  const [isOpen, setIsOpen] = useState(false);
+  const isFiltered =
+    currentKecamatan !== "semua" ||
+    currentKelurahan !== "semua" ||
+    (currentTab === "satuan_paud" && currentBentuk !== "semua");
 
-  const rekap = getKomunitasRekapData(currentTab);
+  // Secara default collapsible terbuka
+  const [isOpen, setIsOpen] = useState<boolean>(true);
+
+  const isPaud = currentTab === "satuan_paud";
+
+  const rekap = getKomunitasRekapData(currentTab, {
+    bentuk: currentBentuk,
+  });
+
+  const bentukRekap = isPaud
+    ? getBentukPendidikanRekap({
+        kecamatan: currentKecamatan,
+        kelurahan: currentKelurahan,
+      })
+    : null;
 
   // Tema warna dinamis sesuai tab aktif
   const theme = {
@@ -82,22 +113,58 @@ export function KomunitasRekapSection({
 
   const IconComponent = theme.icon;
 
-  // Helper membuat link filter wilayah
-  const makeFilterUrl = (kecamatan?: string, kelurahan?: string) => {
+  // Helper membuat link filter dengan parameter terpadu
+  const makeFilterUrl = (
+    kecamatan?: string,
+    kelurahan?: string,
+    bentuk?: string
+  ) => {
     const params = new URLSearchParams();
     params.set("tab", currentTab);
-    if (kecamatan && kecamatan !== "semua") {
-      params.set("kecamatan", kecamatan);
+
+    const targetBentuk = bentuk !== undefined ? bentuk : currentBentuk;
+    if (isPaud && targetBentuk && targetBentuk !== "semua") {
+      params.set("bentuk", targetBentuk);
     }
-    if (kelurahan && kelurahan !== "semua") {
-      params.set("kelurahan", kelurahan);
+
+    const targetKec = kecamatan !== undefined ? kecamatan : currentKecamatan;
+    if (targetKec && targetKec !== "semua") {
+      params.set("kecamatan", targetKec);
     }
+
+    const targetKel = kelurahan !== undefined ? kelurahan : currentKelurahan;
+    if (targetKel && targetKel !== "semua") {
+      params.set("kelurahan", targetKel);
+    }
+
     return `/komunitas?${params.toString()}`;
+  };
+
+  // Helper ikon khusus bentuk pendidikan
+  const getBentukIcon = (bentuk: BentukPendidikanType) => {
+    switch (bentuk) {
+      case "TK":
+        return School;
+      case "KB":
+        return Baby;
+      case "RA":
+        return BookOpen;
+      case "SPS":
+        return Users;
+      case "TPA":
+        return HeartHandshake;
+      case "PKBM":
+        return GraduationCap;
+      case "SKB":
+        return Building2;
+      default:
+        return School;
+    }
   };
 
   return (
     <section
-      className={`rounded-2xl border-2 ${theme.border} ${theme.bgGradient} p-4 sm:p-5 shadow-xs transition-all`}
+      className={`rounded-2xl border-2 ${theme.border} ${theme.bgGradient} p-4 sm:p-5 shadow-xs transition-all space-y-4`}
     >
       {/* Header Bar Rekap */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200/80 dark:border-slate-800 pb-3.5">
@@ -106,18 +173,20 @@ export function KomunitasRekapSection({
             <IconComponent className={`h-5 w-5 ${theme.accentText}`} />
           </div>
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <h2 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">
                 Rekap Jumlah {rekap.labelSingkat}
               </h2>
               <span
-                className={`text-[11px] font-black px-2 py-0.5 rounded-full ${theme.badgeTotal}`}
+                className={`text-[11px] font-black px-2.5 py-0.5 rounded-full ${theme.badgeTotal}`}
               >
                 {rekap.totalSemua} {rekap.satuanLabel}
               </span>
             </div>
             <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-              Tersebar di {rekap.totalKecamatan} Kecamatan &amp; {rekap.totalKelurahan} Kelurahan se-Kota Tegal
+              {isPaud
+                ? `Tersebar di 7 Bentuk Satuan Pendidikan, ${rekap.totalKecamatan} Kecamatan & ${rekap.totalKelurahan} Kelurahan se-Kota Tegal`
+                : `Tersebar di ${rekap.totalKecamatan} Kecamatan & ${rekap.totalKelurahan} Kelurahan se-Kota Tegal`}
             </p>
           </div>
         </div>
@@ -128,7 +197,7 @@ export function KomunitasRekapSection({
           onClick={() => setIsOpen(!isOpen)}
           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300 transition-colors shadow-2xs cursor-pointer active:scale-98"
         >
-          <span>{isOpen ? "Sembunyikan Rincian" : "Lihat Rincian Per Kelurahan"}</span>
+          <span>{isOpen ? "Sembunyikan Rincian" : "Lihat Rincian Lengkap"}</span>
           {isOpen ? (
             <ChevronUp className="h-3.5 w-3.5" />
           ) : (
@@ -137,10 +206,137 @@ export function KomunitasRekapSection({
         </button>
       </div>
 
-      {/* Konten Rekap per Kecamatan & Kelurahan */}
+      {/* Konten Rekap */}
       {isOpen && (
-        <div className="mt-4 space-y-3 pt-1">
-          {/* Grid 4 Kecamatan */}
+        <div className="space-y-4 pt-1 animate-in fade-in duration-300">
+          {/* ========================================================= */}
+          {/* 1. KHUSUS TAB PAUD: REKAP BENTUK SATUAN PENDIDIKAN        */}
+          {/* ========================================================= */}
+          {isPaud && bentukRekap && (
+            <div className="rounded-2xl border-2 border-indigo-200/80 dark:border-indigo-900/60 bg-white/90 dark:bg-slate-900/90 p-3.5 sm:p-4 shadow-xs space-y-2.5">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
+                <div className="flex items-center gap-2">
+                  <Layers className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                  <h3 className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-slate-100">
+                    Bentuk Satuan Pendidikan (TK, RA, KB, SPS, TPA, PKBM, SKB)
+                  </h3>
+                </div>
+                <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">
+                  {currentKecamatan !== "semua" || currentKelurahan !== "semua"
+                    ? `${bentukRekap.totalFiltered} dari total 219 Lembaga di wilayah ini`
+                    : "Total 219 Lembaga se-Kota Tegal"}
+                </span>
+              </div>
+
+              {/* Grid 7 Bentuk Pendidikan + Opsi Semua */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2">
+                {/* Chip: Semua Bentuk */}
+                <Link
+                  href={makeFilterUrl(currentKecamatan, currentKelurahan, "semua")}
+                  className={cn(
+                    "flex flex-col justify-between p-2.5 rounded-xl border-2 transition-all cursor-pointer text-left group",
+                    currentBentuk === "semua"
+                      ? "border-indigo-600 bg-indigo-600 text-white shadow-xs"
+                      : "border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800 hover:border-indigo-300 dark:hover:border-indigo-700 hover:bg-indigo-50/40 text-slate-700 dark:text-slate-200"
+                  )}
+                  title="Tampilkan semua bentuk satuan pendidikan"
+                >
+                  <div className="flex items-center justify-between gap-1 mb-1">
+                    <span className="text-[10px] font-black uppercase tracking-wider line-clamp-1">
+                      Semua
+                    </span>
+                    {currentBentuk === "semua" && (
+                      <CheckCircle2 className="h-3 w-3 text-white shrink-0" />
+                    )}
+                  </div>
+                  <div>
+                    <span className="text-base sm:text-lg font-black font-mono block leading-none">
+                      {bentukRekap.totalFiltered}
+                    </span>
+                    <span
+                      className={cn(
+                        "text-[9px] font-semibold block mt-1 line-clamp-1",
+                        currentBentuk === "semua" ? "text-indigo-100" : "text-slate-500 dark:text-slate-400"
+                      )}
+                    >
+                      Semua Bentuk
+                    </span>
+                  </div>
+                </Link>
+
+                {/* 7 Bentuk Pendidikan */}
+                {bentukRekap.list.map((item) => {
+                  const isSelected =
+                    currentBentuk.toUpperCase() === item.bentuk.toUpperCase();
+                  const ShapeIcon = getBentukIcon(item.bentuk);
+
+                  return (
+                    <Link
+                      key={item.bentuk}
+                      href={makeFilterUrl(
+                        currentKecamatan,
+                        currentKelurahan,
+                        isSelected ? "semua" : item.bentuk
+                      )}
+                      className={cn(
+                        "flex flex-col justify-between p-2.5 rounded-xl border-2 transition-all cursor-pointer text-left group",
+                        isSelected
+                          ? "border-indigo-600 bg-indigo-600 text-white shadow-xs ring-2 ring-indigo-400/40"
+                          : "border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800 hover:border-indigo-300 dark:hover:border-indigo-700 hover:bg-indigo-50/40 text-slate-700 dark:text-slate-200"
+                      )}
+                      title={`Filter: ${item.namaLengkap} (${item.kategori}) - ${item.keterangan}`}
+                    >
+                      <div className="flex items-center justify-between gap-1 mb-1">
+                        <div className="flex items-center gap-1 min-w-0">
+                          <ShapeIcon
+                            className={cn(
+                              "h-3 w-3 shrink-0",
+                              isSelected ? "text-white" : "text-indigo-600 dark:text-indigo-400"
+                            )}
+                          />
+                          <span className="text-[11px] font-black uppercase tracking-wider truncate">
+                            {item.bentuk}
+                          </span>
+                        </div>
+                        {isSelected && (
+                          <CheckCircle2 className="h-3 w-3 text-white shrink-0" />
+                        )}
+                      </div>
+                      <div>
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-base sm:text-lg font-black font-mono leading-none">
+                            {item.filteredCount}
+                          </span>
+                          {item.filteredCount !== item.totalCount && (
+                            <span
+                              className={cn(
+                                "text-[9px] font-mono",
+                                isSelected ? "text-indigo-200" : "text-slate-400"
+                              )}
+                            >
+                              /{item.totalCount}
+                            </span>
+                          )}
+                        </div>
+                        <span
+                          className={cn(
+                            "text-[9px] font-semibold block mt-1 line-clamp-1",
+                            isSelected ? "text-indigo-100" : "text-slate-500 dark:text-slate-400"
+                          )}
+                        >
+                          {item.namaLengkap.replace(/^Taman\s+/i, "")}
+                        </span>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* ========================================================= */}
+          {/* 2. GRID 4 KECAMATAN & 27 KELURAHAN                        */}
+          {/* ========================================================= */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
             {rekap.kecamatanList.map((kec) => {
               const isKecSelected =
@@ -159,7 +355,7 @@ export function KomunitasRekapSection({
                   <div>
                     <div className="flex items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-700/60 pb-2 mb-2.5">
                       <Link
-                        href={makeFilterUrl(kec.kecamatan)}
+                        href={makeFilterUrl(kec.kecamatan, "semua")}
                         className="group inline-flex items-center gap-1.5 hover:underline"
                         title={`Filter hanya Kecamatan ${kec.kecamatan}`}
                       >
@@ -169,7 +365,7 @@ export function KomunitasRekapSection({
                         </span>
                       </Link>
                       <Link
-                        href={makeFilterUrl(kec.kecamatan)}
+                        href={makeFilterUrl(kec.kecamatan, "semua")}
                         className={`text-[11px] font-black px-2 py-0.5 rounded-full border transition-all ${theme.badgeKec} hover:scale-105`}
                         title={`Total di ${kec.kecamatan}`}
                       >
@@ -220,7 +416,7 @@ export function KomunitasRekapSection({
                         Aktif difilter
                       </span>
                       <Link
-                        href={makeFilterUrl()}
+                        href={makeFilterUrl("semua", "semua")}
                         className="text-slate-500 hover:text-slate-900 dark:hover:text-slate-200 underline font-semibold"
                       >
                         Reset
@@ -232,29 +428,63 @@ export function KomunitasRekapSection({
             })}
           </div>
 
-          {/* Banner status filter jika sedang aktif memilih kelurahan/kecamatan */}
-          {(currentKecamatan !== "semua" || currentKelurahan !== "semua") && (
-            <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 rounded-xl bg-slate-100/90 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 text-xs">
-              <div className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
-                <BarChart3 className="h-3.5 w-3.5 text-slate-500 shrink-0" />
-                <span>
-                  Filter Aktif:{" "}
-                  <strong>
-                    {currentKecamatan !== "semua"
-                      ? `Kec. ${currentKecamatan}`
-                      : "Semua Kecamatan"}
-                  </strong>
-                  {currentKelurahan !== "semua" && (
-                    <>
-                      {" "}
-                      &bull; Kelurahan <strong>{currentKelurahan}</strong>
-                    </>
-                  )}
-                </span>
+          {/* ========================================================= */}
+          {/* 3. BANNER STATUS FILTER GABUNGAN AKTIF                     */}
+          {/* ========================================================= */}
+          {isFiltered && (
+            <div className="flex flex-wrap items-center justify-between gap-2 px-3.5 py-2.5 rounded-xl bg-slate-100/90 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 text-xs">
+              <div className="flex items-center gap-2 flex-wrap text-slate-700 dark:text-slate-300">
+                <div className="flex items-center gap-1 text-slate-500">
+                  <BarChart3 className="h-3.5 w-3.5" />
+                  <span className="font-semibold">Filter Aktif:</span>
+                </div>
+
+                {/* Tag Bentuk Pendidikan */}
+                {isPaud && currentBentuk !== "semua" && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-indigo-100 dark:bg-indigo-950 text-indigo-800 dark:text-indigo-300 font-bold border border-indigo-200 dark:border-indigo-800 text-[11px]">
+                    <span>Bentuk: {currentBentuk}</span>
+                    <Link
+                      href={makeFilterUrl(currentKecamatan, currentKelurahan, "semua")}
+                      className="hover:text-red-600 ml-0.5"
+                      title="Hapus filter bentuk"
+                    >
+                      <X className="h-3 w-3" />
+                    </Link>
+                  </span>
+                )}
+
+                {/* Tag Kecamatan */}
+                {currentKecamatan !== "semua" && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 font-bold border border-emerald-200 dark:border-emerald-800 text-[11px]">
+                    <span>Kec. {currentKecamatan}</span>
+                    <Link
+                      href={makeFilterUrl("semua", "semua")}
+                      className="hover:text-red-600 ml-0.5"
+                      title="Hapus filter kecamatan"
+                    >
+                      <X className="h-3 w-3" />
+                    </Link>
+                  </span>
+                )}
+
+                {/* Tag Kelurahan */}
+                {currentKelurahan !== "semua" && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 font-bold border border-emerald-200 dark:border-emerald-800 text-[11px]">
+                    <span>Kel. {currentKelurahan}</span>
+                    <Link
+                      href={makeFilterUrl(currentKecamatan, "semua")}
+                      className="hover:text-red-600 ml-0.5"
+                      title="Hapus filter kelurahan"
+                    >
+                      <X className="h-3 w-3" />
+                    </Link>
+                  </span>
+                )}
               </div>
+
               <Link
-                href={makeFilterUrl()}
-                className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 hover:underline cursor-pointer"
+                href={`/komunitas?tab=${currentTab}`}
+                className="text-[11px] font-bold text-indigo-700 dark:text-indigo-400 hover:underline cursor-pointer"
               >
                 Tampilkan Semua Komunitas Kota Tegal &rarr;
               </Link>

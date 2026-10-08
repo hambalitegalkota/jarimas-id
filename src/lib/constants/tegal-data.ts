@@ -1,8 +1,8 @@
 import { SEED_POSYANDU_TEGAL } from "./seed-posyandu-tegal";
-import { SEED_PAUD_PKBM_TEGAL } from "./seed-paud-tegal";
+import { SEED_PAUD_PKBM_TEGAL, RAW_PAUD_PKBM_TEGAL } from "./seed-paud-tegal";
 import { toValidUUID } from "@/lib/utils";
 
-export { SEED_PAUD_PKBM_TEGAL };
+export { SEED_PAUD_PKBM_TEGAL, RAW_PAUD_PKBM_TEGAL };
 
 export interface KelurahanData {
   nama: string;
@@ -677,6 +677,8 @@ export interface MasterKomunitasSeedItem {
   id: string;
   nama: string;
   jenis: "warga_kita" | "posyandu" | "satuan_paud";
+  jenis_institusi?: "TK" | "KB" | "RA" | "SPS" | "TPA" | "PKBM" | "SKB" | string;
+  npsn?: string;
   kecamatan: string;
   kelurahan: string;
   rt?: string;
@@ -1402,6 +1404,121 @@ export interface RekapKecamatanItem {
   kelurahanList: RekapKelurahanItem[];
 }
 
+export const DAFTAR_BENTUK_PENDIDIKAN = [
+  "TK",
+  "KB",
+  "SPS",
+  "RA",
+  "PKBM",
+  "TPA",
+  "SKB",
+] as const;
+
+export type BentukPendidikanType = (typeof DAFTAR_BENTUK_PENDIDIKAN)[number];
+
+export interface BentukPendidikanRekapItem {
+  bentuk: BentukPendidikanType;
+  labelSingkat: string;
+  namaLengkap: string;
+  kategori: "Formal" | "Nonformal";
+  keterangan: string;
+  totalCount: number;
+  filteredCount: number;
+}
+
+export function getBentukPendidikanRekap(filter?: {
+  kecamatan?: string;
+  kelurahan?: string;
+}): {
+  totalSemua: number;
+  totalFiltered: number;
+  list: BentukPendidikanRekapItem[];
+} {
+  const kecTarget =
+    filter?.kecamatan && filter.kecamatan !== "semua"
+      ? filter.kecamatan.toLowerCase().trim()
+      : null;
+  const kelTarget =
+    filter?.kelurahan && filter.kelurahan !== "semua"
+      ? filter.kelurahan.toLowerCase().trim()
+      : null;
+
+  const metadata: Record<
+    BentukPendidikanType,
+    { namaLengkap: string; kategori: "Formal" | "Nonformal"; keterangan: string }
+  > = {
+    TK: {
+      namaLengkap: "Taman Kanak-Kanak",
+      kategori: "Formal",
+      keterangan: "Pendidikan formal anak usia 4–6 tahun",
+    },
+    KB: {
+      namaLengkap: "Kelompok Bermain",
+      kategori: "Nonformal",
+      keterangan: "Pendidikan nonformal usia 2–4 tahun",
+    },
+    SPS: {
+      namaLengkap: "Satuan PAUD Sejenis / Pos PAUD",
+      kategori: "Nonformal",
+      keterangan: "Layanan pos PAUD terintegrasi posyandu & BKB",
+    },
+    RA: {
+      namaLengkap: "Raudhatul Athfal",
+      kategori: "Formal",
+      keterangan: "PAUD formal binaan Kemenag berciri khas Islam",
+    },
+    PKBM: {
+      namaLengkap: "Pusat Kegiatan Belajar Masyarakat",
+      kategori: "Nonformal",
+      keterangan: "Pendidikan kesetaraan Paket A, B, C & kecakapan hidup",
+    },
+    TPA: {
+      namaLengkap: "Taman Penitipan Anak",
+      kategori: "Nonformal",
+      keterangan: "Layanan pengasuhan anak usia dini 0–6 tahun",
+    },
+    SKB: {
+      namaLengkap: "Sanggar Kegiatan Belajar",
+      kategori: "Nonformal",
+      keterangan: "Unit pelaksana teknis dinas pendidikan nonformal",
+    },
+  };
+
+  const list: BentukPendidikanRekapItem[] = DAFTAR_BENTUK_PENDIDIKAN.map((b) => {
+    const totalCount = RAW_PAUD_PKBM_TEGAL.filter(
+      (p) => (p.jenis_institusi || "").toUpperCase() === b
+    ).length;
+
+    const filteredCount = RAW_PAUD_PKBM_TEGAL.filter((p) => {
+      if ((p.jenis_institusi || "").toUpperCase() !== b) return false;
+      if (kecTarget && p.kecamatan?.toLowerCase().trim() !== kecTarget)
+        return false;
+      if (kelTarget && p.kelurahan?.toLowerCase().trim() !== kelTarget)
+        return false;
+      return true;
+    }).length;
+
+    return {
+      bentuk: b,
+      labelSingkat: b,
+      namaLengkap: metadata[b].namaLengkap,
+      kategori: metadata[b].kategori,
+      keterangan: metadata[b].keterangan,
+      totalCount,
+      filteredCount,
+    };
+  });
+
+  const totalSemua = list.reduce((acc, curr) => acc + curr.totalCount, 0);
+  const totalFiltered = list.reduce((acc, curr) => acc + curr.filteredCount, 0);
+
+  return {
+    totalSemua,
+    totalFiltered,
+    list,
+  };
+}
+
 export interface RekapTabSummary {
   tab: "posyandu" | "warga_kita" | "satuan_paud";
   labelSingkat: string;
@@ -1413,15 +1530,24 @@ export interface RekapTabSummary {
 }
 
 export function getKomunitasRekapData(
-  tab: "posyandu" | "warga_kita" | "satuan_paud" | string = "posyandu"
+  tab: "posyandu" | "warga_kita" | "satuan_paud" | string = "posyandu",
+  filter?: {
+    bentuk?: string;
+  }
 ): RekapTabSummary {
   const isPosyandu = tab === "posyandu";
   const isPaud = tab === "satuan_paud";
+  const activeBentuk =
+    filter?.bentuk && filter.bentuk !== "semua"
+      ? filter.bentuk.toUpperCase().trim()
+      : null;
 
   const labelSingkat = isPosyandu
     ? "Posyandu Balita"
     : isPaud
-    ? "Satuan PAUD & PKBM"
+    ? activeBentuk
+      ? `Satuan ${activeBentuk}`
+      : "Satuan PAUD & PKBM"
     : "Komunitas Warga Kita";
 
   const satuanLabel = isPosyandu
@@ -1452,14 +1578,15 @@ export function getKomunitasRekapData(
           count = kelData.posyandu.length;
         }
       } else if (isPaud) {
-        count = SEED_PAUD_PKBM_TEGAL.filter(
-          (p) =>
-            p.kecamatan?.toLowerCase().trim() === kecName.toLowerCase().trim() &&
-            p.kelurahan?.toLowerCase().trim() === kelName.toLowerCase().trim()
-        ).length;
-        if (count === 0 && Array.isArray(kelData.paud)) {
-          count = kelData.paud.length;
-        }
+        count = RAW_PAUD_PKBM_TEGAL.filter((p) => {
+          if (p.kecamatan?.toLowerCase().trim() !== kecName.toLowerCase().trim())
+            return false;
+          if (p.kelurahan?.toLowerCase().trim() !== kelName.toLowerCase().trim())
+            return false;
+          if (activeBentuk && (p.jenis_institusi || "").toUpperCase() !== activeBentuk)
+            return false;
+          return true;
+        }).length;
       } else {
         const wargaCount = MASTER_KOMUNITAS_SEED.filter(
           (w) =>

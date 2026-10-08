@@ -61,6 +61,7 @@ export interface GetKomunitasListParams {
   kelurahan?: string;
   rw?: string;
   rt?: string;
+  bentuk?: string;
   searchQuery?: string;
   page?: number;
   limit?: number;
@@ -366,6 +367,25 @@ export async function getKomunitasList(
       );
     }
 
+    // Filter bentuk institusi khusus PAUD & PKBM (TK, RA, KB, SPS, TPA, PKBM, SKB)
+    if (params.bentuk && params.bentuk !== "semua") {
+      const bTarget = params.bentuk.toUpperCase().trim();
+      filteredList = filteredList.filter((item) => {
+        if (item.jenis_institusi) {
+          return item.jenis_institusi.toUpperCase() === bTarget;
+        }
+        const upNama = (item.nama || "").toUpperCase().trim();
+        if (bTarget === "TK" && (upNama.startsWith("TK ") || upNama.includes(" TK "))) return true;
+        if (bTarget === "RA" && (upNama.startsWith("RA ") || upNama.includes(" RA "))) return true;
+        if (bTarget === "KB" && (upNama.startsWith("KB ") || upNama.includes(" KB "))) return true;
+        if (bTarget === "SPS" && (upNama.startsWith("SPS ") || upNama.startsWith("POS PAUD") || upNama.includes("POS PAUD"))) return true;
+        if (bTarget === "PKBM" && (upNama.startsWith("PKBM ") || upNama.includes(" PKBM "))) return true;
+        if (bTarget === "TPA" && (upNama.startsWith("TPA ") || upNama.includes(" TPA "))) return true;
+        if (bTarget === "SKB" && (upNama.startsWith("SKB ") || upNama.includes(" SKB "))) return true;
+        return false;
+      });
+    }
+
     if (params.searchQuery && params.searchQuery.trim()) {
       const sq = params.searchQuery.toLowerCase().trim();
       filteredList = filteredList.filter(
@@ -414,6 +434,8 @@ export async function getKomunitasList(
         id: validId,
         nama: itemNama,
         jenis: item.jenis,
+        jenis_institusi: item.jenis_institusi,
+        npsn: item.npsn,
         kecamatan: item.kecamatan,
         kelurahan: item.kelurahan,
         rt: item.rt,

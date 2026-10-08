@@ -103,10 +103,15 @@ export function KomunitasCard({
           </div>
 
           <div className="space-y-0.5 min-w-0 flex-1">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-slate-100 leading-snug truncate">
                 {formattedTitle}
               </h3>
+              {komunitas.jenis === "satuan_paud" && komunitas.jenis_institusi && (
+                <span className="inline-flex items-center px-1.5 py-0.2 rounded-md bg-indigo-50 dark:bg-indigo-950/70 border border-indigo-200 dark:border-indigo-800 text-[10px] font-black text-indigo-700 dark:text-indigo-300">
+                  {komunitas.jenis_institusi}
+                </span>
+              )}
               {/* Membership Status Badge */}
               {membership && (
                 <div className="shrink-0 hidden md:block">
