@@ -616,7 +616,7 @@ export function RekapDataAtsClientView({
 
                 return (
                   <div className="space-y-4 pt-1">
-                    <div className="h-44 w-full flex items-end justify-between gap-0.5 sm:gap-1 px-1 pt-6 pb-2 border-b border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/30 rounded-2xl overflow-x-auto">
+                    <div className="h-48 sm:h-52 w-full flex items-end justify-between gap-0.5 sm:gap-1 px-1.5 pt-6 pb-8 border-b border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/30 rounded-2xl overflow-hidden">
                       {kelasList.map((kItem) => {
                         const heightPct =
                           kItem.jumlah > 0
@@ -651,7 +651,7 @@ export function RekapDataAtsClientView({
                         return (
                           <div
                             key={kItem.key}
-                            className="flex-1 min-w-[20px] sm:min-w-0 flex flex-col items-center justify-end h-full group relative cursor-pointer"
+                            className="flex-1 flex flex-col items-center justify-end h-full group relative cursor-pointer"
                             title={`${kItem.label}: ${kItem.jumlah} Anak (${kItem.persentase}%)`}
                           >
                             {/* Hover Tooltip Floating */}
@@ -662,31 +662,31 @@ export function RekapDataAtsClientView({
                             {/* Value Count Label on Top of Bar */}
                             <span
                               className={cn(
-                                "text-[9px] sm:text-[11px] font-black font-mono mb-1 transition-all",
+                                "text-[8.5px] sm:text-[10px] font-black font-mono mb-1 transition-all",
                                 kItem.jumlah > 0 ? textBadge : "text-slate-300 dark:text-slate-600"
                               )}
                             >
                               {kItem.jumlah}
                             </span>
 
-                            {/* Bar Column */}
-                            <div className="w-full max-w-[24px] h-28 flex items-end justify-center">
+                            {/* Bar Column (Slimmer & Responsive) */}
+                            <div className="w-full max-w-[12px] sm:max-w-[15px] h-20 sm:h-24 flex items-end justify-center">
                               <div
                                 className={cn(
-                                  "w-full rounded-t-md transition-all duration-700 shadow-2xs group-hover:brightness-110",
+                                  "w-full rounded-t-sm sm:rounded-t-md transition-all duration-700 shadow-2xs group-hover:brightness-110",
                                   kItem.jumlah > 0
                                     ? `bg-gradient-to-t ${barGradient}`
                                     : "bg-slate-200 dark:bg-slate-700/50 h-1"
                                 )}
                                 style={{
-                                  height: kItem.jumlah > 0 ? `${heightPct}%` : "4px",
+                                  height: kItem.jumlah > 0 ? `${heightPct}%` : "3px",
                                 }}
                               />
                             </div>
 
-                            {/* Class X-Axis Label */}
-                            <div className="mt-2 text-center">
-                              <span className="text-[8px] sm:text-[9.5px] font-black text-slate-700 dark:text-slate-300 block font-mono whitespace-nowrap leading-tight">
+                            {/* Class X-Axis Label (Miring Menanjak -45 Derajat) */}
+                            <div className="h-7 w-full flex items-start justify-center mt-1.5 overflow-visible">
+                              <span className="text-[7.5px] sm:text-[8.5px] font-bold font-mono text-slate-600 dark:text-slate-300 transform -rotate-45 origin-top-left whitespace-nowrap leading-none block select-none group-hover:text-indigo-600 group-hover:font-black transition-colors">
                                 {kItem.shortLabel}
                               </span>
                             </div>
@@ -696,12 +696,12 @@ export function RekapDataAtsClientView({
                     </div>
 
                     {/* Ringkasan Jenjang Asal Badges */}
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 sm:gap-2 pt-1">
                       <div className="p-2 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 text-center">
                         <span className="text-[9px] sm:text-[10px] font-extrabold text-blue-800 dark:text-blue-300 uppercase block truncate">
                           Belum Sekolah
                         </span>
-                        <div className="text-sm sm:text-base font-black font-mono text-blue-700 dark:text-blue-400">
+                        <div className="text-xs sm:text-sm font-black font-mono text-blue-700 dark:text-blue-400">
                           {countBPB} Anak
                         </div>
                       </div>
@@ -710,7 +710,7 @@ export function RekapDataAtsClientView({
                         <span className="text-[9px] sm:text-[10px] font-extrabold text-emerald-800 dark:text-emerald-300 uppercase block truncate">
                           SD / MI (1–6)
                         </span>
-                        <div className="text-sm sm:text-base font-black font-mono text-emerald-700 dark:text-emerald-400">
+                        <div className="text-xs sm:text-sm font-black font-mono text-emerald-700 dark:text-emerald-400">
                           {countSD} Anak
                         </div>
                       </div>
@@ -719,7 +719,7 @@ export function RekapDataAtsClientView({
                         <span className="text-[9px] sm:text-[10px] font-extrabold text-sky-800 dark:text-sky-300 uppercase block truncate">
                           SMP / MTs (7–9)
                         </span>
-                        <div className="text-sm sm:text-base font-black font-mono text-sky-700 dark:text-sky-400">
+                        <div className="text-xs sm:text-sm font-black font-mono text-sky-700 dark:text-sky-400">
                           {countSMP} Anak
                         </div>
                       </div>
@@ -728,7 +728,7 @@ export function RekapDataAtsClientView({
                         <span className="text-[9px] sm:text-[10px] font-extrabold text-purple-800 dark:text-purple-300 uppercase block truncate">
                           SMA / SMK (10–12)
                         </span>
-                        <div className="text-sm sm:text-base font-black font-mono text-purple-700 dark:text-purple-400">
+                        <div className="text-xs sm:text-sm font-black font-mono text-purple-700 dark:text-purple-400">
                           {countSMA} Anak
                         </div>
                       </div>
