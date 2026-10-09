@@ -343,6 +343,7 @@ export const ALASAN_TIDAK_SEKOLAH_LIST = [
   "Cukup dengan pendidikan yang sekarang",
   "Pengaruh lingkungan",
   "Melanjutkan ke Pondok Pesantren atau Lainnya",
+  "Lainnya",
 ] as const;
 
 export type AlasanTidakSekolah = typeof ALASAN_TIDAK_SEKOLAH_LIST[number] | string;
