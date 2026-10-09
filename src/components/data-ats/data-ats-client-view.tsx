@@ -10,9 +10,11 @@ import {
   AlertCircle,
   Sparkles,
   MapPin,
-  Layers,
-  HeartHandshake,
   Printer,
+  ChevronDown,
+  ChevronUp,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { CardDataAts } from "./card-data-ats";
 import { FormDataAts } from "./form-data-ats";
@@ -22,13 +24,10 @@ import {
   getJenjangAts,
   getWilayahScopeInfo,
   normalizeKeinginanSekolah,
+  getNumericAgeAts,
   type JenjangAtsId,
 } from "@/lib/ats-helpers";
-import {
-  ALASAN_TIDAK_SEKOLAH_LIST,
-  type KomunitasWithMembership,
-  type DataAtsItem,
-} from "@/types/database";
+import type { KomunitasWithMembership, DataAtsItem } from "@/types/database";
 import { cn, hasFullProfilDataAccess } from "@/lib/utils";
 
 interface DataAtsClientViewProps {
@@ -57,7 +56,10 @@ export function DataAtsClientView({
   const [selectedJenjang, setSelectedJenjang] = useState<JenjangAtsId>("semua");
   const [selectedKeinginan, setSelectedKeinginan] = useState<"semua" | "Masih Ada" | "Tidak Ada">("semua");
   const [selectedAlasan, setSelectedAlasan] = useState<string>("semua");
+  const [selectedAge, setSelectedAge] = useState<number | null>(null);
+  const [selectedGender, setSelectedGender] = useState<"semua" | "L" | "P">("semua");
   const [statusFilter, setStatusFilter] = useState<"semua" | "approved" | "pending">("semua");
+  const [isListExpanded, setIsListExpanded] = useState<boolean>(false);
   const [feedbackToast, setFeedbackToast] = useState<{
     type: "success" | "info" | "error";
     message: string;
@@ -74,46 +76,6 @@ export function DataAtsClientView({
     (c) => c.status_approval === "approved"
   ).length;
   const totalPending = totalAts - totalApproved;
-
-  // Hitung jumlah per jenjang pendidikan
-  const countByJenjang = {
-    semua: atsList.length,
-    sd: atsList.filter((c) => getJenjangAts(c).id === "sd").length,
-    smp: atsList.filter((c) => getJenjangAts(c).id === "smp").length,
-    sma: atsList.filter((c) => getJenjangAts(c).id === "sma").length,
-    dewasa: atsList.filter((c) => getJenjangAts(c).id === "dewasa").length,
-  };
-
-  // Hitung jumlah per keinginan untuk bersekolah
-  const countByKeinginan = {
-    semua: atsList.length,
-    masihAda: atsList.filter(
-      (c) => normalizeKeinginanSekolah(c.keinginan_sekolah) === "Masih Ada"
-    ).length,
-    tidakAda: atsList.filter(
-      (c) => normalizeKeinginanSekolah(c.keinginan_sekolah) === "Tidak Ada"
-    ).length,
-  };
-
-  // Daftar alasan unik (standar + custom jika ada)
-  const dynamicAlasanList = Array.from(
-    new Set([
-      ...ALASAN_TIDAK_SEKOLAH_LIST,
-      ...atsList
-        .map((c) => (c.alasan_tidak_sekolah || "").trim())
-        .filter(Boolean),
-    ])
-  );
-
-  // Hitung jumlah per alasan
-  const countByAlasan: Record<string, number> = {
-    semua: atsList.length,
-  };
-  dynamicAlasanList.forEach((alasan) => {
-    countByAlasan[alasan] = atsList.filter(
-      (c) => (c.alasan_tidak_sekolah || "").trim().toLowerCase() === alasan.toLowerCase()
-    ).length;
-  });
 
   const filteredAts = atsList.filter((c) => {
     const q = searchQuery.toLowerCase().trim();
@@ -136,10 +98,27 @@ export function DataAtsClientView({
       selectedAlasan === "semua" ||
       (c.alasan_tidak_sekolah || "").trim().toLowerCase() === selectedAlasan.toLowerCase();
 
+    const matchesAge =
+      selectedAge === null || getNumericAgeAts(c) === selectedAge;
+
+    const rawGender = (c.jenis_kelamin || "").trim().toUpperCase();
+    const matchesGender =
+      selectedGender === "semua" ||
+      (selectedGender === "L" && (rawGender === "L" || rawGender.startsWith("L"))) ||
+      (selectedGender === "P" && (rawGender === "P" || rawGender.startsWith("P")));
+
     const matchesStatus =
       statusFilter === "semua" || c.status_approval === statusFilter;
 
-    return matchesSearch && matchesJenjang && matchesKeinginan && matchesAlasan && matchesStatus;
+    return (
+      matchesSearch &&
+      matchesJenjang &&
+      matchesKeinginan &&
+      matchesAlasan &&
+      matchesAge &&
+      matchesGender &&
+      matchesStatus
+    );
   });
 
   const showToast = (message: string, type: "success" | "info" | "error" = "success") => {
@@ -166,7 +145,10 @@ export function DataAtsClientView({
       setSelectedJenjang("semua");
       setSelectedKeinginan("semua");
       setSelectedAlasan("semua");
+      setSelectedAge(null);
+      setSelectedGender("semua");
       setSearchQuery("");
+      setIsListExpanded(true);
 
       setAtsList((prev) => [newItem, ...prev.filter((item) => item.id !== newItem.id)]);
       showToast(`Data ATS ${newItem.nama_lengkap} berhasil didaftarkan dan langsung masuk ke daftar.`);
@@ -197,64 +179,48 @@ export function DataAtsClientView({
     );
   };
 
-  const jenjangTabs: { id: JenjangAtsId; label: string; count: number; colorClass: string }[] = [
-    {
-      id: "semua",
-      label: "Semua Jenjang",
-      count: countByJenjang.semua,
-      colorClass: "text-foreground",
-    },
-    {
-      id: "sd",
-      label: "SD / Paket A (7-12 Thn)",
-      count: countByJenjang.sd,
-      colorClass: "text-emerald-400",
-    },
-    {
-      id: "smp",
-      label: "SMP / Paket B (13-15 Thn)",
-      count: countByJenjang.smp,
-      colorClass: "text-sky-400",
-    },
-    {
-      id: "sma",
-      label: "SMA / SMK / Paket C (16-18 Thn)",
-      count: countByJenjang.sma,
-      colorClass: "text-amber-400",
-    },
-    {
-      id: "dewasa",
-      label: "19-24+ Thn",
-      count: countByJenjang.dewasa,
-      colorClass: "text-purple-400",
-    },
-  ];
+  // Interactive handler callbacks
+  const handleSelectJenjang = (jenjang: JenjangAtsId) => {
+    setSelectedJenjang((prev) => (prev === jenjang ? "semua" : jenjang));
+    setIsListExpanded(true);
+  };
 
-  const keinginanTabs: {
-    id: "semua" | "Masih Ada" | "Tidak Ada";
-    label: string;
-    count: number;
-    activeClass: string;
-  }[] = [
-    {
-      id: "semua",
-      label: "Semua Keinginan",
-      count: countByKeinginan.semua,
-      activeClass: "bg-amber-600 border-amber-500 text-white shadow-sm ring-1 ring-amber-500",
-    },
-    {
-      id: "Masih Ada",
-      label: "Masih Ada",
-      count: countByKeinginan.masihAda,
-      activeClass: "bg-emerald-600 border-emerald-500 text-white shadow-sm ring-1 ring-emerald-500",
-    },
-    {
-      id: "Tidak Ada",
-      label: "Tidak Ada",
-      count: countByKeinginan.tidakAda,
-      activeClass: "bg-rose-600 border-rose-500 text-white shadow-sm ring-1 ring-rose-500",
-    },
-  ];
+  const handleSelectAge = (age: number | null) => {
+    setSelectedAge((prev) => (prev === age ? null : age));
+    setIsListExpanded(true);
+  };
+
+  const handleSelectKeinginan = (keinginan: "semua" | "Masih Ada" | "Tidak Ada") => {
+    setSelectedKeinginan((prev) => (prev === keinginan ? "semua" : keinginan));
+    setIsListExpanded(true);
+  };
+
+  const handleSelectAlasan = (alasan: string) => {
+    setSelectedAlasan((prev) =>
+      prev.trim().toLowerCase() === alasan.trim().toLowerCase() ? "semua" : alasan
+    );
+    setIsListExpanded(true);
+  };
+
+  const handleSelectGender = (gender: "semua" | "L" | "P") => {
+    setSelectedGender((prev) => (prev === gender ? "semua" : gender));
+    setIsListExpanded(true);
+  };
+
+  const handleSelectStatus = (status: "semua" | "approved" | "pending") => {
+    setStatusFilter((prev) => (prev === status ? "semua" : status));
+    setIsListExpanded(true);
+  };
+
+  const handleResetFilters = () => {
+    setSelectedJenjang("semua");
+    setSelectedKeinginan("semua");
+    setSelectedAlasan("semua");
+    setSelectedAge(null);
+    setSelectedGender("semua");
+    setStatusFilter("semua");
+    setSearchQuery("");
+  };
 
   const tanggalCetakLengkap = new Intl.DateTimeFormat("id-ID", {
     dateStyle: "long",
@@ -268,12 +234,16 @@ export function DataAtsClientView({
   }).format(new Date());
 
   const filterDetails = [
-    selectedJenjang !== "semua" ? `Jenjang: ${selectedJenjang.toUpperCase()}` : "Semua Jenjang",
-    selectedKeinginan !== "semua" ? `Keinginan: ${selectedKeinginan}` : "Semua Keinginan",
-    selectedAlasan !== "semua" ? `Alasan: ${selectedAlasan}` : "Semua Alasan",
-    statusFilter !== "semua" ? `Status: ${statusFilter === "approved" ? "Terverifikasi" : "Menunggu"}` : "Semua Status",
+    selectedAge !== null ? `Usia: ${selectedAge} Tahun` : null,
+    selectedJenjang !== "semua" ? `Jenjang: ${selectedJenjang.toUpperCase()}` : null,
+    selectedKeinginan !== "semua" ? `Keinginan: ${selectedKeinginan}` : null,
+    selectedAlasan !== "semua" ? `Alasan: ${selectedAlasan}` : null,
+    selectedGender !== "semua" ? `Gender: ${selectedGender === "L" ? "Laki-laki" : "Perempuan"}` : null,
+    statusFilter !== "semua" ? `Status: ${statusFilter === "approved" ? "Terverifikasi" : "Menunggu"}` : null,
     searchQuery.trim() ? `Pencarian: "${searchQuery}"` : null,
-  ].filter(Boolean).join(" | ");
+  ]
+    .filter(Boolean)
+    .join(" | ") || "Semua Data ATS";
 
   return (
     <div className="space-y-6">
@@ -292,10 +262,10 @@ export function DataAtsClientView({
               PEMERINTAH KOTA TEGAL
             </h2>
             <h1 className="text-sm sm:text-base font-black uppercase tracking-tight">
-              LAPORAN DATA & PEMETAAN ANAK TIDAK SEKOLAH (ATS)
+              LAPORAN DATA &amp; PEMETAAN ANAK TIDAK SEKOLAH (ATS)
             </h1>
             <p className="text-[10px] font-semibold">
-              JARIMAS-ID • Jaringan Informasi & Layanan Anak Kota Tegal
+              JARIMAS-ID • Jaringan Informasi &amp; Layanan Anak Kota Tegal
             </p>
             <p className="text-[9px] text-gray-700">
               Wilayah: <span className="font-bold">{komunitas.nama}</span> • Cakupan:{" "}
@@ -316,7 +286,9 @@ export function DataAtsClientView({
             <span>{filterDetails}</span>
           </div>
           <div className="text-right shrink-0">
-            <span suppressHydrationWarning>Dicetak: <b suppressHydrationWarning>{tanggalCetakLengkap}</b> ({filteredAts.length} anak)</span>
+            <span suppressHydrationWarning>
+              Dicetak: <b suppressHydrationWarning>{tanggalCetakLengkap}</b> ({filteredAts.length} anak)
+            </span>
           </div>
         </div>
       </div>
@@ -425,174 +397,34 @@ export function DataAtsClientView({
         </div>
       </div>
 
-      {/* 3. JENJANG PENDIDIKAN DISTRIBUTION CARDS */}
-      <div className="rounded-2xl border-2 border-slate-200 bg-white p-5 space-y-3.5 shadow-xs break-inside-avoid print:bg-white print:border-gray-400 print:text-black">
-        <div className="flex items-center justify-between border-b-2 border-slate-100 pb-3">
-          <div className="flex items-center gap-2.5">
-            <Layers className="h-5 w-5 text-blue-700" />
-            <span className="text-base font-bold text-slate-900 print:text-black">
-              Distribusi Jenjang Pendidikan ATS
-            </span>
-          </div>
-          <span className="text-xs font-bold text-slate-600 bg-slate-100 px-3 py-1 rounded-full print:text-gray-600">
-            {selectedJenjang !== "semua" ? selectedJenjang.toUpperCase() : "Semua"}
-          </span>
-        </div>
+      {/* 3. GRAFIK & ANALITIK HASIL FILTER (NAIK KE ATAS MENGGANTIKAN 3 KARTU LAMA) */}
+      <GrafikFilterAts
+        filteredAts={filteredAts}
+        allAts={atsList}
+        totalAllAts={totalAts}
+        activeFilters={{
+          jenjang: selectedJenjang,
+          keinginan: selectedKeinginan,
+          alasan: selectedAlasan,
+          status: statusFilter,
+          search: searchQuery,
+          age: selectedAge,
+          gender: selectedGender,
+        }}
+        onSelectJenjang={handleSelectJenjang}
+        onSelectAge={handleSelectAge}
+        onSelectKeinginan={handleSelectKeinginan}
+        onSelectAlasan={handleSelectAlasan}
+        onSelectGender={handleSelectGender}
+        onSelectStatus={handleSelectStatus}
+        onResetFilters={handleResetFilters}
+      />
 
-        {/* Jenjang Filter Pill Buttons (Min 44px Tap Targets) */}
-        <div className="flex flex-wrap gap-2.5 pt-1">
-          {jenjangTabs.map((tab) => {
-            const isSelected = selectedJenjang === tab.id;
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => setSelectedJenjang(tab.id)}
-                className={cn(
-                  "flex min-h-[44px] items-center gap-2.5 rounded-xl px-4 py-2.5 text-sm font-bold transition-all cursor-pointer border-2",
-                  isSelected
-                    ? "bg-blue-50 border-blue-600 text-blue-950 shadow-xs ring-2 ring-blue-600/20 print:bg-gray-200 print:text-black print:border-black"
-                    : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 print:bg-white print:text-gray-700 print:border-gray-300"
-                )}
-              >
-                <span>{tab.label}</span>
-                <span
-                  className={cn(
-                    "rounded-full px-2 py-0.5 text-xs font-mono font-bold",
-                    isSelected
-                      ? "bg-blue-600 text-white print:bg-black print:text-white"
-                      : "bg-slate-100 text-slate-800 border border-slate-200 print:bg-gray-100 print:text-black"
-                  )}
-                >
-                  {tab.count}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* 3b. KEINGINAN UNTUK BERSEKOLAH FILTER CARD */}
-      <div className="rounded-2xl border-2 border-slate-200 bg-white p-5 space-y-3.5 shadow-xs break-inside-avoid print:bg-white print:border-gray-400 print:text-black">
-        <div className="flex items-center justify-between border-b-2 border-slate-100 pb-3">
-          <div className="flex items-center gap-2.5">
-            <HeartHandshake className="h-5 w-5 text-emerald-600" />
-            <span className="text-base font-bold text-slate-900 print:text-black">
-              Keinginan Kembali Bersekolah
-            </span>
-          </div>
-          <span className="text-xs font-bold text-slate-600 bg-slate-100 px-3 py-1 rounded-full print:text-gray-600">
-            {selectedKeinginan !== "semua" ? selectedKeinginan : "Semua Status"}
-          </span>
-        </div>
-
-        {/* Keinginan Filter Pill Buttons */}
-        <div className="flex flex-wrap gap-2.5 pt-1">
-          {keinginanTabs.map((tab) => {
-            const isSelected = selectedKeinginan === tab.id;
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => setSelectedKeinginan(tab.id)}
-                className={cn(
-                  "flex min-h-[44px] items-center gap-2.5 rounded-xl px-4 py-2.5 text-sm font-bold transition-all cursor-pointer border-2",
-                  isSelected
-                    ? "bg-blue-50 border-blue-600 text-blue-950 shadow-xs ring-2 ring-blue-600/20"
-                    : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300"
-                )}
-              >
-                <span>{tab.label}</span>
-                <span
-                  className={cn(
-                    "rounded-full px-2 py-0.5 text-xs font-mono font-bold",
-                    isSelected
-                      ? "bg-blue-600 text-white"
-                      : "bg-slate-100 text-slate-800 border border-slate-200"
-                  )}
-                >
-                  {tab.count}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* 3c. ALASAN TIDAK SEKOLAH FILTER CARD */}
-      <div className="rounded-2xl border-2 border-slate-200 bg-white p-5 space-y-3.5 shadow-xs break-inside-avoid print:bg-white print:border-gray-400 print:text-black">
-        <div className="flex items-center justify-between border-b-2 border-slate-100 pb-3">
-          <div className="flex items-center gap-2.5">
-            <AlertCircle className="h-5 w-5 text-amber-600" />
-            <span className="text-base font-bold text-slate-900 print:text-black">
-              Alasan Utama Tidak Sekolah
-            </span>
-          </div>
-          <span className="text-xs font-bold text-slate-600 bg-slate-100 px-3 py-1 rounded-full print:text-gray-600">
-            {selectedAlasan !== "semua" ? selectedAlasan : "Semua Alasan"}
-          </span>
-        </div>
-
-        {/* Alasan Filter Buttons */}
-        <div className="flex flex-wrap gap-2.5 pt-1">
-          <button
-            type="button"
-            onClick={() => setSelectedAlasan("semua")}
-            className={cn(
-              "flex min-h-[44px] items-center gap-2.5 rounded-xl px-4 py-2.5 text-sm font-bold transition-all cursor-pointer border-2",
-              selectedAlasan === "semua"
-                ? "bg-blue-50 border-blue-600 text-blue-950 shadow-xs ring-2 ring-blue-600/20"
-                : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300"
-            )}
-          >
-            <span>Semua Alasan</span>
-            <span
-              className={cn(
-                "rounded-full px-2 py-0.5 text-xs font-mono font-bold",
-                selectedAlasan === "semua"
-                  ? "bg-blue-600 text-white"
-                  : "bg-slate-100 text-slate-800 border border-slate-200"
-              )}
-            >
-              {atsList.length}
-            </span>
-          </button>
-
-          {dynamicAlasanList.map((alasan) => {
-            const isSelected = selectedAlasan === alasan;
-            const count = countByAlasan[alasan] || 0;
-            return (
-              <button
-                key={alasan}
-                type="button"
-                onClick={() => setSelectedAlasan(alasan)}
-                className={cn(
-                  "flex min-h-[44px] items-center gap-2.5 rounded-xl px-4 py-2.5 text-sm font-bold transition-all cursor-pointer border-2",
-                  isSelected
-                    ? "bg-blue-50 border-blue-600 text-blue-950 shadow-xs ring-2 ring-blue-600/20"
-                    : count > 0
-                    ? "bg-white border-slate-200 text-slate-800 hover:bg-slate-50"
-                    : "bg-slate-50 border-slate-200/60 text-slate-400 hover:bg-slate-100"
-                )}
-              >
-                <span>{alasan}</span>
-                <span
-                  className={cn(
-                    "rounded-full px-2 py-0.5 text-xs font-mono font-bold",
-                    isSelected
-                      ? "bg-blue-600 text-white"
-                      : count > 0
-                      ? "bg-blue-100 text-blue-800 border border-blue-200"
-                      : "bg-slate-100 text-slate-500 border border-slate-200"
-                  )}
-                >
-                  {count}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
+      {/* 3b. DIAGRAM CHART HASIL FILTER (PIE / DONUT & BAR COLUMNS) */}
+      <DiagramChartFilterAts
+        filteredAts={filteredAts}
+        totalAllAts={totalAts}
+      />
 
       {/* 4. SEARCH & STATUS FILTER & TAMBAH ATS (KONTROL LAYAR) */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-3 print:hidden">
@@ -601,7 +433,12 @@ export function DataAtsClientView({
           <input
             type="text"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              if (e.target.value.trim()) {
+                setIsListExpanded(true);
+              }
+            }}
             placeholder="Cari nama anak ATS, orang tua, alasan, kelurahan..."
             className="w-full min-h-[50px] h-13 rounded-2xl border-2 border-slate-300 bg-white pl-12 pr-4 text-base text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:outline-hidden"
           />
@@ -611,7 +448,7 @@ export function DataAtsClientView({
         <div className="flex items-center gap-1.5 bg-white border-2 border-slate-200 p-1.5 rounded-2xl shrink-0">
           <button
             type="button"
-            onClick={() => setStatusFilter("semua")}
+            onClick={() => handleSelectStatus("semua")}
             className={cn(
               "px-3.5 py-2 rounded-xl text-sm font-bold transition-all cursor-pointer",
               statusFilter === "semua"
@@ -623,7 +460,7 @@ export function DataAtsClientView({
           </button>
           <button
             type="button"
-            onClick={() => setStatusFilter("approved")}
+            onClick={() => handleSelectStatus("approved")}
             className={cn(
               "px-3.5 py-2 rounded-xl text-sm font-bold transition-all cursor-pointer",
               statusFilter === "approved"
@@ -635,7 +472,7 @@ export function DataAtsClientView({
           </button>
           <button
             type="button"
-            onClick={() => setStatusFilter("pending")}
+            onClick={() => handleSelectStatus("pending")}
             className={cn(
               "px-3.5 py-2 rounded-xl text-sm font-bold transition-all cursor-pointer",
               statusFilter === "pending"
@@ -659,73 +496,138 @@ export function DataAtsClientView({
         )}
       </div>
 
-      {/* 5. LIST DATA ATS (SESUAI FILTER SAAT INI) */}
+      {/* 5. LIST DATA ATS (DEFAULT TERSEMBUNYI / DAPAT DIBUKA DENGAN MENYENTUH DIAGRAM ATAU TOMBOL) */}
       <div className="space-y-3.5">
-        <div className="flex items-center justify-between border-b border-border pb-2">
-          <h3 className="text-xs font-mono font-bold uppercase text-foreground print:text-black">
-            DAFTAR RINCIAN ANAK TIDAK SEKOLAH ({filteredAts.length} DATA)
-          </h3>
-          <span className="text-[11px] font-mono text-muted-foreground print:text-gray-600">
-            {filteredAts.length} dari total {totalAts} anak
-          </span>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 dark:border-slate-800 pb-3">
+          <div className="flex items-center gap-2.5">
+            <h3 className="text-xs sm:text-sm font-mono font-black uppercase text-slate-900 dark:text-slate-100 print:text-black flex items-center gap-2">
+              <span>DAFTAR RINCIAN NAMA ANAK</span>
+              <span className="rounded-full bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 px-2 py-0.5 text-xs font-mono font-bold">
+                {filteredAts.length} Anak
+              </span>
+            </h3>
+          </div>
+
+          <div className="flex items-center gap-2 print:hidden">
+            <button
+              type="button"
+              onClick={() => setIsListExpanded((prev) => !prev)}
+              className={cn(
+                "flex items-center gap-2 rounded-xl px-4 py-2 text-xs sm:text-sm font-bold transition-all cursor-pointer border-2",
+                isListExpanded
+                  ? "bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200"
+                  : "bg-blue-600 hover:bg-blue-700 text-white border-blue-600 shadow-sm"
+              )}
+            >
+              {isListExpanded ? (
+                <>
+                  <EyeOff className="h-4 w-4" />
+                  <span>Sembunyikan Daftar Nama</span>
+                  <ChevronUp className="h-4 w-4" />
+                </>
+              ) : (
+                <>
+                  <Eye className="h-4 w-4" />
+                  <span>Tampilkan {filteredAts.length} Nama Anak</span>
+                  <ChevronDown className="h-4 w-4" />
+                </>
+              )}
+            </button>
+          </div>
         </div>
 
-        {filteredAts.length === 0 ? (
-          <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border bg-card p-12 text-center space-y-4 print:bg-white print:border-gray-400 print:text-black">
-            <div className="flex h-12 w-12 items-center justify-center rounded-md border border-border bg-muted text-muted-foreground">
-              <GraduationCap className="h-6 w-6 stroke-[1.5px] text-amber-500" />
+        {/* Banner info jika list tersembunyi secara default */}
+        {!isListExpanded && (
+          <div className="rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/40 p-6 text-center space-y-3 print:hidden">
+            <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-100 dark:bg-blue-950 text-blue-600 dark:text-blue-400">
+              <EyeOff className="h-5 w-5" />
             </div>
-            <div className="space-y-1.5 max-w-sm">
-              <h3 className="text-sm font-bold tracking-tight text-foreground font-mono print:text-black">
-                {selectedJenjang !== "semua" || selectedKeinginan !== "semua" || selectedAlasan !== "semua" || statusFilter !== "semua" || searchQuery
-                  ? "TIDAK ADA DATA ATS SESUAI FILTER"
-                  : "BELUM ADA DATA ANAK TIDAK SEKOLAH (ATS)"}
-              </h3>
-              <p className="text-xs text-muted-foreground leading-relaxed print:text-gray-600">
-                {selectedJenjang !== "semua" || selectedKeinginan !== "semua" || selectedAlasan !== "semua" || statusFilter !== "semua" || searchQuery
-                  ? "Tidak ditemukan data ATS yang cocok dengan filter atau kata kunci pencarian yang dipilih."
-                  : "Daftarkan data Anak Tidak Sekolah di wilayah Anda untuk pemantauan, verifikasi alasan, dan fasilitasi kembali bersekolah."}
+            <div className="max-w-md mx-auto space-y-1">
+              <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">
+                Daftar Nama Anak Tersembunyi (Fokus Analitik)
+              </h4>
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                Sentuh/klik bagian diagram batang usia, alasan, jenjang, atau status di atas untuk membuka daftar rincian {filteredAts.length} nama anak yang sesuai secara otomatis.
               </p>
             </div>
+            <button
+              type="button"
+              onClick={() => setIsListExpanded(true)}
+              className="inline-flex items-center gap-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 text-xs font-bold transition-all shadow-sm cursor-pointer"
+            >
+              <Eye className="h-4 w-4" />
+              <span>Buka Daftar {filteredAts.length} Nama Anak</span>
+            </button>
           </div>
-        ) : (
-          filteredAts.map((child) => (
-            <CardDataAts
-              key={child.id}
-              ats={child}
-              komunitasId={komunitas.id}
-              komunitasNama={komunitas.nama}
-              canValidate={canValidate}
-              canEditDdtk={canEditDdtk}
-              canManage={canManage}
-              currentUserId={currentUserId}
-              isSuperAdmin={isSuperAdmin}
-              onUpdate={handleUpdateItem}
-              onDelete={handleDeleteItem}
-              onKembaliSekolah={handleKembaliSekolah}
-            />
-          ))
         )}
+
+        {/* Konten Daftar Nama (Tampil jika isListExpanded atau saat print) */}
+        <div className={cn(isListExpanded ? "space-y-3.5" : "hidden print:block print:space-y-3.5")}>
+          {filteredAts.length === 0 ? (
+            <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-800 bg-card p-12 text-center space-y-4 print:bg-white print:border-gray-400 print:text-black">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-slate-200 bg-slate-100 text-slate-600">
+                <GraduationCap className="h-6 w-6 stroke-[1.5px] text-amber-500" />
+              </div>
+              <div className="space-y-1.5 max-w-sm">
+                <h3 className="text-sm font-bold tracking-tight text-foreground font-mono print:text-black">
+                  {selectedJenjang !== "semua" ||
+                  selectedKeinginan !== "semua" ||
+                  selectedAlasan !== "semua" ||
+                  statusFilter !== "semua" ||
+                  selectedAge !== null ||
+                  selectedGender !== "semua" ||
+                  searchQuery
+                    ? "TIDAK ADA DATA ATS SESUAI FILTER"
+                    : "BELUM ADA DATA ANAK TIDAK SEKOLAH (ATS)"}
+                </h3>
+                <p className="text-xs text-muted-foreground leading-relaxed print:text-gray-600">
+                  {selectedJenjang !== "semua" ||
+                  selectedKeinginan !== "semua" ||
+                  selectedAlasan !== "semua" ||
+                  statusFilter !== "semua" ||
+                  selectedAge !== null ||
+                  selectedGender !== "semua" ||
+                  searchQuery
+                    ? "Tidak ditemukan data ATS yang cocok dengan kriteria filter yang dipilih. Silakan klik Reset Filter pada diagram."
+                    : "Daftarkan data Anak Tidak Sekolah di wilayah Anda untuk pemantauan, verifikasi alasan, dan fasilitasi kembali bersekolah."}
+                </p>
+                {(selectedJenjang !== "semua" ||
+                  selectedKeinginan !== "semua" ||
+                  selectedAlasan !== "semua" ||
+                  statusFilter !== "semua" ||
+                  selectedAge !== null ||
+                  selectedGender !== "semua" ||
+                  searchQuery) && (
+                  <button
+                    type="button"
+                    onClick={handleResetFilters}
+                    className="mt-2 text-xs font-bold text-blue-600 hover:text-blue-800 underline cursor-pointer"
+                  >
+                    Reset Semua Filter
+                  </button>
+                )}
+              </div>
+            </div>
+          ) : (
+            filteredAts.map((child) => (
+              <CardDataAts
+                key={child.id}
+                ats={child}
+                komunitasId={komunitas.id}
+                komunitasNama={komunitas.nama}
+                canValidate={canValidate}
+                canEditDdtk={canEditDdtk}
+                canManage={canManage}
+                currentUserId={currentUserId}
+                isSuperAdmin={isSuperAdmin}
+                onUpdate={handleUpdateItem}
+                onDelete={handleDeleteItem}
+                onKembaliSekolah={handleKembaliSekolah}
+              />
+            ))
+          )}
+        </div>
       </div>
-
-      {/* 6. GRAFIK & ANALITIK HASIL FILTER */}
-      <GrafikFilterAts
-        filteredAts={filteredAts}
-        totalAllAts={totalAts}
-        activeFilters={{
-          jenjang: selectedJenjang,
-          keinginan: selectedKeinginan,
-          alasan: selectedAlasan,
-          status: statusFilter,
-          search: searchQuery,
-        }}
-      />
-
-      {/* 7. DIAGRAM CHART HASIL FILTER (PIE / DONUT & BAR COLUMNS) */}
-      <DiagramChartFilterAts
-        filteredAts={filteredAts}
-        totalAllAts={totalAts}
-      />
 
       {/* TANDA TANGAN & PENGESAHAN DOKUMEN CETAK A4 (HANYA MUNCUL SAAT PRINT) */}
       <div className="hidden print:grid grid-cols-2 text-center text-[10px] font-sans break-inside-avoid mt-8 pt-4 border-t border-black">
@@ -757,7 +659,7 @@ export function DataAtsClientView({
         <span>Dokumen Sah Pemkot Tegal (A4)</span>
       </div>
 
-      {/* 8. MENU CETAK PDF DATA ATS (HANYA 1 MENU, DI PALING BAWAH HALAMAN) */}
+      {/* 6. MENU CETAK PDF DATA ATS (HANYA 1 MENU, DI PALING BAWAH HALAMAN) */}
       <div className="rounded-2xl border-2 border-slate-200 bg-white p-5 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xs print:hidden">
         <div className="flex items-center gap-4 w-full sm:w-auto">
           <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-amber-800">
@@ -788,7 +690,7 @@ export function DataAtsClientView({
         </button>
       </div>
 
-      {/* 9. MODAL POPUP PENDATAAN ATS */}
+      {/* 7. MODAL POPUP PENDATAAN ATS */}
       {isAddModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto animate-in fade-in duration-200 print:hidden">
           <div
