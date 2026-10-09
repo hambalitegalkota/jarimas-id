@@ -28,6 +28,7 @@ import {
   School,
   HeartHandshake,
   UserPlus,
+  User,
 } from "lucide-react";
 import { createClient } from "@/utils/supabase/server";
 import { getMarketProduk } from "@/app/actions/market";
@@ -189,6 +190,7 @@ export default async function HomePage() {
       {/* 2. HORIZONTAL QUICK-ACTION STORY CHIPS (RATA KIRI KANAN) */}
       {/* ========================================================= */}
       <section className="flex items-center justify-between gap-2 sm:gap-2.5 overflow-x-auto pb-1 scrollbar-none w-full">
+        {/* 1. Posyandu */}
         <Link
           href="/komunitas?tab=posyandu"
           className="flex-1 min-w-max inline-flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-2xl bg-emerald-50/80 dark:bg-emerald-950/30 border-2 border-emerald-200 dark:border-emerald-800/80 hover:border-emerald-500 text-emerald-950 dark:text-emerald-200 text-xs font-extrabold whitespace-nowrap transition-all shadow-2xs shrink-0 sm:shrink active:scale-95 text-center"
@@ -196,9 +198,32 @@ export default async function HomePage() {
           <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-emerald-600 text-white font-bold shrink-0">
             <HeartPulse className="h-3.5 w-3.5" />
           </div>
-          <span>Posyandu &amp; DDTK</span>
+          <span>Posyandu</span>
         </Link>
 
+        {/* 2. Warga Kita */}
+        <Link
+          href="/komunitas?tab=warga_kita"
+          className="flex-1 min-w-max inline-flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-2xl bg-sky-50/80 dark:bg-sky-950/30 border-2 border-sky-200 dark:border-sky-800/80 hover:border-sky-500 text-sky-950 dark:text-sky-200 text-xs font-extrabold whitespace-nowrap transition-all shadow-2xs shrink-0 sm:shrink active:scale-95 text-center"
+        >
+          <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-sky-700 text-white font-bold shrink-0">
+            <Building2 className="h-3.5 w-3.5" />
+          </div>
+          <span>Warga Kita</span>
+        </Link>
+
+        {/* 3. PAUD */}
+        <Link
+          href="/komunitas?tab=satuan_paud"
+          className="flex-1 min-w-max inline-flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-2xl bg-indigo-50/80 dark:bg-indigo-950/30 border-2 border-indigo-200 dark:border-indigo-800/80 hover:border-indigo-500 text-indigo-950 dark:text-indigo-200 text-xs font-extrabold whitespace-nowrap transition-all shadow-2xs shrink-0 sm:shrink active:scale-95 text-center"
+        >
+          <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-indigo-700 text-white font-bold shrink-0">
+            <GraduationCap className="h-3.5 w-3.5" />
+          </div>
+          <span>PAUD</span>
+        </Link>
+
+        {/* 4. Jarimas Market */}
         {SHOW_MARKET_FEATURE && (
           <Link
             href="/market"
@@ -208,20 +233,10 @@ export default async function HomePage() {
               <ShoppingBag className="h-3.5 w-3.5" />
             </div>
             <span>Jarimas Market</span>
-
           </Link>
         )}
 
-        <Link
-          href="/komunitas?tab=warga_kita"
-          className="flex-1 min-w-max inline-flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-2xl bg-sky-50/80 dark:bg-sky-950/30 border-2 border-sky-200 dark:border-sky-800/80 hover:border-sky-500 text-sky-950 dark:text-sky-200 text-xs font-extrabold whitespace-nowrap transition-all shadow-2xs shrink-0 sm:shrink active:scale-95 text-center"
-        >
-          <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-sky-700 text-white font-bold shrink-0">
-            <Building2 className="h-3.5 w-3.5" />
-          </div>
-          <span>Warga RT / RW</span>
-        </Link>
-
+        {/* 5. Kabar Warga */}
         <Link
           href="/kabar"
           className="flex-1 min-w-max inline-flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-2xl bg-emerald-50/80 dark:bg-emerald-950/30 border-2 border-emerald-200 dark:border-emerald-800/80 hover:border-emerald-500 text-emerald-950 dark:text-emerald-200 text-xs font-extrabold whitespace-nowrap transition-all shadow-2xs shrink-0 sm:shrink active:scale-95 text-center"
@@ -232,24 +247,15 @@ export default async function HomePage() {
           <span>Kabar Warga</span>
         </Link>
 
+        {/* 6. Profil */}
         <Link
-          href="/kabar?tab=warga"
+          href={user ? "/profil" : "/register"}
           className="flex-1 min-w-max inline-flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-2xl bg-teal-50/80 dark:bg-teal-950/30 border-2 border-teal-200 dark:border-teal-800/80 hover:border-teal-500 text-teal-950 dark:text-teal-200 text-xs font-extrabold whitespace-nowrap transition-all shadow-2xs shrink-0 sm:shrink active:scale-95 text-center"
         >
           <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-teal-700 text-white font-bold shrink-0">
-            <HeartHandshake className="h-3.5 w-3.5" />
+            <User className="h-3.5 w-3.5" />
           </div>
-          <span>Warga &amp; Teman</span>
-        </Link>
-
-        <Link
-          href="/komunitas?tab=satuan_paud"
-          className="flex-1 min-w-max inline-flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-2xl bg-indigo-50/80 dark:bg-indigo-950/30 border-2 border-indigo-200 dark:border-indigo-800/80 hover:border-indigo-500 text-indigo-950 dark:text-indigo-200 text-xs font-extrabold whitespace-nowrap transition-all shadow-2xs shrink-0 sm:shrink active:scale-95 text-center"
-        >
-          <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-indigo-700 text-white font-bold shrink-0">
-            <GraduationCap className="h-3.5 w-3.5" />
-          </div>
-          <span>PAUD &amp; ATS</span>
+          <span>Profil</span>
         </Link>
       </section>
 
