@@ -27,6 +27,7 @@ import {
   Flame,
   School,
   HeartHandshake,
+  UserPlus,
 } from "lucide-react";
 import { createClient } from "@/utils/supabase/server";
 import { getMarketProduk } from "@/app/actions/market";
@@ -164,13 +165,22 @@ export default async function HomePage() {
               <span className="sm:hidden">Profil</span>
             </Link>
           ) : (
-            <Link
-              href="/login"
-              className="inline-flex min-h-[40px] items-center gap-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 px-4 py-1.5 text-xs font-bold text-white transition-all cursor-pointer active:scale-98 shadow-xs"
-            >
-              <span>Masuk</span>
-              <ArrowRight className="h-3.5 w-3.5" />
-            </Link>
+            <div className="flex items-center gap-2">
+              <Link
+                href="/register"
+                className="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border-2 border-emerald-300 dark:border-emerald-700 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 px-3 sm:px-3.5 py-1.5 text-xs font-bold text-emerald-800 dark:text-emerald-300 transition-all cursor-pointer active:scale-98 shadow-2xs"
+              >
+                <UserPlus className="h-3.5 w-3.5" />
+                <span>Registrasi</span>
+              </Link>
+              <Link
+                href="/login"
+                className="inline-flex min-h-[40px] items-center gap-1.5 sm:gap-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 px-3.5 sm:px-4 py-1.5 text-xs font-bold text-white transition-all cursor-pointer active:scale-98 shadow-xs"
+              >
+                <span>Masuk</span>
+                <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+            </div>
           )}
         </div>
       </header>
