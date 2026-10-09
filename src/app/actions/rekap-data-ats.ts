@@ -113,6 +113,7 @@ export interface RekapDataAtsResult {
 const DAFTAR_ALASAN_ATS = [
   "Tidak ada biaya / Keterbatasan ekonomi",
   "Bekerja / Membantu ekonomi orang tua",
+  "Melanjutkan ke Pondok Pesantren atau Lainnya",
   "Terkendala jarak sekolah & sistem zonasi",
   "Kurang minat / motivasi belajar rendah",
   "Masalah kesehatan / disabilitas",
@@ -242,6 +243,9 @@ function calculateAgeFromBirthDate(birthDateStr?: string | null): number {
 
 function normalizeReasonAts(raw?: string | null): string {
   const s = (raw || "").toLowerCase();
+  if (s.includes("pesantren") || s.includes("pondok") || s.includes("ponpes")) {
+    return "Melanjutkan ke Pondok Pesantren atau Lainnya";
+  }
   if (s.includes("biaya") || s.includes("ekonomi") || s.includes("dana") || s.includes("uang")) {
     return "Tidak ada biaya / Keterbatasan ekonomi";
   }
