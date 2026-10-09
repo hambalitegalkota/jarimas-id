@@ -580,7 +580,7 @@ export function DataAtsClientView({
         )}
 
         {/* Konten Daftar Nama (Tampil jika isListExpanded atau saat print) */}
-        <div className={cn(isListExpanded ? "space-y-3.5" : "hidden print:block print:space-y-3.5")}>
+        <div className={cn(isListExpanded ? "space-y-2.5" : "hidden print:block print:space-y-2.5")}>
           {filteredAts.length === 0 ? (
             <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-800 bg-card p-12 text-center space-y-4 print:bg-white print:border-gray-400 print:text-black">
               <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-slate-200 bg-slate-100 text-slate-600">
