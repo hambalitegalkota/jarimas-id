@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { getJenjangAts, getWilayahScopeInfo } from "@/lib/ats-helpers";
+import { getJenjangAts, getWilayahScopeInfo, normalizeKeinginanSekolah } from "@/lib/ats-helpers";
 import type { DataAtsItem, KomunitasWithMembership } from "@/types/database";
 
 export interface PrintLaporanAtsProps {
@@ -52,9 +52,11 @@ export function PrintLaporanAts({
       (c) => c.jenis_kelamin === "P" || c.jenis_kelamin?.toLowerCase().startsWith("p")
     ).length;
     const masihAda = filteredAts.filter(
-      (c) => (c.keinginan_sekolah === "Tidak Ada" ? "Tidak Ada" : "Masih Ada") === "Masih Ada"
+      (c) => normalizeKeinginanSekolah(c.keinginan_sekolah) === "Masih Ada"
     ).length;
-    const tidakAda = filteredAts.filter((c) => c.keinginan_sekolah === "Tidak Ada").length;
+    const tidakAda = filteredAts.filter(
+      (c) => normalizeKeinginanSekolah(c.keinginan_sekolah) === "Tidak Ada"
+    ).length;
 
     const sd = filteredAts.filter((c) => getJenjangAts(c).id === "sd").length;
     const smp = filteredAts.filter((c) => getJenjangAts(c).id === "smp").length;
@@ -234,8 +236,7 @@ export function PrintLaporanAts({
                 const jenjang = getJenjangAts(item);
                 const isApproved = item.status_approval === "approved";
                 const isMasihAda =
-                  (item.keinginan_sekolah === "Tidak Ada" ? "Tidak Ada" : "Masih Ada") ===
-                  "Masih Ada";
+                  normalizeKeinginanSekolah(item.keinginan_sekolah) === "Masih Ada";
 
                 return (
                   <tr
@@ -281,7 +282,7 @@ export function PrintLaporanAts({
                             : "px-1 py-0.5 border border-dashed border-black rounded text-gray-700"
                         }
                       >
-                        {item.keinginan_sekolah || "Masih Ada"}
+                        {isMasihAda ? "Masih Ada" : "Tidak Ada"}
                       </span>
                     </td>
                     <td className="border border-black p-1 font-medium">

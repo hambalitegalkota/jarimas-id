@@ -6,6 +6,7 @@ import {
   isDataAtsRecord,
   normalizeWilayah,
   parseAtsDetails,
+  normalizeKeinginanSekolah,
 } from "@/lib/data-anak-helpers";
 import { checkUserRekapAdminAccess } from "@/app/actions/rekap-data-anak";
 
@@ -401,7 +402,7 @@ export async function getRekapDataAtsAction(): Promise<{
         if (targetKelItem) {
           const age = calculateAgeFromBirthDate(child.tanggal_lahir);
           const isLaki = (child.jenis_kelamin || "L").toUpperCase() === "L";
-          const isIngin = (parsed.keinginan || "Masih Ada").toLowerCase().includes("masih");
+          const isIngin = normalizeKeinginanSekolah(parsed.keinginan) === "Masih Ada";
 
           targetKelItem.totalAts += 1;
 
@@ -707,7 +708,7 @@ export async function getDaftarNamaAtsRekapAction(params: {
       }
 
       // Filter Keinginan
-      const isIngin = (parsed.keinginan || "Masih Ada").toLowerCase().includes("masih");
+      const isIngin = normalizeKeinginanSekolah(parsed.keinginan) === "Masih Ada";
       if (params.keinginan && params.keinginan !== "semua") {
         if (params.keinginan === "ingin" && !isIngin) continue;
         if (params.keinginan === "tidak" && isIngin) continue;

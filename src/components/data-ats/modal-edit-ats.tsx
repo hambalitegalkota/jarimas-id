@@ -36,6 +36,7 @@ import {
   DAFTAR_RT_TEGAL,
 } from "@/lib/constants/tegal-data";
 import { extractKomunitasMetadata } from "@/lib/admin-helpers";
+import { normalizeKeinginanSekolah } from "@/lib/ats-helpers";
 import { KELAS_TERAKHIR_OPTIONS } from "./form-data-ats";
 import { cn } from "@/lib/utils";
 
@@ -152,7 +153,7 @@ export function ModalEditAts({
 
   // ATS Status Fields
   const [keinginanSekolah, setKeinginanSekolah] = useState<"Masih Ada" | "Tidak Ada">(
-    ats.keinginan_sekolah === "Tidak Ada" ? "Tidak Ada" : "Masih Ada"
+    normalizeKeinginanSekolah(ats.keinginan_sekolah)
   );
   const [alasanTidakSekolah, setAlasanTidakSekolah] = useState<AlasanTidakSekolah>(
     ats.alasan_tidak_sekolah || ALASAN_TIDAK_SEKOLAH_LIST[0]

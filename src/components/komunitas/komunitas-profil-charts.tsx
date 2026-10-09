@@ -19,6 +19,7 @@ import {
   BookOpen,
 } from "lucide-react";
 import type { KomunitasWithMembership, DataAnakItem, DataAtsItem } from "@/types/database";
+import { normalizeKeinginanSekolah } from "@/lib/ats-helpers";
 import { cn } from "@/lib/utils";
 
 interface KomunitasProfilChartsProps {
@@ -114,7 +115,7 @@ export function KomunitasProfilCharts({
       atsPending++;
     }
 
-    if (ats.keinginan_sekolah === "Masih Ada") {
+    if (normalizeKeinginanSekolah(ats.keinginan_sekolah) === "Masih Ada") {
       atsInginSekolah++;
     } else {
       atsTidakIngin++;

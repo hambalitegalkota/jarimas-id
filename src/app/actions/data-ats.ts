@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/utils/supabase/server";
 import { DataAtsSchema, DdtkSchema } from "@/lib/zod-schemas";
 import { toValidUUID } from "@/lib/utils";
+import { normalizeKeinginanSekolah } from "@/lib/data-anak-helpers";
 import { getKomunitasDetail } from "./komunitas";
 import type {
   DataAtsItem,
@@ -472,7 +473,7 @@ function parseAtsDetails(alasanSekolahRaw?: string | null, fallbackKomunitas?: a
 
   const matchKeinginan = raw.match(/\[KEINGINAN\s*:\s*([^\]]+)\]/i);
   if (matchKeinginan && matchKeinginan[1]) {
-    keinginan = matchKeinginan[1].trim() as "Masih Ada" | "Tidak Ada";
+    keinginan = normalizeKeinginanSekolah(matchKeinginan[1]);
   }
 
   const matchAlasan = raw.match(/\[ALASAN\s*:\s*([^\]]+)\]/i);

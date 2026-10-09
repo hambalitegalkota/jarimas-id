@@ -508,6 +508,32 @@ export interface ParsedAtsDetails {
   kelasTerakhir: string;
 }
 
+/**
+ * Helper untuk menormalisasi nilai Keinginan Sekolah ATS
+ * Mendukung variasi input dari Google Sheets / Form seperti:
+ * "Tidak Ada Keinginan", "Masih Ada Keinginan", "Tida Ada Keinginan", "Tidak Ada", "Masih Ada", dll.
+ */
+export function normalizeKeinginanSekolah(val?: string | null): "Masih Ada" | "Tidak Ada" {
+  if (!val) return "Masih Ada";
+  const s = String(val).trim().toLowerCase();
+  if (
+    s.includes("tidak") ||
+    s.includes("tida") ||
+    s.includes("tdk") ||
+    s.includes("bukan") ||
+    s.includes("belum") ||
+    s.includes("ogah") ||
+    s.includes("gamau") ||
+    s.includes("ga mau") ||
+    s === "false" ||
+    s === "no" ||
+    s === "0"
+  ) {
+    return "Tidak Ada";
+  }
+  return "Masih Ada";
+}
+
 export function parseAtsDetails(
   alasanSekolahRaw?: string | null,
   fallbackKomunitas?: any
@@ -529,7 +555,7 @@ export function parseAtsDetails(
 
   const matchKeinginan = raw.match(/\[KEINGINAN\s*:\s*([^\]]+)\]/i);
   if (matchKeinginan && matchKeinginan[1]) {
-    keinginan = matchKeinginan[1].trim() as "Masih Ada" | "Tidak Ada";
+    keinginan = normalizeKeinginanSekolah(matchKeinginan[1]);
   }
 
   const matchAlasan = raw.match(/\[ALASAN\s*:\s*([^\]]+)\]/i);

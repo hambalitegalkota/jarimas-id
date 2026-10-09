@@ -238,3 +238,28 @@ export function getWilayahScopeInfo(komunitas: KomunitasWithMembership | null | 
     rt: meta.rawRt,
   };
 }
+
+/**
+ * Normalisasi status keinginan sekolah ATS
+ */
+export function normalizeKeinginanSekolah(val?: string | null): "Masih Ada" | "Tidak Ada" {
+  if (!val) return "Masih Ada";
+  const s = String(val).trim().toLowerCase();
+  if (
+    s.includes("tidak") ||
+    s.includes("tida") ||
+    s.includes("tdk") ||
+    s.includes("bukan") ||
+    s.includes("belum") ||
+    s.includes("ogah") ||
+    s.includes("gamau") ||
+    s.includes("ga mau") ||
+    s === "false" ||
+    s === "no" ||
+    s === "0"
+  ) {
+    return "Tidak Ada";
+  }
+  return "Masih Ada";
+}
+

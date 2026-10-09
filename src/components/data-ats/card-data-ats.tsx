@@ -22,7 +22,7 @@ import { validateDataAts } from "@/app/actions/data-ats";
 import { ModalKembaliBersekolah } from "./modal-kembali-bersekolah";
 import { ModalEditAts } from "./modal-edit-ats";
 import { ModalHapusAts } from "./modal-hapus-ats";
-import { getJenjangAts } from "@/lib/ats-helpers";
+import { getJenjangAts, normalizeKeinginanSekolah } from "@/lib/ats-helpers";
 import type { DataAtsItem } from "@/types/database";
 import { cn } from "@/lib/utils";
 
@@ -311,12 +311,14 @@ export function CardDataAts({
               <span
                 className={cn(
                   "font-bold truncate px-2 py-0.5 rounded-lg text-xs",
-                  currentAts.keinginan_sekolah === "Masih Ada"
+                  normalizeKeinginanSekolah(currentAts.keinginan_sekolah) === "Masih Ada"
                     ? "bg-emerald-100 text-emerald-900 border border-emerald-300"
                     : "bg-amber-100 text-amber-900 border border-amber-300"
                 )}
               >
-                {currentAts.keinginan_sekolah}
+                {normalizeKeinginanSekolah(currentAts.keinginan_sekolah) === "Masih Ada"
+                  ? "Masih Ada Keinginan"
+                  : "Tidak Ada Keinginan"}
               </span>
             </div>
 

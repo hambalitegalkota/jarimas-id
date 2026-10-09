@@ -30,6 +30,7 @@ import {
   getDaftarNamaAtsRekapAction,
   type DaftarNamaAtsItem,
 } from "@/app/actions/rekap-data-ats";
+import { normalizeKeinginanSekolah } from "@/lib/ats-helpers";
 
 interface KartuDaftarNamaAtsRekapProps {
   tingkat: "kota" | "kecamatan" | "kelurahan";
@@ -99,10 +100,11 @@ export function KartuDaftarNamaAtsRekap({
       }
 
       // Filter Keinginan Sekolah
-      if (keinginanFilter === "ingin" && !item.keinginanSekolah.includes("Masih")) {
+      const isIngin = normalizeKeinginanSekolah(item.keinginanSekolah) === "Masih Ada";
+      if (keinginanFilter === "ingin" && !isIngin) {
         return false;
       }
-      if (keinginanFilter === "tidak" && item.keinginanSekolah.includes("Masih")) {
+      if (keinginanFilter === "tidak" && isIngin) {
         return false;
       }
 
@@ -350,7 +352,7 @@ export function KartuDaftarNamaAtsRekap({
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
                     {filteredData.map((item, idx) => {
                       const isL = item.jenisKelamin === "L";
-                      const isIngin = item.keinginanSekolah.includes("Masih");
+                      const isIngin = normalizeKeinginanSekolah(item.keinginanSekolah) === "Masih Ada";
 
                       return (
                         <tr
@@ -528,7 +530,7 @@ function DaftarNamaAtsMobileCardItem({
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const isL = item.jenisKelamin === "L";
-  const isIngin = item.keinginanSekolah.includes("Masih");
+  const isIngin = normalizeKeinginanSekolah(item.keinginanSekolah) === "Masih Ada";
 
   return (
     <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 space-y-3 shadow-xs transition-all">

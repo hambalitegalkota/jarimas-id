@@ -21,6 +21,7 @@ import { DiagramChartFilterAts } from "./diagram-chart-filter-ats";
 import {
   getJenjangAts,
   getWilayahScopeInfo,
+  normalizeKeinginanSekolah,
   type JenjangAtsId,
 } from "@/lib/ats-helpers";
 import {
@@ -87,10 +88,10 @@ export function DataAtsClientView({
   const countByKeinginan = {
     semua: atsList.length,
     masihAda: atsList.filter(
-      (c) => (c.keinginan_sekolah === "Tidak Ada" ? "Tidak Ada" : "Masih Ada") === "Masih Ada"
+      (c) => normalizeKeinginanSekolah(c.keinginan_sekolah) === "Masih Ada"
     ).length,
     tidakAda: atsList.filter(
-      (c) => c.keinginan_sekolah === "Tidak Ada"
+      (c) => normalizeKeinginanSekolah(c.keinginan_sekolah) === "Tidak Ada"
     ).length,
   };
 
@@ -127,7 +128,7 @@ export function DataAtsClientView({
     const matchesJenjang =
       selectedJenjang === "semua" || getJenjangAts(c).id === selectedJenjang;
 
-    const childKeinginan = (c.keinginan_sekolah || "").toLowerCase().includes("tidak") ? "Tidak Ada" : "Masih Ada";
+    const childKeinginan = normalizeKeinginanSekolah(c.keinginan_sekolah);
     const matchesKeinginan =
       selectedKeinginan === "semua" || childKeinginan === selectedKeinginan;
 

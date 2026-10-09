@@ -8,7 +8,7 @@ import {
   Users,
   AlertCircle,
 } from "lucide-react";
-import { getJenjangAts } from "@/lib/ats-helpers";
+import { getJenjangAts, normalizeKeinginanSekolah } from "@/lib/ats-helpers";
 import type { DataAtsItem } from "@/types/database";
 import { cn } from "@/lib/utils";
 
@@ -93,9 +93,11 @@ export function GrafikFilterAts({
   // 2. Distribusi Keinginan Sekolah
   const keinginanStats = useMemo(() => {
     const masihAda = filteredAts.filter(
-      (c) => (c.keinginan_sekolah === "Tidak Ada" ? "Tidak Ada" : "Masih Ada") === "Masih Ada"
+      (c) => normalizeKeinginanSekolah(c.keinginan_sekolah) === "Masih Ada"
     ).length;
-    const tidakAda = filteredAts.filter((c) => c.keinginan_sekolah === "Tidak Ada").length;
+    const tidakAda = filteredAts.filter(
+      (c) => normalizeKeinginanSekolah(c.keinginan_sekolah) === "Tidak Ada"
+    ).length;
 
     return {
       masihAda,
