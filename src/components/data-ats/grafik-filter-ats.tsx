@@ -12,6 +12,8 @@ import {
   getJenjangAts,
   normalizeKeinginanSekolah,
   getNumericAgeAts,
+  classifyKelasAts,
+  DAFTAR_15_KELAS_ATS,
   type JenjangAtsId,
 } from "@/lib/ats-helpers";
 import type { DataAtsItem } from "@/types/database";
@@ -31,9 +33,11 @@ interface GrafikFilterAtsProps {
     search: string;
     age?: number | null;
     gender?: string;
+    kelasAts?: string | null;
   };
   onSelectJenjang?: (jenjang: JenjangAtsId) => void;
   onSelectAge?: (age: number | null) => void;
+  onSelectKelasAts?: (kelasKey: string | null) => void;
   onSelectKeinginan?: (keinginan: "semua" | "Masih Ada" | "Tidak Ada") => void;
   onSelectAlasan?: (alasan: string) => void;
   onSelectGender?: (gender: "semua" | "L" | "P") => void;
@@ -48,6 +52,7 @@ export function GrafikFilterAts({
   activeFilters,
   onSelectJenjang,
   onSelectAge,
+  onSelectKelasAts,
   onSelectKeinginan,
   onSelectAlasan,
   onSelectGender,
@@ -142,6 +147,57 @@ export function GrafikFilterAts({
     };
   }, [baseList]);
 
+  // 1.8 Distribusi Kelas Akhir ATS (15 Kategori: BPB, 1-12 DO, 6 & 9 LTM)
+  const kelasAkhirStats = useMemo(() => {
+    const counts: Record<string, number> = {};
+    DAFTAR_15_KELAS_ATS.forEach((k) => {
+      counts[k.key] = 0;
+    });
+
+    baseList.forEach((item) => {
+      const kKey = classifyKelasAts(item.jenjang_asal || undefined, item.kelas_terakhir || undefined);
+      if (counts[kKey] !== undefined) {
+        counts[kKey]++;
+      } else {
+        counts["bpb"] = (counts["bpb"] || 0) + 1;
+      }
+    });
+
+    const maxVal = Math.max(...Object.values(counts), 1);
+
+    const totalBPB = counts["bpb"] || 0;
+    const totalSD =
+      (counts["sd1_do"] || 0) +
+      (counts["sd2_do"] || 0) +
+      (counts["sd3_do"] || 0) +
+      (counts["sd4_do"] || 0) +
+      (counts["sd5_do"] || 0) +
+      (counts["sd6_do"] || 0) +
+      (counts["sd6_ltm"] || 0);
+    const totalSMP =
+      (counts["smp7_do"] || 0) +
+      (counts["smp8_do"] || 0) +
+      (counts["smp9_do"] || 0) +
+      (counts["smp9_ltm"] || 0);
+    const totalSMA =
+      (counts["sma10_do"] || 0) +
+      (counts["sma11_do"] || 0) +
+      (counts["sma12_do"] || 0);
+
+    return {
+      items: DAFTAR_15_KELAS_ATS.map((k) => ({
+        ...k,
+        count: counts[k.key] || 0,
+        pct: baseList.length > 0 ? Math.round(((counts[k.key] || 0) / baseList.length) * 100) : 0,
+      })),
+      maxVal,
+      totalBPB,
+      totalSD,
+      totalSMP,
+      totalSMA,
+    };
+  }, [baseList]);
+
   // 2. Distribusi Keinginan Sekolah
   const keinginanStats = useMemo(() => {
     const masihAda = baseList.filter(
@@ -212,6 +268,7 @@ export function GrafikFilterAts({
     activeFilters.alasan !== "semua" ||
     activeFilters.status !== "semua" ||
     (activeFilters.age !== null && activeFilters.age !== undefined) ||
+    (activeFilters.kelasAts !== null && activeFilters.kelasAts !== undefined) ||
     (activeFilters.gender !== undefined && activeFilters.gender !== "semua") ||
     activeFilters.search.trim() !== "";
 
@@ -251,6 +308,16 @@ export function GrafikFilterAts({
                     className="rounded-lg bg-indigo-50 dark:bg-indigo-950/60 px-2.5 py-1 text-2xs font-mono font-bold text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-100 transition-colors flex items-center gap-1 cursor-pointer"
                   >
                     <span>Usia: {activeFilters.age} Thn</span>
+                    <span className="text-indigo-500 font-black">×</span>
+                  </button>
+                )}
+                {activeFilters.kelasAts && (
+                  <button
+                    type="button"
+                    onClick={() => onSelectKelasAts?.(null)}
+                    className="rounded-lg bg-indigo-50 dark:bg-indigo-950/60 px-2.5 py-1 text-2xs font-mono font-bold text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-100 transition-colors flex items-center gap-1 cursor-pointer"
+                  >
+                    <span>Kelas: {DAFTAR_15_KELAS_ATS.find((k) => k.key === activeFilters.kelasAts)?.shortLabel || activeFilters.kelasAts}</span>
                     <span className="text-indigo-500 font-black">×</span>
                   </button>
                 )}
@@ -495,6 +562,214 @@ export function GrafikFilterAts({
                 </span>
                 <span className="text-sm sm:text-base font-black font-mono text-amber-700 dark:text-amber-400">
                   {jenjangStats.find((j) => j.id === "sma")?.count || 0} Anak
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* 1.8 GRAFIK BATANG KELAS AKHIR ATS (15 KATEGORI: BPB, 1-12 DO, 6 & 9 LTM) */}
+        <div className="rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 p-4 sm:p-5 space-y-3.5 lg:col-span-2">
+          <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-2.5">
+            <div className="flex items-center gap-2">
+              <GraduationCap className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+              <div>
+                <span className="text-xs font-mono font-black uppercase text-slate-900 dark:text-slate-100">
+                  Diagram Batang: Kelas Akhir ATS
+                </span>
+                <p className="text-[11px] text-slate-500 font-medium">
+                  Klik kolom kelas untuk memfilter daftar nama anak jenjang/kelas tersebut
+                </p>
+              </div>
+            </div>
+            {activeFilters.kelasAts ? (
+              <button
+                type="button"
+                onClick={() => onSelectKelasAts?.(null)}
+                className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-indigo-600 text-white cursor-pointer hover:bg-indigo-700"
+              >
+                Kelas {DAFTAR_15_KELAS_ATS.find((k) => k.key === activeFilters.kelasAts)?.shortLabel || activeFilters.kelasAts} Aktif ✕
+              </button>
+            ) : (
+              <span className="text-[10px] font-mono text-slate-500 font-bold">
+                15 Kategori
+              </span>
+            )}
+          </div>
+
+          <div className="space-y-4 pt-1">
+            <div className="h-48 sm:h-52 w-full flex items-end justify-between gap-0.5 sm:gap-1 px-1.5 pt-6 pb-8 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-xl shadow-2xs overflow-hidden">
+              {kelasAkhirStats.items.map((kItem) => {
+                const heightPct =
+                  kItem.count > 0
+                    ? Math.max(12, Math.round((kItem.count / kelasAkhirStats.maxVal) * 100))
+                    : 0;
+
+                const isSelected = activeFilters.kelasAts === kItem.key;
+
+                // Color coding by Kategori / Jenjang
+                let barColor = "bg-blue-600";
+                let textBadge = "text-blue-700 dark:text-blue-400";
+
+                if (kItem.jenjang === "SD") {
+                  if (kItem.key === "sd6_ltm") {
+                    barColor = "bg-amber-500";
+                    textBadge = "text-amber-700 dark:text-amber-400";
+                  } else {
+                    barColor = "bg-emerald-500";
+                    textBadge = "text-emerald-700 dark:text-emerald-400";
+                  }
+                } else if (kItem.jenjang === "SMP") {
+                  if (kItem.key === "smp9_ltm") {
+                    barColor = "bg-orange-500";
+                    textBadge = "text-orange-700 dark:text-orange-400";
+                  } else {
+                    barColor = "bg-sky-500";
+                    textBadge = "text-sky-700 dark:text-sky-400";
+                  }
+                } else if (kItem.jenjang === "SMA") {
+                  barColor = "bg-purple-500";
+                  textBadge = "text-purple-700 dark:text-purple-400";
+                }
+
+                return (
+                  <button
+                    key={kItem.key}
+                    type="button"
+                    onClick={() => onSelectKelasAts?.(isSelected ? null : kItem.key)}
+                    className={cn(
+                      "flex-1 flex flex-col items-center justify-end h-full group relative cursor-pointer transition-all rounded-lg p-0.5",
+                      isSelected
+                        ? "bg-indigo-100/70 dark:bg-indigo-950/80 ring-2 ring-indigo-500 shadow-xs"
+                        : "hover:bg-slate-50 dark:hover:bg-slate-800"
+                    )}
+                    title={`${kItem.label}: ${kItem.count} Anak (${kItem.pct}%) - Klik untuk filter`}
+                  >
+                    {/* Hover Floating Tooltip */}
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity absolute -top-8 bg-slate-900 text-white text-[10px] font-bold py-0.5 px-2 rounded-md shadow-lg pointer-events-none z-10 whitespace-nowrap">
+                      {kItem.shortLabel}: {kItem.count} Anak ({kItem.pct}%)
+                    </div>
+
+                    {/* Count Label */}
+                    <span
+                      className={cn(
+                        "text-[8.5px] sm:text-[10px] font-black font-mono mb-1 transition-all",
+                        isSelected
+                          ? "text-indigo-700 dark:text-indigo-300 font-black scale-110"
+                          : kItem.count > 0
+                          ? textBadge
+                          : "text-slate-300 dark:text-slate-600"
+                      )}
+                    >
+                      {kItem.count}
+                    </span>
+
+                    {/* Bar Column (Slimmer & Responsive) */}
+                    <div className="w-full max-w-[12px] sm:max-w-[15px] h-20 sm:h-24 flex items-end justify-center">
+                      <div
+                        className={cn(
+                          "w-full rounded-t-sm sm:rounded-t-md transition-all duration-500 group-hover:brightness-110",
+                          isSelected
+                            ? "bg-indigo-600 ring-2 ring-indigo-400"
+                            : kItem.count > 0
+                            ? barColor
+                            : "bg-slate-200 dark:bg-slate-800 h-1"
+                        )}
+                        style={{
+                          height: kItem.count > 0 ? `${heightPct}%` : "3px",
+                        }}
+                      />
+                    </div>
+
+                    {/* Class X-Axis Label (Miring Menanjak -45 Derajat) */}
+                    <div className="h-7 w-full flex items-start justify-center mt-1.5 overflow-visible">
+                      <span
+                        className={cn(
+                          "text-[7.5px] sm:text-[8.5px] font-bold font-mono transform -rotate-45 origin-top-left whitespace-nowrap leading-none block select-none group-hover:text-indigo-600 transition-colors",
+                          isSelected
+                            ? "text-indigo-700 dark:text-indigo-300 font-black underline"
+                            : "text-slate-600 dark:text-slate-300"
+                        )}
+                      >
+                        {kItem.shortLabel}
+                      </span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Jenjang Badges Sub-summary (Clickable buttons to filter by Jenjang) */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <button
+                type="button"
+                onClick={() => onSelectKelasAts?.(activeFilters.kelasAts === "bpb" ? null : "bpb")}
+                className={cn(
+                  "p-2.5 rounded-xl border-2 transition-all text-center cursor-pointer",
+                  activeFilters.kelasAts === "bpb"
+                    ? "bg-blue-100 border-blue-600 shadow-xs ring-2 ring-blue-600/30"
+                    : "bg-white dark:bg-slate-900 border-blue-200 dark:border-blue-800/60 hover:bg-blue-50"
+                )}
+              >
+                <span className="text-[10px] font-mono font-bold text-blue-800 dark:text-blue-300 uppercase block truncate">
+                  Belum Sekolah
+                </span>
+                <span className="text-xs sm:text-sm font-black font-mono text-blue-700 dark:text-blue-400">
+                  {kelasAkhirStats.totalBPB} Anak
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => onSelectJenjang?.(activeFilters.jenjang === "sd" ? "semua" : "sd")}
+                className={cn(
+                  "p-2.5 rounded-xl border-2 transition-all text-center cursor-pointer",
+                  activeFilters.jenjang === "sd"
+                    ? "bg-emerald-100 border-emerald-600 shadow-xs ring-2 ring-emerald-600/30"
+                    : "bg-white dark:bg-slate-900 border-emerald-200 dark:border-emerald-800/60 hover:bg-emerald-50"
+                )}
+              >
+                <span className="text-[10px] font-mono font-bold text-emerald-800 dark:text-emerald-300 uppercase block truncate">
+                  SD / MI (1–6)
+                </span>
+                <span className="text-xs sm:text-sm font-black font-mono text-emerald-700 dark:text-emerald-400">
+                  {kelasAkhirStats.totalSD} Anak
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => onSelectJenjang?.(activeFilters.jenjang === "smp" ? "semua" : "smp")}
+                className={cn(
+                  "p-2.5 rounded-xl border-2 transition-all text-center cursor-pointer",
+                  activeFilters.jenjang === "smp"
+                    ? "bg-sky-100 border-sky-600 shadow-xs ring-2 ring-sky-600/30"
+                    : "bg-white dark:bg-slate-900 border-sky-200 dark:border-sky-800/60 hover:bg-sky-50"
+                )}
+              >
+                <span className="text-[10px] font-mono font-bold text-sky-800 dark:text-sky-300 uppercase block truncate">
+                  SMP / MTs (7–9)
+                </span>
+                <span className="text-xs sm:text-sm font-black font-mono text-sky-700 dark:text-sky-400">
+                  {kelasAkhirStats.totalSMP} Anak
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => onSelectJenjang?.(activeFilters.jenjang === "sma" ? "semua" : "sma")}
+                className={cn(
+                  "p-2.5 rounded-xl border-2 transition-all text-center cursor-pointer",
+                  activeFilters.jenjang === "sma"
+                    ? "bg-purple-100 border-purple-600 shadow-xs ring-2 ring-purple-600/30"
+                    : "bg-white dark:bg-slate-900 border-purple-200 dark:border-purple-800/60 hover:bg-purple-50"
+                )}
+              >
+                <span className="text-[10px] font-mono font-bold text-purple-800 dark:text-purple-300 uppercase block truncate">
+                  SMA / SMK (10–12)
+                </span>
+                <span className="text-xs sm:text-sm font-black font-mono text-purple-700 dark:text-purple-400">
+                  {kelasAkhirStats.totalSMA} Anak
                 </span>
               </button>
             </div>

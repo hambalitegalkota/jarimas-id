@@ -19,7 +19,7 @@ import {
   BookOpen,
 } from "lucide-react";
 import type { KomunitasWithMembership, DataAnakItem, DataAtsItem } from "@/types/database";
-import { normalizeKeinginanSekolah } from "@/lib/ats-helpers";
+import { normalizeKeinginanSekolah, classifyKelasAts, DAFTAR_15_KELAS_ATS } from "@/lib/ats-helpers";
 import { cn } from "@/lib/utils";
 
 interface KomunitasProfilChartsProps {
@@ -648,6 +648,72 @@ export function KomunitasProfilCharts({
                               <span className="text-[9px] font-bold text-slate-600 font-mono mt-1">
                                 {u}
                               </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* Diagram Batang Kelas Akhir ATS (15 Kategori) */}
+                {(() => {
+                  const classCountMap: Record<string, number> = {};
+                  DAFTAR_15_KELAS_ATS.forEach((k) => {
+                    classCountMap[k.key] = 0;
+                  });
+
+                  dataAtsList.forEach((ats) => {
+                    const kKey = classifyKelasAts(ats.jenjang_asal || undefined, ats.kelas_terakhir || undefined);
+                    if (classCountMap[kKey] !== undefined) {
+                      classCountMap[kKey]++;
+                    } else {
+                      classCountMap["bpb"] = (classCountMap["bpb"] || 0) + 1;
+                    }
+                  });
+
+                  const maxClassVal = Math.max(...Object.values(classCountMap), 1);
+
+                  return (
+                    <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3.5 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-slate-800">
+                          Diagram Batang: Kelas Akhir ATS
+                        </span>
+                        <span className="text-[10px] font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200">
+                          15 Kategori
+                        </span>
+                      </div>
+
+                      <div className="h-32 w-full flex items-end justify-between gap-0.5 px-1 pt-4 pb-6 border-b border-slate-200 bg-white rounded-lg overflow-hidden">
+                        {DAFTAR_15_KELAS_ATS.map((kItem) => {
+                          const count = classCountMap[kItem.key] || 0;
+                          const heightPct = count > 0 ? Math.max(12, Math.round((count / maxClassVal) * 100)) : 0;
+                          let barColor = "bg-blue-600";
+                          if (kItem.jenjang === "SD") {
+                            barColor = kItem.key === "sd6_ltm" ? "bg-amber-500" : "bg-emerald-500";
+                          } else if (kItem.jenjang === "SMP") {
+                            barColor = kItem.key === "smp9_ltm" ? "bg-orange-500" : "bg-sky-500";
+                          } else if (kItem.jenjang === "SMA") {
+                            barColor = "bg-purple-500";
+                          }
+
+                          return (
+                            <div key={kItem.key} className="flex-1 flex flex-col items-center justify-end h-full">
+                              <span className="text-[8px] font-bold font-mono text-slate-700 mb-0.5">
+                                {count > 0 ? count : ""}
+                              </span>
+                              <div className="w-full max-w-[12px] h-14 flex items-end justify-center">
+                                <div
+                                  className={cn("w-full rounded-t-sm transition-all duration-500", count > 0 ? barColor : "bg-slate-100 h-1")}
+                                  style={{ height: count > 0 ? `${heightPct}%` : "2px" }}
+                                />
+                              </div>
+                              <div className="h-5 w-full flex items-start justify-center mt-1 overflow-visible">
+                                <span className="text-[7px] font-bold text-slate-600 font-mono transform -rotate-45 origin-top-left whitespace-nowrap leading-none block select-none">
+                                  {kItem.shortLabel}
+                                </span>
+                              </div>
                             </div>
                           );
                         })}

@@ -25,6 +25,8 @@ import {
   getWilayahScopeInfo,
   normalizeKeinginanSekolah,
   getNumericAgeAts,
+  classifyKelasAts,
+  DAFTAR_15_KELAS_ATS,
   type JenjangAtsId,
 } from "@/lib/ats-helpers";
 import type { KomunitasWithMembership, DataAtsItem } from "@/types/database";
@@ -57,6 +59,7 @@ export function DataAtsClientView({
   const [selectedKeinginan, setSelectedKeinginan] = useState<"semua" | "Masih Ada" | "Tidak Ada">("semua");
   const [selectedAlasan, setSelectedAlasan] = useState<string>("semua");
   const [selectedAge, setSelectedAge] = useState<number | null>(null);
+  const [selectedKelasAts, setSelectedKelasAts] = useState<string | null>(null);
   const [selectedGender, setSelectedGender] = useState<"semua" | "L" | "P">("semua");
   const [statusFilter, setStatusFilter] = useState<"semua" | "approved" | "pending">("semua");
   const [isListExpanded, setIsListExpanded] = useState<boolean>(false);
@@ -101,6 +104,10 @@ export function DataAtsClientView({
     const matchesAge =
       selectedAge === null || getNumericAgeAts(c) === selectedAge;
 
+    const matchesKelasAts =
+      selectedKelasAts === null ||
+      classifyKelasAts(c.jenjang_asal || undefined, c.kelas_terakhir || undefined) === selectedKelasAts;
+
     const rawGender = (c.jenis_kelamin || "").trim().toUpperCase();
     const matchesGender =
       selectedGender === "semua" ||
@@ -116,6 +123,7 @@ export function DataAtsClientView({
       matchesKeinginan &&
       matchesAlasan &&
       matchesAge &&
+      matchesKelasAts &&
       matchesGender &&
       matchesStatus
     );
@@ -146,6 +154,7 @@ export function DataAtsClientView({
       setSelectedKeinginan("semua");
       setSelectedAlasan("semua");
       setSelectedAge(null);
+      setSelectedKelasAts(null);
       setSelectedGender("semua");
       setSearchQuery("");
       setIsListExpanded(true);
@@ -190,6 +199,11 @@ export function DataAtsClientView({
     setIsListExpanded(true);
   };
 
+  const handleSelectKelasAts = (kelasKey: string | null) => {
+    setSelectedKelasAts((prev) => (prev === kelasKey ? null : kelasKey));
+    setIsListExpanded(true);
+  };
+
   const handleSelectKeinginan = (keinginan: "semua" | "Masih Ada" | "Tidak Ada") => {
     setSelectedKeinginan((prev) => (prev === keinginan ? "semua" : keinginan));
     setIsListExpanded(true);
@@ -217,6 +231,7 @@ export function DataAtsClientView({
     setSelectedKeinginan("semua");
     setSelectedAlasan("semua");
     setSelectedAge(null);
+    setSelectedKelasAts(null);
     setSelectedGender("semua");
     setStatusFilter("semua");
     setSearchQuery("");
@@ -235,6 +250,7 @@ export function DataAtsClientView({
 
   const filterDetails = [
     selectedAge !== null ? `Usia: ${selectedAge} Tahun` : null,
+    selectedKelasAts !== null ? `Kelas: ${DAFTAR_15_KELAS_ATS.find((k) => k.key === selectedKelasAts)?.label || selectedKelasAts}` : null,
     selectedJenjang !== "semua" ? `Jenjang: ${selectedJenjang.toUpperCase()}` : null,
     selectedKeinginan !== "semua" ? `Keinginan: ${selectedKeinginan}` : null,
     selectedAlasan !== "semua" ? `Alasan: ${selectedAlasan}` : null,
@@ -410,9 +426,11 @@ export function DataAtsClientView({
           search: searchQuery,
           age: selectedAge,
           gender: selectedGender,
+          kelasAts: selectedKelasAts,
         }}
         onSelectJenjang={handleSelectJenjang}
         onSelectAge={handleSelectAge}
+        onSelectKelasAts={handleSelectKelasAts}
         onSelectKeinginan={handleSelectKeinginan}
         onSelectAlasan={handleSelectAlasan}
         onSelectGender={handleSelectGender}
