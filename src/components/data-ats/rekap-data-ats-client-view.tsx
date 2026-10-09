@@ -575,38 +575,167 @@ export function RekapDataAtsClientView({
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {/* 6.1 Jenjang Sekolah Asal */}
+            {/* 6.1 Diagram Batang: Jenjang Sekolah Asal / Kelas Terakhir ATS */}
             <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-4 shadow-xs">
               <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
                 <div className="flex items-center gap-2">
                   <School className="h-5 w-5 text-indigo-600" />
-                  <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-slate-100">
-                    Jenjang Sekolah Sebelumnya / Asal
-                  </h3>
+                  <div>
+                    <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-slate-100">
+                      Diagram Batang: Jenjang &amp; Kelas Terakhir ATS
+                    </h3>
+                    <p className="text-2xs text-slate-500 font-medium">
+                      Rincian tingkat kelas putus sekolah (DO), lulus tidak lanjut (LTM), dan belum sekolah
+                    </p>
+                  </div>
                 </div>
-                <span className="text-2xs font-bold text-slate-500 uppercase">
-                  Riwayat Pendidikan
+                <span className="text-xs font-black px-2.5 py-1 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 font-mono">
+                  15 Kategori
                 </span>
               </div>
 
-              <div className="space-y-3">
-                {jenjangEntries.map((jItem, idx) => (
-                  <div key={idx} className="space-y-1">
-                    <div className="flex items-center justify-between text-xs font-bold">
-                      <span className="text-slate-800 dark:text-slate-200">{jItem.label}</span>
-                      <span className="font-mono text-slate-900 dark:text-slate-100 font-black">
-                        {jItem.count} ({jItem.pct}%)
-                      </span>
+              {/* Bar Chart Grafik Batang 15 Kategori Kelas */}
+              {(() => {
+                const kelasList = currentWilayahData.kelasPerJenjang || [];
+                const maxKelasCount = Math.max(
+                  ...kelasList.map((k) => k.jumlah),
+                  1
+                );
+
+                // Hitung total ringkasan jenjang
+                const countBPB = kelasList.find((k) => k.key === "bpb")?.jumlah || 0;
+                const countSD = kelasList
+                  .filter((k) => k.jenjang === "SD")
+                  .reduce((acc, curr) => acc + curr.jumlah, 0);
+                const countSMP = kelasList
+                  .filter((k) => k.jenjang === "SMP")
+                  .reduce((acc, curr) => acc + curr.jumlah, 0);
+                const countSMA = kelasList
+                  .filter((k) => k.jenjang === "SMA")
+                  .reduce((acc, curr) => acc + curr.jumlah, 0);
+
+                return (
+                  <div className="space-y-4 pt-1">
+                    <div className="h-44 w-full flex items-end justify-between gap-0.5 sm:gap-1 px-1 pt-6 pb-2 border-b border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/30 rounded-2xl overflow-x-auto">
+                      {kelasList.map((kItem) => {
+                        const heightPct =
+                          kItem.jumlah > 0
+                            ? Math.max(12, Math.round((kItem.jumlah / maxKelasCount) * 100))
+                            : 0;
+
+                        // Color coding by Kategori / Jenjang
+                        let barGradient = "from-blue-600 to-indigo-500";
+                        let textBadge = "text-blue-700 dark:text-blue-400";
+
+                        if (kItem.jenjang === "SD") {
+                          if (kItem.key === "sd6_ltm") {
+                            barGradient = "from-amber-500 to-yellow-400";
+                            textBadge = "text-amber-700 dark:text-amber-400";
+                          } else {
+                            barGradient = "from-emerald-500 to-teal-400";
+                            textBadge = "text-emerald-700 dark:text-emerald-400";
+                          }
+                        } else if (kItem.jenjang === "SMP") {
+                          if (kItem.key === "smp9_ltm") {
+                            barGradient = "from-orange-500 to-amber-400";
+                            textBadge = "text-orange-700 dark:text-orange-400";
+                          } else {
+                            barGradient = "from-sky-500 to-blue-400";
+                            textBadge = "text-sky-700 dark:text-sky-400";
+                          }
+                        } else if (kItem.jenjang === "SMA") {
+                          barGradient = "from-purple-500 to-pink-500";
+                          textBadge = "text-purple-700 dark:text-purple-400";
+                        }
+
+                        return (
+                          <div
+                            key={kItem.key}
+                            className="flex-1 min-w-[20px] sm:min-w-0 flex flex-col items-center justify-end h-full group relative cursor-pointer"
+                            title={`${kItem.label}: ${kItem.jumlah} Anak (${kItem.persentase}%)`}
+                          >
+                            {/* Hover Tooltip Floating */}
+                            <div className="opacity-0 group-hover:opacity-100 transition-opacity absolute -top-8 bg-slate-900 text-white text-[10px] font-bold py-0.5 px-2 rounded-md shadow-lg pointer-events-none z-10 whitespace-nowrap">
+                              {kItem.label}: {kItem.jumlah} Anak ({kItem.persentase}%)
+                            </div>
+
+                            {/* Value Count Label on Top of Bar */}
+                            <span
+                              className={cn(
+                                "text-[9px] sm:text-[11px] font-black font-mono mb-1 transition-all",
+                                kItem.jumlah > 0 ? textBadge : "text-slate-300 dark:text-slate-600"
+                              )}
+                            >
+                              {kItem.jumlah}
+                            </span>
+
+                            {/* Bar Column */}
+                            <div className="w-full max-w-[24px] h-28 flex items-end justify-center">
+                              <div
+                                className={cn(
+                                  "w-full rounded-t-md transition-all duration-700 shadow-2xs group-hover:brightness-110",
+                                  kItem.jumlah > 0
+                                    ? `bg-gradient-to-t ${barGradient}`
+                                    : "bg-slate-200 dark:bg-slate-700/50 h-1"
+                                )}
+                                style={{
+                                  height: kItem.jumlah > 0 ? `${heightPct}%` : "4px",
+                                }}
+                              />
+                            </div>
+
+                            {/* Class X-Axis Label */}
+                            <div className="mt-2 text-center">
+                              <span className="text-[8px] sm:text-[9.5px] font-black text-slate-700 dark:text-slate-300 block font-mono whitespace-nowrap leading-tight">
+                                {kItem.shortLabel}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
-                    <div className="h-2.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                      <div
-                        className={cn("h-full rounded-full transition-all", jItem.color)}
-                        style={{ width: `${Math.max(2, jItem.pct)}%` }}
-                      />
+
+                    {/* Ringkasan Jenjang Asal Badges */}
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
+                      <div className="p-2 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 text-center">
+                        <span className="text-[9px] sm:text-[10px] font-extrabold text-blue-800 dark:text-blue-300 uppercase block truncate">
+                          Belum Sekolah
+                        </span>
+                        <div className="text-sm sm:text-base font-black font-mono text-blue-700 dark:text-blue-400">
+                          {countBPB} Anak
+                        </div>
+                      </div>
+
+                      <div className="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-center">
+                        <span className="text-[9px] sm:text-[10px] font-extrabold text-emerald-800 dark:text-emerald-300 uppercase block truncate">
+                          SD / MI (1–6)
+                        </span>
+                        <div className="text-sm sm:text-base font-black font-mono text-emerald-700 dark:text-emerald-400">
+                          {countSD} Anak
+                        </div>
+                      </div>
+
+                      <div className="p-2 rounded-xl bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 text-center">
+                        <span className="text-[9px] sm:text-[10px] font-extrabold text-sky-800 dark:text-sky-300 uppercase block truncate">
+                          SMP / MTs (7–9)
+                        </span>
+                        <div className="text-sm sm:text-base font-black font-mono text-sky-700 dark:text-sky-400">
+                          {countSMP} Anak
+                        </div>
+                      </div>
+
+                      <div className="p-2 rounded-xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 text-center">
+                        <span className="text-[9px] sm:text-[10px] font-extrabold text-purple-800 dark:text-purple-300 uppercase block truncate">
+                          SMA / SMK (10–12)
+                        </span>
+                        <div className="text-sm sm:text-base font-black font-mono text-purple-700 dark:text-purple-400">
+                          {countSMA} Anak
+                        </div>
+                      </div>
                     </div>
                   </div>
-                ))}
-              </div>
+                );
+              })()}
             </div>
 
             {/* 6.2 Diagram Batang: Distribusi Usia ATS (6 - 18 Tahun) */}

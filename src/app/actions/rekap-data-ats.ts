@@ -8,6 +8,7 @@ import {
   parseAtsDetails,
   normalizeKeinginanSekolah,
 } from "@/lib/data-anak-helpers";
+import { DAFTAR_15_KELAS_ATS, classifyKelasAts } from "@/lib/ats-helpers";
 import { checkUserRekapAdminAccess } from "@/app/actions/rekap-data-anak";
 
 export interface DaftarNamaAtsItem {
@@ -91,6 +92,15 @@ export interface AtsIntervensiRecommendation {
   lembagaTujuan: string;
 }
 
+export interface AtsKelasDetailItem {
+  key: string;
+  label: string;
+  shortLabel: string;
+  jenjang: "BPB" | "SD" | "SMP" | "SMA";
+  jumlah: number;
+  persentase: number;
+}
+
 export interface WilayahRekapAtsItem {
   id: string;
   nama: string;
@@ -102,6 +112,7 @@ export interface WilayahRekapAtsItem {
   keinginan: AtsKeinginanBreakdown;
   gender: AtsGenderBreakdown;
   jenjangAsal: AtsJenjangAsalBreakdown;
+  kelasPerJenjang: AtsKelasDetailItem[];
   usia: AtsAgeGroupBreakdown;
   usiaPerTahun: AtsAgePerYearItem[];
   alasanList: AtsReasonCount[];
@@ -305,6 +316,14 @@ function createEmptyRekapWilayahAts(id: string, nama: string, tingkat: "kota" | 
     keinginan: { masihAda: 0, tidakAda: 0 },
     gender: { lakiLaki: 0, perempuan: 0, total: 0 },
     jenjangAsal: { belumSekolah: 0, sdPutus: 0, sdLulus: 0, smpPutus: 0, smpLulus: 0, smaPutus: 0 },
+    kelasPerJenjang: DAFTAR_15_KELAS_ATS.map((k) => ({
+      key: k.key,
+      label: k.label,
+      shortLabel: k.shortLabel,
+      jenjang: k.jenjang,
+      jumlah: 0,
+      persentase: 0,
+    })),
     usia: { age7_12: 0, age12_15: 0, age15_18: 0, age18_24: 0, age25Plus: 0 },
     usiaPerTahun: USIA_LIST_6_18.map((u) => ({
       usia: u,
@@ -461,6 +480,16 @@ export async function getRekapDataAtsAction(): Promise<{
             targetKelItem.kategori.belumPernahSekolah += 1;
           }
 
+          // Kelas Detail 15 Kategori
+          const targetKelasKey = classifyKelasAts(
+            parsed.jenjangAsal || parsed.sekolahSebelumnya,
+            parsed.kelasTerakhir
+          );
+          const kObj = targetKelItem.kelasPerJenjang.find((k) => k.key === targetKelasKey);
+          if (kObj) {
+            kObj.jumlah += 1;
+          }
+
           // Usia Kelompok
           if (age <= 12) targetKelItem.usia.age7_12 += 1;
           else if (age <= 15) targetKelItem.usia.age12_15 += 1;
@@ -488,6 +517,9 @@ export async function getRekapDataAtsAction(): Promise<{
 
     // Hitung persentase & urutkan alasan kelurahan
     kelurahanMap.forEach((kelItem) => {
+      kelItem.kelasPerJenjang.forEach((k) => {
+        k.persentase = kelItem.totalAts > 0 ? Math.round((k.jumlah / kelItem.totalAts) * 100) : 0;
+      });
       kelItem.usiaPerTahun.forEach((u) => {
         u.persentase = kelItem.totalAts > 0 ? Math.round((u.jumlah / kelItem.totalAts) * 100) : 0;
       });
@@ -529,6 +561,14 @@ export async function getRekapDataAtsAction(): Promise<{
         kecItem.jenjangAsal.smpLulus += kel.jenjangAsal.smpLulus;
         kecItem.jenjangAsal.smaPutus += kel.jenjangAsal.smaPutus;
 
+        // Kelas Detail
+        kel.kelasPerJenjang.forEach((k) => {
+          const kecK = kecItem.kelasPerJenjang.find((x) => x.key === k.key);
+          if (kecK) {
+            kecK.jumlah += k.jumlah;
+          }
+        });
+
         // Usia Kelompok
         kecItem.usia.age7_12 += kel.usia.age7_12;
         kecItem.usia.age12_15 += kel.usia.age12_15;
@@ -560,6 +600,10 @@ export async function getRekapDataAtsAction(): Promise<{
 
       kecItem.persenInginSekolah = kecItem.totalAts > 0 ? Math.round((kecItem.keinginan.masihAda / kecItem.totalAts) * 100) : 0;
       kecItem.persenPutusSekolah = kecItem.totalAts > 0 ? Math.round((kecItem.kategori.putusSekolah / kecItem.totalAts) * 100) : 0;
+
+      kecItem.kelasPerJenjang.forEach((k) => {
+        k.persentase = kecItem.totalAts > 0 ? Math.round((k.jumlah / kecItem.totalAts) * 100) : 0;
+      });
 
       kecItem.usiaPerTahun.forEach((u) => {
         u.persentase = kecItem.totalAts > 0 ? Math.round((u.jumlah / kecItem.totalAts) * 100) : 0;
@@ -601,6 +645,13 @@ export async function getRekapDataAtsAction(): Promise<{
       kotaItem.jenjangAsal.smpLulus += kec.jenjangAsal.smpLulus;
       kotaItem.jenjangAsal.smaPutus += kec.jenjangAsal.smaPutus;
 
+      kec.kelasPerJenjang.forEach((k) => {
+        const kotaK = kotaItem.kelasPerJenjang.find((x) => x.key === k.key);
+        if (kotaK) {
+          kotaK.jumlah += k.jumlah;
+        }
+      });
+
       kotaItem.usia.age7_12 += kec.usia.age7_12;
       kotaItem.usia.age12_15 += kec.usia.age12_15;
       kotaItem.usia.age15_18 += kec.usia.age15_18;
@@ -628,6 +679,10 @@ export async function getRekapDataAtsAction(): Promise<{
 
     kotaItem.persenInginSekolah = kotaItem.totalAts > 0 ? Math.round((kotaItem.keinginan.masihAda / kotaItem.totalAts) * 100) : 0;
     kotaItem.persenPutusSekolah = kotaItem.totalAts > 0 ? Math.round((kotaItem.kategori.putusSekolah / kotaItem.totalAts) * 100) : 0;
+
+    kotaItem.kelasPerJenjang.forEach((k) => {
+      k.persentase = kotaItem.totalAts > 0 ? Math.round((k.jumlah / kotaItem.totalAts) * 100) : 0;
+    });
 
     kotaItem.usiaPerTahun.forEach((u) => {
       u.persentase = kotaItem.totalAts > 0 ? Math.round((u.jumlah / kotaItem.totalAts) * 100) : 0;

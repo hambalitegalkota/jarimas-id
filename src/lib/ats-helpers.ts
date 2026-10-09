@@ -309,3 +309,106 @@ export function normalizeKeinginanSekolah(val?: string | null): "Masih Ada" | "T
   return "Masih Ada";
 }
 
+export const DAFTAR_15_KELAS_ATS = [
+  { key: "bpb", label: "Belum Pernah Bersekolah", shortLabel: "BPB", jenjang: "BPB" as const },
+  { key: "sd1_do", label: "Kelas 1 SD DO", shortLabel: "1 DO", jenjang: "SD" as const },
+  { key: "sd2_do", label: "Kelas 2 SD DO", shortLabel: "2 DO", jenjang: "SD" as const },
+  { key: "sd3_do", label: "Kelas 3 SD DO", shortLabel: "3 DO", jenjang: "SD" as const },
+  { key: "sd4_do", label: "Kelas 4 SD DO", shortLabel: "4 DO", jenjang: "SD" as const },
+  { key: "sd5_do", label: "Kelas 5 SD DO", shortLabel: "5 DO", jenjang: "SD" as const },
+  { key: "sd6_do", label: "Kelas 6 SD DO", shortLabel: "6 DO", jenjang: "SD" as const },
+  { key: "sd6_ltm", label: "Kelas 6 SD LTM", shortLabel: "6 LTM", jenjang: "SD" as const },
+  { key: "smp7_do", label: "Kelas 7 SMP DO", shortLabel: "7 DO", jenjang: "SMP" as const },
+  { key: "smp8_do", label: "Kelas 8 SMP DO", shortLabel: "8 DO", jenjang: "SMP" as const },
+  { key: "smp9_do", label: "Kelas 9 SMP DO", shortLabel: "9 DO", jenjang: "SMP" as const },
+  { key: "smp9_ltm", label: "Kelas 9 SMP LTM", shortLabel: "9 LTM", jenjang: "SMP" as const },
+  { key: "sma10_do", label: "Kelas 10 SMA DO", shortLabel: "10 DO", jenjang: "SMA" as const },
+  { key: "sma11_do", label: "Kelas 11 SMA DO", shortLabel: "11 DO", jenjang: "SMA" as const },
+  { key: "sma12_do", label: "Kelas 12 SMA DO", shortLabel: "12 DO", jenjang: "SMA" as const },
+] as const;
+
+export function classifyKelasAts(rawAsal?: string, rawKelas?: string): string {
+  const k = (rawKelas || "").trim().toLowerCase();
+  const a = (rawAsal || "").trim().toLowerCase();
+  const comb = `${k} ${a}`.toLowerCase();
+
+  // 1. Belum Pernah Bersekolah (BPB)
+  if (
+    comb.includes("belum") ||
+    comb.includes("tidak pernah") ||
+    comb.includes("bpb") ||
+    comb.includes("bps")
+  ) {
+    return "bpb";
+  }
+
+  // 2. SMA / SMK / MA / Paket C (Kelas 10, 11, 12 DO)
+  if (comb.includes("kelas 12") || comb.includes("kls 12") || comb.includes("12 do") || comb.includes("kelas xii")) {
+    return "sma12_do";
+  }
+  if (comb.includes("kelas 11") || comb.includes("kls 11") || comb.includes("11 do") || comb.includes("kelas xi")) {
+    return "sma11_do";
+  }
+  if (comb.includes("kelas 10") || comb.includes("kls 10") || comb.includes("10 do") || comb.includes("kelas x")) {
+    return "sma10_do";
+  }
+
+  // 3. SMP / MTs / Paket B (Kelas 7, 8, 9 DO & 9 LTM)
+  if (
+    comb.includes("9 ltm") ||
+    (comb.includes("kelas 9") && (comb.includes("ltm") || comb.includes("lulus") || comb.includes("tidak lanjut"))) ||
+    ((comb.includes("smp") || comb.includes("mts") || comb.includes("paket b")) && (comb.includes("ltm") || comb.includes("lulus") || comb.includes("tidak lanjut")))
+  ) {
+    return "smp9_ltm";
+  }
+  if (comb.includes("kelas 9") || comb.includes("kls 9") || comb.includes("9 do") || comb.includes("kelas ix")) {
+    return "smp9_do";
+  }
+  if (comb.includes("kelas 8") || comb.includes("kls 8") || comb.includes("8 do") || comb.includes("kelas viii")) {
+    return "smp8_do";
+  }
+  if (comb.includes("kelas 7") || comb.includes("kls 7") || comb.includes("7 do") || comb.includes("kelas vii")) {
+    return "smp7_do";
+  }
+
+  // 4. SD / MI / Paket A (Kelas 1 s/d 6 DO & 6 LTM)
+  if (
+    comb.includes("6 ltm") ||
+    (comb.includes("kelas 6") && (comb.includes("ltm") || comb.includes("lulus") || comb.includes("tidak lanjut"))) ||
+    ((comb.includes("sd") || comb.includes("mi") || comb.includes("paket a")) && (comb.includes("ltm") || comb.includes("lulus") || comb.includes("tidak lanjut")))
+  ) {
+    return "sd6_ltm";
+  }
+  if (comb.includes("kelas 6") || comb.includes("kls 6") || comb.includes("6 do") || comb.includes("kelas vi")) {
+    return "sd6_do";
+  }
+  if (comb.includes("kelas 5") || comb.includes("kls 5") || comb.includes("5 do") || comb.includes("kelas v")) {
+    return "sd5_do";
+  }
+  if (comb.includes("kelas 4") || comb.includes("kls 4") || comb.includes("4 do") || comb.includes("kelas iv")) {
+    return "sd4_do";
+  }
+  if (comb.includes("kelas 3") || comb.includes("kls 3") || comb.includes("3 do") || comb.includes("kelas iii")) {
+    return "sd3_do";
+  }
+  if (comb.includes("kelas 2") || comb.includes("kls 2") || comb.includes("2 do") || comb.includes("kelas ii")) {
+    return "sd2_do";
+  }
+  if (comb.includes("kelas 1") || comb.includes("kls 1") || comb.includes("1 do") || comb.includes("kelas i")) {
+    return "sd1_do";
+  }
+
+  // Fallback jika hanya jenjang asal yang terisi (tanpa kelas spesifik)
+  if (comb.includes("sma") || comb.includes("smk") || comb.includes("paket c")) {
+    return "sma10_do";
+  }
+  if (comb.includes("smp") || comb.includes("mts") || comb.includes("paket b")) {
+    return "smp7_do";
+  }
+  if (comb.includes("sd") || comb.includes("mi") || comb.includes("paket a")) {
+    return "sd6_do";
+  }
+
+  return "bpb";
+}
+
