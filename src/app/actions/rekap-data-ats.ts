@@ -70,6 +70,13 @@ export interface AtsAgeGroupBreakdown {
   age25Plus: number; // 25 >
 }
 
+export interface AtsAgePerYearItem {
+  usia: number;
+  label: string;
+  jumlah: number;
+  persentase: number;
+}
+
 export interface AtsReasonCount {
   alasan: string;
   jumlah: number;
@@ -96,6 +103,7 @@ export interface WilayahRekapAtsItem {
   gender: AtsGenderBreakdown;
   jenjangAsal: AtsJenjangAsalBreakdown;
   usia: AtsAgeGroupBreakdown;
+  usiaPerTahun: AtsAgePerYearItem[];
   alasanList: AtsReasonCount[];
   rekomendasiList: AtsIntervensiRecommendation[];
   
@@ -284,6 +292,8 @@ function normalizeReasonAts(raw?: string | null): string {
   return "Lainnya";
 }
 
+const USIA_LIST_6_18 = [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18];
+
 function createEmptyRekapWilayahAts(id: string, nama: string, tingkat: "kota" | "kecamatan" | "kelurahan", kecamatan?: string): WilayahRekapAtsItem {
   return {
     id,
@@ -296,6 +306,12 @@ function createEmptyRekapWilayahAts(id: string, nama: string, tingkat: "kota" | 
     gender: { lakiLaki: 0, perempuan: 0, total: 0 },
     jenjangAsal: { belumSekolah: 0, sdPutus: 0, sdLulus: 0, smpPutus: 0, smpLulus: 0, smaPutus: 0 },
     usia: { age7_12: 0, age12_15: 0, age15_18: 0, age18_24: 0, age25Plus: 0 },
+    usiaPerTahun: USIA_LIST_6_18.map((u) => ({
+      usia: u,
+      label: `${u} Tahun`,
+      jumlah: 0,
+      persentase: 0,
+    })),
     alasanList: DAFTAR_ALASAN_ATS.map((alasan) => ({ alasan, jumlah: 0, persentase: 0 })),
     rekomendasiList: [
       {
@@ -445,12 +461,18 @@ export async function getRekapDataAtsAction(): Promise<{
             targetKelItem.kategori.belumPernahSekolah += 1;
           }
 
-          // Usia
+          // Usia Kelompok
           if (age <= 12) targetKelItem.usia.age7_12 += 1;
           else if (age <= 15) targetKelItem.usia.age12_15 += 1;
           else if (age <= 18) targetKelItem.usia.age15_18 += 1;
           else if (age <= 24) targetKelItem.usia.age18_24 += 1;
           else targetKelItem.usia.age25Plus += 1;
+
+          // Usia per Tahun (6 - 18)
+          const targetUsiaItem = targetKelItem.usiaPerTahun.find((u) => u.usia === age);
+          if (targetUsiaItem) {
+            targetUsiaItem.jumlah += 1;
+          }
 
           // Alasan
           const normReason = normalizeReasonAts(parsed.alasan);
@@ -460,13 +482,20 @@ export async function getRekapDataAtsAction(): Promise<{
           // Recalculate percentages
           targetKelItem.persenInginSekolah = Math.round((targetKelItem.keinginan.masihAda / targetKelItem.totalAts) * 100);
           targetKelItem.persenPutusSekolah = Math.round((targetKelItem.kategori.putusSekolah / targetKelItem.totalAts) * 100);
-
-          targetKelItem.alasanList.forEach((r) => {
-            r.persentase = targetKelItem!.totalAts > 0 ? Math.round((r.jumlah / targetKelItem!.totalAts) * 100) : 0;
-          });
         }
       }
     }
+
+    // Hitung persentase & urutkan alasan kelurahan
+    kelurahanMap.forEach((kelItem) => {
+      kelItem.usiaPerTahun.forEach((u) => {
+        u.persentase = kelItem.totalAts > 0 ? Math.round((u.jumlah / kelItem.totalAts) * 100) : 0;
+      });
+      kelItem.alasanList.forEach((r) => {
+        r.persentase = kelItem.totalAts > 0 ? Math.round((r.jumlah / kelItem.totalAts) * 100) : 0;
+      });
+      kelItem.alasanList.sort((a, b) => b.jumlah - a.jumlah);
+    });
 
     const kelurahanList = Array.from(kelurahanMap.values()).sort((a, b) => a.nama.localeCompare(b.nama));
 
@@ -500,16 +529,27 @@ export async function getRekapDataAtsAction(): Promise<{
         kecItem.jenjangAsal.smpLulus += kel.jenjangAsal.smpLulus;
         kecItem.jenjangAsal.smaPutus += kel.jenjangAsal.smaPutus;
 
-        // Usia
+        // Usia Kelompok
         kecItem.usia.age7_12 += kel.usia.age7_12;
         kecItem.usia.age12_15 += kel.usia.age12_15;
         kecItem.usia.age15_18 += kel.usia.age15_18;
         kecItem.usia.age18_24 += kel.usia.age18_24;
         kecItem.usia.age25Plus += kel.usia.age25Plus;
 
-        // Alasan
-        kel.alasanList.forEach((r, idx) => {
-          kecItem.alasanList[idx].jumlah += r.jumlah;
+        // Usia per Tahun (6 - 18)
+        kel.usiaPerTahun.forEach((u) => {
+          const kecUsia = kecItem.usiaPerTahun.find((x) => x.usia === u.usia);
+          if (kecUsia) {
+            kecUsia.jumlah += u.jumlah;
+          }
+        });
+
+        // Alasan (cari by alasan name agar aman dari urutan)
+        kel.alasanList.forEach((r) => {
+          const kecReason = kecItem.alasanList.find((x) => x.alasan === r.alasan);
+          if (kecReason) {
+            kecReason.jumlah += r.jumlah;
+          }
         });
 
         // Rekomendasi
@@ -521,9 +561,14 @@ export async function getRekapDataAtsAction(): Promise<{
       kecItem.persenInginSekolah = kecItem.totalAts > 0 ? Math.round((kecItem.keinginan.masihAda / kecItem.totalAts) * 100) : 0;
       kecItem.persenPutusSekolah = kecItem.totalAts > 0 ? Math.round((kecItem.kategori.putusSekolah / kecItem.totalAts) * 100) : 0;
 
+      kecItem.usiaPerTahun.forEach((u) => {
+        u.persentase = kecItem.totalAts > 0 ? Math.round((u.jumlah / kecItem.totalAts) * 100) : 0;
+      });
+
       kecItem.alasanList.forEach((r) => {
         r.persentase = kecItem.totalAts > 0 ? Math.round((r.jumlah / kecItem.totalAts) * 100) : 0;
       });
+      kecItem.alasanList.sort((a, b) => b.jumlah - a.jumlah);
 
       kecItem.rekomendasiList.forEach((rek) => {
         rek.persentase = kecItem.totalAts > 0 ? Math.round((rek.jumlahTarget / kecItem.totalAts) * 100) : 0;
@@ -562,8 +607,18 @@ export async function getRekapDataAtsAction(): Promise<{
       kotaItem.usia.age18_24 += kec.usia.age18_24;
       kotaItem.usia.age25Plus += kec.usia.age25Plus;
 
-      kec.alasanList.forEach((r, idx) => {
-        kotaItem.alasanList[idx].jumlah += r.jumlah;
+      kec.usiaPerTahun.forEach((u) => {
+        const kotaUsia = kotaItem.usiaPerTahun.find((x) => x.usia === u.usia);
+        if (kotaUsia) {
+          kotaUsia.jumlah += u.jumlah;
+        }
+      });
+
+      kec.alasanList.forEach((r) => {
+        const kotaReason = kotaItem.alasanList.find((x) => x.alasan === r.alasan);
+        if (kotaReason) {
+          kotaReason.jumlah += r.jumlah;
+        }
       });
 
       kec.rekomendasiList.forEach((rek, idx) => {
@@ -574,9 +629,14 @@ export async function getRekapDataAtsAction(): Promise<{
     kotaItem.persenInginSekolah = kotaItem.totalAts > 0 ? Math.round((kotaItem.keinginan.masihAda / kotaItem.totalAts) * 100) : 0;
     kotaItem.persenPutusSekolah = kotaItem.totalAts > 0 ? Math.round((kotaItem.kategori.putusSekolah / kotaItem.totalAts) * 100) : 0;
 
+    kotaItem.usiaPerTahun.forEach((u) => {
+      u.persentase = kotaItem.totalAts > 0 ? Math.round((u.jumlah / kotaItem.totalAts) * 100) : 0;
+    });
+
     kotaItem.alasanList.forEach((r) => {
       r.persentase = kotaItem.totalAts > 0 ? Math.round((r.jumlah / kotaItem.totalAts) * 100) : 0;
     });
+    kotaItem.alasanList.sort((a, b) => b.jumlah - a.jumlah);
 
     kotaItem.rekomendasiList.forEach((rek) => {
       rek.persentase = kotaItem.totalAts > 0 ? Math.round((rek.jumlahTarget / kotaItem.totalAts) * 100) : 0;

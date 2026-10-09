@@ -571,7 +571,7 @@ export function KomunitasProfilCharts({
                 </p>
               </div>
             ) : (
-              <div className="space-y-3 pt-1">
+              <div className="space-y-4 pt-1">
                 <div className="grid grid-cols-2 gap-2.5">
                   <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-center space-y-0.5">
                     <span className="text-[11px] font-bold text-emerald-800 block">TERVERIFIKASI RT</span>
@@ -599,6 +599,110 @@ export function KomunitasProfilCharts({
                     />
                   </div>
                 </div>
+
+                {/* Diagram Batang Usia ATS 6 - 18 Tahun */}
+                {(() => {
+                  const USIA_LIST_6_18 = [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18];
+                  const ageCountMap: Record<number, number> = {};
+                  USIA_LIST_6_18.forEach((u) => { ageCountMap[u] = 0; });
+
+                  dataAtsList.forEach((ats) => {
+                    const age = ats.usia ? parseInt(String(ats.usia), 10) : 14;
+                    if (ageCountMap[age] !== undefined) {
+                      ageCountMap[age]++;
+                    }
+                  });
+
+                  const maxAgeVal = Math.max(...Object.values(ageCountMap), 1);
+
+                  return (
+                    <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3.5 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-slate-800">
+                          Diagram Batang: Usia ATS (6 – 18 Tahun)
+                        </span>
+                        <span className="text-[10px] font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200">
+                          6–18 Thn
+                        </span>
+                      </div>
+
+                      <div className="h-28 w-full flex items-end justify-between gap-1 px-1 pt-4 pb-1 border-b border-slate-200 bg-white rounded-lg">
+                        {USIA_LIST_6_18.map((u) => {
+                          const count = ageCountMap[u] || 0;
+                          const heightPct = count > 0 ? Math.max(12, Math.round((count / maxAgeVal) * 100)) : 0;
+                          let barColor = "bg-emerald-500";
+                          if (u >= 13 && u <= 15) barColor = "bg-sky-500";
+                          else if (u >= 16) barColor = "bg-amber-500";
+
+                          return (
+                            <div key={u} className="flex-1 flex flex-col items-center justify-end h-full">
+                              <span className="text-[9px] font-bold font-mono text-slate-700 mb-0.5">
+                                {count > 0 ? count : ""}
+                              </span>
+                              <div className="w-full max-w-[18px] h-16 flex items-end justify-center">
+                                <div
+                                  className={cn("w-full rounded-t-sm transition-all duration-500", count > 0 ? barColor : "bg-slate-100 h-1")}
+                                  style={{ height: count > 0 ? `${heightPct}%` : "2px" }}
+                                />
+                              </div>
+                              <span className="text-[9px] font-bold text-slate-600 font-mono mt-1">
+                                {u}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* Diagram Batang Alasan Terbanyak ke Tersedikit */}
+                {(() => {
+                  const reasonMap: Record<string, number> = {};
+                  dataAtsList.forEach((ats) => {
+                    const r = (ats.alasan_tidak_sekolah || "Lainnya").trim();
+                    reasonMap[r] = (reasonMap[r] || 0) + 1;
+                  });
+                  const sorted = Object.entries(reasonMap)
+                    .map(([alasan, count]) => ({ alasan, count }))
+                    .sort((a, b) => b.count - a.count);
+                  const maxVal = Math.max(...sorted.map((s) => s.count), 1);
+
+                  return (
+                    <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3.5 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-slate-800">
+                          Diagram Batang: Alasan ATS (Terbanyak ke Tersedikit)
+                        </span>
+                        <span className="text-[10px] font-bold text-rose-700 bg-rose-50 px-2 py-0.5 rounded border border-rose-200">
+                          Peringkat
+                        </span>
+                      </div>
+
+                      <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+                        {sorted.map((item, idx) => {
+                          const widthPct = item.count > 0 ? Math.max(5, Math.round((item.count / maxVal) * 100)) : 0;
+                          return (
+                            <div key={item.alasan} className="space-y-1 bg-white p-2 rounded-lg border border-slate-200">
+                              <div className="flex items-center justify-between text-xs font-bold">
+                                <span className="text-slate-800 truncate max-w-[70%]">
+                                  <span className="text-rose-600 mr-1">#{idx + 1}</span> {item.alasan}
+                                </span>
+                                <span className="text-slate-900 font-mono font-black">{item.count} Anak</span>
+                              </div>
+                              <div className="h-2 w-full rounded-full bg-slate-100 overflow-hidden">
+                                <div
+                                  className={cn("h-full rounded-full transition-all duration-500", idx === 0 ? "bg-amber-500" : "bg-rose-500")}
+                                  style={{ width: `${widthPct}%` }}
+                                />
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })()}
 
                 <div className="text-xs text-slate-600 bg-amber-50/70 p-2.5 rounded-xl border border-amber-200 flex items-center justify-between">
                   <span>💡 Rekomendasi intervensi disalurkan ke PKBM / SKB Kota Tegal.</span>

@@ -609,89 +609,240 @@ export function RekapDataAtsClientView({
               </div>
             </div>
 
-            {/* 6.2 Distribusi Kelompok Usia ATS */}
+            {/* 6.2 Diagram Batang: Distribusi Usia ATS (6 - 18 Tahun) */}
             <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-4 shadow-xs">
               <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
                 <div className="flex items-center gap-2">
-                  <Users className="h-5 w-5 text-indigo-600" />
-                  <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-slate-100">
-                    Distribusi Kelompok Usia ATS
-                  </h3>
+                  <BarChart3 className="h-5 w-5 text-indigo-600" />
+                  <div>
+                    <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-slate-100">
+                      Diagram Batang: Usia ATS (6 – 18 Tahun)
+                    </h3>
+                    <p className="text-2xs text-slate-500 font-medium">
+                      Jumlah anak tidak sekolah pada setiap kelompok umur usia wajib belajar
+                    </p>
+                  </div>
                 </div>
-                <span className="text-2xs font-bold text-slate-500 uppercase">
-                  Rentang 6 - 25+ Tahun
+                <span className="text-xs font-black px-2.5 py-1 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 font-mono">
+                  6–18 Thn
                 </span>
               </div>
 
-              <div className="space-y-3">
-                {[
-                  { label: "6 - 12 Tahun", count: currentWilayahData.usia.age7_12, color: "bg-blue-500" },
-                  { label: "13 - 15 Tahun", count: currentWilayahData.usia.age12_15, color: "bg-indigo-600" },
-                  { label: "16 - 18 Tahun", count: currentWilayahData.usia.age15_18, color: "bg-teal-600" },
-                  { label: "19 - 24 Tahun", count: currentWilayahData.usia.age18_24, color: "bg-amber-500" },
-                  { label: "25 >", count: currentWilayahData.usia.age25Plus, color: "bg-rose-500" },
-                ].map((uRow, idx) => {
-                  const pct = Math.round((uRow.count / (currentWilayahData.totalAts || 1)) * 100);
-                  return (
-                    <div key={idx} className="space-y-1">
-                      <div className="flex items-center justify-between text-xs font-bold">
-                        <span className="text-slate-700 dark:text-slate-300">{uRow.label}</span>
-                        <span className="font-mono text-slate-900 dark:text-slate-100">
-                          {uRow.count} ({pct}%)
+              {/* Bar Chart Grafik Batang 6-18 Tahun */}
+              {(() => {
+                const maxAgeCount = Math.max(
+                  ...(currentWilayahData.usiaPerTahun || []).map((u) => u.jumlah),
+                  1
+                );
+                return (
+                  <div className="space-y-4 pt-1">
+                    <div className="h-44 w-full flex items-end justify-between gap-1 sm:gap-2 px-1 pt-6 pb-2 border-b border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/30 rounded-2xl">
+                      {(currentWilayahData.usiaPerTahun || []).map((uItem) => {
+                        const heightPct =
+                          uItem.jumlah > 0
+                            ? Math.max(12, Math.round((uItem.jumlah / maxAgeCount) * 100))
+                            : 0;
+
+                        // Color coding by Jenjang Wajib Belajar
+                        let barGradient = "from-emerald-500 to-teal-400";
+                        let textBadge = "text-emerald-700 dark:text-emerald-400";
+                        if (uItem.usia >= 13 && uItem.usia <= 15) {
+                          barGradient = "from-sky-500 to-blue-400";
+                          textBadge = "text-sky-700 dark:text-sky-400";
+                        } else if (uItem.usia >= 16) {
+                          barGradient = "from-amber-500 to-orange-400";
+                          textBadge = "text-amber-700 dark:text-amber-400";
+                        }
+
+                        return (
+                          <div
+                            key={uItem.usia}
+                            className="flex-1 flex flex-col items-center justify-end h-full group relative cursor-pointer"
+                            title={`Usia ${uItem.usia} Tahun: ${uItem.jumlah} Anak (${uItem.persentase}%)`}
+                          >
+                            {/* Hover Tooltip Floating */}
+                            <div className="opacity-0 group-hover:opacity-100 transition-opacity absolute -top-8 bg-slate-900 text-white text-[10px] font-bold py-0.5 px-2 rounded-md shadow-lg pointer-events-none z-10 whitespace-nowrap">
+                              {uItem.usia} Thn: {uItem.jumlah} Anak ({uItem.persentase}%)
+                            </div>
+
+                            {/* Value Count Label on Top of Bar */}
+                            <span
+                              className={cn(
+                                "text-[10px] sm:text-xs font-black font-mono mb-1 transition-all",
+                                uItem.jumlah > 0 ? textBadge : "text-slate-300 dark:text-slate-600"
+                              )}
+                            >
+                              {uItem.jumlah}
+                            </span>
+
+                            {/* Bar Column */}
+                            <div className="w-full max-w-[28px] h-28 flex items-end justify-center">
+                              <div
+                                className={cn(
+                                  "w-full rounded-t-md transition-all duration-700 shadow-2xs group-hover:brightness-110",
+                                  uItem.jumlah > 0
+                                    ? `bg-gradient-to-t ${barGradient}`
+                                    : "bg-slate-200 dark:bg-slate-700/50 h-1"
+                                )}
+                                style={{
+                                  height: uItem.jumlah > 0 ? `${heightPct}%` : "4px",
+                                }}
+                              />
+                            </div>
+
+                            {/* Age X-Axis Label */}
+                            <div className="mt-2 text-center">
+                              <span className="text-[10px] sm:text-xs font-black text-slate-700 dark:text-slate-300 block font-mono">
+                                {uItem.usia}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Ringkasan Jenjang Usia Badges */}
+                    <div className="grid grid-cols-3 gap-2 pt-1">
+                      <div className="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-center">
+                        <span className="text-[10px] font-extrabold text-emerald-800 dark:text-emerald-300 uppercase block">
+                          SD (6–12 Thn)
                         </span>
+                        <div className="text-base sm:text-lg font-black font-mono text-emerald-700 dark:text-emerald-400">
+                          {currentWilayahData.usia.age7_12} Anak
+                        </div>
                       </div>
-                      <div className="h-2.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                        <div
-                          className={cn("h-full rounded-full transition-all", uRow.color)}
-                          style={{ width: `${Math.max(2, pct)}%` }}
-                        />
+
+                      <div className="p-2.5 rounded-xl bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 text-center">
+                        <span className="text-[10px] font-extrabold text-sky-800 dark:text-sky-300 uppercase block">
+                          SMP (13–15 Thn)
+                        </span>
+                        <div className="text-base sm:text-lg font-black font-mono text-sky-700 dark:text-sky-400">
+                          {currentWilayahData.usia.age12_15} Anak
+                        </div>
+                      </div>
+
+                      <div className="p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-center">
+                        <span className="text-[10px] font-extrabold text-amber-800 dark:text-amber-300 uppercase block">
+                          SMA (16–18 Thn)
+                        </span>
+                        <div className="text-base sm:text-lg font-black font-mono text-amber-700 dark:text-amber-400">
+                          {currentWilayahData.usia.age15_18} Anak
+                        </div>
                       </div>
                     </div>
-                  );
-                })}
-              </div>
+                  </div>
+                );
+              })()}
             </div>
           </div>
 
-          {/* 6.3 Analisis Alasan Utama Tidak Sekolah */}
+          {/* 6.3 Diagram Batang Faktor Penyebab & Alasan Tidak Sekolah (Urutan Terbanyak s/d Tersedikit) */}
           <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-4 shadow-xs">
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-3">
               <div className="flex items-center gap-2">
                 <AlertCircle className="h-5 w-5 text-rose-600" />
                 <div>
                   <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-slate-100">
-                    Faktor Penyebab &amp; Alasan Tidak Sekolah
+                    Diagram Batang: Alasan Menjadi ATS (Urutan Terbanyak ke Tersedikit)
                   </h3>
                   <p className="text-xs text-slate-500 font-medium">
-                    Hasil pendataan alasan tidak bersekolah oleh Kader RT/RW dan Kelurahan
+                    Grafik peringkat faktor pemicu anak tidak bersekolah dari data pendataan lapangan
                   </p>
                 </div>
               </div>
+              <span className="text-xs font-black px-2.5 py-1 rounded-xl bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 font-mono self-start sm:self-center">
+                Ranking Terbanyak
+              </span>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
-              {currentWilayahData.alasanList.map((r, idx) => (
-                <div
-                  key={idx}
-                  className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 space-y-1.5"
-                >
-                  <div className="flex items-start justify-between gap-2 text-xs font-bold">
-                    <span className="text-slate-800 dark:text-slate-200 leading-snug">
-                      {idx + 1}. {r.alasan}
-                    </span>
-                    <span className="font-mono text-rose-700 dark:text-rose-400 shrink-0 font-black">
-                      {r.jumlah} anak ({r.persentase}%)
-                    </span>
-                  </div>
-                  <div className="h-2 w-full bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-rose-600 rounded-full transition-all"
-                      style={{ width: `${Math.max(2, r.persentase)}%` }}
-                    />
-                  </div>
+            {(() => {
+              const sortedReasons = [...(currentWilayahData.alasanList || [])].sort(
+                (a, b) => b.jumlah - a.jumlah
+              );
+              const maxReasonCount = Math.max(...sortedReasons.map((r) => r.jumlah), 1);
+
+              return (
+                <div className="space-y-3 pt-1">
+                  {sortedReasons.map((r, idx) => {
+                    const isTop1 = idx === 0 && r.jumlah > 0;
+                    const isTop2 = idx === 1 && r.jumlah > 0;
+                    const isTop3 = idx === 2 && r.jumlah > 0;
+                    const barWidthPct =
+                      r.jumlah > 0
+                        ? Math.max(4, Math.round((r.jumlah / maxReasonCount) * 100))
+                        : 0;
+
+                    return (
+                      <div
+                        key={idx}
+                        className={cn(
+                          "p-3.5 rounded-2xl border transition-all space-y-2",
+                          isTop1
+                            ? "bg-amber-50/80 dark:bg-amber-950/30 border-amber-300 dark:border-amber-700/60 shadow-xs"
+                            : isTop2 || isTop3
+                            ? "bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700"
+                            : "bg-slate-50/50 dark:bg-slate-800/30 border-slate-100 dark:border-slate-800/80"
+                        )}
+                      >
+                        <div className="flex items-center justify-between gap-3 text-xs font-bold">
+                          <div className="flex items-center gap-2 min-w-0">
+                            {/* Ranking Badge */}
+                            <span
+                              className={cn(
+                                "flex items-center justify-center h-5 w-5 rounded-full text-2xs font-black shrink-0 font-mono",
+                                isTop1
+                                  ? "bg-amber-500 text-white shadow-2xs"
+                                  : isTop2
+                                  ? "bg-slate-400 text-white"
+                                  : isTop3
+                                  ? "bg-amber-700 text-white"
+                                  : "bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400"
+                              )}
+                            >
+                              #{idx + 1}
+                            </span>
+                            <span className="text-slate-800 dark:text-slate-200 font-extrabold truncate">
+                              {r.alasan}
+                            </span>
+                          </div>
+
+                          <div className="flex items-center gap-2 shrink-0">
+                            <span className="font-mono text-slate-900 dark:text-slate-100 font-black text-xs sm:text-sm">
+                              {r.jumlah} Anak
+                            </span>
+                            <span
+                              className={cn(
+                                "text-2xs font-bold px-2 py-0.5 rounded-lg font-mono",
+                                isTop1
+                                  ? "bg-amber-200 dark:bg-amber-900/60 text-amber-900 dark:text-amber-200"
+                                  : "bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300"
+                              )}
+                            >
+                              {r.persentase}%
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Diagram Batang Horizontal */}
+                        <div className="h-2.5 w-full bg-slate-200 dark:bg-slate-700/60 rounded-full overflow-hidden">
+                          <div
+                            className={cn(
+                              "h-full rounded-full transition-all duration-700",
+                              isTop1
+                                ? "bg-gradient-to-r from-amber-500 to-rose-500"
+                                : isTop2 || isTop3
+                                ? "bg-gradient-to-r from-rose-500 to-amber-500"
+                                : "bg-gradient-to-r from-slate-400 to-slate-500 dark:from-slate-500 dark:to-slate-600"
+                            )}
+                            style={{ width: `${barWidthPct}%` }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-              ))}
-            </div>
+              );
+            })()}
           </div>
         </div>
       )}

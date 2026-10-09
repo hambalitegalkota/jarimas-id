@@ -135,6 +135,52 @@ export function getJenjangAts(ats: {
 }
 
 /**
+ * Mendapatkan umur numerik anak ATS secara konsisten dari field usia atau tanggal_lahir.
+ */
+export function getNumericAgeAts(ats: {
+  tanggal_lahir?: string | null;
+  usia?: string | number | null;
+}): number {
+  const rawAge = String(ats.usia || "").trim();
+  if (rawAge === "24>" || rawAge === ">24" || rawAge.includes(">")) {
+    return 25;
+  }
+  if (/^\d+$/.test(rawAge)) {
+    return parseInt(rawAge, 10);
+  }
+  if (ats.tanggal_lahir) {
+    const str = ats.tanggal_lahir.trim();
+    if (str === "24>" || str === ">24" || str.includes(">")) {
+      return 25;
+    }
+    if (/^\d+$/.test(str)) {
+      return parseInt(str, 10);
+    }
+    try {
+      let birthDate: Date;
+      if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {
+        const [y, m, d] = str.split("-").map(Number);
+        birthDate = new Date(y, m - 1, d);
+      } else {
+        birthDate = new Date(str);
+      }
+      if (!isNaN(birthDate.getTime())) {
+        const now = new Date();
+        let years = now.getFullYear() - birthDate.getFullYear();
+        const months = now.getMonth() - birthDate.getMonth();
+        if (months < 0 || (months === 0 && now.getDate() < birthDate.getDate())) {
+          years--;
+        }
+        return Math.max(4, Math.min(30, years));
+      }
+    } catch {
+      // ignore
+    }
+  }
+  return 14;
+}
+
+/**
  * Informasi cakupan wilayah berjenjang (RT, RW, Kelurahan, Kecamatan)
  */
 export function getWilayahScopeInfo(komunitas: KomunitasWithMembership | null | undefined | Record<string, unknown>): {
