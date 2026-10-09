@@ -18,10 +18,10 @@ export interface JenjangAtsInfo {
 export const JENJANG_ATS_CONFIG: Record<Exclude<JenjangAtsId, "semua">, JenjangAtsInfo> = {
   sd: {
     id: "sd",
-    label: "SD / MI / Paket A (7–12 Thn)",
+    label: "SD / MI / Paket A (6–12 Thn)",
     shortLabel: "SD / Paket A",
     badgeLabel: "SD / Paket A",
-    rentangUsia: "Usia 7–12 Tahun",
+    rentangUsia: "Usia 6–12 Tahun",
     colorClass: "text-emerald-400",
     bgClass: "bg-emerald-500/10",
     borderClass: "border-emerald-500/30",

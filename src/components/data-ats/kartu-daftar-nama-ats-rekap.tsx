@@ -59,7 +59,7 @@ export function KartuDaftarNamaAtsRekap({
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [dataList, setDataList] = useState<DaftarNamaAtsItem[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [kategoriFilter, setKategoriFilter] = useState<"semua" | "do" | "ltm" | "bps">("semua");
+  const [kategoriFilter, setKategoriFilter] = useState<"semua" | "do" | "ltm" | "bpb" | "bps">("semua");
   const [keinginanFilter, setKeinginanFilter] = useState<"semua" | "ingin" | "tidak">("semua");
   const [genderFilter, setGenderFilter] = useState<"semua" | "L" | "P">("semua");
   const [isPending, startTransition] = useTransition();
@@ -95,7 +95,12 @@ export function KartuDaftarNamaAtsRekap({
       if (kategoriFilter === "ltm" && !item.kategoriAts.includes("LTM") && !item.kategoriAts.includes("Lulus")) {
         return false;
       }
-      if (kategoriFilter === "bps" && !item.kategoriAts.includes("BPS") && !item.kategoriAts.includes("Belum")) {
+      if (
+        (kategoriFilter === "bpb" || kategoriFilter === "bps") &&
+        !item.kategoriAts.includes("BPB") &&
+        !item.kategoriAts.includes("BPS") &&
+        !item.kategoriAts.includes("Belum")
+      ) {
         return false;
       }
 
@@ -157,7 +162,7 @@ export function KartuDaftarNamaAtsRekap({
               Daftar Anak Tidak Sekolah (ATS)
             </h3>
             <p className="text-xs text-slate-600 dark:text-slate-400 font-medium">
-              Akses identitas lengkap, kategori ATS (Putus Sekolah/LTM/BPS), kesiapan sekolah kembali, kontak orang tua, dan alamat {totalAts} anak di {currentWilayahNama}.
+              Akses identitas lengkap, kategori ATS (Putus Sekolah/LTM/BPB), kesiapan sekolah kembali, kontak orang tua, dan alamat {totalAts} anak di {currentWilayahNama}.
             </p>
           </div>
         </div>
@@ -221,7 +226,7 @@ export function KartuDaftarNamaAtsRekap({
                 <option value="semua">Semua Kategori ATS</option>
                 <option value="do">Putus Sekolah (DO)</option>
                 <option value="ltm">Lulus Tdk Lanjut (LTM)</option>
-                <option value="bps">Belum Pernah Sekolah (BPS)</option>
+                <option value="bpb">Belum Pernah Bersekolah (BPB)</option>
               </select>
 
               {/* Filter Keinginan Sekolah */}

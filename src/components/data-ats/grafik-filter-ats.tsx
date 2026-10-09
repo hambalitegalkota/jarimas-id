@@ -49,7 +49,7 @@ export function GrafikFilterAts({
     return [
       {
         id: "sd",
-        label: "SD / Paket A (7-12 Thn)",
+        label: "SD / Paket A (6-12 Thn)",
         count: counts.sd,
         pct: totalFiltered > 0 ? Math.round((counts.sd / totalFiltered) * 100) : 0,
         color: "bg-emerald-500",

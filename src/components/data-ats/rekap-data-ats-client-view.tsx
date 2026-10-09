@@ -108,12 +108,12 @@ export function RekapDataAtsClientView({
       },
       {
         key: "belumPernahSekolah",
-        label: "Belum Pernah Sekolah (BPS)",
+        label: "Belum Pernah Bersekolah (BPB)",
         count: k.belumPernahSekolah,
         pct: Math.round((k.belumPernahSekolah / total) * 100),
         color: "bg-blue-500",
         textColor: "text-blue-700 dark:text-blue-400",
-        desc: "Usia wajib sekolah yang belum pernah mengenyam bangku sekolah",
+        desc: "Usia wajib sekolah (6–18 tahun) yang belum pernah mengenyam bangku sekolah",
       },
     ];
   }, [currentWilayahData]);
@@ -402,7 +402,7 @@ export function RekapDataAtsClientView({
                     Total: {currentWilayahData.totalAts} Anak
                   </span>
                   <span className="text-2xs font-bold text-slate-500 uppercase hidden sm:inline">
-                    DO • LTM • BPS
+                    DO • LTM • BPB
                   </span>
                 </div>
               </div>
@@ -619,16 +619,16 @@ export function RekapDataAtsClientView({
                   </h3>
                 </div>
                 <span className="text-2xs font-bold text-slate-500 uppercase">
-                  Rentang 7 - 25+ Tahun
+                  Rentang 6 - 25+ Tahun
                 </span>
               </div>
 
               <div className="space-y-3">
                 {[
-                  { label: "7 - 12 Tahun", count: currentWilayahData.usia.age7_12, color: "bg-blue-500" },
-                  { label: "12 - 15 Tahun", count: currentWilayahData.usia.age12_15, color: "bg-indigo-600" },
-                  { label: "15 - 18 Tahun", count: currentWilayahData.usia.age15_18, color: "bg-teal-600" },
-                  { label: "18 - 24 Tahun", count: currentWilayahData.usia.age18_24, color: "bg-amber-500" },
+                  { label: "6 - 12 Tahun", count: currentWilayahData.usia.age7_12, color: "bg-blue-500" },
+                  { label: "13 - 15 Tahun", count: currentWilayahData.usia.age12_15, color: "bg-indigo-600" },
+                  { label: "16 - 18 Tahun", count: currentWilayahData.usia.age15_18, color: "bg-teal-600" },
+                  { label: "19 - 24 Tahun", count: currentWilayahData.usia.age18_24, color: "bg-amber-500" },
                   { label: "25 >", count: currentWilayahData.usia.age25Plus, color: "bg-rose-500" },
                 ].map((uRow, idx) => {
                   const pct = Math.round((uRow.count / (currentWilayahData.totalAts || 1)) * 100);
@@ -712,7 +712,7 @@ export function RekapDataAtsClientView({
                   Tabel Rekapitulasi Berjenjang ATS per Kelurahan
                 </h2>
                 <p className="text-xs text-slate-500 font-medium">
-                  Rincian komparatif jumlah ATS, kategori DO/LTM/BPS, dan kesiapan sekolah kembali se-Kota Tegal
+                  Rincian komparatif jumlah ATS, kategori DO/LTM/BPB, dan kesiapan sekolah kembali se-Kota Tegal
                 </p>
               </div>
             </div>
@@ -741,7 +741,7 @@ export function RekapDataAtsClientView({
                     <th className="py-3.5 px-4 text-center">Total ATS</th>
                     <th className="py-3.5 px-3 text-center">Putus Sekolah (DO)</th>
                     <th className="py-3.5 px-3 text-center">Lulus Tdk Lanjut (LTM)</th>
-                    <th className="py-3.5 px-3 text-center">Belum Pernah (BPS)</th>
+                    <th className="py-3.5 px-3 text-center">Belum Pernah (BPB)</th>
                     <th className="py-3.5 px-4 text-center">Ingin Sekolah Kembali</th>
                     <th className="py-3.5 px-3 text-center">Laki-laki</th>
                     <th className="py-3.5 px-3 text-center">Perempuan</th>

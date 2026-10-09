@@ -19,7 +19,7 @@ export interface DaftarNamaAtsItem {
   namaOrangtua: string;
   nomorHp: string;
   tinggalBersama: string;
-  kategoriAts: "Putus Sekolah (DO)" | "Lulus Tidak Melanjutkan (LTM)" | "Belum Pernah Sekolah (BPS)";
+  kategoriAts: "Putus Sekolah (DO)" | "Lulus Tidak Melanjutkan (LTM)" | "Belum Pernah Bersekolah (BPB)";
   keinginanSekolah: "Masih Ada" | "Tidak Ada";
   alasanTidakSekolah: string;
   sekolahSebelumnya: string;
@@ -39,7 +39,7 @@ export interface DaftarNamaAtsItem {
 export interface AtsCategoryBreakdown {
   putusSekolah: number; // DO (Drop Out)
   lulusTidakLanjut: number; // LTM
-  belumPernahSekolah: number; // BPS
+  belumPernahSekolah: number; // BPB (Belum Pernah Bersekolah)
 }
 
 export interface AtsKeinginanBreakdown {
@@ -59,14 +59,14 @@ export interface AtsJenjangAsalBreakdown {
   sdLulus: number;      // SD / MI / Paket A Lulus Tidak Melanjutkan
   smpPutus: number;     // SMP / MTs / Paket B Putus Sekolah / DO
   smpLulus: number;     // SMP / MTs / Paket B Lulus Tidak Melanjutkan
-  smaPutus: number;     // SMA / SMK / MA / Paket C Putus Sekolah
+  smaPutus: number;     // SMA / SMK / MA / Paket C Putus Sekolah / DO
 }
 
 export interface AtsAgeGroupBreakdown {
-  age7_12: number;   // 7 - 12 Tahun
-  age12_15: number;  // 12 - 15 Tahun
-  age15_18: number;  // 15 - 18 Tahun
-  age18_24: number;  // 18 - 24 Tahun
+  age7_12: number;   // 6 - 12 Tahun (SD / Paket A)
+  age12_15: number;  // 13 - 15 Tahun (SMP / Paket B)
+  age15_18: number;  // 16 - 18 Tahun (SMA / Paket C)
+  age18_24: number;  // 19 - 24 Tahun (Lanjutan / PKBM)
   age25Plus: number; // 25 >
 }
 
@@ -112,58 +112,63 @@ export interface RekapDataAtsResult {
 }
 
 const DAFTAR_ALASAN_ATS = [
-  "Tidak ada biaya / Keterbatasan ekonomi",
-  "Bekerja / Membantu ekonomi orang tua",
-  "Melanjutkan ke Pondok Pesantren atau Lainnya",
-  "Terkendala jarak sekolah & sistem zonasi",
-  "Kurang minat / motivasi belajar rendah",
-  "Masalah kesehatan / disabilitas",
-  "Menikah dini / alasan keluarga",
-  "Korban perundungan (bullying) di sekolah",
-  "Pengaruh lingkungan sekitar",
-  "Alasan lainnya",
+  "Tidak mau sekolah lagi",
+  "Tidak ada biaya",
+  "Melanjutkan ke Pondok Pesantren atau lainnya",
+  "Pindah Domisili",
+  "Masalah Kesehatan / Disabilitas",
+  "Bekerja",
+  "Pengaruh lingkungan",
+  "Menikah",
+  "Korban perundungan",
+  "Anak bermasalah dengan hukum",
+  "Beranggapan sekolah tidak penting",
+  "Cukup dengan pendidikan yang sekarang",
+  "Data tidak ditemukan",
+  "Lainnya",
 ];
 
 function classifyJenjangAsal(rawAsal?: string, rawKelas?: string): {
   key: keyof AtsJenjangAsalBreakdown;
   label: string;
-  kategori: "Putus Sekolah (DO)" | "Lulus Tidak Melanjutkan (LTM)" | "Belum Pernah Sekolah (BPS)";
+  kategori: "Putus Sekolah (DO)" | "Lulus Tidak Melanjutkan (LTM)" | "Belum Pernah Bersekolah (BPB)";
 } {
   const s = `${rawAsal || ""} ${rawKelas || ""}`.toLowerCase();
 
-  // 1. Belum pernah bersekolah
-  if (
-    s.includes("belum") ||
-    s.includes("bps") ||
-    s.includes("paud") ||
-    s.includes("tk") ||
-    s.includes("tidak pernah")
-  ) {
-    return {
-      key: "belumSekolah",
-      label: "Belum Pernah Bersekolah",
-      kategori: "Belum Pernah Sekolah (BPS)",
-    };
-  }
+  // 1. Cek Lulus Tidak Melanjutkan (LTM)
+  const isLtm =
+    s.includes("lulus") ||
+    s.includes("ltm") ||
+    s.includes("tidak lanjut") ||
+    s.includes("tidak melanjutkan") ||
+    s.includes("tamat");
 
-  // 2. SMA / SMK / MA / Paket C Putus Sekolah
+  // 2. Cek SMA / SMK / MA / Paket C
   if (
     s.includes("sma") ||
     s.includes("smk") ||
-    s.includes("ma") ||
+    s.includes("ma ") ||
+    s.includes("/ma") ||
     s.includes("paket c") ||
     s.includes("kelas 10") ||
     s.includes("kelas 11") ||
     s.includes("kelas 12")
   ) {
+    if (isLtm) {
+      return {
+        key: "smaPutus",
+        label: "SMA / SMK / MA / Paket C Lulus Tidak Melanjutkan",
+        kategori: "Lulus Tidak Melanjutkan (LTM)",
+      };
+    }
     return {
       key: "smaPutus",
-      label: "SMA / SMK / MA / Paket C Putus Sekolah",
+      label: "SMA / SMK / MA / Paket C Putus Sekolah / DO",
       kategori: "Putus Sekolah (DO)",
     };
   }
 
-  // 3. SMP / MTs / Paket B
+  // 3. Cek SMP / MTs / Paket B
   if (
     s.includes("smp") ||
     s.includes("mts") ||
@@ -172,12 +177,7 @@ function classifyJenjangAsal(rawAsal?: string, rawKelas?: string): {
     s.includes("kelas 8") ||
     s.includes("kelas 9")
   ) {
-    if (
-      s.includes("lulus") ||
-      s.includes("ltm") ||
-      s.includes("tidak lanjut") ||
-      s.includes("tidak melanjutkan")
-    ) {
+    if (isLtm) {
       return {
         key: "smpLulus",
         label: "SMP / MTs / Paket B Lulus Tidak Melanjutkan",
@@ -191,10 +191,11 @@ function classifyJenjangAsal(rawAsal?: string, rawKelas?: string): {
     };
   }
 
-  // 4. SD / MI / Paket A
+  // 4. Cek SD / MI / Paket A
   if (
     s.includes("sd") ||
-    s.includes("mi") ||
+    s.includes("mi ") ||
+    s.includes("/mi") ||
     s.includes("paket a") ||
     s.includes("kelas 1") ||
     s.includes("kelas 2") ||
@@ -203,12 +204,7 @@ function classifyJenjangAsal(rawAsal?: string, rawKelas?: string): {
     s.includes("kelas 5") ||
     s.includes("kelas 6")
   ) {
-    if (
-      s.includes("lulus") ||
-      s.includes("ltm") ||
-      s.includes("tidak lanjut") ||
-      s.includes("tidak melanjutkan")
-    ) {
+    if (isLtm) {
       return {
         key: "sdLulus",
         label: "SD / MI / Paket A Lulus Tidak Melanjutkan",
@@ -222,10 +218,11 @@ function classifyJenjangAsal(rawAsal?: string, rawKelas?: string): {
     };
   }
 
+  // 5. Belum pernah bersekolah (BPB)
   return {
     key: "belumSekolah",
     label: "Belum Pernah Bersekolah",
-    kategori: "Belum Pernah Sekolah (BPS)",
+    kategori: "Belum Pernah Bersekolah (BPB)",
   };
 }
 
@@ -243,35 +240,48 @@ function calculateAgeFromBirthDate(birthDateStr?: string | null): number {
 }
 
 function normalizeReasonAts(raw?: string | null): string {
-  const s = (raw || "").toLowerCase();
+  const s = (raw || "").trim().toLowerCase();
+  if (!s) return "Lainnya";
   if (s.includes("pesantren") || s.includes("pondok") || s.includes("ponpes")) {
-    return "Melanjutkan ke Pondok Pesantren atau Lainnya";
+    return "Melanjutkan ke Pondok Pesantren atau lainnya";
   }
   if (s.includes("biaya") || s.includes("ekonomi") || s.includes("dana") || s.includes("uang")) {
-    return "Tidak ada biaya / Keterbatasan ekonomi";
+    return "Tidak ada biaya";
   }
-  if (s.includes("bekerja") || s.includes("bantu") || s.includes("orang tua") || s.includes("nafkah")) {
-    return "Bekerja / Membantu ekonomi orang tua";
+  if (s.includes("mau") || s.includes("minat") || s.includes("motivasi") || s.includes("malas")) {
+    return "Tidak mau sekolah lagi";
   }
-  if (s.includes("zonasi") || s.includes("jarak") || s.includes("jauh") || s.includes("transportasi")) {
-    return "Terkendala jarak sekolah & sistem zonasi";
+  if (s.includes("bekerja") || s.includes("kerja") || s.includes("bantu") || s.includes("nafkah")) {
+    return "Bekerja";
   }
-  if (s.includes("minat") || s.includes("motivasi") || s.includes("malas") || s.includes("tidak mau")) {
-    return "Kurang minat / motivasi belajar rendah";
+  if (s.includes("pindah") || s.includes("domisili")) {
+    return "Pindah Domisili";
   }
-  if (s.includes("kesehatan") || s.includes("sakit") || s.includes("disabilitas") || s.includes("khusus")) {
-    return "Masalah kesehatan / disabilitas";
+  if (s.includes("kesehatan") || s.includes("sakit") || s.includes("disabilitas") || s.includes("fisik") || s.includes("mental")) {
+    return "Masalah Kesehatan / Disabilitas";
   }
-  if (s.includes("nikah") || s.includes("menikah") || s.includes("hamil") || s.includes("keluarga")) {
-    return "Menikah dini / alasan keluarga";
+  if (s.includes("lingkungan") || s.includes("teman") || s.includes("pergaulan")) {
+    return "Pengaruh lingkungan";
+  }
+  if (s.includes("nikah") || s.includes("menikah") || s.includes("kawin") || s.includes("hamil")) {
+    return "Menikah";
   }
   if (s.includes("bully") || s.includes("perundungan") || s.includes("diejek") || s.includes("takut")) {
-    return "Korban perundungan (bullying) di sekolah";
+    return "Korban perundungan";
   }
-  if (s.includes("lingkungan") || s.includes("teman") || s.includes("pengaruh")) {
-    return "Pengaruh lingkungan sekitar";
+  if (s.includes("hukum") || s.includes("penjara") || s.includes("polisi")) {
+    return "Anak bermasalah dengan hukum";
   }
-  return "Tidak ada biaya / Keterbatasan ekonomi";
+  if (s.includes("tidak penting") || s.includes("percuma")) {
+    return "Beranggapan sekolah tidak penting";
+  }
+  if (s.includes("cukup")) {
+    return "Cukup dengan pendidikan yang sekarang";
+  }
+  if (s.includes("tidak ditemukan") || s.includes("bukan warga") || s.includes("meninggal")) {
+    return "Data tidak ditemukan";
+  }
+  return "Lainnya";
 }
 
 function createEmptyRekapWilayahAts(id: string, nama: string, tingkat: "kota" | "kecamatan" | "kelurahan", kecamatan?: string): WilayahRekapAtsItem {
@@ -693,7 +703,7 @@ export async function getDaftarNamaAtsRekapAction(params: {
         }
       }
 
-      // Kategori ATS: Putus Sekolah / Lulus Tidak Melanjutkan / Belum Pernah Sekolah
+      // Kategori ATS: Putus Sekolah / Lulus Tidak Melanjutkan / Belum Pernah Bersekolah
       const classified = classifyJenjangAsal(
         parsed.jenjangAsal || parsed.sekolahSebelumnya,
         parsed.kelasTerakhir
@@ -704,7 +714,12 @@ export async function getDaftarNamaAtsRekapAction(params: {
       if (params.kategoriAts && params.kategoriAts !== "semua") {
         if (params.kategoriAts === "do" && kategoriAts !== "Putus Sekolah (DO)") continue;
         if (params.kategoriAts === "ltm" && kategoriAts !== "Lulus Tidak Melanjutkan (LTM)") continue;
-        if (params.kategoriAts === "bps" && kategoriAts !== "Belum Pernah Sekolah (BPS)") continue;
+        if (
+          (params.kategoriAts === "bpb" || params.kategoriAts === "bps") &&
+          kategoriAts !== "Belum Pernah Bersekolah (BPB)"
+        ) {
+          continue;
+        }
       }
 
       // Filter Keinginan

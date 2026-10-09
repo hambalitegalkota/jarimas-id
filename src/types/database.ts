@@ -256,8 +256,9 @@ export const JENJANG_SEKOLAH_ASAL_OPTIONS = [
 
 export type JenjangSekolahAsalOption = typeof JENJANG_SEKOLAH_ASAL_OPTIONS[number];
 
-// Opsi Usia khusus Data ATS (dimulai dari usia wajib belajar 7 tahun ke atas s/d 25>)
+// Opsi Usia khusus Data ATS (Rentang usia ATS 6 s/d 18 tahun + lanjutan PKBM/Dewasa)
 export const USIA_ATS_OPTIONS = [
+  "6",
   "7",
   "8",
   "9",
@@ -327,22 +328,22 @@ export interface DataAnakItem {
 }
 
 export const ALASAN_TIDAK_SEKOLAH_LIST = [
-  "Data tidak ditemukan",
-  "Pindah domisili",
-  "Bukan Warga RT",
-  "Meninggal dunia",
   "Tidak mau sekolah lagi",
   "Tidak ada biaya",
+  "Melanjutkan ke Pondok Pesantren atau lainnya",
+  "Pindah Domisili",
+  "Masalah Kesehatan / Disabilitas",
   "Bekerja",
+  "Pengaruh lingkungan",
   "Menikah",
-  "Masalah kesehatan / disabilitas",
   "Korban perundungan",
   "Anak bermasalah dengan hukum",
   "Anak orang tua bermasalah dengan hukum",
   "Beranggapan sekolah tidak penting",
   "Cukup dengan pendidikan yang sekarang",
-  "Pengaruh lingkungan",
-  "Melanjutkan ke Pondok Pesantren atau Lainnya",
+  "Data tidak ditemukan",
+  "Bukan Warga RT",
+  "Meninggal dunia",
   "Lainnya",
 ] as const;
 
