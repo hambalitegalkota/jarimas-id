@@ -34,7 +34,8 @@ import { getMarketProduk } from "@/app/actions/market";
 import { getKabarFeed } from "@/app/actions/kabar";
 import { getRekapitulasiWargaKomunitas } from "@/app/actions/pertemanan";
 import { WargaRekapitulasiSection } from "@/components/warga/warga-rekapitulasi-section";
-import { formatRupiah } from "@/lib/utils";
+import { KabarCard } from "@/components/kabar/kabar-card";
+import { formatRupiah, isSuperAdmin as checkIsSuperAdmin } from "@/lib/utils";
 import { SHOW_MARKET_FEATURE } from "@/components/layout/bottom-nav";
 import type { MarketProduk } from "@/types/database";
 
@@ -107,6 +108,12 @@ export default async function HomePage() {
       .single();
     profile = data;
   }
+
+  const isSuperAdmin = checkIsSuperAdmin({
+    ...profile,
+    email: profile?.email || user?.email,
+    id: user?.id,
+  });
 
   // 2. Ambil data produk resmi dari Jarimas Market
   const { data: dbProducts } = await getMarketProduk();
@@ -356,7 +363,56 @@ export default async function HomePage() {
       </section>
 
       {/* ========================================================= */}
-      {/* 4. 6 PILAR UTAMA EKOSISTEM JARIMAS-ID (BENTO GRID)        */}
+      {/* 4. FORUM & KABAR WARGA TERKINI (POSISI TERBUKA)           */}
+      {/* ========================================================= */}
+      {topKabarItems.length > 0 && (
+        <section className="space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-bold">
+                  <MessageSquare className="h-4 w-4" />
+                </div>
+                <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
+                  Kabar &amp; Pengumuman Terkini
+                </h2>
+                <span className="rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-800 px-2.5 py-0.5 text-2xs font-extrabold text-emerald-800 dark:text-emerald-300 font-mono">
+                  {recentKabar?.length || topKabarItems.length} Kabar
+                </span>
+                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 px-2 py-0.5 text-[10px] font-bold">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  Langsung Terbuka
+                </span>
+              </div>
+              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400">
+                Informasi publik seputar jadwal posyandu, nutrisi gizi balita, dan kabar lingkungan RT/RW se-Kota Tegal.
+              </p>
+            </div>
+
+            <Link
+              href="/kabar"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-800 text-xs font-bold text-emerald-800 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-all shrink-0 shadow-2xs self-start sm:self-auto"
+            >
+              <span>Lihat Semua Kabar</span>
+              <ChevronRight className="h-4 w-4" />
+            </Link>
+          </div>
+
+          <div className="space-y-4">
+            {topKabarItems.map((item) => (
+              <KabarCard
+                key={item.id}
+                kabar={item}
+                currentUserId={user?.id}
+                isSuperAdmin={isSuperAdmin}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* ========================================================= */}
+      {/* 5. 6 PILAR UTAMA EKOSISTEM JARIMAS-ID (BENTO GRID)        */}
       {/* ========================================================= */}
       <section className="space-y-4">
         <div className="space-y-1 text-center sm:text-left">
@@ -802,63 +858,6 @@ export default async function HomePage() {
                 </p>
               </div>
             </div>
-          </div>
-        </section>
-      )}
-
-      {/* ========================================================= */}
-      {/* 7. KABAR WARGA FEED PREVIEW                               */}
-      {/* ========================================================= */}
-      {topKabarItems.length > 0 && (
-        <section className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <MessageSquare className="h-5 w-5 text-emerald-600" />
-              <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-slate-100">
-                Kabar &amp; Pengumuman Terkini
-              </h2>
-            </div>
-            <Link
-              href="/kabar"
-              className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 dark:text-emerald-400 hover:underline"
-            >
-              <span>Lihat Semua Kabar</span>
-              <ChevronRight className="h-3.5 w-3.5" />
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {topKabarItems.map((item) => (
-              <Link
-                key={item.id}
-                href="/kabar"
-                className="flex flex-col justify-between p-5 rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-emerald-500 transition-all shadow-2xs group"
-              >
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <span className="rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 px-2.5 py-0.5 text-[10px] font-bold">
-                      {item.komunitas?.nama || "Kabar Kota Tegal"}
-                    </span>
-                    <span className="text-[11px] text-slate-400 font-mono">
-                      {new Date(item.created_at).toLocaleDateString("id-ID", {
-                        day: "numeric",
-                        month: "short",
-                      })}
-                    </span>
-                  </div>
-                  <h3 className="line-clamp-2 text-sm sm:text-base font-bold text-slate-900 dark:text-slate-100 group-hover:text-emerald-700 transition-colors">
-                    {item.konten}
-                  </h3>
-                </div>
-
-                <div className="pt-3 mt-3 flex items-center justify-between text-xs text-slate-500 border-t border-slate-100 dark:border-slate-800 font-medium">
-                  <span>Oleh {item.profiles?.nama_lengkap || "Warga"}</span>
-                  <span className="text-emerald-700 font-bold group-hover:translate-x-0.5 transition-transform inline-flex items-center gap-0.5">
-                    Baca <ChevronRight className="h-3.5 w-3.5" />
-                  </span>
-                </div>
-              </Link>
-            ))}
           </div>
         </section>
       )}
