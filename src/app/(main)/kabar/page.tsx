@@ -20,7 +20,6 @@ import {
 import { createClient } from "@/utils/supabase/server";
 import { KabarCard } from "@/components/kabar/kabar-card";
 import { KabarFilter } from "@/components/kabar/kabar-filter";
-import { KabarMainTabs } from "@/components/kabar/kabar-main-tabs";
 import { PercakapanHubSection } from "@/components/kabar/percakapan-hub-section";
 import { DaftarWargaKabarSection } from "@/components/kabar/daftar-warga-kabar-section";
 import { CreateKabarModal } from "@/components/kabar/create-kabar-modal";
@@ -38,9 +37,18 @@ interface KabarPageProps {
 
 export default async function KabarPage({ searchParams }: KabarPageProps) {
   const resolvedParams = await searchParams;
-  const currentTab = resolvedParams.tab
-    ? (resolvedParams.tab as "kabar" | "percakapan" | "warga")
-    : null;
+  const rawTab = resolvedParams.tab;
+  const isExplicitlyClosed =
+    rawTab === "closed" ||
+    rawTab === "none" ||
+    rawTab === "sembunyi" ||
+    rawTab === "tutup";
+
+  const currentTab: "kabar" | "percakapan" | "warga" | null = isExplicitlyClosed
+    ? null
+    : rawTab === "percakapan" || rawTab === "warga"
+    ? rawTab
+    : "kabar";
   const currentSort = (resolvedParams.sort as SortingKabar) || "terbaru";
   const currentVisibility =
     (resolvedParams.visibility as "semua" | VisibilitasKabar) || "semua";
@@ -233,8 +241,8 @@ export default async function KabarPage({ searchParams }: KabarPageProps) {
               {/* Accordion Header / Trigger */}
               {isOpen ? (
                 <Link
-                  href="/kabar"
-                  title="Klik untuk menutup bagian ini"
+                  href={createTabUrl("closed")}
+                  title="Klik untuk menyembunyikan bagian ini"
                   className={`flex items-center justify-between gap-3 p-4 sm:p-5 rounded-2xl text-white ${cat.activeColorBg} shadow-sm cursor-pointer transition-all hover:opacity-95 group`}
                 >
                   <div className="flex items-center gap-3 sm:gap-4 min-w-0">
@@ -263,8 +271,8 @@ export default async function KabarPage({ searchParams }: KabarPageProps) {
                   </div>
 
                   <div className="flex items-center gap-2 shrink-0">
-                    <span className="hidden sm:inline-block text-xs font-bold text-white/90 group-hover:text-white transition-colors">
-                      Tutup Bagian
+                    <span className="text-xs font-bold text-white/90 group-hover:text-white transition-colors">
+                      Sembunyikan
                     </span>
                     <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-xl bg-white/20 flex items-center justify-center text-white backdrop-blur-xs group-hover:bg-white/30 transition-colors">
                       <ChevronDown className="h-5 w-5 transform rotate-180 transition-transform duration-300" />
@@ -380,6 +388,18 @@ export default async function KabarPage({ searchParams }: KabarPageProps) {
                       )}
                     </div>
                   )}
+
+                  {/* Tombol Sembunyikan Bagian di Bawah Konten */}
+                  <div className="flex justify-center pt-2 pb-1 border-t border-slate-200/60 dark:border-slate-800/60">
+                    <Link
+                      href={createTabUrl("closed")}
+                      title="Klik untuk menyembunyikan bagian ini"
+                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 bg-white hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-800 transition-all border border-slate-200 dark:border-slate-700 shadow-2xs cursor-pointer active:scale-98"
+                    >
+                      <ChevronDown className="h-3.5 w-3.5 transform rotate-180" />
+                      <span>Sembunyikan Bagian Ini</span>
+                    </Link>
+                  </div>
                 </div>
               )}
             </div>
