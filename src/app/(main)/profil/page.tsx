@@ -18,10 +18,12 @@ import {
 import { createClient } from "@/utils/supabase/server";
 import { logoutUser } from "@/app/actions/auth";
 import { getPendingApprovals } from "@/app/actions/admin";
+import { getRegisteredUsers } from "@/app/actions/pertemanan";
 import { ApprovalList } from "@/components/admin/approval-list";
 import { CleanupTestDataTool } from "@/components/admin/cleanup-test-data-tool";
 import { KomunitasManagementTools } from "@/components/admin/komunitas-management-tools";
 import { KecamatanMonitoringAccordion } from "@/components/admin/kecamatan-monitoring-accordion";
+import { SuperAdminWargaMonitoringTool } from "@/components/admin/super-admin-warga-monitoring-tool";
 import { formatPeranDisplay, isRoleAdmin, toValidUUID, isSuperAdmin as checkIsSuperAdmin } from "@/lib/utils";
 import { extractKomunitasMetadata } from "@/lib/admin-helpers";
 import { getWargaHierarchyChain, findKecamatanByKelurahan, slugify } from "@/lib/constants/tegal-data";
@@ -81,14 +83,23 @@ export default async function ProfilePage() {
     }
   }
 
-  // 3. Ambil data permohonan pending & komunitas user
-  const [pendingApprovalsResult, userJoinedResult] = await Promise.all([
+  // 3. Ambil data permohonan pending, komunitas user, dan daftar pengguna terdaftar
+  const [pendingApprovalsResult, userJoinedResult, registeredUsersResult] = await Promise.all([
     getPendingApprovals(),
     supabase
       .from("anggota_komunitas")
       .select("id, komunitas_id, peran, peran_diajukan, status, created_at")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false }),
+    isSuperAdmin
+      ? getRegisteredUsers()
+      : Promise.resolve({
+          isAuthenticated: true,
+          users: [],
+          totalCount: 0,
+          totalFriendsCount: 0,
+          totalPendingRequestsCount: 0,
+        }),
   ]);
 
   const pendingApprovals: PendingApprovalItem[] = pendingApprovalsResult.data || [];
@@ -427,6 +438,12 @@ export default async function ProfilePage() {
               Panel Kendali Super Admin
             </h2>
           </div>
+
+          {/* Monitoring Seluruh Pengguna & Warga Online Realtime */}
+          <SuperAdminWargaMonitoringTool
+            initialUsers={registeredUsersResult.users || []}
+            currentUserId={user.id}
+          />
 
           {/* Pembersih Data Uji Coba (Testing Clean-up) */}
           <CleanupTestDataTool />

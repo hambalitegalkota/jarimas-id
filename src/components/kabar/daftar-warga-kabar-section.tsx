@@ -38,6 +38,7 @@ export function DaftarWargaKabarSection({
   const { onlineUserIds } = useGlobalMessageNotification();
   const [users, setUsers] = useState<RegisteredUserItem[]>(initialUsers);
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState<"semua" | "online" | "teman" | "permintaan">("semua");
   const [selectedChatUser, setSelectedChatUser] = useState<RegisteredUserItem | null>(null);
   const [loadingActionUserId, setLoadingActionUserId] = useState<string | null>(null);
   const [actionFeedback, setActionFeedback] = useState<string | null>(null);
@@ -70,6 +71,11 @@ export function DaftarWargaKabarSection({
       return a.nama_lengkap.localeCompare(b.nama_lengkap, "id-ID");
     });
   };
+
+  // Kategori Online: Seluruh warga yang sedang online
+  const onlineCitizens = filterList(
+    users.filter((u) => u.id !== currentUserId && onlineUserIds.has(u.id))
+  );
 
   // Kategori 1: Teman Saya (Sudah berteman)
   const myFriends = filterList(
@@ -417,10 +423,101 @@ export function DaftarWargaKabarSection({
         </div>
       )}
 
+      {/* Quick Filter Tabs */}
+      <div className="flex items-center gap-2 flex-wrap">
+        <button
+          type="button"
+          onClick={() => setActiveTab("semua")}
+          className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            activeTab === "semua"
+              ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-xs"
+              : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200"
+          }`}
+        >
+          Semua Warga ({users.filter((u) => u.id !== currentUserId).length})
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab("online")}
+          className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            activeTab === "online"
+              ? "bg-emerald-600 text-white shadow-xs"
+              : "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 hover:bg-emerald-100"
+          }`}
+        >
+          <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+          <span>🟢 Sedang Online ({onlineCitizens.length})</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab("teman")}
+          className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            activeTab === "teman"
+              ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-xs"
+              : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200"
+          }`}
+        >
+          Teman Saya ({myFriends.length})
+        </button>
+
+        {(incomingRequests.length > 0 || outgoingRequests.length > 0) && (
+          <button
+            type="button"
+            onClick={() => setActiveTab("permintaan")}
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              activeTab === "permintaan"
+                ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-xs"
+                : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200"
+            }`}
+          >
+            Permintaan ({incomingRequests.length + outgoingRequests.length})
+          </button>
+        )}
+      </div>
+
+      {/* ========================================================= */}
+      {/* 0. BAGIAN: WARGA SEDANG ONLINE (JIKA TAB ONLINE AKTIF)     */}
+      {/* ========================================================= */}
+      {activeTab === "online" && (
+        <section className="space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-bold">
+                <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-ping" />
+              </div>
+              <h4 className="text-sm sm:text-base font-black text-slate-900 dark:text-slate-100">
+                Warga Sedang Online di Website Sekarang
+              </h4>
+            </div>
+            <span className="rounded-full bg-emerald-100 dark:bg-emerald-950/80 border border-emerald-300 dark:border-emerald-700 px-2.5 py-0.5 text-xs font-bold text-emerald-800 dark:text-emerald-300 font-mono">
+              {onlineCitizens.length} Online
+            </span>
+          </div>
+
+          {onlineCitizens.length === 0 ? (
+            <div className="p-8 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900 text-center space-y-1">
+              <p className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                Belum Ada Warga Lain yang Sedang Aktif
+              </p>
+              <p className="text-[11px] text-slate-500">
+                Status online akan langsung muncul secara otomatis saat warga membuka website Jarimas.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {onlineCitizens.map((u) => renderUserCard(u))}
+            </div>
+          )}
+        </section>
+      )}
+
       {/* ========================================================= */}
       {/* 1. BAGIAN: TEMAN SAYA (SUDAH MENJADI TEMAN)                */}
       {/* ========================================================= */}
-      <section className="space-y-3">
+      {(activeTab === "semua" || activeTab === "teman") && (
+        <section className="space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-teal-100 dark:bg-teal-950 text-teal-700 dark:text-teal-300 font-bold">
@@ -450,66 +547,70 @@ export function DaftarWargaKabarSection({
           </div>
         )}
       </section>
+      )}
 
       {/* ========================================================= */}
       {/* 2. BAGIAN: PERMINTAAN PERTEMANAN (JIKA ADA)               */}
       {/* ========================================================= */}
-      {(incomingRequests.length > 0 || outgoingRequests.length > 0) && (
-        <section className="space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 font-bold">
-                <Clock className="h-4 w-4" />
+      {(activeTab === "semua" || activeTab === "permintaan") &&
+        (incomingRequests.length > 0 || outgoingRequests.length > 0) && (
+          <section className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 font-bold">
+                  <Clock className="h-4 w-4" />
+                </div>
+                <h4 className="text-sm sm:text-base font-black text-slate-900 dark:text-slate-100">
+                  Permintaan Pertemanan
+                </h4>
               </div>
-              <h4 className="text-sm sm:text-base font-black text-slate-900 dark:text-slate-100">
-                Permintaan Pertemanan
-              </h4>
+              <span className="rounded-full bg-amber-500 text-white px-2.5 py-0.5 text-xs font-bold font-mono">
+                {incomingRequests.length + outgoingRequests.length}
+              </span>
             </div>
-            <span className="rounded-full bg-amber-500 text-white px-2.5 py-0.5 text-xs font-bold font-mono">
-              {incomingRequests.length + outgoingRequests.length}
-            </span>
-          </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {incomingRequests.map((u) => renderUserCard(u))}
-            {outgoingRequests.map((u) => renderUserCard(u))}
-          </div>
-        </section>
-      )}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {incomingRequests.map((u) => renderUserCard(u))}
+              {outgoingRequests.map((u) => renderUserCard(u))}
+            </div>
+          </section>
+        )}
 
       {/* ========================================================= */}
       {/* 3. BAGIAN: WARGA LAINNYA (BELUM MENJADI TEMAN)            */}
       {/* ========================================================= */}
-      <section className="space-y-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-bold">
-              <Users className="h-4 w-4" />
+      {activeTab === "semua" && (
+        <section className="space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-bold">
+                <Users className="h-4 w-4" />
+              </div>
+              <h4 className="text-sm sm:text-base font-black text-slate-900 dark:text-slate-100">
+                Warga Lainnya di Kota Tegal
+              </h4>
             </div>
-            <h4 className="text-sm sm:text-base font-black text-slate-900 dark:text-slate-100">
-              Warga Lainnya di Kota Tegal
-            </h4>
+            <span className="rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2.5 py-0.5 text-xs font-bold text-slate-600 dark:text-slate-400 font-mono">
+              {otherCitizens.length} Warga
+            </span>
           </div>
-          <span className="rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2.5 py-0.5 text-xs font-bold text-slate-600 dark:text-slate-400 font-mono">
-            {otherCitizens.length} Warga
-          </span>
-        </div>
 
-        {otherCitizens.length === 0 ? (
-          <div className="p-6 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900 text-center space-y-1">
-            <p className="text-xs font-bold text-slate-700 dark:text-slate-300">
-              Tidak Ada Warga yang Cocok
-            </p>
-            <p className="text-[11px] text-slate-500">
-              Coba gunakan kata kunci pencarian yang berbeda.
-            </p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {otherCitizens.map((u) => renderUserCard(u))}
-          </div>
-        )}
-      </section>
+          {otherCitizens.length === 0 ? (
+            <div className="p-6 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900 text-center space-y-1">
+              <p className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                Tidak Ada Warga yang Cocok
+              </p>
+              <p className="text-[11px] text-slate-500">
+                Coba gunakan kata kunci pencarian yang berbeda.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {otherCitizens.map((u) => renderUserCard(u))}
+            </div>
+          )}
+        </section>
+      )}
 
       {/* Direct Chat Modal */}
       <ChatDrawerModal
