@@ -143,10 +143,10 @@ export default async function KabarPage({ searchParams }: KabarPageProps) {
     },
   ];
 
-  // Urutkan kategori: Kartu yang terbuka posisinya akan berpindah di posisi paling bawah
+  // Urutkan kategori: Kartu yang terbuka posisinya otomatis berada di paling atas
   const sortedKabarCategories = [
-    ...kabarCategories.filter((c) => c.id !== currentTab),
     ...(currentTab ? kabarCategories.filter((c) => c.id === currentTab) : []),
+    ...kabarCategories.filter((c) => c.id !== currentTab),
   ];
 
   return (

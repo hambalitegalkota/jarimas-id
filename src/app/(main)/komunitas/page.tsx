@@ -159,10 +159,10 @@ export default async function KomunitasPage({
     },
   ];
 
-  // Urutkan kategori: Kartu yang terbuka posisinya akan berpindah di posisi paling bawah
+  // Urutkan kategori: Kartu yang terbuka posisinya otomatis berada di paling atas
   const sortedCategories = [
-    ...accordionCategories.filter((c) => c.id !== currentTab),
     ...(currentTab ? accordionCategories.filter((c) => c.id === currentTab) : []),
+    ...accordionCategories.filter((c) => c.id !== currentTab),
   ];
 
   // Render konten di dalam Accordion yang aktif

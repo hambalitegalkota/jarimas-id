@@ -434,9 +434,10 @@ export function KomunitasDetailClientView({
     },
   ];
 
+  // Urutkan kategori: Kartu yang terbuka posisinya otomatis berada di paling atas
   const sortedDetailCategories = [
-    ...detailAccordionCategories.filter((c) => c.id !== activeTab),
     ...(activeTab ? detailAccordionCategories.filter((c) => c.id === activeTab) : []),
+    ...detailAccordionCategories.filter((c) => c.id !== activeTab),
   ];
 
   return (
