@@ -19,7 +19,6 @@ import { getKomunitasList } from "@/app/actions/komunitas";
 import { KomunitasFilter } from "@/components/komunitas/komunitas-filter";
 import { KomunitasCard } from "@/components/komunitas/komunitas-card";
 import { KomunitasRekapSection } from "@/components/komunitas/komunitas-rekap-section";
-import { PaudKomunitasTableRekapSection } from "@/components/komunitas/paud-komunitas-table-rekap-section";
 import { SpmKomunitasSection } from "@/components/komunitas/spm-komunitas-section";
 import type { JenisKomunitas } from "@/types/database";
 
@@ -187,14 +186,7 @@ export default async function KomunitasPage({
         currentBentuk={currentBentuk}
       />
 
-      {/* 2. KHUSUS TAB PAUD: TABEL KOMUNITAS BERDASARKAN ANGGOTA */}
-      {activeCatId === "satuan_paud" && (
-        <PaudKomunitasTableRekapSection
-          initialKecamatan={currentKecamatan}
-          initialKelurahan={currentKelurahan}
-          initialBentuk={currentBentuk}
-        />
-      )}
+
 
       {/* 3. FILTER DROPDOWN & SEARCH WILAYAH */}
       <Suspense fallback={<div className="min-h-[100px] animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-800" />}>
