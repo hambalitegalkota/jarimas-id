@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { createAdminClient } from "@/utils/supabase/server";
 import {
   findPaudLocation,
   serializeDataAnakAlasan,
@@ -12,7 +13,13 @@ import { toValidUUID } from "@/lib/utils";
 const DEFAULT_SYNC_SECRET = "jarimas-tegal-sync-2026";
 const DEFAULT_SYSTEM_USER_ID = "1d827e22-9253-486a-a948-3fac6d01ae38"; // Akun Admin pengelola
 
-function getSupabaseAdmin() {
+function getSupabaseAdmin(): any {
+  try {
+    const adminClient = createAdminClient();
+    if (adminClient) return adminClient;
+  } catch {
+    // fallback anon
+  }
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://nzfwkpwabfiettoixtdk.supabase.co";
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "sb_publishable_cseh0XvvzEyoWjxbj_JoIg_hdungUJk";
   return createClient(supabaseUrl, supabaseAnonKey);
@@ -88,12 +95,21 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, message: "Invalid JSON body" }, { status: 400 });
     }
 
-    if (!verifySecret(req, body.secret)) {
+    const candidateSecret =
+      body.secret ||
+      body.API_SECRET ||
+      body.apiKey ||
+      body.token ||
+      req.headers.get("x-sync-secret") ||
+      req.nextUrl.searchParams.get("secret") ||
+      "";
+
+    if (!verifySecret(req, candidateSecret)) {
       return NextResponse.json(
         {
           success: false,
           message:
-            "Akses ditolak: Secret Key tidak valid. Pastikan CONFIG.API_SECRET di Google Apps Script diatur ke 'jarimas-tegal-sync-2026'.",
+            `Akses ditolak: Secret Key tidak valid (diterima: '${String(candidateSecret).slice(0, 50)}'). Pastikan CONFIG.API_SECRET di Google Apps Script diatur ke 'jarimas-tegal-sync-2026'.`,
         },
         { status: 401 }
       );
@@ -154,8 +170,8 @@ export async function POST(req: NextRequest) {
       if (dbKomunitas && dbKomunitas.length > 0) {
         // 1. Coba cocokkan dengan komunitas PAUD
         if (isSekolah) {
-          const matchPaudKom = dbKomunitas.find(
-            (k) =>
+          const matchPaudKom = (dbKomunitas as any[]).find(
+            (k: any) =>
               k.jenis === "satuan_paud" &&
               (k.nama.toLowerCase().includes(namaPaud.toLowerCase()) ||
                 namaPaud.toLowerCase().includes(k.nama.toLowerCase()))
@@ -165,8 +181,8 @@ export async function POST(req: NextRequest) {
 
         // 2. Jika belum cocok, cari berdasarkan Kelurahan
         if (targetKomunitasId === "79c0e0c1-d8a9-41b8-8e0a-f9a5e581e703" && targetKelurahan !== "Semua Kelurahan") {
-          const matchKelKom = dbKomunitas.find(
-            (k) =>
+          const matchKelKom = (dbKomunitas as any[]).find(
+            (k: any) =>
               k.kelurahan?.toLowerCase() === targetKelurahan.toLowerCase() &&
               k.jenis === "warga_kita"
           );
@@ -350,9 +366,9 @@ export async function GET(req: NextRequest) {
     }
 
     // Filter hanya anak balita/PAUD (bukan data ATS)
-    const validChildren = (children || []).filter((c) => !isDataAtsRecord(c));
+    const validChildren = ((children as any[]) || []).filter((c: any) => !isDataAtsRecord(c));
 
-    const formattedList = validChildren.map((c) => {
+    const formattedList = validChildren.map((c: any) => {
       const parsed = parseDataAnakDetails(c.alasan_sekolah);
       const sortedDdks = (c.ddks_records || []).sort(
         (a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
