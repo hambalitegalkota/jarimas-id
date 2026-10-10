@@ -80,7 +80,13 @@ export function KomunitasDetailClientView({
   dataAtsList = [],
 }: KomunitasDetailClientViewProps) {
   const [komunitasData, setKomunitasData] = useState(komunitas);
-  const [activeTab, setActiveTab] = useState<string | null>(currentSubtab || null);
+  const initialActiveTab = useMemo(() => {
+    if (!currentUserId && (currentSubtab === "anggota" || currentSubtab === "data")) {
+      return "kabar";
+    }
+    return currentSubtab || null;
+  }, [currentUserId, currentSubtab]);
+  const [activeTab, setActiveTab] = useState<string | null>(initialActiveTab);
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
   const [membershipState, setMembershipState] = useState(komunitas.currentUserMembership);
   const [isWargaOnboardingOpen, setIsWargaOnboardingOpen] = useState(false);
@@ -406,32 +412,36 @@ export function KomunitasDetailClientView({
       iconColor: "text-blue-600 dark:text-blue-400",
       iconBg: "bg-blue-100 dark:bg-blue-950",
     },
-    {
-      id: "anggota",
-      title: "Daftar Anggota & Informasi Operasional",
-      subtitle: "Informasi operasional, struktur pengurus dan 6 bidang kader",
-      badgeText: `${anggotaState.filter((m) => m.status === "approved").length} Anggota`,
-      icon: Users,
-      activeColorBg: "bg-emerald-600 dark:bg-emerald-700",
-      badgeColor: "bg-emerald-500/20 text-emerald-100 border-emerald-400/30",
-      hoverBorder: "hover:border-emerald-400 dark:hover:border-emerald-600",
-      hoverBg: "hover:bg-emerald-50/50 dark:hover:bg-emerald-950/20",
-      iconColor: "text-emerald-600 dark:text-emerald-400",
-      iconBg: "bg-emerald-100 dark:bg-emerald-950",
-    },
-    {
-      id: "data",
-      title: "Profil Data & Rekapitulasi",
-      subtitle: "Data agregat balita, ATS, dan grafik capaian komunitas",
-      badgeText: "Data Agregat",
-      icon: Info,
-      activeColorBg: "bg-indigo-600 dark:bg-indigo-700",
-      badgeColor: "bg-indigo-500/20 text-indigo-100 border-indigo-400/30",
-      hoverBorder: "hover:border-indigo-400 dark:hover:border-indigo-600",
-      hoverBg: "hover:bg-indigo-50/50 dark:hover:bg-indigo-950/20",
-      iconColor: "text-indigo-600 dark:text-indigo-400",
-      iconBg: "bg-indigo-100 dark:bg-indigo-950",
-    },
+    ...(currentUserId
+      ? [
+          {
+            id: "anggota" as const,
+            title: "Daftar Anggota & Informasi Operasional",
+            subtitle: "Informasi operasional, struktur pengurus dan 6 bidang kader",
+            badgeText: `${anggotaState.filter((m) => m.status === "approved").length} Anggota`,
+            icon: Users,
+            activeColorBg: "bg-emerald-600 dark:bg-emerald-700",
+            badgeColor: "bg-emerald-500/20 text-emerald-100 border-emerald-400/30",
+            hoverBorder: "hover:border-emerald-400 dark:hover:border-emerald-600",
+            hoverBg: "hover:bg-emerald-50/50 dark:hover:bg-emerald-950/20",
+            iconColor: "text-emerald-600 dark:text-emerald-400",
+            iconBg: "bg-emerald-100 dark:bg-emerald-950",
+          },
+          {
+            id: "data" as const,
+            title: "Profil Data & Rekapitulasi",
+            subtitle: "Data agregat balita, ATS, dan grafik capaian komunitas",
+            badgeText: "Data Agregat",
+            icon: Info,
+            activeColorBg: "bg-indigo-600 dark:bg-indigo-700",
+            badgeColor: "bg-indigo-500/20 text-indigo-100 border-indigo-400/30",
+            hoverBorder: "hover:border-indigo-400 dark:hover:border-indigo-600",
+            hoverBg: "hover:bg-indigo-50/50 dark:hover:bg-indigo-950/20",
+            iconColor: "text-indigo-600 dark:text-indigo-400",
+            iconBg: "bg-indigo-100 dark:bg-indigo-950",
+          },
+        ]
+      : []),
   ];
 
   // Urutkan kategori: Kartu yang terbuka posisinya otomatis berada di paling atas
