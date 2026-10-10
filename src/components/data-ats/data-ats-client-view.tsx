@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -16,10 +15,6 @@ import {
   ChevronUp,
   Eye,
   EyeOff,
-  Lock,
-  LogIn,
-  UserPlus,
-  ArrowRight,
 } from "lucide-react";
 import { CardDataAts } from "./card-data-ats";
 import { FormDataAts } from "./form-data-ats";
@@ -553,20 +548,20 @@ export function DataAtsClientView({
         </div>
       )}
 
-      {/* 5. LIST DATA ATS (DEFAULT TERSEMBUNYI / DAPAT DIBUKA DENGAN MENYENTUH DIAGRAM ATAU TOMBOL) */}
-      <div className="space-y-3.5">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 dark:border-slate-800 pb-3">
-          <div className="flex items-center gap-2.5">
-            <h3 className="text-xs sm:text-sm font-mono font-black uppercase text-slate-900 dark:text-slate-100 print:text-black flex items-center gap-2">
-              <span>DAFTAR RINCIAN NAMA ANAK</span>
-              <span className="rounded-full bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 px-2 py-0.5 text-xs font-mono font-bold">
-                {filteredAts.length} Anak
-              </span>
-            </h3>
-          </div>
+      {/* 5. LIST DATA ATS (HANYA DITAMPILKAN UNTUK ADMIN KOMUNITAS, PENGURUS, DAN PENDUDUK KOMUNITAS TERSEBUT) */}
+      {canAccessDaftarNama && (
+        <div className="space-y-3.5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 dark:border-slate-800 pb-3">
+            <div className="flex items-center gap-2.5">
+              <h3 className="text-xs sm:text-sm font-mono font-black uppercase text-slate-900 dark:text-slate-100 print:text-black flex items-center gap-2">
+                <span>DAFTAR RINCIAN NAMA ANAK</span>
+                <span className="rounded-full bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 px-2 py-0.5 text-xs font-mono font-bold">
+                  {filteredAts.length} Anak
+                </span>
+              </h3>
+            </div>
 
-          <div className="flex items-center gap-2 print:hidden">
-            {canAccessDaftarNama ? (
+            <div className="flex items-center gap-2 print:hidden">
               <button
                 type="button"
                 onClick={() => setIsListExpanded((prev) => !prev)}
@@ -591,166 +586,104 @@ export function DataAtsClientView({
                   </>
                 )}
               </button>
-            ) : (
-              <span className="inline-flex items-center gap-1.5 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 px-3 py-1.5 text-xs font-bold text-slate-600 dark:text-slate-400">
-                <Lock className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
-                <span>Akses Terkunci</span>
-              </span>
-            )}
+            </div>
           </div>
-        </div>
 
-        {/* Banner informasi perlindungan privasi atau status collapse */}
-        {!canAccessDaftarNama ? (
-          <div className="rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/50 p-6 sm:p-7 text-center space-y-4 print:hidden shadow-xs">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-100 dark:bg-amber-950/80 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
-              <Lock className="h-6 w-6" />
-            </div>
-            <div className="max-w-md mx-auto space-y-1.5">
-              <h4 className="text-sm sm:text-base font-bold text-slate-900 dark:text-slate-100">
-                Daftar Rincian Nama Anak Terkunci
-              </h4>
-              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                Sesuai ketentuan perlindungan privasi dan keamanan data anak, daftar rincian identitas &amp; nama anak hanya dapat dibuka oleh <strong>Admin Komunitas</strong>, <strong>Pengurus</strong>, dan <strong>Penduduk</strong> di {komunitas.nama}.
-              </p>
-            </div>
-
-            {!currentUserId ? (
-              <div className="pt-2 max-w-sm mx-auto space-y-2.5">
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Silakan masuk atau buat akun untuk mengakses data komunitas:
-                </p>
-                <div className="flex flex-col sm:flex-row gap-2">
-                  <Link
-                    href={`/login?redirect=/komunitas/${komunitas.id}/ats`}
-                    className="flex-1 inline-flex min-h-[40px] h-10 items-center justify-center gap-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs transition-all"
-                  >
-                    <LogIn className="h-4 w-4" />
-                    <span>Masuk ke Akun</span>
-                  </Link>
-                  <Link
-                    href={`/register?redirect=/komunitas/${komunitas.id}/ats`}
-                    className="flex-1 inline-flex min-h-[40px] h-10 items-center justify-center gap-2 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border-2 border-slate-300 dark:border-slate-600 text-slate-800 dark:text-slate-200 text-xs font-bold transition-all"
-                  >
-                    <UserPlus className="h-4 w-4" />
-                    <span>Daftar Akun</span>
-                  </Link>
-                </div>
+          {/* Banner info jika list tersembunyi secara default */}
+          {!isListExpanded && (
+            <div className="rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/40 p-6 text-center space-y-3 print:hidden">
+              <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-100 dark:bg-blue-950 text-blue-600 dark:text-blue-400">
+                <EyeOff className="h-5 w-5" />
               </div>
-            ) : (
-              <div className="pt-2 max-w-md mx-auto space-y-2.5 bg-white dark:bg-slate-800/60 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
-                <div className="flex items-center justify-center gap-1.5 text-xs text-slate-600 dark:text-slate-300">
-                  <span>Status akun Anda saat ini:</span>
-                  <span className="font-bold text-amber-700 dark:text-amber-400 px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800">
-                    {userPeran}
-                  </span>
-                </div>
+              <div className="max-w-md mx-auto space-y-1">
+                <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">
+                  Daftar Nama Anak Tersembunyi (Fokus Analitik)
+                </h4>
                 <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                  Untuk melihat daftar rincian nama anak, pastikan Anda terdaftar resmi sebagai <em>Penduduk</em> atau <em>Pengurus / Admin</em> di komunitas ini.
+                  Sentuh/klik bagian diagram batang usia, alasan, jenjang, atau status di atas untuk membuka daftar rincian {filteredAts.length} nama anak yang sesuai secara otomatis.
                 </p>
-                <Link
-                  href={`/komunitas/${komunitas.id}`}
-                  className="inline-flex min-h-[40px] h-10 items-center justify-center gap-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white px-5 text-xs font-bold shadow-xs transition-all"
-                >
-                  <span>Buka Halaman Komunitas &amp; Ajukan Keanggotaan</span>
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
               </div>
-            )}
-          </div>
-        ) : !isListExpanded ? (
-          <div className="rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/40 p-6 text-center space-y-3 print:hidden">
-            <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-100 dark:bg-blue-950 text-blue-600 dark:text-blue-400">
-              <EyeOff className="h-5 w-5" />
+              <button
+                type="button"
+                onClick={() => setIsListExpanded(true)}
+                className="inline-flex items-center gap-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 text-xs font-bold transition-all shadow-sm cursor-pointer"
+              >
+                <Eye className="h-4 w-4" />
+                <span>Buka Daftar {filteredAts.length} Nama Anak</span>
+              </button>
             </div>
-            <div className="max-w-md mx-auto space-y-1">
-              <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">
-                Daftar Nama Anak Tersembunyi (Fokus Analitik)
-              </h4>
-              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                Sentuh/klik bagian diagram batang usia, alasan, jenjang, atau status di atas untuk membuka daftar rincian {filteredAts.length} nama anak yang sesuai secara otomatis.
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => setIsListExpanded(true)}
-              className="inline-flex items-center gap-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 text-xs font-bold transition-all shadow-sm cursor-pointer"
-            >
-              <Eye className="h-4 w-4" />
-              <span>Buka Daftar {filteredAts.length} Nama Anak</span>
-            </button>
-          </div>
-        ) : null}
+          )}
 
-        {/* Konten Daftar Nama (Hanya tampil jika memiliki izin dan sedang dibuka) */}
-        {canAccessDaftarNama && isListExpanded && (
-          <div className="space-y-2.5 print:block print:space-y-2.5">
-          {filteredAts.length === 0 ? (
-            <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-800 bg-card p-12 text-center space-y-4 print:bg-white print:border-gray-400 print:text-black">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-slate-200 bg-slate-100 text-slate-600">
-                <GraduationCap className="h-6 w-6 stroke-[1.5px] text-amber-500" />
-              </div>
-              <div className="space-y-1.5 max-w-sm">
-                <h3 className="text-sm font-bold tracking-tight text-foreground font-mono print:text-black">
-                  {selectedJenjang !== "semua" ||
-                  selectedKeinginan !== "semua" ||
-                  selectedAlasan !== "semua" ||
-                  statusFilter !== "semua" ||
-                  selectedAge !== null ||
-                  selectedGender !== "semua" ||
-                  searchQuery
-                    ? "TIDAK ADA DATA ATS SESUAI FILTER"
-                    : "BELUM ADA DATA ANAK TIDAK SEKOLAH (ATS)"}
-                </h3>
-                <p className="text-xs text-muted-foreground leading-relaxed print:text-gray-600">
-                  {selectedJenjang !== "semua" ||
-                  selectedKeinginan !== "semua" ||
-                  selectedAlasan !== "semua" ||
-                  statusFilter !== "semua" ||
-                  selectedAge !== null ||
-                  selectedGender !== "semua" ||
-                  searchQuery
-                    ? "Tidak ditemukan data ATS yang cocok dengan kriteria filter yang dipilih. Silakan klik Reset Filter pada diagram."
-                    : "Daftarkan data Anak Tidak Sekolah di wilayah Anda untuk pemantauan, verifikasi alasan, dan fasilitasi kembali bersekolah."}
-                </p>
-                {(selectedJenjang !== "semua" ||
-                  selectedKeinginan !== "semua" ||
-                  selectedAlasan !== "semua" ||
-                  statusFilter !== "semua" ||
-                  selectedAge !== null ||
-                  selectedGender !== "semua" ||
-                  searchQuery) && (
-                  <button
-                    type="button"
-                    onClick={handleResetFilters}
-                    className="mt-2 text-xs font-bold text-blue-600 hover:text-blue-800 underline cursor-pointer"
-                  >
-                    Reset Semua Filter
-                  </button>
-                )}
-              </div>
+          {/* Konten Daftar Nama (Hanya tampil jika sedang dibuka) */}
+          {isListExpanded && (
+            <div className="space-y-2.5 print:block print:space-y-2.5">
+              {filteredAts.length === 0 ? (
+                <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-800 bg-card p-12 text-center space-y-4 print:bg-white print:border-gray-400 print:text-black">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-slate-200 bg-slate-100 text-slate-600">
+                    <GraduationCap className="h-6 w-6 stroke-[1.5px] text-amber-500" />
+                  </div>
+                  <div className="space-y-1.5 max-w-sm">
+                    <h3 className="text-sm font-bold tracking-tight text-foreground font-mono print:text-black">
+                      {selectedJenjang !== "semua" ||
+                      selectedKeinginan !== "semua" ||
+                      selectedAlasan !== "semua" ||
+                      statusFilter !== "semua" ||
+                      selectedAge !== null ||
+                      selectedGender !== "semua" ||
+                      searchQuery
+                        ? "TIDAK ADA DATA ATS SESUAI FILTER"
+                        : "BELUM ADA DATA ANAK TIDAK SEKOLAH (ATS)"}
+                    </h3>
+                    <p className="text-xs text-muted-foreground leading-relaxed print:text-gray-600">
+                      {selectedJenjang !== "semua" ||
+                      selectedKeinginan !== "semua" ||
+                      selectedAlasan !== "semua" ||
+                      statusFilter !== "semua" ||
+                      selectedAge !== null ||
+                      selectedGender !== "semua" ||
+                      searchQuery
+                        ? "Tidak ditemukan data ATS yang cocok dengan kriteria filter yang dipilih. Silakan klik Reset Filter pada diagram."
+                        : "Daftarkan data Anak Tidak Sekolah di wilayah Anda untuk pemantauan, verifikasi alasan, dan fasilitasi kembali bersekolah."}
+                    </p>
+                    {(selectedJenjang !== "semua" ||
+                      selectedKeinginan !== "semua" ||
+                      selectedAlasan !== "semua" ||
+                      statusFilter !== "semua" ||
+                      selectedAge !== null ||
+                      selectedGender !== "semua" ||
+                      searchQuery) && (
+                      <button
+                        type="button"
+                        onClick={handleResetFilters}
+                        className="mt-2 text-xs font-bold text-blue-600 hover:text-blue-800 underline cursor-pointer"
+                      >
+                        Reset Semua Filter
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                filteredAts.map((child) => (
+                  <CardDataAts
+                    key={child.id}
+                    ats={child}
+                    komunitasId={komunitas.id}
+                    komunitasNama={komunitas.nama}
+                    canValidate={canValidate}
+                    canEditDdtk={canEditDdtk}
+                    canManage={canManage}
+                    currentUserId={currentUserId}
+                    isSuperAdmin={isSuperAdmin}
+                    onUpdate={handleUpdateItem}
+                    onDelete={handleDeleteItem}
+                    onKembaliSekolah={handleKembaliSekolah}
+                  />
+                ))
+              )}
             </div>
-          ) : (
-            filteredAts.map((child) => (
-              <CardDataAts
-                key={child.id}
-                ats={child}
-                komunitasId={komunitas.id}
-                komunitasNama={komunitas.nama}
-                canValidate={canValidate}
-                canEditDdtk={canEditDdtk}
-                canManage={canManage}
-                currentUserId={currentUserId}
-                isSuperAdmin={isSuperAdmin}
-                onUpdate={handleUpdateItem}
-                onDelete={handleDeleteItem}
-                onKembaliSekolah={handleKembaliSekolah}
-              />
-            ))
           )}
         </div>
       )}
-    </div>
 
       {/* TANDA TANGAN & PENGESAHAN DOKUMEN CETAK A4 (HANYA MUNCUL SAAT PRINT) */}
       <div className="hidden print:grid grid-cols-2 text-center text-[10px] font-sans break-inside-avoid mt-8 pt-4 border-t border-black">
