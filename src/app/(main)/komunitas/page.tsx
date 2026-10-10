@@ -179,12 +179,14 @@ export default async function KomunitasPage({
     return (
       <div className="space-y-6 pt-2">
         {/* 1. REKAP JUMLAH KOMUNITAS PER KECAMATAN & KELURAHAN BESERTA BENTUK SATUAN */}
-      <KomunitasRekapSection
-        currentTab={activeCatId}
-        currentKecamatan={currentKecamatan}
-        currentKelurahan={currentKelurahan}
-        currentBentuk={currentBentuk}
-      />
+      {activeCatId !== "warga_kita" && (
+        <KomunitasRekapSection
+          currentTab={activeCatId}
+          currentKecamatan={currentKecamatan}
+          currentKelurahan={currentKelurahan}
+          currentBentuk={currentBentuk}
+        />
+      )}
 
 
 

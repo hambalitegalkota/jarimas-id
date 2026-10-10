@@ -50,6 +50,10 @@ export function KomunitasRekapSection({
   // Secara default collapsible terbuka
   const [isOpen, setIsOpen] = useState<boolean>(true);
 
+  if (currentTab === "warga_kita") {
+    return null;
+  }
+
   const isPaud = currentTab === "satuan_paud";
 
   const rekap = getKomunitasRekapData(currentTab, {

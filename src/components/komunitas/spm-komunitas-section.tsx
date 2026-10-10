@@ -250,7 +250,7 @@ export function SpmKomunitasSection({
               </span>
             </div>
             <h3 className="text-xl sm:text-2xl font-black tracking-tight text-white">
-              6 Komunitas Bidang Standar Pelayanan Minimal (SPM)
+              Komunitas 6 Bidang Standar Pelayanan Minimal (SPM)
             </h3>
             <p className="text-xs sm:text-sm text-teal-100/90 leading-relaxed">
               Wadah koordinasi, pendataan, verifikasi faktual, dan pemantauan terpadu pemenuhan jenis dan mutu pelayanan dasar bagi seluruh warga Kota Tegal.

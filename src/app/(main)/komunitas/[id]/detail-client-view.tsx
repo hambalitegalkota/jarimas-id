@@ -80,12 +80,22 @@ export function KomunitasDetailClientView({
   dataAtsList = [],
 }: KomunitasDetailClientViewProps) {
   const [komunitasData, setKomunitasData] = useState(komunitas);
+
+  const isSpm = komunitas.jenis === "bidang_spm";
+  const isKomunitasPendidikan =
+    komunitas.id === "kom-spm-pendidikan" ||
+    komunitas.nama.toLowerCase().includes("pendidikan");
+  const isSpmNonPendidikan = isSpm && !isKomunitasPendidikan;
+
   const initialActiveTab = useMemo(() => {
     if (!currentUserId && (currentSubtab === "anggota" || currentSubtab === "data")) {
       return "kabar";
     }
+    if (isSpmNonPendidikan && currentSubtab === "data") {
+      return "kabar";
+    }
     return currentSubtab || null;
-  }, [currentUserId, currentSubtab]);
+  }, [currentUserId, currentSubtab, isSpmNonPendidikan]);
   const [activeTab, setActiveTab] = useState<string | null>(initialActiveTab);
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
   const [membershipState, setMembershipState] = useState(komunitas.currentUserMembership);
@@ -340,44 +350,46 @@ export function KomunitasDetailClientView({
       }
     });
   };
-  const detailLinkCards = [
-    {
-      id: "data_anak",
-      href: `/komunitas/${komunitas.id}/data`,
-      title: "Data Anak (0–6 Tahun) & DDTK",
-      subtitle: "Kelola pendaftaran balita, riwayat DDTK tumbuh kembang, dan validasi data",
-      badgeText: `${dataAnakList.length} Balita / Anak`,
-      icon: Baby,
-      hoverBorder: "hover:border-blue-400 dark:hover:border-blue-600",
-      hoverBg: "hover:bg-blue-50/50 dark:hover:bg-blue-950/20",
-      iconColor: "text-blue-600 dark:text-blue-400",
-      iconBg: "bg-blue-100 dark:bg-blue-950",
-      arrowBg: "bg-slate-100 dark:bg-slate-800",
-      arrowHoverBg: "group-hover:bg-blue-600 group-hover:text-white dark:group-hover:bg-blue-600",
-      arrowColor: "text-slate-500 dark:text-slate-400",
-      textHoverColor: "group-hover:text-blue-600 dark:group-hover:text-blue-400",
-    },
-    ...(komunitas.jenis !== "satuan_paud"
-      ? [
-          {
-            id: "data_ats" as const,
-            href: `/komunitas/${komunitas.id}/ats`,
-            title: "Data ATS (Anak Tidak Sekolah)",
-            subtitle: "Pendataan Anak Tidak Sekolah, pemantauan alasan, dan rencana intervensi kembali bersekolah",
-            badgeText: `${dataAtsList.length} Kasus ATS`,
-            icon: GraduationCap,
-            hoverBorder: "hover:border-amber-400 dark:hover:border-amber-600",
-            hoverBg: "hover:bg-amber-50/50 dark:hover:bg-amber-950/20",
-            iconColor: "text-amber-600 dark:text-amber-400",
-            iconBg: "bg-amber-100 dark:bg-amber-950",
-            arrowBg: "bg-slate-100 dark:bg-slate-800",
-            arrowHoverBg: "group-hover:bg-amber-600 group-hover:text-white dark:group-hover:bg-amber-600",
-            arrowColor: "text-slate-500 dark:text-slate-400",
-            textHoverColor: "group-hover:text-amber-600 dark:group-hover:text-amber-400",
-          },
-        ]
-      : []),
-  ];
+  const detailLinkCards = isSpmNonPendidikan
+    ? []
+    : [
+        {
+          id: "data_anak",
+          href: `/komunitas/${komunitas.id}/data`,
+          title: "Data Anak (0–6 Tahun) & DDTK",
+          subtitle: "Kelola pendaftaran balita, riwayat DDTK tumbuh kembang, dan validasi data",
+          badgeText: `${dataAnakList.length} Balita / Anak`,
+          icon: Baby,
+          hoverBorder: "hover:border-blue-400 dark:hover:border-blue-600",
+          hoverBg: "hover:bg-blue-50/50 dark:hover:bg-blue-950/20",
+          iconColor: "text-blue-600 dark:text-blue-400",
+          iconBg: "bg-blue-100 dark:bg-blue-950",
+          arrowBg: "bg-slate-100 dark:bg-slate-800",
+          arrowHoverBg: "group-hover:bg-blue-600 group-hover:text-white dark:group-hover:bg-blue-600",
+          arrowColor: "text-slate-500 dark:text-slate-400",
+          textHoverColor: "group-hover:text-blue-600 dark:group-hover:text-blue-400",
+        },
+        ...(komunitas.jenis !== "satuan_paud"
+          ? [
+              {
+                id: "data_ats" as const,
+                href: `/komunitas/${komunitas.id}/ats`,
+                title: "Data ATS (Anak Tidak Sekolah)",
+                subtitle: "Pendataan Anak Tidak Sekolah, pemantauan alasan, dan rencana intervensi kembali bersekolah",
+                badgeText: `${dataAtsList.length} Kasus ATS`,
+                icon: GraduationCap,
+                hoverBorder: "hover:border-amber-400 dark:hover:border-amber-600",
+                hoverBg: "hover:bg-amber-50/50 dark:hover:bg-amber-950/20",
+                iconColor: "text-amber-600 dark:text-amber-400",
+                iconBg: "bg-amber-100 dark:bg-amber-950",
+                arrowBg: "bg-slate-100 dark:bg-slate-800",
+                arrowHoverBg: "group-hover:bg-amber-600 group-hover:text-white dark:group-hover:bg-amber-600",
+                arrowColor: "text-slate-500 dark:text-slate-400",
+                textHoverColor: "group-hover:text-amber-600 dark:group-hover:text-amber-400",
+              },
+            ]
+          : []),
+      ];
 
   const detailAccordionCategories = [
     {
@@ -427,19 +439,23 @@ export function KomunitasDetailClientView({
             iconColor: "text-emerald-600 dark:text-emerald-400",
             iconBg: "bg-emerald-100 dark:bg-emerald-950",
           },
-          {
-            id: "data" as const,
-            title: "Profil Data & Rekapitulasi",
-            subtitle: "Data agregat balita, ATS, dan grafik capaian komunitas",
-            badgeText: "Data Agregat",
-            icon: Info,
-            activeColorBg: "bg-indigo-600 dark:bg-indigo-700",
-            badgeColor: "bg-indigo-500/20 text-indigo-100 border-indigo-400/30",
-            hoverBorder: "hover:border-indigo-400 dark:hover:border-indigo-600",
-            hoverBg: "hover:bg-indigo-50/50 dark:hover:bg-indigo-950/20",
-            iconColor: "text-indigo-600 dark:text-indigo-400",
-            iconBg: "bg-indigo-100 dark:bg-indigo-950",
-          },
+          ...(!isSpmNonPendidikan
+            ? [
+                {
+                  id: "data" as const,
+                  title: "Profil Data & Rekapitulasi",
+                  subtitle: "Data agregat balita, ATS, dan grafik capaian komunitas",
+                  badgeText: "Data Agregat",
+                  icon: Info,
+                  activeColorBg: "bg-indigo-600 dark:bg-indigo-700",
+                  badgeColor: "bg-indigo-500/20 text-indigo-100 border-indigo-400/30",
+                  hoverBorder: "hover:border-indigo-400 dark:hover:border-indigo-600",
+                  hoverBg: "hover:bg-indigo-50/50 dark:hover:bg-indigo-950/20",
+                  iconColor: "text-indigo-600 dark:text-indigo-400",
+                  iconBg: "bg-indigo-100 dark:bg-indigo-950",
+                },
+              ]
+            : []),
         ]
       : []),
   ];
