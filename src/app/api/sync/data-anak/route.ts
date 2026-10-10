@@ -139,6 +139,8 @@ export async function POST(req: NextRequest) {
       message?: string;
     }> = [];
 
+    // 1. Filter dan kumpulkan nama serta ID untuk bulk check
+    const validItems: any[] = [];
     for (const item of items) {
       const rowIndex = Number(item.row_index || 0);
       const namaLengkap = String(item.nama_lengkap || "").trim();
@@ -154,9 +156,89 @@ export async function POST(req: NextRequest) {
         continue;
       }
 
+      validItems.push({
+        ...item,
+        row_index: rowIndex,
+        nama_lengkap: namaLengkap,
+      });
+    }
+
+    const incomingNames = Array.from(new Set(validItems.map((v) => v.nama_lengkap)));
+    const incomingIds = validItems
+      .map((v) => toValidUUID(v.id))
+      .filter((id): id is string => Boolean(id && id.length > 10));
+
+    // 2. Bulk Lookup data yang sudah ada di database
+    let existingByName: any[] = [];
+    if (incomingNames.length > 0) {
+      const { data: foundByName } = await supabase
+        .from("data_anak")
+        .select("id, nama_lengkap, nama_orangtua, alasan_sekolah")
+        .in("nama_lengkap", incomingNames);
+      if (foundByName) existingByName = foundByName;
+    }
+
+    let existingById: any[] = [];
+    if (incomingIds.length > 0) {
+      const { data: foundById } = await supabase
+        .from("data_anak")
+        .select("id")
+        .in("id", incomingIds);
+      if (foundById) existingById = foundById;
+    }
+
+    const existingIdSet = new Set(existingById.map((e) => e.id));
+
+    // 3. Pisahkan item yang sudah ada vs yang baru perlu di-insert
+    const itemsToInsert: Array<{
+      rowIndex: number;
+      namaLengkap: string;
+      payload: any;
+    }> = [];
+
+    for (const item of validItems) {
+      const rowIndex = item.row_index;
+      const namaLengkap = item.nama_lengkap;
+      const validItemId = toValidUUID(item.id);
+
+      // Cek apakah ada kecocokan ID
+      if (validItemId && existingIdSet.has(validItemId)) {
+        results.push({
+          row_index: rowIndex,
+          id: validItemId,
+          status: "existing",
+          nama_lengkap: namaLengkap,
+          message: "Data anak sudah terdaftar sebelumnya di sistem (cocok ID).",
+        });
+        continue;
+      }
+
+      // Cek apakah ada kecocokan Nama Lengkap & Nama Orang Tua
+      const namaOrangtua = String(item.nama_orangtua || "").trim() || "-";
+      const matchInDb = existingByName.find(
+        (ex) =>
+          ex.nama_lengkap?.toLowerCase() === namaLengkap.toLowerCase() &&
+          !isDataAtsRecord(ex) &&
+          (namaOrangtua === "-" ||
+            !ex.nama_orangtua ||
+            ex.nama_orangtua === "-" ||
+            ex.nama_orangtua.toLowerCase() === namaOrangtua.toLowerCase())
+      );
+
+      if (matchInDb) {
+        results.push({
+          row_index: rowIndex,
+          id: matchInDb.id,
+          status: "existing",
+          nama_lengkap: namaLengkap,
+          message: "Data anak sudah terdaftar sebelumnya di sistem.",
+        });
+        continue;
+      }
+
+      // Siapkan payload untuk insert data baru
       const rawJk = String(item.jenis_kelamin || "").trim().toUpperCase();
       const jk: "L" | "P" = rawJk.startsWith("P") || rawJk === "PEREMPUAN" ? "P" : "L";
-      const namaOrangtua = String(item.nama_orangtua || "").trim() || "-";
       const namaPaud = String(item.nama_paud || "").trim();
       const isSekolah = Boolean(namaPaud && namaPaud.toLowerCase() !== "belum sekolah");
 
@@ -168,7 +250,6 @@ export async function POST(req: NextRequest) {
       // Cari Komunitas yang paling cocok
       let targetKomunitasId = "79c0e0c1-d8a9-41b8-8e0a-f9a5e581e703"; // Default Komunitas
       if (dbKomunitas && dbKomunitas.length > 0) {
-        // 1. Coba cocokkan dengan komunitas PAUD
         if (isSekolah) {
           const matchPaudKom = (dbKomunitas as any[]).find(
             (k: any) =>
@@ -179,7 +260,6 @@ export async function POST(req: NextRequest) {
           if (matchPaudKom) targetKomunitasId = matchPaudKom.id;
         }
 
-        // 2. Jika belum cocok, cari berdasarkan Kelurahan
         if (targetKomunitasId === "79c0e0c1-d8a9-41b8-8e0a-f9a5e581e703" && targetKelurahan !== "Semua Kelurahan") {
           const matchKelKom = (dbKomunitas as any[]).find(
             (k: any) =>
@@ -190,49 +270,6 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      // Cek apakah data anak sudah ada di database
-      let existingChildId: string | null = null;
-
-      // 1. Cek berdasarkan ID jika sheet sudah memiliki ID
-      if (item.id && String(item.id).trim().length > 10) {
-        const { data: foundById } = await supabase
-          .from("data_anak")
-          .select("id")
-          .eq("id", toValidUUID(item.id))
-          .maybeSingle();
-
-        if (foundById) {
-          existingChildId = foundById.id;
-        }
-      }
-
-      // 2. Cek berdasarkan Nama Lengkap dan Nama Orang Tua jika ID belum ada
-      if (!existingChildId) {
-        const { data: foundByName } = await supabase
-          .from("data_anak")
-          .select("id, alasan_sekolah")
-          .ilike("nama_lengkap", namaLengkap)
-          .ilike("nama_orangtua", namaOrangtua)
-          .maybeSingle();
-
-        if (foundByName && !isDataAtsRecord(foundByName)) {
-          existingChildId = foundByName.id;
-        }
-      }
-
-      // JIKA DATA SUDAH ADA: Kembalikan ID yang ada
-      if (existingChildId) {
-        results.push({
-          row_index: rowIndex,
-          id: existingChildId,
-          status: "existing",
-          nama_lengkap: namaLengkap,
-          message: "Data anak sudah terdaftar sebelumnya di sistem.",
-        });
-        continue;
-      }
-
-      // JIKA BELUM ADA: Lakukan INSERT data baru
       const birthDate = calculateBirthDateFromUsia(item.usia);
       const alasanFormatted = serializeDataAnakAlasan({
         alasanSekolah: isSekolah ? "Sudah Usia PAUD" : "Belum Wajib (Masih Balita)",
@@ -260,33 +297,65 @@ export async function POST(req: NextRequest) {
         nama_sekolah: isSekolah ? namaPaud : "Belum Sekolah",
         alasan_sekolah: alasanFormatted,
         komunitas_id: toValidUUID(targetKomunitasId),
-        status_approval: "pending", // Status awal menunggu verifikasi kader / posyandu
+        status_approval: "pending",
         created_by: DEFAULT_SYSTEM_USER_ID,
         created_at: new Date().toISOString(),
       };
 
-      const { data: inserted, error: insertError } = await supabase
-        .from("data_anak")
-        .insert(childPayload)
-        .select("id")
-        .single();
+      itemsToInsert.push({
+        rowIndex,
+        namaLengkap,
+        payload: childPayload,
+      });
+    }
 
-      if (insertError || !inserted) {
-        results.push({
-          row_index: rowIndex,
-          id: "",
-          status: "error",
-          nama_lengkap: namaLengkap,
-          message: insertError?.message || "Gagal menyimpan ke database Supabase.",
+    // 4. Lakukan Bulk Insert massal
+    if (itemsToInsert.length > 0) {
+      const payloads = itemsToInsert.map((t) => t.payload);
+      const { data: insertedBatch, error: batchError } = await supabase
+        .from("data_anak")
+        .insert(payloads)
+        .select("id, nama_lengkap");
+
+      if (!batchError && insertedBatch && insertedBatch.length === itemsToInsert.length) {
+        // Semua data berhasil di-insert secara massal
+        insertedBatch.forEach((ins: any, idx: number) => {
+          results.push({
+            row_index: itemsToInsert[idx].rowIndex,
+            id: ins.id,
+            status: "created",
+            nama_lengkap: itemsToInsert[idx].namaLengkap,
+            message: "Data anak baru berhasil didaftarkan ke sistem.",
+          });
         });
       } else {
-        results.push({
-          row_index: rowIndex,
-          id: inserted.id,
-          status: "created",
-          nama_lengkap: namaLengkap,
-          message: "Data anak baru berhasil didaftarkan ke sistem.",
-        });
+        // Fallback jika batch insert gagal (misal constraint per-baris): coba insert satu per satu
+        console.warn("Batch insert fallback to sequential:", batchError?.message);
+        for (const itemInsert of itemsToInsert) {
+          const { data: singleInserted, error: singleError } = await supabase
+            .from("data_anak")
+            .insert(itemInsert.payload)
+            .select("id")
+            .single();
+
+          if (singleError || !singleInserted) {
+            results.push({
+              row_index: itemInsert.rowIndex,
+              id: "",
+              status: "error",
+              nama_lengkap: itemInsert.namaLengkap,
+              message: singleError?.message || "Gagal menyimpan ke database Supabase.",
+            });
+          } else {
+            results.push({
+              row_index: itemInsert.rowIndex,
+              id: singleInserted.id,
+              status: "created",
+              nama_lengkap: itemInsert.namaLengkap,
+              message: "Data anak baru berhasil didaftarkan ke sistem.",
+            });
+          }
+        }
       }
     }
 
