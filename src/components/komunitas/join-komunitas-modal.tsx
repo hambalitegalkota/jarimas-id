@@ -43,6 +43,13 @@ const ROLE_OPTIONS_BY_TYPE: Record<string, string[]> = {
     "Alumni",
     "Pengunjung",
   ],
+  bidang_spm: [
+    "Tim Pembina",
+    "Pendamping",
+    "Kader",
+    "Mitra",
+    "Pengunjung",
+  ],
 };
 
 export function JoinKomunitasModal({
@@ -188,8 +195,16 @@ export function JoinKomunitasModal({
                 </div>
               </div>
 
-              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed bg-amber-50 p-3 rounded-xl border border-amber-200 text-amber-900">
-                * Pengajuan bergabung sebagai <strong>{selectedRole}</strong> di <strong>{komunitas.nama}</strong> akan ditinjau dan disetujui terlebih dahulu oleh Admin Komunitas. Setelah disetujui, status Anda akan aktif sesuai peran yang diajukan.
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed bg-amber-50 p-3.5 rounded-xl border border-amber-200 text-amber-900">
+                {selectedRole === "Pengunjung" ? (
+                  <span>
+                    * Anda akan langsung bergabung dan aktif di <strong>{komunitas.nama}</strong> dengan peran sebagai <strong>Pengunjung</strong>.
+                  </span>
+                ) : (
+                  <span>
+                    * Pengajuan peran sebagai <strong>{selectedRole}</strong> di <strong>{komunitas.nama}</strong> memerlukan persetujuan Admin. Sebelum permohonan disetujui, Anda dapat langsung masuk dan mengakses komunitas dengan peran sebagai <strong>Pengunjung</strong>. Setelah disetujui oleh Admin, peran Anda akan otomatis berubah sesuai ajuan.
+                  </span>
+                )}
               </p>
 
               {/* Submit Button */}

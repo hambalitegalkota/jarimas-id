@@ -676,7 +676,7 @@ export function getKelurahanByKecamatan(kecamatan: string): string[] {
 export interface MasterKomunitasSeedItem {
   id: string;
   nama: string;
-  jenis: "warga_kita" | "posyandu" | "satuan_paud";
+  jenis: "warga_kita" | "posyandu" | "satuan_paud" | "bidang_spm";
   jenis_institusi?: "TK" | "KB" | "RA" | "SPS" | "TPA" | "PKBM" | "SKB" | string;
   npsn?: string;
   kecamatan: string;
@@ -864,6 +864,16 @@ function buildMasterKomunitasSeed(): MasterKomunitasSeedItem[] {
     }
   }
 
+  // Masukkan seluruh 6 Komunitas Bidang SPM Kota Tegal dari SEED_SPM_TEGAL
+  if (Array.isArray(SEED_SPM_TEGAL)) {
+    for (const spm of SEED_SPM_TEGAL) {
+      if (!existingIds.has(spm.id)) {
+        list.push(spm);
+        existingIds.add(spm.id);
+      }
+    }
+  }
+
   // Masukkan seluruh Satuan PAUD & PKBM resmi se-Kota Tegal dari SEED_PAUD_PKBM_TEGAL
   if (Array.isArray(SEED_PAUD_PKBM_TEGAL)) {
     for (const paud of SEED_PAUD_PKBM_TEGAL) {
@@ -876,6 +886,81 @@ function buildMasterKomunitasSeed(): MasterKomunitasSeedItem[] {
 
   return list;
 }
+
+export const SEED_SPM_TEGAL: MasterKomunitasSeedItem[] = [
+  {
+    id: "kom-spm-pendidikan",
+    nama: "Komunitas Bidang Pendidikan",
+    jenis: "bidang_spm",
+    kecamatan: "Kota Tegal",
+    kelurahan: "Semua Kelurahan",
+    lokasi: "Dinas Pendidikan dan Kebudayaan Kota Tegal, Jl. Ki Gede Sebayu No. 1, Kota Tegal",
+    deskripsi:
+      "Wadah koordinasi pemenuhan Standar Pelayanan Minimal (SPM) Bidang Pendidikan, penanganan Anak Tidak Sekolah (ATS), validasi anak usia 0-6 tahun, dan pendampingan satuan PAUD se-Kota Tegal.",
+    kontak: "0283-351000 (Sekretariat SPM Bidang Pendidikan)",
+    jadwal: "Koordinasi Rutin Tim Pembina, Pendamping & Kader SPM Pendidikan",
+  },
+  {
+    id: "kom-spm-kesehatan",
+    nama: "Komunitas Bidang Kesehatan",
+    jenis: "bidang_spm",
+    kecamatan: "Kota Tegal",
+    kelurahan: "Semua Kelurahan",
+    lokasi: "Dinas Kesehatan Kota Tegal, Jl. Hang Tuah No. 1, Kota Tegal",
+    deskripsi:
+      "Wadah koordinasi pemenuhan Standar Pelayanan Minimal (SPM) Bidang Kesehatan, pemantauan balita stunting, DDTK posyandu, imunisasi balita, dan layanan kesehatan keluarga Kota Tegal.",
+    kontak: "0283-353000 (Sekretariat SPM Bidang Kesehatan)",
+    jadwal: "Koordinasi Terpadu Tim Pembina, Pendamping & Kader Kesehatan",
+  },
+  {
+    id: "kom-spm-pekerjaan-umum",
+    nama: "Komunitas Bidang Pekerjaan Umum",
+    jenis: "bidang_spm",
+    kecamatan: "Kota Tegal",
+    kelurahan: "Semua Kelurahan",
+    lokasi: "Dinas Pekerjaan Umum dan Penataan Ruang (DPUPR) Kota Tegal, Jl. Proklamasi No. 1, Kota Tegal",
+    deskripsi:
+      "Wadah koordinasi pemenuhan SPM Bidang Pekerjaan Umum, penyediaan akses air minum layak, sanitasi terpadu, dan drainase lingkungan ramah anak.",
+    kontak: "0283-352000 (Sekretariat SPM Pekerjaan Umum)",
+    jadwal: "Monitoring Infrastruktur Dasar & Sanitasi Warga",
+  },
+  {
+    id: "kom-spm-perumahan-rakyat",
+    nama: "Komunitas Bidang Perumahan Rakyat",
+    jenis: "bidang_spm",
+    kecamatan: "Kota Tegal",
+    kelurahan: "Semua Kelurahan",
+    lokasi: "Dinas Perumahan dan Kawasan Permukiman (Disperkim) Kota Tegal, Jl. Ki Gede Sebayu No. 12, Kota Tegal",
+    deskripsi:
+      "Wadah koordinasi pemenuhan SPM Bidang Perumahan Rakyat, perbaikan rumah tidak layak huni (RTLH), serta penataan kawasan permukiman sehat keluarga.",
+    kontak: "0283-354000 (Sekretariat SPM Perumahan Rakyat)",
+    jadwal: "Verifikasi Data RTLH & Koordinasi Kawasan Sehat",
+  },
+  {
+    id: "kom-spm-trantibumlinmas",
+    nama: "Komunitas Bidang Trantibumlinmas",
+    jenis: "bidang_spm",
+    kecamatan: "Kota Tegal",
+    kelurahan: "Semua Kelurahan",
+    lokasi: "Satuan Polisi Pamong Praja & Linmas Kota Tegal, Jl. Ki Gede Sebayu No. 5, Kota Tegal",
+    deskripsi:
+      "Wadah koordinasi pemenuhan SPM Bidang Ketenteraman, Ketertiban Umum, dan Perlindungan Masyarakat, keamanan lingkungan ramah anak, dan kesiapsiagaan bencana.",
+    kontak: "0283-355000 (Sekretariat SPM Trantibumlinmas)",
+    jadwal: "Patroli Ketertiban Terpadu & Edukasi Warga",
+  },
+  {
+    id: "kom-spm-sosial",
+    nama: "Komunitas Bidang Sosial",
+    jenis: "bidang_spm",
+    kecamatan: "Kota Tegal",
+    kelurahan: "Semua Kelurahan",
+    lokasi: "Dinas Sosial Kota Tegal, Jl. Sipelem No. 2, Kota Tegal",
+    deskripsi:
+      "Wadah koordinasi pemenuhan SPM Bidang Sosial, penanganan Pemerlu Pelayanan Kesejahteraan Sosial (PPKS), bantuan sosial terpadu, dan perlindungan keluarga rentan.",
+    kontak: "0283-356000 (Sekretariat SPM Bidang Sosial)",
+    jadwal: "Rakor Pendamping Sosial & Penyaluran Bantuan",
+  },
+];
 
 export const MASTER_KOMUNITAS_SEED = buildMasterKomunitasSeed();
 

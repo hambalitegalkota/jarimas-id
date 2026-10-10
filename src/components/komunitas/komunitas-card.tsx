@@ -12,6 +12,7 @@ import {
   UserPlus,
   ArrowRight,
   Sparkles,
+  ShieldCheck,
 } from "lucide-react";
 import { JoinKomunitasModal } from "@/components/komunitas/join-komunitas-modal";
 import { WargaOnboardingModal } from "@/components/komunitas/warga-onboarding-modal";
@@ -81,7 +82,9 @@ export function KomunitasCard({
           komunitas.jenis === "posyandu" &&
             "border-slate-200 dark:border-slate-800 hover:border-emerald-500 dark:hover:border-emerald-500",
           komunitas.jenis === "satuan_paud" &&
-            "border-slate-200 dark:border-slate-800 hover:border-indigo-500 dark:hover:border-indigo-500"
+            "border-slate-200 dark:border-slate-800 hover:border-indigo-500 dark:hover:border-indigo-500",
+          komunitas.jenis === "bidang_spm" &&
+            "border-slate-200 dark:border-slate-800 hover:border-teal-500 dark:hover:border-teal-500"
         )}
       >
         {/* Kiri: Icon, Nama Posyandu & Alamat */}
@@ -94,12 +97,15 @@ export function KomunitasCard({
               komunitas.jenis === "posyandu" &&
                 "bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800",
               komunitas.jenis === "satuan_paud" &&
-                "bg-indigo-50 dark:bg-indigo-950/50 text-indigo-800 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800"
+                "bg-indigo-50 dark:bg-indigo-950/50 text-indigo-800 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800",
+              komunitas.jenis === "bidang_spm" &&
+                "bg-teal-50 dark:bg-teal-950/50 text-teal-800 dark:text-teal-300 border-teal-200 dark:border-teal-800"
             )}
           >
             {komunitas.jenis === "warga_kita" && <Users className="h-5 w-5" />}
             {komunitas.jenis === "posyandu" && <Sparkles className="h-5 w-5" />}
             {komunitas.jenis === "satuan_paud" && <Building2 className="h-5 w-5" />}
+            {komunitas.jenis === "bidang_spm" && <ShieldCheck className="h-5 w-5" />}
           </div>
 
           <div className="space-y-0.5 min-w-0 flex-1">
@@ -177,6 +183,8 @@ export function KomunitasCard({
               isApprovedMember &&
                 (komunitas.jenis === "warga_kita"
                   ? "bg-blue-600 hover:bg-blue-700 text-white border-transparent"
+                  : komunitas.jenis === "bidang_spm"
+                  ? "bg-teal-700 hover:bg-teal-800 text-white border-transparent"
                   : "bg-emerald-600 hover:bg-emerald-700 text-white border-transparent")
             )}
           >
@@ -192,6 +200,8 @@ export function KomunitasCard({
                 "inline-flex min-h-[38px] h-9.5 items-center justify-center gap-1.5 rounded-xl px-3.5 text-xs font-extrabold text-white transition-all shadow-2xs cursor-pointer active:scale-95",
                 komunitas.jenis === "warga_kita"
                   ? "bg-blue-600 hover:bg-blue-700"
+                  : komunitas.jenis === "bidang_spm"
+                  ? "bg-teal-700 hover:bg-teal-800"
                   : "bg-emerald-600 hover:bg-emerald-700"
               )}
             >

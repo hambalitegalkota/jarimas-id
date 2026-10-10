@@ -13,12 +13,14 @@ import {
   GraduationCap,
   MapPin,
   CheckCircle2,
+  ShieldCheck,
 } from "lucide-react";
 import { getKomunitasList } from "@/app/actions/komunitas";
 import { KomunitasFilter } from "@/components/komunitas/komunitas-filter";
 import { KomunitasCard } from "@/components/komunitas/komunitas-card";
 import { KomunitasRekapSection } from "@/components/komunitas/komunitas-rekap-section";
 import { PaudKomunitasTableRekapSection } from "@/components/komunitas/paud-komunitas-table-rekap-section";
+import { SpmKomunitasSection } from "@/components/komunitas/spm-komunitas-section";
 import type { JenisKomunitas } from "@/types/database";
 
 interface KomunitasPageProps {
@@ -141,6 +143,20 @@ export default async function KomunitasPage({
       iconColor: "text-indigo-600 dark:text-indigo-400",
       iconBg: "bg-indigo-100 dark:bg-indigo-950",
     },
+    {
+      id: "bidang_spm" as JenisKomunitas,
+      title: "Kartu Bidang SPM",
+      subtitle: "Standar Pelayanan Minimal 6 Bidang Urusan Pemerintahan Wajib Kota Tegal",
+      badgeText: "6 Bidang SPM",
+      icon: ShieldCheck,
+      activeColorBg: "bg-teal-700 dark:bg-teal-800",
+      activeBorder: "border-teal-500",
+      badgeColor: "bg-teal-500/20 text-teal-100 border-teal-400/30",
+      hoverBorder: "hover:border-teal-400 dark:hover:border-teal-600",
+      hoverBg: "hover:bg-teal-50/50 dark:hover:bg-teal-950/20",
+      iconColor: "text-teal-600 dark:text-teal-400",
+      iconBg: "bg-teal-100 dark:bg-teal-950",
+    },
   ];
 
   // Urutkan kategori: Kartu yang terbuka posisinya akan berpindah di posisi paling bawah
@@ -150,9 +166,20 @@ export default async function KomunitasPage({
   ];
 
   // Render konten di dalam Accordion yang aktif
-  const renderActiveAccordionContent = (activeCatId: JenisKomunitas) => (
-    <div className="space-y-6 pt-2">
-      {/* 1. REKAP JUMLAH KOMUNITAS PER KECAMATAN & KELURAHAN BESERTA BENTUK SATUAN */}
+  const renderActiveAccordionContent = (activeCatId: JenisKomunitas) => {
+    if (activeCatId === "bidang_spm") {
+      return (
+        <SpmKomunitasSection
+          komunitasList={listKomunitas}
+          currentUserId={currentUserId}
+          initialSearch={currentSearch}
+        />
+      );
+    }
+
+    return (
+      <div className="space-y-6 pt-2">
+        {/* 1. REKAP JUMLAH KOMUNITAS PER KECAMATAN & KELURAHAN BESERTA BENTUK SATUAN */}
       <KomunitasRekapSection
         currentTab={activeCatId}
         currentKecamatan={currentKecamatan}
@@ -283,7 +310,8 @@ export default async function KomunitasPage({
         )}
       </main>
     </div>
-  );
+    );
+  };
 
   return (
     <div className="flex flex-col flex-1 px-4 py-4 sm:px-6 md:px-8 gap-6 max-w-4xl mx-auto w-full pb-20">
@@ -305,7 +333,7 @@ export default async function KomunitasPage({
               Eksplorasi Komunitas Kota Tegal
             </h1>
             <p className="text-xs sm:text-sm text-slate-300 max-w-lg leading-relaxed">
-              Jelajahi 230+ Posyandu Balita, Satuan PAUD &amp; Kesetaraan, dan Komunitas Warga 4 Tingkat (RT/RW/Kelurahan) se-Kota Tegal.
+              Jelajahi 230+ Posyandu Balita, Satuan PAUD &amp; Kesetaraan, Komunitas Warga 4 Tingkat, dan 6 Bidang SPM se-Kota Tegal.
             </p>
           </div>
 

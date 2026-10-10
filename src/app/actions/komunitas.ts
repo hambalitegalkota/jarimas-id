@@ -1289,6 +1289,10 @@ export async function requestJoinKomunitas({
       .eq("komunitas_id", dbKomunitasId)
       .maybeSingle();
 
+    const isDirectPengunjung = targetPeranDiajukan.toLowerCase() === "pengunjung";
+    const initialActiveRole = isDirectPengunjung ? "Pengunjung" : "Pengunjung";
+    const appliedRole = isDirectPengunjung ? null : targetPeranDiajukan;
+
     if (existingMember) {
       if (
         existingMember.status === "approved" &&
@@ -1301,36 +1305,35 @@ export async function requestJoinKomunitas({
         };
       }
 
-      if (existingMember.status === "pending" || existingMember.peran_diajukan) {
-        const pendingRole = existingMember.peran_diajukan || existingMember.peran;
+      if (existingMember.peran_diajukan && existingMember.peran_diajukan.toLowerCase() === targetPeranDiajukan.toLowerCase()) {
         return {
           success: false,
-          message: `Permohonan bergabung Anda sebagai ${formatPeranDisplay(pendingRole)} sedang menunggu persetujuan Admin/Pengurus.`,
+          message: `Permohonan bergabung Anda sebagai ${formatPeranDisplay(existingMember.peran_diajukan)} sedang menunggu persetujuan Admin/Pengurus.`,
         };
       }
 
-      // Perbarui status ke pending dan simpan peran_diajukan
+      // Perbarui keanggotaan: Masuk langsung sebagai Pengunjung dan catat peran_diajukan untuk persetujuan Admin
       const { error: updateError } = await supabase
         .from("anggota_komunitas")
         .update({
-          peran: targetPeranDiajukan,
-          peran_diajukan: targetPeranDiajukan,
-          status: "pending",
+          peran: existingMember.status === "approved" && existingMember.peran !== "Pengunjung" ? existingMember.peran : initialActiveRole,
+          peran_diajukan: appliedRole,
+          status: "approved",
           updated_at: new Date().toISOString(),
         })
         .eq("id", existingMember.id);
 
       if (updateError) throw updateError;
     } else {
-      // Buat pendaftaran baru dengan status pending
+      // Buat pendaftaran baru: Langsung dapat masuk sebagai Pengunjung dengan peran_diajukan
       const { error: insertError } = await supabase
         .from("anggota_komunitas")
         .insert({
           user_id: user.id,
           komunitas_id: dbKomunitasId,
-          peran: targetPeranDiajukan,
-          peran_diajukan: targetPeranDiajukan,
-          status: "pending",
+          peran: initialActiveRole,
+          peran_diajukan: appliedRole,
+          status: "approved",
           created_at: new Date().toISOString(),
         });
 
@@ -1343,9 +1346,16 @@ export async function requestJoinKomunitas({
     revalidatePath("/profil");
     revalidatePath("/admin/approval");
 
+    if (isDirectPengunjung) {
+      return {
+        success: true,
+        message: `Selamat bergabung di ${seedItem?.nama || "Komunitas"} sebagai Pengunjung!`,
+      };
+    }
+
     return {
       success: true,
-      message: `Permohonan bergabung sebagai ${targetPeranDiajukan} berhasil dikirim! Menunggu persetujuan Admin Komunitas.`,
+      message: `Permohonan bergabung sebagai ${targetPeranDiajukan} berhasil dikirim! Anda langsung dapat mengakses komunitas sebagai Pengunjung sambil menunggu persetujuan Admin.`,
     };
   } catch (err: any) {
     console.error("Error requestJoinKomunitas:", err);
@@ -1723,6 +1733,21 @@ export async function applyForAdminKomunitas({
           success: false,
           message:
             "Hanya anggota aktif dengan status Penduduk (KK & Domisili di Kota Tegal) yang berhak mengajukan permohonan sebagai Admin/Pengurus.",
+        };
+      }
+    }
+
+    // 2b. SYARAT UNTUK BIDANG SPM: Hanya peran Pendamping yang berhak mengajukan permohonan sebagai Admin Bidang SPM kepada Super Admin
+    if (seed?.jenis === "bidang_spm") {
+      const isPendamping =
+        existingMember.peran?.toLowerCase() === "pendamping" ||
+        existingMember.peran?.toLowerCase().includes("pendamping");
+
+      if (!isPendamping) {
+        return {
+          success: false,
+          message:
+            "Akses ditolak: Hanya anggota dengan peran Pendamping yang berhak mengajukan diri sebagai Admin Bidang SPM kepada Super Admin.",
         };
       }
     }

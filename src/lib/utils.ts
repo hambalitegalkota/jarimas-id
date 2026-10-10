@@ -115,6 +115,9 @@ export function formatPeranDisplay(peran?: string | null): string {
   if (pLower === "orangtua/wali murid" || pLower === "wali murid") return "Orangtua/Wali Murid";
   if (pLower === "komite") return "Komite";
   if (pLower === "alumni") return "Alumni";
+  if (pLower === "tim pembina" || pLower === "pembina") return "Tim Pembina";
+  if (pLower === "pendamping") return "Pendamping";
+  if (pLower === "mitra") return "Mitra";
   if (pLower === "admin kelurahan") return "Admin Kelurahan";
   if (pLower === "admin") return "Admin";
   return p.charAt(0).toUpperCase() + p.slice(1);
@@ -132,6 +135,8 @@ export function isRoleAdmin(peran?: string | null): boolean {
     p === "penduduk" ||
     p === "pendatang" ||
     p === "pengunjung" ||
+    p === "mitra" ||
+    p === "pendamping" ||
     p === "penduduk berdomisili luar kota" ||
     p === "penduduk domisili diluar" ||
     p === "penduduk domisili di luar"

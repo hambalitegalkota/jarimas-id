@@ -253,6 +253,15 @@ export function computeTierAndApprover(
     };
   }
 
+  if (meta.jenis === "bidang_spm") {
+    return {
+      tierLevel: "Bidang SPM" as any,
+      targetApproverTitle: isAdmin
+        ? "Super Admin"
+        : "Admin Bidang SPM / Super Admin",
+    };
+  }
+
   return {
     tierLevel: "Umum",
     targetApproverTitle: "Super Admin",

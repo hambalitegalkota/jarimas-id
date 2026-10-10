@@ -112,6 +112,10 @@ export function KomunitasDetailClientView({
     isApprovedMember &&
     (userPeran === "Penduduk" ||
       (membership?.berdomisili === true && membership?.kk_terdaftar === true));
+  const isPendamping =
+    isApprovedMember &&
+    (userPeran.toLowerCase().trim() === "pendamping" ||
+      userPeran.toLowerCase().trim().includes("pendamping"));
   const isKader =
     isApprovedMember &&
     (userPeran.toLowerCase().trim() === "kader" ||
@@ -281,6 +285,17 @@ export function KomunitasDetailClientView({
       );
     }
 
+    if (komunitas.jenis === "bidang_spm") {
+      return (
+        isAdminOrKader ||
+        (isApproved &&
+          (roleLower.includes("admin") ||
+            roleLower.includes("pengurus") ||
+            roleLower.includes("tim pembina") ||
+            roleLower.includes("pendamping")))
+      );
+    }
+
     return isAdminOrKader;
   }, [komunitas.jenis, membership, isAdminOrKader, currentUserId]);
 
@@ -414,12 +429,14 @@ export function KomunitasDetailClientView({
                 "flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl font-bold border-2",
                 komunitas.jenis === "warga_kita" && "bg-blue-50 text-blue-700 border-blue-200",
                 komunitas.jenis === "posyandu" && "bg-emerald-50 text-emerald-700 border-emerald-200",
-                komunitas.jenis === "satuan_paud" && "bg-amber-50 text-amber-800 border-amber-200"
+                komunitas.jenis === "satuan_paud" && "bg-amber-50 text-amber-800 border-amber-200",
+                komunitas.jenis === "bidang_spm" && "bg-teal-50 text-teal-700 border-teal-200"
               )}
             >
               {komunitas.jenis === "warga_kita" && <Users className="h-7 w-7" />}
               {komunitas.jenis === "posyandu" && <Sparkles className="h-7 w-7" />}
               {komunitas.jenis === "satuan_paud" && <Building2 className="h-7 w-7" />}
+              {komunitas.jenis === "bidang_spm" && <ShieldCheck className="h-7 w-7" />}
             </div>
 
             <div className="space-y-1">
@@ -429,6 +446,8 @@ export function KomunitasDetailClientView({
                     ? "WARGA KITA"
                     : komunitas.jenis === "posyandu"
                     ? "POSYANDU"
+                    : komunitas.jenis === "bidang_spm"
+                    ? "BIDANG SPM"
                     : "SATUAN PAUD"}
                 </span>
                 <span className="text-xs font-semibold text-slate-500">
@@ -559,8 +578,8 @@ export function KomunitasDetailClientView({
         </section>
       )}
 
-      {/* ALERT JIKA BELUM MEMILIKI ADMIN (HANYA UNTUK PENGGUNA YANG SUDAH LOGIN & SUDAH BERGABUNG SEBAGAI ANGGOTA PADA WARGA KITA) */}
-      {Boolean(currentUserId) && isApprovedMember && !komunitas.hasAdmin && isWargaKita && (
+      {/* ALERT JIKA BELUM MEMILIKI ADMIN (UNTUK WARGA KITA & BIDANG SPM) */}
+      {Boolean(currentUserId) && isApprovedMember && !komunitas.hasAdmin && (isWargaKita || komunitas.jenis === "bidang_spm") && (
         <section className="rounded-2xl border-2 border-amber-200 bg-amber-50/70 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
           <div className="flex items-start gap-3.5">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-900">
@@ -571,7 +590,19 @@ export function KomunitasDetailClientView({
                 Komunitas Belum Memiliki Admin / Pengurus
               </h4>
               <p className="text-sm text-slate-700 leading-relaxed">
-                {isPenduduk ? (
+                {komunitas.jenis === "bidang_spm" ? (
+                  isPendamping ? (
+                    membership?.peran_diajukan ? (
+                      <span className="font-semibold text-emerald-800">
+                        Permohonan Anda sebagai Admin Bidang SPM sedang menunggu verifikasi dan persetujuan Super Admin.
+                      </span>
+                    ) : (
+                      "Sebagai anggota berstatus Pendamping, Anda berhak mengajukan permohonan peran sebagai Admin Bidang SPM kepada Super Admin."
+                    )
+                  ) : (
+                    "Pengajuan peran sebagai Admin Bidang SPM hanya dapat diajukan oleh anggota dengan peran Pendamping kepada Super Admin."
+                  )
+                ) : isPenduduk ? (
                   membership?.peran_diajukan ? (
                     <span className="font-semibold text-emerald-800">
                       Permohonan Anda sebagai Admin sedang menunggu verifikasi dan persetujuan Super Admin / Admin hierarki tingkat atas. (Tidak ada proses otomatisasi).
@@ -586,8 +617,8 @@ export function KomunitasDetailClientView({
             </div>
           </div>
 
-          {/* Action Button: Pengajuan Admin jika berstatus Penduduk */}
-          {isPenduduk && !membership?.peran_diajukan ? (
+          {/* Action Button: Pengajuan Admin */}
+          {((komunitas.jenis === "bidang_spm" && isPendamping) || (isWargaKita && isPenduduk)) && !membership?.peran_diajukan ? (
             <button
               type="button"
               onClick={() => setIsApplyAdminOpen(true)}
