@@ -10,6 +10,7 @@ import {
   Store,
   Sparkles,
 } from "lucide-react";
+import { isSuperOrAdminPusat, isAdminPusat } from "@/lib/utils";
 
 export default async function AdminLayout({
   children,
@@ -27,13 +28,17 @@ export default async function AdminLayout({
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("is_super_admin, nama_lengkap, email")
+    .select("id, is_super_admin, is_admin_pusat, nama_lengkap, email")
     .eq("id", user.id)
     .single();
 
-  if (!profile?.is_super_admin) {
+  if (!isSuperOrAdminPusat(profile)) {
     redirect("/profil");
   }
+
+  const isPusat = isAdminPusat(profile);
+  const portalTitle = profile?.is_super_admin ? "PORTAL SUPER ADMIN" : "PORTAL ADMIN PUSAT";
+  const badgeText = profile?.is_super_admin ? "ROOT OWNER" : "MANAJERIAL GLOBAL";
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -47,14 +52,14 @@ export default async function AdminLayout({
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-sm font-bold tracking-tight text-foreground font-mono">
-                  PORTAL SUPER ADMIN
+                  {portalTitle}
                 </span>
                 <span className="rounded-md border border-emerald-800/60 bg-emerald-950/30 px-1.5 py-0.2 text-[10px] font-mono text-emerald-400">
-                  KOTA TEGAL
+                  {badgeText}
                 </span>
               </div>
               <p className="text-[11px] text-muted-foreground font-mono">
-                Operator: <span className="text-foreground">{profile.nama_lengkap || user.email}</span>
+                Operator: <span className="text-foreground">{profile?.nama_lengkap || user.email}</span>
               </p>
             </div>
           </div>

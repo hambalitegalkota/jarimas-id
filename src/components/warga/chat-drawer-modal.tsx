@@ -23,6 +23,7 @@ import {
   JARIMAS_BOT_ID,
   JARIMAS_BOT_NAME,
 } from "@/types/database";
+import { isAdminPusat } from "@/lib/utils";
 
 interface ChatDrawerModalProps {
   isOpen: boolean;
@@ -285,7 +286,12 @@ export function ChatDrawerModal({
                 ) : targetUser.is_super_admin ? (
                   <span className="inline-flex items-center gap-0.5 rounded-full bg-amber-100 dark:bg-amber-950/80 px-2 py-0.5 text-[9px] font-black text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-700">
                     <ShieldCheck className="h-3 w-3 text-amber-600" />
-                    Admin
+                    Super Admin
+                  </span>
+                ) : (targetUser.is_admin_pusat || isAdminPusat(targetUser)) ? (
+                  <span className="inline-flex items-center gap-0.5 rounded-full bg-teal-100 dark:bg-teal-950/80 px-2 py-0.5 text-[9px] font-black text-teal-900 dark:text-teal-300 border border-teal-300 dark:border-teal-700">
+                    <ShieldCheck className="h-3 w-3 text-teal-600" />
+                    Admin Pusat
                   </span>
                 ) : null}
               </div>

@@ -23,7 +23,7 @@ import {
 import { getGroupMessages, sendGroupMessage } from "@/app/actions/pertemanan";
 import { createClient } from "@/utils/supabase/client";
 import type { KomunitasWithMembership, PesanGrup } from "@/types/database";
-import { formatPeranDisplay, isRoleAdmin, cn } from "@/lib/utils";
+import { formatPeranDisplay, isRoleAdmin, cn, isAdminPusat } from "@/lib/utils";
 
 interface KomunitasPercakapanTabProps {
   komunitas: KomunitasWithMembership;
@@ -228,12 +228,21 @@ export function KomunitasPercakapanTab({
   };
 
   // Badge Peran Warna Khusus
-  const renderRoleBadge = (role?: string | null, isSuper?: boolean) => {
+  const renderRoleBadge = (role?: string | null, isSuper?: boolean, isPusat?: boolean) => {
     if (isSuper) {
       return (
         <span className="inline-flex items-center gap-1 text-[10px] font-extrabold px-2 py-0.5 rounded-md bg-purple-100 dark:bg-purple-950/80 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
           <Sparkles className="h-2.5 w-2.5 text-purple-600" />
           Super Admin
+        </span>
+      );
+    }
+
+    if (isPusat || (role && role.toLowerCase().includes("admin pusat"))) {
+      return (
+        <span className="inline-flex items-center gap-1 text-[10px] font-extrabold px-2 py-0.5 rounded-md bg-teal-100 dark:bg-teal-950/80 text-teal-800 dark:text-teal-300 border border-teal-200 dark:border-teal-800">
+          <ShieldCheck className="h-2.5 w-2.5 text-teal-600" />
+          Admin Pusat
         </span>
       );
     }
@@ -376,7 +385,8 @@ export function KomunitasPercakapanTab({
               const isMe = currentUserId && msg.user_id === currentUserId;
               const senderName = msg.profiles?.nama_lengkap || "Warga Komunitas";
               const isSuper = msg.profiles?.is_super_admin === true;
-              const roleDisplay = msg.user_role || (isSuper ? "Super Admin" : "Anggota");
+              const isPusat = isAdminPusat(msg.profiles);
+              const roleDisplay = msg.user_role || (isSuper ? "Super Admin" : isPusat ? "Admin Pusat" : "Anggota");
 
               const timeStr = msg.created_at
                 ? new Date(msg.created_at).toLocaleTimeString("id-ID", {
@@ -395,7 +405,7 @@ export function KomunitasPercakapanTab({
                     <span className="font-bold text-slate-700 dark:text-slate-300">
                       {isMe ? "Saya" : senderName}
                     </span>
-                    {renderRoleBadge(roleDisplay, isSuper)}
+                    {renderRoleBadge(roleDisplay, isSuper, isPusat)}
                     <span className="text-slate-400 dark:text-slate-500 flex items-center gap-1">
                       <Clock className="h-2.5 w-2.5" />
                       {timeStr}

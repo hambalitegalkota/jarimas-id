@@ -25,6 +25,7 @@ import {
   respondFriendRequest,
 } from "@/app/actions/pertemanan";
 import { ChatDrawerModal } from "./chat-drawer-modal";
+import { isAdminPusat } from "@/lib/utils";
 import type { RegisteredUserItem } from "@/types/database";
 
 interface RegisteredUsersSectionProps {
@@ -384,12 +385,17 @@ export function RegisteredUsersSection({
                           <h3 className="text-sm font-black text-slate-900 dark:text-slate-100 truncate">
                             {userItem.nama_lengkap}
                           </h3>
-                          {userItem.is_super_admin && (
+                          {userItem.is_super_admin ? (
                             <span className="inline-flex items-center gap-0.5 rounded-full bg-amber-100 dark:bg-amber-950/80 px-2 py-0.5 text-[9px] font-black text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-700">
                               <ShieldCheck className="h-3 w-3 text-amber-600" />
-                              Admin
+                              Super Admin
                             </span>
-                          )}
+                          ) : (userItem.is_admin_pusat || isAdminPusat(userItem)) ? (
+                            <span className="inline-flex items-center gap-0.5 rounded-full bg-teal-100 dark:bg-teal-950/80 px-2 py-0.5 text-[9px] font-black text-teal-900 dark:text-teal-300 border border-teal-300 dark:border-teal-700">
+                              <ShieldCheck className="h-3 w-3 text-teal-600" />
+                              Admin Pusat
+                            </span>
+                          ) : null}
                           {isMe && (
                             <span className="rounded-full bg-emerald-100 dark:bg-emerald-950 px-2 py-0.5 text-[9px] font-black text-emerald-800 dark:text-emerald-300 border border-emerald-300">
                               Anda

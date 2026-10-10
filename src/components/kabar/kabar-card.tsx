@@ -24,7 +24,7 @@ import {
   toggleKomentarKabarStatus,
 } from "@/app/actions/kabar";
 import type { KabarItem, KomentarKabar } from "@/types/database";
-import { cn } from "@/lib/utils";
+import { cn, isAdminPusat } from "@/lib/utils";
 import { LoginPromptModal } from "@/components/kabar/login-prompt-modal";
 
 interface KabarCardProps {
@@ -426,11 +426,15 @@ export function KabarCard({
               <h3 className="text-base font-bold text-slate-900 leading-tight">
                 {authorName}
               </h3>
-              {kabar.profiles?.is_super_admin && (
-                <span className="rounded-md bg-blue-50 px-2 py-0.5 text-xs font-bold text-blue-800 border border-blue-200">
-                  ADMIN
+              {kabar.profiles?.is_super_admin ? (
+                <span className="rounded-md bg-amber-50 px-2 py-0.5 text-xs font-bold text-amber-800 border border-amber-200">
+                  SUPER ADMIN
                 </span>
-              )}
+              ) : isAdminPusat(kabar.profiles) ? (
+                <span className="rounded-md bg-teal-50 px-2 py-0.5 text-xs font-bold text-teal-800 border border-teal-200">
+                  ADMIN PUSAT
+                </span>
+              ) : null}
             </div>
 
             <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-slate-500">

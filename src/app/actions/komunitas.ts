@@ -671,10 +671,17 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
         currentUserId = user.id;
         const { data: prof } = await supabase
           .from("profiles")
-          .select("is_super_admin")
+          .select("id, is_super_admin, is_admin_pusat, nama_lengkap")
           .eq("id", user.id)
           .single();
         isSuperAdmin = prof?.is_super_admin === true;
+        const isAdminPusat =
+          prof?.is_admin_pusat === true ||
+          (prof?.nama_lengkap || "").toLowerCase().includes("jarimas indonesia") ||
+          prof?.id === "00000000-0000-0000-0000-000000000001";
+        if (isAdminPusat) {
+          isSuperAdmin = true; // Memberikan wewenang manajerial global
+        }
       }
     } catch {
       // User tamu
@@ -2130,17 +2137,21 @@ export async function kickMemberByAdmin({
 
     const dbKomunitasId = toValidUUID(komunitasId);
 
-    // Cek profil pemanggil apakah Super Admin
+    // Cek profil pemanggil apakah Super Admin atau Admin Pusat
     const { data: myProfile } = await supabase
       .from("profiles")
-      .select("is_super_admin")
+      .select("id, is_super_admin, is_admin_pusat, nama_lengkap")
       .eq("id", user.id)
       .maybeSingle();
 
     const isSuperAdmin = myProfile?.is_super_admin === true;
+    const isAdminPusat =
+      myProfile?.is_admin_pusat === true ||
+      (myProfile?.nama_lengkap || "").toLowerCase().includes("jarimas indonesia") ||
+      myProfile?.id === "00000000-0000-0000-0000-000000000001";
 
     // Cek keanggotaan pemanggil apakah Admin di komunitas ini
-    let hasAdminAuth = isSuperAdmin;
+    let hasAdminAuth = isSuperAdmin || isAdminPusat;
     if (!hasAdminAuth) {
       const { data: myMembership } = await supabase
         .from("anggota_komunitas")

@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/utils/supabase/server";
 import { KabarSchema, KomentarSchema } from "@/lib/zod-schemas";
-import { toValidUUID } from "@/lib/utils";
+import { toValidUUID, isSuperOrAdminPusat } from "@/lib/utils";
 import type {
   KabarItem,
   KomentarKabar,
@@ -42,10 +42,10 @@ export async function getKabarFeed(
         currentUserId = user.id;
         const { data: profile } = await supabase
           .from("profiles")
-          .select("is_super_admin")
+          .select("id, is_super_admin, is_admin_pusat, nama_lengkap")
           .eq("id", user.id)
           .maybeSingle();
-        isSuperAdmin = profile?.is_super_admin === true;
+        isSuperAdmin = isSuperOrAdminPusat(profile);
       }
     } catch {
       // User mungkin belum login (tamu)
@@ -757,11 +757,11 @@ export async function deleteKabar(kabarId: string): Promise<{
     if (!isOwner) {
       const { data: profile } = await supabase
         .from("profiles")
-        .select("is_super_admin")
+        .select("id, is_super_admin, is_admin_pusat, nama_lengkap")
         .eq("id", user.id)
         .single();
 
-      const isSuperAdmin = profile?.is_super_admin === true;
+      const isSuperAdmin = isSuperOrAdminPusat(profile);
       if (!isSuperAdmin) {
         return {
           success: false,
@@ -851,11 +851,11 @@ export async function deleteKomentarKabar(
     // Cek otorisasi user
     const { data: profile } = await supabase
       .from("profiles")
-      .select("is_super_admin")
+      .select("id, is_super_admin, is_admin_pusat, nama_lengkap")
       .eq("id", user.id)
       .maybeSingle();
 
-    const isSuperAdmin = profile?.is_super_admin === true;
+    const isSuperAdmin = isSuperOrAdminPusat(profile);
     const isCommentAuthor = komentar.user_id === user.id;
     const isPostAuthor = kabar?.user_id === user.id;
 
@@ -948,11 +948,11 @@ export async function toggleKomentarKabarStatus(
     // Cek otorisasi
     const { data: profile } = await supabase
       .from("profiles")
-      .select("is_super_admin")
+      .select("id, is_super_admin, is_admin_pusat, nama_lengkap")
       .eq("id", user.id)
       .maybeSingle();
 
-    const isSuperAdmin = profile?.is_super_admin === true;
+    const isSuperAdmin = isSuperOrAdminPusat(profile);
     const isAuthor = kabar.user_id === user.id;
 
     if (!isAuthor && !isSuperAdmin) {

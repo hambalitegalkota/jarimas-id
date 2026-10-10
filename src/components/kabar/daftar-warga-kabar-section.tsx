@@ -23,6 +23,7 @@ import {
 import { sendFriendRequest, respondFriendRequest } from "@/app/actions/pertemanan";
 import { ChatDrawerModal } from "@/components/warga/chat-drawer-modal";
 import { useGlobalMessageNotification } from "@/components/notifications/global-message-notification-provider";
+import { isAdminPusat } from "@/lib/utils";
 import type { RegisteredUserItem } from "@/types/database";
 
 interface DaftarWargaKabarSectionProps {
@@ -252,11 +253,15 @@ export function DaftarWargaKabarSection({
                     Online
                   </span>
                 )}
-                {userItem.is_super_admin && (
+                {userItem.is_super_admin ? (
                   <span className="rounded-full bg-amber-100 dark:bg-amber-950/80 px-1.5 py-0.2 text-[9px] font-black text-amber-900 dark:text-amber-300 border border-amber-300">
-                    Admin
+                    Super Admin
                   </span>
-                )}
+                ) : (userItem.is_admin_pusat || isAdminPusat(userItem)) ? (
+                  <span className="rounded-full bg-teal-100 dark:bg-teal-950/80 px-1.5 py-0.2 text-[9px] font-black text-teal-900 dark:text-teal-300 border border-teal-300">
+                    Admin Pusat
+                  </span>
+                ) : null}
               </div>
               <span className="text-[10px] text-slate-400 block">
                 {isOnline ? (

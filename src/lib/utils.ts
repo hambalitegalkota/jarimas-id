@@ -96,6 +96,7 @@ export function formatPeranDisplay(peran?: string | null): string {
   if (pLower === "pengurus") return "Pengurus";
   if (pLower === "anggota") return "Anggota";
   if (pLower === "super_admin" || pLower === "super admin") return "Super Admin";
+  if (pLower === "admin_pusat" || pLower === "admin pusat") return "Admin Pusat";
   if (pLower === "penduduk") return "Penduduk";
   if (
     pLower === "penduduk berdomisili luar kota" ||
@@ -121,6 +122,37 @@ export function formatPeranDisplay(peran?: string | null): string {
   if (pLower === "admin kelurahan") return "Admin Kelurahan";
   if (pLower === "admin") return "Admin";
   return p.charAt(0).toUpperCase() + p.slice(1);
+}
+
+/**
+ * Mengecek apakah pengguna memiliki status peran Admin Pusat (Manajerial Global di bawah Super Admin)
+ */
+export function isAdminPusat(profileOrUser?: {
+  is_admin_pusat?: boolean;
+  is_super_admin?: boolean;
+  nama_lengkap?: string | null;
+  id?: string | null;
+} | null): boolean {
+  if (!profileOrUser) return false;
+  if (profileOrUser.is_admin_pusat === true) return true;
+  const name = (profileOrUser.nama_lengkap || "").toLowerCase().trim();
+  if (name.includes("jarimas indonesia") || name === "jarimas") return true;
+  if (profileOrUser.id === "00000000-0000-0000-0000-000000000001") return true;
+  return false;
+}
+
+/**
+ * Mengecek apakah pengguna memiliki hak akses penuh tingkat atas (Super Admin atau Admin Pusat)
+ */
+export function isSuperOrAdminPusat(profileOrUser?: {
+  is_admin_pusat?: boolean;
+  is_super_admin?: boolean;
+  nama_lengkap?: string | null;
+  id?: string | null;
+} | null): boolean {
+  if (!profileOrUser) return false;
+  if (profileOrUser.is_super_admin === true) return true;
+  return isAdminPusat(profileOrUser);
 }
 
 /**
@@ -152,6 +184,8 @@ export function isRoleAdmin(peran?: string | null): boolean {
     p.includes("pimpinan") ||
     p.includes("super_admin") ||
     p.includes("super admin") ||
+    p.includes("admin_pusat") ||
+    p.includes("admin pusat") ||
     p.includes("nakes") ||
     p.includes("bidan") ||
     p.includes("kepala") ||
@@ -215,6 +249,10 @@ export function canManageDataAnakInKomunitas(
   }
 
   const p = peran.toLowerCase().trim();
+  if (p.includes("admin pusat") || p.includes("admin_pusat") || p.includes("super admin") || p.includes("super_admin")) {
+    return { canCreate: true, canEdit: true, canDelete: true, isReadOnly: false };
+  }
+
   const jenis = (jenisKomunitas || "").toLowerCase().trim();
 
   if (jenis === "satuan_paud") {

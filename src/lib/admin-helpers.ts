@@ -279,10 +279,12 @@ export function computeTierAndApprover(
  */
 export function checkUserCanApproveItem({
   isSuperAdmin,
+  isAdminPusat = false,
   userAdminKomunitas,
   targetItem,
 }: {
   isSuperAdmin: boolean;
+  isAdminPusat?: boolean;
   userAdminKomunitas: any[];
   targetItem: {
     komunitas_id: string;
@@ -299,7 +301,7 @@ export function checkUserCanApproveItem({
     } | null;
   };
 }): boolean {
-  if (isSuperAdmin) return true;
+  if (isSuperAdmin || isAdminPusat) return true;
   if (!userAdminKomunitas || userAdminKomunitas.length === 0) return false;
 
   const roleReq = (targetItem.peran_diajukan || targetItem.peran || "").toLowerCase();

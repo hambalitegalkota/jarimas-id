@@ -1,4 +1,4 @@
-export type UserRole = "Super Admin" | "Pengurus" | "Kader" | "Anggota";
+export type UserRole = "Super Admin" | "Admin Pusat" | "Pengurus" | "Kader" | "Anggota" | "Pengunjung";
 export type MembershipStatus = "pending" | "approved" | "rejected";
 export type VisibilitasKabar = "publik" | "teman" | "komunitas";
 export type SortingKabar = "terbaru" | "terpopuler";
@@ -12,6 +12,8 @@ export interface Profile {
   nama_lengkap: string;
   email: string;
   is_super_admin: boolean;
+  is_admin_pusat?: boolean;
+  role_level?: "root_super_admin" | "admin_pusat" | "user";
   avatar_url?: string | null;
   nomor_hp?: string | null;
   created_at?: string;
@@ -584,6 +586,7 @@ export interface RegisteredUserItem {
   nomor_hp?: string | null;
   avatar_url?: string | null;
   is_super_admin: boolean;
+  is_admin_pusat?: boolean;
   created_at: string;
   komunitas_list?: UserKomunitasAffiliation[];
   friendship_status?: "none" | "pending_sent" | "pending_received" | "accepted" | "self";
@@ -594,6 +597,7 @@ export interface RegisteredUserItem {
 export interface GetRegisteredUsersResult {
   isAuthenticated: boolean;
   isSuperAdmin?: boolean;
+  isAdminPusat?: boolean;
   currentUserId?: string | null;
   users: RegisteredUserItem[];
   totalCount: number;

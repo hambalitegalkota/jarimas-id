@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/utils/supabase/server";
-import { toValidUUID } from "@/lib/utils";
+import { toValidUUID, isAdminPusat, isSuperOrAdminPusat } from "@/lib/utils";
 import { SEED_SPM_TEGAL } from "@/lib/constants/tegal-data";
 import type {
   GetRegisteredUsersResult,
@@ -46,15 +46,17 @@ export async function getRegisteredUsers(params?: {
 
     const currentUserId = user.id;
 
-    // 2. Periksa status Super Admin pengguna saat ini
+    // 2. Periksa status Super Admin & Admin Pusat pengguna saat ini
     let isSuperAdmin = false;
+    let isAdminPusatUser = false;
     try {
       const { data: currentUserProfile } = await supabase
         .from("profiles")
-        .select("id, is_super_admin")
+        .select("id, is_super_admin, is_admin_pusat, nama_lengkap")
         .eq("id", currentUserId)
         .maybeSingle();
       isSuperAdmin = currentUserProfile?.is_super_admin === true;
+      isAdminPusatUser = isAdminPusat(currentUserProfile);
     } catch {
       // Abaikan jika pengecekan profil terkendala
     }
@@ -122,14 +124,14 @@ export async function getRegisteredUsers(params?: {
     // - Super Admin: Mengambil semua profil terdaftar
     // - User Reguler: HANYA mengambil profil pengguna yang satu komunitas
     let targetProfiles: any[] = [];
-    if (isSuperAdmin) {
+    if (isSuperAdmin || isAdminPusatUser) {
       const { data: profiles, error: profileErr } = await supabase
         .from("profiles")
         .select("id, nama_lengkap, email, nomor_hp, avatar_url, is_super_admin, created_at")
         .order("created_at", { ascending: false });
 
       if (profileErr) {
-        console.warn("Gagal mengambil profiles untuk super admin:", profileErr);
+        console.warn("Gagal mengambil profiles untuk super admin / admin pusat:", profileErr);
       }
       targetProfiles = profiles || [];
     } else {
@@ -226,6 +228,7 @@ export async function getRegisteredUsers(params?: {
         }
       }
 
+      const userIsAdminPusat = isAdminPusat(p);
       return {
         id: p.id,
         nama_lengkap: p.nama_lengkap || "Warga Jarimas",
@@ -233,6 +236,7 @@ export async function getRegisteredUsers(params?: {
         nomor_hp: p.nomor_hp,
         avatar_url: p.avatar_url,
         is_super_admin: p.is_super_admin === true,
+        is_admin_pusat: userIsAdminPusat,
         created_at: p.created_at || new Date().toISOString(),
         komunitas_list: communityMap[p.id] || [],
         friendship_status,
@@ -271,6 +275,7 @@ export async function getRegisteredUsers(params?: {
     return {
       isAuthenticated: true,
       isSuperAdmin,
+      isAdminPusat: isAdminPusatUser,
       currentUserId,
       users: mappedUsers,
       totalCount: otherUsersCount,
@@ -322,26 +327,26 @@ export async function sendFriendRequest(targetUserId: string): Promise<{
       };
     }
 
-    // Periksa hak akses Super Admin
+    // Periksa hak akses Super Admin / Admin Pusat
     let isCurrentSuperAdmin = false;
     try {
       const { data: myProfile } = await supabase
         .from("profiles")
-        .select("id, is_super_admin")
+        .select("id, is_super_admin, is_admin_pusat, nama_lengkap")
         .eq("id", user.id)
         .maybeSingle();
-      isCurrentSuperAdmin = myProfile?.is_super_admin === true;
+      isCurrentSuperAdmin = isSuperOrAdminPusat(myProfile);
     } catch {
       // Abaikan
     }
 
     const { data: targetProfile } = await supabase
       .from("profiles")
-      .select("id, is_super_admin")
+      .select("id, is_super_admin, is_admin_pusat, nama_lengkap")
       .eq("id", targetUserId)
       .maybeSingle();
 
-    const isTargetSuperAdmin = targetProfile?.is_super_admin === true;
+    const isTargetSuperAdmin = isSuperOrAdminPusat(targetProfile);
 
     // Jika bukan super admin dan target bukan super admin, validasi kesamaan komunitas
     if (!isCurrentSuperAdmin && !isTargetSuperAdmin) {
@@ -742,15 +747,15 @@ export async function sendPrivateMessage(params: {
       };
     }
 
-    // Periksa status Super Admin pengirim dan penerima
+    // Periksa status Super Admin / Admin Pusat pengirim dan penerima
     let isCurrentSuperAdmin = false;
     try {
       const { data: myProfile } = await supabase
         .from("profiles")
-        .select("id, is_super_admin")
+        .select("id, is_super_admin, is_admin_pusat, nama_lengkap")
         .eq("id", user.id)
         .maybeSingle();
-      isCurrentSuperAdmin = myProfile?.is_super_admin === true;
+      isCurrentSuperAdmin = isSuperOrAdminPusat(myProfile);
     } catch {
       // Abaikan
     }
@@ -761,10 +766,10 @@ export async function sendPrivateMessage(params: {
     } else {
       const { data: targetProfile } = await supabase
         .from("profiles")
-        .select("id, is_super_admin")
+        .select("id, is_super_admin, is_admin_pusat, nama_lengkap")
         .eq("id", receiverId)
         .maybeSingle();
-      isTargetSuperAdmin = targetProfile?.is_super_admin === true;
+      isTargetSuperAdmin = isSuperOrAdminPusat(targetProfile);
     }
 
     // Jika bukan Super Admin, penerima bukan Super Admin, dan bukan Bot Jarimas:
@@ -1373,15 +1378,15 @@ export async function sendGroupMessage(params: {
       };
     }
 
-    // Periksa status Super Admin atau keanggotaan komunitas
+    // Periksa status Super Admin / Admin Pusat atau keanggotaan komunitas
     let isSuperAdmin = false;
     try {
       const { data: prof } = await supabase
         .from("profiles")
-        .select("is_super_admin")
+        .select("id, is_super_admin, is_admin_pusat, nama_lengkap")
         .eq("id", user.id)
         .maybeSingle();
-      isSuperAdmin = prof?.is_super_admin === true;
+      isSuperAdmin = isSuperOrAdminPusat(prof);
     } catch {
       // Abaikan
     }

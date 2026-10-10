@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/utils/supabase/server";
-import { toValidUUID, isRoleAdmin } from "@/lib/utils";
+import { toValidUUID, isRoleAdmin, isSuperOrAdminPusat } from "@/lib/utils";
 import type {
   LaporanKaderSpmItem,
   BidangSpmType,
@@ -78,11 +78,11 @@ export async function createLaporanKaderSpmAction(
     // 1.5. Validasi Otorisasi: Hanya Admin / Pengurus dan Kader Komunitas Posyandu yang bersangkutan
     const { data: prof } = await supabase
       .from("profiles")
-      .select("is_super_admin")
+      .select("id, is_super_admin, is_admin_pusat, nama_lengkap")
       .eq("id", user.id)
       .maybeSingle();
 
-    const isSuperAdmin = prof?.is_super_admin === true;
+    const isSuperAdmin = isSuperOrAdminPusat(prof);
 
     if (!isSuperAdmin) {
       const { data: memberships } = await supabase
@@ -235,11 +235,11 @@ export async function getLaporanKaderSpmByKomunitasAction(
 
     const { data: prof } = await supabase
       .from("profiles")
-      .select("is_super_admin")
+      .select("id, is_super_admin, is_admin_pusat, nama_lengkap")
       .eq("id", user.id)
       .maybeSingle();
 
-    const isSuperAdmin = prof?.is_super_admin === true;
+    const isSuperAdmin = isSuperOrAdminPusat(prof);
 
     if (!isSuperAdmin) {
       const { data: memberships } = await supabase
@@ -464,11 +464,11 @@ export async function deleteLaporanKaderSpmAction(
 
     const { data: prof } = await supabase
       .from("profiles")
-      .select("is_super_admin")
+      .select("id, is_super_admin, is_admin_pusat, nama_lengkap")
       .eq("id", user.id)
       .maybeSingle();
 
-    const isSuperAdmin = prof?.is_super_admin === true;
+    const isSuperAdmin = isSuperOrAdminPusat(prof);
 
     // Cek apakah user adalah pembuat laporan atau admin/pengurus
     const { data: existingReport } = await supabase

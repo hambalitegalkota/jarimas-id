@@ -7,6 +7,7 @@ import {
   isDataAtsRecord,
   normalizeWilayah,
 } from "@/lib/data-anak-helpers";
+import { isAdminPusat } from "@/lib/utils";
 
 export interface DaftarNamaAnakItem {
   id: string;
@@ -543,6 +544,7 @@ export async function getRekapDataAnakUsiaDiniAction(): Promise<{
 export async function checkUserRekapAdminAccess(): Promise<{
   canAccess: boolean;
   isSuperAdmin: boolean;
+  isAdminPusat?: boolean;
   isAdminKomunitas: boolean;
   userPeran?: string;
   userName?: string;
@@ -555,23 +557,37 @@ export async function checkUserRekapAdminAccess(): Promise<{
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return { canAccess: false, isSuperAdmin: false, isAdminKomunitas: false };
+      return { canAccess: false, isSuperAdmin: false, isAdminPusat: false, isAdminKomunitas: false };
     }
 
     const { data: profile } = await supabase
       .from("profiles")
-      .select("id, is_super_admin, nama_lengkap")
+      .select("id, is_super_admin, is_admin_pusat, nama_lengkap")
       .eq("id", user.id)
       .maybeSingle();
 
     const isSuperAdmin = profile?.is_super_admin === true;
+    const isPusat = isAdminPusat(profile);
+
     if (isSuperAdmin) {
       return {
         canAccess: true,
         isSuperAdmin: true,
+        isAdminPusat: false,
         isAdminKomunitas: true,
         userPeran: "Super Admin",
         userName: profile?.nama_lengkap || "Super Admin",
+      };
+    }
+
+    if (isPusat) {
+      return {
+        canAccess: true,
+        isSuperAdmin: false,
+        isAdminPusat: true,
+        isAdminKomunitas: true,
+        userPeran: "Admin Pusat",
+        userName: profile?.nama_lengkap || "Jarimas Indonesia",
       };
     }
 
