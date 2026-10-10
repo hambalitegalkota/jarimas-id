@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/utils/supabase/server";
-import { toValidUUID, isAdminPusat, isSuperOrAdminPusat } from "@/lib/utils";
+import { toValidUUID, isAdminPusat, isSuperOrAdminPusat, isSuperAdmin as checkIsSuperAdmin } from "@/lib/utils";
 import { SEED_SPM_TEGAL } from "@/lib/constants/tegal-data";
 import type {
   GetRegisteredUsersResult,
@@ -52,11 +52,18 @@ export async function getRegisteredUsers(params?: {
     try {
       const { data: currentUserProfile } = await supabase
         .from("profiles")
-        .select("id, is_super_admin, is_admin_pusat, nama_lengkap")
+        .select("id, is_super_admin, is_admin_pusat, nama_lengkap, email")
         .eq("id", currentUserId)
         .maybeSingle();
-      isSuperAdmin = currentUserProfile?.is_super_admin === true;
-      isAdminPusatUser = isAdminPusat(currentUserProfile);
+
+      const userCtx = {
+        ...currentUserProfile,
+        id: currentUserId,
+        email: currentUserProfile?.email || user.email,
+        nama_lengkap: currentUserProfile?.nama_lengkap || user.user_metadata?.nama_lengkap,
+      };
+      isSuperAdmin = checkIsSuperAdmin(userCtx);
+      isAdminPusatUser = !isSuperAdmin && isAdminPusat(userCtx);
     } catch {
       // Abaikan jika pengecekan profil terkendala
     }
@@ -228,14 +235,15 @@ export async function getRegisteredUsers(params?: {
         }
       }
 
-      const userIsAdminPusat = isAdminPusat(p);
+      const userIsSuperAdmin = checkIsSuperAdmin(p);
+      const userIsAdminPusat = !userIsSuperAdmin && isAdminPusat(p);
       return {
         id: p.id,
         nama_lengkap: p.nama_lengkap || "Warga Jarimas",
         email: p.email,
         nomor_hp: p.nomor_hp,
         avatar_url: p.avatar_url,
-        is_super_admin: p.is_super_admin === true,
+        is_super_admin: userIsSuperAdmin,
         is_admin_pusat: userIsAdminPusat,
         created_at: p.created_at || new Date().toISOString(),
         komunitas_list: communityMap[p.id] || [],
@@ -1100,10 +1108,15 @@ export async function getGroupChatRooms(): Promise<{
         currentUserId = user.id;
         const { data: prof } = await supabase
           .from("profiles")
-          .select("is_super_admin")
+          .select("id, is_super_admin, is_admin_pusat, nama_lengkap, email")
           .eq("id", user.id)
           .maybeSingle();
-        isSuperAdmin = prof?.is_super_admin === true;
+        isSuperAdmin = checkIsSuperAdmin({
+          ...prof,
+          id: user.id,
+          email: prof?.email || user.email,
+          nama_lengkap: prof?.nama_lengkap || user.user_metadata?.nama_lengkap,
+        });
       }
     } catch {
       // Tamu
@@ -1323,7 +1336,9 @@ export async function getGroupMessages(komunitasId: string): Promise<{
 
     const formattedMessages = (rawMessages || []).map((m: any) => ({
       ...m,
-      user_role: roleMap[m.user_id] || (m.profiles?.is_super_admin ? "Super Admin" : "Anggota"),
+      user_role:
+        roleMap[m.user_id] ||
+        (checkIsSuperAdmin(m.profiles) ? "Super Admin" : isAdminPusat(m.profiles) ? "Admin Pusat" : "Anggota"),
     }));
 
     return {

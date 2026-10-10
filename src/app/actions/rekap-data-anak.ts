@@ -7,7 +7,7 @@ import {
   isDataAtsRecord,
   normalizeWilayah,
 } from "@/lib/data-anak-helpers";
-import { isAdminPusat } from "@/lib/utils";
+import { isAdminPusat, isSuperAdmin as checkIsSuperAdmin } from "@/lib/utils";
 
 export interface DaftarNamaAnakItem {
   id: string;
@@ -562,12 +562,19 @@ export async function checkUserRekapAdminAccess(): Promise<{
 
     const { data: profile } = await supabase
       .from("profiles")
-      .select("id, is_super_admin, is_admin_pusat, nama_lengkap")
+      .select("id, is_super_admin, is_admin_pusat, nama_lengkap, email")
       .eq("id", user.id)
       .maybeSingle();
 
-    const isSuperAdmin = profile?.is_super_admin === true;
-    const isPusat = isAdminPusat(profile);
+    const userProfileCtx = {
+      ...profile,
+      id: user.id,
+      email: profile?.email || user.email,
+      nama_lengkap: profile?.nama_lengkap || user.user_metadata?.nama_lengkap,
+    };
+
+    const isSuperAdmin = checkIsSuperAdmin(userProfileCtx);
+    const isPusat = !isSuperAdmin && isAdminPusat(userProfileCtx);
 
     if (isSuperAdmin) {
       return {
@@ -576,7 +583,7 @@ export async function checkUserRekapAdminAccess(): Promise<{
         isAdminPusat: false,
         isAdminKomunitas: true,
         userPeran: "Super Admin",
-        userName: profile?.nama_lengkap || "Super Admin",
+        userName: userProfileCtx.nama_lengkap || "Super Admin",
       };
     }
 
@@ -587,7 +594,7 @@ export async function checkUserRekapAdminAccess(): Promise<{
         isAdminPusat: true,
         isAdminKomunitas: true,
         userPeran: "Admin Pusat",
-        userName: profile?.nama_lengkap || "Jarimas Indonesia",
+        userName: userProfileCtx.nama_lengkap || "Jarimas Indonesia",
       };
     }
 

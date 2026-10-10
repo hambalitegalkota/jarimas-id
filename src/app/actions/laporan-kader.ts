@@ -78,11 +78,16 @@ export async function createLaporanKaderSpmAction(
     // 1.5. Validasi Otorisasi: Hanya Admin / Pengurus dan Kader Komunitas Posyandu yang bersangkutan
     const { data: prof } = await supabase
       .from("profiles")
-      .select("id, is_super_admin, is_admin_pusat, nama_lengkap")
+      .select("id, is_super_admin, is_admin_pusat, nama_lengkap, email")
       .eq("id", user.id)
       .maybeSingle();
 
-    const isSuperAdmin = isSuperOrAdminPusat(prof);
+    const isSuperAdmin = isSuperOrAdminPusat({
+      ...prof,
+      id: user.id,
+      email: prof?.email || user.email,
+      nama_lengkap: prof?.nama_lengkap || user.user_metadata?.nama_lengkap,
+    });
 
     if (!isSuperAdmin) {
       const { data: memberships } = await supabase
@@ -235,11 +240,16 @@ export async function getLaporanKaderSpmByKomunitasAction(
 
     const { data: prof } = await supabase
       .from("profiles")
-      .select("id, is_super_admin, is_admin_pusat, nama_lengkap")
+      .select("id, is_super_admin, is_admin_pusat, nama_lengkap, email")
       .eq("id", user.id)
       .maybeSingle();
 
-    const isSuperAdmin = isSuperOrAdminPusat(prof);
+    const isSuperAdmin = isSuperOrAdminPusat({
+      ...prof,
+      id: user.id,
+      email: prof?.email || user.email,
+      nama_lengkap: prof?.nama_lengkap || user.user_metadata?.nama_lengkap,
+    });
 
     if (!isSuperAdmin) {
       const { data: memberships } = await supabase
@@ -464,11 +474,16 @@ export async function deleteLaporanKaderSpmAction(
 
     const { data: prof } = await supabase
       .from("profiles")
-      .select("id, is_super_admin, is_admin_pusat, nama_lengkap")
+      .select("id, is_super_admin, is_admin_pusat, nama_lengkap, email")
       .eq("id", user.id)
       .maybeSingle();
 
-    const isSuperAdmin = isSuperOrAdminPusat(prof);
+    const isSuperAdmin = isSuperOrAdminPusat({
+      ...prof,
+      id: user.id,
+      email: prof?.email || user.email,
+      nama_lengkap: prof?.nama_lengkap || user.user_metadata?.nama_lengkap,
+    });
 
     // Cek apakah user adalah pembuat laporan atau admin/pengurus
     const { data: existingReport } = await supabase

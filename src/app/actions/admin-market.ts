@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/utils/supabase/server";
 import { MarketProdukSchema } from "@/lib/zod-schemas";
+import { isSuperAdmin as checkIsSuperAdmin } from "@/lib/utils";
 import type {
   MarketProduk,
   MarketPesanan,
@@ -34,11 +35,16 @@ export async function upsertProduk(formData: FormData): Promise<{
     // Verifikasi Super Admin
     const { data: profile } = await supabase
       .from("profiles")
-      .select("is_super_admin")
+      .select("id, is_super_admin, is_admin_pusat, nama_lengkap, email")
       .eq("id", user.id)
-      .single();
+      .maybeSingle();
 
-    if (!profile?.is_super_admin) {
+    if (!checkIsSuperAdmin({
+      ...profile,
+      id: user.id,
+      email: profile?.email || user.email,
+      nama_lengkap: profile?.nama_lengkap || user.user_metadata?.nama_lengkap,
+    })) {
       return {
         success: false,
         message: "Hanya Super Admin yang berhak mengelola produk Jarimas Market.",
@@ -167,11 +173,16 @@ export async function getSemuaPesanan(): Promise<{
     // Cek hak akses
     const { data: profile } = await supabase
       .from("profiles")
-      .select("is_super_admin")
+      .select("id, is_super_admin, is_admin_pusat, nama_lengkap, email")
       .eq("id", user.id)
-      .single();
+      .maybeSingle();
 
-    if (!profile?.is_super_admin) {
+    if (!checkIsSuperAdmin({
+      ...profile,
+      id: user.id,
+      email: profile?.email || user.email,
+      nama_lengkap: profile?.nama_lengkap || user.user_metadata?.nama_lengkap,
+    })) {
       return {
         success: false,
         message: "Akses ditolak. Rute ini hanya untuk Super Admin.",
@@ -237,11 +248,16 @@ export async function updateStatusPesanan(
     // Verifikasi Super Admin
     const { data: profile } = await supabase
       .from("profiles")
-      .select("is_super_admin")
+      .select("id, is_super_admin, is_admin_pusat, nama_lengkap, email")
       .eq("id", user.id)
-      .single();
+      .maybeSingle();
 
-    if (!profile?.is_super_admin) {
+    if (!checkIsSuperAdmin({
+      ...profile,
+      id: user.id,
+      email: profile?.email || user.email,
+      nama_lengkap: profile?.nama_lengkap || user.user_metadata?.nama_lengkap,
+    })) {
       return {
         success: false,
         message: "Akses ditolak: Hanya Super Admin yang berhak memperbarui pesanan.",

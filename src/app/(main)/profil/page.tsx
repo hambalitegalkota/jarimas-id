@@ -22,7 +22,7 @@ import { ApprovalList } from "@/components/admin/approval-list";
 import { CleanupTestDataTool } from "@/components/admin/cleanup-test-data-tool";
 import { KomunitasManagementTools } from "@/components/admin/komunitas-management-tools";
 import { KecamatanMonitoringAccordion } from "@/components/admin/kecamatan-monitoring-accordion";
-import { formatPeranDisplay, isRoleAdmin, toValidUUID } from "@/lib/utils";
+import { formatPeranDisplay, isRoleAdmin, toValidUUID, isSuperAdmin as checkIsSuperAdmin } from "@/lib/utils";
 import { extractKomunitasMetadata } from "@/lib/admin-helpers";
 import { getWargaHierarchyChain, findKecamatanByKelurahan, slugify } from "@/lib/constants/tegal-data";
 import { UserCheck, Users } from "lucide-react";
@@ -49,13 +49,37 @@ export default async function ProfilePage() {
     .eq("id", user.id)
     .maybeSingle();
 
-  const isSuperAdmin = profile?.is_super_admin === true;
   const namaLengkap =
     profile?.nama_lengkap ||
     user.user_metadata?.nama_lengkap ||
     user.email?.split("@")[0] ||
     "Pengguna JARIMAS";
   const userEmail = profile?.email || user.email || "-";
+
+  const isSuperAdmin = checkIsSuperAdmin({
+    ...profile,
+    email: userEmail,
+    nama_lengkap: namaLengkap,
+    id: user.id,
+  });
+
+  // Self-healing: jika akun adalah Super Admin tetapi is_super_admin di DB belum true, sinkronkan ke DB
+  if (isSuperAdmin && profile?.is_super_admin !== true) {
+    try {
+      await supabase.from("profiles").upsert(
+        {
+          id: user.id,
+          nama_lengkap: namaLengkap,
+          email: userEmail,
+          is_super_admin: true,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "id" }
+      );
+    } catch (dbErr) {
+      console.warn("Gagal auto-upgrade Super Admin profile di DB:", dbErr);
+    }
+  }
 
   // 3. Ambil data permohonan pending & komunitas user
   const [pendingApprovalsResult, userJoinedResult] = await Promise.all([

@@ -10,7 +10,7 @@ import {
   Store,
   Sparkles,
 } from "lucide-react";
-import { isSuperOrAdminPusat, isAdminPusat } from "@/lib/utils";
+import { isSuperOrAdminPusat, isAdminPusat, isSuperAdmin } from "@/lib/utils";
 
 export default async function AdminLayout({
   children,
@@ -30,15 +30,22 @@ export default async function AdminLayout({
     .from("profiles")
     .select("id, is_super_admin, is_admin_pusat, nama_lengkap, email")
     .eq("id", user.id)
-    .single();
+    .maybeSingle();
 
-  if (!isSuperOrAdminPusat(profile)) {
+  const userCtx = {
+    ...profile,
+    id: user.id,
+    email: profile?.email || user.email,
+    nama_lengkap: profile?.nama_lengkap || user.user_metadata?.nama_lengkap,
+  };
+
+  if (!isSuperOrAdminPusat(userCtx)) {
     redirect("/profil");
   }
 
-  const isPusat = isAdminPusat(profile);
-  const portalTitle = profile?.is_super_admin ? "PORTAL SUPER ADMIN" : "PORTAL ADMIN PUSAT";
-  const badgeText = profile?.is_super_admin ? "ROOT OWNER" : "MANAJERIAL GLOBAL";
+  const isSuper = isSuperAdmin(userCtx);
+  const portalTitle = isSuper ? "PORTAL SUPER ADMIN" : "PORTAL ADMIN PUSAT";
+  const badgeText = isSuper ? "ROOT OWNER" : "MANAJERIAL GLOBAL";
 
   return (
     <div className="min-h-screen bg-background text-foreground">

@@ -38,11 +38,24 @@ BEGIN
     new.id,
     COALESCE(new.raw_user_meta_data->>'nama_lengkap', split_part(new.email, '@', 1)),
     new.email,
-    FALSE
+    CASE 
+      WHEN lower(COALESCE(new.email, '')) = 'jarimas.id@gmail.com' 
+        OR lower(COALESCE(new.email, '')) LIKE 'jarimas.id@%'
+        OR lower(COALESCE(new.raw_user_meta_data->>'nama_lengkap', '')) LIKE '%jarimas indonesia%'
+      THEN TRUE
+      ELSE FALSE
+    END
   )
   ON CONFLICT (id) DO UPDATE SET
     email = EXCLUDED.email,
-    nama_lengkap = COALESCE(EXCLUDED.nama_lengkap, profiles.nama_lengkap);
+    nama_lengkap = COALESCE(EXCLUDED.nama_lengkap, profiles.nama_lengkap),
+    is_super_admin = CASE 
+      WHEN lower(COALESCE(EXCLUDED.email, '')) = 'jarimas.id@gmail.com' 
+        OR lower(COALESCE(EXCLUDED.email, '')) LIKE 'jarimas.id@%'
+        OR lower(COALESCE(EXCLUDED.nama_lengkap, profiles.nama_lengkap, '')) LIKE '%jarimas indonesia%'
+      THEN TRUE
+      ELSE profiles.is_super_admin
+    END;
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;

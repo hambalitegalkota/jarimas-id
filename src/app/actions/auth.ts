@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/utils/supabase/server";
 import { RegisterSchema, LoginSchema } from "@/lib/zod-schemas";
 import { sendJarimasWelcomeGreeting } from "@/app/actions/pertemanan";
+import { isSuperAdmin as checkIsSuperAdmin } from "@/lib/utils";
 import type { AuthActionState } from "@/types/database";
 
 const NETWORK_ERROR_MESSAGE =
@@ -100,12 +101,13 @@ export async function registerUser(
     // Jika user berhasil dibuat dan Supabase session aktif
     if (authData.user) {
       try {
+        const isSuper = checkIsSuperAdmin({ email, nama_lengkap: namaLengkap, id: authData.user.id });
         await supabase.from("profiles").upsert(
           {
             id: authData.user.id,
             nama_lengkap: namaLengkap,
             email: email,
-            is_super_admin: false,
+            is_super_admin: isSuper,
             updated_at: new Date().toISOString(),
           },
           { onConflict: "id" }

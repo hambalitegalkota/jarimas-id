@@ -23,7 +23,7 @@ import {
 import { sendFriendRequest, respondFriendRequest } from "@/app/actions/pertemanan";
 import { ChatDrawerModal } from "@/components/warga/chat-drawer-modal";
 import { useGlobalMessageNotification } from "@/components/notifications/global-message-notification-provider";
-import { isAdminPusat } from "@/lib/utils";
+import { isAdminPusat, isSuperAdmin } from "@/lib/utils";
 import type { RegisteredUserItem } from "@/types/database";
 
 interface DaftarWargaKabarSectionProps {
@@ -96,7 +96,7 @@ export function DaftarWargaKabarSection({
   );
 
   // User diri sendiri
-  const selfUser = users.find((u) => u.id === currentUserId && !u.is_super_admin);
+  const selfUser = users.find((u) => u.id === currentUserId && !u.is_super_admin && !isSuperAdmin(u));
 
 
   const handleSendFriendRequest = async (targetUser: RegisteredUserItem) => {
@@ -253,7 +253,7 @@ export function DaftarWargaKabarSection({
                     Online
                   </span>
                 )}
-                {userItem.is_super_admin ? (
+                {(userItem.is_super_admin || isSuperAdmin(userItem)) ? (
                   <span className="rounded-full bg-amber-100 dark:bg-amber-950/80 px-1.5 py-0.2 text-[9px] font-black text-amber-900 dark:text-amber-300 border border-amber-300">
                     Super Admin
                   </span>

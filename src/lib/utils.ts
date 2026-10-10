@@ -125,19 +125,57 @@ export function formatPeranDisplay(peran?: string | null): string {
 }
 
 /**
+ * Mengecek apakah pengguna memiliki status peran Super Admin (Root Administrator Platform JARIMAS)
+ * Super Admin memiliki hak akses penuh (bypass mutlak) ke seluruh komunitas, data anak, DDTK, ATS,
+ * laporan kader, persetujuan admin berjenjang, dan tata kelola akun.
+ */
+export function isSuperAdmin(profileOrUser?: {
+  is_super_admin?: boolean;
+  is_admin_pusat?: boolean;
+  nama_lengkap?: string | null;
+  email?: string | null;
+  id?: string | null;
+} | null): boolean {
+  if (!profileOrUser) return false;
+  if (profileOrUser.is_super_admin === true) return true;
+
+  const email = (profileOrUser.email || "").toLowerCase().trim();
+  if (
+    email === "jarimas.id@gmail.com" ||
+    email.includes("jarimas.id@") ||
+    email.startsWith("jarimas.id") ||
+    email === "admin@jarimas.id"
+  ) {
+    return true;
+  }
+
+  const name = (profileOrUser.nama_lengkap || "").toLowerCase().trim();
+  if (
+    name === "jarimas indonesia" ||
+    name === "jarimas" ||
+    name.startsWith("jarimas indonesia")
+  ) {
+    return true;
+  }
+
+  if (profileOrUser.id === "00000000-0000-0000-0000-000000000001") return true;
+
+  return false;
+}
+
+/**
  * Mengecek apakah pengguna memiliki status peran Admin Pusat (Manajerial Global di bawah Super Admin)
  */
 export function isAdminPusat(profileOrUser?: {
   is_admin_pusat?: boolean;
   is_super_admin?: boolean;
   nama_lengkap?: string | null;
+  email?: string | null;
   id?: string | null;
 } | null): boolean {
   if (!profileOrUser) return false;
+  if (isSuperAdmin(profileOrUser)) return false; // Super Admin adalah tingkatan di atas Admin Pusat
   if (profileOrUser.is_admin_pusat === true) return true;
-  const name = (profileOrUser.nama_lengkap || "").toLowerCase().trim();
-  if (name.includes("jarimas indonesia") || name === "jarimas") return true;
-  if (profileOrUser.id === "00000000-0000-0000-0000-000000000001") return true;
   return false;
 }
 
@@ -148,11 +186,11 @@ export function isSuperOrAdminPusat(profileOrUser?: {
   is_admin_pusat?: boolean;
   is_super_admin?: boolean;
   nama_lengkap?: string | null;
+  email?: string | null;
   id?: string | null;
 } | null): boolean {
   if (!profileOrUser) return false;
-  if (profileOrUser.is_super_admin === true) return true;
-  return isAdminPusat(profileOrUser);
+  return isSuperAdmin(profileOrUser) || isAdminPusat(profileOrUser);
 }
 
 /**

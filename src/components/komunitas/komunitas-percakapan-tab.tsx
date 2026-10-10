@@ -23,7 +23,7 @@ import {
 import { getGroupMessages, sendGroupMessage } from "@/app/actions/pertemanan";
 import { createClient } from "@/utils/supabase/client";
 import type { KomunitasWithMembership, PesanGrup } from "@/types/database";
-import { formatPeranDisplay, isRoleAdmin, cn, isAdminPusat } from "@/lib/utils";
+import { formatPeranDisplay, isRoleAdmin, cn, isAdminPusat, isSuperAdmin } from "@/lib/utils";
 
 interface KomunitasPercakapanTabProps {
   komunitas: KomunitasWithMembership;
@@ -384,8 +384,8 @@ export function KomunitasPercakapanTab({
             messages.map((msg) => {
               const isMe = currentUserId && msg.user_id === currentUserId;
               const senderName = msg.profiles?.nama_lengkap || "Warga Komunitas";
-              const isSuper = msg.profiles?.is_super_admin === true;
-              const isPusat = isAdminPusat(msg.profiles);
+              const isSuper = msg.profiles?.is_super_admin === true || isSuperAdmin(msg.profiles);
+              const isPusat = !isSuper && isAdminPusat(msg.profiles);
               const roleDisplay = msg.user_role || (isSuper ? "Super Admin" : isPusat ? "Admin Pusat" : "Anggota");
 
               const timeStr = msg.created_at

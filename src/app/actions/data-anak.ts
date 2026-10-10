@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/utils/supabase/server";
 import { DataAnakSchema, DdksSchema } from "@/lib/zod-schemas";
-import { toValidUUID } from "@/lib/utils";
+import { toValidUUID, isSuperAdmin as checkIsSuperAdmin } from "@/lib/utils";
 import { extractKomunitasMetadata } from "@/lib/admin-helpers";
 import { findOrGenerateKomunitasSeed } from "@/lib/constants/tegal-data";
 import {
@@ -312,11 +312,16 @@ export async function validateDataAnak(dataAnakId: string): Promise<{
     // Verifikasi otorisasi: Apakah user adalah Super Admin, Kader Posyandu, atau Pengurus RT
     const { data: profile } = await supabase
       .from("profiles")
-      .select("is_super_admin, nama_lengkap")
+      .select("is_super_admin, nama_lengkap, email")
       .eq("id", user.id)
-      .single();
+      .maybeSingle();
 
-    const isSuperAdmin = profile?.is_super_admin === true;
+    const isSuperAdmin = checkIsSuperAdmin({
+      ...profile,
+      id: user.id,
+      email: profile?.email || user.email,
+      nama_lengkap: profile?.nama_lengkap || user.user_metadata?.nama_lengkap,
+    });
 
     if (!isSuperAdmin) {
       const { data: memberships } = await supabase
@@ -442,11 +447,16 @@ export async function addDdksRecord(formData: FormData): Promise<{
     // Verifikasi otorisasi Kader/Nakes
     const { data: profile } = await supabase
       .from("profiles")
-      .select("is_super_admin, nama_lengkap")
+      .select("is_super_admin, nama_lengkap, email")
       .eq("id", user.id)
-      .single();
+      .maybeSingle();
 
-    const isSuperAdmin = profile?.is_super_admin === true;
+    const isSuperAdmin = checkIsSuperAdmin({
+      ...profile,
+      id: user.id,
+      email: profile?.email || user.email,
+      nama_lengkap: profile?.nama_lengkap || user.user_metadata?.nama_lengkap,
+    });
 
     if (!isSuperAdmin) {
       const { data: memberships } = await supabase
@@ -619,11 +629,16 @@ export async function getDataAnakByKomunitas(komunitasId: string): Promise<{
         isAuthenticated = true;
         const { data: profile } = await supabase
           .from("profiles")
-          .select("is_super_admin")
+          .select("id, is_super_admin, is_admin_pusat, nama_lengkap, email")
           .eq("id", user.id)
-          .single();
+          .maybeSingle();
 
-        const isSuperAdmin = profile?.is_super_admin === true;
+        const isSuperAdmin = checkIsSuperAdmin({
+          ...profile,
+          id: user.id,
+          email: profile?.email || user.email,
+          nama_lengkap: profile?.nama_lengkap || user.user_metadata?.nama_lengkap,
+        });
 
         const dbKomunitasId = toValidUUID(komunitasId);
         const { data: member } = await supabase
@@ -950,11 +965,16 @@ export async function updateDataAnak(
     // Cek otorisasi user
     const { data: profile } = await supabase
       .from("profiles")
-      .select("is_super_admin")
+      .select("id, is_super_admin, is_admin_pusat, nama_lengkap, email")
       .eq("id", user.id)
       .maybeSingle();
 
-    const isSuperAdmin = profile?.is_super_admin === true;
+    const isSuperAdmin = checkIsSuperAdmin({
+      ...profile,
+      id: user.id,
+      email: profile?.email || user.email,
+      nama_lengkap: profile?.nama_lengkap || user.user_metadata?.nama_lengkap,
+    });
     const isCreator = existingChild.created_by === user.id;
 
     if (!isSuperAdmin && !isCreator) {
@@ -1225,11 +1245,16 @@ export async function keluarDataAnak(
     // Cek otorisasi user
     const { data: profile } = await supabase
       .from("profiles")
-      .select("is_super_admin")
+      .select("id, is_super_admin, is_admin_pusat, nama_lengkap, email")
       .eq("id", user.id)
       .maybeSingle();
 
-    const isSuperAdmin = profile?.is_super_admin === true;
+    const isSuperAdmin = checkIsSuperAdmin({
+      ...profile,
+      id: user.id,
+      email: profile?.email || user.email,
+      nama_lengkap: profile?.nama_lengkap || user.user_metadata?.nama_lengkap,
+    });
     const isCreator = existingChild.created_by === user.id;
 
     if (!isSuperAdmin && !isCreator) {
@@ -1343,11 +1368,16 @@ export async function deleteDataAnak(
 
     const { data: profile } = await supabase
       .from("profiles")
-      .select("is_super_admin")
+      .select("id, is_super_admin, is_admin_pusat, nama_lengkap, email")
       .eq("id", user.id)
       .maybeSingle();
 
-    const isSuperAdmin = profile?.is_super_admin === true;
+    const isSuperAdmin = checkIsSuperAdmin({
+      ...profile,
+      id: user.id,
+      email: profile?.email || user.email,
+      nama_lengkap: profile?.nama_lengkap || user.user_metadata?.nama_lengkap,
+    });
     const isCreator = existingChild.created_by === user.id;
 
     if (!isSuperAdmin && !isCreator) {

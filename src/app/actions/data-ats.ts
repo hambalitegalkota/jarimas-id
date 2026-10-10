@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/utils/supabase/server";
 import { DataAtsSchema, DdtkSchema } from "@/lib/zod-schemas";
-import { toValidUUID } from "@/lib/utils";
+import { toValidUUID, isSuperAdmin as checkIsSuperAdmin } from "@/lib/utils";
 import { normalizeKeinginanSekolah } from "@/lib/data-anak-helpers";
 import { getKomunitasDetail } from "./komunitas";
 import type {
@@ -355,11 +355,16 @@ export async function validateDataAts(dataAtsId: string): Promise<{
     // Verifikasi otorisasi
     const { data: profile } = await supabase
       .from("profiles")
-      .select("is_super_admin, nama_lengkap")
+      .select("id, is_super_admin, is_admin_pusat, nama_lengkap, email")
       .eq("id", user.id)
-      .single();
+      .maybeSingle();
 
-    const isSuperAdmin = profile?.is_super_admin === true;
+    const isSuperAdmin = checkIsSuperAdmin({
+      ...profile,
+      id: user.id,
+      email: profile?.email || user.email,
+      nama_lengkap: profile?.nama_lengkap || user.user_metadata?.nama_lengkap,
+    });
 
     if (!isSuperAdmin) {
       const { data: memberships } = await supabase
@@ -573,11 +578,16 @@ export async function updateDataAts(
     // Cek otorisasi user
     const { data: profile } = await supabase
       .from("profiles")
-      .select("is_super_admin")
+      .select("id, is_super_admin, is_admin_pusat, nama_lengkap, email")
       .eq("id", user.id)
       .maybeSingle();
 
-    const isSuperAdmin = profile?.is_super_admin === true;
+    const isSuperAdmin = checkIsSuperAdmin({
+      ...profile,
+      id: user.id,
+      email: profile?.email || user.email,
+      nama_lengkap: profile?.nama_lengkap || user.user_metadata?.nama_lengkap,
+    });
     const isCreator = existingChild.created_by === user.id;
 
     if (!isSuperAdmin && !isCreator) {
@@ -818,11 +828,16 @@ export async function kembaliBersekolah(
     // Cek otorisasi user
     const { data: profile } = await supabase
       .from("profiles")
-      .select("is_super_admin")
+      .select("id, is_super_admin, is_admin_pusat, nama_lengkap, email")
       .eq("id", user.id)
       .maybeSingle();
 
-    const isSuperAdmin = profile?.is_super_admin === true;
+    const isSuperAdmin = checkIsSuperAdmin({
+      ...profile,
+      id: user.id,
+      email: profile?.email || user.email,
+      nama_lengkap: profile?.nama_lengkap || user.user_metadata?.nama_lengkap,
+    });
     const isCreator = existingChild.created_by === user.id;
 
     if (!isSuperAdmin && !isCreator) {
@@ -945,11 +960,16 @@ export async function deleteDataAts(
     // Cek otorisasi user
     const { data: profile } = await supabase
       .from("profiles")
-      .select("is_super_admin")
+      .select("id, is_super_admin, is_admin_pusat, nama_lengkap, email")
       .eq("id", user.id)
       .maybeSingle();
 
-    const isSuperAdmin = profile?.is_super_admin === true;
+    const isSuperAdmin = checkIsSuperAdmin({
+      ...profile,
+      id: user.id,
+      email: profile?.email || user.email,
+      nama_lengkap: profile?.nama_lengkap || user.user_metadata?.nama_lengkap,
+    });
     const isCreator = existingChild.created_by === user.id;
 
     if (!isSuperAdmin && !isCreator) {
@@ -1059,11 +1079,16 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
         currentUserId = user.id;
         const { data: profile } = await supabase
           .from("profiles")
-          .select("is_super_admin")
+          .select("id, is_super_admin, is_admin_pusat, nama_lengkap, email")
           .eq("id", user.id)
-          .single();
+          .maybeSingle();
 
-        isSuperAdmin = profile?.is_super_admin === true;
+        isSuperAdmin = checkIsSuperAdmin({
+          ...profile,
+          id: user.id,
+          email: profile?.email || user.email,
+          nama_lengkap: profile?.nama_lengkap || user.user_metadata?.nama_lengkap,
+        });
         const dbKomunitasId = toValidUUID(komunitasId);
 
         const { data: member } = await supabase

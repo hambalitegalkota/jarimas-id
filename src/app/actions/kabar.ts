@@ -42,10 +42,15 @@ export async function getKabarFeed(
         currentUserId = user.id;
         const { data: profile } = await supabase
           .from("profiles")
-          .select("id, is_super_admin, is_admin_pusat, nama_lengkap")
+          .select("id, is_super_admin, is_admin_pusat, nama_lengkap, email")
           .eq("id", user.id)
           .maybeSingle();
-        isSuperAdmin = isSuperOrAdminPusat(profile);
+        isSuperAdmin = isSuperOrAdminPusat({
+          ...profile,
+          id: user.id,
+          email: profile?.email || user.email,
+          nama_lengkap: profile?.nama_lengkap || user.user_metadata?.nama_lengkap,
+        });
       }
     } catch {
       // User mungkin belum login (tamu)
@@ -757,11 +762,16 @@ export async function deleteKabar(kabarId: string): Promise<{
     if (!isOwner) {
       const { data: profile } = await supabase
         .from("profiles")
-        .select("id, is_super_admin, is_admin_pusat, nama_lengkap")
+        .select("id, is_super_admin, is_admin_pusat, nama_lengkap, email")
         .eq("id", user.id)
-        .single();
+        .maybeSingle();
 
-      const isSuperAdmin = isSuperOrAdminPusat(profile);
+      const isSuperAdmin = isSuperOrAdminPusat({
+        ...profile,
+        id: user.id,
+        email: profile?.email || user.email,
+        nama_lengkap: profile?.nama_lengkap || user.user_metadata?.nama_lengkap,
+      });
       if (!isSuperAdmin) {
         return {
           success: false,
@@ -851,11 +861,16 @@ export async function deleteKomentarKabar(
     // Cek otorisasi user
     const { data: profile } = await supabase
       .from("profiles")
-      .select("id, is_super_admin, is_admin_pusat, nama_lengkap")
+      .select("id, is_super_admin, is_admin_pusat, nama_lengkap, email")
       .eq("id", user.id)
       .maybeSingle();
 
-    const isSuperAdmin = isSuperOrAdminPusat(profile);
+    const isSuperAdmin = isSuperOrAdminPusat({
+      ...profile,
+      id: user.id,
+      email: profile?.email || user.email,
+      nama_lengkap: profile?.nama_lengkap || user.user_metadata?.nama_lengkap,
+    });
     const isCommentAuthor = komentar.user_id === user.id;
     const isPostAuthor = kabar?.user_id === user.id;
 
@@ -948,11 +963,16 @@ export async function toggleKomentarKabarStatus(
     // Cek otorisasi
     const { data: profile } = await supabase
       .from("profiles")
-      .select("id, is_super_admin, is_admin_pusat, nama_lengkap")
+      .select("id, is_super_admin, is_admin_pusat, nama_lengkap, email")
       .eq("id", user.id)
       .maybeSingle();
 
-    const isSuperAdmin = isSuperOrAdminPusat(profile);
+    const isSuperAdmin = isSuperOrAdminPusat({
+      ...profile,
+      id: user.id,
+      email: profile?.email || user.email,
+      nama_lengkap: profile?.nama_lengkap || user.user_metadata?.nama_lengkap,
+    });
     const isAuthor = kabar.user_id === user.id;
 
     if (!isAuthor && !isSuperAdmin) {

@@ -2,7 +2,14 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient, createAdminClient } from "@/utils/supabase/server";
-import { formatPeranDisplay, toValidUUID, isRoleAdmin } from "@/lib/utils";
+import {
+  formatPeranDisplay,
+  toValidUUID,
+  isRoleAdmin,
+  isSuperAdmin as checkIsSuperAdmin,
+  isAdminPusat as checkIsAdminPusat,
+  isSuperOrAdminPusat as checkIsSuperOrAdminPusat,
+} from "@/lib/utils";
 import { findOrGenerateKomunitasSeed } from "@/lib/constants/tegal-data";
 import {
   computeTierAndApprover,
@@ -30,12 +37,38 @@ async function getAuthenticatedUserContext() {
     .eq("id", user.id)
     .maybeSingle();
 
-  const isSuperAdmin = profile?.is_super_admin === true;
-  const isAdminPusat =
-    profile?.is_admin_pusat === true ||
-    (profile?.nama_lengkap || "").toLowerCase().includes("jarimas indonesia") ||
-    profile?.id === "00000000-0000-0000-0000-000000000001";
+  const userFullProfile = {
+    ...profile,
+    id: user.id,
+    email: profile?.email || user.email,
+    nama_lengkap:
+      profile?.nama_lengkap ||
+      user.user_metadata?.nama_lengkap ||
+      user.email?.split("@")[0] ||
+      "Pengguna JARIMAS",
+  };
+
+  const isSuperAdmin = checkIsSuperAdmin(userFullProfile);
+  const isAdminPusat = !isSuperAdmin && checkIsAdminPusat(userFullProfile);
   const isSuperOrAdminPusat = isSuperAdmin || isAdminPusat;
+
+  // Auto-sync Super Admin status in DB
+  if (isSuperAdmin && profile?.is_super_admin !== true) {
+    try {
+      await supabase.from("profiles").upsert(
+        {
+          id: user.id,
+          nama_lengkap: userFullProfile.nama_lengkap,
+          email: userFullProfile.email,
+          is_super_admin: true,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "id" }
+      );
+    } catch (err) {
+      console.warn("Auto-sync super admin profile error in admin action:", err);
+    }
+  }
 
   // Ambil data komunitas di mana pengguna merupakan Admin/Pengurus/Kader aktif
   let userAdminKomunitas: any[] = [];

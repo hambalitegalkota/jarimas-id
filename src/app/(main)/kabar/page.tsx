@@ -25,6 +25,7 @@ import { PercakapanHubSection } from "@/components/kabar/percakapan-hub-section"
 import { DaftarWargaKabarSection } from "@/components/kabar/daftar-warga-kabar-section";
 import { CreateKabarModal } from "@/components/kabar/create-kabar-modal";
 import { WargaLockedCard } from "@/components/warga/warga-locked-card";
+import { isSuperAdmin as checkIsSuperAdmin } from "@/lib/utils";
 import type { SortingKabar, VisibilitasKabar } from "@/types/database";
 
 interface KabarPageProps {
@@ -71,10 +72,14 @@ export default async function KabarPage({ searchParams }: KabarPageProps) {
       const supabase = await createClient();
       const { data: profile } = await supabase
         .from("profiles")
-        .select("is_super_admin")
+        .select("id, is_super_admin, is_admin_pusat, nama_lengkap, email")
         .eq("id", currentUserId)
         .maybeSingle();
-      isSuperAdmin = profile?.is_super_admin === true;
+
+      isSuperAdmin = checkIsSuperAdmin({
+        ...profile,
+        id: currentUserId,
+      });
     } catch {
       // Abaikan jika tabel profil belum ada
     }
