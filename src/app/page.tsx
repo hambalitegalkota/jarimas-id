@@ -28,7 +28,6 @@ import {
   School,
   HeartHandshake,
   UserPlus,
-  User,
 } from "lucide-react";
 import { createClient } from "@/utils/supabase/server";
 import { getMarketProduk } from "@/app/actions/market";
@@ -247,15 +246,15 @@ export default async function HomePage() {
           <span>Kabar Warga</span>
         </Link>
 
-        {/* 6. Profil */}
+        {/* 6. Bidang SPM */}
         <Link
-          href={user ? "/profil" : "/register"}
+          href="/komunitas?tab=bidang_spm"
           className="flex-1 min-w-max inline-flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-2xl bg-teal-50/80 dark:bg-teal-950/30 border-2 border-teal-200 dark:border-teal-800/80 hover:border-teal-500 text-teal-950 dark:text-teal-200 text-xs font-extrabold whitespace-nowrap transition-all shadow-2xs shrink-0 sm:shrink active:scale-95 text-center"
         >
           <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-teal-700 text-white font-bold shrink-0">
-            <User className="h-3.5 w-3.5" />
+            <ShieldCheck className="h-3.5 w-3.5" />
           </div>
-          <span>Profil</span>
+          <span>Bidang SPM</span>
         </Link>
       </section>
 
