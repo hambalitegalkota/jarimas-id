@@ -482,13 +482,13 @@ export const RAW_PAUD_PKBM_TEGAL: RawPaudItem[] = [
   },
   {
     id: "6448b6d1-a2b6-4844-8595-ba29636faa7d",
-    nama: "KB Bina Anak Sholeh (BIAS)",
+    nama: "KB Bina Iman Anak Sholeh (BIAS) TT",
     npsn: "69928753",
     jenis_institusi: "KB",
     kecamatan: "Tegal Timur",
     kelurahan: "Panggung",
     lokasi: "Panggung, Tegal Timur, Kota Tegal",
-    deskripsi: "Lembaga PAUD & Pendidikan Kesetaraan (KB Bina Anak Sholeh (BIAS)) menyelenggarakan layanan stimulasi tumbuh kembang anak usia dini, kesiapan belajar, pendidikan kesetaraan Paket A/B/C, dan parenting keluarga.",
+    deskripsi: "Lembaga PAUD & Pendidikan Kesetaraan (KB Bina Iman Anak Sholeh (BIAS) TT) menyelenggarakan layanan stimulasi tumbuh kembang anak usia dini, kesiapan belajar, pendidikan kesetaraan Paket A/B/C, dan parenting keluarga.",
   },
   {
     id: "e4bf87aa-96fe-433e-8c1f-9fc1d2fc8b76",
@@ -962,13 +962,13 @@ export const RAW_PAUD_PKBM_TEGAL: RawPaudItem[] = [
   // Kemandungan (6 Lembaga)
   {
     id: "e001abba-d414-4cf2-886e-913577dbfcc5",
-    nama: "KB Bina Anak Sholeh (BIAS)",
+    nama: "KB Bina Iman Anak Sholeh (BIAS) TB",
     npsn: "69818088",
     jenis_institusi: "KB",
     kecamatan: "Tegal Barat",
     kelurahan: "Kemandungan",
     lokasi: "Kemandungan, Tegal Barat, Kota Tegal",
-    deskripsi: "Lembaga PAUD & Pendidikan Kesetaraan (KB Bina Anak Sholeh (BIAS)) menyelenggarakan layanan stimulasi tumbuh kembang anak usia dini, kesiapan belajar, pendidikan kesetaraan Paket A/B/C, dan parenting keluarga.",
+    deskripsi: "Lembaga PAUD & Pendidikan Kesetaraan (KB Bina Iman Anak Sholeh (BIAS) TB) menyelenggarakan layanan stimulasi tumbuh kembang anak usia dini, kesiapan belajar, pendidikan kesetaraan Paket A/B/C, dan parenting keluarga.",
   },
   {
     id: "ffc0485b-b7f2-48ca-821e-ede952af492f",

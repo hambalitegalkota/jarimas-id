@@ -75,7 +75,7 @@ export const KOTA_TEGAL_DATA: Record<string, KecamatanData> = {
         "paud": [
           "KB Aisyiyah Anak Sholeh",
           "KB Amalia",
-          "KB Bina Anak Sholeh (BIAS)",
+          "KB Bina Iman Anak Sholeh (BIAS) TT",
           "KB Ihsaniyah 3",
           "KB Prima Universal",
           "KB Sakila Kerti",
@@ -278,7 +278,7 @@ export const KOTA_TEGAL_DATA: Record<string, KecamatanData> = {
           "Posyandu Seruni"
         ],
         "paud": [
-          "KB Bina Anak Sholeh (BIAS)",
+          "KB Bina Iman Anak Sholeh (BIAS) TB",
           "KB Global Inbyra School",
           "KB Mutiara Shahabat",
           "Pos PAUD Kenanga Kemandungan",

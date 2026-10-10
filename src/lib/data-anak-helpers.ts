@@ -95,6 +95,46 @@ export function findPaudLocation(paudNameOrId?: string | null): {
   if (!paudNameOrId) return null;
   const query = paudNameOrId.trim().toLowerCase();
 
+  // Disambiguasi khusus KB BIAS (Tegal Barat / Kemandungan vs Tegal Timur / Panggung)
+  if (query.includes("bias") || (query.includes("bina") && query.includes("sholeh"))) {
+    const isTb =
+      query.endsWith(" tb") ||
+      query.includes(" tb ") ||
+      query.includes("(bias) tb") ||
+      query.includes("barat") ||
+      query.includes("kemandungan");
+    const isTt =
+      query.endsWith(" tt") ||
+      query.includes(" tt ") ||
+      query.includes("(bias) tt") ||
+      query.includes("timur") ||
+      query.includes("panggung");
+
+    if (isTb && !isTt) {
+      const tbMatch = RAW_PAUD_PKBM_TEGAL.find(
+        (p) => p.id === "e001abba-d414-4cf2-886e-913577dbfcc5"
+      );
+      if (tbMatch) {
+        return {
+          kecamatan: tbMatch.kecamatan,
+          kelurahan: tbMatch.kelurahan,
+          nama: tbMatch.nama,
+        };
+      }
+    } else if (isTt && !isTb) {
+      const ttMatch = RAW_PAUD_PKBM_TEGAL.find(
+        (p) => p.id === "6448b6d1-a2b6-4844-8595-ba29636faa7d"
+      );
+      if (ttMatch) {
+        return {
+          kecamatan: ttMatch.kecamatan,
+          kelurahan: ttMatch.kelurahan,
+          nama: ttMatch.nama,
+        };
+      }
+    }
+  }
+
   // 1. Cek di RAW_PAUD_PKBM_TEGAL berdasarkan nama
   const rawMatch = RAW_PAUD_PKBM_TEGAL.find(
     (p) =>
