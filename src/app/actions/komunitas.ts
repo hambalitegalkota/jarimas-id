@@ -2308,7 +2308,7 @@ export async function updateMemberRole(
 }
 
 /**
- * Server Action: Menyemai seluruh data 230+ Posyandu resmi Kota Tegal ke tabel `komunitas` di Supabase
+ * Server Action: Menyemai seluruh data 209 Posyandu resmi Kota Tegal ke tabel `komunitas` di Supabase
  */
 export async function seedPosyanduToSupabase(): Promise<{
   success: boolean;

@@ -5,6 +5,8 @@ import { getKomunitasDetail } from "@/app/actions/komunitas";
 import { getDataAtsByKomunitas } from "@/app/actions/data-ats";
 import { DataAtsClientView } from "@/components/data-ats/data-ats-client-view";
 
+import { isRoleAdmin } from "@/lib/utils";
+
 interface KomunitasDataAtsPageProps {
   params: Promise<{
     id: string;
@@ -31,9 +33,29 @@ export default async function KomunitasDataAtsPage({
     canValidate,
     canEditDdtk,
     canManage,
+    canAccessDaftarNama: serverCanAccess,
     currentUserId,
     isSuperAdmin,
   } = await getDataAtsByKomunitas(id);
+
+  // Periksa otorisasi: Daftar Rincian Nama Anak hanya bisa dibuka oleh Admin Komunitas, Pengurus, dan Penduduk di Komunitas tersebut
+  const membership = komunitas?.currentUserMembership;
+  const isApprovedMember = membership?.status === "approved";
+  const memberRoleLower = (membership?.peran || "").toLowerCase();
+  const isPenduduk = memberRoleLower.includes("penduduk");
+  const isAdminOrPengurus =
+    isRoleAdmin(memberRoleLower) ||
+    memberRoleLower.includes("admin") ||
+    memberRoleLower.includes("pengurus") ||
+    memberRoleLower.includes("kader") ||
+    memberRoleLower.includes("ketua");
+
+  const canAccessDaftarNama = Boolean(
+    isSuperAdmin ||
+    serverCanAccess ||
+    canManage ||
+    (isApprovedMember && (isPenduduk || isAdminOrPengurus))
+  );
 
   return (
     <div className="flex flex-col flex-1 px-4 py-6 sm:px-6 md:px-8 gap-6 max-w-4xl mx-auto w-full">
@@ -75,6 +97,7 @@ export default async function KomunitasDataAtsPage({
         canValidate={canValidate}
         canEditDdtk={canEditDdtk}
         canManage={canManage}
+        canAccessDaftarNama={canAccessDaftarNama}
         currentUserId={currentUserId}
         isSuperAdmin={isSuperAdmin}
       />

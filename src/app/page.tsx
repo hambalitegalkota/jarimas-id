@@ -344,7 +344,7 @@ export default async function HomePage() {
             </div>
             <div className="rounded-xl bg-white/5 backdrop-blur-xs p-3 border border-white/10">
               <span className="text-lg sm:text-xl font-black text-emerald-400 block font-mono">
-                100+ Posyandu
+                209 Posyandu
               </span>
               <span className="text-xs text-slate-300 font-medium">
                 Pemantauan DDTK

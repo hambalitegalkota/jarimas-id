@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/utils/supabase/server";
 import { DataAtsSchema, DdtkSchema } from "@/lib/zod-schemas";
-import { toValidUUID, isSuperAdmin as checkIsSuperAdmin } from "@/lib/utils";
+import { toValidUUID, isSuperAdmin as checkIsSuperAdmin, isRoleAdmin } from "@/lib/utils";
 import { normalizeKeinginanSekolah } from "@/lib/data-anak-helpers";
 import { getKomunitasDetail } from "./komunitas";
 import type {
@@ -1057,6 +1057,7 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
   canValidate: boolean;
   canEditDdtk: boolean;
   canManage: boolean;
+  canAccessDaftarNama?: boolean;
   currentUserId?: string | null;
   isSuperAdmin?: boolean;
   message?: string;
@@ -1067,6 +1068,7 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
     let canValidate = false;
     let canEditDdtk = false;
     let canManage = false;
+    let canAccessDaftarNama = false;
     let currentUserId: string | null = null;
     let isSuperAdmin = false;
 
@@ -1106,11 +1108,13 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
           roleLower.includes("nakes") ||
           roleLower.includes("bidan");
         const isPengurus =
-          roleLower.includes("pengurus") || roleLower.includes("admin");
+          roleLower.includes("pengurus") || roleLower.includes("admin") || isRoleAdmin(roleLower);
+        const isPenduduk = roleLower.includes("penduduk");
 
         canValidate = isSuperAdmin || isKader || isPengurus;
         canEditDdtk = isSuperAdmin || isKader;
         canManage = isSuperAdmin || isKader || isPengurus;
+        canAccessDaftarNama = isSuperAdmin || canManage || isPenduduk;
       }
     } catch {
       // Tamu
@@ -1159,6 +1163,66 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
       .from("komunitas")
       .select("id, nama, jenis, kecamatan, kelurahan, rw, rt");
     const dbKomMap = new Map((allDbKom || []).map((k: any) => [k.id, k]));
+
+    // 2.2 Verifikasi wewenang membuka daftar rincian nama anak jika belum terotorisasi langsung
+    if (!canAccessDaftarNama && currentUserId) {
+      try {
+        const { data: userMems } = await supabase
+          .from("anggota_komunitas")
+          .select("komunitas_id, peran, status")
+          .eq("user_id", currentUserId)
+          .eq("status", "approved");
+
+        if (userMems && userMems.length > 0) {
+          for (const um of userMems) {
+            const rLow = (um.peran || "").toLowerCase();
+            const isUmPenduduk = rLow.includes("penduduk");
+            const isUmAdminOrPengurus =
+              isRoleAdmin(rLow) ||
+              rLow.includes("admin") ||
+              rLow.includes("pengurus") ||
+              rLow.includes("kader") ||
+              rLow.includes("ketua");
+
+            if (isUmPenduduk || isUmAdminOrPengurus) {
+              const umKom =
+                dbKomMap.get(um.komunitas_id) ||
+                findOrGenerateKomunitasSeed(um.komunitas_id);
+              if (umKom) {
+                const umMeta = extractKomunitasMetadata(umKom);
+                if (meta.hasRt && umMeta.hasRt) {
+                  if (
+                    umMeta.kec === meta.kec &&
+                    umMeta.kel === meta.kel &&
+                    umMeta.rw === meta.rw &&
+                    umMeta.rt === meta.rt
+                  ) {
+                    canAccessDaftarNama = true;
+                    break;
+                  }
+                } else if (meta.hasRw && umMeta.hasRw) {
+                  if (
+                    umMeta.kec === meta.kec &&
+                    umMeta.kel === meta.kel &&
+                    umMeta.rw === meta.rw
+                  ) {
+                    canAccessDaftarNama = true;
+                    break;
+                  }
+                } else if (meta.hasKel && umMeta.hasKel) {
+                  if (umMeta.kec === meta.kec && umMeta.kel === meta.kel) {
+                    canAccessDaftarNama = true;
+                    break;
+                  }
+                }
+              }
+            }
+          }
+        }
+      } catch {
+        // Fallback pass
+      }
+    }
 
     // 3. Query data ATS dari data_anak
     let dbChildren: any[] | null = null;
@@ -1411,12 +1475,26 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
         return true;
       });
 
+    const sanitizedItems = canAccessDaftarNama
+      ? items
+      : items.map((c, idx) => ({
+          ...c,
+          nama_lengkap: `Anak ATS #${idx + 1} (Terkunci)`,
+          nama_orangtua: "Dirahasiakan",
+          nomor_hp: "-",
+          alamat: "-",
+          rt: "-",
+          rw: "-",
+          keterangan: "",
+        }));
+
     return {
       success: true,
-      data: items,
+      data: sanitizedItems,
       canValidate,
       canEditDdtk,
       canManage,
+      canAccessDaftarNama,
       currentUserId,
       isSuperAdmin,
     };
@@ -1429,6 +1507,7 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
       canValidate: false,
       canEditDdtk: false,
       canManage: false,
+      canAccessDaftarNama: false,
     };
   }
 }
