@@ -145,7 +145,7 @@ export default async function KomunitasPage({
     },
     {
       id: "bidang_spm" as JenisKomunitas,
-      title: "Kartu Bidang SPM",
+      title: "Komunitas 6 Bidang SPM",
       subtitle: "Standar Pelayanan Minimal 6 Bidang Urusan Pemerintahan Wajib Kota Tegal",
       badgeText: "6 Bidang SPM",
       icon: ShieldCheck,
