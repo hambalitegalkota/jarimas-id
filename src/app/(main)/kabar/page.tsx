@@ -123,7 +123,7 @@ export default async function KabarPage({ searchParams }: KabarPageProps) {
       subtitle: isSuperAdmin
         ? "Kirim pesan langsung ke siapa saja atau berdiskusi di ruang obrolan grup"
         : "Kirim pesan langsung ke sesama warga satu komunitas atau diskusi di grup",
-      badgeText: totalUnreadChat > 0 ? `${totalUnreadChat} Pesan Baru` : `${convResult.conversations.length + groupRoomsResult.rooms.length} Obrolan`,
+      badgeText: totalUnreadChat > 0 ? `${totalUnreadChat} Pesan Baru` : undefined,
       icon: MessageCircle,
       activeColorBg: "bg-teal-600 dark:bg-teal-700",
       activeBorder: "border-teal-500",

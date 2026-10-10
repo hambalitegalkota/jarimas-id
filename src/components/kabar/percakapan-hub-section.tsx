@@ -170,9 +170,6 @@ export function PercakapanHubSection({
           >
             <Users className="h-4 w-4 text-indigo-600" />
             <span>Percakapan Grup Komunitas</span>
-            <span className="rounded-full bg-slate-200 dark:bg-slate-700 px-1.5 py-0.2 text-[10px] font-mono font-bold">
-              {rooms.length}
-            </span>
           </button>
         </div>
 
