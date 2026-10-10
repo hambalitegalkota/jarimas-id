@@ -32,6 +32,7 @@ import {
   UserX,
   AlertTriangle,
   ChevronDown,
+  MessageCircle,
 } from "lucide-react";
 import { JoinKomunitasModal } from "@/components/komunitas/join-komunitas-modal";
 import { WargaOnboardingModal } from "@/components/komunitas/warga-onboarding-modal";
@@ -41,6 +42,7 @@ import { CreateKabarModal } from "@/components/kabar/create-kabar-modal";
 import { KomunitasProfilCharts } from "@/components/komunitas/komunitas-profil-charts";
 import { LaporanKaderSpmFormCard } from "@/components/komunitas/laporan-kader-spm-form-card";
 import { RekapLaporanKaderWilayahCard } from "@/components/komunitas/rekap-laporan-kader-wilayah-card";
+import { KomunitasPercakapanTab } from "@/components/komunitas/komunitas-percakapan-tab";
 import {
   applyForAdminKomunitas,
   leaveKomunitas,
@@ -373,6 +375,25 @@ export function KomunitasDetailClientView({
 
   const detailAccordionCategories = [
     {
+      id: "percakapan",
+      title: komunitas.jenis === "bidang_spm" ? "Ruang Percakapan Bidang" : "Percakapan Komunitas",
+      subtitle:
+        komunitas.jenis === "bidang_spm"
+          ? "Forum koordinasi langsung Tim Pembina, Pendamping, Kader, dan Mitra"
+          : "Ruang diskusi dan koordinasi interaktif seluruh anggota komunitas",
+      badgeText: "Chat Grup",
+      icon: MessageCircle,
+      activeColorBg:
+        komunitas.jenis === "bidang_spm"
+          ? "bg-teal-700 dark:bg-teal-800"
+          : "bg-teal-600 dark:bg-teal-700",
+      badgeColor: "bg-teal-500/20 text-teal-100 border-teal-400/30",
+      hoverBorder: "hover:border-teal-400 dark:hover:border-teal-600",
+      hoverBg: "hover:bg-teal-50/50 dark:hover:bg-teal-950/20",
+      iconColor: "text-teal-600 dark:text-teal-400",
+      iconBg: "bg-teal-100 dark:bg-teal-950",
+    },
+    {
       id: "kabar",
       title: "Kabar Komunitas",
       subtitle: "Pengumuman dan diskusi interaktif anggota komunitas",
@@ -484,6 +505,17 @@ export function KomunitasDetailClientView({
                   <CheckCircle2 className="h-4 w-4 text-emerald-600" />
                   <span>{formatPeranDisplay(userPeran).toUpperCase()}</span>
                 </span>
+
+                {/* Shortcut Buka Ruang Percakapan */}
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("percakapan")}
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-teal-300 bg-teal-50 hover:bg-teal-100 text-teal-800 px-3 py-1.5 text-xs font-bold shadow-2xs transition-all active:scale-98 cursor-pointer"
+                  title="Buka Ruang Percakapan Komunitas"
+                >
+                  <MessageCircle className="h-3.5 w-3.5 text-teal-600" />
+                  <span className="hidden sm:inline">Percakapan</span>
+                </button>
 
                 {/* Tombol Berhenti Jadi Admin jika user adalah Admin */}
                 {isUserAdmin && (
@@ -827,6 +859,24 @@ export function KomunitasDetailClientView({
               {/* Accordion Body Content */}
               {isOpen && (
                 <div className="p-2 sm:p-4 animate-in fade-in-50 duration-300">
+                  {/* Subtab: RUANG PERCAKAPAN KOMUNITAS */}
+                  {cat.id === "percakapan" && (
+                    <section className="space-y-4 pb-4">
+                      <KomunitasPercakapanTab
+                        komunitas={komunitasData}
+                        currentUserId={currentUserId}
+                        isAdminOrKader={isAdminOrKader}
+                        onOpenJoinModal={() => {
+                          if (komunitas.jenis === "warga_kita") {
+                            setIsWargaOnboardingOpen(true);
+                          } else {
+                            setIsJoinModalOpen(true);
+                          }
+                        }}
+                      />
+                    </section>
+                  )}
+
                   {cat.id === "kabar" && (
                     <section className="space-y-4 pb-4">
           {kabarKomunitas.length === 0 ? (

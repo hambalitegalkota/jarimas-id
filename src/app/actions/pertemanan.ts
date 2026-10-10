@@ -2,6 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/utils/supabase/server";
+import { toValidUUID } from "@/lib/utils";
+import { SEED_SPM_TEGAL } from "@/lib/constants/tegal-data";
 import type {
   GetRegisteredUsersResult,
   RegisteredUserItem,
@@ -1102,8 +1104,8 @@ export async function getGroupChatRooms(): Promise<{
       // Tamu
     }
 
-    // Ambil komunitas aktif
-    const { data: communities, error } = await supabase
+    // Ambil komunitas aktif dari database
+    const { data: dbCommunities } = await supabase
       .from("komunitas")
       .select(`
         id,
@@ -1117,14 +1119,31 @@ export async function getGroupChatRooms(): Promise<{
         rt
       `)
       .order("nama", { ascending: true })
-      .limit(50);
+      .limit(60);
 
-    if (error || !communities) {
-      return {
-        success: true,
-        rooms: [],
-        currentUserId,
-      };
+    const communityList = [...(dbCommunities || [])];
+    const existingIds = new Set(communityList.map((c) => c.id));
+
+    // Masukkan seed SPM ke daftar agar dapat diakses ruang percakapannya
+    if (Array.isArray(SEED_SPM_TEGAL)) {
+      for (const spm of SEED_SPM_TEGAL) {
+        const spmUuid = toValidUUID(spm.id);
+        if (!existingIds.has(spm.id) && !existingIds.has(spmUuid)) {
+          communityList.push({
+            id: spm.id,
+            nama: spm.nama,
+            jenis: spm.jenis,
+            deskripsi: spm.deskripsi,
+            logo_url: spm.logo_url || null,
+            kecamatan: spm.kecamatan,
+            kelurahan: spm.kelurahan,
+            rw: spm.rw || null,
+            rt: spm.rt || null,
+          } as any);
+          existingIds.add(spm.id);
+          existingIds.add(spmUuid);
+        }
+      }
     }
 
     // Ambil jumlah anggota masing-masing komunitas & keanggotaan user saat ini
@@ -1148,9 +1167,12 @@ export async function getGroupChatRooms(): Promise<{
     // Filter komunitas yang relevan:
     // Super Admin: seluruh komunitas
     // User reguler: HANYA komunitas yang telah diikuti (approved)
-    let relevantCommunities = communities;
+    let relevantCommunities = communityList;
     if (!isSuperAdmin) {
-      relevantCommunities = communities.filter((c) => myMembershipSet.has(c.id));
+      relevantCommunities = communityList.filter((c) => {
+        const cUuid = toValidUUID(c.id);
+        return myMembershipSet.has(c.id) || myMembershipSet.has(cUuid);
+      });
     }
 
     // Ambil pesan terakhir grup jika ada
@@ -1183,20 +1205,26 @@ export async function getGroupChatRooms(): Promise<{
       // Fallback
     }
 
-    const rooms: import("@/types/database").GrupChatRoom[] = relevantCommunities.map((c) => ({
-      id: c.id,
-      nama: c.nama || "Grup Komunitas",
-      jenis: c.jenis || "warga_kita",
-      deskripsi: c.deskripsi,
-      logo_url: c.logo_url,
-      kecamatan: c.kecamatan,
-      kelurahan: c.kelurahan,
-      rw: c.rw,
-      rt: c.rt,
-      jumlah_anggota: countMap[c.id] || 0,
-      last_message: lastMsgMap[c.id] || null,
-      is_member: myMembershipSet.has(c.id),
-    }));
+    const rooms: import("@/types/database").GrupChatRoom[] = relevantCommunities.map((c) => {
+      const cUuid = toValidUUID(c.id);
+      const totalAnggota = (countMap[c.id] || 0) + (countMap[cUuid] || 0);
+      const isMember = myMembershipSet.has(c.id) || myMembershipSet.has(cUuid);
+
+      return {
+        id: c.id,
+        nama: c.nama || "Grup Komunitas",
+        jenis: c.jenis || "warga_kita",
+        deskripsi: c.deskripsi,
+        logo_url: c.logo_url,
+        kecamatan: c.kecamatan,
+        kelurahan: c.kelurahan,
+        rw: c.rw,
+        rt: c.rt,
+        jumlah_anggota: totalAnggota,
+        last_message: lastMsgMap[c.id] || lastMsgMap[cUuid] || null,
+        is_member: isMember,
+      };
+    });
 
     return {
       success: true,
@@ -1225,6 +1253,7 @@ export async function getGroupMessages(komunitasId: string): Promise<{
 }> {
   try {
     const supabase = await createClient();
+    const dbKomunitasId = toValidUUID(komunitasId);
 
     let currentUserId: string | null = null;
     try {
@@ -1240,8 +1269,21 @@ export async function getGroupMessages(komunitasId: string): Promise<{
     const { data: community } = await supabase
       .from("komunitas")
       .select("id, nama, jenis, kecamatan, kelurahan, rw, rt, logo_url, deskripsi")
-      .eq("id", komunitasId)
+      .in("id", [komunitasId, dbKomunitasId])
       .maybeSingle();
+
+    // Ambil peranan anggota di komunitas ini untuk role badge
+    const { data: memberRoles } = await supabase
+      .from("anggota_komunitas")
+      .select("user_id, peran, peran_diajukan, status")
+      .in("komunitas_id", [komunitasId, dbKomunitasId]);
+
+    const roleMap: Record<string, string> = {};
+    if (memberRoles) {
+      memberRoles.forEach((mr) => {
+        roleMap[mr.user_id] = mr.peran || "Pengunjung";
+      });
+    }
 
     // Ambil riwayat pesan grup
     const { data: rawMessages, error } = await supabase
@@ -1260,9 +1302,9 @@ export async function getGroupMessages(komunitasId: string): Promise<{
           is_super_admin
         )
       `)
-      .eq("komunitas_id", komunitasId)
+      .in("komunitas_id", [komunitasId, dbKomunitasId])
       .order("created_at", { ascending: true })
-      .limit(100);
+      .limit(150);
 
     if (error) {
       console.warn("Gagal getGroupMessages:", error);
@@ -1274,9 +1316,14 @@ export async function getGroupMessages(komunitasId: string): Promise<{
       };
     }
 
+    const formattedMessages = (rawMessages || []).map((m: any) => ({
+      ...m,
+      user_role: roleMap[m.user_id] || (m.profiles?.is_super_admin ? "Super Admin" : "Anggota"),
+    }));
+
     return {
       success: true,
-      messages: (rawMessages || []) as any,
+      messages: formattedMessages as any,
       komunitas: community as any,
       currentUserId,
     };
@@ -1304,6 +1351,7 @@ export async function sendGroupMessage(params: {
   try {
     const { komunitasId, pesan } = params;
     const cleanPesan = (pesan || "").trim();
+    const dbKomunitasId = toValidUUID(komunitasId);
 
     if (!cleanPesan) {
       return {
@@ -1341,9 +1389,9 @@ export async function sendGroupMessage(params: {
     if (!isSuperAdmin) {
       const { data: membership } = await supabase
         .from("anggota_komunitas")
-        .select("id")
+        .select("id, peran")
         .eq("user_id", user.id)
-        .eq("komunitas_id", komunitasId)
+        .in("komunitas_id", [komunitasId, dbKomunitasId])
         .eq("status", "approved")
         .maybeSingle();
 
@@ -1358,7 +1406,7 @@ export async function sendGroupMessage(params: {
     const { data: inserted, error: insertErr } = await supabase
       .from("pesan_grup")
       .insert({
-        komunitas_id: komunitasId,
+        komunitas_id: dbKomunitasId,
         user_id: user.id,
         pesan: cleanPesan,
       })
@@ -1389,6 +1437,8 @@ export async function sendGroupMessage(params: {
       };
     }
 
+    revalidatePath(`/komunitas/${komunitasId}`);
+    revalidatePath(`/komunitas/${dbKomunitasId}`);
     revalidatePath("/kabar");
 
     return {

@@ -610,6 +610,7 @@ export interface PesanGrup {
   created_at: string;
   updated_at?: string;
   profiles?: Profile | null;
+  user_role?: string | null;
 }
 
 export interface GrupChatRoom {
