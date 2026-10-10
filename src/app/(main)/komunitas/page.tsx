@@ -103,7 +103,7 @@ export default async function KomunitasPage({
   const accordionCategories = [
     {
       id: "posyandu" as JenisKomunitas,
-      title: "Posyandu Balita",
+      title: "Posyandu",
       subtitle: "Layanan Pemantauan Tumbuh Kembang, Gizi & Imunisasi Balita",
       badgeText: "230+ Posyandu",
       icon: HeartPulse,
@@ -333,7 +333,7 @@ export default async function KomunitasPage({
               Eksplorasi Komunitas Kota Tegal
             </h1>
             <p className="text-xs sm:text-sm text-slate-300 max-w-lg leading-relaxed">
-              Jelajahi 230+ Posyandu Balita, Satuan PAUD &amp; Kesetaraan, Komunitas Warga 4 Tingkat, dan 6 Bidang SPM se-Kota Tegal.
+              Jelajahi 230+ Posyandu, Satuan PAUD &amp; Kesetaraan, Komunitas Warga 4 Tingkat, dan 6 Bidang SPM se-Kota Tegal.
             </p>
           </div>
 

@@ -1628,7 +1628,7 @@ export function getKomunitasRekapData(
       : null;
 
   const labelSingkat = isPosyandu
-    ? "Posyandu Balita"
+    ? "Posyandu"
     : isPaud
     ? activeBentuk
       ? `Satuan ${activeBentuk}`
