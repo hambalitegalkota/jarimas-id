@@ -114,18 +114,8 @@ function parseBirthDateOrAge(item: any): string {
     }
   }
 
-  // 3. Fallback cerdas berdasarkan jenjang PAUD
-  const sPaud = String(item.nama_paud || item.nama_sekolah || "").toLowerCase();
-  let defaultAge = 3; // Rata-rata anak KB (Kelompok Bermain) adalah 3 tahun
-  if (sPaud.includes("tk") || sPaud.includes("ra") || sPaud.includes("bustanul")) {
-    defaultAge = 5;
-  } else if (sPaud.includes("tpa") || sPaud.includes("penitipan")) {
-    defaultAge = 1;
-  } else if (sPaud.includes("kb") || sPaud.includes("bermain")) {
-    defaultAge = 3;
-  }
-
-  return `${currentYear - defaultAge}-07-01`;
+  // 3. Fallback jika tanggal lahir dan usia tidak diisi sama sekali di data input
+  return `${currentYear - 4}-07-01`;
 }
 
 function calculateUsiaFromBirthDate(birthDateStr?: string | null): string {

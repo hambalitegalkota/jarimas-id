@@ -70,13 +70,13 @@ const DAFTAR_SATUAN_PAUD_KEYS: Array<{
 ];
 
 const RENTANG_USIA_LIST = [
-  { age: 0, label: "0 Tahun", sub: "Bayi", hint: "Rentang Usia 0–11 Bulan (TPA / Bayi)" },
-  { age: 1, label: "1 Tahun", sub: "Toddler Awal", hint: "Rentang Usia 12–23 Bulan (TPA / Toddler)" },
-  { age: 2, label: "2 Tahun", sub: "Toddler / KB", hint: "Rentang Usia 24–35 Bulan (TPA / KB Awal)" },
-  { age: 3, label: "3 Tahun", sub: "KB Awal", hint: "Rentang Usia 36–47 Bulan (Kelompok Bermain)" },
-  { age: 4, label: "4 Tahun", sub: "KB / TK A", hint: "Rentang Usia 48–59 Bulan (KB Lanjutan / TK Awal)" },
-  { age: 5, label: "5 Tahun", sub: "TK B / RA", hint: "Rentang Usia 60–71 Bulan (TK B / RA)" },
-  { age: 6, label: "6 Tahun", sub: "Kesiapan SD", hint: "Rentang Usia 72–83 Bulan (Kesiapan Masuk SD)" },
+  { age: 0, label: "0 Tahun" },
+  { age: 1, label: "1 Tahun" },
+  { age: 2, label: "2 Tahun" },
+  { age: 3, label: "3 Tahun" },
+  { age: 4, label: "4 Tahun" },
+  { age: 5, label: "5 Tahun" },
+  { age: 6, label: "6 Tahun" },
 ];
 
 export function RekapDataAnakClientView({
@@ -631,12 +631,12 @@ export function RekapDataAnakClientView({
                 </span>
 
                 {[
-                  { label: "0–1 Tahun (TPA / Penitipan Bayi)", count: currentWilayahData.bersekolahUsia.age0_1, color: "bg-teal-500" },
-                  { label: "2 Tahun (TPA / Toddler)", count: currentWilayahData.bersekolahUsia.age2, color: "bg-teal-600" },
-                  { label: "3 Tahun (Kelompok Bermain Awal)", count: currentWilayahData.bersekolahUsia.age3, color: "bg-emerald-500" },
-                  { label: "4 Tahun (Kelompok Bermain / TK A)", count: currentWilayahData.bersekolahUsia.age4, color: "bg-emerald-600" },
-                  { label: "5 Tahun (TK B / RA)", count: currentWilayahData.bersekolahUsia.age5, color: "bg-sky-600" },
-                  { label: "6 Tahun (Kesiapan Masuk SD)", count: currentWilayahData.bersekolahUsia.age6, color: "bg-indigo-600" },
+                  { label: "0–1 Tahun", count: currentWilayahData.bersekolahUsia.age0_1, color: "bg-teal-500" },
+                  { label: "2 Tahun", count: currentWilayahData.bersekolahUsia.age2, color: "bg-teal-600" },
+                  { label: "3 Tahun", count: currentWilayahData.bersekolahUsia.age3, color: "bg-emerald-500" },
+                  { label: "4 Tahun", count: currentWilayahData.bersekolahUsia.age4, color: "bg-emerald-600" },
+                  { label: "5 Tahun", count: currentWilayahData.bersekolahUsia.age5, color: "bg-sky-600" },
+                  { label: "6 Tahun", count: currentWilayahData.bersekolahUsia.age6, color: "bg-indigo-600" },
                 ].map((ageRow, idx) => {
                   const pct = Math.round((ageRow.count / (currentWilayahData.totalBersekolah || 1)) * 100);
                   return (
@@ -754,7 +754,7 @@ export function RekapDataAnakClientView({
 
                   {/* 7 Columns for Ages 0 to 6 */}
                   <div className="relative min-w-[720px] grid grid-cols-7 gap-3 sm:gap-4 items-end h-72 pb-16">
-                    {RENTANG_USIA_LIST.map(({ age, label, sub, hint }) => {
+                    {RENTANG_USIA_LIST.map(({ age, label }) => {
                       const dataAge = currentWilayahData.bersekolahUsiaJenjang?.[age] || {
                         tk: 0,
                         ra: 0,
@@ -823,11 +823,8 @@ export function RekapDataAnakClientView({
 
                           {/* Age Column Footer */}
                           <div className="w-full text-center pt-2.5 space-y-1">
-                            <span className="inline-block px-2 py-0.5 rounded-md bg-slate-200/80 dark:bg-slate-700/80 text-xs font-black text-slate-800 dark:text-slate-200">
+                            <span className="inline-block px-2.5 py-0.5 rounded-md bg-slate-200/80 dark:bg-slate-700/80 text-xs font-black text-slate-800 dark:text-slate-200">
                               {label}
-                            </span>
-                            <span className="block text-2xs font-semibold text-slate-400 truncate" title={hint}>
-                              {sub}
                             </span>
                             <div className="font-mono text-2xs font-bold text-slate-600 dark:text-slate-400">
                               Total: <span className="text-slate-900 dark:text-slate-100 font-extrabold">{totalAge}</span>
@@ -875,7 +872,7 @@ export function RekapDataAnakClientView({
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
-                    {RENTANG_USIA_LIST.map(({ age, label, sub }) => {
+                    {RENTANG_USIA_LIST.map(({ age, label }) => {
                       const dataAge = currentWilayahData.bersekolahUsiaJenjang?.[age] || {
                         tk: 0,
                         ra: 0,
@@ -891,7 +888,7 @@ export function RekapDataAnakClientView({
                       return (
                         <tr key={age} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                           <td className="py-2.5 px-4 font-bold text-slate-800 dark:text-slate-200">
-                            {label} <span className="text-2xs text-slate-400 font-normal">({sub})</span>
+                            {label}
                           </td>
                           <td className="py-2.5 px-3 text-center font-mono font-bold text-slate-700 dark:text-slate-300">
                             {dataAge.tk || "-"}

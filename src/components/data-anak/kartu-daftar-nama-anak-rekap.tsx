@@ -281,13 +281,13 @@ export function KartuDaftarNamaAnakRekap({
                 onChange={(e) => setAgeFilter(e.target.value)}
                 className="h-9 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 px-3 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-hidden"
               >
-                <option value="semua">Semua Usia (0–6 Thn)</option>
-                <option value="0">0–1 Tahun (Bayi)</option>
-                <option value="2">2 Tahun (Toddler)</option>
-                <option value="3">3 Tahun (KB Awal)</option>
-                <option value="4">4 Tahun (KB/TK A)</option>
-                <option value="5">5 Tahun (TK A/B)</option>
-                <option value="6">6 Tahun (TK B/Matang)</option>
+                <option value="semua">Semua Usia (0–6 Tahun)</option>
+                <option value="0">0–1 Tahun</option>
+                <option value="2">2 Tahun</option>
+                <option value="3">3 Tahun</option>
+                <option value="4">4 Tahun</option>
+                <option value="5">5 Tahun</option>
+                <option value="6">6 Tahun</option>
               </select>
 
               {/* Print Button */}
