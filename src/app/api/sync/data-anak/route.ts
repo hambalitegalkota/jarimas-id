@@ -6,6 +6,7 @@ import {
   serializeDataAnakAlasan,
   parseDataAnakDetails,
   isDataAtsRecord,
+  isDummyDataAnak,
 } from "@/lib/data-anak-helpers";
 import { toValidUUID } from "@/lib/utils";
 
@@ -219,6 +220,7 @@ export async function POST(req: NextRequest) {
         (ex) =>
           ex.nama_lengkap?.toLowerCase() === namaLengkap.toLowerCase() &&
           !isDataAtsRecord(ex) &&
+          !isDummyDataAnak(ex) &&
           (namaOrangtua === "-" ||
             !ex.nama_orangtua ||
             ex.nama_orangtua === "-" ||
@@ -434,8 +436,10 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // Filter hanya anak balita/PAUD (bukan data ATS)
-    const validChildren = ((children as any[]) || []).filter((c: any) => !isDataAtsRecord(c));
+    // Filter hanya anak balita/PAUD riil (bukan data ATS dan bukan data dummy)
+    const validChildren = ((children as any[]) || []).filter(
+      (c: any) => !isDataAtsRecord(c) && !isDummyDataAnak(c)
+    );
 
     const formattedList = validChildren.map((c: any) => {
       const parsed = parseDataAnakDetails(c.alasan_sekolah);

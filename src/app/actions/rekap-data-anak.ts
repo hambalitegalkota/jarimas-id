@@ -5,6 +5,7 @@ import { KOTA_TEGAL_DATA, findOrGenerateKomunitasSeed } from "@/lib/constants/te
 import {
   parseDataAnakDetails,
   isDataAtsRecord,
+  isDummyDataAnak,
   normalizeWilayah,
 } from "@/lib/data-anak-helpers";
 import { isAdminPusat, isSuperAdmin as checkIsSuperAdmin } from "@/lib/utils";
@@ -138,14 +139,36 @@ function calculateAgeFromBirthDate(birthDateStr?: string | null): number {
 }
 
 function classifySchoolType(namaSekolah?: string | null): keyof SchoolTypeBreakdown {
-  const s = (namaSekolah || "").toUpperCase();
-  if (s.includes("TK") || s.includes("TAMAN KANAK")) return "tk";
-  if (s.includes("RA") || s.includes("RAUDHATUL") || s.includes("BA")) return "ra";
-  if (s.includes("KB") || s.includes("KELOMPOK BERMAIN") || s.includes("KBI")) return "kb";
-  if (s.includes("SPS") || s.includes("POS PAUD") || s.includes("PAUD TPQ")) return "sps";
-  if (s.includes("TPA") || s.includes("PENITIPAN")) return "tpa";
-  if (s.includes("SKB") || s.includes("SANGGAR KEGIATAN")) return "skb";
-  if (s.includes("PKBM") || s.includes("PUSAT KEGIATAN")) return "pkbm";
+  const s = (namaSekolah || "").trim();
+  if (!s) return "kb";
+
+  // 1. Kelompok Bermain (KB) - Prioritas utama
+  if (/\b(KB|KELOMPOK\s*BERMAIN|KBI)\b/i.test(s)) return "kb";
+
+  // 2. Raudhatul Athfal (RA / BA / Bustanul Athfal)
+  if (
+    /\b(RA|RAUDHATUL\s*ATHFAL|RAUDLATUL\s*ATHFAL|BUSTANUL\s*ATHFAL)\b/i.test(s) ||
+    /\bBA\b/i.test(s)
+  ) {
+    return "ra";
+  }
+
+  // 3. Taman Kanak-Kanak (TK)
+  if (/\b(TK|TAMAN\s*KANAK[- ]*KANAK|TKI)\b/i.test(s)) return "tk";
+
+  // 4. Satuan PAUD Sejenis (SPS)
+  if (/\b(SPS|POS\s*PAUD|PAUD\s*TPQ)\b/i.test(s)) return "sps";
+
+  // 5. Taman Penitipan Anak (TPA)
+  if (/\b(TPA|TAMAN\s*PENITIPAN|PENITIPAN\s*ANAK)\b/i.test(s)) return "tpa";
+
+  // 6. Sanggar Kegiatan Belajar (SKB)
+  if (/\b(SKB|SANGGAR\s*KEGIATAN)\b/i.test(s)) return "skb";
+
+  // 7. Pusat Kegiatan Belajar Masyarakat (PKBM)
+  if (/\b(PKBM|PUSAT\s*KEGIATAN\s*BELAJAR)\b/i.test(s)) return "pkbm";
+
+  if (/\bPAUD\b/i.test(s)) return "kb";
   return "tk";
 }
 
@@ -238,8 +261,10 @@ export async function getRekapDataAnakUsiaDiniAction(): Promise<{
       console.warn("Rekap data_anak fetch warning:", fetchErr.message);
     }
 
-    // Filter ketat: Hanya data anak balita / PAUD riil (BUKAN data ATS)
-    const validLiveChildren = (dbChildren || []).filter((c) => !isDataAtsRecord(c));
+    // Filter ketat: Hanya data anak balita / PAUD riil (BUKAN data ATS dan BUKAN data dummy uji coba)
+    const validLiveChildren = (dbChildren || []).filter(
+      (c) => !isDataAtsRecord(c) && !isDummyDataAnak(c)
+    );
     const totalLiveRecords = validLiveChildren.length;
 
     // 2. Inisialisasi seluruh 27 Kelurahan resmi Kota Tegal
@@ -700,8 +725,10 @@ export async function getDaftarNamaAnakRekapAction(params: {
       };
     }
 
-    // Filter ketat: Bukan data ATS
-    const validLiveChildren = (dbChildren || []).filter((c) => !isDataAtsRecord(c));
+    // Filter ketat: Bukan data ATS dan Bukan data dummy
+    const validLiveChildren = (dbChildren || []).filter(
+      (c) => !isDataAtsRecord(c) && !isDummyDataAnak(c)
+    );
     const resultList: DaftarNamaAnakItem[] = [];
 
     for (const child of validLiveChildren) {

@@ -85,6 +85,40 @@ export function isDataAtsRecord(row: any): boolean {
 }
 
 /**
+ * Mendeteksi apakah suatu baris data merupakan data uji coba / dummy anak
+ */
+export function isDummyDataAnak(row: any): boolean {
+  if (!row) return false;
+  const name = String(row.nama_lengkap || "").trim().toUpperCase();
+  const school = String(row.nama_sekolah || "").trim().toUpperCase();
+  const parent = String(row.nama_orangtua || "").trim();
+
+  // Pola nama uji coba: "ANAK TEST 0".."ANAK TEST 49", "TEST", "TEST CEK RETURN", dll.
+  if (
+    name.startsWith("ANAK TEST") ||
+    name === "TEST" ||
+    name.includes("TEST CEK") ||
+    name.startsWith("TEST ") ||
+    name === "DUMMY" ||
+    name.startsWith("DUMMY ")
+  ) {
+    return true;
+  }
+
+  // Pola nama sekolah uji coba: "KB TEST", "TEST"
+  if (school.includes("TEST") || school.includes("DUMMY")) {
+    return true;
+  }
+
+  // Data duplikat uji coba khusus (seperti ANAK SHOLEH dengan orangtua '-')
+  if (school === "ANAK SHOLEH" && (parent === "-" || !parent)) {
+    return true;
+  }
+
+  return false;
+}
+
+/**
  * Mencari lokasi (Kecamatan dan Kelurahan) dari sebuah Satuan PAUD/PKBM berdasarkan nama atau ID
  */
 export function findPaudLocation(paudNameOrId?: string | null): {

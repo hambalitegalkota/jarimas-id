@@ -11,6 +11,7 @@ import {
   parseDataAnakDetails,
   isDataAnakMatchingKomunitas,
   isDataAtsRecord,
+  isDummyDataAnak,
 } from "@/lib/data-anak-helpers";
 import type {
   DataAnakItem,
@@ -786,8 +787,10 @@ export async function getDataAnakByKomunitas(komunitasId: string): Promise<{
       };
     }
 
-    // Filter ketat: Hanya data anak balita / PAUD (0–6 Tahun) yang BUKAN data ATS
-    const nonAtsChildren = (dbChildren || []).filter((row: any) => !isDataAtsRecord(row));
+    // Filter ketat: Hanya data anak balita / PAUD (0–6 Tahun) yang BUKAN data ATS dan BUKAN data dummy
+    const nonAtsChildren = (dbChildren || []).filter(
+      (row: any) => !isDataAtsRecord(row) && !isDummyDataAnak(row)
+    );
 
     if (!nonAtsChildren || nonAtsChildren.length === 0) {
       return {
