@@ -53,17 +53,79 @@ function verifySecret(req: NextRequest, bodySecret?: string): boolean {
   return false;
 }
 
-function calculateBirthDateFromUsia(usia?: string | number | null): string {
+function parseBirthDateOrAge(item: any): string {
   const currentYear = new Date().getFullYear();
-  let numUsia = 4;
-  if (usia !== undefined && usia !== null && usia !== "") {
-    const parsed = Number(usia);
-    if (!isNaN(parsed) && parsed >= 0 && parsed <= 6) {
-      numUsia = parsed;
+
+  // 1. Cek kolom tanggal lahir eksplisit
+  const rawDate =
+    item.tanggal_lahir ||
+    item.tgl_lahir ||
+    item.birth_date ||
+    item.tanggalLahir ||
+    item.tglLahir ||
+    item.tgl ||
+    item.lahir;
+
+  if (rawDate) {
+    const s = String(rawDate).trim();
+    // Format YYYY-MM-DD
+    const isoMatch = s.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})/);
+    if (isoMatch) {
+      const y = parseInt(isoMatch[1], 10);
+      const m = String(isoMatch[2]).padStart(2, "0");
+      const d = String(isoMatch[3]).padStart(2, "0");
+      if (y >= 2015 && y <= currentYear) {
+        return `${y}-${m}-${d}`;
+      }
+    }
+    // Format DD-MM-YYYY atau DD/MM/YYYY
+    const dmyMatch = s.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})/);
+    if (dmyMatch) {
+      const d = String(dmyMatch[1]).padStart(2, "0");
+      const m = String(dmyMatch[2]).padStart(2, "0");
+      const y = parseInt(dmyMatch[3], 10);
+      if (y >= 2015 && y <= currentYear) {
+        return `${y}-${m}-${d}`;
+      }
+    }
+    // Coba Date bawaan
+    const dObj = new Date(s);
+    if (!isNaN(dObj.getTime()) && dObj.getFullYear() >= 2015 && dObj.getFullYear() <= currentYear) {
+      return dObj.toISOString().split("T")[0];
     }
   }
-  const birthYear = currentYear - numUsia;
-  return `${birthYear}-07-01`;
+
+  // 2. Cek kolom usia / umur
+  const rawUsia =
+    item.usia !== undefined && item.usia !== null && item.usia !== ""
+      ? item.usia
+      : item.umur !== undefined && item.umur !== null && item.umur !== ""
+      ? item.umur
+      : item.age;
+
+  if (rawUsia !== undefined && rawUsia !== null && rawUsia !== "") {
+    const s = String(rawUsia).trim();
+    const match = s.match(/\b([0-6])\b/) || s.match(/(\d+)/);
+    if (match) {
+      const parsedNum = parseInt(match[1], 10);
+      if (!isNaN(parsedNum) && parsedNum >= 0 && parsedNum <= 6) {
+        return `${currentYear - parsedNum}-07-01`;
+      }
+    }
+  }
+
+  // 3. Fallback cerdas berdasarkan jenjang PAUD
+  const sPaud = String(item.nama_paud || item.nama_sekolah || "").toLowerCase();
+  let defaultAge = 3; // Rata-rata anak KB (Kelompok Bermain) adalah 3 tahun
+  if (sPaud.includes("tk") || sPaud.includes("ra") || sPaud.includes("bustanul")) {
+    defaultAge = 5;
+  } else if (sPaud.includes("tpa") || sPaud.includes("penitipan")) {
+    defaultAge = 1;
+  } else if (sPaud.includes("kb") || sPaud.includes("bermain")) {
+    defaultAge = 3;
+  }
+
+  return `${currentYear - defaultAge}-07-01`;
 }
 
 function calculateUsiaFromBirthDate(birthDateStr?: string | null): string {
@@ -202,47 +264,56 @@ export async function POST(req: NextRequest) {
       const namaLengkap = item.nama_lengkap;
       const validItemId = toValidUUID(item.id);
 
-      // Cek apakah ada kecocokan ID
-      if (validItemId && existingIdSet.has(validItemId)) {
-        results.push({
-          row_index: rowIndex,
-          id: validItemId,
-          status: "existing",
-          nama_lengkap: namaLengkap,
-          message: "Data anak sudah terdaftar sebelumnya di sistem (cocok ID).",
-        });
-        continue;
-      }
-
-      // Cek apakah ada kecocokan Nama Lengkap & Nama Orang Tua
-      const namaOrangtua = String(item.nama_orangtua || "").trim() || "-";
-      const matchInDb = existingByName.find(
-        (ex) =>
-          ex.nama_lengkap?.toLowerCase() === namaLengkap.toLowerCase() &&
-          !isDataAtsRecord(ex) &&
-          !isDummyDataAnak(ex) &&
-          (namaOrangtua === "-" ||
-            !ex.nama_orangtua ||
-            ex.nama_orangtua === "-" ||
-            ex.nama_orangtua.toLowerCase() === namaOrangtua.toLowerCase())
-      );
-
-      if (matchInDb) {
-        results.push({
-          row_index: rowIndex,
-          id: matchInDb.id,
-          status: "existing",
-          nama_lengkap: namaLengkap,
-          message: "Data anak sudah terdaftar sebelumnya di sistem.",
-        });
-        continue;
-      }
-
-      // Siapkan payload untuk insert data baru
       const rawJk = String(item.jenis_kelamin || "").trim().toUpperCase();
       const jk: "L" | "P" = rawJk.startsWith("P") || rawJk === "PEREMPUAN" ? "P" : "L";
       const namaPaud = String(item.nama_paud || "").trim();
       const isSekolah = Boolean(namaPaud && namaPaud.toLowerCase() !== "belum sekolah");
+      const birthDate = parseBirthDateOrAge(item);
+      const namaOrangtua = String(item.nama_orangtua || "").trim() || "-";
+
+      // Cek apakah ada kecocokan ID atau Nama Lengkap & Nama Orang Tua
+      const matchById = validItemId ? existingById.find((e) => e.id === validItemId) : null;
+      const matchInDb =
+        matchById ||
+        existingByName.find(
+          (ex) =>
+            ex.nama_lengkap?.toLowerCase() === namaLengkap.toLowerCase() &&
+            !isDataAtsRecord(ex) &&
+            !isDummyDataAnak(ex) &&
+            (namaOrangtua === "-" ||
+              !ex.nama_orangtua ||
+              ex.nama_orangtua === "-" ||
+              ex.nama_orangtua.toLowerCase() === namaOrangtua.toLowerCase())
+        );
+
+      if (matchInDb) {
+        // Perbarui tanggal lahir & informasi sekolah anak yang sudah ada
+        const updatePayload: any = {
+          tanggal_lahir: birthDate,
+          jenis_kelamin: jk,
+          is_sekolah: isSekolah,
+          nama_sekolah: isSekolah ? namaPaud : "Belum Sekolah",
+          updated_at: new Date().toISOString(),
+        };
+        if (namaOrangtua && namaOrangtua !== "-") updatePayload.nama_orangtua = namaOrangtua;
+        if (item.nomor_hp) updatePayload.nomor_hp = String(item.nomor_hp).trim();
+
+        const { error: updErr } = await supabase
+          .from("data_anak")
+          .update(updatePayload)
+          .eq("id", matchInDb.id);
+
+        results.push({
+          row_index: rowIndex,
+          id: matchInDb.id,
+          status: updErr ? "error" : "updated",
+          nama_lengkap: namaLengkap,
+          message: updErr
+            ? `Gagal memperbarui data: ${updErr.message}`
+            : "Data anak & usia/tanggal lahir berhasil diperbarui dari sinkronisasi.",
+        });
+        continue;
+      }
 
       // Deteksi lokasi dan wilayah Satuan PAUD
       const paudLoc = isSekolah ? findPaudLocation(namaPaud) : null;
@@ -271,8 +342,6 @@ export async function POST(req: NextRequest) {
           if (matchKelKom) targetKomunitasId = matchKelKom.id;
         }
       }
-
-      const birthDate = calculateBirthDateFromUsia(item.usia);
       const alasanFormatted = serializeDataAnakAlasan({
         alasanSekolah: isSekolah ? "Sudah Usia PAUD" : "Belum Wajib (Masih Balita)",
         kkKecamatan: targetKecamatan,

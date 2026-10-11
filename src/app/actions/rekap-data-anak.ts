@@ -89,6 +89,9 @@ export interface WilayahRekapItem {
   bersekolahUsia: AgeGroupBreakdown;
   bersekolahAlasan: ReasonCount[];
 
+  // Rincian Matriks: Usia Tunggal (0–6 Tahun) x Jenjang Satuan PAUD (TK, RA, KB, SPS, TPA, PKBM, SKB)
+  bersekolahUsiaJenjang: Record<number, SchoolTypeBreakdown>;
+
   // Rincian Anak Tidak / Belum Bersekolah
   tidakBersekolahGender: GenderBreakdown;
   tidakBersekolahUsia: AgeGroupBreakdown;
@@ -127,7 +130,18 @@ const DAFTAR_ALASAN_TIDAK_SEKOLAH = [
 
 function calculateAgeFromBirthDate(birthDateStr?: string | null): number {
   if (!birthDateStr) return 4;
-  const birth = new Date(birthDateStr);
+  let s = String(birthDateStr).trim();
+
+  // Dukung format tanggal DD-MM-YYYY atau DD/MM/YYYY
+  const dmyMatch = s.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})/);
+  if (dmyMatch) {
+    const d = String(dmyMatch[1]).padStart(2, "0");
+    const m = String(dmyMatch[2]).padStart(2, "0");
+    const y = dmyMatch[3];
+    s = `${y}-${m}-${d}`;
+  }
+
+  const birth = new Date(s);
   if (isNaN(birth.getTime())) return 4;
   const now = new Date();
   let age = now.getFullYear() - birth.getFullYear();
@@ -210,6 +224,14 @@ function normalizeReasonTidakSekolah(raw?: string | null, age: number = 2): stri
   return "Belum Cukup Usia / Masih Balita";
 }
 
+function createEmptyUsiaJenjang(): Record<number, SchoolTypeBreakdown> {
+  const res: Record<number, SchoolTypeBreakdown> = {};
+  for (let age = 0; age <= 6; age++) {
+    res[age] = { tk: 0, ra: 0, kb: 0, sps: 0, tpa: 0, skb: 0, pkbm: 0 };
+  }
+  return res;
+}
+
 function createEmptyRekapWilayah(id: string, nama: string, tingkat: "kota" | "kecamatan" | "kelurahan", kecamatan?: string): WilayahRekapItem {
   return {
     id,
@@ -225,6 +247,7 @@ function createEmptyRekapWilayah(id: string, nama: string, tingkat: "kota" | "ke
     bersekolahJenjang: { tk: 0, ra: 0, kb: 0, sps: 0, tpa: 0, skb: 0, pkbm: 0 },
     bersekolahUsia: { age0_1: 0, age2: 0, age3: 0, age4: 0, age5: 0, age6: 0 },
     bersekolahAlasan: DAFTAR_ALASAN_BERSEKOLAH.map((alasan) => ({ alasan, jumlah: 0, persentase: 0 })),
+    bersekolahUsiaJenjang: createEmptyUsiaJenjang(),
     tidakBersekolahGender: { lakiLaki: 0, perempuan: 0, total: 0 },
     tidakBersekolahUsia: { age0_1: 0, age2: 0, age3: 0, age4: 0, age5: 0, age6: 0 },
     tidakBersekolahAlasan: DAFTAR_ALASAN_TIDAK_SEKOLAH.map((alasan) => ({ alasan, jumlah: 0, persentase: 0 })),
@@ -242,23 +265,36 @@ export async function getRekapDataAnakUsiaDiniAction(): Promise<{
   try {
     const supabase = await createClient();
 
-    // 1. Ambil data_anak dari database
-    const { data: dbChildren, error: fetchErr } = await supabase
-      .from("data_anak")
-      .select(`
-        id,
-        nama_lengkap,
-        tanggal_lahir,
-        jenis_kelamin,
-        is_sekolah,
-        nama_sekolah,
-        alasan_sekolah,
-        komunitas_id,
-        created_at
-      `);
+    // 1. Ambil data_anak dari database dengan paginasi penuh (mencegah batas 1.000 baris)
+    let dbChildren: any[] = [];
+    let from = 0;
+    const pageSize = 1000;
 
-    if (fetchErr) {
-      console.warn("Rekap data_anak fetch warning:", fetchErr.message);
+    while (true) {
+      const { data: chunk, error: fetchErr } = await supabase
+        .from("data_anak")
+        .select(`
+          id,
+          nama_lengkap,
+          tanggal_lahir,
+          jenis_kelamin,
+          is_sekolah,
+          nama_sekolah,
+          alasan_sekolah,
+          komunitas_id,
+          created_at
+        `)
+        .range(from, from + pageSize - 1);
+
+      if (fetchErr) {
+        console.warn("Rekap data_anak fetch warning:", fetchErr.message);
+        break;
+      }
+
+      if (!chunk || chunk.length === 0) break;
+      dbChildren = dbChildren.concat(chunk);
+      if (chunk.length < pageSize) break;
+      from += pageSize;
     }
 
     // Filter ketat: Hanya data anak balita / PAUD riil (BUKAN data ATS dan BUKAN data dummy uji coba)
@@ -331,6 +367,12 @@ export async function getRekapDataAnakUsiaDiniAction(): Promise<{
             else if (age === 4) targetKelItem.bersekolahUsia.age4 += 1;
             else if (age === 5) targetKelItem.bersekolahUsia.age5 += 1;
             else targetKelItem.bersekolahUsia.age6 += 1;
+
+            // Akumulasi Matriks Usia (0 - 6 Tahun) x Jenjang Satuan PAUD
+            const clampedAge = Math.max(0, Math.min(6, age));
+            if (targetKelItem.bersekolahUsiaJenjang[clampedAge]) {
+              targetKelItem.bersekolahUsiaJenjang[clampedAge][st] += 1;
+            }
 
             const normReason = normalizeReasonBersekolah(parsed.alasan);
             const rObj = targetKelItem.bersekolahAlasan.find((r) => r.alasan === normReason);
@@ -417,6 +459,16 @@ export async function getRekapDataAnakUsiaDiniAction(): Promise<{
         kecItem.bersekolahUsia.age5 += kel.bersekolahUsia.age5;
         kecItem.bersekolahUsia.age6 += kel.bersekolahUsia.age6;
 
+        for (let a = 0; a <= 6; a++) {
+          kecItem.bersekolahUsiaJenjang[a].tk += kel.bersekolahUsiaJenjang[a].tk;
+          kecItem.bersekolahUsiaJenjang[a].ra += kel.bersekolahUsiaJenjang[a].ra;
+          kecItem.bersekolahUsiaJenjang[a].kb += kel.bersekolahUsiaJenjang[a].kb;
+          kecItem.bersekolahUsiaJenjang[a].sps += kel.bersekolahUsiaJenjang[a].sps;
+          kecItem.bersekolahUsiaJenjang[a].tpa += kel.bersekolahUsiaJenjang[a].tpa;
+          kecItem.bersekolahUsiaJenjang[a].skb += kel.bersekolahUsiaJenjang[a].skb;
+          kecItem.bersekolahUsiaJenjang[a].pkbm += kel.bersekolahUsiaJenjang[a].pkbm;
+        }
+
         kel.bersekolahAlasan.forEach((r, idx) => {
           kecItem.bersekolahAlasan[idx].jumlah += r.jumlah;
         });
@@ -488,6 +540,16 @@ export async function getRekapDataAnakUsiaDiniAction(): Promise<{
       kotaItem.bersekolahUsia.age4 += kec.bersekolahUsia.age4;
       kotaItem.bersekolahUsia.age5 += kec.bersekolahUsia.age5;
       kotaItem.bersekolahUsia.age6 += kec.bersekolahUsia.age6;
+
+      for (let a = 0; a <= 6; a++) {
+        kotaItem.bersekolahUsiaJenjang[a].tk += kec.bersekolahUsiaJenjang[a].tk;
+        kotaItem.bersekolahUsiaJenjang[a].ra += kec.bersekolahUsiaJenjang[a].ra;
+        kotaItem.bersekolahUsiaJenjang[a].kb += kec.bersekolahUsiaJenjang[a].kb;
+        kotaItem.bersekolahUsiaJenjang[a].sps += kec.bersekolahUsiaJenjang[a].sps;
+        kotaItem.bersekolahUsiaJenjang[a].tpa += kec.bersekolahUsiaJenjang[a].tpa;
+        kotaItem.bersekolahUsiaJenjang[a].skb += kec.bersekolahUsiaJenjang[a].skb;
+        kotaItem.bersekolahUsiaJenjang[a].pkbm += kec.bersekolahUsiaJenjang[a].pkbm;
+      }
 
       kec.bersekolahAlasan.forEach((r, idx) => {
         kotaItem.bersekolahAlasan[idx].jumlah += r.jumlah;

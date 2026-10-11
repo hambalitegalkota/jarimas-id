@@ -25,6 +25,8 @@ import {
   AlertCircle,
   Printer,
   ChevronDown,
+  BarChart2,
+  Table as TableIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type {
@@ -51,6 +53,32 @@ const JENJANG_COLORS: Record<keyof SchoolTypeBreakdown, { bg: string; text: stri
   pkbm: { bg: "bg-teal-500", text: "text-teal-700 dark:text-teal-400", fill: "#0d9488", border: "border-teal-300", label: "PKBM (Pendidikan Kesetaraan)" },
 };
 
+const DAFTAR_SATUAN_PAUD_KEYS: Array<{
+  key: keyof SchoolTypeBreakdown;
+  shortLabel: string;
+  label: string;
+  bg: string;
+  text: string;
+}> = [
+  { key: "tk", shortLabel: "TK", label: "Taman Kanak-Kanak", bg: "bg-sky-500", text: "text-sky-700 dark:text-sky-300" },
+  { key: "ra", shortLabel: "RA", label: "Raudhatul Athfal", bg: "bg-emerald-500", text: "text-emerald-700 dark:text-emerald-300" },
+  { key: "kb", shortLabel: "KB", label: "Kelompok Bermain", bg: "bg-indigo-500", text: "text-indigo-700 dark:text-indigo-300" },
+  { key: "sps", shortLabel: "SPS", label: "Satuan PAUD Sejenis", bg: "bg-amber-500", text: "text-amber-700 dark:text-amber-300" },
+  { key: "tpa", shortLabel: "TPA", label: "Tempat Penitipan Anak", bg: "bg-rose-500", text: "text-rose-700 dark:text-rose-300" },
+  { key: "pkbm", shortLabel: "PKBM", label: "Pendidikan Kesetaraan", bg: "bg-teal-500", text: "text-teal-700 dark:text-teal-300" },
+  { key: "skb", shortLabel: "SKB", label: "Sanggar Kegiatan Belajar", bg: "bg-purple-500", text: "text-purple-700 dark:text-purple-300" },
+];
+
+const RENTANG_USIA_LIST = [
+  { age: 0, label: "0 Tahun", sub: "Bayi", hint: "Rentang Usia 0–11 Bulan (TPA / Bayi)" },
+  { age: 1, label: "1 Tahun", sub: "Toddler Awal", hint: "Rentang Usia 12–23 Bulan (TPA / Toddler)" },
+  { age: 2, label: "2 Tahun", sub: "Toddler / KB", hint: "Rentang Usia 24–35 Bulan (TPA / KB Awal)" },
+  { age: 3, label: "3 Tahun", sub: "KB Awal", hint: "Rentang Usia 36–47 Bulan (Kelompok Bermain)" },
+  { age: 4, label: "4 Tahun", sub: "KB / TK A", hint: "Rentang Usia 48–59 Bulan (KB Lanjutan / TK Awal)" },
+  { age: 5, label: "5 Tahun", sub: "TK B / RA", hint: "Rentang Usia 60–71 Bulan (TK B / RA)" },
+  { age: 6, label: "6 Tahun", sub: "Kesiapan SD", hint: "Rentang Usia 72–83 Bulan (Kesiapan Masuk SD)" },
+];
+
 export function RekapDataAnakClientView({
   initialData,
   canAccessDaftarNamaAnak = false,
@@ -62,6 +90,8 @@ export function RekapDataAnakClientView({
   const [selectedKelurahan, setSelectedKelurahan] = useState<string>("Kejambon");
   const [activeTabSection, setActiveTabSection] = useState<"semua" | "bersekolah" | "tidak_sekolah" | "tabel">("semua");
   const [tableSearch, setTableSearch] = useState<string>("");
+  const [viewModeDiagramUsia, setViewModeDiagramUsia] = useState<"diagram" | "matriks">("diagram");
+  const [activeHoverBar, setActiveHoverBar] = useState<{ age: number; key: keyof SchoolTypeBreakdown; val: number } | null>(null);
 
   // Daftar opsi kecamatan & kelurahan
   const daftarKecamatan = useMemo(() => {
@@ -111,6 +141,18 @@ export function RekapDataAnakClientView({
       { key: "pkbm", count: j.pkbm, pct: Math.round((j.pkbm / total) * 100) },
     ];
     return entries;
+  }, [currentWilayahData]);
+
+  // Nilai maksimum untuk skala diagram batang tegak usia x jenjang
+  const maxBarValue = useMemo(() => {
+    let maxVal = 1;
+    RENTANG_USIA_LIST.forEach(({ age }) => {
+      DAFTAR_SATUAN_PAUD_KEYS.forEach(({ key }) => {
+        const val = currentWilayahData.bersekolahUsiaJenjang?.[age]?.[key] || 0;
+        if (val > maxVal) maxVal = val;
+      });
+    });
+    return maxVal;
   }, [currentWilayahData]);
 
   return (
@@ -616,6 +658,301 @@ export function RekapDataAnakClientView({
                 })}
               </div>
             </div>
+          </div>
+
+          {/* ========================================================= */}
+          {/* DIAGRAM BATANG TEGAK PANJANG: SEBARAN SATUAN PAUD         */}
+          {/* PER RENTANG USIA 0 - 6 TAHUN (TK, RA, KB, SPS, TPA, DLL) */}
+          {/* ========================================================= */}
+          <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-6 shadow-xs">
+            {/* Header Card */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-bold shrink-0 shadow-sm">
+                  <BarChart2 className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                    Sebaran Satuan PAUD per Rentang Usia (0–6 Tahun)
+                  </h3>
+                  <p className="text-xs text-slate-500 font-medium">
+                    Diagram batang tegak rincian jumlah data anak di tiap rentang usia (0–6 tahun) pada satuan TK, RA, KB, SPS, TPA, PKBM, dan SKB.
+                  </p>
+                </div>
+              </div>
+
+              {/* View Switcher: Diagram vs Matriks Tabel */}
+              <div className="flex items-center gap-1.5 self-start sm:self-auto p-1 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                <button
+                  type="button"
+                  onClick={() => setViewModeDiagramUsia("diagram")}
+                  className={cn(
+                    "px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5",
+                    viewModeDiagramUsia === "diagram"
+                      ? "bg-white dark:bg-slate-900 text-indigo-700 dark:text-indigo-400 shadow-xs"
+                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
+                  )}
+                >
+                  <BarChart3 className="h-3.5 w-3.5" />
+                  Diagram Batang Tegak
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewModeDiagramUsia("matriks")}
+                  className={cn(
+                    "px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5",
+                    viewModeDiagramUsia === "matriks"
+                      ? "bg-white dark:bg-slate-900 text-indigo-700 dark:text-indigo-400 shadow-xs"
+                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
+                  )}
+                >
+                  <TableIcon className="h-3.5 w-3.5" />
+                  Tabel Matriks
+                </button>
+              </div>
+            </div>
+
+            {/* Interactive Legend Badges */}
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-2xs font-black uppercase tracking-wider text-slate-400 shrink-0 mr-1">
+                Bentuk Satuan PAUD:
+              </span>
+              {DAFTAR_SATUAN_PAUD_KEYS.map((s) => {
+                const totalSatuan = [0, 1, 2, 3, 4, 5, 6].reduce((acc, age) => {
+                  return acc + (currentWilayahData.bersekolahUsiaJenjang?.[age]?.[s.key] || 0);
+                }, 0);
+
+                return (
+                  <div
+                    key={s.key}
+                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs font-bold"
+                  >
+                    <span className={cn("h-2.5 w-2.5 rounded-full shrink-0", s.bg)} />
+                    <span className="text-slate-700 dark:text-slate-300">
+                      {s.shortLabel} ({s.label})
+                    </span>
+                    <span className="ml-0.5 px-1.5 py-0.2 rounded-md bg-white dark:bg-slate-900 text-2xs font-mono font-black text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-slate-700">
+                      {totalSatuan.toLocaleString("id-ID")}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* View Mode 1: DIAGRAM BATANG TEGAK */}
+            {viewModeDiagramUsia === "diagram" && (
+              <div className="space-y-4">
+                {/* Visual Canvas Container */}
+                <div className="relative rounded-2xl bg-slate-50/70 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-700/80 p-4 sm:p-6 overflow-x-auto">
+                  {/* Grid Background Lines */}
+                  <div className="absolute inset-x-6 top-6 bottom-20 flex flex-col justify-between pointer-events-none opacity-30">
+                    <div className="border-b border-dashed border-slate-300 dark:border-slate-600 w-full" />
+                    <div className="border-b border-dashed border-slate-300 dark:border-slate-600 w-full" />
+                    <div className="border-b border-dashed border-slate-300 dark:border-slate-600 w-full" />
+                    <div className="border-b border-dashed border-slate-300 dark:border-slate-600 w-full" />
+                  </div>
+
+                  {/* 7 Columns for Ages 0 to 6 */}
+                  <div className="relative min-w-[720px] grid grid-cols-7 gap-3 sm:gap-4 items-end h-72 pb-16">
+                    {RENTANG_USIA_LIST.map(({ age, label, sub, hint }) => {
+                      const dataAge = currentWilayahData.bersekolahUsiaJenjang?.[age] || {
+                        tk: 0,
+                        ra: 0,
+                        kb: 0,
+                        sps: 0,
+                        tpa: 0,
+                        skb: 0,
+                        pkbm: 0,
+                      };
+
+                      const totalAge = DAFTAR_SATUAN_PAUD_KEYS.reduce((sum, s) => sum + (dataAge[s.key] || 0), 0);
+
+                      return (
+                        <div
+                          key={age}
+                          className="h-full flex flex-col justify-end items-center relative group"
+                        >
+                          {/* Bars Cluster */}
+                          <div className="w-full flex items-end justify-center gap-1 sm:gap-1.5 h-48 px-1 pb-1 border-b-2 border-slate-200 dark:border-slate-700">
+                            {DAFTAR_SATUAN_PAUD_KEYS.map((s) => {
+                              const val = dataAge[s.key] || 0;
+                              const heightPct = maxBarValue > 0 ? (val / maxBarValue) * 100 : 0;
+                              const isHovered =
+                                activeHoverBar?.age === age && activeHoverBar?.key === s.key;
+
+                              return (
+                                <div
+                                  key={s.key}
+                                  className="relative flex-1 flex flex-col items-center justify-end h-full"
+                                  onMouseEnter={() => setActiveHoverBar({ age, key: s.key, val })}
+                                  onMouseLeave={() => setActiveHoverBar(null)}
+                                >
+                                  {/* Value tooltip/number on top of bar */}
+                                  {val > 0 && (
+                                    <div
+                                      className={cn(
+                                        "mb-1 text-2xs font-black font-mono px-1 py-0.5 rounded shadow-xs transition-all pointer-events-none",
+                                        isHovered
+                                          ? "scale-110 bg-slate-900 text-white dark:bg-white dark:text-slate-900 z-20"
+                                          : "text-slate-700 dark:text-slate-300"
+                                      )}
+                                    >
+                                      {val}
+                                    </div>
+                                  )}
+
+                                  {/* The Vertical Bar */}
+                                  <div
+                                    className={cn(
+                                      "w-full rounded-t-md transition-all duration-500 cursor-pointer",
+                                      s.bg,
+                                      val > 0
+                                        ? "hover:brightness-110 shadow-xs"
+                                        : "opacity-25",
+                                      isHovered && "ring-2 ring-slate-900 dark:ring-white ring-offset-1"
+                                    )}
+                                    style={{
+                                      height: val > 0 ? `${Math.max(10, heightPct)}%` : "3px",
+                                    }}
+                                    title={`${s.shortLabel} (${s.label}) - Usia ${age} Tahun: ${val} Anak`}
+                                  />
+                                </div>
+                              );
+                            })}
+                          </div>
+
+                          {/* Age Column Footer */}
+                          <div className="w-full text-center pt-2.5 space-y-1">
+                            <span className="inline-block px-2 py-0.5 rounded-md bg-slate-200/80 dark:bg-slate-700/80 text-xs font-black text-slate-800 dark:text-slate-200">
+                              {label}
+                            </span>
+                            <span className="block text-2xs font-semibold text-slate-400 truncate" title={hint}>
+                              {sub}
+                            </span>
+                            <div className="font-mono text-2xs font-bold text-slate-600 dark:text-slate-400">
+                              Total: <span className="text-slate-900 dark:text-slate-100 font-extrabold">{totalAge}</span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Tooltip Card Info Bar when hovering */}
+                {activeHoverBar && (
+                  <div className="flex items-center justify-between p-3 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800/50 text-xs font-bold text-indigo-950 dark:text-indigo-200 animate-in fade-in">
+                    <span className="flex items-center gap-2">
+                      <span className="h-2.5 w-2.5 rounded-full bg-indigo-600" />
+                      <span>
+                        Kelompok Usia {activeHoverBar.age} Tahun •{" "}
+                        {DAFTAR_SATUAN_PAUD_KEYS.find((k) => k.key === activeHoverBar.key)?.label || activeHoverBar.key.toUpperCase()}
+                      </span>
+                    </span>
+                    <span className="font-mono text-sm font-black text-indigo-700 dark:text-indigo-300">
+                      {activeHoverBar.val.toLocaleString("id-ID")} Anak
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* View Mode 2: TABEL MATRIKS CROSS-TABULATION */}
+            {viewModeDiagramUsia === "matriks" && (
+              <div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-slate-100 dark:bg-slate-800/90 text-slate-700 dark:text-slate-300 font-extrabold uppercase text-2xs tracking-wider border-b border-slate-200 dark:border-slate-700">
+                    <tr>
+                      <th className="py-3 px-4">Rentang Usia</th>
+                      <th className="py-3 px-3 text-center">TK</th>
+                      <th className="py-3 px-3 text-center">RA</th>
+                      <th className="py-3 px-3 text-center">KB</th>
+                      <th className="py-3 px-3 text-center">SPS</th>
+                      <th className="py-3 px-3 text-center">TPA</th>
+                      <th className="py-3 px-3 text-center">PKBM</th>
+                      <th className="py-3 px-3 text-center">SKB</th>
+                      <th className="py-3 px-4 text-right">Total Anak</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
+                    {RENTANG_USIA_LIST.map(({ age, label, sub }) => {
+                      const dataAge = currentWilayahData.bersekolahUsiaJenjang?.[age] || {
+                        tk: 0,
+                        ra: 0,
+                        kb: 0,
+                        sps: 0,
+                        tpa: 0,
+                        skb: 0,
+                        pkbm: 0,
+                      };
+                      const totalAge =
+                        dataAge.tk + dataAge.ra + dataAge.kb + dataAge.sps + dataAge.tpa + dataAge.skb + dataAge.pkbm;
+
+                      return (
+                        <tr key={age} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                          <td className="py-2.5 px-4 font-bold text-slate-800 dark:text-slate-200">
+                            {label} <span className="text-2xs text-slate-400 font-normal">({sub})</span>
+                          </td>
+                          <td className="py-2.5 px-3 text-center font-mono font-bold text-slate-700 dark:text-slate-300">
+                            {dataAge.tk || "-"}
+                          </td>
+                          <td className="py-2.5 px-3 text-center font-mono font-bold text-slate-700 dark:text-slate-300">
+                            {dataAge.ra || "-"}
+                          </td>
+                          <td className="py-2.5 px-3 text-center font-mono font-bold text-indigo-600 dark:text-indigo-400">
+                            {dataAge.kb || "-"}
+                          </td>
+                          <td className="py-2.5 px-3 text-center font-mono font-bold text-slate-700 dark:text-slate-300">
+                            {dataAge.sps || "-"}
+                          </td>
+                          <td className="py-2.5 px-3 text-center font-mono font-bold text-slate-700 dark:text-slate-300">
+                            {dataAge.tpa || "-"}
+                          </td>
+                          <td className="py-2.5 px-3 text-center font-mono font-bold text-slate-700 dark:text-slate-300">
+                            {dataAge.pkbm || "-"}
+                          </td>
+                          <td className="py-2.5 px-3 text-center font-mono font-bold text-slate-700 dark:text-slate-300">
+                            {dataAge.skb || "-"}
+                          </td>
+                          <td className="py-2.5 px-4 text-right font-mono font-black text-slate-900 dark:text-slate-100">
+                            {totalAge} Anak
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                  <tfoot className="bg-slate-50 dark:bg-slate-800/60 font-black border-t-2 border-slate-200 dark:border-slate-700">
+                    <tr>
+                      <td className="py-3 px-4 text-slate-900 dark:text-slate-100">Total Keseluruhan</td>
+                      <td className="py-3 px-3 text-center font-mono text-slate-900 dark:text-slate-100">
+                        {currentWilayahData.bersekolahJenjang.tk}
+                      </td>
+                      <td className="py-3 px-3 text-center font-mono text-slate-900 dark:text-slate-100">
+                        {currentWilayahData.bersekolahJenjang.ra}
+                      </td>
+                      <td className="py-3 px-3 text-center font-mono text-indigo-600 dark:text-indigo-400">
+                        {currentWilayahData.bersekolahJenjang.kb}
+                      </td>
+                      <td className="py-3 px-3 text-center font-mono text-slate-900 dark:text-slate-100">
+                        {currentWilayahData.bersekolahJenjang.sps}
+                      </td>
+                      <td className="py-3 px-3 text-center font-mono text-slate-900 dark:text-slate-100">
+                        {currentWilayahData.bersekolahJenjang.tpa}
+                      </td>
+                      <td className="py-3 px-3 text-center font-mono text-slate-900 dark:text-slate-100">
+                        {currentWilayahData.bersekolahJenjang.pkbm}
+                      </td>
+                      <td className="py-3 px-3 text-center font-mono text-slate-900 dark:text-slate-100">
+                        {currentWilayahData.bersekolahJenjang.skb}
+                      </td>
+                      <td className="py-3 px-4 text-right font-mono text-emerald-600 dark:text-emerald-400">
+                        {currentWilayahData.totalBersekolah} Anak
+                      </td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            )}
           </div>
 
           {/* 5.3 Grafik / Chart Alasan Anak Bersekolah */}
