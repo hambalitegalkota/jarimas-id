@@ -174,7 +174,7 @@ export function DataAnakClientView({
           </div>
 
           {/* LIST DATA ANAK */}
-          <div className="space-y-4 pb-16">
+          <div className="space-y-2 sm:space-y-2.5 pb-16">
             <div className="flex items-center justify-between border-b-2 border-slate-100 pb-2">
               <h3 className="text-xs font-bold uppercase text-slate-600 tracking-wider">
                 DAFTAR RINCIAN ANAK ({filteredChildren.length} DATA)
