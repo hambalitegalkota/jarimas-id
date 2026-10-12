@@ -738,13 +738,7 @@ export async function getDataAnakByKomunitas(komunitasId: string): Promise<{
       // Tamu
     }
 
-    // 2. Ambil peta seluruh komunitas untuk fallback metadata
-    const { data: allDbKom } = await supabase
-      .from("komunitas")
-      .select("id, nama, jenis, kecamatan, kelurahan, rw, rt");
-    const dbKomMap = new Map((allDbKom || []).map((k: any) => [k.id, k]));
-
-    // 3. Query data_anak dari database (Targeted untuk Satuan PAUD & Paginasi penuh untuk wilayah)
+    // 2. Query data_anak dari database (Targeted untuk Satuan PAUD & Paginasi penuh untuk wilayah)
     const validKomId = toValidUUID(komunitasId);
     let dbChildren: any[] = [];
     let childError: any = null;
@@ -896,6 +890,13 @@ export async function getDataAnakByKomunitas(komunitasId: string): Promise<{
     }
 
     // 4. Format dan filter data_anak sesuai hierarki & interoperabilitas wilayah
+    const childKomIds = [...new Set(dbChildren.map((c: any) => c.komunitas_id).filter(Boolean))];
+    const missingKomIds = childKomIds.filter((cid: string) => !findOrGenerateKomunitasSeed(cid));
+    const { data: missingDbKoms } = missingKomIds.length > 0
+      ? await supabase.from("komunitas").select("id, nama, jenis, kecamatan, kelurahan, rw, rt").in("id", missingKomIds)
+      : { data: [] };
+    const dbKomMap = new Map((missingDbKoms || []).map((k: any) => [k.id, k]));
+
     const items: DataAnakItem[] = nonAtsChildren
       .map((row: any) => {
         const records: DdksRecord[] = (row.ddks_records || []).map((r: any) => ({

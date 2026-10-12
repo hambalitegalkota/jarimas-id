@@ -18,7 +18,10 @@ export default async function KomunitasDataAtsPage({
 }: KomunitasDataAtsPageProps) {
   const { id } = await params;
 
-  const { data: komunitas } = await getKomunitasDetail(id);
+  const [{ data: komunitas }, dataAtsResult] = await Promise.all([
+    getKomunitasDetail(id),
+    getDataAtsByKomunitas(id),
+  ]);
 
   if (!komunitas) {
     notFound();
@@ -36,7 +39,7 @@ export default async function KomunitasDataAtsPage({
     canAccessDaftarNama: serverCanAccess,
     currentUserId,
     isSuperAdmin,
-  } = await getDataAtsByKomunitas(id);
+  } = dataAtsResult;
 
   // Periksa otorisasi: Daftar Rincian Nama Anak hanya bisa dibuka oleh Admin Komunitas, Pengurus, dan Penduduk di Komunitas tersebut
   const membership = komunitas?.currentUserMembership;

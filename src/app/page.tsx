@@ -115,22 +115,27 @@ export default async function HomePage() {
     id: user?.id,
   });
 
-  // 2. Ambil data produk resmi dari Jarimas Market
-  const { data: dbProducts } = await getMarketProduk();
+  // 2. Ambil data produk, kabar terbaru, dan rekapitulasi secara paralel (Promise.all) untuk mempercepat loading homepage
+  const [
+    { data: dbProducts },
+    { data: recentKabar },
+    rekapWargaKomunitas,
+  ] = await Promise.all([
+    getMarketProduk(),
+    getKabarFeed({
+      sorting: "terbaru",
+      filterVisibilitas: "semua",
+      limit: 4,
+    }),
+    getRekapitulasiWargaKomunitas(),
+  ]);
+
   const featuredProducts =
     dbProducts && dbProducts.length > 0
       ? dbProducts.slice(0, 4)
       : FALLBACK_SHOWCASE_PRODUCTS;
 
-  // 3. Ambil 2 kabar terbaru sebagai preview feed
-  const { data: recentKabar } = await getKabarFeed({
-    sorting: "terbaru",
-    filterVisibilitas: "semua",
-  });
   const topKabarItems = (recentKabar || []).slice(0, 2);
-
-  // 4. Ambil ringkasan rekapitulasi partisipasi warga & komunitas
-  const rekapWargaKomunitas = await getRekapitulasiWargaKomunitas();
 
 
   return (

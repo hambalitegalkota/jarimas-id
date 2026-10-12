@@ -55,17 +55,18 @@ export default async function KomunitasDetailPage({
     notFound();
   }
 
-  // Ambil daftar anggota
-  const { data: anggotaList } = await getAnggotaKomunitas(id);
-
-  // Ambil data anak aktual untuk visualisasi Profil Data & Charts real-time
-  const { data: dataAnakList } = await getDataAnakByKomunitas(id);
-
-  // Ambil data ATS aktual untuk visualisasi Profil Data & Charts real-time
-  const { data: dataAtsList } = await getDataAtsByKomunitas(id);
-
-  // Ambil kabar feed khusus untuk komunitas ini (membersihkan kabar dummy & postingan dari komunitas lain)
-  const { data: allKabar } = await getKabarFeed();
+  // Ambil data anggota, data anak, data ATS, dan kabar secara paralel (Promise.all) untuk menghilangkan waterfall latensi
+  const [
+    { data: anggotaList },
+    { data: dataAnakList },
+    { data: dataAtsList },
+    { data: allKabar },
+  ] = await Promise.all([
+    getAnggotaKomunitas(id),
+    getDataAnakByKomunitas(id),
+    getDataAtsByKomunitas(id),
+    getKabarFeed({ filterVisibilitas: "semua", limit: 30 }),
+  ]);
   const dbKomunitasId = toValidUUID(id);
   const cleanNama = (komunitas.nama || "").toLowerCase().trim();
 

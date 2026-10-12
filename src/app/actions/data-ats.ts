@@ -1158,13 +1158,7 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
     );
     canValidate = (isRtCommunity || isPosyanduCommunity) && (isSuperAdmin || canManage);
 
-    // 2. Ambil peta seluruh komunitas dari DB untuk resolusi fallback metadata
-    const { data: allDbKom } = await supabase
-      .from("komunitas")
-      .select("id, nama, jenis, kecamatan, kelurahan, rw, rt");
-    const dbKomMap = new Map((allDbKom || []).map((k: any) => [k.id, k]));
-
-    // 2.2 Verifikasi wewenang membuka daftar rincian nama anak jika belum terotorisasi langsung
+    // 2. Verifikasi wewenang membuka daftar rincian nama anak jika belum terotorisasi langsung
     if (!canAccessDaftarNama && currentUserId) {
       try {
         const { data: userMems } = await supabase
@@ -1185,9 +1179,15 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
               rLow.includes("ketua");
 
             if (isUmPenduduk || isUmAdminOrPengurus) {
-              const umKom =
-                dbKomMap.get(um.komunitas_id) ||
-                findOrGenerateKomunitasSeed(um.komunitas_id);
+              let umKom: any = findOrGenerateKomunitasSeed(um.komunitas_id);
+              if (!umKom) {
+                const { data: dbKom } = await supabase
+                  .from("komunitas")
+                  .select("id, nama, jenis, kecamatan, kelurahan, rw, rt")
+                  .eq("id", um.komunitas_id)
+                  .maybeSingle();
+                umKom = dbKom;
+              }
               if (umKom) {
                 const umMeta = extractKomunitasMetadata(umKom);
                 if (meta.hasRt && umMeta.hasRt) {
@@ -1291,6 +1291,13 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
       (row: any) => isDataAtsRecord(row) && row.is_sekolah !== true
     );
     const validKomId = toValidUUID(komunitasId);
+
+    const atsKomIds = [...new Set(rows.map((c: any) => c.komunitas_id).filter(Boolean))];
+    const missingKomIds = atsKomIds.filter((cid: string) => !findOrGenerateKomunitasSeed(cid));
+    const { data: missingDbKoms } = missingKomIds.length > 0
+      ? await supabase.from("komunitas").select("id, nama, jenis, kecamatan, kelurahan, rw, rt").in("id", missingKomIds)
+      : { data: [] };
+    const dbKomMap = new Map((missingDbKoms || []).map((k: any) => [k.id, k]));
 
     const items: DataAtsItem[] = rows
       .map((row: any) => {

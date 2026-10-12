@@ -142,43 +142,51 @@ export async function getKomunitasList(
       }
     }
 
-    // 3. Ambil data anggota yang disetujui (untuk hitungan anggota & deteksi admin komunitas)
-    const { data: approvedMembersData } = await supabase
-      .from("anggota_komunitas")
-      .select("id, komunitas_id, user_id, peran, status")
-      .eq("status", "approved");
+    // 3. Helper untuk mengambil hitungan anggota dan admin HANYA untuk daftar ID komunitas yang sedang ditampilkan (maks 20-50 ID)
+    async function fetchMemberAndAdminInfoByIds(candidateIds: string[]) {
+      const countsMap: Record<string, number> = {};
+      const adminMembersMap: Record<string, any[]> = {};
+      const adminUserIds = new Set<string>();
 
-    const countsMap: Record<string, number> = {};
-    const adminMembersMap: Record<string, any[]> = {};
-    const adminUserIds = new Set<string>();
+      if (!candidateIds || candidateIds.length === 0) {
+        return { countsMap, adminMembersMap, adminProfileMap: new Map<string, any>() };
+      }
 
-    if (approvedMembersData) {
-      approvedMembersData.forEach((m) => {
-        countsMap[m.komunitas_id] = (countsMap[m.komunitas_id] || 0) + 1;
-        if (isRoleAdmin(m.peran)) {
-          if (!adminMembersMap[m.komunitas_id]) {
-            adminMembersMap[m.komunitas_id] = [];
+      const { data: approvedMembersData } = await supabase
+        .from("anggota_komunitas")
+        .select("id, komunitas_id, user_id, peran, status")
+        .in("komunitas_id", candidateIds)
+        .eq("status", "approved");
+
+      if (approvedMembersData) {
+        approvedMembersData.forEach((m) => {
+          countsMap[m.komunitas_id] = (countsMap[m.komunitas_id] || 0) + 1;
+          if (isRoleAdmin(m.peran)) {
+            if (!adminMembersMap[m.komunitas_id]) {
+              adminMembersMap[m.komunitas_id] = [];
+            }
+            adminMembersMap[m.komunitas_id].push(m);
+            if (m.user_id) {
+              adminUserIds.add(m.user_id);
+            }
           }
-          adminMembersMap[m.komunitas_id].push(m);
-          if (m.user_id) {
-            adminUserIds.add(m.user_id);
-          }
-        }
-      });
+        });
+      }
+
+      const { data: adminProfilesData } =
+        adminUserIds.size > 0
+          ? await supabase
+              .from("profiles")
+              .select("id, nama_lengkap, email")
+              .in("id", Array.from(adminUserIds))
+          : { data: [] };
+
+      const adminProfileMap = new Map(
+        (adminProfilesData || []).map((p: any) => [p.id, p])
+      );
+
+      return { countsMap, adminMembersMap, adminProfileMap };
     }
-
-    // Ambil profile nama admin secara aman
-    const { data: adminProfilesData } =
-      adminUserIds.size > 0
-        ? await supabase
-            .from("profiles")
-            .select("id, nama_lengkap, email")
-            .in("id", Array.from(adminUserIds))
-        : { data: [] };
-
-    const adminProfileMap = new Map(
-      (adminProfilesData || []).map((p: any) => [p.id, p])
-    );
 
     // 4. Khusus jenis "warga_kita": gunakan generator hierarki dinamis Kota Tegal
     if (params.jenis === "warga_kita") {
@@ -205,42 +213,30 @@ export async function getKomunitasList(
       const totalPages = Math.max(1, Math.ceil(totalCount / limit));
       const pagedWarga = filteredWarga.slice(offset, offset + limit);
 
-      // Pastikan data Warga Kita tersinkronisasi di tabel komunitas Supabase (background upsert)
-      const upsertPayload = pagedWarga.map((item) => {
-        const validId = toValidUUID(item.id);
-        return {
-          id: validId,
-          nama: item.nama,
-          nama_komunitas: item.nama,
-          jenis: "warga_kita",
-          jenis_komunitas: "warga_kita",
-          kecamatan: item.kecamatan || null,
-          kelurahan: item.kelurahan || null,
-          rt: item.rt || null,
-          rw: item.rw || null,
-          lokasi: item.lokasi,
-          deskripsi: item.deskripsi,
-          kontak: item.kontak || null,
-          jadwal: item.jadwal || null,
-          updated_at: new Date().toISOString(),
-        };
+      // Ambil komunitas warga tersimpan di DB HANYA untuk kelurahan di halaman ini (bukan seluruh Kota Tegal)
+      const pagedKelurahans = Array.from(
+        new Set(pagedWarga.map((item) => item.kelurahan).filter(Boolean))
+      );
+      const { data: dbWargaKomunitas } =
+        pagedKelurahans.length > 0
+          ? await supabase
+              .from("komunitas")
+              .select("id, nama, jenis, kecamatan, kelurahan, rw, rt")
+              .in("kelurahan", pagedKelurahans)
+          : { data: [] };
+
+      // Kumpulkan ID calon anggota dari pagedWarga dan matching DB komunitas
+      const allCandidateWargaIds = new Set<string>();
+      pagedWarga.forEach((item) => {
+        allCandidateWargaIds.add(item.id);
+        allCandidateWargaIds.add(toValidUUID(item.id));
+      });
+      (dbWargaKomunitas || []).forEach((k) => {
+        allCandidateWargaIds.add(k.id);
       });
 
-      if (upsertPayload.length > 0) {
-        try {
-          await supabase
-            .from("komunitas")
-            .upsert(upsertPayload, { onConflict: "id" });
-        } catch {
-          // Abaikan jika background upsert gagal
-        }
-      }
-
-      // Ambil data komunitas warga yang tersimpan di DB untuk pencocokan relasi admin
-      const { data: dbWargaKomunitas } = await supabase
-        .from("komunitas")
-        .select("id, nama, jenis, kecamatan, kelurahan, rw, rt")
-        .eq("jenis", "warga_kita");
+      const { countsMap, adminMembersMap, adminProfileMap } =
+        await fetchMemberAndAdminInfoByIds(Array.from(allCandidateWargaIds));
 
       const normalizeStr = (str?: string | null) =>
         (str || "")
@@ -407,6 +403,13 @@ export async function getKomunitasList(
     const totalPages = Math.max(1, Math.ceil(totalCount / limit));
     const hasMore = page < totalPages;
     const pagedList = filteredList.slice(offset, offset + limit);
+
+    // Ambil info anggota & admin HANYA untuk pagedList di halaman ini
+    const pagedCandidateIds = Array.from(
+      new Set(pagedList.flatMap((item) => [item.id, toValidUUID(item.id)]).filter(Boolean))
+    );
+    const { countsMap, adminMembersMap, adminProfileMap } =
+      await fetchMemberAndAdminInfoByIds(pagedCandidateIds);
 
     // Normalisasi data dengan status keanggotaan dan admin
     const items: KomunitasWithMembership[] = pagedList.map((item) => {
@@ -755,24 +758,65 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
       deskripsi = deskripsi.replace(/Posyandu\s+Posyandu/gi, "Posyandu");
     }
 
-    // 1. Ambil seluruh komunitas dari database
-    const { data: dbAllKomunitas } = await supabase
-      .from("komunitas")
-      .select("id, nama, jenis, kecamatan, kelurahan, rw, rt, lokasi, deskripsi");
+    // 1. Identifikasi komunitas yang relevan (hanya untuk detail ini dan hierarkinya jika warga_kita)
+    const relevantKomIds = new Set<string>([komunitasId, dbKomunitasId]);
+    let dbRelevantKomunitas: any[] = [];
 
-    const dbKomMap = new Map((dbAllKomunitas || []).map((k) => [k.id, k]));
+    if (jenis === "warga_kita") {
+      const chain = getWargaHierarchyChain({
+        kecamatan: komunitas.kecamatan || "Kota Tegal",
+        kelurahan: komunitas.kelurahan || "",
+        rw: komunitas.rw || "",
+        rt: komunitas.rt || "",
+      });
+      chain.forEach((item) => {
+        relevantKomIds.add(item.id);
+        relevantKomIds.add(toValidUUID(item.id));
+      });
 
-    // 2. Ambil seluruh anggota berstatus approved dari database
-    const { data: allApprovedMembers } = await supabase
-      .from("anggota_komunitas")
-      .select("id, komunitas_id, user_id, peran, status")
-      .eq("status", "approved");
+      // Ambil komunitas DB hanya di wilayah kelurahan/kecamatan yang sama (bukan seluruh Kota Tegal)
+      let komQuery = supabase
+        .from("komunitas")
+        .select("id, nama, jenis, kecamatan, kelurahan, rw, rt, lokasi, deskripsi");
 
-    const approvedAdmins = (allApprovedMembers || []).filter((m) =>
+      if (komunitas.kecamatan && komunitas.kecamatan !== "semua") {
+        komQuery = komQuery.eq("kecamatan", komunitas.kecamatan);
+      }
+      if (komunitas.kelurahan && komunitas.kelurahan !== "semua") {
+        komQuery = komQuery.eq("kelurahan", komunitas.kelurahan);
+      }
+      const { data: dbKoms } = await komQuery;
+      dbRelevantKomunitas = dbKoms || [];
+      dbRelevantKomunitas.forEach((k) => relevantKomIds.add(k.id));
+    }
+
+    const dbKomMap = new Map((dbRelevantKomunitas || []).map((k) => [k.id, k]));
+
+    // 2. Ambil data anggota approved HANYA untuk komunitas terkait, data user, dan hitungan secara paralel
+    const [relevantMembersRes, userMemRes, countRes] = await Promise.all([
+      supabase
+        .from("anggota_komunitas")
+        .select("id, komunitas_id, user_id, peran, status")
+        .in("komunitas_id", Array.from(relevantKomIds))
+        .eq("status", "approved"),
+      currentUserId
+        ? supabase
+            .from("anggota_komunitas")
+            .select("id, komunitas_id, peran, peran_diajukan, status, berdomisili, kk_terdaftar")
+            .eq("user_id", currentUserId)
+        : Promise.resolve({ data: [] }),
+      supabase
+        .from("anggota_komunitas")
+        .select("*", { count: "exact", head: true })
+        .eq("komunitas_id", dbKomunitasId)
+        .eq("status", "approved"),
+    ]);
+
+    const approvedAdmins = (relevantMembersRes.data || []).filter((m) =>
       isRoleAdmin(m.peran)
     );
 
-    // Ambil profiles untuk seluruh admin
+    // Ambil profiles untuk admin yang relevan saja
     const adminUserIds = [
       ...new Set(approvedAdmins.map((ca) => ca.user_id).filter(Boolean)),
     ];
@@ -789,27 +833,13 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
       (chainProfiles || []).map((p: any) => [p.id, p])
     );
 
-    // 3. Ambil seluruh keanggotaan user saat ini jika login
-    let userMembershipsMap: Record<string, any> = {};
-    let userMembershipsList: any[] = [];
-    if (currentUserId) {
-      const { data: userMemberships } = await supabase
-        .from("anggota_komunitas")
-        .select("id, komunitas_id, peran, peran_diajukan, status, berdomisili, kk_terdaftar")
-        .eq("user_id", currentUserId);
+    const userMembershipsList = userMemRes.data || [];
+    const userMembershipsMap: Record<string, any> = {};
+    userMembershipsList.forEach((um: any) => {
+      userMembershipsMap[um.komunitas_id] = um;
+    });
 
-      userMembershipsList = userMemberships || [];
-      (userMemberships || []).forEach((um) => {
-        userMembershipsMap[um.komunitas_id] = um;
-      });
-    }
-
-    // 4. Hitung jumlah anggota yang disetujui
-    const { count } = await supabase
-      .from("anggota_komunitas")
-      .select("*", { count: "exact", head: true })
-      .eq("komunitas_id", dbKomunitasId)
-      .eq("status", "approved");
+    const count = countRes.count;
 
     // 5. Hitung informasi admin berjenjang (RT, RW, Kelurahan, Kecamatan)
     let hierarchyAdmins: WargaHierarchyAdmins | null = null;
@@ -854,7 +884,7 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
         }
 
         // Cari ID komunitas yang cocok untuk tier ini
-        const matchingDbKomIds = (dbAllKomunitas || [])
+        const matchingDbKomIds = (dbRelevantKomunitas || [])
           .filter((k) => {
             const kMeta = extractKomunitasMetadata(k);
             if (tierMeta.hasRt) {

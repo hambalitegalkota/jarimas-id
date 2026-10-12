@@ -53,45 +53,31 @@ export default async function KabarPage({ searchParams }: KabarPageProps) {
   const currentVisibility =
     (resolvedParams.visibility as "semua" | VisibilitasKabar) || "semua";
 
-  // 1. Ambil data feed kabar
-  const { data: feedItems, currentUserId } = await getKabarFeed({
-    sorting: currentSort,
-    filterVisibilitas: currentVisibility,
-  });
-
-  // 2. Ambil data pengguna terdaftar & pertemanan
-  const registeredUsersResult = await getRegisteredUsers();
-
-  // 3. Ambil riwayat percakapan terbaru & ruang obrolan grup
-  const [convResult, groupRoomsResult] = await Promise.all([
+  // 1. Ambil seluruh data feed kabar, pengguna terdaftar, dan chat secara paralel (Promise.all)
+  const [
+    feedResult,
+    registeredUsersResult,
+    convResult,
+    groupRoomsResult,
+  ] = await Promise.all([
+    getKabarFeed({
+      sorting: currentSort,
+      filterVisibilitas: currentVisibility,
+      limit: 50,
+    }),
+    getRegisteredUsers(),
     getRecentConversations(),
     getGroupChatRooms(),
   ]);
+
+  const feedItems = feedResult.data;
+  const currentUserId = feedResult.currentUserId || registeredUsersResult.currentUserId;
+  const isSuperAdmin = registeredUsersResult.isSuperAdmin;
 
   const totalUnreadChat = (convResult.conversations || []).reduce(
     (acc, c) => acc + c.unreadCount,
     0
   );
-
-  // 4. Periksa hak akses Super Admin jika user terautentikasi
-  let isSuperAdmin = false;
-  if (currentUserId) {
-    try {
-      const supabase = await createClient();
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("id, is_super_admin, is_admin_pusat, nama_lengkap, email")
-        .eq("id", currentUserId)
-        .maybeSingle();
-
-      isSuperAdmin = checkIsSuperAdmin({
-        ...profile,
-        id: currentUserId,
-      });
-    } catch {
-      // Abaikan jika tabel profil belum ada
-    }
-  }
 
   const createTabUrl = (targetTab: string) => {
     const params = new URLSearchParams();

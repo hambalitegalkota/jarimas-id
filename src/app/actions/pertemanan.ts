@@ -1846,30 +1846,30 @@ export async function getRekapitulasiWargaKomunitas(): Promise<
   try {
     const supabase = await createClient();
 
-    // 1. Total Pengguna yang telah registrasi (Kecualikan bot resmi Jarimas)
-    const { count: userCount, error: userErr } = await supabase
-      .from("profiles")
-      .select("id", { count: "exact", head: true })
-      .neq("id", JARIMAS_BOT_ID);
+    // 1 & 2. Ambil total pengguna dan data keanggotaan komunitas secara paralel
+    const [{ count: userCount, error: userErr }, { data: memberships, error: memErr }] =
+      await Promise.all([
+        supabase
+          .from("profiles")
+          .select("id", { count: "exact", head: true })
+          .neq("id", JARIMAS_BOT_ID),
+        supabase
+          .from("anggota_komunitas")
+          .select(`
+            user_id,
+            komunitas_id,
+            status,
+            komunitas (
+              id,
+              jenis
+            )
+          `)
+          .eq("status", "approved"),
+      ]);
 
     if (userErr) {
       console.warn("Gagal menghitung profiles registrasi:", userErr.message);
     }
-
-    // 2. Ambil seluruh data keanggotaan komunitas yang berstatus approved
-    const { data: memberships, error: memErr } = await supabase
-      .from("anggota_komunitas")
-      .select(`
-        user_id,
-        komunitas_id,
-        status,
-        komunitas (
-          id,
-          jenis
-        )
-      `)
-      .eq("status", "approved");
-
     if (memErr) {
       console.warn("Gagal mengambil keanggotaan komunitas:", memErr.message);
     }

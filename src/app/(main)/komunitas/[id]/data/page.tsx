@@ -19,7 +19,10 @@ export default async function KomunitasDataAnakPage({
 }: KomunitasDataAnakPageProps) {
   const { id } = await params;
 
-  const { data: komunitas } = await getKomunitasDetail(id);
+  const [{ data: komunitas }, dataAnakResult] = await Promise.all([
+    getKomunitasDetail(id),
+    getDataAnakByKomunitas(id),
+  ]);
 
   if (!komunitas) {
     notFound();
@@ -37,7 +40,7 @@ export default async function KomunitasDataAnakPage({
     canDelete,
     isReadOnly,
     userRole,
-  } = await getDataAnakByKomunitas(id);
+  } = dataAnakResult;
 
   return (
     <div className="flex flex-col flex-1 px-4 py-6 sm:px-6 md:px-8 gap-6 max-w-4xl mx-auto w-full">

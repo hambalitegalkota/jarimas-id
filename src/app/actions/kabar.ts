@@ -15,6 +15,8 @@ import type {
 interface GetKabarFeedParams {
   filterVisibilitas?: "semua" | VisibilitasKabar;
   sorting?: SortingKabar;
+  komunitasId?: string;
+  limit?: number;
 }
 
 /**
@@ -96,8 +98,17 @@ export async function getKabarFeed(
       query = query.eq("visibilitas", params.filterVisibilitas);
     }
 
+    // Filter komunitas jika diberikan
+    if (params.komunitasId) {
+      query = query.eq("komunitas_id", params.komunitasId);
+    }
+
     // Urutan default (terbaru)
     query = query.order("created_at", { ascending: false });
+
+    // Batasi jumlah baris untuk performa optimal (default: 50 post)
+    const limitCount = params.limit && params.limit > 0 ? params.limit : 50;
+    query = query.limit(limitCount);
 
     const { data, error } = await query;
 

@@ -18,11 +18,13 @@ export default async function KelolaAnggotaPage({
 }: KelolaAnggotaPageProps) {
   const { id } = await params;
 
-  const {
-    data: komunitas,
-    currentUserId,
-    isAdminOrKader,
-  } = await getKomunitasDetail(id);
+  const [
+    { data: komunitas, currentUserId, isAdminOrKader },
+    { data: allMembers },
+  ] = await Promise.all([
+    getKomunitasDetail(id),
+    getAnggotaKomunitas(id),
+  ]);
 
   if (!komunitas) {
     notFound();
@@ -77,8 +79,6 @@ export default async function KelolaAnggotaPage({
   if (!hasManagePermission) {
     redirect(`/komunitas/${id}`);
   }
-
-  const { data: allMembers } = await getAnggotaKomunitas(id);
 
   return (
     <div className="flex flex-col flex-1 px-4 py-8 sm:px-6 md:px-8 gap-6">
