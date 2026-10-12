@@ -26,8 +26,11 @@ import {
   normalizeKeinginanSekolah,
   getNumericAgeAts,
   classifyKelasAts,
+  classifyKategoriAts,
+  KATEGORI_ATS_LIST,
   DAFTAR_15_KELAS_ATS,
   type JenjangAtsId,
+  type KategoriAtsId,
 } from "@/lib/ats-helpers";
 import type { KomunitasWithMembership, DataAtsItem } from "@/types/database";
 import { cn, hasFullProfilDataAccess, isRoleAdmin } from "@/lib/utils";
@@ -58,6 +61,7 @@ export function DataAtsClientView({
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedJenjang, setSelectedJenjang] = useState<JenjangAtsId>("semua");
+  const [selectedKategori, setSelectedKategori] = useState<KategoriAtsId>("semua");
   const [selectedKeinginan, setSelectedKeinginan] = useState<"semua" | "Masih Ada" | "Tidak Ada">("semua");
   const [selectedAlasan, setSelectedAlasan] = useState<string>("semua");
   const [selectedAge, setSelectedAge] = useState<number | null>(null);
@@ -132,12 +136,17 @@ export function DataAtsClientView({
       (selectedGender === "L" && (rawGender === "L" || rawGender.startsWith("L"))) ||
       (selectedGender === "P" && (rawGender === "P" || rawGender.startsWith("P")));
 
+    const childKategori = classifyKategoriAts(c);
+    const matchesKategori =
+      selectedKategori === "semua" || childKategori === selectedKategori;
+
     const matchesStatus =
       statusFilter === "semua" || c.status_approval === statusFilter;
 
     return (
       matchesSearch &&
       matchesJenjang &&
+      matchesKategori &&
       matchesKeinginan &&
       matchesAlasan &&
       matchesAge &&
@@ -169,6 +178,7 @@ export function DataAtsClientView({
         setStatusFilter("semua");
       }
       setSelectedJenjang("semua");
+      setSelectedKategori("semua");
       setSelectedKeinginan("semua");
       setSelectedAlasan("semua");
       setSelectedAge(null);
@@ -258,8 +268,16 @@ export function DataAtsClientView({
     }
   };
 
+  const handleSelectKategori = (kategori: KategoriAtsId) => {
+    setSelectedKategori((prev) => (prev === kategori ? "semua" : kategori));
+    if (canAccessDaftarNama) {
+      setIsListExpanded(true);
+    }
+  };
+
   const handleResetFilters = () => {
     setSelectedJenjang("semua");
+    setSelectedKategori("semua");
     setSelectedKeinginan("semua");
     setSelectedAlasan("semua");
     setSelectedAge(null);
@@ -282,6 +300,7 @@ export function DataAtsClientView({
 
   const filterDetails = [
     selectedAge !== null ? `Usia: ${selectedAge} Tahun` : null,
+    selectedKategori !== "semua" ? `Kategori: ${KATEGORI_ATS_LIST.find((k) => k.id === selectedKategori)?.label || selectedKategori}` : null,
     selectedKelasAts !== null ? `Kelas: ${DAFTAR_15_KELAS_ATS.find((k) => k.key === selectedKelasAts)?.label || selectedKelasAts}` : null,
     selectedJenjang !== "semua" ? `Jenjang: ${selectedJenjang.toUpperCase()}` : null,
     selectedKeinginan !== "semua" ? `Keinginan: ${selectedKeinginan}` : null,
@@ -461,10 +480,12 @@ export function DataAtsClientView({
           age: selectedAge,
           gender: selectedGender,
           kelasAts: selectedKelasAts,
+          kategoriAts: selectedKategori,
         }}
         onSelectJenjang={handleSelectJenjang}
         onSelectAge={handleSelectAge}
         onSelectKelasAts={handleSelectKelasAts}
+        onSelectKategoriAts={handleSelectKategori}
         onSelectKeinginan={handleSelectKeinginan}
         onSelectAlasan={handleSelectAlasan}
         onSelectGender={handleSelectGender}
@@ -627,6 +648,7 @@ export function DataAtsClientView({
                   <div className="space-y-1.5 max-w-sm">
                     <h3 className="text-sm font-bold tracking-tight text-foreground font-mono print:text-black">
                       {selectedJenjang !== "semua" ||
+                      selectedKategori !== "semua" ||
                       selectedKeinginan !== "semua" ||
                       selectedAlasan !== "semua" ||
                       statusFilter !== "semua" ||
@@ -638,6 +660,7 @@ export function DataAtsClientView({
                     </h3>
                     <p className="text-xs text-muted-foreground leading-relaxed print:text-gray-600">
                       {selectedJenjang !== "semua" ||
+                      selectedKategori !== "semua" ||
                       selectedKeinginan !== "semua" ||
                       selectedAlasan !== "semua" ||
                       statusFilter !== "semua" ||
@@ -648,6 +671,7 @@ export function DataAtsClientView({
                         : "Daftarkan data Anak Tidak Sekolah di wilayah Anda untuk pemantauan, verifikasi alasan, dan fasilitasi kembali bersekolah."}
                     </p>
                     {(selectedJenjang !== "semua" ||
+                      selectedKategori !== "semua" ||
                       selectedKeinginan !== "semua" ||
                       selectedAlasan !== "semua" ||
                       statusFilter !== "semua" ||

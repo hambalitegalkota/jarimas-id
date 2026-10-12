@@ -435,3 +435,66 @@ export function classifyKelasAts(rawAsal?: string, rawKelas?: string): string {
   return "bpb";
 }
 
+export type KategoriAtsId = "semua" | "bpb" | "do" | "ltm";
+
+export const KATEGORI_ATS_LIST: { id: "bpb" | "do" | "ltm"; label: string; shortLabel: string }[] = [
+  { id: "bpb", label: "Belum Pernah Bersekolah", shortLabel: "BPB" },
+  { id: "do", label: "Drop Out", shortLabel: "DO" },
+  { id: "ltm", label: "Lulus Tidak Melanjutkan", shortLabel: "LTM" },
+];
+
+/**
+ * Mengklasifikasikan data ATS ke dalam 3 kategori utama:
+ * 1. "bpb" = Belum Pernah Bersekolah
+ * 2. "do"  = Drop Out / Putus Sekolah
+ * 3. "ltm" = Lulus Tidak Melanjutkan
+ */
+export function classifyKategoriAts(item: {
+  jenjang_asal?: string | null;
+  kelas_terakhir?: string | null;
+  alasan_sekolah?: string | null;
+}): "bpb" | "do" | "ltm" {
+  const combined = `${item.jenjang_asal || ""} ${item.kelas_terakhir || ""} ${item.alasan_sekolah || ""}`.toLowerCase();
+
+  // 1. Cek Lulus Tidak Melanjutkan (LTM)
+  if (
+    combined.includes("lulus") ||
+    combined.includes("ltm") ||
+    combined.includes("tidak lanjut") ||
+    combined.includes("tidak melanjutkan") ||
+    combined.includes("tamat")
+  ) {
+    return "ltm";
+  }
+
+  // 2. Cek Belum Pernah Bersekolah (BPB)
+  if (
+    combined.includes("belum pernah") ||
+    combined.includes("belum sekolah") ||
+    combined.includes("tidak pernah") ||
+    combined.includes("bpb") ||
+    combined.includes("bps")
+  ) {
+    return "bpb";
+  }
+
+  // 3. Cek Drop Out / Putus Sekolah (DO)
+  if (
+    combined.includes("putus") ||
+    combined.includes("drop") ||
+    combined.includes("do") ||
+    combined.includes("keluar") ||
+    combined.includes("berhenti") ||
+    combined.includes("sd") ||
+    combined.includes("smp") ||
+    combined.includes("sma") ||
+    combined.includes("smk") ||
+    combined.includes("paket") ||
+    combined.includes("kelas")
+  ) {
+    return "do";
+  }
+
+  return "bpb";
+}
+

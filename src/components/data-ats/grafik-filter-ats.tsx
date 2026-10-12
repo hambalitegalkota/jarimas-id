@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   BarChart3,
   GraduationCap,
@@ -13,6 +13,8 @@ import {
   normalizeKeinginanSekolah,
   getNumericAgeAts,
   classifyKelasAts,
+  classifyKategoriAts,
+  type KategoriAtsId,
   DAFTAR_15_KELAS_ATS,
   type JenjangAtsId,
 } from "@/lib/ats-helpers";
@@ -34,10 +36,12 @@ interface GrafikFilterAtsProps {
     age?: number | null;
     gender?: string;
     kelasAts?: string | null;
+    kategoriAts?: KategoriAtsId;
   };
   onSelectJenjang?: (jenjang: JenjangAtsId) => void;
   onSelectAge?: (age: number | null) => void;
   onSelectKelasAts?: (kelasKey: string | null) => void;
+  onSelectKategoriAts?: (kategori: KategoriAtsId) => void;
   onSelectKeinginan?: (keinginan: "semua" | "Masih Ada" | "Tidak Ada") => void;
   onSelectAlasan?: (alasan: string) => void;
   onSelectGender?: (gender: "semua" | "L" | "P") => void;
@@ -53,6 +57,7 @@ export function GrafikFilterAts({
   onSelectJenjang,
   onSelectAge,
   onSelectKelasAts,
+  onSelectKategoriAts,
   onSelectKeinginan,
   onSelectAlasan,
   onSelectGender,
@@ -61,6 +66,14 @@ export function GrafikFilterAts({
 }: GrafikFilterAtsProps) {
   const totalFiltered = filteredAts.length;
   const baseList = allAts || filteredAts;
+
+  const [localKategori, setLocalKategori] = useState<KategoriAtsId>("semua");
+  const currentKategori: KategoriAtsId = activeFilters.kategoriAts ?? localKategori;
+
+  const handleSelectKategori = (kat: KategoriAtsId) => {
+    setLocalKategori(kat);
+    onSelectKategoriAts?.(kat);
+  };
 
   // 1. Distribusi Jenjang
   const jenjangStats = useMemo(() => {
@@ -121,14 +134,19 @@ export function GrafikFilterAts({
     ];
   }, [baseList]);
 
-  // 1.5 Distribusi Usia per Tahun (6 - 18 Tahun)
+  // 1.5 Distribusi Usia per Tahun (6 - 18 Tahun) berdasarkan Kategori ATS (Total, BPB, DO, LTM)
   const usiaPerTahunStats = useMemo(() => {
     const ageMap: Record<number, number> = {};
     USIA_LIST_6_18.forEach((u) => {
       ageMap[u] = 0;
     });
 
-    baseList.forEach((item) => {
+    const targetList =
+      currentKategori === "semua"
+        ? baseList
+        : baseList.filter((item) => classifyKategoriAts(item) === currentKategori);
+
+    targetList.forEach((item) => {
       const age = getNumericAgeAts(item);
       if (ageMap[age] !== undefined) {
         ageMap[age]++;
@@ -141,9 +159,34 @@ export function GrafikFilterAts({
       items: USIA_LIST_6_18.map((u) => ({
         usia: u,
         count: ageMap[u] || 0,
-        pct: baseList.length > 0 ? Math.round(((ageMap[u] || 0) / baseList.length) * 100) : 0,
+        pct:
+          targetList.length > 0
+            ? Math.round(((ageMap[u] || 0) / targetList.length) * 100)
+            : 0,
       })),
       maxVal,
+      totalCount: targetList.length,
+    };
+  }, [baseList, currentKategori]);
+
+  // Statistik Ringkasan 4 Kategori ATS (Total ATS, Belum Pernah Bersekolah, Drop Out, Lulus Tidak Melanjutkan)
+  const kategoriStats = useMemo(() => {
+    let bpb = 0;
+    let doCount = 0;
+    let ltm = 0;
+
+    baseList.forEach((item) => {
+      const cat = classifyKategoriAts(item);
+      if (cat === "bpb") bpb++;
+      else if (cat === "do") doCount++;
+      else if (cat === "ltm") ltm++;
+    });
+
+    return {
+      total: baseList.length,
+      bpb,
+      do: doCount,
+      ltm,
     };
   }, [baseList]);
 
@@ -269,6 +312,7 @@ export function GrafikFilterAts({
     activeFilters.status !== "semua" ||
     (activeFilters.age !== null && activeFilters.age !== undefined) ||
     (activeFilters.kelasAts !== null && activeFilters.kelasAts !== undefined) ||
+    (activeFilters.kategoriAts !== undefined && activeFilters.kategoriAts !== "semua") ||
     (activeFilters.gender !== undefined && activeFilters.gender !== "semua") ||
     activeFilters.search.trim() !== "";
 
@@ -403,23 +447,45 @@ export function GrafikFilterAts({
                   Diagram Batang: Usia ATS (6 – 18 Tahun)
                 </span>
                 <p className="text-[11px] text-slate-500 font-medium">
-                  Klik kolom umur untuk memfilter daftar nama anak usia tersebut
+                  {currentKategori === "semua" &&
+                    "Menampilkan Total ATS • Klik kolom umur untuk memfilter daftar nama"}
+                  {currentKategori === "bpb" &&
+                    `Menampilkan Belum Pernah Bersekolah (${kategoriStats.bpb} Anak) • Klik kolom umur untuk memfilter`}
+                  {currentKategori === "do" &&
+                    `Menampilkan Drop Out / Putus Sekolah (${kategoriStats.do} Anak) • Klik kolom umur untuk memfilter`}
+                  {currentKategori === "ltm" &&
+                    `Menampilkan Lulus Tidak Melanjutkan (${kategoriStats.ltm} Anak) • Klik kolom umur untuk memfilter`}
                 </p>
               </div>
             </div>
-            {activeFilters.age ? (
-              <button
-                type="button"
-                onClick={() => onSelectAge?.(null)}
-                className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-indigo-600 text-white cursor-pointer hover:bg-indigo-700"
-              >
-                Usia {activeFilters.age} Thn Aktif ✕
-              </button>
-            ) : (
-              <span className="text-[10px] font-mono text-slate-500 font-bold">
-                Rentang 6–18 Thn
-              </span>
-            )}
+            <div className="flex items-center gap-1.5">
+              {currentKategori !== "semua" && (
+                <button
+                  type="button"
+                  onClick={() => handleSelectKategori("semua")}
+                  className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 cursor-pointer hover:bg-slate-300 transition-colors"
+                  title="Kembali ke Total ATS"
+                >
+                  {currentKategori === "bpb" && "BPB"}
+                  {currentKategori === "do" && "DO"}
+                  {currentKategori === "ltm" && "LTM"}
+                  {" ✕"}
+                </button>
+              )}
+              {activeFilters.age ? (
+                <button
+                  type="button"
+                  onClick={() => onSelectAge?.(null)}
+                  className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-indigo-600 text-white cursor-pointer hover:bg-indigo-700"
+                >
+                  Usia {activeFilters.age} Thn Aktif ✕
+                </button>
+              ) : (
+                <span className="text-[10px] font-mono text-slate-500 font-bold">
+                  Rentang 6–18 Thn
+                </span>
+              )}
+            </div>
           </div>
 
           <div className="space-y-4 pt-1">
@@ -509,60 +575,192 @@ export function GrafikFilterAts({
               })}
             </div>
 
-            {/* Jenjang Badges Sub-summary (Clickable buttons to filter by Jenjang) */}
-            <div className="grid grid-cols-3 gap-2">
+            {/* 4 Tombol Kategori: Total ATS, Belum Pernah Bersekolah, Drop Out, Lulus Tidak Melanjutkan */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-2.5 pt-1">
+              {/* 1. Tombol Total ATS */}
               <button
                 type="button"
-                onClick={() => onSelectJenjang?.(activeFilters.jenjang === "sd" ? "semua" : "sd")}
+                onClick={() => handleSelectKategori("semua")}
                 className={cn(
-                  "p-2.5 rounded-xl border-2 transition-all text-center cursor-pointer",
-                  activeFilters.jenjang === "sd"
-                    ? "bg-emerald-100 border-emerald-600 shadow-xs ring-2 ring-emerald-600/30"
-                    : "bg-white dark:bg-slate-900 border-emerald-200 dark:border-emerald-800/60 hover:bg-emerald-50"
+                  "p-2.5 sm:p-3 rounded-xl border-2 transition-all text-center cursor-pointer flex flex-col justify-between relative group",
+                  currentKategori === "semua"
+                    ? "bg-indigo-50/90 dark:bg-indigo-950/80 border-indigo-600 dark:border-indigo-500 shadow-xs ring-2 ring-indigo-600/30 dark:ring-indigo-400/30"
+                    : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-700 hover:bg-indigo-50/30"
                 )}
               >
-                <span className="text-[10px] font-mono font-bold text-emerald-800 dark:text-emerald-300 uppercase block">
-                  SD (6–12 Thn)
-                </span>
-                <span className="text-sm sm:text-base font-black font-mono text-emerald-700 dark:text-emerald-400">
-                  {jenjangStats.find((j) => j.id === "sd")?.count || 0} Anak
-                </span>
+                <div className="flex items-center justify-center gap-1.5 mb-1">
+                  <span
+                    className={cn(
+                      "text-[10px] sm:text-xs font-mono font-bold uppercase tracking-wider block",
+                      currentKategori === "semua"
+                        ? "text-indigo-900 dark:text-indigo-200 font-black"
+                        : "text-slate-600 dark:text-slate-400"
+                    )}
+                  >
+                    Total ATS
+                  </span>
+                </div>
+                <div className="flex items-baseline justify-center gap-1">
+                  <span
+                    className={cn(
+                      "text-base sm:text-lg font-black font-mono transition-transform",
+                      currentKategori === "semua"
+                        ? "text-indigo-700 dark:text-indigo-300 scale-105"
+                        : "text-slate-800 dark:text-slate-200"
+                    )}
+                  >
+                    {kategoriStats.total}
+                  </span>
+                  <span className="text-2xs font-bold text-slate-500 dark:text-slate-400">
+                    Anak
+                  </span>
+                </div>
+                {currentKategori === "semua" && (
+                  <span className="absolute -top-1.5 right-2 px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-indigo-600 text-white shadow-xs">
+                    Aktif
+                  </span>
+                )}
               </button>
 
+              {/* 2. Tombol Belum Pernah Bersekolah */}
               <button
                 type="button"
-                onClick={() => onSelectJenjang?.(activeFilters.jenjang === "smp" ? "semua" : "smp")}
+                onClick={() =>
+                  handleSelectKategori(currentKategori === "bpb" ? "semua" : "bpb")
+                }
                 className={cn(
-                  "p-2.5 rounded-xl border-2 transition-all text-center cursor-pointer",
-                  activeFilters.jenjang === "smp"
-                    ? "bg-sky-100 border-sky-600 shadow-xs ring-2 ring-sky-600/30"
-                    : "bg-white dark:bg-slate-900 border-sky-200 dark:border-sky-800/60 hover:bg-sky-50"
+                  "p-2.5 sm:p-3 rounded-xl border-2 transition-all text-center cursor-pointer flex flex-col justify-between relative group",
+                  currentKategori === "bpb"
+                    ? "bg-emerald-50/90 dark:bg-emerald-950/80 border-emerald-600 dark:border-emerald-500 shadow-xs ring-2 ring-emerald-600/30 dark:ring-emerald-400/30"
+                    : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-emerald-300 dark:hover:border-emerald-700 hover:bg-emerald-50/30"
                 )}
               >
-                <span className="text-[10px] font-mono font-bold text-sky-800 dark:text-sky-300 uppercase block">
-                  SMP (13–15 Thn)
-                </span>
-                <span className="text-sm sm:text-base font-black font-mono text-sky-700 dark:text-sky-400">
-                  {jenjangStats.find((j) => j.id === "smp")?.count || 0} Anak
-                </span>
+                <div className="flex items-center justify-center gap-1.5 mb-1">
+                  <span
+                    className={cn(
+                      "text-[10px] sm:text-xs font-mono font-bold uppercase tracking-wider block leading-tight",
+                      currentKategori === "bpb"
+                        ? "text-emerald-900 dark:text-emerald-200 font-black"
+                        : "text-slate-600 dark:text-slate-400"
+                    )}
+                  >
+                    Belum Pernah Bersekolah
+                  </span>
+                </div>
+                <div className="flex items-baseline justify-center gap-1">
+                  <span
+                    className={cn(
+                      "text-base sm:text-lg font-black font-mono transition-transform",
+                      currentKategori === "bpb"
+                        ? "text-emerald-700 dark:text-emerald-300 scale-105"
+                        : "text-emerald-600 dark:text-emerald-400"
+                    )}
+                  >
+                    {kategoriStats.bpb}
+                  </span>
+                  <span className="text-2xs font-bold text-slate-500 dark:text-slate-400">
+                    Anak
+                  </span>
+                </div>
+                {currentKategori === "bpb" && (
+                  <span className="absolute -top-1.5 right-2 px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-emerald-600 text-white shadow-xs">
+                    Aktif
+                  </span>
+                )}
               </button>
 
+              {/* 3. Tombol Drop Out */}
               <button
                 type="button"
-                onClick={() => onSelectJenjang?.(activeFilters.jenjang === "sma" ? "semua" : "sma")}
+                onClick={() =>
+                  handleSelectKategori(currentKategori === "do" ? "semua" : "do")
+                }
                 className={cn(
-                  "p-2.5 rounded-xl border-2 transition-all text-center cursor-pointer",
-                  activeFilters.jenjang === "sma"
-                    ? "bg-amber-100 border-amber-600 shadow-xs ring-2 ring-amber-600/30"
-                    : "bg-white dark:bg-slate-900 border-amber-200 dark:border-amber-800/60 hover:bg-amber-50"
+                  "p-2.5 sm:p-3 rounded-xl border-2 transition-all text-center cursor-pointer flex flex-col justify-between relative group",
+                  currentKategori === "do"
+                    ? "bg-rose-50/90 dark:bg-rose-950/80 border-rose-600 dark:border-rose-500 shadow-xs ring-2 ring-rose-600/30 dark:ring-rose-400/30"
+                    : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-rose-300 dark:hover:border-rose-700 hover:bg-rose-50/30"
                 )}
               >
-                <span className="text-[10px] font-mono font-bold text-amber-800 dark:text-amber-300 uppercase block">
-                  SMA (16–18 Thn)
-                </span>
-                <span className="text-sm sm:text-base font-black font-mono text-amber-700 dark:text-amber-400">
-                  {jenjangStats.find((j) => j.id === "sma")?.count || 0} Anak
-                </span>
+                <div className="flex items-center justify-center gap-1.5 mb-1">
+                  <span
+                    className={cn(
+                      "text-[10px] sm:text-xs font-mono font-bold uppercase tracking-wider block",
+                      currentKategori === "do"
+                        ? "text-rose-900 dark:text-rose-200 font-black"
+                        : "text-slate-600 dark:text-slate-400"
+                    )}
+                  >
+                    Drop Out
+                  </span>
+                </div>
+                <div className="flex items-baseline justify-center gap-1">
+                  <span
+                    className={cn(
+                      "text-base sm:text-lg font-black font-mono transition-transform",
+                      currentKategori === "do"
+                        ? "text-rose-700 dark:text-rose-300 scale-105"
+                        : "text-rose-600 dark:text-rose-400"
+                    )}
+                  >
+                    {kategoriStats.do}
+                  </span>
+                  <span className="text-2xs font-bold text-slate-500 dark:text-slate-400">
+                    Anak
+                  </span>
+                </div>
+                {currentKategori === "do" && (
+                  <span className="absolute -top-1.5 right-2 px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-rose-600 text-white shadow-xs">
+                    Aktif
+                  </span>
+                )}
+              </button>
+
+              {/* 4. Tombol Lulus Tidak Melanjutkan */}
+              <button
+                type="button"
+                onClick={() =>
+                  handleSelectKategori(currentKategori === "ltm" ? "semua" : "ltm")
+                }
+                className={cn(
+                  "p-2.5 sm:p-3 rounded-xl border-2 transition-all text-center cursor-pointer flex flex-col justify-between relative group",
+                  currentKategori === "ltm"
+                    ? "bg-sky-50/90 dark:bg-sky-950/80 border-sky-600 dark:border-sky-500 shadow-xs ring-2 ring-sky-600/30 dark:ring-sky-400/30"
+                    : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-sky-300 dark:hover:border-sky-700 hover:bg-sky-50/30"
+                )}
+              >
+                <div className="flex items-center justify-center gap-1.5 mb-1">
+                  <span
+                    className={cn(
+                      "text-[10px] sm:text-xs font-mono font-bold uppercase tracking-wider block leading-tight",
+                      currentKategori === "ltm"
+                        ? "text-sky-900 dark:text-sky-200 font-black"
+                        : "text-slate-600 dark:text-slate-400"
+                    )}
+                  >
+                    Lulus Tidak Melanjutkan
+                  </span>
+                </div>
+                <div className="flex items-baseline justify-center gap-1">
+                  <span
+                    className={cn(
+                      "text-base sm:text-lg font-black font-mono transition-transform",
+                      currentKategori === "ltm"
+                        ? "text-sky-700 dark:text-sky-300 scale-105"
+                        : "text-sky-600 dark:text-sky-400"
+                    )}
+                  >
+                    {kategoriStats.ltm}
+                  </span>
+                  <span className="text-2xs font-bold text-slate-500 dark:text-slate-400">
+                    Anak
+                  </span>
+                </div>
+                {currentKategori === "ltm" && (
+                  <span className="absolute -top-1.5 right-2 px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-sky-600 text-white shadow-xs">
+                    Aktif
+                  </span>
+                )}
               </button>
             </div>
           </div>
