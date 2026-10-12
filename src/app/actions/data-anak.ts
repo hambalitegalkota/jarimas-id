@@ -745,35 +745,11 @@ export async function getDataAnakByKomunitas(komunitasId: string): Promise<{
 
     if (targetJenis === "satuan_paud") {
       const rawPaudName = (targetKomunitas?.nama || "").trim();
-      const cleanKeyword = rawPaudName
-        .toLowerCase()
-        .replace(/[`'’]/g, "%")
-        .replace(/[.,\/#!$%\^&\*;:{}=\-_~()]/g, " ")
-        .replace(/\b111\b/g, " ")
-        .split(" ")
-        .filter(
-          (w: string) =>
-            w.length >= 3 &&
-            ![
-              "taman",
-              "kanak",
-              "kelompok",
-              "bermain",
-              "pos",
-              "paud",
-              "satuan",
-              "tpq",
-              "iii",
-              "ii",
-              "iv",
-              "xii",
-              "xiii",
-              "viii",
-              "vii",
-            ].includes(w)
-        )[0] || rawPaudName;
+      const cleanPaudName = rawPaudName
+        .replace(/^(KB|TK|TPA|SPS|RA|PKBM|SKB|POS PAUD)\s+/i, "")
+        .trim();
 
-      const { data: paudDirect, error: paudDirectError } = await supabase
+      let query = supabase
         .from("data_anak")
         .select(`
           id,
@@ -795,23 +771,65 @@ export async function getDataAnakByKomunitas(komunitasId: string): Promise<{
           created_at,
           ddks_records (*)
         `)
-        .or(`komunitas_id.eq.${validKomId},nama_sekolah.ilike.%${cleanKeyword}%`)
         .order("created_at", { ascending: false });
+
+      if (cleanPaudName) {
+        query = query.or(`komunitas_id.eq.${validKomId},nama_sekolah.ilike.%${cleanPaudName}%`);
+      } else {
+        query = query.eq("komunitas_id", validKomId);
+      }
+
+      const { data: paudDirect, error: paudDirectError } = await query;
 
       if (paudDirectError) {
         childError = paudDirectError;
-      } else if (paudDirect && paudDirect.length > 0) {
+      } else if (paudDirect) {
         dbChildren = paudDirect;
       }
-    }
+    } else {
+      // Komunitas Posyandu, Warga Kita, SPM: filter targeted per komunitas_id atau kelurahan
+      const targetKel = targetKomunitas?.kelurahan && targetKomunitas.kelurahan !== "semua" && targetKomunitas.kelurahan !== "Semua Kelurahan"
+        ? targetKomunitas.kelurahan
+        : null;
 
-    if (dbChildren.length === 0) {
-      let from = 0;
-      const pageSize = 1000;
-      let hasMore = true;
+      let directQuery = supabase
+        .from("data_anak")
+        .select(`
+          id,
+          nama_lengkap,
+          tanggal_lahir,
+          jenis_kelamin,
+          nama_orangtua,
+          nomor_hp,
+          tinggal_bersama,
+          jarak_rumah_km,
+          is_sekolah,
+          nama_sekolah,
+          alasan_sekolah,
+          komunitas_id,
+          status_approval,
+          validated_by,
+          validated_at,
+          created_by,
+          created_at,
+          ddks_records (*)
+        `)
+        .order("created_at", { ascending: false });
 
-      while (hasMore) {
-        const { data: chunk, error: chunkErr } = await supabase
+      if (targetKel) {
+        directQuery = directQuery.or(`komunitas_id.eq.${validKomId},alasan_sekolah.ilike.%${targetKel}%`);
+      } else {
+        directQuery = directQuery.eq("komunitas_id", validKomId);
+      }
+
+      const { data: directData, error: directErr } = await directQuery;
+      if (directErr) {
+        childError = directErr;
+      } else if (directData && directData.length > 0) {
+        dbChildren = directData;
+      } else if (!targetKel) {
+        // Fallback hanya jika di level kota (tanpa kelurahan), dibatasi maksimal 1000 data terbaru
+        const { data: fallbackChunk, error: fallbackErr } = await supabase
           .from("data_anak")
           .select(`
             id,
@@ -834,17 +852,10 @@ export async function getDataAnakByKomunitas(komunitasId: string): Promise<{
             ddks_records (*)
           `)
           .order("created_at", { ascending: false })
-          .range(from, from + pageSize - 1);
+          .limit(1000);
 
-        if (chunkErr) {
-          childError = chunkErr;
-          break;
-        }
-
-        if (!chunk || chunk.length === 0) break;
-        dbChildren = dbChildren.concat(chunk);
-        if (chunk.length < pageSize) break;
-        from += pageSize;
+        if (fallbackErr) childError = fallbackErr;
+        else if (fallbackChunk) dbChildren = fallbackChunk;
       }
     }
 

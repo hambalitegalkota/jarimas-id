@@ -55,18 +55,29 @@ export default async function KomunitasDetailPage({
     notFound();
   }
 
-  // Ambil data anggota, data anak, data ATS, dan kabar secara paralel (Promise.all) untuk menghilangkan waterfall latensi
+  // Ambil data anggota, data anak, data ATS, dan kabar secara paralel (hanya yang relevan dengan tipe komunitas)
+  const isPaud = komunitas.jenis === "satuan_paud";
+  const isSpm = komunitas.jenis === "bidang_spm";
+  const isKomunitasPendidikan =
+    komunitas.id === "kom-spm-pendidikan" ||
+    komunitas.nama.toLowerCase().includes("pendidikan");
+  const shouldFetchDataAnak = !isSpm || isKomunitasPendidikan;
+  const shouldFetchDataAts = !isPaud && (!isSpm || isKomunitasPendidikan);
+
   const [
     { data: anggotaList },
-    { data: dataAnakList },
-    { data: dataAtsList },
+    dataAnakRes,
+    dataAtsRes,
     { data: allKabar },
   ] = await Promise.all([
     getAnggotaKomunitas(id),
-    getDataAnakByKomunitas(id),
-    getDataAtsByKomunitas(id),
+    shouldFetchDataAnak ? getDataAnakByKomunitas(id) : Promise.resolve({ data: [] }),
+    shouldFetchDataAts ? getDataAtsByKomunitas(id) : Promise.resolve({ data: [] }),
     getKabarFeed({ filterVisibilitas: "semua", limit: 30 }),
   ]);
+
+  const dataAnakList = dataAnakRes?.data || [];
+  const dataAtsList = dataAtsRes?.data || [];
   const dbKomunitasId = toValidUUID(id);
   const cleanNama = (komunitas.nama || "").toLowerCase().trim();
 

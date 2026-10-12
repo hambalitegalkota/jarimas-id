@@ -178,6 +178,7 @@ export function KomunitasCard({
 
           <Link
             href={`/komunitas/${komunitas.id}`}
+            prefetch={false}
             className={cn(
               "group inline-flex min-h-[38px] h-9.5 items-center justify-center gap-1.5 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 text-xs font-extrabold text-slate-800 dark:text-slate-200 transition-all hover:bg-slate-50 dark:hover:bg-slate-700 shadow-2xs active:scale-95",
               isApprovedMember &&

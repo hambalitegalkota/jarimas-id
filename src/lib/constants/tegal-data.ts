@@ -1185,19 +1185,54 @@ export function generateWargaKomunitasHierarchy({
   return items;
 }
 
+const seedCache = new Map<string, MasterKomunitasSeedItem | null>();
+let masterSeedMap: Map<string, MasterKomunitasSeedItem> | null = null;
+
+function getMasterSeedMap(): Map<string, MasterKomunitasSeedItem> {
+  if (!masterSeedMap) {
+    masterSeedMap = new Map();
+    for (const k of MASTER_KOMUNITAS_SEED) {
+      masterSeedMap.set(k.id, k);
+      const uuid = toValidUUID(k.id);
+      if (uuid) {
+        masterSeedMap.set(uuid, k);
+      }
+    }
+  }
+  return masterSeedMap;
+}
+
 export function findOrGenerateKomunitasSeed(
   komunitasId: string
 ): MasterKomunitasSeedItem | null {
   if (!komunitasId) return null;
 
+  if (seedCache.has(komunitasId)) {
+    return seedCache.get(komunitasId) || null;
+  }
+
   const targetUuid = toValidUUID(komunitasId);
-  const directMatch = MASTER_KOMUNITAS_SEED.find(
-    (k) =>
-      k.id === komunitasId ||
-      toValidUUID(k.id) === targetUuid ||
-      toValidUUID(k.id) === komunitasId
-  );
-  if (directMatch) return directMatch;
+  if (seedCache.has(targetUuid)) {
+    return seedCache.get(targetUuid) || null;
+  }
+
+  const directMatch = getMasterSeedMap().get(komunitasId) || getMasterSeedMap().get(targetUuid);
+  if (directMatch) {
+    seedCache.set(komunitasId, directMatch);
+    seedCache.set(targetUuid, directMatch);
+    return directMatch;
+  }
+
+  const setAndReturn = (item: MasterKomunitasSeedItem | null) => {
+    seedCache.set(komunitasId, item);
+    seedCache.set(targetUuid, item);
+    if (item?.id) {
+      seedCache.set(item.id, item);
+      const itemUuid = toValidUUID(item.id);
+      if (itemUuid) seedCache.set(itemUuid, item);
+    }
+    return item;
+  };
 
   // 0. Cocokkan Tingkat Kota Tegal
   if (
@@ -1206,7 +1241,7 @@ export function findOrGenerateKomunitasSeed(
     toValidUUID("kom-warga-kota-tegal") === targetUuid ||
     toValidUUID("kom-warga-kota-tegal") === komunitasId
   ) {
-    return {
+    return setAndReturn({
       id: "kom-warga-kota-tegal",
       nama: "Warga Kota Tegal",
       jenis: "warga_kita",
@@ -1219,7 +1254,7 @@ export function findOrGenerateKomunitasSeed(
         "Komunitas resmi seluruh warga masyarakat Kota Tegal, Jawa Tengah. Wadah kebersamaan, koordinasi layanan publik, kesehatan keluarga, dan partisipasi warga se-Kota Tegal.",
       kontak: "Pemerintah Kota Tegal / Forum Warga Kota Tegal",
       jadwal: "Forum Komunikasi & Pelayanan Warga Tingkat Kota Tegal",
-    };
+    });
   }
 
   // Cek seluruh kemungkinan hierarki Warga Kota Tegal (Kecamatan, Kelurahan, RW 1..15, RT 1..15)
@@ -1233,7 +1268,7 @@ export function findOrGenerateKomunitasSeed(
       toValidUUID(kecId) === targetUuid ||
       toValidUUID(kecId) === komunitasId
     ) {
-      return {
+      return setAndReturn({
         id: kecId,
         nama: `Warga Kecamatan: ${kecName}`,
         jenis: "warga_kita",
@@ -1245,7 +1280,7 @@ export function findOrGenerateKomunitasSeed(
         deskripsi: `Komunitas paguyuban warga se-Kecamatan ${kecName}, Kota Tegal.`,
         kontak: `Sekretariat Kecamatan ${kecName}`,
         jadwal: "Pertemuan Komunitas Warga Tingkat Kecamatan",
-      };
+      });
     }
 
     for (const kelName of Object.keys(kecData.kelurahan)) {
@@ -1258,7 +1293,7 @@ export function findOrGenerateKomunitasSeed(
         toValidUUID(kelId) === targetUuid ||
         toValidUUID(kelId) === komunitasId
       ) {
-        return {
+        return setAndReturn({
           id: kelId,
           nama: `Warga Kelurahan: ${kelName}, Kecamatan: ${kecName}`,
           jenis: "warga_kita",
@@ -1270,7 +1305,7 @@ export function findOrGenerateKomunitasSeed(
           deskripsi: `Komunitas seluruh warga di wilayah Kelurahan ${kelName}, Kecamatan ${kecName}, Kota Tegal.`,
           kontak: `Sekretariat Kelurahan ${kelName}`,
           jadwal: "Forum Komunikasi Warga Kelurahan",
-        };
+        });
       }
 
       // 3. Cocokkan Tingkat RW (RW 01 s/d RW 15)
@@ -1282,7 +1317,7 @@ export function findOrGenerateKomunitasSeed(
           toValidUUID(rwId) === targetUuid ||
           toValidUUID(rwId) === komunitasId
         ) {
-          return {
+          return setAndReturn({
             id: rwId,
             nama: `Warga RW: ${rwStr}, Kelurahan: ${kelName}, Kecamatan: ${kecName}`,
             jenis: "warga_kita",
@@ -1294,7 +1329,7 @@ export function findOrGenerateKomunitasSeed(
             deskripsi: `Komunitas rukun warga tingkat RW ${rwStr} Kelurahan ${kelName}, Kecamatan ${kecName}, Kota Tegal.`,
             kontak: `Pengurus RW ${rwStr}`,
             jadwal: "Rembug RW dan Pertemuan Warga Bulanan",
-          };
+          });
         }
 
         // 4. Cocokkan Tingkat RT (RT 01 s/d RT 15)
@@ -1306,7 +1341,7 @@ export function findOrGenerateKomunitasSeed(
             toValidUUID(rtId) === targetUuid ||
             toValidUUID(rtId) === komunitasId
           ) {
-            return {
+            return setAndReturn({
               id: rtId,
               nama: `Warga RT: ${rtStr}, RW: ${rwStr}, Kelurahan: ${kelName}, Kecamatan: ${kecName}`,
               jenis: "warga_kita",
@@ -1318,14 +1353,14 @@ export function findOrGenerateKomunitasSeed(
               deskripsi: `Komunitas paguyuban rukun tetangga warga RT ${rtStr} RW ${rwStr} Kelurahan ${kelName}, Kecamatan ${kecName}, Kota Tegal.`,
               kontak: `Pengurus RT ${rtStr} / RW ${rwStr}`,
               jadwal: "Pertemuan Rutin Warga Setiap Bulan",
-            };
+            });
           }
         }
       }
     }
   }
 
-  return null;
+  return setAndReturn(null);
 }
 
 /**
