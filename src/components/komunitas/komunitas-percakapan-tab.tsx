@@ -77,7 +77,10 @@ export function KomunitasPercakapanTab({
   const inputRef = useRef<HTMLInputElement>(null);
 
   const membership = komunitas.currentUserMembership;
-  const isApprovedMember = membership?.status === "approved" || isAdminOrKader;
+  const isApprovedMember =
+    membership?.status === "approved" ||
+    membership?.peran === "Super Admin" ||
+    isAdminOrKader;
   const userPeran = membership?.peran || (isAdminOrKader ? "Admin" : "Pengunjung");
   const isPendingApproval = Boolean(membership?.peran_diajukan);
 

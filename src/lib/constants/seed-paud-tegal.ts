@@ -140,13 +140,13 @@ export const RAW_PAUD_PKBM_TEGAL: RawPaudItem[] = [
   // Kejambon (17 Lembaga)
   {
     id: "37270cc5-beae-446d-8317-4db53bcc295b",
-    nama: "RA Permata Hati",
+    nama: "RA Permata Hati Kejambon",
     npsn: "69743502",
     jenis_institusi: "RA",
     kecamatan: "Tegal Timur",
     kelurahan: "Kejambon",
     lokasi: "Jl. Nakula Gg. Widuri No. 27, Kejambon, Tegal Timur, Kota Tegal",
-    deskripsi: "Lembaga PAUD & Pendidikan Kesetaraan (RA Permata Hati) menyelenggarakan layanan stimulasi tumbuh kembang anak usia dini, kesiapan belajar, pendidikan kesetaraan Paket A/B/C, dan parenting keluarga.",
+    deskripsi: "Lembaga PAUD & Pendidikan Kesetaraan (RA Permata Hati Kejambon) menyelenggarakan layanan stimulasi tumbuh kembang anak usia dini, kesiapan belajar, pendidikan kesetaraan Paket A/B/C, dan parenting keluarga.",
   },
   {
     id: "b1eb8891-7279-4ff8-803e-34e171c38f1e",
@@ -482,13 +482,13 @@ export const RAW_PAUD_PKBM_TEGAL: RawPaudItem[] = [
   },
   {
     id: "6448b6d1-a2b6-4844-8595-ba29636faa7d",
-    nama: "KB Bina Iman Anak Sholeh (BIAS) TT",
+    nama: "KB Bina Iman Anak Sholeh (BIAS) Panggung",
     npsn: "69928753",
     jenis_institusi: "KB",
     kecamatan: "Tegal Timur",
     kelurahan: "Panggung",
     lokasi: "Panggung, Tegal Timur, Kota Tegal",
-    deskripsi: "Lembaga PAUD & Pendidikan Kesetaraan (KB Bina Iman Anak Sholeh (BIAS) TT) menyelenggarakan layanan stimulasi tumbuh kembang anak usia dini, kesiapan belajar, pendidikan kesetaraan Paket A/B/C, dan parenting keluarga.",
+    deskripsi: "Lembaga PAUD & Pendidikan Kesetaraan (KB Bina Iman Anak Sholeh (BIAS) Panggung) menyelenggarakan layanan stimulasi tumbuh kembang anak usia dini, kesiapan belajar, pendidikan kesetaraan Paket A/B/C, dan parenting keluarga.",
   },
   {
     id: "e4bf87aa-96fe-433e-8c1f-9fc1d2fc8b76",
@@ -542,13 +542,13 @@ export const RAW_PAUD_PKBM_TEGAL: RawPaudItem[] = [
   },
   {
     id: "1af0c1cb-41b6-4346-8f87-752576a648a5",
-    nama: "KB Sekar Melati",
+    nama: "KB Sekar Melati Panggung",
     npsn: "69818049",
     jenis_institusi: "KB",
     kecamatan: "Tegal Timur",
     kelurahan: "Panggung",
     lokasi: "Panggung, Tegal Timur, Kota Tegal",
-    deskripsi: "Lembaga PAUD & Pendidikan Kesetaraan (KB Sekar Melati) menyelenggarakan layanan stimulasi tumbuh kembang anak usia dini, kesiapan belajar, pendidikan kesetaraan Paket A/B/C, dan parenting keluarga.",
+    deskripsi: "Lembaga PAUD & Pendidikan Kesetaraan (KB Sekar Melati Panggung) menyelenggarakan layanan stimulasi tumbuh kembang anak usia dini, kesiapan belajar, pendidikan kesetaraan Paket A/B/C, dan parenting keluarga.",
   },
   {
     id: "5464192a-1ac9-49c6-820f-b4e11b9460c2",
@@ -562,13 +562,13 @@ export const RAW_PAUD_PKBM_TEGAL: RawPaudItem[] = [
   },
   {
     id: "cfa2e2a4-dfdb-4081-8966-e93d3c965114",
-    nama: "PAUD TPQ Nurul Huda",
+    nama: "PAUD TPQ Nurul Huda Panggung",
     npsn: "69818110",
     jenis_institusi: "SPS",
     kecamatan: "Tegal Timur",
     kelurahan: "Panggung",
     lokasi: "Panggung, Tegal Timur, Kota Tegal",
-    deskripsi: "Lembaga PAUD & Pendidikan Kesetaraan (PAUD TPQ Nurul Huda) menyelenggarakan layanan stimulasi tumbuh kembang anak usia dini, kesiapan belajar, pendidikan kesetaraan Paket A/B/C, dan parenting keluarga.",
+    deskripsi: "Lembaga PAUD & Pendidikan Kesetaraan (PAUD TPQ Nurul Huda Panggung) menyelenggarakan layanan stimulasi tumbuh kembang anak usia dini, kesiapan belajar, pendidikan kesetaraan Paket A/B/C, dan parenting keluarga.",
   },
   {
     id: "c8e282c9-9149-4f2e-85f8-78594bd666cd",
@@ -814,13 +814,13 @@ export const RAW_PAUD_PKBM_TEGAL: RawPaudItem[] = [
   },
   {
     id: "d1e30c58-b32f-4e8e-86b3-f7b526c0db17",
-    nama: "KB Permata Hati",
+    nama: "KB Permata Hati Slerok",
     npsn: "69818070",
     jenis_institusi: "KB",
     kecamatan: "Tegal Timur",
     kelurahan: "Slerok",
     lokasi: "Slerok, Tegal Timur, Kota Tegal",
-    deskripsi: "Lembaga PAUD & Pendidikan Kesetaraan (KB Permata Hati) menyelenggarakan layanan stimulasi tumbuh kembang anak usia dini, kesiapan belajar, pendidikan kesetaraan Paket A/B/C, dan parenting keluarga.",
+    deskripsi: "Lembaga PAUD & Pendidikan Kesetaraan (KB Permata Hati Slerok) menyelenggarakan layanan stimulasi tumbuh kembang anak usia dini, kesiapan belajar, pendidikan kesetaraan Paket A/B/C, dan parenting keluarga.",
   },
   {
     id: "2e77393f-00a2-45f3-8f8b-f5b195a263cc",
@@ -884,14 +884,14 @@ export const RAW_PAUD_PKBM_TEGAL: RawPaudItem[] = [
   },
   {
     id: "3ff83fb1-b19c-45c8-871a-a6bd264d56c0",
-    nama: "Pos PAUD Kartini RW. VI",
+    nama: "Pos PAUD Kartini Slerok",
     npsn: "69917972",
     jenis_institusi: "SPS",
     kecamatan: "Tegal Timur",
     kelurahan: "Slerok",
     rw: "06",
     lokasi: "Balai RW 06 Slerok, Tegal Timur, Kota Tegal",
-    deskripsi: "Lembaga PAUD & Pendidikan Kesetaraan (Pos PAUD Kartini RW. VI) menyelenggarakan layanan stimulasi tumbuh kembang anak usia dini, kesiapan belajar, pendidikan kesetaraan Paket A/B/C, dan parenting keluarga.",
+    deskripsi: "Lembaga PAUD & Pendidikan Kesetaraan (Pos PAUD Kartini Slerok) menyelenggarakan layanan stimulasi tumbuh kembang anak usia dini, kesiapan belajar, pendidikan kesetaraan Paket A/B/C, dan parenting keluarga.",
   },
   {
     id: "c3045b68-af75-4042-8a14-aa5d35a71948",
@@ -962,13 +962,13 @@ export const RAW_PAUD_PKBM_TEGAL: RawPaudItem[] = [
   // Kemandungan (6 Lembaga)
   {
     id: "e001abba-d414-4cf2-886e-913577dbfcc5",
-    nama: "KB Bina Iman Anak Sholeh (BIAS) TB",
+    nama: "KB Bina Iman Anak Sholeh (BIAS) Kemandungan",
     npsn: "69818088",
     jenis_institusi: "KB",
     kecamatan: "Tegal Barat",
     kelurahan: "Kemandungan",
     lokasi: "Kemandungan, Tegal Barat, Kota Tegal",
-    deskripsi: "Lembaga PAUD & Pendidikan Kesetaraan (KB Bina Iman Anak Sholeh (BIAS) TB) menyelenggarakan layanan stimulasi tumbuh kembang anak usia dini, kesiapan belajar, pendidikan kesetaraan Paket A/B/C, dan parenting keluarga.",
+    deskripsi: "Lembaga PAUD & Pendidikan Kesetaraan (KB Bina Iman Anak Sholeh (BIAS) Kemandungan) menyelenggarakan layanan stimulasi tumbuh kembang anak usia dini, kesiapan belajar, pendidikan kesetaraan Paket A/B/C, dan parenting keluarga.",
   },
   {
     id: "ffc0485b-b7f2-48ca-821e-ede952af492f",
@@ -982,13 +982,13 @@ export const RAW_PAUD_PKBM_TEGAL: RawPaudItem[] = [
   },
   {
     id: "6247e885-e1ab-4851-89ca-eb795b1cdc55",
-    nama: "KB Mutiara Shahabat",
+    nama: "KB Mutiara Shahabat Kemandungan",
     npsn: "69964731",
     jenis_institusi: "KB",
     kecamatan: "Tegal Barat",
     kelurahan: "Kemandungan",
     lokasi: "Kemandungan, Tegal Barat, Kota Tegal",
-    deskripsi: "Lembaga PAUD & Pendidikan Kesetaraan (KB Mutiara Shahabat) menyelenggarakan layanan stimulasi tumbuh kembang anak usia dini, kesiapan belajar, pendidikan kesetaraan Paket A/B/C, dan parenting keluarga.",
+    deskripsi: "Lembaga PAUD & Pendidikan Kesetaraan (KB Mutiara Shahabat Kemandungan) menyelenggarakan layanan stimulasi tumbuh kembang anak usia dini, kesiapan belajar, pendidikan kesetaraan Paket A/B/C, dan parenting keluarga.",
   },
   {
     id: "f397f77c-eb3b-4be7-8674-af7d082f8c88",
@@ -1074,13 +1074,13 @@ export const RAW_PAUD_PKBM_TEGAL: RawPaudItem[] = [
   },
   {
     id: "21283b97-a8a0-4031-8641-2349ad207e87",
-    nama: "Pos PAUD Kartini",
+    nama: "Pos PAUD Kartini Kraton",
     npsn: "69818094",
     jenis_institusi: "SPS",
     kecamatan: "Tegal Barat",
     kelurahan: "Kraton",
     lokasi: "Kraton, Tegal Barat, Kota Tegal",
-    deskripsi: "Lembaga PAUD & Pendidikan Kesetaraan (Pos PAUD Kartini) menyelenggarakan layanan stimulasi tumbuh kembang anak usia dini, kesiapan belajar, pendidikan kesetaraan Paket A/B/C, dan parenting keluarga.",
+    deskripsi: "Lembaga PAUD & Pendidikan Kesetaraan (Pos PAUD Kartini Kraton) menyelenggarakan layanan stimulasi tumbuh kembang anak usia dini, kesiapan belajar, pendidikan kesetaraan Paket A/B/C, dan parenting keluarga.",
   },
   {
     id: "5c629cfc-94bf-4453-8406-3bf516deef93",
@@ -1134,13 +1134,13 @@ export const RAW_PAUD_PKBM_TEGAL: RawPaudItem[] = [
   },
   {
     id: "402b25de-13bc-4bdb-861e-7b298e2449e5",
-    nama: "TK Little Star",
+    nama: "TK Little Star Kraton",
     npsn: "20351674",
     jenis_institusi: "TK",
     kecamatan: "Tegal Barat",
     kelurahan: "Kraton",
     lokasi: "Kraton, Tegal Barat, Kota Tegal",
-    deskripsi: "Lembaga PAUD & Pendidikan Kesetaraan (TK Little Star) menyelenggarakan layanan stimulasi tumbuh kembang anak usia dini, kesiapan belajar, pendidikan kesetaraan Paket A/B/C, dan parenting keluarga.",
+    deskripsi: "Lembaga PAUD & Pendidikan Kesetaraan (TK Little Star Kraton) menyelenggarakan layanan stimulasi tumbuh kembang anak usia dini, kesiapan belajar, pendidikan kesetaraan Paket A/B/C, dan parenting keluarga.",
   },
   {
     id: "6298a9fe-5f4c-4faf-821c-dcc9ec57ae99",
@@ -1196,25 +1196,25 @@ export const RAW_PAUD_PKBM_TEGAL: RawPaudItem[] = [
   },
   {
     id: "69a407c5-026b-42bd-8fe9-7d494266c419",
-    nama: "TK Nurul Huda",
+    nama: "TK Nurul Huda Muarareja",
     npsn: "20351670",
     jenis_institusi: "TK",
     kecamatan: "Tegal Barat",
     kelurahan: "Muarareja",
     lokasi: "Muarareja, Tegal Barat, Kota Tegal",
-    deskripsi: "Lembaga PAUD & Pendidikan Kesetaraan (TK Nurul Huda) menyelenggarakan layanan stimulasi tumbuh kembang anak usia dini, kesiapan belajar, pendidikan kesetaraan Paket A/B/C, dan parenting keluarga.",
+    deskripsi: "Lembaga PAUD & Pendidikan Kesetaraan (TK Nurul Huda Muarareja) menyelenggarakan layanan stimulasi tumbuh kembang anak usia dini, kesiapan belajar, pendidikan kesetaraan Paket A/B/C, dan parenting keluarga.",
   },
 
   // Pekauman (18 Lembaga)
   {
     id: "15c639f8-83e2-4c52-8df2-398d069aaca4",
-    nama: "RA At Taqwa",
+    nama: "RA At Taqwa Pekauman",
     npsn: "69743498",
     jenis_institusi: "RA",
     kecamatan: "Tegal Barat",
     kelurahan: "Pekauman",
     lokasi: "Jl. Kelapa Sawit No. 3, Pekauman, Tegal Barat, Kota Tegal",
-    deskripsi: "Lembaga PAUD & Pendidikan Kesetaraan (RA At Taqwa) menyelenggarakan layanan stimulasi tumbuh kembang anak usia dini, kesiapan belajar, pendidikan kesetaraan Paket A/B/C, dan parenting keluarga.",
+    deskripsi: "Lembaga PAUD & Pendidikan Kesetaraan (RA At Taqwa Pekauman) menyelenggarakan layanan stimulasi tumbuh kembang anak usia dini, kesiapan belajar, pendidikan kesetaraan Paket A/B/C, dan parenting keluarga.",
   },
   {
     id: "c1dbf59c-4c1d-4a6b-8e23-d729e366d68f",
@@ -1298,13 +1298,13 @@ export const RAW_PAUD_PKBM_TEGAL: RawPaudItem[] = [
   },
   {
     id: "165f31bb-b754-478a-8385-4a2dc69cfa96",
-    nama: "PKBM Mutiara Shahabat",
+    nama: "PKBM Mutiara Shahabat Pekauman",
     npsn: "P9959948",
     jenis_institusi: "PKBM",
     kecamatan: "Tegal Barat",
     kelurahan: "Pekauman",
     lokasi: "Pekauman, Tegal Barat, Kota Tegal",
-    deskripsi: "Lembaga PAUD & Pendidikan Kesetaraan (PKBM Mutiara Shahabat) menyelenggarakan layanan stimulasi tumbuh kembang anak usia dini, kesiapan belajar, pendidikan kesetaraan Paket A/B/C, dan parenting keluarga.",
+    deskripsi: "Lembaga PAUD & Pendidikan Kesetaraan (PKBM Mutiara Shahabat Pekauman) menyelenggarakan layanan stimulasi tumbuh kembang anak usia dini, kesiapan belajar, pendidikan kesetaraan Paket A/B/C, dan parenting keluarga.",
   },
   {
     id: "c6e73c38-b1e7-41de-8871-d8dde221f038",
@@ -1410,13 +1410,13 @@ export const RAW_PAUD_PKBM_TEGAL: RawPaudItem[] = [
   },
   {
     id: "8b999637-20c5-41f9-8913-d5857e0009a9",
-    nama: "KB Little Star",
+    nama: "KB Little Star Tegalsari",
     npsn: "69818056",
     jenis_institusi: "KB",
     kecamatan: "Tegal Barat",
     kelurahan: "Tegalsari",
     lokasi: "Tegalsari, Tegal Barat, Kota Tegal",
-    deskripsi: "Lembaga PAUD & Pendidikan Kesetaraan (KB Little Star) menyelenggarakan layanan stimulasi tumbuh kembang anak usia dini, kesiapan belajar, pendidikan kesetaraan Paket A/B/C, dan parenting keluarga.",
+    deskripsi: "Lembaga PAUD & Pendidikan Kesetaraan (KB Little Star Tegalsari) menyelenggarakan layanan stimulasi tumbuh kembang anak usia dini, kesiapan belajar, pendidikan kesetaraan Paket A/B/C, dan parenting keluarga.",
   },
   {
     id: "f0c4c9b0-d522-4744-84fd-bfa92329da0b",
@@ -1470,13 +1470,13 @@ export const RAW_PAUD_PKBM_TEGAL: RawPaudItem[] = [
   },
   {
     id: "d7366691-3515-497c-8956-cb299412f69d",
-    nama: "Pos PAUD Sekar Melati",
+    nama: "Pos PAUD Sekar Melati Tegalsari",
     npsn: "69818103",
     jenis_institusi: "SPS",
     kecamatan: "Tegal Barat",
     kelurahan: "Tegalsari",
     lokasi: "Tegalsari, Tegal Barat, Kota Tegal",
-    deskripsi: "Lembaga PAUD & Pendidikan Kesetaraan (Pos PAUD Sekar Melati) menyelenggarakan layanan stimulasi tumbuh kembang anak usia dini, kesiapan belajar, pendidikan kesetaraan Paket A/B/C, dan parenting keluarga.",
+    deskripsi: "Lembaga PAUD & Pendidikan Kesetaraan (Pos PAUD Sekar Melati Tegalsari) menyelenggarakan layanan stimulasi tumbuh kembang anak usia dini, kesiapan belajar, pendidikan kesetaraan Paket A/B/C, dan parenting keluarga.",
   },
   {
     id: "c7a2cc26-bfbc-4f79-8163-2299cc9fba19",
@@ -2010,13 +2010,13 @@ export const RAW_PAUD_PKBM_TEGAL: RawPaudItem[] = [
   // Cabawan (2 Lembaga)
   {
     id: "973faf52-ffd0-451c-87cf-5461b003057a",
-    nama: "PAUD TPQ At Taqwa",
+    nama: "PAUD TPQ At Taqwa Cabawan",
     npsn: "69818096",
     jenis_institusi: "SPS",
     kecamatan: "Margadana",
     kelurahan: "Cabawan",
     lokasi: "Cabawan, Margadana, Kota Tegal",
-    deskripsi: "Lembaga PAUD & Pendidikan Kesetaraan (PAUD TPQ At Taqwa) menyelenggarakan layanan stimulasi tumbuh kembang anak usia dini, kesiapan belajar, pendidikan kesetaraan Paket A/B/C, dan parenting keluarga.",
+    deskripsi: "Lembaga PAUD & Pendidikan Kesetaraan (PAUD TPQ At Taqwa Cabawan) menyelenggarakan layanan stimulasi tumbuh kembang anak usia dini, kesiapan belajar, pendidikan kesetaraan Paket A/B/C, dan parenting keluarga.",
   },
   {
     id: "3405c9ad-8e32-4fcf-87eb-b1bd3f59893c",

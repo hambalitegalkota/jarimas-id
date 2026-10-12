@@ -7,6 +7,7 @@ import {
   isDataAtsRecord,
   isDummyDataAnak,
   normalizeWilayah,
+  formatNamaSekolahDisplay,
 } from "@/lib/data-anak-helpers";
 import { isAdminPusat, isSuperAdmin as checkIsSuperAdmin } from "@/lib/utils";
 
@@ -758,33 +759,41 @@ export async function getDaftarNamaAnakRekapAction(params: {
       .select("id, nama, jenis, kecamatan, kelurahan, rw, rt");
     const komMap = new Map((allKom || []).map((k: any) => [k.id, k]));
 
-    // 2. Query data_anak
-    const { data: dbChildren, error: fetchErr } = await supabase
-      .from("data_anak")
-      .select(`
-        id,
-        nama_lengkap,
-        tanggal_lahir,
-        jenis_kelamin,
-        nama_orangtua,
-        nomor_hp,
-        tinggal_bersama,
-        is_sekolah,
-        nama_sekolah,
-        alasan_sekolah,
-        komunitas_id,
-        status_approval,
-        created_at
-      `)
-      .order("created_at", { ascending: false });
+    // 2. Query seluruh data_anak dari database dengan paginasi penuh
+    let dbChildren: any[] = [];
+    let from = 0;
+    const pageSize = 1000;
 
-    if (fetchErr) {
-      return {
-        success: false,
-        message: fetchErr.message,
-        data: [],
-        total: 0,
-      };
+    while (true) {
+      const { data: chunk, error: fetchErr } = await supabase
+        .from("data_anak")
+        .select(`
+          id,
+          nama_lengkap,
+          tanggal_lahir,
+          jenis_kelamin,
+          nama_orangtua,
+          nomor_hp,
+          tinggal_bersama,
+          is_sekolah,
+          nama_sekolah,
+          alasan_sekolah,
+          komunitas_id,
+          status_approval,
+          created_at
+        `)
+        .order("created_at", { ascending: false })
+        .range(from, from + pageSize - 1);
+
+      if (fetchErr) {
+        console.warn("getDaftarNamaAnakRekapAction chunk fetch warning:", fetchErr.message);
+        break;
+      }
+
+      if (!chunk || chunk.length === 0) break;
+      dbChildren = dbChildren.concat(chunk);
+      if (chunk.length < pageSize) break;
+      from += pageSize;
     }
 
     // Filter ketat: Bukan data ATS dan Bukan data dummy
@@ -850,7 +859,11 @@ export async function getDaftarNamaAnakRekapAction(params: {
         nomorHp: child.nomor_hp || "-",
         tinggalBersama: child.tinggal_bersama || "Orang Tua",
         isSekolah,
-        namaSekolah: child.nama_sekolah || (isSekolah ? "Satuan PAUD" : "-"),
+        namaSekolah: child.nama_sekolah
+          ? formatNamaSekolahDisplay(child.nama_sekolah)
+          : isSekolah
+          ? "Satuan PAUD"
+          : "-",
         kategoriSekolah: isSekolah ? classifySchoolType(child.nama_sekolah) : undefined,
         alasan: parsed.alasan || (isSekolah ? "Stimulasi & Pendidikan Usia Dini" : "Belum Cukup Usia / Masih Balita"),
         kkKabupaten: parsed.kkKabupaten || "Kota Tegal",

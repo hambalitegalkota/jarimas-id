@@ -275,7 +275,9 @@ export function PercakapanHubSection({
 
               {candidateCitizens.length === 0 ? (
                 <div className="p-5 text-center text-xs text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800">
-                  Belum ada kontak satu komunitas yang ditemukan. Bergabunglah dengan komunitas Posyandu, Satuan PAUD, atau Forum RT/RW untuk mulai menjalin percakapan.
+                  {isSuperAdmin
+                    ? "Belum ada pengguna terdaftar lain yang ditemukan di platform."
+                    : "Belum ada kontak satu komunitas yang ditemukan. Bergabunglah dengan komunitas Posyandu, Satuan PAUD, atau Forum RT/RW untuk mulai menjalin percakapan."}
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 max-h-72 overflow-y-auto pr-1">

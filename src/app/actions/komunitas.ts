@@ -1071,6 +1071,18 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
           kk_terdaftar: directMember.kk_terdaftar ?? undefined,
         };
       }
+
+      // Root bypass: Super Admin otomatis berstatus approved di seluruh komunitas tanpa harus mendaftar
+      if (isSuperAdmin && !currentUserMembership) {
+        currentUserMembership = {
+          id: `super-admin-${currentUserId}`,
+          status: "approved" as MembershipStatus,
+          peran: "Super Admin",
+          peran_diajukan: null,
+          berdomisili: true,
+          kk_terdaftar: true,
+        };
+      }
     }
 
     const fullData: KomunitasWithMembership = {

@@ -142,12 +142,26 @@ export async function getRegisteredUsers(params?: {
       }
       targetProfiles = profiles || [];
     } else {
-      if (myCommunityIds.size > 0 && sameCommunityUserIds.size > 0) {
-        const userIdsToFetch = Array.from(sameCommunityUserIds);
+      const userIdsToFetch = new Set<string>(sameCommunityUserIds);
+
+      // Selalu sertakan akun Super Admin agar seluruh pengguna dapat menjalin percakapan dengan Super Admin
+      try {
+        const { data: superAdmins } = await supabase
+          .from("profiles")
+          .select("id")
+          .or("is_super_admin.eq.true,email.eq.jarimas.id@gmail.com,email.ilike.%jarimas.id%");
+        if (superAdmins) {
+          superAdmins.forEach((sa: any) => userIdsToFetch.add(sa.id));
+        }
+      } catch {
+        // Abaikan
+      }
+
+      if (userIdsToFetch.size > 0) {
         const { data: profiles, error: profileErr } = await supabase
           .from("profiles")
           .select("id, nama_lengkap, email, nomor_hp, avatar_url, is_super_admin, created_at")
-          .in("id", userIdsToFetch)
+          .in("id", Array.from(userIdsToFetch))
           .order("created_at", { ascending: false });
 
         if (profileErr) {
@@ -155,7 +169,7 @@ export async function getRegisteredUsers(params?: {
         }
         targetProfiles = profiles || [];
       } else {
-        // User belum bergabung di komunitas manapun, targetProfiles kosong
+        // User belum bergabung di komunitas manapun dan tidak ada super admin ditemukan
         targetProfiles = [];
       }
     }
@@ -340,21 +354,27 @@ export async function sendFriendRequest(targetUserId: string): Promise<{
     try {
       const { data: myProfile } = await supabase
         .from("profiles")
-        .select("id, is_super_admin, is_admin_pusat, nama_lengkap")
+        .select("id, is_super_admin, is_admin_pusat, nama_lengkap, email")
         .eq("id", user.id)
         .maybeSingle();
-      isCurrentSuperAdmin = isSuperOrAdminPusat(myProfile);
+      const myCtx = {
+        ...myProfile,
+        id: user.id,
+        email: myProfile?.email || user.email,
+        nama_lengkap: myProfile?.nama_lengkap || user.user_metadata?.nama_lengkap,
+      };
+      isCurrentSuperAdmin = checkIsSuperAdmin(myCtx) || isAdminPusat(myCtx);
     } catch {
       // Abaikan
     }
 
     const { data: targetProfile } = await supabase
       .from("profiles")
-      .select("id, is_super_admin, is_admin_pusat, nama_lengkap")
+      .select("id, is_super_admin, is_admin_pusat, nama_lengkap, email")
       .eq("id", targetUserId)
       .maybeSingle();
 
-    const isTargetSuperAdmin = isSuperOrAdminPusat(targetProfile);
+    const isTargetSuperAdmin = checkIsSuperAdmin(targetProfile) || isAdminPusat(targetProfile);
 
     // Jika bukan super admin dan target bukan super admin, validasi kesamaan komunitas
     if (!isCurrentSuperAdmin && !isTargetSuperAdmin) {
@@ -793,10 +813,16 @@ export async function sendPrivateMessage(params: {
     try {
       const { data: myProfile } = await supabase
         .from("profiles")
-        .select("id, is_super_admin, is_admin_pusat, nama_lengkap")
+        .select("id, is_super_admin, is_admin_pusat, nama_lengkap, email")
         .eq("id", user.id)
         .maybeSingle();
-      isCurrentSuperAdmin = isSuperOrAdminPusat(myProfile);
+      const myCtx = {
+        ...myProfile,
+        id: user.id,
+        email: myProfile?.email || user.email,
+        nama_lengkap: myProfile?.nama_lengkap || user.user_metadata?.nama_lengkap,
+      };
+      isCurrentSuperAdmin = checkIsSuperAdmin(myCtx) || isAdminPusat(myCtx);
     } catch {
       // Abaikan
     }
@@ -804,13 +830,14 @@ export async function sendPrivateMessage(params: {
     let isTargetSuperAdmin = false;
     if (receiverId === JARIMAS_BOT_ID) {
       await ensureJarimasBotProfile(supabase);
+      isTargetSuperAdmin = true;
     } else {
       const { data: targetProfile } = await supabase
         .from("profiles")
-        .select("id, is_super_admin, is_admin_pusat, nama_lengkap")
+        .select("id, is_super_admin, is_admin_pusat, nama_lengkap, email")
         .eq("id", receiverId)
         .maybeSingle();
-      isTargetSuperAdmin = isSuperOrAdminPusat(targetProfile);
+      isTargetSuperAdmin = checkIsSuperAdmin(targetProfile) || isAdminPusat(targetProfile);
     }
 
     // Jika bukan Super Admin, penerima bukan Super Admin, dan bukan Bot Jarimas:
@@ -1448,10 +1475,16 @@ export async function sendGroupMessage(params: {
     try {
       const { data: prof } = await supabase
         .from("profiles")
-        .select("id, is_super_admin, is_admin_pusat, nama_lengkap")
+        .select("id, is_super_admin, is_admin_pusat, nama_lengkap, email")
         .eq("id", user.id)
         .maybeSingle();
-      isSuperAdmin = isSuperOrAdminPusat(prof);
+      const userCtx = {
+        ...prof,
+        id: user.id,
+        email: prof?.email || user.email,
+        nama_lengkap: prof?.nama_lengkap || user.user_metadata?.nama_lengkap,
+      };
+      isSuperAdmin = checkIsSuperAdmin(userCtx) || isAdminPusat(userCtx);
     } catch {
       // Abaikan
     }

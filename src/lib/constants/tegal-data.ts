@@ -37,7 +37,7 @@ export const KOTA_TEGAL_DATA: Record<string, KecamatanData> = {
           "KB Nurullah",
           "Pos PAUD Al Maemunah",
           "Pos PAUD Sekar Kamboja",
-          "RA Permata Hati",
+          "RA Permata Hati Kejambon",
           "RA Perwanida",
           "TK Aisyiyah Bustanul Athfal III",
           "TK Aisyiyah Bustanul Athfal V",
@@ -75,15 +75,15 @@ export const KOTA_TEGAL_DATA: Record<string, KecamatanData> = {
         "paud": [
           "KB Aisyiyah Anak Sholeh",
           "KB Amalia",
-          "KB Bina Iman Anak Sholeh (BIAS) TT",
+          "KB Bina Iman Anak Sholeh (BIAS) Panggung",
           "KB Ihsaniyah 3",
           "KB Prima Universal",
           "KB Sakila Kerti",
-          "KB Sekar Melati",
+          "KB Sekar Melati Panggung",
           "KB Syi'arul Islam",
           "KB Syuhada",
           "KBI Usamah",
-          "PAUD TPQ Nurul Huda",
+          "PAUD TPQ Nurul Huda Panggung",
           "PKBM Citra Mandiri",
           "PKBM Sakila Kerti",
           "Pos PAUD Anyelir",
@@ -130,14 +130,14 @@ export const KOTA_TEGAL_DATA: Record<string, KecamatanData> = {
           "KB Darul Kifaah",
           "KB Istiqomah",
           "KB Nurunnisa",
-          "KB Permata Hati",
+          "KB Permata Hati Slerok",
           "KB Riyaadul Jannah",
           "KB Tarbiyatul Khasanah",
           "KB Transisi Anilo",
           "PAUD TPQ Ath Thohiriyah",
           "PKBM Sarana Maju",
           "PKBM Transisi Anilo",
-          "Pos PAUD Kartini RW. VI",
+          "Pos PAUD Kartini Slerok",
           "Pos PAUD Sumbodro",
           "Pos PAUD Werkudoro",
           "RA Al Hasaniyah",
@@ -218,13 +218,13 @@ export const KOTA_TEGAL_DATA: Record<string, KecamatanData> = {
           "KB Pelita Harapan Bangsa",
           "KB Pius",
           "Pos PAUD Dewi Sartika Kraton",
-          "Pos PAUD Kartini",
+          "Pos PAUD Kartini Kraton",
           "Pos PAUD Kenanga Kraton",
           "TK Aisyiyah Bustanul Athfal VIII",
           "TK Al Khairiyyah",
           "TK Assyifa",
           "TK Elkana",
-          "TK Little Star",
+          "TK Little Star Kraton",
           "TK Pertiwi 25.5 Kraton",
           "TK Pius",
           "UPTD SPNF Sanggar Kegiatan Belajar Kota Tegal"
@@ -256,13 +256,13 @@ export const KOTA_TEGAL_DATA: Record<string, KecamatanData> = {
         "paud": [
           "KB Insan Mandiri",
           "KB Kalimasada",
-          "KB Little Star",
+          "KB Little Star Tegalsari",
           "KB Tunas Hidup Harapan Kita",
           "PKBM Maju Bersama",
           "Pos PAUD Bougenville Tegalsari",
           "Pos PAUD Mawar Merah",
           "Pos PAUD Melati Sari",
-          "Pos PAUD Sekar Melati",
+          "Pos PAUD Sekar Melati Tegalsari",
           "TK Persatuan Ummat Islam (PUI) Cabang Tegal",
           "TK Pertiwi 25.4 Tegalsari",
           "TK Shining Little Star",
@@ -278,9 +278,9 @@ export const KOTA_TEGAL_DATA: Record<string, KecamatanData> = {
           "Posyandu Seruni"
         ],
         "paud": [
-          "KB Bina Iman Anak Sholeh (BIAS) TB",
+          "KB Bina Iman Anak Sholeh (BIAS) Kemandungan",
           "KB Global Inbyra School",
-          "KB Mutiara Shahabat",
+          "KB Mutiara Shahabat Kemandungan",
           "Pos PAUD Kenanga Kemandungan",
           "TK Global Inbyra School",
           "TK Pertiwi 25.2 Kemandungan"
@@ -305,9 +305,9 @@ export const KOTA_TEGAL_DATA: Record<string, KecamatanData> = {
           "KB Kiddy Care",
           "PKBM Bina Harapan",
           "PKBM Budi Luhur",
-          "PKBM Mutiara Shahabat",
+          "PKBM Mutiara Shahabat Pekauman",
           "Pos PAUD Delima",
-          "RA At Taqwa",
+          "RA At Taqwa Pekauman",
           "TK Al-Irsyad Al-Islamiyah",
           "TK Bagya Wacana",
           "TK Hang Tuah 16",
@@ -331,7 +331,7 @@ export const KOTA_TEGAL_DATA: Record<string, KecamatanData> = {
         "paud": [
           "PAUD TPQ Plus Insan Kamil",
           "Pos PAUD Mawar",
-          "TK Nurul Huda"
+          "TK Nurul Huda Muarareja"
         ]
       },
       "Debong Lor": {
@@ -561,7 +561,7 @@ export const KOTA_TEGAL_DATA: Record<string, KecamatanData> = {
           "Posyandu Dahlia RW 4"
         ],
         "paud": [
-          "PAUD TPQ At Taqwa",
+          "PAUD TPQ At Taqwa Cabawan",
           "Pos PAUD Tunas Ceria"
         ]
       },

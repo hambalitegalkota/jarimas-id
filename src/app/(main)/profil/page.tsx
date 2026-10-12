@@ -21,6 +21,7 @@ import { getPendingApprovals } from "@/app/actions/admin";
 import { getRegisteredUsers } from "@/app/actions/pertemanan";
 import { ApprovalList } from "@/components/admin/approval-list";
 import { CleanupTestDataTool } from "@/components/admin/cleanup-test-data-tool";
+import { DistribusiDataAnakTool } from "@/components/admin/distribusi-data-anak-tool";
 import { KomunitasManagementTools } from "@/components/admin/komunitas-management-tools";
 import { KecamatanMonitoringAccordion } from "@/components/admin/kecamatan-monitoring-accordion";
 import { SuperAdminWargaMonitoringTool } from "@/components/admin/super-admin-warga-monitoring-tool";
@@ -447,6 +448,9 @@ export default async function ProfilePage() {
 
           {/* Pembersih Data Uji Coba (Testing Clean-up) */}
           <CleanupTestDataTool />
+
+          {/* Distribusi & Sinkronisasi Data Anak ke PAUD */}
+          <DistribusiDataAnakTool />
 
           {/* Monitoring Seluruh Permohonan Wilayah Berjenjang (Accordion per Kecamatan) */}
           <KecamatanMonitoringAccordion initialItems={allHierarchyPendingApprovals} />

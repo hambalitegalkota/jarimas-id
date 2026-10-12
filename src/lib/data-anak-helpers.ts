@@ -129,7 +129,7 @@ export function findPaudLocation(paudNameOrId?: string | null): {
   if (!paudNameOrId) return null;
   const query = paudNameOrId.trim().toLowerCase();
 
-  // Disambiguasi khusus KB BIAS (Tegal Barat / Kemandungan vs Tegal Timur / Panggung)
+  // Disambiguasi khusus KB BIAS (Kemandungan vs Panggung)
   if (query.includes("bias") || (query.includes("bina") && query.includes("sholeh"))) {
     const isTb =
       query.endsWith(" tb") ||
@@ -166,6 +166,21 @@ export function findPaudLocation(paudNameOrId?: string | null): {
           nama: ttMatch.nama,
         };
       }
+    }
+  }
+
+  // Disambiguasi Pos PAUD Kartini (Kraton vs Slerok)
+  if (query.includes("kartini")) {
+    if (query.includes("kraton") || query.includes("barat")) {
+      const match = RAW_PAUD_PKBM_TEGAL.find(
+        (p) => p.id === "21283b97-a8a0-4031-8641-2349ad207e87"
+      );
+      if (match) return { kecamatan: match.kecamatan, kelurahan: match.kelurahan, nama: match.nama };
+    } else if (query.includes("slerok") || query.includes("rw. vi") || query.includes("rw 06") || query.includes("timur")) {
+      const match = RAW_PAUD_PKBM_TEGAL.find(
+        (p) => p.id === "3ff83fb1-b19c-45c8-871a-a6bd264d56c0"
+      );
+      if (match) return { kecamatan: match.kecamatan, kelurahan: match.kelurahan, nama: match.nama };
     }
   }
 
@@ -443,6 +458,120 @@ export function parseDataAnakDetails(
 }
 
 /**
+ * Ekstraksi token nomor / angka Romawi pada nama sekolah (misal: "X", "III", "2")
+ */
+export function extractSchoolNumberToken(str?: string | null): string | null {
+  if (!str) return null;
+  const norm = str
+    .toLowerCase()
+    .replace(/[`'’]/g, "")
+    .replace(/[.,\/#!$%\^&\*;:{}=\-_~()]/g, " ")
+    .replace(/\b111\b/g, "iii")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  const match = norm.match(
+    /\b(xiii|xii|xi|x|ix|viii|vii|vi|v|iv|iii|ii|i|13|12|11|10|9|8|7|6|5|4|3|2|1)\b/
+  );
+  if (!match) return null;
+  const val = match[1];
+  const romanMap: Record<string, string> = {
+    "1": "i",
+    "2": "ii",
+    "3": "iii",
+    "4": "iv",
+    "5": "v",
+    "6": "vi",
+    "7": "vii",
+    "8": "viii",
+    "9": "ix",
+    "10": "x",
+    "11": "xi",
+    "12": "xii",
+    "13": "xiii",
+    i: "i",
+    ii: "ii",
+    iii: "iii",
+    iv: "iv",
+    v: "v",
+    vi: "vi",
+    vii: "vii",
+    viii: "viii",
+    ix: "ix",
+    x: "x",
+    xi: "xi",
+    xii: "xii",
+    xiii: "xiii",
+  };
+  return romanMap[val] || val;
+}
+
+/**
+ * Membersihkan nama sekolah ke basis string alfanumerik tanpa nomor cabang
+ */
+export function cleanBaseSchoolName(str?: string | null): string {
+  if (!str) return "";
+  let s = str
+    .toLowerCase()
+    .replace(/[`'’]/g, "")
+    .replace(/[.,\/#!$%\^&\*;:{}=\-_~()]/g, " ")
+    .replace(/\b111\b/g, "iii")
+    .replace(/\biman\b/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  s = s
+    .replace(
+      /\b(xiii|xii|xi|x|ix|viii|vii|vi|v|iv|iii|ii|i|13|12|11|10|9|8|7|6|5|4|3|2|1)\b/g,
+      ""
+    )
+    .replace(/\s+/g, " ")
+    .trim();
+
+  return s.replace(/[^a-z0-9]/g, "");
+}
+
+/**
+ * Mencocokkan dua nama sekolah/PAUD secara cerdas dan toleran terhadap variasi penulisan:
+ * tanda baca (titik, petik), romawi vs angka arab (111 -> III, 1 -> I), singkatan, dll.
+ */
+export function isSchoolNameMatching(
+  school1?: string | null,
+  school2?: string | null
+): boolean {
+  if (!school1 || !school2) return false;
+  const s1 = school1.trim();
+  const s2 = school2.trim();
+  if (s1.toLowerCase() === s2.toLowerCase()) return true;
+
+  const num1 = extractSchoolNumberToken(s1);
+  const num2 = extractSchoolNumberToken(s2);
+
+  // Jika kedua nama memiliki nomor cabang, nomornya wajib sama persis
+  if (num1 && num2 && num1 !== num2) {
+    return false;
+  }
+  // Jika salah satu memiliki nomor cabang dan yang lain tidak, jangan cocokkan
+  if ((num1 && !num2) || (!num1 && num2)) {
+    return false;
+  }
+
+  const base1 = cleanBaseSchoolName(s1);
+  const base2 = cleanBaseSchoolName(s2);
+
+  if (base1 === base2) return true;
+  if (
+    base1.length > 5 &&
+    base2.length > 5 &&
+    (base1.includes(base2) || base2.includes(base1))
+  ) {
+    return true;
+  }
+
+  return false;
+}
+
+/**
  * Filter logika hierarkis: Apakah data anak sesuai dan harus muncul di komunitas target?
  * Mencakup Komunitas PAUD, Posyandu, RT, RW, Kelurahan, Kecamatan, dan Kabupaten/Kota.
  */
@@ -462,9 +591,7 @@ export function isDataAnakMatchingKomunitas(
     if (
       item.nama_sekolah &&
       targetKomunitas?.nama &&
-      (item.nama_sekolah.toLowerCase() === targetKomunitas.nama.toLowerCase() ||
-        item.nama_sekolah.toLowerCase().includes(targetKomunitas.nama.toLowerCase()) ||
-        targetKomunitas.nama.toLowerCase().includes(item.nama_sekolah.toLowerCase()))
+      isSchoolNameMatching(item.nama_sekolah, targetKomunitas.nama)
     ) {
       return true;
     }
@@ -686,6 +813,87 @@ export function parseAtsDetails(
     sekolahSebelumnya,
     kelasTerakhir,
   };
+}
+
+/**
+ * Memformat nama satuan PAUD agar seragam dan menyertakan nama kelurahan
+ * jika merupakan salah satu lembaga yang memiliki kesamaan nama di Kota Tegal.
+ */
+export function formatNamaSekolahDisplay(namaSekolah?: string | null): string {
+  if (!namaSekolah) return "-";
+  const s = namaSekolah.trim();
+  const lower = s.toLowerCase();
+
+  // 1. KB BIAS
+  if (lower.includes("bias") && (lower.includes("tb") || lower.includes("kemandungan") || lower.includes("barat"))) {
+    return "KB Bina Iman Anak Sholeh (BIAS) Kemandungan";
+  }
+  if (lower.includes("bias") && (lower.includes("tt") || lower.includes("panggung") || lower.includes("timur"))) {
+    return "KB Bina Iman Anak Sholeh (BIAS) Panggung";
+  }
+
+  // 2. Pos PAUD Kartini
+  if (lower === "pos paud kartini kraton" || (lower.includes("kartini") && (lower.includes("kraton") || lower.includes("barat")))) {
+    return "Pos PAUD Kartini Kraton";
+  }
+  if (
+    lower === "pos paud kartini slerok" ||
+    lower === "pos paud kartini rw. vi" ||
+    lower === "pos paud kartini rw 06" ||
+    (lower.includes("kartini") && (lower.includes("slerok") || lower.includes("timur")))
+  ) {
+    return "Pos PAUD Kartini Slerok";
+  }
+
+  // 3. Permata Hati
+  if (lower === "ra permata hati" || lower === "ra permata hati kejambon") {
+    return "RA Permata Hati Kejambon";
+  }
+  if (lower === "kb permata hati" || lower === "kb permata hati slerok") {
+    return "KB Permata Hati Slerok";
+  }
+
+  // 4. Sekar Melati
+  if (lower === "kb sekar melati" || lower === "kb. sekar melati" || lower === "kb sekar melati panggung") {
+    return "KB Sekar Melati Panggung";
+  }
+  if (lower === "pos paud sekar melati" || lower === "pos paud sekar melati tegalsari") {
+    return "Pos PAUD Sekar Melati Tegalsari";
+  }
+
+  // 5. Little Star
+  if (lower === "tk little star" || lower === "tk little star kraton") {
+    return "TK Little Star Kraton";
+  }
+  if (lower === "kb little star" || lower === "kb little star tegalsari") {
+    return "KB Little Star Tegalsari";
+  }
+
+  // 6. Nurul Huda
+  if (lower === "paud tpq nurul huda" || lower === "paud tpq nurul huda panggung") {
+    return "PAUD TPQ Nurul Huda Panggung";
+  }
+  if (lower === "tk nurul huda" || lower === "tk nurul huda muarareja") {
+    return "TK Nurul Huda Muarareja";
+  }
+
+  // 7. Mutiara Shahabat
+  if (lower === "kb mutiara shahabat" || lower === "kb mutiara shahabat kemandungan") {
+    return "KB Mutiara Shahabat Kemandungan";
+  }
+  if (lower === "pkbm mutiara shahabat" || lower === "pkbm mutiara shahabat pekauman") {
+    return "PKBM Mutiara Shahabat Pekauman";
+  }
+
+  // 8. At Taqwa
+  if (lower === "ra at taqwa" || lower === "ra at taqwa pekauman") {
+    return "RA At Taqwa Pekauman";
+  }
+  if (lower === "paud tpq at taqwa" || lower === "paud tpq at taqwa cabawan") {
+    return "PAUD TPQ At Taqwa Cabawan";
+  }
+
+  return s;
 }
 
 

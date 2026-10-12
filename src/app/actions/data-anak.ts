@@ -12,6 +12,7 @@ import {
   isDataAnakMatchingKomunitas,
   isDataAtsRecord,
   isDummyDataAnak,
+  isSchoolNameMatching,
 } from "@/lib/data-anak-helpers";
 import type {
   DataAnakItem,
@@ -743,30 +744,115 @@ export async function getDataAnakByKomunitas(komunitasId: string): Promise<{
       .select("id, nama, jenis, kecamatan, kelurahan, rw, rt");
     const dbKomMap = new Map((allDbKom || []).map((k: any) => [k.id, k]));
 
-    // 3. Query semua data_anak dari database
-    const { data: dbChildren, error: childError } = await supabase
-      .from("data_anak")
-      .select(`
-        id,
-        nama_lengkap,
-        tanggal_lahir,
-        jenis_kelamin,
-        nama_orangtua,
-        nomor_hp,
-        tinggal_bersama,
-        jarak_rumah_km,
-        is_sekolah,
-        nama_sekolah,
-        alasan_sekolah,
-        komunitas_id,
-        status_approval,
-        validated_by,
-        validated_at,
-        created_by,
-        created_at,
-        ddks_records (*)
-      `)
-      .order("created_at", { ascending: false });
+    // 3. Query data_anak dari database (Targeted untuk Satuan PAUD & Paginasi penuh untuk wilayah)
+    const validKomId = toValidUUID(komunitasId);
+    let dbChildren: any[] = [];
+    let childError: any = null;
+
+    if (targetJenis === "satuan_paud") {
+      const rawPaudName = (targetKomunitas?.nama || "").trim();
+      const cleanKeyword = rawPaudName
+        .toLowerCase()
+        .replace(/[`'’]/g, "%")
+        .replace(/[.,\/#!$%\^&\*;:{}=\-_~()]/g, " ")
+        .replace(/\b111\b/g, " ")
+        .split(" ")
+        .filter(
+          (w: string) =>
+            w.length >= 3 &&
+            ![
+              "taman",
+              "kanak",
+              "kelompok",
+              "bermain",
+              "pos",
+              "paud",
+              "satuan",
+              "tpq",
+              "iii",
+              "ii",
+              "iv",
+              "xii",
+              "xiii",
+              "viii",
+              "vii",
+            ].includes(w)
+        )[0] || rawPaudName;
+
+      const { data: paudDirect, error: paudDirectError } = await supabase
+        .from("data_anak")
+        .select(`
+          id,
+          nama_lengkap,
+          tanggal_lahir,
+          jenis_kelamin,
+          nama_orangtua,
+          nomor_hp,
+          tinggal_bersama,
+          jarak_rumah_km,
+          is_sekolah,
+          nama_sekolah,
+          alasan_sekolah,
+          komunitas_id,
+          status_approval,
+          validated_by,
+          validated_at,
+          created_by,
+          created_at,
+          ddks_records (*)
+        `)
+        .or(`komunitas_id.eq.${validKomId},nama_sekolah.ilike.%${cleanKeyword}%`)
+        .order("created_at", { ascending: false });
+
+      if (paudDirectError) {
+        childError = paudDirectError;
+      } else if (paudDirect && paudDirect.length > 0) {
+        dbChildren = paudDirect;
+      }
+    }
+
+    if (dbChildren.length === 0) {
+      let from = 0;
+      const pageSize = 1000;
+      let hasMore = true;
+
+      while (hasMore) {
+        const { data: chunk, error: chunkErr } = await supabase
+          .from("data_anak")
+          .select(`
+            id,
+            nama_lengkap,
+            tanggal_lahir,
+            jenis_kelamin,
+            nama_orangtua,
+            nomor_hp,
+            tinggal_bersama,
+            jarak_rumah_km,
+            is_sekolah,
+            nama_sekolah,
+            alasan_sekolah,
+            komunitas_id,
+            status_approval,
+            validated_by,
+            validated_at,
+            created_by,
+            created_at,
+            ddks_records (*)
+          `)
+          .order("created_at", { ascending: false })
+          .range(from, from + pageSize - 1);
+
+        if (chunkErr) {
+          childError = chunkErr;
+          break;
+        }
+
+        if (!chunk || chunk.length === 0) break;
+        dbChildren = dbChildren.concat(chunk);
+        if (chunk.length < pageSize) break;
+        from += pageSize;
+      }
+    }
 
     if (childError) {
       console.warn("Query data_anak error:", childError.message);
@@ -808,8 +894,6 @@ export async function getDataAnakByKomunitas(komunitasId: string): Promise<{
         userRole,
       };
     }
-
-    const validKomId = toValidUUID(komunitasId);
 
     // 4. Format dan filter data_anak sesuai hierarki & interoperabilitas wilayah
     const items: DataAnakItem[] = nonAtsChildren
@@ -1456,3 +1540,113 @@ export async function deleteDataAnak(
     };
   }
 }
+
+/**
+ * Server Action: Mendistribusikan / Menautkan Data Anak yang Bersekolah ke Komunitas PAUD Masing-Masing
+ * Memperbarui kolom komunitas_id pada tabel data_anak agar langsung menunjuk ke komunitas PAUD yang sesuai.
+ */
+export async function distribusikanDataAnakKePaudAction(): Promise<{
+  success: boolean;
+  message: string;
+  totalDistributed: number;
+}> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return {
+        success: false,
+        message: "Silakan masuk terlebih dahulu untuk menjalankan aksi ini.",
+        totalDistributed: 0,
+      };
+    }
+
+    // Ambil daftar seluruh Satuan PAUD
+    const { data: dbPauds, error: paudErr } = await supabase
+      .from("komunitas")
+      .select("id, nama, jenis")
+      .eq("jenis", "satuan_paud");
+
+    if (paudErr || !dbPauds || dbPauds.length === 0) {
+      return {
+        success: false,
+        message: "Gagal memuat daftar Komunitas Satuan PAUD: " + (paudErr?.message || "Data kosong"),
+        totalDistributed: 0,
+      };
+    }
+
+    // Ambil seluruh data_anak yang bersekolah dengan paginasi penuh
+    let allChildren: any[] = [];
+    let from = 0;
+    const pageSize = 1000;
+
+    while (true) {
+      const { data: chunk, error: fetchErr } = await supabase
+        .from("data_anak")
+        .select("id, nama_sekolah, komunitas_id, is_sekolah")
+        .eq("is_sekolah", true)
+        .range(from, from + pageSize - 1);
+
+      if (fetchErr) break;
+      if (!chunk || chunk.length === 0) break;
+      allChildren = allChildren.concat(chunk);
+      if (chunk.length < pageSize) break;
+      from += pageSize;
+    }
+
+    let updatedCount = 0;
+    const paudUpdates = new Map<string, string[]>();
+
+    for (const child of allChildren) {
+      if (!child.nama_sekolah || isDataAtsRecord(child) || isDummyDataAnak(child)) continue;
+      const matchedPaud = dbPauds.find((p: any) =>
+        isSchoolNameMatching(child.nama_sekolah, p.nama)
+      );
+
+      if (matchedPaud && child.komunitas_id !== matchedPaud.id) {
+        const list = paudUpdates.get(matchedPaud.id) || [];
+        list.push(child.id);
+        paudUpdates.set(matchedPaud.id, list);
+      }
+    }
+
+    for (const [paudId, childIds] of paudUpdates.entries()) {
+      for (let i = 0; i < childIds.length; i += 200) {
+        const batchIds = childIds.slice(i, i + 200);
+        const { error: updErr } = await supabase
+          .from("data_anak")
+          .update({
+            komunitas_id: paudId,
+            updated_at: new Date().toISOString(),
+          })
+          .in("id", batchIds);
+
+        if (!updErr) {
+          updatedCount += batchIds.length;
+        }
+      }
+    }
+
+    revalidatePath("/komunitas");
+    revalidatePath("/data-anak");
+    revalidatePath("/profil");
+    revalidatePath("/");
+
+    return {
+      success: true,
+      message: `Berhasil mendistribusikan ${updatedCount} data anak ke Komunitas Satuan PAUD masing-masing!`,
+      totalDistributed: updatedCount,
+    };
+  } catch (err: any) {
+    return {
+      success: false,
+      message: err.message || "Gagal mendistribusikan data anak ke PAUD.",
+      totalDistributed: 0,
+    };
+  }
+}
+

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { createClient } from "@supabase/supabase-js";
 import { createAdminClient } from "@/utils/supabase/server";
 import {
@@ -7,6 +8,7 @@ import {
   parseDataAnakDetails,
   isDataAtsRecord,
   isDummyDataAnak,
+  isSchoolNameMatching,
 } from "@/lib/data-anak-helpers";
 import { toValidUUID } from "@/lib/utils";
 
@@ -178,11 +180,18 @@ export async function POST(req: NextRequest) {
       }, { status: 400 });
     }
 
-    // Ambil daftar komunitas aktif untuk mencocokkan PAUD / Kelurahan
-    const { data: dbKomunitas } = await supabase
+    // Ambil daftar seluruh Komunitas Satuan PAUD (219 lembaga) dan Kelurahan untuk pemetaan wilayah
+    const { data: dbPauds } = await supabase
       .from("komunitas")
       .select("id, nama, jenis, kecamatan, kelurahan")
-      .limit(300);
+      .eq("jenis", "satuan_paud");
+
+    const { data: dbKelKomunitas } = await supabase
+      .from("komunitas")
+      .select("id, nama, jenis, kecamatan, kelurahan")
+      .eq("jenis", "warga_kita")
+      .is("rw", null)
+      .is("rt", null);
 
     const results: Array<{
       row_index: number;
@@ -261,6 +270,51 @@ export async function POST(req: NextRequest) {
       const birthDate = parseBirthDateOrAge(item);
       const namaOrangtua = String(item.nama_orangtua || "").trim() || "-";
 
+      // Deteksi lokasi dan wilayah Satuan PAUD
+      const paudLoc = isSekolah ? findPaudLocation(namaPaud) : null;
+      const targetKecamatan = paudLoc?.kecamatan || item.kecamatan || "Kota Tegal";
+      const targetKelurahan = paudLoc?.kelurahan || item.kelurahan || "Semua Kelurahan";
+
+      // Cari Komunitas yang paling cocok: Prioritas utama Komunitas PAUD jika anak bersekolah
+      let targetKomunitasId = "79c0e0c1-d8a9-41b8-8e0a-f9a5e581e703"; // Default Komunitas
+
+      if (isSekolah && dbPauds && dbPauds.length > 0) {
+        const matchPaudKom = (dbPauds as any[]).find((k: any) =>
+          isSchoolNameMatching(namaPaud, k.nama)
+        );
+        if (matchPaudKom) {
+          targetKomunitasId = matchPaudKom.id;
+        }
+      }
+
+      if (
+        targetKomunitasId === "79c0e0c1-d8a9-41b8-8e0a-f9a5e581e703" &&
+        targetKelurahan !== "Semua Kelurahan" &&
+        dbKelKomunitas &&
+        dbKelKomunitas.length > 0
+      ) {
+        const matchKelKom = (dbKelKomunitas as any[]).find(
+          (k: any) =>
+            k.kelurahan?.toLowerCase() === targetKelurahan.toLowerCase() &&
+            k.jenis === "warga_kita"
+        );
+        if (matchKelKom) targetKomunitasId = matchKelKom.id;
+      }
+
+      const alasanFormatted = serializeDataAnakAlasan({
+        alasanSekolah: isSekolah ? "Sudah Usia PAUD" : "Belum Wajib (Masih Balita)",
+        kkKecamatan: targetKecamatan,
+        kkKelurahan: targetKelurahan,
+        kkRw: item.rw || "01",
+        kkRt: item.rt || "01",
+        kkJalan: item.alamat_jalan || "",
+        domisiliKecamatan: targetKecamatan,
+        domisiliKelurahan: targetKelurahan,
+        domisiliRw: item.rw || "01",
+        domisiliRt: item.rt || "01",
+        domisiliJalan: item.alamat_jalan || "",
+      });
+
       // Cek apakah ada kecocokan ID atau Nama Lengkap & Nama Orang Tua
       const matchById = validItemId ? existingById.find((e) => e.id === validItemId) : null;
       const matchInDb =
@@ -277,16 +331,26 @@ export async function POST(req: NextRequest) {
         );
 
       if (matchInDb) {
-        // Perbarui tanggal lahir & informasi sekolah anak yang sudah ada
+        // Perbarui data anak yang sudah ada (termasuk alokasi komunitas PAUD & alamat jika ada pembaruan)
         const updatePayload: any = {
           tanggal_lahir: birthDate,
           jenis_kelamin: jk,
           is_sekolah: isSekolah,
           nama_sekolah: isSekolah ? namaPaud : "Belum Sekolah",
+          komunitas_id: toValidUUID(targetKomunitasId),
           updated_at: new Date().toISOString(),
         };
         if (namaOrangtua && namaOrangtua !== "-") updatePayload.nama_orangtua = namaOrangtua;
         if (item.nomor_hp) updatePayload.nomor_hp = String(item.nomor_hp).trim();
+        if (item.tinggal_bersama) updatePayload.tinggal_bersama = String(item.tinggal_bersama).trim();
+        if (item.jarak_rumah_km !== undefined && item.jarak_rumah_km !== null) {
+          updatePayload.jarak_rumah_km = Number(item.jarak_rumah_km) || 0.5;
+        }
+
+        // Jika terdapat rincian alamat baru, perbarui alasan_sekolah
+        if (item.kecamatan || item.kelurahan || item.alamat_jalan || item.rw || item.rt) {
+          updatePayload.alasan_sekolah = alasanFormatted;
+        }
 
         const { error: updErr } = await supabase
           .from("data_anak")
@@ -300,51 +364,10 @@ export async function POST(req: NextRequest) {
           nama_lengkap: namaLengkap,
           message: updErr
             ? `Gagal memperbarui data: ${updErr.message}`
-            : "Data anak & usia/tanggal lahir berhasil diperbarui dari sinkronisasi.",
+            : "Data anak & pemetaan PAUD berhasil diperbarui dari sinkronisasi Google Sheet.",
         });
         continue;
       }
-
-      // Deteksi lokasi dan wilayah Satuan PAUD
-      const paudLoc = isSekolah ? findPaudLocation(namaPaud) : null;
-      const targetKecamatan = paudLoc?.kecamatan || item.kecamatan || "Kota Tegal";
-      const targetKelurahan = paudLoc?.kelurahan || item.kelurahan || "Semua Kelurahan";
-
-      // Cari Komunitas yang paling cocok
-      let targetKomunitasId = "79c0e0c1-d8a9-41b8-8e0a-f9a5e581e703"; // Default Komunitas
-      if (dbKomunitas && dbKomunitas.length > 0) {
-        if (isSekolah) {
-          const matchPaudKom = (dbKomunitas as any[]).find(
-            (k: any) =>
-              k.jenis === "satuan_paud" &&
-              (k.nama.toLowerCase().includes(namaPaud.toLowerCase()) ||
-                namaPaud.toLowerCase().includes(k.nama.toLowerCase()))
-          );
-          if (matchPaudKom) targetKomunitasId = matchPaudKom.id;
-        }
-
-        if (targetKomunitasId === "79c0e0c1-d8a9-41b8-8e0a-f9a5e581e703" && targetKelurahan !== "Semua Kelurahan") {
-          const matchKelKom = (dbKomunitas as any[]).find(
-            (k: any) =>
-              k.kelurahan?.toLowerCase() === targetKelurahan.toLowerCase() &&
-              k.jenis === "warga_kita"
-          );
-          if (matchKelKom) targetKomunitasId = matchKelKom.id;
-        }
-      }
-      const alasanFormatted = serializeDataAnakAlasan({
-        alasanSekolah: isSekolah ? "Sudah Usia PAUD" : "Belum Wajib (Masih Balita)",
-        kkKecamatan: targetKecamatan,
-        kkKelurahan: targetKelurahan,
-        kkRw: item.rw || "01",
-        kkRt: item.rt || "01",
-        kkJalan: item.alamat_jalan || "",
-        domisiliKecamatan: targetKecamatan,
-        domisiliKelurahan: targetKelurahan,
-        domisiliRw: item.rw || "01",
-        domisiliRt: item.rt || "01",
-        domisiliJalan: item.alamat_jalan || "",
-      });
 
       const childPayload = {
         nama_lengkap: namaLengkap,
@@ -421,13 +444,24 @@ export async function POST(req: NextRequest) {
     }
 
     const createdCount = results.filter((r) => r.status === "created").length;
+    const updatedCount = results.filter((r) => r.status === "updated").length;
     const existingCount = results.filter((r) => r.status === "existing").length;
     const errorCount = results.filter((r) => r.status === "error").length;
 
+    try {
+      revalidatePath("/komunitas");
+      revalidatePath("/data-anak");
+      revalidatePath("/profil");
+      revalidatePath("/");
+    } catch (revalErr) {
+      console.warn("Gagal revalidasi path pasca sinkronisasi:", revalErr);
+    }
+
     return NextResponse.json({
       success: true,
-      message: `Proses sinkronisasi selesai: ${createdCount} data baru ditambahkan, ${existingCount} data sudah ada, ${errorCount} gagal.`,
+      message: `Proses sinkronisasi selesai: ${createdCount} data baru ditambahkan, ${updatedCount} data berhasil diperbarui, ${existingCount} data tidak berubah, ${errorCount} gagal.`,
       createdCount,
+      updatedCount,
       existingCount,
       errorCount,
       results,

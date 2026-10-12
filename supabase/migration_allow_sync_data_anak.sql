@@ -12,3 +12,14 @@ FOR INSERT WITH CHECK (
   OR auth.role() = 'anon'
   OR auth.role() = 'service_role'
 );
+
+-- Izin bagi sinkronisasi sistem / anon / service_role untuk memperbarui (UPDATE) data anak yang sudah ada
+DROP POLICY IF EXISTS "Sinkronisasi Google Sheet dapat update data anak" ON public.data_anak;
+
+CREATE POLICY "Sinkronisasi Google Sheet dapat update data anak" ON public.data_anak 
+FOR UPDATE USING (
+  created_by = '1d827e22-9253-486a-a948-3fac6d01ae38'::uuid
+  OR auth.role() = 'anon'
+  OR auth.role() = 'service_role'
+);
+

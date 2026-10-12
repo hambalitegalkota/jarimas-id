@@ -24,6 +24,7 @@ import {
   MapPin,
 } from "lucide-react";
 import { validateDataAnak } from "@/app/actions/data-anak";
+import { formatNamaSekolahDisplay } from "@/lib/data-anak-helpers";
 import { DdksDrawer } from "./ddks-drawer";
 import { ModalEditDataAnak } from "./modal-edit-data-anak";
 import { ModalKeluarDataAnak } from "./modal-keluar-data-anak";
@@ -290,7 +291,7 @@ export function CardDataAnak({
                 </span>
                 <span className="font-semibold text-slate-900 truncate block leading-snug">
                   {currentChild.is_sekolah
-                    ? currentChild.nama_sekolah || "Bersekolah PAUD"
+                    ? formatNamaSekolahDisplay(currentChild.nama_sekolah) || "Bersekolah PAUD"
                     : "Belum Sekolah"}
                 </span>
               </div>
@@ -438,7 +439,7 @@ export function CardDataAnak({
           isOpen={isEditModalOpen}
           anak={currentChild}
           komunitasId={komunitas?.id || currentChild.komunitas_id}
-          komunitasNama={komunitas?.nama || currentChild.nama_sekolah || "Satuan PAUD"}
+          komunitasNama={komunitas?.nama || formatNamaSekolahDisplay(currentChild.nama_sekolah) || "Satuan PAUD"}
           jenisKomunitas={komunitas?.jenis || "satuan_paud"}
           onClose={() => setIsEditModalOpen(false)}
           onSuccess={handleChildUpdated}
@@ -451,7 +452,7 @@ export function CardDataAnak({
           isOpen={isKeluarModalOpen}
           anak={currentChild}
           komunitasId={komunitas?.id || currentChild.komunitas_id}
-          komunitasNama={komunitas?.nama || currentChild.nama_sekolah || "Satuan PAUD"}
+          komunitasNama={komunitas?.nama || formatNamaSekolahDisplay(currentChild.nama_sekolah) || "Satuan PAUD"}
           onClose={() => setIsKeluarModalOpen(false)}
           onSuccess={handleChildDeleted}
         />
