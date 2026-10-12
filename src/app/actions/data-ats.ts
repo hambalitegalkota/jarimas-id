@@ -1249,7 +1249,9 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
           created_at,
           ddks_records (*)
         `)
-        .order("created_at", { ascending: false });
+        .or("is_sekolah.eq.false,is_sekolah.is.null,nama_sekolah.ilike.%ATS%,alasan_sekolah.ilike.%KEINGINAN%")
+        .order("created_at", { ascending: false })
+        .limit(5000);
 
       if (childError) {
         console.warn("Query data_ats with relation error:", childError.message);
@@ -1282,7 +1284,9 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
           created_by,
           created_at
         `)
-        .order("created_at", { ascending: false });
+        .or("is_sekolah.eq.false,is_sekolah.is.null,nama_sekolah.ilike.%ATS%,alasan_sekolah.ilike.%KEINGINAN%")
+        .order("created_at", { ascending: false })
+        .limit(5000);
 
       dbChildren = fallbackData || [];
     }

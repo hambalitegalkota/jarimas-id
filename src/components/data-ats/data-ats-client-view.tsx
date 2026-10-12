@@ -382,6 +382,8 @@ export function DataAtsClientView({
                   `Menampilkan data Anak ATS di seluruh RW & RT dalam ${scopeInfo.scopeTitle}, ${scopeInfo.scopeSubtitle}.`}
                 {scopeInfo.tierLevel === "Kecamatan" &&
                   `Menampilkan data seluruh Anak ATS di wilayah ${scopeInfo.scopeTitle}, ${scopeInfo.scopeSubtitle}.`}
+                {scopeInfo.tierLevel === "Kota" &&
+                  `Menampilkan data seluruh Anak ATS di wilayah Kota Tegal (mencakup seluruh Kecamatan, Kelurahan, RW & RT).`}
               </p>
             </div>
           </div>

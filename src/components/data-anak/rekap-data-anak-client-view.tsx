@@ -550,7 +550,7 @@ export function RekapDataAnakClientView({
                       <div className="h-3 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800 p-0.5">
                         <div
                           className={cn("h-full rounded-full transition-all duration-700", conf.bg)}
-                          style={{ width: `${Math.max(2, item.pct)}%` }}
+                          style={{ width: `${item.count > 0 ? Math.max(2, item.pct) : 0}%` }}
                         />
                       </div>
                     </div>
@@ -753,7 +753,7 @@ export function RekapDataAnakClientView({
                   </div>
 
                   {/* 7 Columns for Ages 0 to 6 */}
-                  <div className="relative min-w-[720px] grid grid-cols-7 gap-3 sm:gap-4 items-end h-72 pb-16">
+                  <div className="relative min-w-[760px] grid grid-cols-7 gap-2 sm:gap-3 items-end h-72 pb-16">
                     {RENTANG_USIA_LIST.map(({ age, label }) => {
                       const dataAge = currentWilayahData.bersekolahUsiaJenjang?.[age] || {
                         tk: 0,
@@ -766,55 +766,68 @@ export function RekapDataAnakClientView({
                       };
 
                       const totalAge = DAFTAR_SATUAN_PAUD_KEYS.reduce((sum, s) => sum + (dataAge[s.key] || 0), 0);
+                      const maxValInAge = Math.max(...DAFTAR_SATUAN_PAUD_KEYS.map((s) => dataAge[s.key] || 0));
 
                       return (
                         <div
                           key={age}
-                          className="h-full flex flex-col justify-end items-center relative group"
+                          className="h-full flex flex-col justify-end items-center relative group px-1 rounded-xl transition-colors hover:bg-slate-100/50 dark:hover:bg-slate-800/40"
                         >
                           {/* Bars Cluster */}
-                          <div className="w-full flex items-end justify-center gap-1 sm:gap-1.5 h-48 px-1 pb-1 border-b-2 border-slate-200 dark:border-slate-700">
+                          <div className="w-full max-w-[110px] mx-auto flex items-end justify-center gap-1 sm:gap-1.5 h-48 px-1 pb-1 border-b-2 border-slate-200 dark:border-slate-700">
                             {DAFTAR_SATUAN_PAUD_KEYS.map((s) => {
                               const val = dataAge[s.key] || 0;
                               const heightPct = maxBarValue > 0 ? (val / maxBarValue) * 100 : 0;
                               const isHovered =
                                 activeHoverBar?.age === age && activeHoverBar?.key === s.key;
+                              const isPeak = val > 0 && val === maxValInAge;
 
                               return (
                                 <div
                                   key={s.key}
-                                  className="relative flex-1 flex flex-col items-center justify-end h-full"
+                                  className="relative flex-1 min-w-0 max-w-[12px] flex flex-col items-center justify-end h-full group/bar cursor-pointer"
                                   onMouseEnter={() => setActiveHoverBar({ age, key: s.key, val })}
                                   onMouseLeave={() => setActiveHoverBar(null)}
                                 >
-                                  {/* Value tooltip/number on top of bar */}
+                                  {/* Floating value pill above bar */}
                                   {val > 0 && (
                                     <div
                                       className={cn(
-                                        "mb-1 text-2xs font-black font-mono px-1 py-0.5 rounded shadow-xs transition-all pointer-events-none",
+                                        "absolute -top-7 left-1/2 -translate-x-1/2 z-20 pointer-events-none transition-all duration-200 whitespace-nowrap",
                                         isHovered
-                                          ? "scale-110 bg-slate-900 text-white dark:bg-white dark:text-slate-900 z-20"
-                                          : "text-slate-700 dark:text-slate-300"
+                                          ? "opacity-100 scale-110 z-30"
+                                          : isPeak
+                                          ? "opacity-100 scale-100"
+                                          : "opacity-0 group-hover/bar:opacity-100 scale-95"
                                       )}
                                     >
-                                      {val}
+                                      <span
+                                        className={cn(
+                                          "px-1.5 py-0.5 rounded text-[10px] font-mono font-black shadow-xs",
+                                          isHovered
+                                            ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-md ring-1 ring-white/20"
+                                            : "bg-white/95 dark:bg-slate-900/95 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700"
+                                        )}
+                                      >
+                                        {val.toLocaleString("id-ID")}
+                                      </span>
                                     </div>
                                   )}
 
                                   {/* The Vertical Bar */}
                                   <div
                                     className={cn(
-                                      "w-full rounded-t-md transition-all duration-500 cursor-pointer",
+                                      "w-full rounded-t-sm transition-all duration-300",
                                       s.bg,
                                       val > 0
                                         ? "hover:brightness-110 shadow-xs"
-                                        : "opacity-25",
-                                      isHovered && "ring-2 ring-slate-900 dark:ring-white ring-offset-1"
+                                        : "opacity-20",
+                                      isHovered && "ring-2 ring-slate-900 dark:ring-white ring-offset-1 brightness-110"
                                     )}
                                     style={{
-                                      height: val > 0 ? `${Math.max(10, heightPct)}%` : "3px",
+                                      height: val > 0 ? `${Math.max(8, heightPct)}%` : "3px",
                                     }}
-                                    title={`${s.shortLabel} (${s.label}) - Usia ${age} Tahun: ${val} Anak`}
+                                    title={`${s.shortLabel} (${s.label}) - Usia ${age} Tahun: ${val.toLocaleString("id-ID")} Anak`}
                                   />
                                 </div>
                               );
@@ -827,7 +840,7 @@ export function RekapDataAnakClientView({
                               {label}
                             </span>
                             <div className="font-mono text-2xs font-bold text-slate-600 dark:text-slate-400">
-                              Total: <span className="text-slate-900 dark:text-slate-100 font-extrabold">{totalAge}</span>
+                              Total: <span className="text-slate-900 dark:text-slate-100 font-extrabold">{totalAge.toLocaleString("id-ID")}</span>
                             </div>
                           </div>
                         </div>
@@ -840,7 +853,12 @@ export function RekapDataAnakClientView({
                 {activeHoverBar && (
                   <div className="flex items-center justify-between p-3 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800/50 text-xs font-bold text-indigo-950 dark:text-indigo-200 animate-in fade-in">
                     <span className="flex items-center gap-2">
-                      <span className="h-2.5 w-2.5 rounded-full bg-indigo-600" />
+                      <span
+                        className={cn(
+                          "h-2.5 w-2.5 rounded-full shrink-0",
+                          DAFTAR_SATUAN_PAUD_KEYS.find((k) => k.key === activeHoverBar.key)?.bg || "bg-indigo-600"
+                        )}
+                      />
                       <span>
                         Kelompok Usia {activeHoverBar.age} Tahun •{" "}
                         {DAFTAR_SATUAN_PAUD_KEYS.find((k) => k.key === activeHoverBar.key)?.label || activeHoverBar.key.toUpperCase()}

@@ -157,19 +157,20 @@ function classifySchoolType(namaSekolah?: string | null): keyof SchoolTypeBreakd
   const s = (namaSekolah || "").trim();
   if (!s) return "kb";
 
-  // 1. Kelompok Bermain (KB) - Prioritas utama
+  // 1. Taman Kanak-Kanak (TK) - Prioritas jika terdapat sebutan TK / Taman Kanak-Kanak (termasuk TK ABA)
+  if (/\b(TK|TAMAN\s*KANAK[- ]*KANAK|TKI)\b/i.test(s)) return "tk";
+
+  // 2. Kelompok Bermain (KB)
   if (/\b(KB|KELOMPOK\s*BERMAIN|KBI)\b/i.test(s)) return "kb";
 
-  // 2. Raudhatul Athfal (RA / BA / Bustanul Athfal)
+  // 3. Raudhatul Athfal (RA) - Khusus satuan RA / Raudhatul Athfal Kemenag
   if (
-    /\b(RA|RAUDHATUL\s*ATHFAL|RAUDLATUL\s*ATHFAL|BUSTANUL\s*ATHFAL)\b/i.test(s) ||
-    /\bBA\b/i.test(s)
+    /^(RA\b|RAUDHATUL\s*ATHFAL|RAUDLATUL\s*ATHFAL)/i.test(s) ||
+    /\b(RAUDHATUL\s*ATHFAL|RAUDLATUL\s*ATHFAL)\b/i.test(s) ||
+    /\bRA\s+[A-Z]/i.test(s)
   ) {
     return "ra";
   }
-
-  // 3. Taman Kanak-Kanak (TK)
-  if (/\b(TK|TAMAN\s*KANAK[- ]*KANAK|TKI)\b/i.test(s)) return "tk";
 
   // 4. Satuan PAUD Sejenis (SPS)
   if (/\b(SPS|POS\s*PAUD|PAUD\s*TPQ)\b/i.test(s)) return "sps";

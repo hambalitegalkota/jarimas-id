@@ -184,7 +184,7 @@ export function getNumericAgeAts(ats: {
  * Informasi cakupan wilayah berjenjang (RT, RW, Kelurahan, Kecamatan)
  */
 export function getWilayahScopeInfo(komunitas: KomunitasWithMembership | null | undefined | Record<string, unknown>): {
-  tierLevel: "RT" | "RW" | "Kelurahan" | "Kecamatan" | "Komunitas";
+  tierLevel: "RT" | "RW" | "Kelurahan" | "Kecamatan" | "Komunitas" | "Kota";
   scopeTitle: string;
   scopeSubtitle: string;
   badgeLabel: string;
@@ -236,6 +236,29 @@ export function getWilayahScopeInfo(komunitas: KomunitasWithMembership | null | 
         rt: "",
       };
     }
+    const isKotaLevel =
+      !meta.hasKel &&
+      !meta.hasRw &&
+      !meta.hasRt &&
+      (meta.kec === "kota tegal" ||
+        meta.rawKec.toLowerCase().includes("kota tegal") ||
+        meta.rawKec.toLowerCase().includes("semua") ||
+        (typeof (komunitas as any)?.nama === "string" && (komunitas as any).nama.toLowerCase().includes("kota tegal")));
+
+    if (isKotaLevel) {
+      return {
+        tierLevel: "Kota",
+        scopeTitle: `Wilayah Kota Tegal (Mencakup Semua Kelurahan, RW & RT)`,
+        scopeSubtitle: `Kota Tegal`,
+        badgeLabel: `Wilayah Kota Tegal`,
+        isWargaKita: true,
+        kecamatan: "Kota Tegal",
+        kelurahan: "",
+        rw: "",
+        rt: "",
+      };
+    }
+
     return {
       tierLevel: "Kecamatan",
       scopeTitle: `Wilayah Kecamatan ${meta.rawKec} (Mencakup Semua Kelurahan, RW & RT)`,

@@ -398,7 +398,9 @@ export async function getRekapDataAtsAction(): Promise<{
         alasan_sekolah,
         komunitas_id,
         created_at
-      `);
+      `)
+      .or("is_sekolah.eq.false,is_sekolah.is.null,nama_sekolah.ilike.%ATS%,alasan_sekolah.ilike.%KEINGINAN%")
+      .limit(5000);
 
     if (fetchErr) {
       console.warn("Rekap ATS fetch warning:", fetchErr.message);
@@ -782,7 +784,9 @@ export async function getDaftarNamaAtsRekapAction(params: {
         status_approval,
         created_at
       `)
-      .order("created_at", { ascending: false });
+      .or("is_sekolah.eq.false,is_sekolah.is.null,nama_sekolah.ilike.%ATS%,alasan_sekolah.ilike.%KEINGINAN%")
+      .order("created_at", { ascending: false })
+      .limit(5000);
 
     if (fetchErr) {
       return {
