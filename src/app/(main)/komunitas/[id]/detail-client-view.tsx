@@ -429,7 +429,10 @@ export function KomunitasDetailClientView({
           {
             id: "anggota" as const,
             title: "Daftar Anggota & Informasi Operasional",
-            subtitle: "Informasi operasional, struktur pengurus dan 6 bidang kader",
+            subtitle:
+              komunitas.jenis === "posyandu"
+                ? "Informasi operasional, struktur pengurus dan 6 bidang kader"
+                : "Informasi operasional dan struktur pengurus komunitas",
             badgeText: `${anggotaState.filter((m) => m.status === "approved").length} Anggota`,
             icon: Users,
             activeColorBg: "bg-emerald-600 dark:bg-emerald-700",
@@ -951,7 +954,9 @@ export function KomunitasDetailClientView({
                   Informasi Resmi &amp; Operasional
                 </h3>
                 <p className="text-xs text-slate-500 font-medium">
-                  Informasi alamat lokasi, jadwal layanan, dan kontak resmi 6 bidang kader
+                  {komunitasData.jenis === "posyandu"
+                    ? "Informasi alamat lokasi, jadwal layanan, dan kontak resmi 6 bidang kader"
+                    : "Informasi alamat lokasi, jadwal layanan, dan kontak resmi"}
                 </p>
               </div>
 
@@ -1017,8 +1022,9 @@ export function KomunitasDetailClientView({
                 </div>
               </div>
 
-              {/* Kontak 6 Bidang Kader SPM (Permendagri No. 13 Tahun 2024) */}
-              <div className="rounded-2xl border-2 border-emerald-100 bg-emerald-50/40 p-4 sm:p-5 space-y-3.5">
+              {/* Kontak 6 Bidang Kader SPM (Permendagri No. 13 Tahun 2024) - Khusus Komunitas Posyandu */}
+              {komunitasData.jenis === "posyandu" && (
+                <div className="rounded-2xl border-2 border-emerald-100 bg-emerald-50/40 p-4 sm:p-5 space-y-3.5">
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
                     <Sparkles className="h-4 w-4 text-emerald-700" />
@@ -1207,6 +1213,7 @@ export function KomunitasDetailClientView({
                   </div>
                 </div>
               </div>
+              )}
 
               {/* Profil & Visi */}
               {komunitasData.deskripsi && (

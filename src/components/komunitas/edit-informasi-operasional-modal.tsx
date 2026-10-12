@@ -155,7 +155,7 @@ export function EditInformasiOperasionalModal({
                   Edit Informasi Resmi &amp; Operasional
                 </h3>
                 <span className="text-xs font-bold px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 border border-emerald-200">
-                  ADMIN, PENGURUS &amp; KADER
+                  {komunitas.jenis === "posyandu" ? "ADMIN, PENGURUS & KADER" : "ADMIN & PENGURUS"}
                 </span>
               </div>
               <p className="text-xs text-slate-500 font-semibold line-clamp-1">
@@ -172,37 +172,39 @@ export function EditInformasiOperasionalModal({
           </button>
         </div>
 
-        {/* Tab Navigation (Umum vs Kader 6 Bidang SPM) */}
-        <div className="px-5 pt-3 bg-white shrink-0">
-          <div className="flex rounded-xl bg-slate-100 p-1 gap-1 border border-slate-200">
-            <button
-              type="button"
-              onClick={() => setActiveTab("umum")}
-              className={cn(
-                "flex-1 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5",
-                activeTab === "umum"
-                  ? "bg-white text-slate-900 shadow-xs"
-                  : "text-slate-600 hover:text-slate-900"
-              )}
-            >
-              <Info className="h-3.5 w-3.5" />
-              <span>Lokasi &amp; Profil</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab("kader_spm")}
-              className={cn(
-                "flex-1 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5",
-                activeTab === "kader_spm"
-                  ? "bg-white text-emerald-800 shadow-xs font-extrabold"
-                  : "text-slate-600 hover:text-slate-900"
-              )}
-            >
-              <Phone className="h-3.5 w-3.5 text-emerald-600" />
-              <span>Kontak Resmi &amp; 6 Kader Bidang</span>
-            </button>
+        {/* Tab Navigation (Hanya tampil untuk Komunitas Posyandu karena memiliki 6 Bidang Kader SPM) */}
+        {komunitas.jenis === "posyandu" && (
+          <div className="px-5 pt-3 bg-white shrink-0">
+            <div className="flex rounded-xl bg-slate-100 p-1 gap-1 border border-slate-200">
+              <button
+                type="button"
+                onClick={() => setActiveTab("umum")}
+                className={cn(
+                  "flex-1 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5",
+                  activeTab === "umum"
+                    ? "bg-white text-slate-900 shadow-xs"
+                    : "text-slate-600 hover:text-slate-900"
+                )}
+              >
+                <Info className="h-3.5 w-3.5" />
+                <span>Lokasi &amp; Profil</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab("kader_spm")}
+                className={cn(
+                  "flex-1 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5",
+                  activeTab === "kader_spm"
+                    ? "bg-white text-emerald-800 shadow-xs font-extrabold"
+                    : "text-slate-600 hover:text-slate-900"
+                )}
+              >
+                <Phone className="h-3.5 w-3.5 text-emerald-600" />
+                <span>Kontak Resmi &amp; 6 Kader Bidang</span>
+              </button>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="flex-1 flex flex-col overflow-hidden">
@@ -260,6 +262,26 @@ export function EditInformasiOperasionalModal({
                     className="w-full px-3.5 py-2.5 rounded-xl border-2 border-slate-200 bg-white text-slate-900 text-sm font-semibold focus:border-blue-600 focus:outline-none"
                   />
                 </div>
+
+                {/* Kontak Resmi Utama / Sekretariat (untuk Komunitas Non-Posyandu) */}
+                {komunitas.jenis !== "posyandu" && (
+                  <div className="space-y-1.5">
+                    <label className="flex items-center gap-1.5 font-bold text-slate-800 text-xs">
+                      <Phone className="h-4 w-4 text-emerald-600" />
+                      <span>Kontak Resmi Utama / Sekretariat / Pengurus</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={kontakUtama}
+                      onChange={(e) => setKontakUtama(e.target.value)}
+                      placeholder="Contoh: 0813-2233-4455 / 0283-356xxx"
+                      className="w-full px-3.5 py-2.5 rounded-xl border-2 border-slate-200 bg-white text-slate-900 font-mono text-sm font-bold focus:border-blue-600 focus:outline-none"
+                    />
+                    <p className="text-[11px] text-slate-500 font-medium">
+                      Nomor telepon atau WhatsApp resmi pengurus komunitas.
+                    </p>
+                  </div>
+                )}
 
                 {/* Profil & Visi */}
                 <div className="space-y-1.5">
