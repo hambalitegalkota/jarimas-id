@@ -1415,6 +1415,185 @@ export async function requestJoinKomunitas({
   }
 }
 
+/**
+ * Server Action: Mengajukan perubahan peran anggota di komunitas (misal dari Pengunjung ke Guru/Kepala Sekolah di PAUD, atau ke Kader/Nakes di Posyandu)
+ * Pengajuan ini akan diverifikasi dan disetujui oleh Admin / Pengurus komunitas.
+ */
+export async function requestPerubahanPeran({
+  komunitasId,
+  peranBaru,
+  catatan,
+}: {
+  komunitasId: string;
+  peranBaru: string;
+  catatan?: string;
+}): Promise<{
+  success: boolean;
+  message: string;
+  peranDiajukan?: string;
+}> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return {
+        success: false,
+        message: "Silakan masuk terlebih dahulu untuk mengajukan perubahan peran.",
+      };
+    }
+
+    if (!komunitasId || !peranBaru) {
+      return {
+        success: false,
+        message: "Komunitas atau peran yang diajukan tidak valid.",
+      };
+    }
+
+    const targetPeran = peranBaru.trim();
+    const dbKomunitasId = toValidUUID(komunitasId);
+
+    // Ambil data keanggotaan pengguna saat ini
+    const { data: member, error: memberErr } = await supabase
+      .from("anggota_komunitas")
+      .select("id, status, peran, peran_diajukan")
+      .eq("user_id", user.id)
+      .eq("komunitas_id", dbKomunitasId)
+      .maybeSingle();
+
+    if (memberErr) {
+      throw memberErr;
+    }
+
+    if (member) {
+      if (
+        member.status === "approved" &&
+        member.peran.toLowerCase() === targetPeran.toLowerCase() &&
+        !member.peran_diajukan
+      ) {
+        return {
+          success: false,
+          message: `Anda saat ini sudah aktif memiliki peran sebagai ${formatPeranDisplay(member.peran)}.`,
+        };
+      }
+
+      if (
+        member.peran_diajukan &&
+        member.peran_diajukan.toLowerCase() === targetPeran.toLowerCase()
+      ) {
+        return {
+          success: false,
+          message: `Pengajuan peran ${formatPeranDisplay(targetPeran)} Anda sudah terkirim dan sedang menunggu persetujuan Admin/Pengurus.`,
+        };
+      }
+
+      const { error: updateErr } = await supabase
+        .from("anggota_komunitas")
+        .update({
+          peran_diajukan: targetPeran,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", member.id);
+
+      if (updateErr) throw updateErr;
+    } else {
+      // Jika belum terdaftar, buat keanggotaan sebagai Pengunjung dengan peran_diajukan
+      const { error: insertErr } = await supabase
+        .from("anggota_komunitas")
+        .insert({
+          user_id: user.id,
+          komunitas_id: dbKomunitasId,
+          peran: "Pengunjung",
+          peran_diajukan: targetPeran,
+          status: "approved",
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        });
+
+      if (insertErr) throw insertErr;
+    }
+
+    revalidatePath(`/komunitas/${komunitasId}`);
+    revalidatePath(`/komunitas/${dbKomunitasId}`);
+    revalidatePath(`/komunitas/${komunitasId}/anggota`);
+    revalidatePath("/komunitas");
+    revalidatePath("/profil");
+    revalidatePath("/admin/approval");
+
+    return {
+      success: true,
+      message: `Permohonan perubahan peran menjadi ${formatPeranDisplay(targetPeran)} berhasil dikirim ke Admin/Pengurus komunitas!`,
+      peranDiajukan: targetPeran,
+    };
+  } catch (err: any) {
+    console.error("Error requestPerubahanPeran:", err);
+    return {
+      success: false,
+      message: err.message || "Gagal mengajukan perubahan peran.",
+    };
+  }
+}
+
+/**
+ * Server Action: Membatalkan permohonan perubahan peran yang masih tertunda
+ */
+export async function cancelPerubahanPeran({
+  komunitasId,
+}: {
+  komunitasId: string;
+}): Promise<{
+  success: boolean;
+  message: string;
+}> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return {
+        success: false,
+        message: "Silakan masuk terlebih dahulu.",
+      };
+    }
+
+    const dbKomunitasId = toValidUUID(komunitasId);
+
+    const { error: updateErr } = await supabase
+      .from("anggota_komunitas")
+      .update({
+        peran_diajukan: null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("user_id", user.id)
+      .eq("komunitas_id", dbKomunitasId);
+
+    if (updateErr) throw updateErr;
+
+    revalidatePath(`/komunitas/${komunitasId}`);
+    revalidatePath(`/komunitas/${dbKomunitasId}`);
+    revalidatePath(`/komunitas/${komunitasId}/anggota`);
+    revalidatePath("/komunitas");
+    revalidatePath("/profil");
+
+    return {
+      success: true,
+      message: "Permohonan perubahan peran telah berhasil dibatalkan.",
+    };
+  } catch (err: any) {
+    console.error("Error cancelPerubahanPeran:", err);
+    return {
+      success: false,
+      message: err.message || "Gagal membatalkan permohonan peran.",
+    };
+  }
+}
+
 export interface JoinKomunitasWargaParams {
   komunitasId: string;
   nama?: string | null;

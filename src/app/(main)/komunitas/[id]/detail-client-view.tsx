@@ -43,6 +43,7 @@ import { KomunitasProfilCharts } from "@/components/komunitas/komunitas-profil-c
 import { LaporanKaderSpmFormCard } from "@/components/komunitas/laporan-kader-spm-form-card";
 import { RekapLaporanKaderWilayahCard } from "@/components/komunitas/rekap-laporan-kader-wilayah-card";
 import { KomunitasPercakapanTab } from "@/components/komunitas/komunitas-percakapan-tab";
+import { AjukanPerubahanPeranModal } from "@/components/komunitas/ajukan-perubahan-peran-modal";
 import {
   applyForAdminKomunitas,
   leaveKomunitas,
@@ -101,6 +102,7 @@ export function KomunitasDetailClientView({
   const [membershipState, setMembershipState] = useState(komunitas.currentUserMembership);
   const [isWargaOnboardingOpen, setIsWargaOnboardingOpen] = useState(false);
   const [isEditOperasionalOpen, setIsEditOperasionalOpen] = useState(false);
+  const [isUbahPeranOpen, setIsUbahPeranOpen] = useState(false);
 
   // State untuk modal Ajukan Diri Sebagai Admin
   const [isApplyAdminOpen, setIsApplyAdminOpen] = useState(false);
@@ -535,6 +537,34 @@ export function KomunitasDetailClientView({
                   <CheckCircle2 className="h-4 w-4 text-emerald-600" />
                   <span>{formatPeranDisplay(userPeran).toUpperCase()}</span>
                 </span>
+
+                {/* Badge Menunggu Verifikasi Perubahan Peran */}
+                {membershipState?.peran_diajukan &&
+                  membershipState.peran_diajukan.toLowerCase() !== userPeran.toLowerCase() && (
+                    <span
+                      className="inline-flex items-center gap-1.5 rounded-xl bg-amber-50 px-3 py-1.5 text-xs font-bold text-amber-900 border-2 border-amber-300"
+                      title="Permohonan perubahan peran sedang menunggu verifikasi Admin/Pengurus"
+                    >
+                      <Clock className="h-3.5 w-3.5 text-amber-600 animate-pulse" />
+                      <span>MENUNGGU: {formatPeranDisplay(membershipState.peran_diajukan).toUpperCase()}</span>
+                    </span>
+                  )}
+
+                {/* Tombol Ajukan Perubahan Peran (misal Pengunjung -> Guru / Kepala Sekolah di PAUD, Kader / Nakes di Posyandu) */}
+                <button
+                  type="button"
+                  onClick={() => setIsUbahPeranOpen(true)}
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-blue-300 bg-blue-50 hover:bg-blue-100 text-blue-800 px-3 py-1.5 text-xs font-bold shadow-2xs transition-all active:scale-98 cursor-pointer"
+                  title="Ajukan perubahan peran kepada Admin"
+                >
+                  <Sparkles className="h-3.5 w-3.5 text-blue-600" />
+                  <span>
+                    {membershipState?.peran_diajukan &&
+                    membershipState.peran_diajukan.toLowerCase() !== userPeran.toLowerCase()
+                      ? "Ubah Pengajuan Peran"
+                      : "Ajukan Peran"}
+                  </span>
+                </button>
 
                 {/* Shortcut Buka Ruang Percakapan */}
                 <button
@@ -1300,6 +1330,19 @@ export function KomunitasDetailClientView({
                         </span>
                       )}
 
+                      {/* Tombol Ajukan Ubah Peran jika ini adalah User sendiri */}
+                      {isMe && (
+                        <button
+                          type="button"
+                          onClick={() => setIsUbahPeranOpen(true)}
+                          className="inline-flex items-center gap-1 rounded-xl border border-blue-200 bg-blue-50 hover:bg-blue-100 text-blue-700 px-2.5 py-1.5 text-xs font-bold transition-all shadow-2xs active:scale-95 cursor-pointer"
+                          title="Ajukan perubahan peran kepada Admin"
+                        >
+                          <Sparkles className="h-3 w-3 text-blue-600" />
+                          <span>Ubah Peran</span>
+                        </button>
+                      )}
+
                       {/* Tombol Keluarkan Anggota oleh Pengurus */}
                       {canKickThisMember && (
                         <button
@@ -1765,6 +1808,34 @@ export function KomunitasDetailClientView({
             </div>
           </div>
         </div>
+      )}
+
+      {/* Modal Ajukan Perubahan Peran (misal Pengunjung -> Guru/Kepala Sekolah di PAUD, atau Kader/Nakes di Posyandu) */}
+      {isUbahPeranOpen && (
+        <AjukanPerubahanPeranModal
+          komunitas={komunitasData}
+          currentPeran={userPeran}
+          currentPeranDiajukan={membershipState?.peran_diajukan}
+          isOpen={isUbahPeranOpen}
+          onClose={() => setIsUbahPeranOpen(false)}
+          onSuccess={(newPeranDiajukan) => {
+            setMembershipState((prev) =>
+              prev
+                ? {
+                    ...prev,
+                    peran_diajukan: newPeranDiajukan,
+                  }
+                : null
+            );
+            setAnggotaState((prev) =>
+              prev.map((m) =>
+                m.user_id === currentUserId
+                  ? { ...m, peran_diajukan: newPeranDiajukan }
+                  : m
+              )
+            );
+          }}
+        />
       )}
     </div>
   );
