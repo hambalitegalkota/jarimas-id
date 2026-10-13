@@ -19,6 +19,7 @@ import {
   slugify,
   KOTA_TEGAL_DATA,
   getWargaHierarchyChain,
+  findKecamatanByKelurahan,
   MASTER_KOMUNITAS_SEED,
   getJumlahRwByKelurahan,
   getJumlahRtPerRwByKelurahan,
@@ -1281,6 +1282,17 @@ export async function requestJoinKomunitas({
 
     // Pastikan record komunitas ada di database
     const seedItem = findOrGenerateKomunitasSeed(komunitasId);
+
+    // KETENTUAN: Fungsi gabung komunitas warga HANYA ADA di Komunitas RT (melalui Survey KK & Domisili).
+    // Komunitas RW, Kelurahan, Kecamatan, dan Kota Tegal ditiadakan fungsi gabung langsungnya.
+    if (seedItem && seedItem.jenis === "warga_kita") {
+      return {
+        success: false,
+        message:
+          "Fungsi gabung langsung pada Komunitas RW, Kelurahan, Kecamatan, dan Kota Tegal ditiadakan. Silakan bergabung melalui Komunitas RT di lingkungan Anda untuk terhubung otomatis ke seluruh tingkatan wilayah.",
+      };
+    }
+
     if (seedItem) {
       await supabase.from("komunitas").upsert(
         {
@@ -1299,37 +1311,6 @@ export async function requestJoinKomunitas({
         },
         { onConflict: "id" }
       );
-    }
-
-    // Pastikan jika komunitas Warga Kita, sertakan juga rantai hierarki (RW, Kelurahan, Kecamatan)
-    if (seedItem && seedItem.jenis === "warga_kita") {
-      const hierarchyChain = getWargaHierarchyChain({
-        kecamatan: seedItem.kecamatan,
-        kelurahan: seedItem.kelurahan,
-        rw: seedItem.rw,
-        rt: seedItem.rt,
-      });
-
-      for (const item of hierarchyChain) {
-        const itemDbId = toValidUUID(item.id);
-        await supabase.from("komunitas").upsert(
-          {
-            id: itemDbId,
-            nama: item.nama,
-            nama_komunitas: item.nama,
-            jenis: "warga_kita",
-            jenis_komunitas: "warga_kita",
-            kecamatan: item.kecamatan || "Kota Tegal",
-            kelurahan: item.kelurahan || "Semua Kelurahan",
-            rt: item.rt || null,
-            rw: item.rw || null,
-            lokasi: item.lokasi,
-            deskripsi: item.deskripsi,
-            updated_at: new Date().toISOString(),
-          },
-          { onConflict: "id" }
-        );
-      }
     }
 
     // Cek apakah sudah terdaftar sebelumnya
@@ -1391,22 +1372,115 @@ export async function requestJoinKomunitas({
       if (insertError) throw insertError;
     }
 
+    // CASCADE JOIN: Apabila bergabung di Komunitas Posyandu atau Satuan PAUD,
+    // otomatis tergabung di Komunitas Kelurahan, Kecamatan, dan Kota Tegal sesuai wilayahnya.
+    const isPosyanduOrPaud =
+      seedItem?.jenis === "posyandu" || seedItem?.jenis === "satuan_paud";
+
+    if (isPosyanduOrPaud) {
+      let targetKecamatan = seedItem?.kecamatan;
+      let targetKelurahan = seedItem?.kelurahan;
+
+      if (!targetKecamatan || !targetKelurahan) {
+        const { data: dbKomRow } = await supabase
+          .from("komunitas")
+          .select("kecamatan, kelurahan")
+          .eq("id", dbKomunitasId)
+          .maybeSingle();
+        if (dbKomRow) {
+          targetKecamatan = targetKecamatan || dbKomRow.kecamatan;
+          targetKelurahan = targetKelurahan || dbKomRow.kelurahan;
+        }
+      }
+
+      if ((!targetKecamatan || targetKecamatan === "Kota Tegal") && targetKelurahan) {
+        const foundKec = findKecamatanByKelurahan(targetKelurahan);
+        if (foundKec) targetKecamatan = foundKec;
+      }
+
+      if (targetKecamatan || targetKelurahan) {
+        const wilayahHierarchy = getWargaHierarchyChain({
+          kecamatan: targetKecamatan,
+          kelurahan: targetKelurahan,
+        });
+
+        for (const item of wilayahHierarchy) {
+          const itemDbId = toValidUUID(item.id);
+
+          // 1. Pastikan komunitas wilayah tersedia di database
+          await supabase.from("komunitas").upsert(
+            {
+              id: itemDbId,
+              nama: item.nama,
+              nama_komunitas: item.nama,
+              jenis: "warga_kita",
+              jenis_komunitas: "warga_kita",
+              kecamatan: item.kecamatan || "Kota Tegal",
+              kelurahan: item.kelurahan || "Semua Kelurahan",
+              rt: item.rt || null,
+              rw: item.rw || null,
+              lokasi: item.lokasi,
+              deskripsi: item.deskripsi,
+              updated_at: new Date().toISOString(),
+            },
+            { onConflict: "id" }
+          );
+
+          // 2. Cek keanggotaan pengguna di komunitas wilayah tersebut
+          const { data: existingWilayahMember } = await supabase
+            .from("anggota_komunitas")
+            .select("id, status, peran")
+            .eq("user_id", user.id)
+            .eq("komunitas_id", itemDbId)
+            .maybeSingle();
+
+          if (!existingWilayahMember) {
+            // Otomatis terdaftar dan disetujui (approved) sebagai Penduduk
+            await supabase.from("anggota_komunitas").insert({
+              user_id: user.id,
+              komunitas_id: itemDbId,
+              peran: "Penduduk",
+              peran_diajukan: null,
+              status: "approved",
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            });
+          } else if (existingWilayahMember.status !== "approved") {
+            await supabase
+              .from("anggota_komunitas")
+              .update({
+                status: "approved",
+                updated_at: new Date().toISOString(),
+              })
+              .eq("id", existingWilayahMember.id);
+          }
+
+          revalidatePath(`/komunitas/${item.id}`);
+          revalidatePath(`/komunitas/${itemDbId}`);
+        }
+      }
+    }
+
     revalidatePath(`/komunitas/${komunitasId}`);
     revalidatePath(`/komunitas/${dbKomunitasId}`);
     revalidatePath("/komunitas");
     revalidatePath("/profil");
     revalidatePath("/admin/approval");
 
+    const cascadeWilayahNote = isPosyanduOrPaud
+      ? " Anda juga otomatis terhubung ke Komunitas Kelurahan, Kecamatan, dan Kota Tegal sesuai wilayah."
+      : "";
+
     if (isDirectPengunjung) {
       return {
         success: true,
-        message: `Selamat bergabung di ${seedItem?.nama || "Komunitas"} sebagai Pengunjung!`,
+        message: `Selamat bergabung di ${seedItem?.nama || "Komunitas"} sebagai Pengunjung!${cascadeWilayahNote}`,
       };
     }
 
     return {
       success: true,
-      message: `Permohonan bergabung sebagai ${targetPeranDiajukan} berhasil dikirim! Anda langsung dapat mengakses komunitas sebagai Pengunjung sambil menunggu persetujuan Admin.`,
+      message: `Permohonan bergabung sebagai ${targetPeranDiajukan} berhasil dikirim! Anda langsung dapat mengakses komunitas sebagai Pengunjung sambil menunggu persetujuan Admin.${cascadeWilayahNote}`,
     };
   } catch (err: any) {
     console.error("Error requestJoinKomunitas:", err);
@@ -1658,6 +1732,16 @@ export async function joinKomunitasWargaWithSurvey({
     const finalRw = rw || seedItem?.rw || null;
     const finalRt = rt || seedItem?.rt || null;
 
+    // KETENTUAN: Fungsi gabung komunitas warga HANYA ADA di Komunitas RT.
+    // Jika tidak ada RT (misalnya mencoba bergabung langsung ke RW, Kelurahan, Kecamatan, atau Kota Tegal), tolak!
+    if (!finalRt || finalRt.trim() === "" || finalRt === "semua") {
+      return {
+        success: false,
+        message:
+          "Fungsi gabung langsung pada Komunitas RW, Kelurahan, Kecamatan, dan Kota Tegal ditiadakan. Silakan bergabung melalui Komunitas RT di lingkungan Anda untuk terhubung otomatis ke seluruh tingkatan wilayah (RW, Kelurahan, Kecamatan, dan Kota Tegal).",
+      };
+    }
+
     // 1. Identifikasi Peran dari Survey Alamat KK & Domisili:
     let identifiedRole = "Pengunjung";
     if (berdomisili && kkTerdaftar) {
@@ -1824,7 +1908,7 @@ export async function joinKomunitasWargaWithSurvey({
 
     const message =
       hierarchyChain.length > 1
-        ? `Selamat bergabung sebagai ${activePeran}! Anda otomatis terhubung di ${hierarchyChain.length} tingkatan komunitas (RT, RW, Kelurahan, & Kecamatan).`
+        ? `Selamat bergabung sebagai ${activePeran}! Anda otomatis terhubung di seluruh tingkatan komunitas wilayah (RT, RW, Kelurahan, Kecamatan, dan Kota Tegal).`
         : `Selamat bergabung di Komunitas Warga sebagai ${activePeran}!`;
 
     return {

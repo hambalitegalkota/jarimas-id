@@ -188,17 +188,23 @@ export function JoinKomunitasModal({
                 </div>
               </div>
 
-              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed bg-amber-50 p-3.5 rounded-xl border border-amber-200 text-amber-900">
+              <div className="text-xs sm:text-sm text-slate-600 leading-relaxed bg-amber-50 dark:bg-amber-950/40 p-3.5 rounded-xl border border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-200 space-y-1.5">
                 {selectedRole === "Pengunjung" ? (
-                  <span>
+                  <p>
                     * Anda akan langsung bergabung dan aktif di <strong>{komunitas.nama}</strong> dengan peran sebagai <strong>Pengunjung</strong>.
-                  </span>
+                  </p>
                 ) : (
-                  <span>
+                  <p>
                     * Pengajuan peran sebagai <strong>{selectedRole}</strong> di <strong>{komunitas.nama}</strong> memerlukan persetujuan Admin. Sebelum permohonan disetujui, Anda dapat langsung masuk dan mengakses komunitas dengan peran sebagai <strong>Pengunjung</strong>. Setelah disetujui oleh Admin, peran Anda akan otomatis berubah sesuai ajuan.
-                  </span>
+                  </p>
                 )}
-              </p>
+                <p className="text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 pt-1 border-t border-amber-200/60 dark:border-amber-800/60 flex items-center gap-1.5">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                  <span>
+                    Akun Anda juga akan otomatis tergabung di Komunitas Kelurahan, Kecamatan, dan Kota Tegal sesuai wilayah ini.
+                  </span>
+                </p>
+              </div>
 
               {/* Submit Button */}
               <div className="pt-2">

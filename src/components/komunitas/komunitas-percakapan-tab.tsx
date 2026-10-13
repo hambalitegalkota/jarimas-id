@@ -78,6 +78,14 @@ export function KomunitasPercakapanTab({
   const isPendingApproval = Boolean(membership?.peran_diajukan);
   const presets = QUICK_CHAT_PRESETS[komunitas.jenis] || QUICK_CHAT_PRESETS.warga_kita;
 
+  // Hanya Komunitas RT, Posyandu, dan Satuan PAUD yang dapat digabung langsung.
+  // Komunitas RW, Kelurahan, Kecamatan, dan Kota Tegal tidak memiliki fungsi gabung langsung.
+  const canJoin =
+    komunitas.jenis === "posyandu" ||
+    komunitas.jenis === "satuan_paud" ||
+    (komunitas.jenis === "warga_kita" &&
+      Boolean(komunitas.rt && komunitas.rt.trim() !== "" && komunitas.rt !== "semua"));
+
   const scrollToBottom = (behavior: ScrollBehavior = "smooth") => {
     messagesEndRef.current?.scrollIntoView({ behavior });
   };
@@ -461,17 +469,28 @@ export function KomunitasPercakapanTab({
               <div className="flex items-center gap-2 text-xs text-amber-800 dark:text-amber-300 text-center sm:text-left">
                 <Info className="h-4 w-4 text-amber-600 shrink-0" />
                 <span>
-                  Anda perlu bergabung dengan komunitas ini untuk mengirim pesan di ruang percakapan.
+                  {canJoin
+                    ? "Anda perlu bergabung dengan komunitas ini untuk mengirim pesan di ruang percakapan."
+                    : "Keanggotaan komunitas wilayah (RW, Kelurahan, Kecamatan, Kota Tegal) didapatkan otomatis dengan bergabung di Komunitas RT, Posyandu, atau PAUD."}
                 </span>
               </div>
-              <button
-                type="button"
-                onClick={onOpenJoinModal}
-                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold transition-colors shrink-0 shadow-xs cursor-pointer"
-              >
-                <UserPlus className="h-3.5 w-3.5" />
-                Bergabung Sekarang
-              </button>
+              {canJoin ? (
+                <button
+                  type="button"
+                  onClick={onOpenJoinModal}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold transition-colors shrink-0 shadow-xs cursor-pointer"
+                >
+                  <UserPlus className="h-3.5 w-3.5" />
+                  Bergabung Sekarang
+                </button>
+              ) : (
+                <Link
+                  href="/komunitas?tab=warga_kita"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition-colors shrink-0 shadow-xs"
+                >
+                  <span>Cari Komunitas RT</span>
+                </Link>
+              )}
             </div>
           ) : (
             <form onSubmit={handleSendMessage} className="flex items-center gap-2">

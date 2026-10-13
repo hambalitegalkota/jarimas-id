@@ -117,6 +117,15 @@ export function KomunitasDetailClientView({
   const isApprovedMember = membership?.status === "approved";
   const userPeran = membership?.peran || "Pengunjung";
   const isWargaKita = komunitasData.jenis === "warga_kita";
+
+  // Hanya Komunitas RT, Posyandu, dan Satuan PAUD yang memiliki fungsi gabung langsung.
+  // Komunitas RW, Kelurahan, Kecamatan, dan Kota Tegal tidak memiliki fungsi gabung langsung.
+  const canJoin =
+    komunitasData.jenis === "posyandu" ||
+    komunitasData.jenis === "satuan_paud" ||
+    (komunitasData.jenis === "warga_kita" &&
+      Boolean(komunitasData.rt && komunitasData.rt.trim() !== "" && komunitasData.rt !== "semua"));
+
   const hasFullAccess = !isWargaKita || hasFullProfilDataAccess(userPeran, isAdminOrKader);
   const isChartOnly = isWargaKita && !hasFullAccess;
   const isPenduduk =
@@ -581,7 +590,7 @@ export function KomunitasDetailClientView({
                   <span>Batal</span>
                 </button>
               </div>
-            ) : (
+            ) : canJoin ? (
               <button
                 type="button"
                 onClick={() => {
@@ -596,6 +605,11 @@ export function KomunitasDetailClientView({
                 <UserPlus className="h-4 w-4" />
                 <span>Bergabung</span>
               </button>
+            ) : (
+              <div className="inline-flex items-center gap-1.5 rounded-xl bg-slate-100 dark:bg-slate-800/80 px-3 py-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                <Info className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
+                <span>Keanggotaan Otomatis dari RT / Posyandu / PAUD</span>
+              </div>
             )}
           </div>
         </div>
@@ -1470,7 +1484,7 @@ export function KomunitasDetailClientView({
       )}
 
       {/* PopUp Isian Bergabung Warga Kita */}
-      {isWargaOnboardingOpen && (
+      {isWargaOnboardingOpen && canJoin && (
         <WargaOnboardingModal
           komunitas={komunitas}
           isOpen={isWargaOnboardingOpen}
@@ -1484,7 +1498,7 @@ export function KomunitasDetailClientView({
       )}
 
       {/* PopUp Minta Bergabung Posyandu / PAUD */}
-      {isJoinModalOpen && (
+      {isJoinModalOpen && canJoin && (
         <JoinKomunitasModal
           komunitas={komunitasData}
           isOpen={isJoinModalOpen}

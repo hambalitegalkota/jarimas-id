@@ -33,6 +33,14 @@ export function KomunitasCard({
   const membership = komunitas.currentUserMembership;
   const isApprovedMember = membership?.status === "approved";
 
+  // Hanya Komunitas RT, Posyandu, dan Satuan PAUD yang dapat digabung secara langsung.
+  // Komunitas RW, Kelurahan, Kecamatan, dan Kota Tegal tidak memiliki tombol gabung langsung.
+  const canJoin =
+    komunitas.jenis === "posyandu" ||
+    komunitas.jenis === "satuan_paud" ||
+    (komunitas.jenis === "warga_kita" &&
+      Boolean(komunitas.rt && komunitas.rt.trim() !== "" && komunitas.rt !== "semua"));
+
   // Format Nama Komunitas sesuai tipe
   let formattedTitle = komunitas.nama;
   if (komunitas.jenis === "warga_kita") {
@@ -60,6 +68,7 @@ export function KomunitasCard({
 
   // Handle klik tombol Gabung
   const handleJoinClick = () => {
+    if (!canJoin) return;
     if (!currentUserId) {
       window.location.href = `/login?redirectTo=/komunitas/${komunitas.id}`;
       return;
@@ -185,7 +194,7 @@ export function KomunitasCard({
             <ArrowRight className="h-3.5 w-3.5 text-slate-500 dark:text-slate-400 group-hover:translate-x-0.5 transition-transform" />
           </Link>
 
-          {!isApprovedMember && (
+          {!isApprovedMember && canJoin && (
             <button
               type="button"
               onClick={handleJoinClick}
@@ -204,7 +213,7 @@ export function KomunitasCard({
       </div>
 
       {/* PopUp Isian Bergabung Warga Kita (Survey KK & Domisili) */}
-      {isWargaModalOpen && (
+      {isWargaModalOpen && canJoin && (
         <WargaOnboardingModal
           komunitas={komunitas}
           isOpen={isWargaModalOpen}
@@ -218,7 +227,7 @@ export function KomunitasCard({
       )}
 
       {/* Pop Up Minta Bergabung Modal (Posyandu / PAUD) */}
-      {isJoinModalOpen && (
+      {isJoinModalOpen && canJoin && (
         <JoinKomunitasModal
           komunitas={komunitas}
           isOpen={isJoinModalOpen}

@@ -553,7 +553,7 @@ export default async function HomePage() {
               href="/komunitas?tab=warga_kita"
               className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:text-slate-900 underline pt-2"
             >
-              <span>Gabung dengan RT &amp; RW Anda</span>
+              <span>Gabung melalui Komunitas RT Anda</span>
               <ChevronRight className="h-4 w-4" />
             </Link>
           </div>

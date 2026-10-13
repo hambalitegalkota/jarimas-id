@@ -114,7 +114,7 @@ export function KomunitasSayaSection({
             Komunitas Saya (0 Tergabung)
           </h3>
           <p className="text-sm text-slate-600 max-w-xl mx-auto leading-relaxed">
-            Anda belum bergabung dengan komunitas manapun. Temukan Posyandu di lingkungan Anda, RT/RW Warga Kita, atau PAUD dan Kesetaraan pada daftar di bawah dan klik tombol <span className="font-bold text-blue-700">Gabung</span> untuk mulai terhubung.
+            Anda belum bergabung dengan komunitas manapun. Temukan Posyandu di lingkungan Anda, Komunitas RT Warga Kita, atau Satuan PAUD pada daftar di bawah dan klik tombol <span className="font-bold text-blue-700">Gabung</span> untuk mulai terhubung.
           </p>
         </div>
       </div>
