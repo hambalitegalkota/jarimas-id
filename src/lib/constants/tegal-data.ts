@@ -349,13 +349,12 @@ export const KOTA_TEGAL_DATA: Record<string, KecamatanData> = {
       "Pesurungan Kidul": {
         "nama": "Pesurungan Kidul",
         "posyandu": [
-          "Posyandu Anggrek Kidul",
-          "Posyandu Kamboja Asri",
-          "Posyandu Mawar Kidul",
-          "Posyandu Melati Kidul 1",
-          "Posyandu Melati Kidul 2",
-          "Posyandu Teratai Pesurungan Kidul 1",
-          "Posyandu Teratai Pesurungan Kidul 2"
+          "Posyandu Melati 1",
+          "Posyandu Melati 2",
+          "Posyandu Melati 3",
+          "Posyandu Melati 4",
+          "Posyandu Melati 5",
+          "Posyandu Melati 6"
         ],
         "paud": [
           "KB Islam Al Azhar 66 Kota Tegal",

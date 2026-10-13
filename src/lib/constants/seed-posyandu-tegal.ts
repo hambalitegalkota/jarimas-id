@@ -56,9 +56,16 @@ export const INVALID_POSYANDU_IDS = [
   "c6fb0a75-c707-494d-8f6a-4a8d631c4cd8",
   "35340ff5-6bdc-4a31-8603-94d5694e7823",
   "23ed4077-9179-4849-8132-09f53850ff15",
+  "3df828b8-b4a9-4cea-88c8-6009b6c26607",
+  "8049e14c-d11b-40f3-85db-5a7dd60480ac",
+  "d6ebfe33-8234-4038-8357-61f9203c334f",
+  "6cc9796f-c934-4527-8d9c-5fcd8f02315a",
+  "92230c5c-c934-4527-8ff0-a80520c5909b",
+  "d7527926-042e-45a9-8509-c455f7653f1d",
+  "391aff75-042e-45a9-807b-31bd4df2b630",
 ];
 
-// Data Lengkap 209 Posyandu Resmi se-Kota Tegal (4 Kecamatan, 27 Kelurahan)
+// Data Lengkap 208 Posyandu Resmi se-Kota Tegal (4 Kecamatan, 27 Kelurahan)
 export const RAW_POSYANDU_TEGAL: RawPosyanduItem[] = [
   // ==========================================
   // 1. KECAMATAN TEGAL TIMUR (5 Kelurahan)
@@ -130,7 +137,7 @@ export const RAW_POSYANDU_TEGAL: RawPosyanduItem[] = [
   { id: "a0ae97f1-4782-4d00-8823-df39f56190b1", nama: "Posyandu Werkudoro 2", kecamatan: "Tegal Timur", kelurahan: "Slerok", rw: "03", rt: "04", lokasi: "Balai Posyandu / RW 03, Slerok, Tegal Timur, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Werkudoro 2 Slerok: penimbangan berat badan, tinggi badan, imunisasi, DDKS, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
 
   // ==========================================
-  // 2. KECAMATAN TEGAL BARAT (6 Kelurahan)
+  // 2. KECAMATAN TEGAL BARAT (7 Kelurahan)
   // ==========================================
   // Debong Lor (4 Posyandu)
   { id: "8a3e27d7-c6b0-4cf9-8b2b-6425e1f79f59", nama: "Posyandu Mawar", kecamatan: "Tegal Barat", kelurahan: "Debong Lor", rw: "04", rt: "04", lokasi: "Balai Posyandu / RW 04, Debong Lor, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Kenanga Jaya Debong Lor: penimbangan berat badan, tinggi badan, imunisasi, DDKS, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
@@ -175,6 +182,14 @@ export const RAW_POSYANDU_TEGAL: RawPosyanduItem[] = [
   { id: "869cb9e3-4dca-4a68-8f5a-7d4996e58a7b", nama: "Posyandu Jalak", kecamatan: "Tegal Barat", kelurahan: "Pekauman", rw: "02", rt: "02", lokasi: "Balai Posyandu / RW 02, Pekauman, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Teratai 1 Pekauman: penimbangan berat badan, tinggi badan, imunisasi, DDKS, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
   { id: "abf64cd0-4dca-4a68-8acb-eab110f9c010", nama: "Posyandu Nanas", kecamatan: "Tegal Barat", kelurahan: "Pekauman", rw: "02", rt: "04", lokasi: "Balai Posyandu / RW 02, Pekauman, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Teratai 2 Pekauman: penimbangan berat badan, tinggi badan, imunisasi, DDKS, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
   { id: "1ba20db1-a59e-4198-8a8c-42e1c533e3e6", nama: "Posyandu Tunas", kecamatan: "Tegal Barat", kelurahan: "Pekauman", rw: "04", rt: "04", lokasi: "Balai Posyandu / RW 04, Pekauman, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Cempaka Pekauman: penimbangan berat badan, tinggi badan, imunisasi, DDKS, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+
+  // Pesurungan Kidul (6 Posyandu)
+  { id: "d84b007b-f156-42f2-88a1-f0f1af220a00", nama: "Posyandu Melati 1", kecamatan: "Tegal Barat", kelurahan: "Pesurungan Kidul", rw: "01", rt: "01", lokasi: "Balai Posyandu / RW 01, Pesurungan Kidul, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Melati 1 Pesurungan Kidul: penimbangan berat badan, tinggi badan, imunisasi, DDKS, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "fda49368-f156-42f2-8d30-8389350dd46b", nama: "Posyandu Melati 2", kecamatan: "Tegal Barat", kelurahan: "Pesurungan Kidul", rw: "02", rt: "01", lokasi: "Balai Posyandu / RW 02, Pesurungan Kidul, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Melati 2 Pesurungan Kidul: penimbangan berat badan, tinggi badan, imunisasi, DDKS, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "9bdc0d19-f156-42f2-81bf-1621d2a8c882", nama: "Posyandu Melati 3", kecamatan: "Tegal Barat", kelurahan: "Pesurungan Kidul", rw: "03", rt: "01", lokasi: "Balai Posyandu / RW 03, Pesurungan Kidul, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Melati 3 Pesurungan Kidul: penimbangan berat badan, tinggi badan, imunisasi, DDKS, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "b2f16d8e-508b-4787-81d9-13f9589492ed", nama: "Posyandu Melati 4", kecamatan: "Tegal Barat", kelurahan: "Pesurungan Kidul", rw: "04", rt: "01", lokasi: "Balai Posyandu / RW 04, Pesurungan Kidul, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Melati 4 Pesurungan Kidul: penimbangan berat badan, tinggi badan, imunisasi, DDKS, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "5128e73f-508b-4787-8667-a691c6d133ac", nama: "Posyandu Melati 5", kecamatan: "Tegal Barat", kelurahan: "Pesurungan Kidul", rw: "05", rt: "01", lokasi: "Balai Posyandu / RW 05, Pesurungan Kidul, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Melati 5 Pesurungan Kidul: penimbangan berat badan, tinggi badan, imunisasi, DDKS, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "76827a2c-508b-4787-8af6-39294cbcfe17", nama: "Posyandu Melati 6", kecamatan: "Tegal Barat", kelurahan: "Pesurungan Kidul", rw: "06", rt: "01", lokasi: "Balai Posyandu / RW 06, Pesurungan Kidul, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Melati 6 Pesurungan Kidul: penimbangan berat badan, tinggi badan, imunisasi, DDKS, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
 
   // Tegalsari (19 Posyandu)
   { id: "b9eb4b9f-b56b-4b87-8640-ed815ace953c", nama: "Posyandu Anggrek Unggu", kecamatan: "Tegal Barat", kelurahan: "Tegalsari", rw: "02", rt: "04", lokasi: "Balai Posyandu / RW 02, Tegalsari, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Bahari Sejahtera 2 Tegalsari: penimbangan berat badan, tinggi badan, imunisasi, DDKS, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
@@ -311,15 +326,6 @@ export const RAW_POSYANDU_TEGAL: RawPosyanduItem[] = [
   { id: "d138d905-ad66-4e85-8bad-91bd5698aeb8", nama: "Posyandu Sedap Malam", kecamatan: "Margadana", kelurahan: "Margadana", lokasi: "Margadana, Kecamatan Margadana, Kota Tegal" },
   { id: "0ed7a033-6287-4764-8d76-c651610374dc", nama: "Posyandu Suflir", kecamatan: "Margadana", kelurahan: "Margadana", lokasi: "Margadana, Kecamatan Margadana, Kota Tegal" },
   { id: "561272b8-3e1a-44f6-832d-ed1d0e6b65d4", nama: "Posyandu Wijaya Kusuma", kecamatan: "Margadana", kelurahan: "Margadana", lokasi: "Margadana, Kecamatan Margadana, Kota Tegal" },
-
-  // Pesurungan Kidul (7 Posyandu)
-  { id: "3df828b8-b4a9-4cea-88c8-6009b6c26607", nama: "Posyandu Anggrek Kidul", kecamatan: "Margadana", kelurahan: "Pesurungan Kidul", rw: "03", rt: "03", lokasi: "Balai Posyandu / RW 03, Pesurungan Kidul, Margadana, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Anggrek Kidul Pesurungan Kidul: penimbangan berat badan, tinggi badan, imunisasi, DDKS, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "8049e14c-d11b-40f3-85db-5a7dd60480ac", nama: "Posyandu Kamboja Asri", kecamatan: "Margadana", kelurahan: "Pesurungan Kidul", rw: "04", rt: "02", lokasi: "Balai Posyandu / RW 04, Pesurungan Kidul, Margadana, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Kamboja Asri Pesurungan Kidul: penimbangan berat badan, tinggi badan, imunisasi, DDKS, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "d6ebfe33-8234-4038-8357-61f9203c334f", nama: "Posyandu Mawar Kidul", kecamatan: "Margadana", kelurahan: "Pesurungan Kidul", rw: "03", rt: "01", lokasi: "Balai Posyandu / RW 03, Pesurungan Kidul, Margadana, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Mawar Kidul Pesurungan Kidul: penimbangan berat badan, tinggi badan, imunisasi, DDKS, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "6cc9796f-c934-4527-8d9c-5fcd8f02315a", nama: "Posyandu Melati Kidul 1", kecamatan: "Margadana", kelurahan: "Pesurungan Kidul", rw: "02", rt: "02", lokasi: "Balai Posyandu / RW 02, Pesurungan Kidul, Margadana, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Melati Kidul 1 Pesurungan Kidul: penimbangan berat badan, tinggi badan, imunisasi, DDKS, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "92230c5c-c934-4527-8ff0-a80520c5909b", nama: "Posyandu Melati Kidul 2", kecamatan: "Margadana", kelurahan: "Pesurungan Kidul", rw: "02", rt: "04", lokasi: "Balai Posyandu / RW 02, Pesurungan Kidul, Margadana, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Melati Kidul 2 Pesurungan Kidul: penimbangan berat badan, tinggi badan, imunisasi, DDKS, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "d7527926-042e-45a9-8509-c455f7653f1d", nama: "Posyandu Teratai Pesurungan Kidul 1", kecamatan: "Margadana", kelurahan: "Pesurungan Kidul", rw: "01", rt: "01", lokasi: "Balai Posyandu / RW 01, Pesurungan Kidul, Margadana, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Teratai Pesurungan Kidul 1 Pesurungan Kidul: penimbangan berat badan, tinggi badan, imunisasi, DDKS, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "391aff75-042e-45a9-807b-31bd4df2b630", nama: "Posyandu Teratai Pesurungan Kidul 2", kecamatan: "Margadana", kelurahan: "Pesurungan Kidul", rw: "01", rt: "03", lokasi: "Balai Posyandu / RW 01, Pesurungan Kidul, Margadana, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Teratai Pesurungan Kidul 2 Pesurungan Kidul: penimbangan berat badan, tinggi badan, imunisasi, DDKS, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
 
   // Pesurungan Lor (4 Posyandu)
   { id: "7e363301-78ea-4310-84c2-94618d860cee", nama: "Posyandu Anggrek", kecamatan: "Margadana", kelurahan: "Pesurungan Lor", rw: "01", rt: "01", lokasi: "Balai Posyandu / RW 01, Pesurungan Lor, Margadana, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Dahlia Pesurungan Lor 1 Pesurungan Lor: penimbangan berat badan, tinggi badan, imunisasi, DDKS, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
