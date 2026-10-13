@@ -20,6 +20,8 @@ import {
   KOTA_TEGAL_DATA,
   getWargaHierarchyChain,
   MASTER_KOMUNITAS_SEED,
+  getJumlahRwByKelurahan,
+  getJumlahRtPerRwByKelurahan,
 } from "@/lib/constants/tegal-data";
 import {
   toValidUUID,
@@ -2844,8 +2846,9 @@ export async function seedWargaKitaToSupabase(options?: {
           updated_at: new Date().toISOString(),
         });
 
-        // 17 RW per Kelurahan
-        for (let r = 1; r <= 17; r++) {
+        // RW sesuai ketentuan kelurahan
+        const rwTotal = getJumlahRwByKelurahan(kelName);
+        for (let r = 1; r <= rwTotal; r++) {
           const rwStr = String(r).padStart(2, "0");
           const rwId = toValidUUID(`kom-warga-${kecSlug}-${kelSlug}-rw${rwStr}`);
           items.push({
@@ -2865,9 +2868,10 @@ export async function seedWargaKitaToSupabase(options?: {
             updated_at: new Date().toISOString(),
           });
 
-          // 17 RT per RW (7.803 RT)
+          // 10 RT per RW (khusus Kelurahan Panggung 13 RT per RW)
           if (includeRt) {
-            for (let t = 1; t <= 17; t++) {
+            const rtTotal = getJumlahRtPerRwByKelurahan(kelName);
+            for (let t = 1; t <= rtTotal; t++) {
               const rtStr = String(t).padStart(2, "0");
               const rtId = toValidUUID(`kom-warga-${kecSlug}-${kelSlug}-rw${rwStr}-rt${rtStr}`);
               items.push({
@@ -2908,8 +2912,8 @@ export async function seedWargaKitaToSupabase(options?: {
     }
 
     const detailText = includeRt
-      ? "4 Kecamatan, 27 Kelurahan, 459 RW, dan 7.803 RT"
-      : "4 Kecamatan, 27 Kelurahan, dan 459 RW";
+      ? "4 Kecamatan, 27 Kelurahan, 167 RW, dan 1.712 RT"
+      : "4 Kecamatan, 27 Kelurahan, dan 167 RW";
 
     return {
       success: true,
@@ -3097,11 +3101,11 @@ export async function getKomunitasAuditSummaryAction(): Promise<{
         total: wargaCount,
         kecamatanCount: 4,
         kelurahanCount: 27,
-        rwCount: 459,
-        rtCount: 7514,
+        rwCount: 167,
+        rtCount: 1712,
         standardKec: 4,
         standardKel: 27,
-        standardRw: 459,
+        standardRw: 167,
         isComplete: wargaCount > 0,
       },
       kecamatanBreakdown,

@@ -27,6 +27,8 @@ import {
   DAFTAR_RW_TEGAL,
   DAFTAR_RT_TEGAL,
   getKelurahanByKecamatan,
+  getRwListByKelurahan,
+  getRtListByKelurahan,
 } from "@/lib/constants/tegal-data";
 import type { DataAnakItem, JenisKomunitas } from "@/types/database";
 import { cn } from "@/lib/utils";
@@ -616,14 +618,14 @@ export function ModalEditDataAnak({
                 <div className="grid grid-cols-2 gap-3.5">
                   <div className="space-y-1.5">
                     <label className="text-xs font-bold uppercase tracking-wider text-slate-700">
-                      RW KK (01–15) <span className="text-rose-600">*</span>
+                      RW KK <span className="text-rose-600">*</span>
                     </label>
                     <select
                       value={kkRw}
                       onChange={(e) => setKkRw(e.target.value)}
                       className="w-full min-h-[44px] h-11 rounded-xl border-2 border-slate-300 bg-white px-3 text-sm font-mono font-bold text-slate-900 focus:border-blue-600 focus:outline-hidden cursor-pointer"
                     >
-                      {DAFTAR_RW_TEGAL.map((rw) => (
+                      {getRwListByKelurahan(kkKelurahan).map((rw) => (
                         <option key={rw} value={rw}>
                           RW {rw}
                         </option>
@@ -633,14 +635,14 @@ export function ModalEditDataAnak({
 
                   <div className="space-y-1.5">
                     <label className="text-xs font-bold uppercase tracking-wider text-slate-700">
-                      RT KK (01–15) <span className="text-rose-600">*</span>
+                      RT KK <span className="text-rose-600">*</span>
                     </label>
                     <select
                       value={kkRt}
                       onChange={(e) => setKkRt(e.target.value)}
                       className="w-full min-h-[44px] h-11 rounded-xl border-2 border-slate-300 bg-white px-3 text-sm font-mono font-bold text-slate-900 focus:border-blue-600 focus:outline-hidden cursor-pointer"
                     >
-                      {DAFTAR_RT_TEGAL.map((rt) => (
+                      {getRtListByKelurahan(kkKelurahan, kkRw).map((rt) => (
                         <option key={rt} value={rt}>
                           RT {rt}
                         </option>
@@ -818,14 +820,14 @@ export function ModalEditDataAnak({
                     <div className="grid grid-cols-2 gap-3.5">
                       <div className="space-y-1.5">
                         <label className="text-xs font-bold uppercase tracking-wider text-slate-700">
-                          RW Domisili (01–15) <span className="text-rose-600">*</span>
+                          RW Domisili <span className="text-rose-600">*</span>
                         </label>
                         <select
                           value={domisiliRw}
                           onChange={(e) => setDomisiliRw(e.target.value)}
                           className="w-full min-h-[44px] h-11 rounded-xl border-2 border-slate-300 bg-white px-3 text-sm font-mono font-bold text-slate-900 focus:border-emerald-600 focus:outline-hidden cursor-pointer"
                         >
-                          {DAFTAR_RW_TEGAL.map((rw) => (
+                          {getRwListByKelurahan(domisiliKelurahan).map((rw) => (
                             <option key={rw} value={rw}>
                               RW {rw}
                             </option>
@@ -835,14 +837,14 @@ export function ModalEditDataAnak({
 
                       <div className="space-y-1.5">
                         <label className="text-xs font-bold uppercase tracking-wider text-slate-700">
-                          RT Domisili (01–15) <span className="text-rose-600">*</span>
+                          RT Domisili <span className="text-rose-600">*</span>
                         </label>
                         <select
                           value={domisiliRt}
                           onChange={(e) => setDomisiliRt(e.target.value)}
                           className="w-full min-h-[44px] h-11 rounded-xl border-2 border-slate-300 bg-white px-3 text-sm font-mono font-bold text-slate-900 focus:border-emerald-600 focus:outline-hidden cursor-pointer"
                         >
-                          {DAFTAR_RT_TEGAL.map((rt) => (
+                          {getRtListByKelurahan(domisiliKelurahan, domisiliRw).map((rt) => (
                             <option key={rt} value={rt}>
                               RT {rt}
                             </option>

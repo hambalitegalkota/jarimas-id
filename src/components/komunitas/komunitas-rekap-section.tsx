@@ -49,11 +49,8 @@ export function KomunitasRekapSection({
   // Secara default collapsible terbuka
   const [isOpen, setIsOpen] = useState<boolean>(true);
 
-  if (currentTab === "warga_kita") {
-    return null;
-  }
-
   const isPaud = currentTab === "satuan_paud";
+  const isWarga = currentTab === "warga_kita";
 
   const rekap = getKomunitasRekapData(currentTab, {
     bentuk: currentBentuk,
@@ -198,12 +195,16 @@ export function KomunitasRekapSection({
               <span
                 className={`text-[11px] font-black px-2.5 py-0.5 rounded-full ${theme.badgeTotal}`}
               >
-                {rekap.totalSemua} {rekap.satuanLabel}
+                {isWarga
+                  ? `${rekap.totalSemua} RW • ${(rekap.totalRt || 1712).toLocaleString("id-ID")} RT`
+                  : `${rekap.totalSemua} ${rekap.satuanLabel}`}
               </span>
             </div>
             <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 mt-0.5">
               {isPaud
                 ? `Tersebar di 7 Bentuk Satuan Pendidikan, ${rekap.totalKecamatan} Kecamatan & ${rekap.totalKelurahan} Kelurahan se-Kota Tegal`
+                : isWarga
+                ? `Tersebar di ${rekap.totalKecamatan} Kecamatan & ${rekap.totalKelurahan} Kelurahan (${rekap.totalSemua} RW & ${(rekap.totalRt || 1712).toLocaleString("id-ID")} RT) se-Kota Tegal`
                 : `Tersebar di ${rekap.totalKecamatan} Kecamatan & ${rekap.totalKelurahan} Kelurahan se-Kota Tegal`}
             </p>
           </div>
@@ -365,7 +366,9 @@ export function KomunitasRekapSection({
                   key={kec.kecamatan}
                   className={`rounded-xl border-2 transition-all p-3 flex flex-col justify-between ${
                     isKecSelected
-                      ? "border-emerald-500 dark:border-emerald-500 bg-white dark:bg-slate-800 shadow-sm ring-2 ring-emerald-500/20"
+                      ? isWarga
+                        ? "border-blue-500 dark:border-blue-500 bg-white dark:bg-slate-800 shadow-sm ring-2 ring-blue-500/20"
+                        : "border-emerald-500 dark:border-emerald-500 bg-white dark:bg-slate-800 shadow-sm ring-2 ring-emerald-500/20"
                       : "border-slate-200/90 dark:border-slate-800 bg-white/80 dark:bg-slate-800/80 hover:border-slate-300 dark:hover:border-slate-700"
                   }`}
                 >
@@ -377,17 +380,17 @@ export function KomunitasRekapSection({
                         className="group inline-flex items-center gap-1.5 hover:underline"
                         title={`Filter hanya Kecamatan ${kec.kecamatan}`}
                       >
-                        <MapPin className="h-3.5 w-3.5 text-slate-400 group-hover:text-emerald-600 transition-colors shrink-0" />
-                        <span className="text-xs font-black text-slate-900 dark:text-slate-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+                        <MapPin className={`h-3.5 w-3.5 text-slate-400 ${isWarga ? "group-hover:text-blue-600" : "group-hover:text-emerald-600"} transition-colors shrink-0`} />
+                        <span className={`text-xs font-black text-slate-900 dark:text-slate-100 ${isWarga ? "group-hover:text-blue-600 dark:group-hover:text-blue-400" : "group-hover:text-emerald-600 dark:group-hover:text-emerald-400"} transition-colors`}>
                           Kec. {kec.kecamatan}
                         </span>
                       </Link>
                       <Link
                         href={makeFilterUrl(kec.kecamatan, "semua")}
                         className={`text-[11px] font-black px-2 py-0.5 rounded-full border transition-all ${theme.badgeKec} hover:scale-105`}
-                        title={`Total di ${kec.kecamatan}`}
+                        title={isWarga ? `Total ${kec.totalCount} RW (${kec.rtTotal || (kec.totalCount * 10)} RT) di ${kec.kecamatan}` : `Total di ${kec.kecamatan}`}
                       >
-                        {kec.totalCount}
+                        {isWarga ? `${kec.totalCount} RW (${kec.rtTotal || (kec.totalCount * 10)} RT)` : kec.totalCount}
                       </Link>
                     </div>
 
@@ -408,7 +411,11 @@ export function KomunitasRekapSection({
                                 ? theme.chipActive
                                 : `bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 ${theme.chipHover}`
                             }`}
-                            title={`Filter: Kelurahan ${kel.kelurahan} (${kel.count} ${rekap.satuanLabel})`}
+                            title={
+                              isWarga
+                                ? `Filter: Kelurahan ${kel.kelurahan} (${kel.rwCount ?? kel.count} RW • ${kel.rtCount ?? (kel.count * 10)} RT)`
+                                : `Filter: Kelurahan ${kel.kelurahan} (${kel.count} ${rekap.satuanLabel})`
+                            }
                           >
                             <span>{kel.kelurahan}</span>
                             <span
@@ -418,7 +425,7 @@ export function KomunitasRekapSection({
                                   : theme.countBadge
                               }`}
                             >
-                              {kel.count}
+                              {isWarga ? `${kel.rwCount ?? kel.count} RW` : kel.count}
                             </span>
                           </Link>
                         );
@@ -429,7 +436,7 @@ export function KomunitasRekapSection({
                   {/* Quick Reset for this Kecamatan */}
                   {isKecSelected && (
                     <div className="mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between text-[11px]">
-                      <span className="font-bold text-emerald-600 dark:text-emerald-400 inline-flex items-center gap-1">
+                      <span className={`font-bold ${isWarga ? "text-blue-600 dark:text-blue-400" : "text-emerald-600 dark:text-emerald-400"} inline-flex items-center gap-1`}>
                         <CheckCircle2 className="h-3 w-3" />
                         Aktif difilter
                       </span>

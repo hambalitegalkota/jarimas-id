@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useEffect, useRef } from "react";
+import { useState, useTransition, useEffect, useRef, useMemo } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import {
   MapPin,
@@ -18,6 +18,10 @@ import {
   DAFTAR_RT_TEGAL,
   DAFTAR_BENTUK_PENDIDIKAN,
   getKelurahanByKecamatan,
+  getRwListByKelurahan,
+  getRtListByKelurahan,
+  getJumlahRwByKelurahan,
+  getJumlahRtPerRwByKelurahan,
 } from "@/lib/constants/tegal-data";
 import { cn } from "@/lib/utils";
 
@@ -59,6 +63,15 @@ export function KomunitasFilter({
     currentKecamatan && currentKecamatan !== "semua"
       ? getKelurahanByKecamatan(currentKecamatan)
       : [];
+
+  // Daftar RW dan RT dinamis sesuai kelurahan terpilih
+  const availableRwList = useMemo(() => {
+    return getRwListByKelurahan(currentKelurahan);
+  }, [currentKelurahan]);
+
+  const availableRtList = useMemo(() => {
+    return getRtListByKelurahan(currentKelurahan, currentRw);
+  }, [currentKelurahan, currentRw]);
 
   const updateUrlParams = (updater: (params: URLSearchParams) => void) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -140,6 +153,18 @@ export function KomunitasFilter({
         params.delete("rt");
       } else {
         params.set("kelurahan", val);
+        const maxRw = getJumlahRwByKelurahan(val);
+        const rwNum = parseInt(currentRw, 10);
+        if (!isNaN(rwNum) && rwNum > maxRw) {
+          params.delete("rw");
+          params.delete("rt");
+        } else {
+          const maxRt = getJumlahRtPerRwByKelurahan(val);
+          const rtNum = parseInt(currentRt, 10);
+          if (!isNaN(rtNum) && rtNum > maxRt) {
+            params.delete("rt");
+          }
+        }
       }
     });
   };
@@ -163,6 +188,11 @@ export function KomunitasFilter({
         params.delete("rt");
       } else {
         params.set("rw", val);
+        const maxRt = getJumlahRtPerRwByKelurahan(currentKelurahan);
+        const rtNum = parseInt(currentRt, 10);
+        if (!isNaN(rtNum) && rtNum > maxRt) {
+          params.delete("rt");
+        }
       }
     });
   };
@@ -226,7 +256,7 @@ export function KomunitasFilter({
           </div>
 
           <p className="text-sm text-slate-700 leading-relaxed">
-            Saat ini terdapat <strong>1 Komunitas Kota Tegal</strong>, <strong>4 Komunitas Kecamatan</strong>, <strong>27 Komunitas Kelurahan</strong>, <strong>459 Komunitas RW</strong> dan <strong>7.803 Komunitas RT</strong>.
+            Saat ini terdapat <strong>1 Komunitas Kota Tegal</strong>, <strong>4 Komunitas Kecamatan</strong>, <strong>27 Komunitas Kelurahan</strong>, <strong>167 Komunitas RW</strong> dan <strong>1.712 Komunitas RT</strong>.
           </p>
 
           <p className="text-xs sm:text-sm text-slate-600 font-medium leading-relaxed">
@@ -379,7 +409,7 @@ export function KomunitasFilter({
                   className="w-full min-h-[44px] h-11 rounded-xl border-2 border-slate-200 bg-white px-3 text-xs sm:text-sm font-semibold text-slate-900 focus:border-blue-600 focus:outline-none disabled:opacity-60 cursor-pointer"
                 >
                   <option value="semua">Semua RW</option>
-                  {DAFTAR_RW_TEGAL.map((rwNum) => (
+                  {availableRwList.map((rwNum) => (
                     <option key={rwNum} value={rwNum}>
                       RW {rwNum}
                     </option>
@@ -403,7 +433,7 @@ export function KomunitasFilter({
                   className="w-full min-h-[44px] h-11 rounded-xl border-2 border-slate-200 bg-white px-3 text-xs sm:text-sm font-semibold text-slate-900 focus:border-blue-600 focus:outline-none disabled:opacity-60 cursor-pointer"
                 >
                   <option value="semua">Semua RT</option>
-                  {DAFTAR_RT_TEGAL.map((rtNum) => (
+                  {availableRtList.map((rtNum) => (
                     <option key={rtNum} value={rtNum}>
                       RT {rtNum}
                     </option>

@@ -140,7 +140,7 @@ export default async function KomunitasPage({
       id: "warga_kita" as JenisKomunitas,
       title: "Komunitas Warga Kita",
       subtitle: "Struktur Komunitas 4 Tingkat: RT, RW, Kelurahan & Kecamatan",
-      badgeText: "7.800+ RT/RW",
+      badgeText: "167 RW • 1.712 RT",
       icon: Users,
       activeColorBg: "bg-blue-600 dark:bg-blue-700",
       activeBorder: "border-blue-500",
@@ -174,7 +174,7 @@ export default async function KomunitasPage({
 
   const categoryTotalLabels: Record<string, string | number> = {
     posyandu: 209,
-    warga_kita: "7.800+",
+    warga_kita: "167 RW • 1.712 RT",
     satuan_paud: 219,
   };
   const totalDisplay = hasActiveFilter
@@ -188,14 +188,12 @@ export default async function KomunitasPage({
     return (
       <div className="space-y-6 pt-2">
         {/* 1. REKAP JUMLAH KOMUNITAS PER KECAMATAN & KELURAHAN BESERTA BENTUK SATUAN */}
-        {activeCatId !== "warga_kita" && (
-          <KomunitasRekapSection
-            currentTab={activeCatId}
-            currentKecamatan={currentKecamatan}
-            currentKelurahan={currentKelurahan}
-            currentBentuk={currentBentuk}
-          />
-        )}
+        <KomunitasRekapSection
+          currentTab={activeCatId}
+          currentKecamatan={currentKecamatan}
+          currentKelurahan={currentKelurahan}
+          currentBentuk={currentBentuk}
+        />
 
         {/* 2. FILTER DROPDOWN & SEARCH WILAYAH */}
         <Suspense fallback={<div className="min-h-[100px] animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-800" />}>

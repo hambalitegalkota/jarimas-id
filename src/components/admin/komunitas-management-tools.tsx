@@ -368,7 +368,7 @@ export function KomunitasManagementTools() {
                     <span>3. Warga Kita (Domisili)</span>
                   </div>
                   <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-300 px-2 py-0.5 text-[10px] font-bold">
-                    4 Kec / 27 Kel
+                    4 Kec / 27 Kel / 167 RW
                   </span>
                 </div>
 
@@ -377,7 +377,7 @@ export function KomunitasManagementTools() {
                     {auditSummary.warga.total}
                   </span>
                   <span className="text-xs text-slate-500 font-medium">
-                    Entitas Tingkat Kec, Kel, RW &amp; RT
+                    Entitas Tingkat Kec, Kel, RW &amp; RT (167 RW • 1.712 RT)
                   </span>
                 </div>
               </div>

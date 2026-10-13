@@ -34,6 +34,8 @@ import {
   getKelurahanByKecamatan,
   DAFTAR_RW_TEGAL,
   DAFTAR_RT_TEGAL,
+  getRwListByKelurahan,
+  getRtListByKelurahan,
 } from "@/lib/constants/tegal-data";
 import { extractKomunitasMetadata } from "@/lib/admin-helpers";
 import { normalizeKeinginanSekolah } from "@/lib/ats-helpers";
@@ -561,7 +563,7 @@ export function ModalEditAts({
                     className="w-full h-9 rounded-md border border-border bg-card px-3 text-xs font-medium text-foreground focus:border-amber-500 focus:outline-hidden cursor-pointer"
                   >
                     <option value="Belum Tahu">Belum Tahu</option>
-                    {DAFTAR_RW_TEGAL.map((r) => (
+                    {getRwListByKelurahan(kelurahan).map((r) => (
                       <option key={r} value={r}>
                         RW {r}
                       </option>
@@ -579,7 +581,7 @@ export function ModalEditAts({
                     className="w-full h-9 rounded-md border border-border bg-card px-3 text-xs font-medium text-foreground focus:border-amber-500 focus:outline-hidden cursor-pointer"
                   >
                     <option value="Belum Tahu">Belum Tahu</option>
-                    {DAFTAR_RT_TEGAL.map((t) => (
+                    {getRtListByKelurahan(kelurahan, rw).map((t) => (
                       <option key={t} value={t}>
                         RT {t}
                       </option>

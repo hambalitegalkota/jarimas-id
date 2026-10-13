@@ -22,6 +22,8 @@ import {
   DAFTAR_RW_TEGAL,
   DAFTAR_RT_TEGAL,
   getKelurahanByKecamatan,
+  getRwListByKelurahan,
+  getRtListByKelurahan,
 } from "@/lib/constants/tegal-data";
 import type { KomunitasWithMembership } from "@/types/database";
 import { cn } from "@/lib/utils";
@@ -98,6 +100,22 @@ export function WargaOnboardingModal({
   const domisiliKelurahanOptions = useMemo(() => {
     return getKelurahanByKecamatan(effectiveDomisiliKecamatan);
   }, [effectiveDomisiliKecamatan]);
+
+  const kkRwOptions = useMemo(() => {
+    return getRwListByKelurahan(kkKelurahan);
+  }, [kkKelurahan]);
+
+  const kkRtOptions = useMemo(() => {
+    return getRtListByKelurahan(kkKelurahan, kkRw);
+  }, [kkKelurahan, kkRw]);
+
+  const domisiliRwOptions = useMemo(() => {
+    return getRwListByKelurahan(effectiveDomisiliKelurahan);
+  }, [effectiveDomisiliKelurahan]);
+
+  const domisiliRtOptions = useMemo(() => {
+    return getRtListByKelurahan(effectiveDomisiliKelurahan, effectiveDomisiliRw);
+  }, [effectiveDomisiliKelurahan, effectiveDomisiliRw]);
 
   if (!isOpen) return null;
 
@@ -363,7 +381,7 @@ export function WargaOnboardingModal({
                       onChange={(e) => setKkRw(e.target.value)}
                       className="w-full px-3 py-2 rounded-xl border-2 border-slate-200 bg-white text-xs font-semibold text-slate-900 focus:border-blue-600 focus:outline-none cursor-pointer"
                     >
-                      {DAFTAR_RW_TEGAL.map((rwNum) => (
+                      {kkRwOptions.map((rwNum) => (
                         <option key={rwNum} value={rwNum}>
                           RW {rwNum}
                         </option>
@@ -380,7 +398,7 @@ export function WargaOnboardingModal({
                       onChange={(e) => setKkRt(e.target.value)}
                       className="w-full px-3 py-2 rounded-xl border-2 border-slate-200 bg-white text-xs font-semibold text-slate-900 focus:border-blue-600 focus:outline-none cursor-pointer"
                     >
-                      {DAFTAR_RT_TEGAL.map((rtNum) => (
+                      {kkRtOptions.map((rtNum) => (
                         <option key={rtNum} value={rtNum}>
                           RT {rtNum}
                         </option>
@@ -628,7 +646,7 @@ export function WargaOnboardingModal({
                           onChange={(e) => setDomisiliRw(e.target.value)}
                           className="w-full px-3 py-2 rounded-xl border-2 border-slate-200 bg-white text-xs font-semibold text-slate-900 focus:border-blue-600 focus:outline-none cursor-pointer"
                         >
-                          {DAFTAR_RW_TEGAL.map((rwNum) => (
+                          {domisiliRwOptions.map((rwNum) => (
                             <option key={rwNum} value={rwNum}>
                               RW {rwNum}
                             </option>
@@ -645,7 +663,7 @@ export function WargaOnboardingModal({
                           onChange={(e) => setDomisiliRt(e.target.value)}
                           className="w-full px-3 py-2 rounded-xl border-2 border-slate-200 bg-white text-xs font-semibold text-slate-900 focus:border-blue-600 focus:outline-none cursor-pointer"
                         >
-                          {DAFTAR_RT_TEGAL.map((rtNum) => (
+                          {domisiliRtOptions.map((rtNum) => (
                             <option key={rtNum} value={rtNum}>
                               RT {rtNum}
                             </option>

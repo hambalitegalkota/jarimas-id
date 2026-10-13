@@ -656,11 +656,111 @@ export const KOTA_TEGAL_DATA: Record<string, KecamatanData> = {
 
 export const DAFTAR_KECAMATAN_TEGAL = Object.keys(KOTA_TEGAL_DATA);
 
-export const DAFTAR_RW_TEGAL = Array.from({ length: 15 }, (_, i) =>
+/**
+ * Data Resmi Jumlah Komunitas RW per Kelurahan di Kota Tegal
+ * Sesuai ketentuan:
+ * - Margadana (7 Kelurahan, 38 RW, 380 RT):
+ *   Kaligangsa 7 RW, Krandon 4 RW, Cabawan 4 RW, Margadana 13 RW,
+ *   Kalinyamat Kulon 4 RW, Sumurpanggang 2 RW, Pesurungan Lor 4 RW.
+ * - Tegal Barat (7 Kelurahan, 46 RW, 460 RT):
+ *   Pesurungan Kidul 6 RW, Debong Lor 3 RW, Kemandungan 3 RW, Pekauman 8 RW,
+ *   Kraton 9 RW, Tegalsari 14 RW, Muarareja 3 RW.
+ * - Tegal Selatan (8 Kelurahan, 42 RW, 420 RT):
+ *   Kalinyamat Wetan 4 RW, Bandung 5 RW, Debong Kidul 4 RW, Tunon 4 RW,
+ *   Keturen 3 RW, Debong Kulon 4 RW, Debong Tengah 6 RW, Randugunting 12 RW.
+ * - Tegal Timur (5 Kelurahan, 41 RW, 452 RT):
+ *   Kejambon 6 RW, Slerok 6 RW, Panggung 14 RW, Mangkukusuman 4 RW, Mintaragen 11 RW.
+ */
+export const DATA_RW_PER_KELURAHAN: Record<string, number> = {
+  // Kecamatan Margadana (38 RW, 380 RT)
+  "Kaligangsa": 7,
+  "Krandon": 4,
+  "Cabawan": 4,
+  "Margadana": 13,
+  "Kalinyamat Kulon": 4,
+  "Sumurpanggang": 2,
+  "Pesurungan Lor": 4,
+
+  // Kecamatan Tegal Barat (46 RW, 460 RT)
+  "Pesurungan Kidul": 6,
+  "Debong Lor": 3,
+  "Kemandungan": 3,
+  "Pekauman": 8,
+  "Kraton": 9,
+  "Tegalsari": 14,
+  "Muarareja": 3,
+
+  // Kecamatan Tegal Selatan (42 RW, 420 RT)
+  "Kalinyamat Wetan": 4,
+  "Bandung": 5,
+  "Debong Kidul": 4,
+  "Tunon": 4,
+  "Keturen": 3,
+  "Debong Kulon": 4,
+  "Debong Tengah": 6,
+  "Randugunting": 12,
+
+  // Kecamatan Tegal Timur (41 RW, 452 RT)
+  "Kejambon": 6,
+  "Slerok": 6,
+  "Panggung": 14,
+  "Mangkukusuman": 4,
+  "Mintaragen": 11,
+};
+
+export const RT_PER_RW_DEFAULT = 10;
+export const RT_PER_RW_PANGGUNG = 13;
+
+export const TOTAL_KOMUNITAS_RW_KOTA_TEGAL = 167;
+export const TOTAL_KOMUNITAS_RT_KOTA_TEGAL = 1712;
+
+export function getJumlahRwByKelurahan(kelurahan?: string | null): number {
+  if (!kelurahan) return 14;
+  const clean = kelurahan.replace(/^(kelurahan|kel\.)\s+/i, "").trim().toLowerCase();
+  for (const [k, v] of Object.entries(DATA_RW_PER_KELURAHAN)) {
+    if (k.toLowerCase() === clean) {
+      return v;
+    }
+  }
+  return 14;
+}
+
+export function getJumlahRtPerRwByKelurahan(kelurahan?: string | null): number {
+  if (!kelurahan) return RT_PER_RW_DEFAULT;
+  const clean = kelurahan.replace(/^(kelurahan|kel\.)\s+/i, "").trim().toLowerCase();
+  if (clean === "panggung") {
+    return RT_PER_RW_PANGGUNG; // 13 RT
+  }
+  return RT_PER_RW_DEFAULT; // 10 RT
+}
+
+export function getTotalRtByKelurahan(kelurahan?: string | null): number {
+  const rwCount = getJumlahRwByKelurahan(kelurahan);
+  const rtPerRw = getJumlahRtPerRwByKelurahan(kelurahan);
+  return rwCount * rtPerRw;
+}
+
+export function getRwListByKelurahan(kelurahan?: string | null): string[] {
+  if (!kelurahan || kelurahan === "semua" || kelurahan === "Semua Kelurahan") {
+    return Array.from({ length: 14 }, (_, i) => String(i + 1).padStart(2, "0"));
+  }
+  const count = getJumlahRwByKelurahan(kelurahan);
+  return Array.from({ length: count }, (_, i) => String(i + 1).padStart(2, "0"));
+}
+
+export function getRtListByKelurahan(kelurahan?: string | null, _rw?: string | null): string[] {
+  if (!kelurahan || kelurahan === "semua" || kelurahan === "Semua Kelurahan") {
+    return Array.from({ length: 13 }, (_, i) => String(i + 1).padStart(2, "0"));
+  }
+  const count = getJumlahRtPerRwByKelurahan(kelurahan);
+  return Array.from({ length: count }, (_, i) => String(i + 1).padStart(2, "0"));
+}
+
+export const DAFTAR_RW_TEGAL = Array.from({ length: 14 }, (_, i) =>
   String(i + 1).padStart(2, "0")
 );
 
-export const DAFTAR_RT_TEGAL = Array.from({ length: 15 }, (_, i) =>
+export const DAFTAR_RT_TEGAL = Array.from({ length: 13 }, (_, i) =>
   String(i + 1).padStart(2, "0")
 );
 
@@ -936,8 +1036,9 @@ export function generateWargaKomunitasHierarchy({
       },
     ];
 
-    // Sertakan 15 Komunitas RT di bawah RW ini (RT 01 s/d RT 15)
-    for (let i = 1; i <= 15; i++) {
+    // Sertakan Komunitas RT di bawah RW ini (10 RT per RW, kecuali Panggung 13 RT)
+    const rtCountInRw = getJumlahRtPerRwByKelurahan(kelurahan);
+    for (let i = 1; i <= rtCountInRw; i++) {
       const rtStr = String(i).padStart(2, "0");
       items.push({
         id: `kom-warga-${slugify(kecamatan!)}-${slugify(kelurahan!)}-rw${cleanRw}-rt${rtStr}`,
@@ -976,8 +1077,9 @@ export function generateWargaKomunitasHierarchy({
       },
     ];
 
-    // Sertakan 15 Komunitas RW di bawah Kelurahan ini (RW 01 s/d RW 15)
-    for (let r = 1; r <= 15; r++) {
+    // Sertakan Komunitas RW di bawah Kelurahan ini sesuai jumlah RW resmi
+    const rwCountInKel = getJumlahRwByKelurahan(kelurahan);
+    for (let r = 1; r <= rwCountInKel; r++) {
       const rwStr = String(r).padStart(2, "0");
       items.push({
         id: `kom-warga-${slugify(kecamatan!)}-${slugify(kelurahan!)}-rw${rwStr}`,
@@ -1222,8 +1324,11 @@ export function findOrGenerateKomunitasSeed(
         });
       }
 
-      // 3. Cocokkan Tingkat RW (RW 01 s/d RW 15)
-      for (let r = 1; r <= 15; r++) {
+      // 3. Cocokkan Tingkat RW
+      const maxRw = getJumlahRwByKelurahan(kelName);
+      const maxRt = getJumlahRtPerRwByKelurahan(kelName);
+
+      for (let r = 1; r <= maxRw; r++) {
         const rwStr = String(r).padStart(2, "0");
         const rwId = `kom-warga-${kecSlug}-${kelSlug}-rw${rwStr}`;
         if (
@@ -1246,8 +1351,8 @@ export function findOrGenerateKomunitasSeed(
           });
         }
 
-        // 4. Cocokkan Tingkat RT (RT 01 s/d RT 15)
-        for (let t = 1; t <= 15; t++) {
+        // 4. Cocokkan Tingkat RT
+        for (let t = 1; t <= maxRt; t++) {
           const rtStr = String(t).padStart(2, "0");
           const rtId = `kom-warga-${kecSlug}-${kelSlug}-rw${rwStr}-rt${rtStr}`;
           if (
@@ -1430,11 +1535,15 @@ export function getWargaHierarchyChain(params: {
 export interface RekapKelurahanItem {
   kelurahan: string;
   count: number;
+  rwCount?: number;
+  rtCount?: number;
 }
 
 export interface RekapKecamatanItem {
   kecamatan: string;
   totalCount: number;
+  rwTotal?: number;
+  rtTotal?: number;
   kelurahanList: RekapKelurahanItem[];
 }
 
@@ -1558,6 +1667,8 @@ export interface RekapTabSummary {
   labelSingkat: string;
   satuanLabel: string;
   totalSemua: number;
+  totalRw?: number;
+  totalRt?: number;
   totalKecamatan: number;
   totalKelurahan: number;
   kecamatanList: RekapKecamatanItem[];
@@ -1571,6 +1682,7 @@ export function getKomunitasRekapData(
 ): RekapTabSummary {
   const isPosyandu = tab === "posyandu";
   const isPaud = tab === "satuan_paud";
+  const isWarga = tab === "warga_kita";
   const activeBentuk =
     filter?.bentuk && filter.bentuk !== "semua"
       ? filter.bentuk.toUpperCase().trim()
@@ -1588,19 +1700,25 @@ export function getKomunitasRekapData(
     ? "Posyandu"
     : isPaud
     ? "Lembaga"
-    : "Komunitas";
+    : "RW";
 
   const kecamatanList: RekapKecamatanItem[] = [];
   let totalSemua = 0;
+  let totalRwAll = 0;
+  let totalRtAll = 0;
   let totalKelurahanCount = 0;
 
   for (const [kecName, kecData] of Object.entries(KOTA_TEGAL_DATA)) {
     const kelurahanList: RekapKelurahanItem[] = [];
     let kecTotal = 0;
+    let kecRwTotal = 0;
+    let kecRtTotal = 0;
 
     for (const [kelName, kelData] of Object.entries(kecData.kelurahan)) {
       totalKelurahanCount++;
       let count = 0;
+      let rwCount: number | undefined;
+      let rtCount: number | undefined;
 
       if (isPosyandu) {
         count = SEED_POSYANDU_TEGAL.filter(
@@ -1622,26 +1740,32 @@ export function getKomunitasRekapData(
           return true;
         }).length;
       } else {
-        const wargaCount = MASTER_KOMUNITAS_SEED.filter(
-          (w) =>
-            w.jenis === "warga_kita" &&
-            w.kecamatan?.toLowerCase().trim() === kecName.toLowerCase().trim() &&
-            w.kelurahan?.toLowerCase().trim() === kelName.toLowerCase().trim()
-        ).length;
-        count = wargaCount > 0 ? wargaCount : 2;
+        // Tab Warga Kita: hitung persis jumlah RW dan RT per kelurahan
+        rwCount = getJumlahRwByKelurahan(kelName);
+        rtCount = getTotalRtByKelurahan(kelName);
+        count = rwCount;
+        kecRwTotal += rwCount;
+        kecRtTotal += rtCount;
       }
 
       kecTotal += count;
       kelurahanList.push({
         kelurahan: kelName,
         count,
+        ...(rwCount !== undefined ? { rwCount, rtCount } : {}),
       });
     }
 
     totalSemua += kecTotal;
+    if (isWarga) {
+      totalRwAll += kecRwTotal;
+      totalRtAll += kecRtTotal;
+    }
+
     kecamatanList.push({
       kecamatan: kecName,
       totalCount: kecTotal,
+      ...(isWarga ? { rwTotal: kecRwTotal, rtTotal: kecRtTotal } : {}),
       kelurahanList,
     });
   }
@@ -1650,7 +1774,9 @@ export function getKomunitasRekapData(
     tab: (tab as any) || "posyandu",
     labelSingkat,
     satuanLabel,
-    totalSemua,
+    totalSemua: isWarga ? TOTAL_KOMUNITAS_RW_KOTA_TEGAL : totalSemua,
+    totalRw: isWarga ? TOTAL_KOMUNITAS_RW_KOTA_TEGAL : undefined,
+    totalRt: isWarga ? TOTAL_KOMUNITAS_RT_KOTA_TEGAL : undefined,
     totalKecamatan: kecamatanList.length,
     totalKelurahan: totalKelurahanCount,
     kecamatanList,

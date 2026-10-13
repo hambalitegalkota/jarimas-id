@@ -32,6 +32,8 @@ import {
   getKelurahanByKecamatan,
   DAFTAR_RW_TEGAL,
   DAFTAR_RT_TEGAL,
+  getRwListByKelurahan,
+  getRtListByKelurahan,
 } from "@/lib/constants/tegal-data";
 import { extractKomunitasMetadata } from "@/lib/admin-helpers";
 import type {
@@ -552,7 +554,7 @@ export function FormDataAts({
               className="w-full min-h-[48px] h-12 rounded-xl border-2 border-slate-300 bg-white px-4 text-base font-semibold text-slate-900 focus:border-blue-600 focus:outline-hidden cursor-pointer"
             >
               <option value="Belum Tahu">Belum Tahu</option>
-              {DAFTAR_RW_TEGAL.map((r) => (
+              {getRwListByKelurahan(kelurahan).map((r) => (
                 <option key={r} value={r}>
                   RW {r}
                 </option>
@@ -570,7 +572,7 @@ export function FormDataAts({
               className="w-full min-h-[48px] h-12 rounded-xl border-2 border-slate-300 bg-white px-4 text-base font-semibold text-slate-900 focus:border-blue-600 focus:outline-hidden cursor-pointer"
             >
               <option value="Belum Tahu">Belum Tahu</option>
-              {DAFTAR_RT_TEGAL.map((t) => (
+              {getRtListByKelurahan(kelurahan, rw).map((t) => (
                 <option key={t} value={t}>
                   RT {t}
                 </option>
