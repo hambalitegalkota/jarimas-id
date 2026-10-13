@@ -779,7 +779,7 @@ export async function getDataAnakByKomunitas(komunitasId: string): Promise<{
         query = query.eq("komunitas_id", validKomId);
       }
 
-      const { data: paudDirect, error: paudDirectError } = await query;
+      const { data: paudDirect, error: paudDirectError } = await query.limit(150);
 
       if (paudDirectError) {
         childError = paudDirectError;
@@ -1591,24 +1591,15 @@ export async function distribusikanDataAnakKePaudAction(): Promise<{
       };
     }
 
-    // Ambil seluruh data_anak yang bersekolah dengan paginasi penuh
-    let allChildren: any[] = [];
-    let from = 0;
-    const pageSize = 1000;
+    // Ambil data_anak yang bersekolah (maksimal 1.000 per eksekusi agar proses selesai dalam < 3 detik)
+    const { data: chunk } = await supabase
+      .from("data_anak")
+      .select("id, nama_sekolah, komunitas_id, is_sekolah")
+      .eq("is_sekolah", true)
+      .order("created_at", { ascending: false })
+      .limit(1000);
 
-    while (true) {
-      const { data: chunk, error: fetchErr } = await supabase
-        .from("data_anak")
-        .select("id, nama_sekolah, komunitas_id, is_sekolah")
-        .eq("is_sekolah", true)
-        .range(from, from + pageSize - 1);
-
-      if (fetchErr) break;
-      if (!chunk || chunk.length === 0) break;
-      allChildren = allChildren.concat(chunk);
-      if (chunk.length < pageSize) break;
-      from += pageSize;
-    }
+    const allChildren = chunk || [];
 
     let updatedCount = 0;
     const paudUpdates = new Map<string, string[]>();
@@ -1626,22 +1617,29 @@ export async function distribusikanDataAnakKePaudAction(): Promise<{
       }
     }
 
+    // Eksekusi pembaruan komunitas PAUD secara paralel
+    const updatePromises: Promise<void>[] = [];
     for (const [paudId, childIds] of paudUpdates.entries()) {
       for (let i = 0; i < childIds.length; i += 200) {
         const batchIds = childIds.slice(i, i + 200);
-        const { error: updErr } = await supabase
-          .from("data_anak")
-          .update({
-            komunitas_id: paudId,
-            updated_at: new Date().toISOString(),
-          })
-          .in("id", batchIds);
+        updatePromises.push(
+          (async () => {
+            const { error: updErr } = await supabase
+              .from("data_anak")
+              .update({
+                komunitas_id: paudId,
+                updated_at: new Date().toISOString(),
+              })
+              .in("id", batchIds);
 
-        if (!updErr) {
-          updatedCount += batchIds.length;
-        }
+            if (!updErr) {
+              updatedCount += batchIds.length;
+            }
+          })()
+        );
       }
     }
+    await Promise.all(updatePromises);
 
     revalidatePath("/komunitas");
     revalidatePath("/data-anak");

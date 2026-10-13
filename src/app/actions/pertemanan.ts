@@ -134,7 +134,8 @@ export async function getRegisteredUsers(params?: {
       const { data: profiles, error: profileErr } = await supabase
         .from("profiles")
         .select("id, nama_lengkap, email, nomor_hp, avatar_url, is_super_admin, created_at")
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false })
+        .limit(100);
 
       if (profileErr) {
         console.warn("Gagal mengambil profiles untuk super admin / admin pusat:", profileErr);
@@ -161,7 +162,8 @@ export async function getRegisteredUsers(params?: {
           .from("profiles")
           .select("id, nama_lengkap, email, nomor_hp, avatar_url, is_super_admin, created_at")
           .in("id", Array.from(userIdsToFetch))
-          .order("created_at", { ascending: false });
+          .order("created_at", { ascending: false })
+          .limit(100);
 
         if (profileErr) {
           console.warn("Gagal mengambil profiles satu komunitas:", profileErr);

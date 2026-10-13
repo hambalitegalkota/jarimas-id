@@ -267,13 +267,10 @@ export async function getRekapDataAnakUsiaDiniAction(): Promise<{
   try {
     const supabase = await createClient();
 
-    // 1. Ambil data_anak dari database dengan paginasi penuh (mencegah batas 1.000 baris)
-    let dbChildren: any[] = [];
-    let from = 0;
-    const pageSize = 1000;
-
-    while (true) {
-      const { data: chunk, error: fetchErr } = await supabase
+    // 1. Ambil data_anak dari database secara paralel (hingga 2.000 data teratas)
+    // untuk mencegah loop sekuensial yang menyebabkan loading > 5 detik
+    const [chunk1Res, chunk2Res] = await Promise.all([
+      supabase
         .from("data_anak")
         .select(`
           id,
@@ -286,18 +283,29 @@ export async function getRekapDataAnakUsiaDiniAction(): Promise<{
           komunitas_id,
           created_at
         `)
-        .range(from, from + pageSize - 1);
+        .order("created_at", { ascending: false })
+        .range(0, 999),
+      supabase
+        .from("data_anak")
+        .select(`
+          id,
+          nama_lengkap,
+          tanggal_lahir,
+          jenis_kelamin,
+          is_sekolah,
+          nama_sekolah,
+          alasan_sekolah,
+          komunitas_id,
+          created_at
+        `)
+        .order("created_at", { ascending: false })
+        .range(1000, 1999),
+    ]);
 
-      if (fetchErr) {
-        console.warn("Rekap data_anak fetch warning:", fetchErr.message);
-        break;
-      }
-
-      if (!chunk || chunk.length === 0) break;
-      dbChildren = dbChildren.concat(chunk);
-      if (chunk.length < pageSize) break;
-      from += pageSize;
-    }
+    const dbChildren: any[] = [
+      ...(chunk1Res.data || []),
+      ...(chunk2Res.data || []),
+    ];
 
     // Filter ketat: Hanya data anak balita / PAUD riil (BUKAN data ATS dan BUKAN data dummy uji coba)
     const validLiveChildren = (dbChildren || []).filter(
@@ -754,57 +762,61 @@ export async function getDaftarNamaAnakRekapAction(params: {
 
     const supabase = await createClient();
 
-    // 1. Ambil seluruh komunitas untuk pemetaan nama & metadata
-    const { data: allKom } = await supabase
-      .from("komunitas")
-      .select("id, nama, jenis, kecamatan, kelurahan, rw, rt");
-    const komMap = new Map((allKom || []).map((k: any) => [k.id, k]));
+    // 1. Query data_anak dengan filter kelurahan di level SQL jika ditentukan (maksimal 500 baris)
+    const targetKel =
+      params.kelurahan && params.kelurahan !== "semua" ? params.kelurahan : null;
 
-    // 2. Query seluruh data_anak dari database dengan paginasi penuh
-    let dbChildren: any[] = [];
-    let from = 0;
-    const pageSize = 1000;
+    let query = supabase
+      .from("data_anak")
+      .select(`
+        id,
+        nama_lengkap,
+        tanggal_lahir,
+        jenis_kelamin,
+        nama_orangtua,
+        nomor_hp,
+        tinggal_bersama,
+        is_sekolah,
+        nama_sekolah,
+        alasan_sekolah,
+        komunitas_id,
+        status_approval,
+        created_at
+      `)
+      .order("created_at", { ascending: false });
 
-    while (true) {
-      const { data: chunk, error: fetchErr } = await supabase
-        .from("data_anak")
-        .select(`
-          id,
-          nama_lengkap,
-          tanggal_lahir,
-          jenis_kelamin,
-          nama_orangtua,
-          nomor_hp,
-          tinggal_bersama,
-          is_sekolah,
-          nama_sekolah,
-          alasan_sekolah,
-          komunitas_id,
-          status_approval,
-          created_at
-        `)
-        .order("created_at", { ascending: false })
-        .range(from, from + pageSize - 1);
+    if (targetKel) {
+      query = query.ilike("alasan_sekolah", `%${targetKel}%`);
+    }
 
-      if (fetchErr) {
-        console.warn("getDaftarNamaAnakRekapAction chunk fetch warning:", fetchErr.message);
-        break;
-      }
+    const { data: dbChildren, error: fetchErr } = await query.limit(500);
 
-      if (!chunk || chunk.length === 0) break;
-      dbChildren = dbChildren.concat(chunk);
-      if (chunk.length < pageSize) break;
-      from += pageSize;
+    if (fetchErr) {
+      console.warn("getDaftarNamaAnakRekapAction fetch error:", fetchErr.message);
+      return {
+        success: false,
+        message: fetchErr.message,
+        data: [],
+        total: 0,
+      };
     }
 
     // Filter ketat: Bukan data ATS dan Bukan data dummy
-    const validLiveChildren = (dbChildren || []).filter(
-      (c) => !isDataAtsRecord(c) && !isDummyDataAnak(c)
+    const validLiveChildren: any[] = (dbChildren || []).filter(
+      (c: any) => !isDataAtsRecord(c) && !isDummyDataAnak(c)
     );
+
+    // Ambil komunitas HANYA untuk ID yang relevan dari data anak yang ditemukan
+    const childKomIds: string[] = Array.from(new Set(validLiveChildren.map((c: any) => c.komunitas_id).filter(Boolean)));
+    const missingKomIds = childKomIds.filter((cid: string) => !findOrGenerateKomunitasSeed(cid));
+    const { data: missingDbKoms } = missingKomIds.length > 0
+      ? await supabase.from("komunitas").select("id, nama, jenis, kecamatan, kelurahan, rw, rt").in("id", missingKomIds)
+      : { data: [] };
+    const komMap = new Map((missingDbKoms || []).map((k: any) => [k.id, k]));
     const resultList: DaftarNamaAnakItem[] = [];
 
     for (const child of validLiveChildren) {
-      const kom = komMap.get(child.komunitas_id) || findOrGenerateKomunitasSeed(child.komunitas_id);
+      const kom: any = komMap.get(child.komunitas_id) || findOrGenerateKomunitasSeed(child.komunitas_id);
       const parsed = parseDataAnakDetails(child.alasan_sekolah, kom);
       const age = calculateAgeFromBirthDate(child.tanggal_lahir);
       const isSekolah =

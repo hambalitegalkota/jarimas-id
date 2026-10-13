@@ -29,6 +29,7 @@ export async function getKabarFeed(
   message?: string;
   data: KabarItem[];
   currentUserId?: string | null;
+  isSuperAdmin?: boolean;
 }> {
   try {
     const supabase = await createClient();
@@ -220,6 +221,7 @@ export async function getKabarFeed(
       success: true,
       data: items,
       currentUserId,
+      isSuperAdmin,
     };
   } catch (err: any) {
     console.error("Error pada getKabarFeed:", err);
@@ -228,6 +230,7 @@ export async function getKabarFeed(
       message: err.message || "Gagal memuat kabar warga.",
       data: [],
       currentUserId: null,
+      isSuperAdmin: false,
     };
   }
 }

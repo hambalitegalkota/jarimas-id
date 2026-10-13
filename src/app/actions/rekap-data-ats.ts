@@ -400,7 +400,7 @@ export async function getRekapDataAtsAction(): Promise<{
         created_at
       `)
       .or("is_sekolah.eq.false,is_sekolah.is.null,nama_sekolah.ilike.%ATS%,alasan_sekolah.ilike.%KEINGINAN%")
-      .limit(5000);
+      .limit(1000);
 
     if (fetchErr) {
       console.warn("Rekap ATS fetch warning:", fetchErr.message);
@@ -760,14 +760,11 @@ export async function getDaftarNamaAtsRekapAction(params: {
 
     const supabase = await createClient();
 
-    // 1. Ambil seluruh komunitas untuk pemetaan nama & metadata
-    const { data: allKom } = await supabase
-      .from("komunitas")
-      .select("id, nama, jenis, kecamatan, kelurahan, rw, rt");
-    const komMap = new Map((allKom || []).map((k: any) => [k.id, k]));
+    // 1. Query data_anak dengan filter kelurahan di level SQL jika ditentukan (maksimal 500 baris)
+    const targetKel =
+      params.kelurahan && params.kelurahan !== "semua" ? params.kelurahan : null;
 
-    // 2. Query data_anak
-    const { data: dbChildren, error: fetchErr } = await supabase
+    let query = supabase
       .from("data_anak")
       .select(`
         id,
@@ -785,8 +782,13 @@ export async function getDaftarNamaAtsRekapAction(params: {
         created_at
       `)
       .or("is_sekolah.eq.false,is_sekolah.is.null,nama_sekolah.ilike.%ATS%,alasan_sekolah.ilike.%KEINGINAN%")
-      .order("created_at", { ascending: false })
-      .limit(5000);
+      .order("created_at", { ascending: false });
+
+    if (targetKel) {
+      query = query.ilike("alasan_sekolah", `%${targetKel}%`);
+    }
+
+    const { data: dbChildren, error: fetchErr } = await query.limit(500);
 
     if (fetchErr) {
       return {
@@ -798,11 +800,17 @@ export async function getDaftarNamaAtsRekapAction(params: {
     }
 
     // Filter ketat: Hanya baris data ATS
-    const validLiveAts = (dbChildren || []).filter((c) => isDataAtsRecord(c));
+    const validLiveAts: any[] = (dbChildren || []).filter((c: any) => isDataAtsRecord(c));
+    const childKomIds: string[] = Array.from(new Set(validLiveAts.map((c: any) => c.komunitas_id).filter(Boolean)));
+    const missingKomIds = childKomIds.filter((cid: string) => !findOrGenerateKomunitasSeed(cid));
+    const { data: missingDbKoms } = missingKomIds.length > 0
+      ? await supabase.from("komunitas").select("id, nama, jenis, kecamatan, kelurahan, rw, rt").in("id", missingKomIds)
+      : { data: [] };
+    const komMap = new Map((missingDbKoms || []).map((k: any) => [k.id, k]));
     const resultList: DaftarNamaAtsItem[] = [];
 
     for (const child of validLiveAts) {
-      const kom = komMap.get(child.komunitas_id) || findOrGenerateKomunitasSeed(child.komunitas_id);
+      const kom: any = komMap.get(child.komunitas_id) || findOrGenerateKomunitasSeed(child.komunitas_id);
       const parsed = parseAtsDetails(child.alasan_sekolah, kom);
       const age = calculateAgeFromBirthDate(child.tanggal_lahir);
 

@@ -3079,86 +3079,33 @@ export async function getKomunitasAuditSummaryAction(): Promise<{
 
     const invalidFilter = `(${allInvalidIds.join(",")})`;
 
-    // Query exact database counts in parallel (head request without row size limits, excluding dummy IDs)
-    const [
-      totalRes,
-      posyanduRes,
-      paudRes,
-      wargaRes,
-      timurRes,
-      baratRes,
-      selatanRes,
-      margadanaRes,
-      timurPosRes,
-      baratPosRes,
-      selatanPosRes,
-      margadanaPosRes,
-      timurPaudRes,
-      baratPaudRes,
-      selatanPaudRes,
-      margadanaPaudRes,
-      timurWargaRes,
-      baratWargaRes,
-      selatanWargaRes,
-      margadanaWargaRes,
-    ] = await Promise.all([
-      supabase.from("komunitas").select("*", { count: "exact", head: true }).not("id", "in", invalidFilter),
-      supabase.from("komunitas").select("*", { count: "exact", head: true }).eq("jenis", "posyandu").not("id", "in", invalidFilter),
-      supabase.from("komunitas").select("*", { count: "exact", head: true }).eq("jenis", "satuan_paud").not("id", "in", invalidFilter),
-      supabase.from("komunitas").select("*", { count: "exact", head: true }).eq("jenis", "warga_kita"),
-      supabase.from("komunitas").select("*", { count: "exact", head: true }).eq("kecamatan", "Tegal Timur").not("id", "in", invalidFilter),
-      supabase.from("komunitas").select("*", { count: "exact", head: true }).eq("kecamatan", "Tegal Barat").not("id", "in", invalidFilter),
-      supabase.from("komunitas").select("*", { count: "exact", head: true }).eq("kecamatan", "Tegal Selatan").not("id", "in", invalidFilter),
-      supabase.from("komunitas").select("*", { count: "exact", head: true }).eq("kecamatan", "Margadana").not("id", "in", invalidFilter),
-      supabase.from("komunitas").select("*", { count: "exact", head: true }).eq("kecamatan", "Tegal Timur").eq("jenis", "posyandu").not("id", "in", invalidFilter),
-      supabase.from("komunitas").select("*", { count: "exact", head: true }).eq("kecamatan", "Tegal Barat").eq("jenis", "posyandu").not("id", "in", invalidFilter),
-      supabase.from("komunitas").select("*", { count: "exact", head: true }).eq("kecamatan", "Tegal Selatan").eq("jenis", "posyandu").not("id", "in", invalidFilter),
-      supabase.from("komunitas").select("*", { count: "exact", head: true }).eq("kecamatan", "Margadana").eq("jenis", "posyandu").not("id", "in", invalidFilter),
-      supabase.from("komunitas").select("*", { count: "exact", head: true }).eq("kecamatan", "Tegal Timur").eq("jenis", "satuan_paud").not("id", "in", invalidFilter),
-      supabase.from("komunitas").select("*", { count: "exact", head: true }).eq("kecamatan", "Tegal Barat").eq("jenis", "satuan_paud").not("id", "in", invalidFilter),
-      supabase.from("komunitas").select("*", { count: "exact", head: true }).eq("kecamatan", "Tegal Selatan").eq("jenis", "satuan_paud").not("id", "in", invalidFilter),
-      supabase.from("komunitas").select("*", { count: "exact", head: true }).eq("kecamatan", "Margadana").eq("jenis", "satuan_paud").not("id", "in", invalidFilter),
-      supabase.from("komunitas").select("*", { count: "exact", head: true }).eq("kecamatan", "Tegal Timur").eq("jenis", "warga_kita"),
-      supabase.from("komunitas").select("*", { count: "exact", head: true }).eq("kecamatan", "Tegal Barat").eq("jenis", "warga_kita"),
-      supabase.from("komunitas").select("*", { count: "exact", head: true }).eq("kecamatan", "Tegal Selatan").eq("jenis", "warga_kita"),
-      supabase.from("komunitas").select("*", { count: "exact", head: true }).eq("kecamatan", "Margadana").eq("jenis", "warga_kita"),
-    ]);
+    // Query exact database items efficiently in 1 single lightweight query instead of 20 separate round-trips
+    let query = supabase
+      .from("komunitas")
+      .select("id, jenis, kecamatan");
 
-    const totalKomunitas = totalRes.count || 0;
-    const posyanduCount = posyanduRes.count || 0;
-    const paudCount = paudRes.count || 0;
-    const wargaCount = wargaRes.count || 0;
+    if (allInvalidIds.length > 0) {
+      query = query.not("id", "in", invalidFilter);
+    }
 
-    const kecamatanBreakdown = [
-      {
-        nama: "Tegal Timur",
-        total: timurRes.count || 0,
-        posyandu: timurPosRes.count || 0,
-        paud: timurPaudRes.count || 0,
-        warga: timurWargaRes.count || 0,
-      },
-      {
-        nama: "Tegal Barat",
-        total: baratRes.count || 0,
-        posyandu: baratPosRes.count || 0,
-        paud: baratPaudRes.count || 0,
-        warga: baratWargaRes.count || 0,
-      },
-      {
-        nama: "Tegal Selatan",
-        total: selatanRes.count || 0,
-        posyandu: selatanPosRes.count || 0,
-        paud: selatanPaudRes.count || 0,
-        warga: selatanWargaRes.count || 0,
-      },
-      {
-        nama: "Margadana",
-        total: margadanaRes.count || 0,
-        posyandu: margadanaPosRes.count || 0,
-        paud: margadanaPaudRes.count || 0,
-        warga: margadanaWargaRes.count || 0,
-      },
-    ];
+    const { data: allKomItems } = await query;
+    const items = allKomItems || [];
+
+    const totalKomunitas = items.length;
+    const posyanduCount = items.filter((k) => k.jenis === "posyandu").length;
+    const paudCount = items.filter((k) => k.jenis === "satuan_paud").length;
+    const wargaCount = items.filter((k) => k.jenis === "warga_kita").length;
+
+    const kecamatanBreakdown = ["Tegal Timur", "Tegal Barat", "Tegal Selatan", "Margadana"].map((kec) => {
+      const kecItems = items.filter((k) => k.kecamatan === kec);
+      return {
+        nama: kec,
+        total: kecItems.length,
+        posyandu: kecItems.filter((k) => k.jenis === "posyandu").length,
+        paud: kecItems.filter((k) => k.jenis === "satuan_paud").length,
+        warga: kecItems.filter((k) => k.jenis === "warga_kita").length,
+      };
+    });
 
     const standardPosyanduTarget = SEED_POSYANDU_TEGAL.length || 209;
     const standardPaudTarget = SEED_PAUD_PKBM_TEGAL.length || 219;
@@ -3804,9 +3751,12 @@ export async function getHierarchicalActiveKomunitasAction(): Promise<{
     const activeKomIds = Object.keys(komStatsMap);
 
     // 3. Ambil data anak per komunitas
-    const { data: rawChildren } = await supabase
-      .from("data_anak")
-      .select("komunitas_id");
+    const { data: rawChildren } = activeKomIds.length > 0
+      ? await supabase
+          .from("data_anak")
+          .select("komunitas_id")
+          .in("komunitas_id", activeKomIds)
+      : { data: [] };
 
     const dataAnakCountMap: Record<string, number> = {};
     if (rawChildren) {

@@ -53,7 +53,8 @@ export default async function KabarPage({ searchParams }: KabarPageProps) {
   const currentVisibility =
     (resolvedParams.visibility as "semua" | VisibilitasKabar) || "semua";
 
-  // 1. Ambil seluruh data feed kabar, pengguna terdaftar, dan chat secara paralel (Promise.all)
+  // 1. Ambil feed kabar utama. Tab Percakapan & Warga hanya di-load jika user membuka tab tersebut
+  // untuk memastikan proses buka halaman kabar selalu di bawah 1 detik tanpa membebani server
   const [
     feedResult,
     registeredUsersResult,
@@ -63,16 +64,22 @@ export default async function KabarPage({ searchParams }: KabarPageProps) {
     getKabarFeed({
       sorting: currentSort,
       filterVisibilitas: currentVisibility,
-      limit: 50,
+      limit: 30,
     }),
-    getRegisteredUsers(),
-    getRecentConversations(),
-    getGroupChatRooms(),
+    currentTab === "warga" || currentTab === "percakapan"
+      ? getRegisteredUsers()
+      : Promise.resolve({ success: true, users: [], currentUserId: null, isSuperAdmin: false, totalCount: 0 }),
+    currentTab === "percakapan"
+      ? getRecentConversations()
+      : Promise.resolve({ conversations: [] }),
+    currentTab === "percakapan"
+      ? getGroupChatRooms()
+      : Promise.resolve({ rooms: [] }),
   ]);
 
   const feedItems = feedResult.data;
   const currentUserId = feedResult.currentUserId || registeredUsersResult.currentUserId;
-  const isSuperAdmin = registeredUsersResult.isSuperAdmin;
+  const isSuperAdmin = Boolean(feedResult.isSuperAdmin ?? registeredUsersResult.isSuperAdmin);
 
   const totalUnreadChat = (convResult.conversations || []).reduce(
     (acc, c) => acc + c.unreadCount,
