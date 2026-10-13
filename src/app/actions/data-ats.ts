@@ -1224,10 +1224,16 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
       }
     }
 
-    // 3. Query data ATS dari data_anak
+    // 3. Query data ATS dari data_anak dengan filter wilayah target
+    const validKomId = toValidUUID(komunitasId);
+    const targetKel =
+      meta.rawKel && meta.rawKel !== "semua" && meta.rawKel !== "Semua Kelurahan"
+        ? meta.rawKel
+        : null;
+
     let dbChildren: any[] | null = null;
     try {
-      const { data, error: childError } = await supabase
+      let atsQuery = supabase
         .from("data_anak")
         .select(`
           id,
@@ -1250,8 +1256,15 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
           ddks_records (*)
         `)
         .or("is_sekolah.eq.false,is_sekolah.is.null,nama_sekolah.ilike.%ATS%,alasan_sekolah.ilike.%KEINGINAN%")
-        .order("created_at", { ascending: false })
-        .limit(5000);
+        .order("created_at", { ascending: false });
+
+      if (targetKel) {
+        atsQuery = atsQuery.or(`komunitas_id.eq.${validKomId},alasan_sekolah.ilike.%${targetKel}%`);
+      } else {
+        atsQuery = atsQuery.eq("komunitas_id", validKomId);
+      }
+
+      const { data, error: childError } = await atsQuery.limit(150);
 
       if (childError) {
         console.warn("Query data_ats with relation error:", childError.message);
@@ -1263,7 +1276,7 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
     }
 
     if (!dbChildren) {
-      const { data: fallbackData } = await supabase
+      let fallbackQuery = supabase
         .from("data_anak")
         .select(`
           id,
@@ -1285,16 +1298,21 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
           created_at
         `)
         .or("is_sekolah.eq.false,is_sekolah.is.null,nama_sekolah.ilike.%ATS%,alasan_sekolah.ilike.%KEINGINAN%")
-        .order("created_at", { ascending: false })
-        .limit(5000);
+        .order("created_at", { ascending: false });
 
+      if (targetKel) {
+        fallbackQuery = fallbackQuery.or(`komunitas_id.eq.${validKomId},alasan_sekolah.ilike.%${targetKel}%`);
+      } else {
+        fallbackQuery = fallbackQuery.eq("komunitas_id", validKomId);
+      }
+
+      const { data: fallbackData } = await fallbackQuery.limit(150);
       dbChildren = fallbackData || [];
     }
 
     const rows = (dbChildren || []).filter(
       (row: any) => isDataAtsRecord(row) && row.is_sekolah !== true
     );
-    const validKomId = toValidUUID(komunitasId);
 
     const atsKomIds = [...new Set(rows.map((c: any) => c.komunitas_id).filter(Boolean))];
     const missingKomIds = atsKomIds.filter((cid: string) => !findOrGenerateKomunitasSeed(cid));

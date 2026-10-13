@@ -724,13 +724,7 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
           updated_at: new Date().toISOString(),
         };
 
-        const { data: inserted } = await supabase
-          .from("komunitas")
-          .upsert(insertPayload, { onConflict: "id" })
-          .select()
-          .maybeSingle();
-
-        komunitas = inserted || (insertPayload as any);
+        komunitas = insertPayload as any;
       }
     }
 
@@ -782,13 +776,13 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
         .from("komunitas")
         .select("id, nama, jenis, kecamatan, kelurahan, rw, rt, lokasi, deskripsi");
 
-      if (komunitas.kecamatan && komunitas.kecamatan !== "semua") {
+      if (komunitas.kecamatan && komunitas.kecamatan !== "semua" && komunitas.kecamatan !== "Kota Tegal") {
         komQuery = komQuery.eq("kecamatan", komunitas.kecamatan);
       }
-      if (komunitas.kelurahan && komunitas.kelurahan !== "semua") {
+      if (komunitas.kelurahan && komunitas.kelurahan !== "semua" && komunitas.kelurahan !== "Semua Kelurahan") {
         komQuery = komQuery.eq("kelurahan", komunitas.kelurahan);
       }
-      const { data: dbKoms } = await komQuery;
+      const { data: dbKoms } = await komQuery.limit(50);
       dbRelevantKomunitas = dbKoms || [];
       dbRelevantKomunitas.forEach((k) => relevantKomIds.add(k.id));
     }

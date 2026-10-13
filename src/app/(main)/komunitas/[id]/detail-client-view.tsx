@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useMemo } from "react";
+import { useState, useTransition, useMemo, useEffect } from "react";
 import Link from "next/link";
 import {
   MapPin,
@@ -50,6 +50,8 @@ import {
   resignAdminKomunitas,
   kickMemberByAdmin,
 } from "@/app/actions/komunitas";
+import { getDataAnakByKomunitas } from "@/app/actions/data-anak";
+import { getDataAtsByKomunitas } from "@/app/actions/data-ats";
 import type {
   KomunitasWithMembership,
   AnggotaKomunitasDetail,
@@ -89,6 +91,38 @@ export function KomunitasDetailClientView({
     return currentSubtab || null;
   }, [currentUserId, currentSubtab]);
   const [activeTab, setActiveTab] = useState<string | null>(initialActiveTab);
+
+  // State untuk lazy loading profil data anak & ATS saat tab data dibuka
+  const [dataAnakState, setDataAnakState] = useState<DataAnakItem[]>(dataAnakList);
+  const [dataAtsState, setDataAtsState] = useState<DataAtsItem[]>(dataAtsList);
+  const [isLoadingChartsData, setIsLoadingChartsData] = useState(false);
+  const [hasLoadedChartsData, setHasLoadedChartsData] = useState(
+    (dataAnakList && dataAnakList.length > 0) || (dataAtsList && dataAtsList.length > 0)
+  );
+
+  useEffect(() => {
+    if (activeTab === "data" && !hasLoadedChartsData && !isLoadingChartsData) {
+      setIsLoadingChartsData(true);
+      Promise.all([
+        getDataAnakByKomunitas(komunitasData.id),
+        komunitasData.jenis !== "satuan_paud"
+          ? getDataAtsByKomunitas(komunitasData.id)
+          : Promise.resolve({ data: [] }),
+      ])
+        .then(([anakRes, atsRes]) => {
+          if (anakRes?.data) setDataAnakState(anakRes.data);
+          if (atsRes?.data) setDataAtsState(atsRes.data);
+          setHasLoadedChartsData(true);
+        })
+        .catch((err) => {
+          console.error("Gagal memuat profil data komunitas:", err);
+        })
+        .finally(() => {
+          setIsLoadingChartsData(false);
+        });
+    }
+  }, [activeTab, hasLoadedChartsData, isLoadingChartsData, komunitasData.id, komunitasData.jenis]);
+
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
   const [membershipState, setMembershipState] = useState(komunitas.currentUserMembership);
   const [isWargaOnboardingOpen, setIsWargaOnboardingOpen] = useState(false);
@@ -1378,13 +1412,20 @@ export function KomunitasDetailClientView({
           )}
 
           {/* Visualisasi Grafik & Chart Statistik Wilayah */}
-          <KomunitasProfilCharts
-            komunitas={komunitas}
-            dataAnakList={dataAnakList}
-            dataAtsList={dataAtsList}
-            userRole={userPeran}
-            isChartOnly={isChartOnly}
-          />
+          {isLoadingChartsData ? (
+            <div className="flex flex-col items-center justify-center p-12 bg-white dark:bg-slate-900 rounded-2xl border-2 border-slate-200 dark:border-slate-800 text-slate-500 gap-3 shadow-xs">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <p className="text-sm font-semibold">Memuat data agregat wilayah &amp; grafik...</p>
+            </div>
+          ) : (
+            <KomunitasProfilCharts
+              komunitas={komunitas}
+              dataAnakList={dataAnakState}
+              dataAtsList={dataAtsState}
+              userRole={userPeran}
+              isChartOnly={isChartOnly}
+            />
+          )}
         </section>
       )}
                 </div>

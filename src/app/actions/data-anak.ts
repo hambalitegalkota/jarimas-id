@@ -822,13 +822,13 @@ export async function getDataAnakByKomunitas(komunitasId: string): Promise<{
         directQuery = directQuery.eq("komunitas_id", validKomId);
       }
 
-      const { data: directData, error: directErr } = await directQuery;
+      const { data: directData, error: directErr } = await directQuery.limit(200);
       if (directErr) {
         childError = directErr;
       } else if (directData && directData.length > 0) {
         dbChildren = directData;
       } else if (!targetKel) {
-        // Fallback hanya jika di level kota (tanpa kelurahan), dibatasi maksimal 1000 data terbaru
+        // Fallback hanya jika di level kota (tanpa kelurahan), dibatasi maksimal 200 data terbaru
         const { data: fallbackChunk, error: fallbackErr } = await supabase
           .from("data_anak")
           .select(`
@@ -852,7 +852,7 @@ export async function getDataAnakByKomunitas(komunitasId: string): Promise<{
             ddks_records (*)
           `)
           .order("created_at", { ascending: false })
-          .limit(1000);
+          .limit(200);
 
         if (fallbackErr) childError = fallbackErr;
         else if (fallbackChunk) dbChildren = fallbackChunk;

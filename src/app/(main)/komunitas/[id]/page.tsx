@@ -55,10 +55,11 @@ export default async function KomunitasDetailPage({
     notFound();
   }
 
-  // Ambil data anggota, data anak, data ATS, dan kabar secara paralel (hanya yang relevan dengan tipe komunitas)
+  // Ambil data anggota dan kabar secara paralel untuk render awal yang super cepat.
+  // Data anak & ATS hanya di-fetch di server jika user membuka langsung subtab data (?subtab=data).
+  // Untuk kunjungan biasa (subtab default: kabar), data anak & ATS dimuat on-demand di browser saat tab data dibuka.
   const isPaud = komunitas.jenis === "satuan_paud";
-  const shouldFetchDataAnak = true;
-  const shouldFetchDataAts = !isPaud;
+  const shouldFetchChartsData = currentSubtab === "data";
 
   const [
     { data: anggotaList },
@@ -67,9 +68,9 @@ export default async function KomunitasDetailPage({
     { data: allKabar },
   ] = await Promise.all([
     getAnggotaKomunitas(id),
-    shouldFetchDataAnak ? getDataAnakByKomunitas(id) : Promise.resolve({ data: [] }),
-    shouldFetchDataAts ? getDataAtsByKomunitas(id) : Promise.resolve({ data: [] }),
-    getKabarFeed({ filterVisibilitas: "semua", limit: 30 }),
+    shouldFetchChartsData ? getDataAnakByKomunitas(id) : Promise.resolve({ data: [] }),
+    shouldFetchChartsData && !isPaud ? getDataAtsByKomunitas(id) : Promise.resolve({ data: [] }),
+    getKabarFeed({ filterVisibilitas: "semua", limit: 20 }),
   ]);
 
   const dataAnakList = dataAnakRes?.data || [];
