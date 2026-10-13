@@ -7,6 +7,8 @@ import {
   Layers,
   HeartHandshake,
   Sparkles,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { getJenjangAts, normalizeKeinginanSekolah } from "@/lib/ats-helpers";
 import type { DataAtsItem } from "@/types/database";
@@ -65,6 +67,30 @@ export function DiagramChartFilterAts({
 }: DiagramChartFilterAtsProps) {
   const [hoveredJenjang, setHoveredJenjang] = useState<string | null>(null);
   const [hoveredKeinginan, setHoveredKeinginan] = useState<string | null>(null);
+
+  const [isAllHidden, setIsAllHidden] = useState(false);
+  const [hiddenCharts, setHiddenCharts] = useState<Record<string, boolean>>({});
+
+  const toggleChart = (key: string) => {
+    setHiddenCharts((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
+  };
+
+  const toggleAll = () => {
+    if (isAllHidden) {
+      setIsAllHidden(false);
+      setHiddenCharts({});
+    } else {
+      setIsAllHidden(true);
+      setHiddenCharts({
+        jenjang: true,
+        keinginan: true,
+        gender: true,
+      });
+    }
+  };
 
   const totalFiltered = filteredAts.length;
 
@@ -245,9 +271,34 @@ export function DiagramChartFilterAts({
             </p>
           </div>
         </div>
-        <div className="hidden sm:flex items-center gap-1.5 rounded-md border border-border bg-muted/40 px-2.5 py-1 text-[11px] font-mono text-muted-foreground">
-          <Sparkles className="h-3.5 w-3.5 text-amber-400" />
-          <span>Interaktif & Real-time</span>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={toggleAll}
+            className={cn(
+              "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-2xs font-bold transition-all border cursor-pointer",
+              isAllHidden
+                ? "bg-indigo-600 hover:bg-indigo-700 text-white border-indigo-600"
+                : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 shadow-2xs"
+            )}
+            title={isAllHidden ? "Tampilkan Seluruh Diagram" : "Sembunyikan Seluruh Diagram"}
+          >
+            {isAllHidden ? (
+              <>
+                <Eye className="h-3.5 w-3.5" />
+                <span>Tampilkan Semua</span>
+              </>
+            ) : (
+              <>
+                <EyeOff className="h-3.5 w-3.5 text-slate-500" />
+                <span>Sembunyikan Semua</span>
+              </>
+            )}
+          </button>
+          <div className="hidden sm:flex items-center gap-1.5 rounded-md border border-border bg-muted/40 px-2.5 py-1 text-[11px] font-mono text-muted-foreground">
+            <Sparkles className="h-3.5 w-3.5 text-amber-400" />
+            <span>Interaktif & Real-time</span>
+          </div>
         </div>
       </div>
 
@@ -262,89 +313,125 @@ export function DiagramChartFilterAts({
                 Donut: Jenjang ATS
               </span>
             </div>
-            <span className="text-[10px] font-mono text-muted-foreground">Proporsi</span>
-          </div>
-
-          {/* SVG Donut Center Graphic */}
-          <div className="relative flex items-center justify-center py-2">
-            <svg
-              width="170"
-              height="170"
-              viewBox="0 0 170 170"
-              className="overflow-visible drop-shadow-sm"
-            >
-              {jenjangChartData.map((item) => {
-                if (item.count === 0) return null;
-                const path = getDonutSlicePath(85, 85, 80, 52, item.startAngle, item.endAngle);
-                const isHovered = hoveredJenjang === item.id;
-                return (
-                  <path
-                    key={item.id}
-                    d={path}
-                    fill={item.color}
-                    className="transition-all duration-200 cursor-pointer"
-                    opacity={hoveredJenjang === null || isHovered ? 1 : 0.4}
-                    style={{
-                      transform: isHovered ? "scale(1.04)" : "scale(1)",
-                      transformOrigin: "85px 85px",
-                    }}
-                    onMouseEnter={() => setHoveredJenjang(item.id)}
-                    onMouseLeave={() => setHoveredJenjang(null)}
-                  />
-                );
-              })}
-            </svg>
-
-            {/* Donut Center Label */}
-            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
-              {activeJenjangItem ? (
-                <>
-                  <span className={cn("text-xs font-mono font-bold", activeJenjangItem.colorClass)}>
-                    {activeJenjangItem.label}
-                  </span>
-                  <span className="text-lg font-black font-mono text-foreground">
-                    {activeJenjangItem.count}
-                  </span>
-                  <span className="text-[10px] font-mono text-muted-foreground">
-                    {activeJenjangItem.pct}%
-                  </span>
-                </>
-              ) : (
-                <>
-                  <span className="text-[10px] font-mono uppercase text-muted-foreground">
-                    TOTAL
-                  </span>
-                  <span className="text-xl font-black font-mono text-foreground">
-                    {totalFiltered}
-                  </span>
-                  <span className="text-[10px] font-mono text-muted-foreground">ANAK</span>
-                </>
-              )}
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => toggleChart("jenjang")}
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded border border-border bg-card text-foreground text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-muted"
+                title={hiddenCharts.jenjang ? "Tampilkan Diagram" : "Sembunyikan Diagram"}
+              >
+                {hiddenCharts.jenjang ? (
+                  <>
+                    <Eye className="h-3 w-3 text-indigo-400" />
+                    <span>Tampilkan</span>
+                  </>
+                ) : (
+                  <>
+                    <EyeOff className="h-3 w-3 text-muted-foreground" />
+                    <span>Sembunyikan</span>
+                  </>
+                )}
+              </button>
+              <span className="text-[10px] font-mono text-muted-foreground">Proporsi</span>
             </div>
           </div>
 
-          {/* Legend Items */}
-          <div className="grid grid-cols-2 gap-1.5 pt-2 border-t border-border/60 text-xs font-mono">
-            {jenjangChartData.map((item) => (
-              <div
-                key={item.id}
-                onMouseEnter={() => setHoveredJenjang(item.id)}
-                onMouseLeave={() => setHoveredJenjang(null)}
-                className={cn(
-                  "flex items-center justify-between p-1.5 rounded transition-colors cursor-pointer",
-                  hoveredJenjang === item.id ? "bg-muted font-bold" : "hover:bg-muted/50"
-                )}
+          {hiddenCharts.jenjang ? (
+            <div className="py-16 text-center text-xs text-muted-foreground bg-muted/20 rounded-lg border border-dashed border-border flex items-center justify-center gap-2">
+              <EyeOff className="h-4 w-4 text-muted-foreground" />
+              <span>Donut Diagram Jenjang disembunyikan.</span>
+              <button
+                type="button"
+                onClick={() => toggleChart("jenjang")}
+                className="font-bold text-indigo-400 hover:underline cursor-pointer"
               >
-                <div className="flex items-center gap-1.5 min-w-0">
-                  <span className={cn("h-2 w-2 rounded-full shrink-0", item.bgClass)} />
-                  <span className="truncate text-muted-foreground text-[11px]">{item.label}</span>
+                Tampilkan kembali
+              </button>
+            </div>
+          ) : (
+            <>
+              {/* SVG Donut Center Graphic */}
+              <div className="relative flex items-center justify-center py-2">
+                <svg
+                  width="170"
+                  height="170"
+                  viewBox="0 0 170 170"
+                  className="overflow-visible drop-shadow-sm"
+                >
+                  {jenjangChartData.map((item) => {
+                    if (item.count === 0) return null;
+                    const path = getDonutSlicePath(85, 85, 80, 52, item.startAngle, item.endAngle);
+                    const isHovered = hoveredJenjang === item.id;
+                    return (
+                      <path
+                        key={item.id}
+                        d={path}
+                        fill={item.color}
+                        className="transition-all duration-200 cursor-pointer"
+                        opacity={hoveredJenjang === null || isHovered ? 1 : 0.4}
+                        style={{
+                          transform: isHovered ? "scale(1.04)" : "scale(1)",
+                          transformOrigin: "85px 85px",
+                        }}
+                        onMouseEnter={() => setHoveredJenjang(item.id)}
+                        onMouseLeave={() => setHoveredJenjang(null)}
+                      />
+                    );
+                  })}
+                </svg>
+
+                {/* Donut Center Label */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
+                  {activeJenjangItem ? (
+                    <>
+                      <span className={cn("text-xs font-mono font-bold", activeJenjangItem.colorClass)}>
+                        {activeJenjangItem.label}
+                      </span>
+                      <span className="text-lg font-black font-mono text-foreground">
+                        {activeJenjangItem.count}
+                      </span>
+                      <span className="text-[10px] font-mono text-muted-foreground">
+                        {activeJenjangItem.pct}%
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-[10px] font-mono uppercase text-muted-foreground">
+                        TOTAL
+                      </span>
+                      <span className="text-xl font-black font-mono text-foreground">
+                        {totalFiltered}
+                      </span>
+                      <span className="text-[10px] font-mono text-muted-foreground">ANAK</span>
+                    </>
+                  )}
                 </div>
-                <span className="text-foreground text-[11px] font-bold shrink-0 ml-1">
-                  {item.count} ({item.pct}%)
-                </span>
               </div>
-            ))}
-          </div>
+
+              {/* Legend Items */}
+              <div className="grid grid-cols-2 gap-1.5 pt-2 border-t border-border/60 text-xs font-mono">
+                {jenjangChartData.map((item) => (
+                  <div
+                    key={item.id}
+                    onMouseEnter={() => setHoveredJenjang(item.id)}
+                    onMouseLeave={() => setHoveredJenjang(null)}
+                    className={cn(
+                      "flex items-center justify-between p-1.5 rounded transition-colors cursor-pointer",
+                      hoveredJenjang === item.id ? "bg-muted font-bold" : "hover:bg-muted/50"
+                    )}
+                  >
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <span className={cn("h-2 w-2 rounded-full shrink-0", item.bgClass)} />
+                      <span className="truncate text-muted-foreground text-[11px]">{item.label}</span>
+                    </div>
+                    <span className="text-foreground text-[11px] font-bold shrink-0 ml-1">
+                      {item.count} ({item.pct}%)
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
         </div>
 
         {/* DIAGRAM 2: DONUT CHART KEINGINAN BERSEKOLAH */}
@@ -356,89 +443,125 @@ export function DiagramChartFilterAts({
                 Donut: Keinginan Sekolah
               </span>
             </div>
-            <span className="text-[10px] font-mono text-muted-foreground">Komitmen</span>
-          </div>
-
-          {/* SVG Donut Keinginan Graphic */}
-          <div className="relative flex items-center justify-center py-2">
-            <svg
-              width="170"
-              height="170"
-              viewBox="0 0 170 170"
-              className="overflow-visible drop-shadow-sm"
-            >
-              {keinginanChartData.map((item) => {
-                if (item.count === 0) return null;
-                const path = getDonutSlicePath(85, 85, 80, 52, item.startAngle, item.endAngle);
-                const isHovered = hoveredKeinginan === item.id;
-                return (
-                  <path
-                    key={item.id}
-                    d={path}
-                    fill={item.color}
-                    className="transition-all duration-200 cursor-pointer"
-                    opacity={hoveredKeinginan === null || isHovered ? 1 : 0.4}
-                    style={{
-                      transform: isHovered ? "scale(1.04)" : "scale(1)",
-                      transformOrigin: "85px 85px",
-                    }}
-                    onMouseEnter={() => setHoveredKeinginan(item.id)}
-                    onMouseLeave={() => setHoveredKeinginan(null)}
-                  />
-                );
-              })}
-            </svg>
-
-            {/* Donut Center Label */}
-            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center px-4">
-              {activeKeinginanItem ? (
-                <>
-                  <span className={cn("text-[11px] font-mono font-bold leading-tight", activeKeinginanItem.colorClass)}>
-                    {activeKeinginanItem.label}
-                  </span>
-                  <span className="text-lg font-black font-mono text-foreground">
-                    {activeKeinginanItem.count}
-                  </span>
-                  <span className="text-[10px] font-mono text-muted-foreground">
-                    {activeKeinginanItem.pct}%
-                  </span>
-                </>
-              ) : (
-                <>
-                  <span className="text-[10px] font-mono uppercase text-emerald-400 font-bold">
-                    MASIH ADA
-                  </span>
-                  <span className="text-xl font-black font-mono text-emerald-400">
-                    {keinginanChartData[0]?.pct || 0}%
-                  </span>
-                  <span className="text-[10px] font-mono text-muted-foreground">BERMINAT</span>
-                </>
-              )}
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => toggleChart("keinginan")}
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded border border-border bg-card text-foreground text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-muted"
+                title={hiddenCharts.keinginan ? "Tampilkan Diagram" : "Sembunyikan Diagram"}
+              >
+                {hiddenCharts.keinginan ? (
+                  <>
+                    <Eye className="h-3 w-3 text-indigo-400" />
+                    <span>Tampilkan</span>
+                  </>
+                ) : (
+                  <>
+                    <EyeOff className="h-3 w-3 text-muted-foreground" />
+                    <span>Sembunyikan</span>
+                  </>
+                )}
+              </button>
+              <span className="text-[10px] font-mono text-muted-foreground">Komitmen</span>
             </div>
           </div>
 
-          {/* Legend Items */}
-          <div className="flex flex-col gap-1.5 pt-2 border-t border-border/60 text-xs font-mono">
-            {keinginanChartData.map((item) => (
-              <div
-                key={item.id}
-                onMouseEnter={() => setHoveredKeinginan(item.id)}
-                onMouseLeave={() => setHoveredKeinginan(null)}
-                className={cn(
-                  "flex items-center justify-between p-1.5 rounded transition-colors cursor-pointer",
-                  hoveredKeinginan === item.id ? "bg-muted font-bold" : "hover:bg-muted/50"
-                )}
+          {hiddenCharts.keinginan ? (
+            <div className="py-16 text-center text-xs text-muted-foreground bg-muted/20 rounded-lg border border-dashed border-border flex items-center justify-center gap-2">
+              <EyeOff className="h-4 w-4 text-muted-foreground" />
+              <span>Donut Diagram Keinginan Sekolah disembunyikan.</span>
+              <button
+                type="button"
+                onClick={() => toggleChart("keinginan")}
+                className="font-bold text-indigo-400 hover:underline cursor-pointer"
               >
-                <div className="flex items-center gap-1.5 min-w-0">
-                  <span className={cn("h-2.5 w-2.5 rounded-full shrink-0", item.bgClass)} />
-                  <span className="truncate text-foreground text-[11px]">{item.label}</span>
+                Tampilkan kembali
+              </button>
+            </div>
+          ) : (
+            <>
+              {/* SVG Donut Keinginan Graphic */}
+              <div className="relative flex items-center justify-center py-2">
+                <svg
+                  width="170"
+                  height="170"
+                  viewBox="0 0 170 170"
+                  className="overflow-visible drop-shadow-sm"
+                >
+                  {keinginanChartData.map((item) => {
+                    if (item.count === 0) return null;
+                    const path = getDonutSlicePath(85, 85, 80, 52, item.startAngle, item.endAngle);
+                    const isHovered = hoveredKeinginan === item.id;
+                    return (
+                      <path
+                        key={item.id}
+                        d={path}
+                        fill={item.color}
+                        className="transition-all duration-200 cursor-pointer"
+                        opacity={hoveredKeinginan === null || isHovered ? 1 : 0.4}
+                        style={{
+                          transform: isHovered ? "scale(1.04)" : "scale(1)",
+                          transformOrigin: "85px 85px",
+                        }}
+                        onMouseEnter={() => setHoveredKeinginan(item.id)}
+                        onMouseLeave={() => setHoveredKeinginan(null)}
+                      />
+                    );
+                  })}
+                </svg>
+
+                {/* Donut Center Label */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center px-4">
+                  {activeKeinginanItem ? (
+                    <>
+                      <span className={cn("text-[11px] font-mono font-bold leading-tight", activeKeinginanItem.colorClass)}>
+                        {activeKeinginanItem.label}
+                      </span>
+                      <span className="text-lg font-black font-mono text-foreground">
+                        {activeKeinginanItem.count}
+                      </span>
+                      <span className="text-[10px] font-mono text-muted-foreground">
+                        {activeKeinginanItem.pct}%
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-[10px] font-mono uppercase text-emerald-400 font-bold">
+                        MASIH ADA
+                      </span>
+                      <span className="text-xl font-black font-mono text-emerald-400">
+                        {keinginanChartData[0]?.pct || 0}%
+                      </span>
+                      <span className="text-[10px] font-mono text-muted-foreground">BERMINAT</span>
+                    </>
+                  )}
                 </div>
-                <span className={cn("text-[11px] font-bold shrink-0 ml-1", item.colorClass)}>
-                  {item.count} Anak ({item.pct}%)
-                </span>
               </div>
-            ))}
-          </div>
+
+              {/* Legend Items */}
+              <div className="flex flex-col gap-1.5 pt-2 border-t border-border/60 text-xs font-mono">
+                {keinginanChartData.map((item) => (
+                  <div
+                    key={item.id}
+                    onMouseEnter={() => setHoveredKeinginan(item.id)}
+                    onMouseLeave={() => setHoveredKeinginan(null)}
+                    className={cn(
+                      "flex items-center justify-between p-1.5 rounded transition-colors cursor-pointer",
+                      hoveredKeinginan === item.id ? "bg-muted font-bold" : "hover:bg-muted/50"
+                    )}
+                  >
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <span className={cn("h-2.5 w-2.5 rounded-full shrink-0", item.bgClass)} />
+                      <span className="truncate text-foreground text-[11px]">{item.label}</span>
+                    </div>
+                    <span className={cn("text-[11px] font-bold shrink-0 ml-1", item.colorClass)}>
+                      {item.count} Anak ({item.pct}%)
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
         </div>
 
         {/* DIAGRAM 3: DIAGRAM BATANG KOLOM (JENJANG x GENDER) */}
@@ -451,6 +574,24 @@ export function DiagramChartFilterAts({
               </span>
             </div>
             <div className="flex items-center gap-2 text-[10px] font-mono">
+              <button
+                type="button"
+                onClick={() => toggleChart("gender")}
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded border border-border bg-card text-foreground text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-muted"
+                title={hiddenCharts.gender ? "Tampilkan Diagram" : "Sembunyikan Diagram"}
+              >
+                {hiddenCharts.gender ? (
+                  <>
+                    <Eye className="h-3 w-3 text-indigo-400" />
+                    <span>Tampilkan</span>
+                  </>
+                ) : (
+                  <>
+                    <EyeOff className="h-3 w-3 text-muted-foreground" />
+                    <span>Sembunyikan</span>
+                  </>
+                )}
+              </button>
               <span className="flex items-center gap-1 text-sky-400">
                 <span className="h-2 w-2 rounded-full bg-sky-500" /> L
               </span>
@@ -460,67 +601,83 @@ export function DiagramChartFilterAts({
             </div>
           </div>
 
-          {/* Column Bars Display */}
-          <div className="flex items-end justify-around h-44 pt-4 pb-2 border-b border-border">
-            {columnChartData.data.map((col) => {
-              const lakiHeightPct = Math.max(
-                Math.round((col.laki / columnChartData.maxVal) * 100),
-                col.laki > 0 ? 8 : 0
-              );
-              const peremHeightPct = Math.max(
-                Math.round((col.perempuan / columnChartData.maxVal) * 100),
-                col.perempuan > 0 ? 8 : 0
-              );
+          {hiddenCharts.gender ? (
+            <div className="py-16 text-center text-xs text-muted-foreground bg-muted/20 rounded-lg border border-dashed border-border flex items-center justify-center gap-2">
+              <EyeOff className="h-4 w-4 text-muted-foreground" />
+              <span>Diagram Batang Jenjang x Gender disembunyikan.</span>
+              <button
+                type="button"
+                onClick={() => toggleChart("gender")}
+                className="font-bold text-indigo-400 hover:underline cursor-pointer"
+              >
+                Tampilkan kembali
+              </button>
+            </div>
+          ) : (
+            <>
+              {/* Column Bars Display */}
+              <div className="flex items-end justify-around h-44 pt-4 pb-2 border-b border-border">
+                {columnChartData.data.map((col) => {
+                  const lakiHeightPct = Math.max(
+                    Math.round((col.laki / columnChartData.maxVal) * 100),
+                    col.laki > 0 ? 8 : 0
+                  );
+                  const peremHeightPct = Math.max(
+                    Math.round((col.perempuan / columnChartData.maxVal) * 100),
+                    col.perempuan > 0 ? 8 : 0
+                  );
 
-              return (
-                <div key={col.id} className="flex flex-col items-center gap-1.5 h-full justify-end flex-1 max-w-[65px]">
-                  {/* Pair of Bars */}
-                  <div className="flex items-end justify-center gap-1.5 w-full h-32">
-                    {/* Laki Bar */}
-                    <div className="flex flex-col items-center justify-end h-full w-4">
-                      {col.laki > 0 && (
-                        <span className="text-[9px] font-mono font-bold text-sky-400 mb-0.5">
-                          {col.laki}
-                        </span>
-                      )}
-                      <div
-                        className="w-full bg-sky-500 rounded-t-sm transition-all duration-500 hover:brightness-125"
-                        style={{ height: `${lakiHeightPct}%` }}
-                        title={`${col.label} - Laki-laki: ${col.laki}`}
-                      />
+                  return (
+                    <div key={col.id} className="flex flex-col items-center gap-1.5 h-full justify-end flex-1 max-w-[65px]">
+                      {/* Pair of Bars */}
+                      <div className="flex items-end justify-center gap-1.5 w-full h-32">
+                        {/* Laki Bar */}
+                        <div className="flex flex-col items-center justify-end h-full w-4">
+                          {col.laki > 0 && (
+                            <span className="text-[9px] font-mono font-bold text-sky-400 mb-0.5">
+                              {col.laki}
+                            </span>
+                          )}
+                          <div
+                            className="w-full bg-sky-500 rounded-t-sm transition-all duration-500 hover:brightness-125"
+                            style={{ height: `${lakiHeightPct}%` }}
+                            title={`${col.label} - Laki-laki: ${col.laki}`}
+                          />
+                        </div>
+
+                        {/* Perempuan Bar */}
+                        <div className="flex flex-col items-center justify-end h-full w-4">
+                          {col.perempuan > 0 && (
+                            <span className="text-[9px] font-mono font-bold text-pink-400 mb-0.5">
+                              {col.perempuan}
+                            </span>
+                          )}
+                          <div
+                            className="w-full bg-pink-500 rounded-t-sm transition-all duration-500 hover:brightness-125"
+                            style={{ height: `${peremHeightPct}%` }}
+                            title={`${col.label} - Perempuan: ${col.perempuan}`}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Axis Label */}
+                      <span className="text-[10px] font-mono text-muted-foreground font-bold text-center truncate w-full" title={col.label}>
+                        {col.label.split(" ")[0]}
+                      </span>
                     </div>
+                  );
+                })}
+              </div>
 
-                    {/* Perempuan Bar */}
-                    <div className="flex flex-col items-center justify-end h-full w-4">
-                      {col.perempuan > 0 && (
-                        <span className="text-[9px] font-mono font-bold text-pink-400 mb-0.5">
-                          {col.perempuan}
-                        </span>
-                      )}
-                      <div
-                        className="w-full bg-pink-500 rounded-t-sm transition-all duration-500 hover:brightness-125"
-                        style={{ height: `${peremHeightPct}%` }}
-                        title={`${col.label} - Perempuan: ${col.perempuan}`}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Axis Label */}
-                  <span className="text-[10px] font-mono text-muted-foreground font-bold text-center truncate w-full" title={col.label}>
-                    {col.label.split(" ")[0]}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Bottom Footnote info */}
-          <div className="flex items-center justify-between text-[11px] font-mono text-muted-foreground pt-1">
-            <span>Perbandingan Anak L vs P</span>
-            <span className="text-foreground font-bold font-mono">
-              Total {totalFiltered} Anak
-            </span>
-          </div>
+              {/* Bottom Footnote info */}
+              <div className="flex items-center justify-between text-[11px] font-mono text-muted-foreground pt-1">
+                <span>Perbandingan Anak L vs P</span>
+                <span className="text-foreground font-bold font-mono">
+                  Total {totalFiltered} Anak
+                </span>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>

@@ -7,6 +7,8 @@ import {
   HeartHandshake,
   Users,
   AlertCircle,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import {
   getJenjangAts,
@@ -66,6 +68,33 @@ export function GrafikFilterAts({
 }: GrafikFilterAtsProps) {
   const totalFiltered = filteredAts.length;
   const baseList = allAts || filteredAts;
+
+  const [isAllHidden, setIsAllHidden] = useState(false);
+  const [hiddenCharts, setHiddenCharts] = useState<Record<string, boolean>>({});
+
+  const toggleChart = (key: string) => {
+    setHiddenCharts((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
+  };
+
+  const toggleAll = () => {
+    if (isAllHidden) {
+      setIsAllHidden(false);
+      setHiddenCharts({});
+    } else {
+      setIsAllHidden(true);
+      setHiddenCharts({
+        usia: true,
+        kelas: true,
+        alasan: true,
+        jenjang: true,
+        keinginan: true,
+        demografi: true,
+      });
+    }
+  };
 
   const [localKategori, setLocalKategori] = useState<KategoriAtsId>("semua");
   const currentKategori: KategoriAtsId = activeFilters.kategoriAts ?? localKategori;
@@ -432,6 +461,31 @@ export function GrafikFilterAts({
               Total {totalAllAts} Anak
             </span>
           )}
+
+          {/* Global Toggle Button */}
+          <button
+            type="button"
+            onClick={toggleAll}
+            className={cn(
+              "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-2xs font-bold transition-all border cursor-pointer",
+              isAllHidden
+                ? "bg-indigo-600 hover:bg-indigo-700 text-white border-indigo-600"
+                : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 shadow-2xs"
+            )}
+            title={isAllHidden ? "Tampilkan Seluruh Grafik" : "Sembunyikan Seluruh Grafik"}
+          >
+            {isAllHidden ? (
+              <>
+                <Eye className="h-3.5 w-3.5" />
+                <span>Tampilkan Semua Grafik</span>
+              </>
+            ) : (
+              <>
+                <EyeOff className="h-3.5 w-3.5 text-slate-500" />
+                <span>Sembunyikan Semua Grafik</span>
+              </>
+            )}
+          </button>
         </div>
       </div>
 
@@ -459,6 +513,24 @@ export function GrafikFilterAts({
               </div>
             </div>
             <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => toggleChart("usia")}
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700"
+                title={hiddenCharts.usia ? "Tampilkan Grafik" : "Sembunyikan Grafik"}
+              >
+                {hiddenCharts.usia ? (
+                  <>
+                    <Eye className="h-3 w-3 text-indigo-600 dark:text-indigo-400" />
+                    <span>Tampilkan</span>
+                  </>
+                ) : (
+                  <>
+                    <EyeOff className="h-3 w-3 text-slate-500" />
+                    <span>Sembunyikan</span>
+                  </>
+                )}
+              </button>
               {currentKategori !== "semua" && (
                 <button
                   type="button"
@@ -488,7 +560,20 @@ export function GrafikFilterAts({
             </div>
           </div>
 
-          <div className="space-y-4 pt-1">
+          {hiddenCharts.usia ? (
+            <div className="py-8 text-center text-xs text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900 rounded-xl border border-dashed border-slate-200 dark:border-slate-700 flex items-center justify-center gap-2">
+              <EyeOff className="h-4 w-4 text-slate-400" />
+              <span>Diagram Batang Usia ATS disembunyikan.</span>
+              <button
+                type="button"
+                onClick={() => toggleChart("usia")}
+                className="font-bold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
+              >
+                Tampilkan kembali
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-4 pt-1">
             <div className="h-44 w-full flex items-end justify-between gap-1 sm:gap-2 px-1 pt-6 pb-2 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-xl shadow-2xs">
               {usiaPerTahunStats.items.map((uItem) => {
                 const heightPct =
@@ -764,6 +849,7 @@ export function GrafikFilterAts({
               </button>
             </div>
           </div>
+          )}
         </div>
 
         {/* 1.8 GRAFIK BATANG KELAS AKHIR ATS (15 KATEGORI: BPB, 1-12 DO, 6 & 9 LTM) */}
@@ -780,22 +866,55 @@ export function GrafikFilterAts({
                 </p>
               </div>
             </div>
-            {activeFilters.kelasAts ? (
+            <div className="flex items-center gap-1.5">
               <button
                 type="button"
-                onClick={() => onSelectKelasAts?.(null)}
-                className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-indigo-600 text-white cursor-pointer hover:bg-indigo-700"
+                onClick={() => toggleChart("kelas")}
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700"
+                title={hiddenCharts.kelas ? "Tampilkan Grafik" : "Sembunyikan Grafik"}
               >
-                Kelas {DAFTAR_15_KELAS_ATS.find((k) => k.key === activeFilters.kelasAts)?.shortLabel || activeFilters.kelasAts} Aktif ✕
+                {hiddenCharts.kelas ? (
+                  <>
+                    <Eye className="h-3 w-3 text-indigo-600 dark:text-indigo-400" />
+                    <span>Tampilkan</span>
+                  </>
+                ) : (
+                  <>
+                    <EyeOff className="h-3 w-3 text-slate-500" />
+                    <span>Sembunyikan</span>
+                  </>
+                )}
               </button>
-            ) : (
-              <span className="text-[10px] font-mono text-slate-500 font-bold">
-                15 Kategori
-              </span>
-            )}
+              {activeFilters.kelasAts ? (
+                <button
+                  type="button"
+                  onClick={() => onSelectKelasAts?.(null)}
+                  className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-indigo-600 text-white cursor-pointer hover:bg-indigo-700"
+                >
+                  Kelas {DAFTAR_15_KELAS_ATS.find((k) => k.key === activeFilters.kelasAts)?.shortLabel || activeFilters.kelasAts} Aktif ✕
+                </button>
+              ) : (
+                <span className="text-[10px] font-mono text-slate-500 font-bold">
+                  15 Kategori
+                </span>
+              )}
+            </div>
           </div>
 
-          <div className="space-y-4 pt-1">
+          {hiddenCharts.kelas ? (
+            <div className="py-8 text-center text-xs text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900 rounded-xl border border-dashed border-slate-200 dark:border-slate-700 flex items-center justify-center gap-2">
+              <EyeOff className="h-4 w-4 text-slate-400" />
+              <span>Diagram Batang Kelas Akhir ATS disembunyikan.</span>
+              <button
+                type="button"
+                onClick={() => toggleChart("kelas")}
+                className="font-bold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
+              >
+                Tampilkan kembali
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-4 pt-1">
             <div className="h-48 sm:h-52 w-full flex items-end justify-between gap-0.5 sm:gap-1 px-1.5 pt-6 pb-8 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-xl shadow-2xs overflow-hidden">
               {kelasAkhirStats.items.map((kItem) => {
                 const heightPct =
@@ -972,6 +1091,7 @@ export function GrafikFilterAts({
               </button>
             </div>
           </div>
+          )}
         </div>
 
         {/* 2. GRAFIK DISTRIBUSI ALASAN TIDAK SEKOLAH (URUTAN TERBANYAK KE TERSEDIAKIT) */}
@@ -988,23 +1108,56 @@ export function GrafikFilterAts({
                 </p>
               </div>
             </div>
-            {activeFilters.alasan !== "semua" ? (
+            <div className="flex items-center gap-1.5">
               <button
                 type="button"
-                onClick={() => onSelectAlasan?.("semua")}
-                className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-rose-600 text-white cursor-pointer hover:bg-rose-700"
+                onClick={() => toggleChart("alasan")}
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700"
+                title={hiddenCharts.alasan ? "Tampilkan Grafik" : "Sembunyikan Grafik"}
               >
-                Filter Aktif ✕
+                {hiddenCharts.alasan ? (
+                  <>
+                    <Eye className="h-3 w-3 text-indigo-600 dark:text-indigo-400" />
+                    <span>Tampilkan</span>
+                  </>
+                ) : (
+                  <>
+                    <EyeOff className="h-3 w-3 text-slate-500" />
+                    <span>Sembunyikan</span>
+                  </>
+                )}
               </button>
-            ) : (
-              <span className="text-[11px] font-mono text-slate-500 font-bold">
-                {alasanStats.length} Kategori
-              </span>
-            )}
+              {activeFilters.alasan !== "semua" ? (
+                <button
+                  type="button"
+                  onClick={() => onSelectAlasan?.("semua")}
+                  className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-rose-600 text-white cursor-pointer hover:bg-rose-700"
+                >
+                  Filter Aktif ✕
+                </button>
+              ) : (
+                <span className="text-[11px] font-mono text-slate-500 font-bold">
+                  {alasanStats.length} Kategori
+                </span>
+              )}
+            </div>
           </div>
 
-          {(() => {
-            const maxReasonCount = Math.max(...alasanStats.map((r) => r.count), 1);
+          {hiddenCharts.alasan ? (
+            <div className="py-8 text-center text-xs text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900 rounded-xl border border-dashed border-slate-200 dark:border-slate-700 flex items-center justify-center gap-2">
+              <EyeOff className="h-4 w-4 text-slate-400" />
+              <span>Diagram Batang Alasan Menjadi ATS disembunyikan.</span>
+              <button
+                type="button"
+                onClick={() => toggleChart("alasan")}
+                className="font-bold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
+              >
+                Tampilkan kembali
+              </button>
+            </div>
+          ) : (
+            (() => {
+              const maxReasonCount = Math.max(...alasanStats.map((r) => r.count), 1);
             return (
               <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
                 {alasanStats.map((item, idx) => {
@@ -1100,7 +1253,8 @@ export function GrafikFilterAts({
                 })}
               </div>
             );
-          })()}
+          })()
+          )}
         </div>
 
         {/* 3. GRAFIK JENJANG PENDIDIKAN */}
@@ -1112,12 +1266,45 @@ export function GrafikFilterAts({
                 Distribusi Jenjang Pendidikan
               </span>
             </div>
-            <span className="text-[11px] font-mono text-slate-500 font-bold">
-              {baseList.length} Anak
-            </span>
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => toggleChart("jenjang")}
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700"
+                title={hiddenCharts.jenjang ? "Tampilkan Grafik" : "Sembunyikan Grafik"}
+              >
+                {hiddenCharts.jenjang ? (
+                  <>
+                    <Eye className="h-3 w-3 text-indigo-600 dark:text-indigo-400" />
+                    <span>Tampilkan</span>
+                  </>
+                ) : (
+                  <>
+                    <EyeOff className="h-3 w-3 text-slate-500" />
+                    <span>Sembunyikan</span>
+                  </>
+                )}
+              </button>
+              <span className="text-[11px] font-mono text-slate-500 font-bold">
+                {baseList.length} Anak
+              </span>
+            </div>
           </div>
 
-          <div className="space-y-2.5">
+          {hiddenCharts.jenjang ? (
+            <div className="py-8 text-center text-xs text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900 rounded-xl border border-dashed border-slate-200 dark:border-slate-700 flex items-center justify-center gap-2">
+              <EyeOff className="h-4 w-4 text-slate-400" />
+              <span>Distribusi Jenjang Pendidikan disembunyikan.</span>
+              <button
+                type="button"
+                onClick={() => toggleChart("jenjang")}
+                className="font-bold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
+              >
+                Tampilkan kembali
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-2.5">
             {jenjangStats.map((item) => {
               const isSelected = activeFilters.jenjang === item.id;
               return (
@@ -1155,6 +1342,7 @@ export function GrafikFilterAts({
               );
             })}
           </div>
+          )}
         </div>
 
         {/* 4. GRAFIK KEINGINAN BERSEKOLAH */}
@@ -1166,101 +1354,137 @@ export function GrafikFilterAts({
                 Keinginan Melanjutkan Sekolah
               </span>
             </div>
-            <span className="text-[11px] font-mono text-slate-500 font-bold">
-              {baseList.length} Anak
-            </span>
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => toggleChart("keinginan")}
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700"
+                title={hiddenCharts.keinginan ? "Tampilkan Grafik" : "Sembunyikan Grafik"}
+              >
+                {hiddenCharts.keinginan ? (
+                  <>
+                    <Eye className="h-3 w-3 text-indigo-600 dark:text-indigo-400" />
+                    <span>Tampilkan</span>
+                  </>
+                ) : (
+                  <>
+                    <EyeOff className="h-3 w-3 text-slate-500" />
+                    <span>Sembunyikan</span>
+                  </>
+                )}
+              </button>
+              <span className="text-[11px] font-mono text-slate-500 font-bold">
+                {baseList.length} Anak
+              </span>
+            </div>
           </div>
 
-          {/* Dual Segment Visual Bar */}
-          <div className="space-y-2">
-            <div className="h-4 w-full rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden flex p-0.5 border border-slate-300 dark:border-slate-600">
-              {keinginanStats.masihAda > 0 && (
+          {hiddenCharts.keinginan ? (
+            <div className="py-8 text-center text-xs text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900 rounded-xl border border-dashed border-slate-200 dark:border-slate-700 flex items-center justify-center gap-2">
+              <EyeOff className="h-4 w-4 text-slate-400" />
+              <span>Grafik Keinginan Sekolah disembunyikan.</span>
+              <button
+                type="button"
+                onClick={() => toggleChart("keinginan")}
+                className="font-bold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
+              >
+                Tampilkan kembali
+              </button>
+            </div>
+          ) : (
+            <>
+              {/* Dual Segment Visual Bar */}
+              <div className="space-y-2">
+                <div className="h-4 w-full rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden flex p-0.5 border border-slate-300 dark:border-slate-600">
+                  {keinginanStats.masihAda > 0 && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        onSelectKeinginan?.(activeFilters.keinginan === "Masih Ada" ? "semua" : "Masih Ada")
+                      }
+                      className="h-full bg-emerald-500 rounded-l-full transition-all duration-500 cursor-pointer hover:brightness-110"
+                      style={{ width: `${keinginanStats.masihAdaPct}%` }}
+                      title={`Masih Ada: ${keinginanStats.masihAda} anak (${keinginanStats.masihAdaPct}%)`}
+                    />
+                  )}
+                  {keinginanStats.tidakAda > 0 && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        onSelectKeinginan?.(activeFilters.keinginan === "Tidak Ada" ? "semua" : "Tidak Ada")
+                      }
+                      className="h-full bg-rose-500 rounded-r-full transition-all duration-500 cursor-pointer hover:brightness-110"
+                      style={{ width: `${keinginanStats.tidakAdaPct}%` }}
+                      title={`Tidak Ada: ${keinginanStats.tidakAda} anak (${keinginanStats.tidakAdaPct}%)`}
+                    />
+                  )}
+                </div>
+                <div className="flex items-between justify-between text-[11px] font-mono text-slate-500 font-bold">
+                  <span>Masih Ada ({keinginanStats.masihAdaPct}%)</span>
+                  <span>Tidak Ada ({keinginanStats.tidakAdaPct}%)</span>
+                </div>
+              </div>
+
+              {/* Detail Cards */}
+              <div className="grid grid-cols-2 gap-2.5 pt-1">
                 <button
                   type="button"
                   onClick={() =>
                     onSelectKeinginan?.(activeFilters.keinginan === "Masih Ada" ? "semua" : "Masih Ada")
                   }
-                  className="h-full bg-emerald-500 rounded-l-full transition-all duration-500 cursor-pointer hover:brightness-110"
-                  style={{ width: `${keinginanStats.masihAdaPct}%` }}
-                  title={`Masih Ada: ${keinginanStats.masihAda} anak (${keinginanStats.masihAdaPct}%)`}
-                />
-              )}
-              {keinginanStats.tidakAda > 0 && (
+                  className={cn(
+                    "rounded-xl border-2 p-3 text-left transition-all cursor-pointer",
+                    activeFilters.keinginan === "Masih Ada"
+                      ? "bg-emerald-100 border-emerald-600 shadow-xs ring-2 ring-emerald-600/30"
+                      : "bg-emerald-50/70 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100/50"
+                  )}
+                >
+                  <span className="text-[10px] font-mono font-black uppercase text-emerald-800 dark:text-emerald-300 block">
+                    MASIH ADA KEINGINAN
+                  </span>
+                  <div className="flex items-baseline justify-between mt-1">
+                    <span className="text-xl font-black font-mono text-emerald-700 dark:text-emerald-400">
+                      {keinginanStats.masihAda}
+                    </span>
+                    <span className="text-xs font-mono font-bold text-emerald-700">
+                      {keinginanStats.masihAdaPct}%
+                    </span>
+                  </div>
+                  <span className="text-[10px] text-emerald-700 font-medium block mt-0.5">
+                    Prioritas Fasilitasi
+                  </span>
+                </button>
+
                 <button
                   type="button"
                   onClick={() =>
                     onSelectKeinginan?.(activeFilters.keinginan === "Tidak Ada" ? "semua" : "Tidak Ada")
                   }
-                  className="h-full bg-rose-500 rounded-r-full transition-all duration-500 cursor-pointer hover:brightness-110"
-                  style={{ width: `${keinginanStats.tidakAdaPct}%` }}
-                  title={`Tidak Ada: ${keinginanStats.tidakAda} anak (${keinginanStats.tidakAdaPct}%)`}
-                />
-              )}
-            </div>
-            <div className="flex items-center justify-between text-[11px] font-mono text-slate-500 font-bold">
-              <span>Masih Ada ({keinginanStats.masihAdaPct}%)</span>
-              <span>Tidak Ada ({keinginanStats.tidakAdaPct}%)</span>
-            </div>
-          </div>
-
-          {/* Detail Cards */}
-          <div className="grid grid-cols-2 gap-2.5 pt-1">
-            <button
-              type="button"
-              onClick={() =>
-                onSelectKeinginan?.(activeFilters.keinginan === "Masih Ada" ? "semua" : "Masih Ada")
-              }
-              className={cn(
-                "rounded-xl border-2 p-3 text-left transition-all cursor-pointer",
-                activeFilters.keinginan === "Masih Ada"
-                  ? "bg-emerald-100 border-emerald-600 shadow-xs ring-2 ring-emerald-600/30"
-                  : "bg-emerald-50/70 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100/50"
-              )}
-            >
-              <span className="text-[10px] font-mono font-black uppercase text-emerald-800 dark:text-emerald-300 block">
-                MASIH ADA KEINGINAN
-              </span>
-              <div className="flex items-baseline justify-between mt-1">
-                <span className="text-xl font-black font-mono text-emerald-700 dark:text-emerald-400">
-                  {keinginanStats.masihAda}
-                </span>
-                <span className="text-xs font-mono font-bold text-emerald-700">
-                  {keinginanStats.masihAdaPct}%
-                </span>
+                  className={cn(
+                    "rounded-xl border-2 p-3 text-left transition-all cursor-pointer",
+                    activeFilters.keinginan === "Tidak Ada"
+                      ? "bg-rose-100 border-rose-600 shadow-xs ring-2 ring-rose-600/30"
+                      : "bg-rose-50/70 border-rose-200 dark:border-rose-800 hover:bg-rose-100/50"
+                  )}
+                >
+                  <span className="text-[10px] font-mono font-black uppercase text-rose-800 dark:text-rose-300 block">
+                    TIDAK ADA KEINGINAN
+                  </span>
+                  <div className="flex items-baseline justify-between mt-1">
+                    <span className="text-xl font-black font-mono text-rose-700 dark:text-rose-400">
+                      {keinginanStats.tidakAda}
+                    </span>
+                    <span className="text-xs font-mono font-bold text-rose-700">
+                      {keinginanStats.tidakAdaPct}%
+                    </span>
+                  </div>
+                  <span className="text-[10px] text-rose-700 font-medium block mt-0.5">
+                    Perlu Konseling
+                  </span>
+                </button>
               </div>
-              <span className="text-[10px] text-emerald-700 font-medium block mt-0.5">
-                Prioritas Fasilitasi
-              </span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() =>
-                onSelectKeinginan?.(activeFilters.keinginan === "Tidak Ada" ? "semua" : "Tidak Ada")
-              }
-              className={cn(
-                "rounded-xl border-2 p-3 text-left transition-all cursor-pointer",
-                activeFilters.keinginan === "Tidak Ada"
-                  ? "bg-rose-100 border-rose-600 shadow-xs ring-2 ring-rose-600/30"
-                  : "bg-rose-50/70 border-rose-200 dark:border-rose-800 hover:bg-rose-100/50"
-              )}
-            >
-              <span className="text-[10px] font-mono font-black uppercase text-rose-800 dark:text-rose-300 block">
-                TIDAK ADA KEINGINAN
-              </span>
-              <div className="flex items-baseline justify-between mt-1">
-                <span className="text-xl font-black font-mono text-rose-700 dark:text-rose-400">
-                  {keinginanStats.tidakAda}
-                </span>
-                <span className="text-xs font-mono font-bold text-rose-700">
-                  {keinginanStats.tidakAdaPct}%
-                </span>
-              </div>
-              <span className="text-[10px] text-rose-700 font-medium block mt-0.5">
-                Perlu Konseling
-              </span>
-            </button>
-          </div>
+            </>
+          )}
         </div>
 
         {/* 5. GRAFIK DEMOGRAFI GENDER & VALIDASI */}
@@ -1272,12 +1496,45 @@ export function GrafikFilterAts({
                 Profil Gender &amp; Verifikasi (Klik untuk Filter)
               </span>
             </div>
-            <span className="text-[11px] font-mono text-slate-500 font-bold">
-              Demografi
-            </span>
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => toggleChart("demografi")}
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700"
+                title={hiddenCharts.demografi ? "Tampilkan Grafik" : "Sembunyikan Grafik"}
+              >
+                {hiddenCharts.demografi ? (
+                  <>
+                    <Eye className="h-3 w-3 text-indigo-600 dark:text-indigo-400" />
+                    <span>Tampilkan</span>
+                  </>
+                ) : (
+                  <>
+                    <EyeOff className="h-3 w-3 text-slate-500" />
+                    <span>Sembunyikan</span>
+                  </>
+                )}
+              </button>
+              <span className="text-[11px] font-mono text-slate-500 font-bold">
+                Demografi
+              </span>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {hiddenCharts.demografi ? (
+            <div className="py-8 text-center text-xs text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900 rounded-xl border border-dashed border-slate-200 dark:border-slate-700 flex items-center justify-center gap-2">
+              <EyeOff className="h-4 w-4 text-slate-400" />
+              <span>Profil Gender &amp; Verifikasi disembunyikan.</span>
+              <button
+                type="button"
+                onClick={() => toggleChart("demografi")}
+                className="font-bold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
+              >
+                Tampilkan kembali
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Gender Split */}
             <div className="space-y-2 bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-700">
               <div className="flex items-center justify-between text-xs font-mono">
@@ -1410,6 +1667,7 @@ export function GrafikFilterAts({
               </div>
             </div>
           </div>
+          )}
         </div>
       </div>
     </div>

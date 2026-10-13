@@ -22,6 +22,8 @@ import {
   HelpCircle,
   Compass,
   ArrowRight,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type {
@@ -49,6 +51,32 @@ export function RekapDataAtsClientView({
   const [selectedKelurahan, setSelectedKelurahan] = useState<string>("Kejambon");
   const [activeTabSection, setActiveTabSection] = useState<"semua" | "kategori" | "jenjang_usia" | "tabel">("semua");
   const [tableSearch, setTableSearch] = useState<string>("");
+
+  const [isAllHidden, setIsAllHidden] = useState(false);
+  const [hiddenCharts, setHiddenCharts] = useState<Record<string, boolean>>({});
+
+  const toggleChart = (key: string) => {
+    setHiddenCharts((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
+  };
+
+  const toggleAll = () => {
+    if (isAllHidden) {
+      setIsAllHidden(false);
+      setHiddenCharts({});
+    } else {
+      setIsAllHidden(true);
+      setHiddenCharts({
+        kategori: true,
+        keinginan: true,
+        kelas: true,
+        usia: true,
+        alasan: true,
+      });
+    }
+  };
 
   // Daftar opsi kecamatan & kelurahan
   const daftarKecamatan = useMemo(() => {
@@ -377,9 +405,34 @@ export function RekapDataAtsClientView({
                 </p>
               </div>
             </div>
-            <span className="hidden sm:inline-block text-xs font-extrabold px-3 py-1 rounded-full bg-blue-50 text-blue-800 border border-blue-200">
-              Total: {currentWilayahData.totalAts} Anak
-            </span>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={toggleAll}
+                className={cn(
+                  "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all border cursor-pointer",
+                  isAllHidden
+                    ? "bg-blue-600 hover:bg-blue-700 text-white border-blue-600 shadow-xs"
+                    : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 shadow-2xs"
+                )}
+                title={isAllHidden ? "Tampilkan Seluruh Grafik" : "Sembunyikan Seluruh Grafik"}
+              >
+                {isAllHidden ? (
+                  <>
+                    <Eye className="h-3.5 w-3.5" />
+                    <span>Tampilkan Semua Grafik</span>
+                  </>
+                ) : (
+                  <>
+                    <EyeOff className="h-3.5 w-3.5 text-slate-500" />
+                    <span>Sembunyikan Semua Grafik</span>
+                  </>
+                )}
+              </button>
+              <span className="hidden sm:inline-block text-xs font-extrabold px-3 py-1 rounded-full bg-blue-50 text-blue-800 border border-blue-200">
+                Total: {currentWilayahData.totalAts} Anak
+              </span>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -398,6 +451,24 @@ export function RekapDataAtsClientView({
                   </div>
                 </div>
                 <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => toggleChart("kategori")}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700"
+                    title={hiddenCharts.kategori ? "Tampilkan Grafik" : "Sembunyikan Grafik"}
+                  >
+                    {hiddenCharts.kategori ? (
+                      <>
+                        <Eye className="h-3 w-3 text-blue-600 dark:text-blue-400" />
+                        <span>Tampilkan</span>
+                      </>
+                    ) : (
+                      <>
+                        <EyeOff className="h-3 w-3 text-slate-500" />
+                        <span>Sembunyikan</span>
+                      </>
+                    )}
+                  </button>
                   <span className="text-xs font-black px-2.5 py-1 rounded-xl bg-blue-100 dark:bg-blue-950/60 text-blue-800 dark:text-blue-300 border border-blue-300 dark:border-blue-700 font-mono shadow-2xs">
                     Total: {currentWilayahData.totalAts} Anak
                   </span>
@@ -407,60 +478,76 @@ export function RekapDataAtsClientView({
                 </div>
               </div>
 
-              {/* Rasio Gender ATS (Laki-laki & Perempuan) */}
-              <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-2">
-                <div className="flex items-center justify-between text-xs font-extrabold">
-                  <span className="text-sky-700 dark:text-sky-400 flex items-center gap-1.5">
-                    <span className="h-2.5 w-2.5 rounded-full bg-sky-500" />
-                    Laki-laki: {currentWilayahData.gender.lakiLaki} Anak (
-                    {Math.round((currentWilayahData.gender.lakiLaki / (currentWilayahData.totalAts || 1)) * 100)}%)
-                  </span>
-                  <span className="text-rose-600 dark:text-rose-400 flex items-center gap-1.5">
-                    <span className="h-2.5 w-2.5 rounded-full bg-rose-500" />
-                    Perempuan: {currentWilayahData.gender.perempuan} Anak (
-                    {Math.round((currentWilayahData.gender.perempuan / (currentWilayahData.totalAts || 1)) * 100)}%)
-                  </span>
+              {hiddenCharts.kategori ? (
+                <div className="py-12 text-center text-xs text-slate-500 dark:text-slate-400 bg-slate-50/50 dark:bg-slate-800/40 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700 flex items-center justify-center gap-2">
+                  <EyeOff className="h-4 w-4 text-slate-400" />
+                  <span>Grafik Distribusi Kategori ATS disembunyikan.</span>
+                  <button
+                    type="button"
+                    onClick={() => toggleChart("kategori")}
+                    className="font-bold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
+                  >
+                    Tampilkan kembali
+                  </button>
                 </div>
-                <div className="h-2.5 w-full flex rounded-full overflow-hidden bg-slate-200 dark:bg-slate-700">
-                  <div
-                    className="bg-sky-500 h-full transition-all"
-                    style={{
-                      width: `${Math.round((currentWilayahData.gender.lakiLaki / (currentWilayahData.totalAts || 1)) * 100)}%`,
-                    }}
-                  />
-                  <div
-                    className="bg-rose-500 h-full transition-all"
-                    style={{
-                      width: `${Math.round((currentWilayahData.gender.perempuan / (currentWilayahData.totalAts || 1)) * 100)}%`,
-                    }}
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                {kategoriEntries.map((item) => (
-                  <div key={item.key} className="space-y-1.5 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
-                    <div className="flex items-center justify-between text-xs font-bold">
-                      <span className="flex items-center gap-2 text-slate-800 dark:text-slate-200">
-                        <span className={cn("inline-block h-2.5 w-2.5 rounded-full", item.color)} />
-                        <span>{item.label}</span>
+              ) : (
+                <>
+                  {/* Rasio Gender ATS (Laki-laki & Perempuan) */}
+                  <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-2">
+                    <div className="flex items-center justify-between text-xs font-extrabold">
+                      <span className="text-sky-700 dark:text-sky-400 flex items-center gap-1.5">
+                        <span className="h-2.5 w-2.5 rounded-full bg-sky-500" />
+                        Laki-laki: {currentWilayahData.gender.lakiLaki} Anak (
+                        {Math.round((currentWilayahData.gender.lakiLaki / (currentWilayahData.totalAts || 1)) * 100)}%)
                       </span>
-                      <span className="font-mono font-black text-slate-900 dark:text-slate-100">
-                        {item.count} Anak ({item.pct}%)
+                      <span className="text-rose-600 dark:text-rose-400 flex items-center gap-1.5">
+                        <span className="h-2.5 w-2.5 rounded-full bg-rose-500" />
+                        Perempuan: {currentWilayahData.gender.perempuan} Anak (
+                        {Math.round((currentWilayahData.gender.perempuan / (currentWilayahData.totalAts || 1)) * 100)}%)
                       </span>
                     </div>
-                    <p className="text-2xs text-slate-500 font-medium pl-4">
-                      {item.desc}
-                    </p>
-                    <div className="h-2.5 w-full bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                    <div className="h-2.5 w-full flex rounded-full overflow-hidden bg-slate-200 dark:bg-slate-700">
                       <div
-                        className={cn("h-full rounded-full transition-all duration-700", item.color)}
-                        style={{ width: `${Math.max(2, item.pct)}%` }}
+                        className="bg-sky-500 h-full transition-all"
+                        style={{
+                          width: `${Math.round((currentWilayahData.gender.lakiLaki / (currentWilayahData.totalAts || 1)) * 100)}%`,
+                        }}
+                      />
+                      <div
+                        className="bg-rose-500 h-full transition-all"
+                        style={{
+                          width: `${Math.round((currentWilayahData.gender.perempuan / (currentWilayahData.totalAts || 1)) * 100)}%`,
+                        }}
                       />
                     </div>
                   </div>
-                ))}
-              </div>
+
+                  <div className="space-y-4">
+                    {kategoriEntries.map((item) => (
+                      <div key={item.key} className="space-y-1.5 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
+                        <div className="flex items-center justify-between text-xs font-bold">
+                          <span className="flex items-center gap-2 text-slate-800 dark:text-slate-200">
+                            <span className={cn("inline-block h-2.5 w-2.5 rounded-full", item.color)} />
+                            <span>{item.label}</span>
+                          </span>
+                          <span className="font-mono font-black text-slate-900 dark:text-slate-100">
+                            {item.count} Anak ({item.pct}%)
+                          </span>
+                        </div>
+                        <p className="text-2xs text-slate-500 font-medium pl-4">
+                          {item.desc}
+                        </p>
+                        <div className="h-2.5 w-full bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                          <div
+                            className={cn("h-full rounded-full transition-all duration-700", item.color)}
+                            style={{ width: `${Math.max(2, item.pct)}%` }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
 
             {/* 5.2 Keinginan Bersekolah Kembali & Rasio Gender */}
@@ -478,6 +565,24 @@ export function RekapDataAtsClientView({
                   </div>
                 </div>
                 <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => toggleChart("keinginan")}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700"
+                    title={hiddenCharts.keinginan ? "Tampilkan Grafik" : "Sembunyikan Grafik"}
+                  >
+                    {hiddenCharts.keinginan ? (
+                      <>
+                        <Eye className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
+                        <span>Tampilkan</span>
+                      </>
+                    ) : (
+                      <>
+                        <EyeOff className="h-3 w-3 text-slate-500" />
+                        <span>Sembunyikan</span>
+                      </>
+                    )}
+                  </button>
                   <span className="text-xs font-black px-2.5 py-1 rounded-xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700 font-mono shadow-2xs">
                     Total: {currentWilayahData.totalAts} Anak
                   </span>
@@ -487,67 +592,83 @@ export function RekapDataAtsClientView({
                 </div>
               </div>
 
-              {/* Keinginan Kembali Bersekolah Cards */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-center space-y-1">
-                  <span className="text-2xs font-extrabold text-emerald-800 dark:text-emerald-300 uppercase block">
-                    MASIH ADA KEINGINAN
-                  </span>
-                  <div className="text-2xl sm:text-3xl font-black font-mono text-emerald-700 dark:text-emerald-400">
-                    {currentWilayahData.keinginan.masihAda}
+              {hiddenCharts.keinginan ? (
+                <div className="py-12 text-center text-xs text-slate-500 dark:text-slate-400 bg-slate-50/50 dark:bg-slate-800/40 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700 flex items-center justify-center gap-2">
+                  <EyeOff className="h-4 w-4 text-slate-400" />
+                  <span>Grafik Keinginan Bersekolah disembunyikan.</span>
+                  <button
+                    type="button"
+                    onClick={() => toggleChart("keinginan")}
+                    className="font-bold text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer"
+                  >
+                    Tampilkan kembali
+                  </button>
+                </div>
+              ) : (
+                <>
+                  {/* Keinginan Kembali Bersekolah Cards */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-center space-y-1">
+                      <span className="text-2xs font-extrabold text-emerald-800 dark:text-emerald-300 uppercase block">
+                        MASIH ADA KEINGINAN
+                      </span>
+                      <div className="text-2xl sm:text-3xl font-black font-mono text-emerald-700 dark:text-emerald-400">
+                        {currentWilayahData.keinginan.masihAda}
+                      </div>
+                      <span className="text-xs font-bold text-emerald-800 dark:text-emerald-300">
+                        ({currentWilayahData.persenInginSekolah}%) Siap Lanjut
+                      </span>
+                    </div>
+
+                    <div className="p-4 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-center space-y-1">
+                      <span className="text-2xs font-extrabold text-slate-600 dark:text-slate-400 uppercase block">
+                        TIDAK INGIN / RAGU
+                      </span>
+                      <div className="text-2xl sm:text-3xl font-black font-mono text-slate-700 dark:text-slate-300">
+                        {currentWilayahData.keinginan.tidakAda}
+                      </div>
+                      <span className="text-xs font-bold text-slate-500">
+                        ({100 - currentWilayahData.persenInginSekolah}%) Perlu Konseling
+                      </span>
+                    </div>
                   </div>
-                  <span className="text-xs font-bold text-emerald-800 dark:text-emerald-300">
-                    ({currentWilayahData.persenInginSekolah}%) Siap Lanjut
-                  </span>
-                </div>
 
-                <div className="p-4 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-center space-y-1">
-                  <span className="text-2xs font-extrabold text-slate-600 dark:text-slate-400 uppercase block">
-                    TIDAK INGIN / RAGU
-                  </span>
-                  <div className="text-2xl sm:text-3xl font-black font-mono text-slate-700 dark:text-slate-300">
-                    {currentWilayahData.keinginan.tidakAda}
+                  {/* Rasio Gender ATS */}
+                  <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-2">
+                    <div className="flex items-center justify-between text-xs font-extrabold">
+                      <span className="text-sky-700 dark:text-sky-400 flex items-center gap-1.5">
+                        <span className="h-2.5 w-2.5 rounded-full bg-sky-500" />
+                        Laki-laki: {currentWilayahData.gender.lakiLaki} Anak (
+                        {Math.round((currentWilayahData.gender.lakiLaki / (currentWilayahData.totalAts || 1)) * 100)}%)
+                      </span>
+                      <span className="text-rose-600 dark:text-rose-400 flex items-center gap-1.5">
+                        <span className="h-2.5 w-2.5 rounded-full bg-rose-500" />
+                        Perempuan: {currentWilayahData.gender.perempuan} Anak (
+                        {Math.round((currentWilayahData.gender.perempuan / (currentWilayahData.totalAts || 1)) * 100)}%)
+                      </span>
+                    </div>
+                    <div className="h-3 w-full flex rounded-full overflow-hidden bg-slate-200 dark:bg-slate-700">
+                      <div
+                        className="bg-sky-500 h-full transition-all"
+                        style={{
+                          width: `${Math.round((currentWilayahData.gender.lakiLaki / (currentWilayahData.totalAts || 1)) * 100)}%`,
+                        }}
+                      />
+                      <div
+                        className="bg-rose-500 h-full transition-all"
+                        style={{
+                          width: `${Math.round((currentWilayahData.gender.perempuan / (currentWilayahData.totalAts || 1)) * 100)}%`,
+                        }}
+                      />
+                    </div>
                   </div>
-                  <span className="text-xs font-bold text-slate-500">
-                    ({100 - currentWilayahData.persenInginSekolah}%) Perlu Konseling
-                  </span>
-                </div>
-              </div>
 
-              {/* Rasio Gender ATS */}
-              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-2">
-                <div className="flex items-center justify-between text-xs font-extrabold">
-                  <span className="text-sky-700 dark:text-sky-400 flex items-center gap-1.5">
-                    <span className="h-2.5 w-2.5 rounded-full bg-sky-500" />
-                    Laki-laki: {currentWilayahData.gender.lakiLaki} Anak (
-                    {Math.round((currentWilayahData.gender.lakiLaki / (currentWilayahData.totalAts || 1)) * 100)}%)
-                  </span>
-                  <span className="text-rose-600 dark:text-rose-400 flex items-center gap-1.5">
-                    <span className="h-2.5 w-2.5 rounded-full bg-rose-500" />
-                    Perempuan: {currentWilayahData.gender.perempuan} Anak (
-                    {Math.round((currentWilayahData.gender.perempuan / (currentWilayahData.totalAts || 1)) * 100)}%)
-                  </span>
-                </div>
-                <div className="h-3 w-full flex rounded-full overflow-hidden bg-slate-200 dark:bg-slate-700">
-                  <div
-                    className="bg-sky-500 h-full transition-all"
-                    style={{
-                      width: `${Math.round((currentWilayahData.gender.lakiLaki / (currentWilayahData.totalAts || 1)) * 100)}%`,
-                    }}
-                  />
-                  <div
-                    className="bg-rose-500 h-full transition-all"
-                    style={{
-                      width: `${Math.round((currentWilayahData.gender.perempuan / (currentWilayahData.totalAts || 1)) * 100)}%`,
-                    }}
-                  />
-                </div>
-              </div>
-
-              <div className="p-3 rounded-xl bg-blue-50/60 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900/40 text-xs font-medium text-blue-900 dark:text-blue-300 flex items-center gap-2">
-                <Sparkles className="h-4 w-4 text-blue-600 shrink-0" />
-                <span>Anak dengan motivasi belajar tinggi segera difasilitasi ke PKBM terdekat.</span>
-              </div>
+                  <div className="p-3 rounded-xl bg-blue-50/60 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900/40 text-xs font-medium text-blue-900 dark:text-blue-300 flex items-center gap-2">
+                    <Sparkles className="h-4 w-4 text-blue-600 shrink-0" />
+                    <span>Anak dengan motivasi belajar tinggi segera difasilitasi ke PKBM terdekat.</span>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -558,7 +679,7 @@ export function RekapDataAtsClientView({
       {/* ========================================================= */}
       {(activeTabSection === "semua" || activeTabSection === "jenjang_usia") && (
         <div className="space-y-4 pt-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <div className="h-8 w-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold">
                 <BookOpen className="h-4 w-4" />
@@ -572,6 +693,23 @@ export function RekapDataAtsClientView({
                 </p>
               </div>
             </div>
+            <button
+              type="button"
+              onClick={toggleAll}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition-all shadow-2xs cursor-pointer shrink-0"
+            >
+              {isAllHidden ? (
+                <>
+                  <Eye className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
+                  <span>Tampilkan Semua Grafik</span>
+                </>
+              ) : (
+                <>
+                  <EyeOff className="h-3.5 w-3.5 text-slate-500" />
+                  <span>Sembunyikan Semua Grafik</span>
+                </>
+              )}
+            </button>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -589,14 +727,48 @@ export function RekapDataAtsClientView({
                     </p>
                   </div>
                 </div>
-                <span className="text-xs font-black px-2.5 py-1 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 font-mono">
-                  15 Kategori
-                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => toggleChart("kelas")}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700"
+                    title={hiddenCharts.kelas ? "Tampilkan Grafik" : "Sembunyikan Grafik"}
+                  >
+                    {hiddenCharts.kelas ? (
+                      <>
+                        <Eye className="h-3 w-3 text-indigo-600 dark:text-indigo-400" />
+                        <span>Tampilkan</span>
+                      </>
+                    ) : (
+                      <>
+                        <EyeOff className="h-3 w-3 text-slate-500" />
+                        <span>Sembunyikan</span>
+                      </>
+                    )}
+                  </button>
+                  <span className="text-xs font-black px-2.5 py-1 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 font-mono">
+                    15 Kategori
+                  </span>
+                </div>
               </div>
 
-              {/* Bar Chart Grafik Batang 15 Kategori Kelas */}
-              {(() => {
-                const kelasList = currentWilayahData.kelasPerJenjang || [];
+              {hiddenCharts.kelas ? (
+                <div className="py-12 text-center text-xs text-slate-500 dark:text-slate-400 bg-slate-50/50 dark:bg-slate-800/40 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700 flex items-center justify-center gap-2">
+                  <EyeOff className="h-4 w-4 text-slate-400" />
+                  <span>Grafik jenjang &amp; kelas terakhir ATS disembunyikan.</span>
+                  <button
+                    type="button"
+                    onClick={() => toggleChart("kelas")}
+                    className="font-bold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
+                  >
+                    Tampilkan kembali
+                  </button>
+                </div>
+              ) : (
+                <>
+                  {/* Bar Chart Grafik Batang 15 Kategori Kelas */}
+                  {(() => {
+                    const kelasList = currentWilayahData.kelasPerJenjang || [];
                 const maxKelasCount = Math.max(
                   ...kelasList.map((k) => k.jumlah),
                   1
@@ -736,6 +908,8 @@ export function RekapDataAtsClientView({
                   </div>
                 );
               })()}
+                </>
+              )}
             </div>
 
             {/* 6.2 Diagram Batang: Distribusi Usia ATS (6 - 18 Tahun) */}
@@ -752,13 +926,47 @@ export function RekapDataAtsClientView({
                     </p>
                   </div>
                 </div>
-                <span className="text-xs font-black px-2.5 py-1 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 font-mono">
-                  6–18 Thn
-                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => toggleChart("usia")}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700"
+                    title={hiddenCharts.usia ? "Tampilkan Grafik" : "Sembunyikan Grafik"}
+                  >
+                    {hiddenCharts.usia ? (
+                      <>
+                        <Eye className="h-3 w-3 text-indigo-600 dark:text-indigo-400" />
+                        <span>Tampilkan</span>
+                      </>
+                    ) : (
+                      <>
+                        <EyeOff className="h-3 w-3 text-slate-500" />
+                        <span>Sembunyikan</span>
+                      </>
+                    )}
+                  </button>
+                  <span className="text-xs font-black px-2.5 py-1 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 font-mono">
+                    6–18 Thn
+                  </span>
+                </div>
               </div>
 
-              {/* Bar Chart Grafik Batang 6-18 Tahun */}
-              {(() => {
+              {hiddenCharts.usia ? (
+                <div className="py-12 text-center text-xs text-slate-500 dark:text-slate-400 bg-slate-50/50 dark:bg-slate-800/40 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700 flex items-center justify-center gap-2">
+                  <EyeOff className="h-4 w-4 text-slate-400" />
+                  <span>Grafik usia ATS disembunyikan.</span>
+                  <button
+                    type="button"
+                    onClick={() => toggleChart("usia")}
+                    className="font-bold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
+                  >
+                    Tampilkan kembali
+                  </button>
+                </div>
+              ) : (
+                <>
+                  {/* Bar Chart Grafik Batang 6-18 Tahun */}
+                  {(() => {
                 const maxAgeCount = Math.max(
                   ...(currentWilayahData.usiaPerTahun || []).map((u) => u.jumlah),
                   1
@@ -862,6 +1070,8 @@ export function RekapDataAtsClientView({
                   </div>
                 );
               })()}
+                </>
+              )}
             </div>
           </div>
 
@@ -879,12 +1089,46 @@ export function RekapDataAtsClientView({
                   </p>
                 </div>
               </div>
-              <span className="text-xs font-black px-2.5 py-1 rounded-xl bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 font-mono self-start sm:self-center">
-                Ranking Terbanyak
-              </span>
+              <div className="flex items-center gap-2 self-start sm:self-center">
+                <button
+                  type="button"
+                  onClick={() => toggleChart("alasan")}
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700"
+                  title={hiddenCharts.alasan ? "Tampilkan Grafik" : "Sembunyikan Grafik"}
+                >
+                  {hiddenCharts.alasan ? (
+                    <>
+                      <Eye className="h-3 w-3 text-indigo-600 dark:text-indigo-400" />
+                      <span>Tampilkan</span>
+                    </>
+                  ) : (
+                    <>
+                      <EyeOff className="h-3 w-3 text-slate-500" />
+                      <span>Sembunyikan</span>
+                    </>
+                  )}
+                </button>
+                <span className="text-xs font-black px-2.5 py-1 rounded-xl bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 font-mono">
+                  Ranking Terbanyak
+                </span>
+              </div>
             </div>
 
-            {(() => {
+            {hiddenCharts.alasan ? (
+              <div className="py-12 text-center text-xs text-slate-500 dark:text-slate-400 bg-slate-50/50 dark:bg-slate-800/40 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700 flex items-center justify-center gap-2">
+                <EyeOff className="h-4 w-4 text-slate-400" />
+                <span>Grafik alasan menjadi ATS disembunyikan.</span>
+                <button
+                  type="button"
+                  onClick={() => toggleChart("alasan")}
+                  className="font-bold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
+                >
+                  Tampilkan kembali
+                </button>
+              </div>
+            ) : (
+              <>
+                {(() => {
               const sortedReasons = [...(currentWilayahData.alasanList || [])].sort(
                 (a, b) => b.jumlah - a.jumlah
               );
@@ -972,6 +1216,8 @@ export function RekapDataAtsClientView({
                 </div>
               );
             })()}
+              </>
+            )}
           </div>
         </div>
       )}

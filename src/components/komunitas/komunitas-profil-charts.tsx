@@ -17,6 +17,8 @@ import {
   ArrowRight,
   Clock,
   BookOpen,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import type { KomunitasWithMembership, DataAnakItem, DataAtsItem } from "@/types/database";
 import { normalizeKeinginanSekolah, classifyKelasAts, DAFTAR_15_KELAS_ATS } from "@/lib/ats-helpers";
@@ -38,6 +40,31 @@ export function KomunitasProfilCharts({
   isChartOnly = false,
 }: KomunitasProfilChartsProps) {
   const [activeChartFilter, setActiveChartFilter] = useState<"semua" | "usia" | "paud" | "ats" | "ddtk">("semua");
+  const [isAllHidden, setIsAllHidden] = useState(false);
+  const [hiddenCharts, setHiddenCharts] = useState<Record<string, boolean>>({});
+
+  const toggleChart = (key: string) => {
+    setHiddenCharts((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
+  };
+
+  const toggleAll = () => {
+    if (isAllHidden) {
+      setIsAllHidden(false);
+      setHiddenCharts({});
+    } else {
+      setIsAllHidden(true);
+      setHiddenCharts({
+        usia: true,
+        paud: true,
+        ddtk: true,
+        ats: true,
+        warga: true,
+      });
+    }
+  };
 
   // Perhitungan data agregat 100% NYATA berbasis data_anak & data_ats aktual
   const totalWarga = komunitas.jumlah_anggota || 0;
@@ -221,6 +248,31 @@ export function KomunitasProfilCharts({
           >
             Tumbuh Kembang
           </button>
+
+          {/* Tombol Toggle Sembunyikan/Tampilkan Semua Grafik */}
+          <button
+            type="button"
+            onClick={toggleAll}
+            className={cn(
+              "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-extrabold transition-all border cursor-pointer ml-auto",
+              isAllHidden
+                ? "bg-blue-600 hover:bg-blue-700 text-white border-blue-600 shadow-xs"
+                : "bg-white hover:bg-slate-50 text-slate-700 border-slate-300 shadow-2xs"
+            )}
+            title={isAllHidden ? "Tampilkan Seluruh Grafik" : "Sembunyikan Seluruh Grafik"}
+          >
+            {isAllHidden ? (
+              <>
+                <Eye className="h-3.5 w-3.5" />
+                <span>Tampilkan Grafik</span>
+              </>
+            ) : (
+              <>
+                <EyeOff className="h-3.5 w-3.5 text-slate-500" />
+                <span>Sembunyikan Grafik</span>
+              </>
+            )}
+          </button>
         </div>
       </div>
 
@@ -312,9 +364,40 @@ export function KomunitasProfilCharts({
                   </p>
                 </div>
               </div>
+
+              <button
+                type="button"
+                onClick={() => toggleChart("usia")}
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-bold transition-all cursor-pointer shadow-2xs"
+                title={hiddenCharts["usia"] ? "Tampilkan Grafik" : "Sembunyikan Grafik"}
+              >
+                {hiddenCharts["usia"] ? (
+                  <>
+                    <Eye className="h-3.5 w-3.5 text-blue-600" />
+                    <span>Tampilkan</span>
+                  </>
+                ) : (
+                  <>
+                    <EyeOff className="h-3.5 w-3.5 text-slate-500" />
+                    <span>Sembunyikan</span>
+                  </>
+                )}
+              </button>
             </div>
 
-            {totalBalita === 0 ? (
+            {hiddenCharts["usia"] ? (
+              <div className="py-4 text-center text-xs text-slate-500 bg-slate-50 rounded-xl border border-dashed border-slate-200 flex items-center justify-center gap-2">
+                <EyeOff className="h-4 w-4 text-slate-400" />
+                <span>Grafik Distribusi Kelompok Usia disembunyikan.</span>
+                <button
+                  type="button"
+                  onClick={() => toggleChart("usia")}
+                  className="font-bold text-blue-600 hover:underline cursor-pointer"
+                >
+                  Tampilkan
+                </button>
+              </div>
+            ) : totalBalita === 0 ? (
               <div className="rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 p-6 text-center space-y-2">
                 <Baby className="h-8 w-8 text-slate-400 mx-auto" />
                 <p className="text-sm font-bold text-slate-700">Belum Ada Data Usia Anak</p>
@@ -405,9 +488,40 @@ export function KomunitasProfilCharts({
                   </p>
                 </div>
               </div>
+
+              <button
+                type="button"
+                onClick={() => toggleChart("paud")}
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-bold transition-all cursor-pointer shadow-2xs"
+                title={hiddenCharts["paud"] ? "Tampilkan Grafik" : "Sembunyikan Grafik"}
+              >
+                {hiddenCharts["paud"] ? (
+                  <>
+                    <Eye className="h-3.5 w-3.5 text-blue-600" />
+                    <span>Tampilkan</span>
+                  </>
+                ) : (
+                  <>
+                    <EyeOff className="h-3.5 w-3.5 text-slate-500" />
+                    <span>Sembunyikan</span>
+                  </>
+                )}
+              </button>
             </div>
 
-            {totalBalita === 0 ? (
+            {hiddenCharts["paud"] ? (
+              <div className="py-4 text-center text-xs text-slate-500 bg-slate-50 rounded-xl border border-dashed border-slate-200 flex items-center justify-center gap-2">
+                <EyeOff className="h-4 w-4 text-slate-400" />
+                <span>Grafik Partisipasi Pendidikan PAUD / TK disembunyikan.</span>
+                <button
+                  type="button"
+                  onClick={() => toggleChart("paud")}
+                  className="font-bold text-blue-600 hover:underline cursor-pointer"
+                >
+                  Tampilkan
+                </button>
+              </div>
+            ) : totalBalita === 0 ? (
               <div className="rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 p-6 text-center space-y-2">
                 <GraduationCap className="h-8 w-8 text-slate-400 mx-auto" />
                 <p className="text-sm font-bold text-slate-700">Belum Ada Data Partisipasi PAUD</p>
@@ -488,9 +602,40 @@ export function KomunitasProfilCharts({
                   </p>
                 </div>
               </div>
+
+              <button
+                type="button"
+                onClick={() => toggleChart("ddtk")}
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-bold transition-all cursor-pointer shadow-2xs"
+                title={hiddenCharts["ddtk"] ? "Tampilkan Grafik" : "Sembunyikan Grafik"}
+              >
+                {hiddenCharts["ddtk"] ? (
+                  <>
+                    <Eye className="h-3.5 w-3.5 text-blue-600" />
+                    <span>Tampilkan</span>
+                  </>
+                ) : (
+                  <>
+                    <EyeOff className="h-3.5 w-3.5 text-slate-500" />
+                    <span>Sembunyikan</span>
+                  </>
+                )}
+              </button>
             </div>
 
-            {totalBalita === 0 ? (
+            {hiddenCharts["ddtk"] ? (
+              <div className="py-4 text-center text-xs text-slate-500 bg-slate-50 rounded-xl border border-dashed border-slate-200 flex items-center justify-center gap-2">
+                <EyeOff className="h-4 w-4 text-slate-400" />
+                <span>Grafik Pemantauan Tumbuh Kembang (DDTK) disembunyikan.</span>
+                <button
+                  type="button"
+                  onClick={() => toggleChart("ddtk")}
+                  className="font-bold text-blue-600 hover:underline cursor-pointer"
+                >
+                  Tampilkan
+                </button>
+              </div>
+            ) : totalBalita === 0 ? (
               <div className="rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 p-6 text-center space-y-2">
                 <HeartPulse className="h-8 w-8 text-slate-400 mx-auto" />
                 <p className="text-sm font-bold text-slate-700">Belum Ada Riwayat DDTK</p>
@@ -554,13 +699,46 @@ export function KomunitasProfilCharts({
                 </div>
               </div>
 
-              {/* Status Badge */}
-              <span className="text-xs font-bold px-2.5 py-0.5 rounded-md bg-amber-100 text-amber-900 border border-amber-300">
-                {totalAts} Terdata
-              </span>
+              <div className="flex items-center gap-2">
+                {/* Status Badge */}
+                <span className="text-xs font-bold px-2.5 py-0.5 rounded-md bg-amber-100 text-amber-900 border border-amber-300">
+                  {totalAts} Terdata
+                </span>
+
+                <button
+                  type="button"
+                  onClick={() => toggleChart("ats")}
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50 hover:bg-amber-100 text-amber-900 text-xs font-bold transition-all cursor-pointer shadow-2xs"
+                  title={hiddenCharts["ats"] ? "Tampilkan Grafik" : "Sembunyikan Grafik"}
+                >
+                  {hiddenCharts["ats"] ? (
+                    <>
+                      <Eye className="h-3.5 w-3.5 text-amber-700" />
+                      <span>Tampilkan</span>
+                    </>
+                  ) : (
+                    <>
+                      <EyeOff className="h-3.5 w-3.5 text-amber-700" />
+                      <span>Sembunyikan</span>
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
 
-            {totalAts === 0 ? (
+            {hiddenCharts["ats"] ? (
+              <div className="py-4 text-center text-xs text-amber-800 bg-amber-50/60 rounded-xl border border-dashed border-amber-200 flex items-center justify-center gap-2">
+                <EyeOff className="h-4 w-4 text-amber-600" />
+                <span>Grafik Statistik Anak Tidak Sekolah (ATS) disembunyikan.</span>
+                <button
+                  type="button"
+                  onClick={() => toggleChart("ats")}
+                  className="font-bold text-amber-900 hover:underline cursor-pointer"
+                >
+                  Tampilkan
+                </button>
+              </div>
+            ) : totalAts === 0 ? (
               <div className="rounded-xl border-2 border-dashed border-amber-200 bg-amber-50/40 p-6 text-center space-y-2">
                 <GraduationCap className="h-8 w-8 text-amber-600 mx-auto" />
                 <p className="text-sm font-bold text-slate-800">Tidak Ada Kasus ATS Terdata</p>
@@ -795,9 +973,41 @@ export function KomunitasProfilCharts({
                   </p>
                 </div>
               </div>
+
+              <button
+                type="button"
+                onClick={() => toggleChart("warga")}
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-bold transition-all cursor-pointer shadow-2xs"
+                title={hiddenCharts["warga"] ? "Tampilkan Grafik" : "Sembunyikan Grafik"}
+              >
+                {hiddenCharts["warga"] ? (
+                  <>
+                    <Eye className="h-3.5 w-3.5 text-blue-600" />
+                    <span>Tampilkan</span>
+                  </>
+                ) : (
+                  <>
+                    <EyeOff className="h-3.5 w-3.5 text-slate-500" />
+                    <span>Sembunyikan</span>
+                  </>
+                )}
+              </button>
             </div>
 
-            <div className="space-y-2 pt-1 text-xs">
+            {hiddenCharts["warga"] ? (
+              <div className="py-4 text-center text-xs text-slate-500 bg-slate-50 rounded-xl border border-dashed border-slate-200 flex items-center justify-center gap-2">
+                <EyeOff className="h-4 w-4 text-slate-400" />
+                <span>Kategori Warga &amp; Hak Akses disembunyikan.</span>
+                <button
+                  type="button"
+                  onClick={() => toggleChart("warga")}
+                  className="font-bold text-blue-600 hover:underline cursor-pointer"
+                >
+                  Tampilkan
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-2 pt-1 text-xs">
               <div className="flex items-center justify-between p-2.5 rounded-xl bg-emerald-50 border border-emerald-200">
                 <span className="font-bold text-emerald-950">1. Penduduk (KK &amp; Domisili Kota Tegal)</span>
                 <span className="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-bold text-2xs">
@@ -823,9 +1033,10 @@ export function KomunitasProfilCharts({
                 </span>
               </div>
             </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      )}
     </div>
-  );
+  </div>
+);
 }

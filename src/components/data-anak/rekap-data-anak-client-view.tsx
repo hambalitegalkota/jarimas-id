@@ -27,6 +27,8 @@ import {
   ChevronDown,
   BarChart2,
   Table as TableIcon,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type {
@@ -92,6 +94,34 @@ export function RekapDataAnakClientView({
   const [tableSearch, setTableSearch] = useState<string>("");
   const [viewModeDiagramUsia, setViewModeDiagramUsia] = useState<"diagram" | "matriks">("diagram");
   const [activeHoverBar, setActiveHoverBar] = useState<{ age: number; key: keyof SchoolTypeBreakdown; val: number } | null>(null);
+
+  // State Hide / Show Grafik
+  const [hiddenCharts, setHiddenCharts] = useState<Record<string, boolean>>({});
+  const [isAllHidden, setIsAllHidden] = useState<boolean>(false);
+
+  const toggleChart = (key: string) => {
+    setHiddenCharts((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
+  };
+
+  const toggleAll = () => {
+    if (isAllHidden) {
+      setIsAllHidden(false);
+      setHiddenCharts({});
+    } else {
+      setIsAllHidden(true);
+      setHiddenCharts({
+        satuan_paud: true,
+        umur_gender_bersekolah: true,
+        sebaran_usia_satuan: true,
+        alasan_bersekolah: true,
+        umur_gender_tidak_sekolah: true,
+        alasan_tidak_sekolah: true,
+      });
+    }
+  };
 
   // Daftar opsi kecamatan & kelurahan
   const daftarKecamatan = useMemo(() => {
@@ -493,7 +523,7 @@ export function RekapDataAnakClientView({
       {/* ========================================================= */}
       {(activeTabSection === "semua" || activeTabSection === "bersekolah") && (
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <div className="h-8 w-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold">
                 <School className="h-4 w-4" />
@@ -507,9 +537,28 @@ export function RekapDataAnakClientView({
                 </p>
               </div>
             </div>
-            <span className="hidden sm:inline-block text-xs font-extrabold px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
-              Total: {currentWilayahData.totalBersekolah} Anak
-            </span>
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={toggleAll}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition-all shadow-2xs cursor-pointer shrink-0"
+              >
+                {isAllHidden ? (
+                  <>
+                    <Eye className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
+                    <span>Tampilkan Semua Grafik</span>
+                  </>
+                ) : (
+                  <>
+                    <EyeOff className="h-3.5 w-3.5 text-slate-500" />
+                    <span>Sembunyikan Semua Grafik</span>
+                  </>
+                )}
+              </button>
+              <span className="hidden sm:inline-block text-xs font-extrabold px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 font-mono">
+                Total: {currentWilayahData.totalBersekolah} Anak
+              </span>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -522,13 +571,47 @@ export function RekapDataAnakClientView({
                     Distribusi Satuan Pendidikan Usia Dini
                   </h3>
                 </div>
-                <span className="text-2xs font-bold text-slate-500 uppercase">
-                  TK • RA • KB • SPS • TPA • SKB • PKBM
-                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => toggleChart("satuan_paud")}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700"
+                    title={hiddenCharts.satuan_paud ? "Tampilkan Grafik" : "Sembunyikan Grafik"}
+                  >
+                    {hiddenCharts.satuan_paud ? (
+                      <>
+                        <Eye className="h-3 w-3 text-indigo-600 dark:text-indigo-400" />
+                        <span>Tampilkan</span>
+                      </>
+                    ) : (
+                      <>
+                        <EyeOff className="h-3 w-3 text-slate-500" />
+                        <span>Sembunyikan</span>
+                      </>
+                    )}
+                  </button>
+                  <span className="text-2xs font-bold text-slate-500 uppercase">
+                    TK • RA • KB • SPS • TPA • SKB • PKBM
+                  </span>
+                </div>
               </div>
 
-              {/* Jenjang Bars Breakdown */}
-              <div className="space-y-3">
+              {hiddenCharts.satuan_paud ? (
+                <div className="py-12 text-center text-xs text-slate-500 dark:text-slate-400 bg-slate-50/50 dark:bg-slate-800/40 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700 flex items-center justify-center gap-2">
+                  <EyeOff className="h-4 w-4 text-slate-400" />
+                  <span>Grafik satuan pendidikan usia dini disembunyikan.</span>
+                  <button
+                    type="button"
+                    onClick={() => toggleChart("satuan_paud")}
+                    className="font-bold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
+                  >
+                    Tampilkan kembali
+                  </button>
+                </div>
+              ) : (
+                <>
+                  {/* Jenjang Bars Breakdown */}
+                  <div className="space-y-3">
                 {jenjangEntries.map((item) => {
                   const conf = JENJANG_COLORS[item.key];
                   return (
@@ -578,6 +661,8 @@ export function RekapDataAnakClientView({
                   })}
                 </div>
               </div>
+                </>
+              )}
             </div>
 
             {/* 5.2 Grafik Kelompok Umur & Gender Anak Bersekolah */}
@@ -589,10 +674,45 @@ export function RekapDataAnakClientView({
                     Kelompok Umur &amp; Jenis Kelamin (Bersekolah)
                   </h3>
                 </div>
-                <span className="text-2xs font-bold text-slate-500 uppercase">
-                  Rentang 0–6 Tahun
-                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => toggleChart("umur_gender_bersekolah")}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700"
+                    title={hiddenCharts.umur_gender_bersekolah ? "Tampilkan Grafik" : "Sembunyikan Grafik"}
+                  >
+                    {hiddenCharts.umur_gender_bersekolah ? (
+                      <>
+                        <Eye className="h-3 w-3 text-indigo-600 dark:text-indigo-400" />
+                        <span>Tampilkan</span>
+                      </>
+                    ) : (
+                      <>
+                        <EyeOff className="h-3 w-3 text-slate-500" />
+                        <span>Sembunyikan</span>
+                      </>
+                    )}
+                  </button>
+                  <span className="text-2xs font-bold text-slate-500 uppercase">
+                    Rentang 0–6 Tahun
+                  </span>
+                </div>
               </div>
+
+              {hiddenCharts.umur_gender_bersekolah ? (
+                <div className="py-12 text-center text-xs text-slate-500 dark:text-slate-400 bg-slate-50/50 dark:bg-slate-800/40 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700 flex items-center justify-center gap-2">
+                  <EyeOff className="h-4 w-4 text-slate-400" />
+                  <span>Grafik kelompok umur &amp; jenis kelamin disembunyikan.</span>
+                  <button
+                    type="button"
+                    onClick={() => toggleChart("umur_gender_bersekolah")}
+                    className="font-bold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
+                  >
+                    Tampilkan kembali
+                  </button>
+                </div>
+              ) : (
+                <>
 
               {/* Gender Comparison Pill */}
               <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-2">
@@ -657,6 +777,8 @@ export function RekapDataAnakClientView({
                   );
                 })}
               </div>
+                </>
+              )}
             </div>
           </div>
 
@@ -681,38 +803,73 @@ export function RekapDataAnakClientView({
                 </div>
               </div>
 
-              {/* View Switcher: Diagram vs Matriks Tabel */}
-              <div className="flex items-center gap-1.5 self-start sm:self-auto p-1 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+              <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
                 <button
                   type="button"
-                  onClick={() => setViewModeDiagramUsia("diagram")}
-                  className={cn(
-                    "px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5",
-                    viewModeDiagramUsia === "diagram"
-                      ? "bg-white dark:bg-slate-900 text-indigo-700 dark:text-indigo-400 shadow-xs"
-                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
-                  )}
+                  onClick={() => toggleChart("sebaran_usia_satuan")}
+                  className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700"
+                  title={hiddenCharts.sebaran_usia_satuan ? "Tampilkan Grafik" : "Sembunyikan Grafik"}
                 >
-                  <BarChart3 className="h-3.5 w-3.5" />
-                  Diagram Batang Tegak
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setViewModeDiagramUsia("matriks")}
-                  className={cn(
-                    "px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5",
-                    viewModeDiagramUsia === "matriks"
-                      ? "bg-white dark:bg-slate-900 text-indigo-700 dark:text-indigo-400 shadow-xs"
-                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
+                  {hiddenCharts.sebaran_usia_satuan ? (
+                    <>
+                      <Eye className="h-3 w-3 text-indigo-600 dark:text-indigo-400" />
+                      <span>Tampilkan</span>
+                    </>
+                  ) : (
+                    <>
+                      <EyeOff className="h-3 w-3 text-slate-500" />
+                      <span>Sembunyikan</span>
+                    </>
                   )}
-                >
-                  <TableIcon className="h-3.5 w-3.5" />
-                  Tabel Matriks
                 </button>
+
+                {/* View Switcher: Diagram vs Matriks Tabel */}
+                <div className="flex items-center gap-1.5 p-1 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                  <button
+                    type="button"
+                    onClick={() => setViewModeDiagramUsia("diagram")}
+                    className={cn(
+                      "px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5",
+                      viewModeDiagramUsia === "diagram"
+                        ? "bg-white dark:bg-slate-900 text-indigo-700 dark:text-indigo-400 shadow-xs"
+                        : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
+                    )}
+                  >
+                    <BarChart3 className="h-3.5 w-3.5" />
+                    Diagram Batang Tegak
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setViewModeDiagramUsia("matriks")}
+                    className={cn(
+                      "px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5",
+                      viewModeDiagramUsia === "matriks"
+                        ? "bg-white dark:bg-slate-900 text-indigo-700 dark:text-indigo-400 shadow-xs"
+                        : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
+                    )}
+                  >
+                    <TableIcon className="h-3.5 w-3.5" />
+                    Tabel Matriks
+                  </button>
+                </div>
               </div>
             </div>
 
-            {/* Interactive Legend Badges */}
+            {hiddenCharts.sebaran_usia_satuan ? (
+              <div className="py-16 text-center text-xs text-slate-500 dark:text-slate-400 bg-slate-50/50 dark:bg-slate-800/40 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700 flex items-center justify-center gap-2">
+                <EyeOff className="h-4 w-4 text-slate-400" />
+                <span>Grafik sebaran satuan PAUD per rentang usia disembunyikan.</span>
+                <button
+                  type="button"
+                  onClick={() => toggleChart("sebaran_usia_satuan")}
+                  className="font-bold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
+                >
+                  Tampilkan kembali
+                </button>
+              </div>
+            ) : (
+              <>
+                {/* Interactive Legend Badges */}
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-2xs font-black uppercase tracking-wider text-slate-400 shrink-0 mr-1">
                 Bentuk Satuan PAUD:
@@ -968,6 +1125,8 @@ export function RekapDataAnakClientView({
                 </table>
               </div>
             )}
+              </>
+            )}
           </div>
 
           {/* 5.3 Grafik / Chart Alasan Anak Bersekolah */}
@@ -984,31 +1143,63 @@ export function RekapDataAnakClientView({
                   </p>
                 </div>
               </div>
+              <button
+                type="button"
+                onClick={() => toggleChart("alasan_bersekolah")}
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700"
+                title={hiddenCharts.alasan_bersekolah ? "Tampilkan Grafik" : "Sembunyikan Grafik"}
+              >
+                {hiddenCharts.alasan_bersekolah ? (
+                  <>
+                    <Eye className="h-3 w-3 text-indigo-600 dark:text-indigo-400" />
+                    <span>Tampilkan</span>
+                  </>
+                ) : (
+                  <>
+                    <EyeOff className="h-3 w-3 text-slate-500" />
+                    <span>Sembunyikan</span>
+                  </>
+                )}
+              </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 pt-1">
-              {currentWilayahData.bersekolahAlasan.map((r, idx) => (
-                <div
-                  key={idx}
-                  className="p-3.5 rounded-2xl bg-emerald-50/40 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30 space-y-1.5"
+            {hiddenCharts.alasan_bersekolah ? (
+              <div className="py-12 text-center text-xs text-slate-500 dark:text-slate-400 bg-slate-50/50 dark:bg-slate-800/40 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700 flex items-center justify-center gap-2">
+                <EyeOff className="h-4 w-4 text-slate-400" />
+                <span>Grafik analisis alasan utama bersekolah disembunyikan.</span>
+                <button
+                  type="button"
+                  onClick={() => toggleChart("alasan_bersekolah")}
+                  className="font-bold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
                 >
-                  <div className="flex items-start justify-between gap-2 text-xs font-bold">
-                    <span className="text-emerald-950 dark:text-emerald-200 leading-snug">
-                      {idx + 1}. {r.alasan}
-                    </span>
-                    <span className="font-mono text-emerald-700 dark:text-emerald-400 shrink-0 font-black">
-                      {r.jumlah} anak ({r.persentase}%)
-                    </span>
+                  Tampilkan kembali
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 pt-1">
+                {currentWilayahData.bersekolahAlasan.map((r, idx) => (
+                  <div
+                    key={idx}
+                    className="p-3.5 rounded-2xl bg-emerald-50/40 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30 space-y-1.5"
+                  >
+                    <div className="flex items-start justify-between gap-2 text-xs font-bold">
+                      <span className="text-emerald-950 dark:text-emerald-200 leading-snug">
+                        {idx + 1}. {r.alasan}
+                      </span>
+                      <span className="font-mono text-emerald-700 dark:text-emerald-400 shrink-0 font-black">
+                        {r.jumlah} anak ({r.persentase}%)
+                      </span>
+                    </div>
+                    <div className="h-2 w-full bg-emerald-200/50 dark:bg-emerald-900/40 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-emerald-600 rounded-full transition-all"
+                        style={{ width: `${Math.max(2, r.persentase)}%` }}
+                      />
+                    </div>
                   </div>
-                  <div className="h-2 w-full bg-emerald-200/50 dark:bg-emerald-900/40 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-emerald-600 rounded-full transition-all"
-                      style={{ width: `${Math.max(2, r.persentase)}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* KARTU DAFTAR NAMA ANAK BERSEKOLAH (KHUSUS ADMIN KOMUNITAS & SUPER ADMIN) */}
@@ -1030,7 +1221,7 @@ export function RekapDataAnakClientView({
       {/* ========================================================= */}
       {(activeTabSection === "semua" || activeTabSection === "tidak_sekolah") && (
         <div className="space-y-4 pt-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <div className="h-8 w-8 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold">
                 <HeartHandshake className="h-4 w-4" />
@@ -1044,9 +1235,28 @@ export function RekapDataAnakClientView({
                 </p>
               </div>
             </div>
-            <span className="hidden sm:inline-block text-xs font-extrabold px-3 py-1 rounded-full bg-blue-50 text-blue-800 border border-blue-200">
-              Total: {currentWilayahData.totalTidakBersekolah} Anak
-            </span>
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={toggleAll}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition-all shadow-2xs cursor-pointer shrink-0"
+              >
+                {isAllHidden ? (
+                  <>
+                    <Eye className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
+                    <span>Tampilkan Semua Grafik</span>
+                  </>
+                ) : (
+                  <>
+                    <EyeOff className="h-3.5 w-3.5 text-slate-500" />
+                    <span>Sembunyikan Semua Grafik</span>
+                  </>
+                )}
+              </button>
+              <span className="hidden sm:inline-block text-xs font-extrabold px-3 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-800 dark:text-blue-300 border border-blue-200 dark:border-blue-800 font-mono">
+                Total: {currentWilayahData.totalTidakBersekolah} Anak
+              </span>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -1059,13 +1269,47 @@ export function RekapDataAnakClientView({
                     Sebaran Usia Anak Belum Bersekolah
                   </h3>
                 </div>
-                <span className="text-2xs font-bold text-slate-500 uppercase">
-                  Kelompok 0–6 Tahun
-                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => toggleChart("umur_gender_tidak_sekolah")}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700"
+                    title={hiddenCharts.umur_gender_tidak_sekolah ? "Tampilkan Grafik" : "Sembunyikan Grafik"}
+                  >
+                    {hiddenCharts.umur_gender_tidak_sekolah ? (
+                      <>
+                        <Eye className="h-3 w-3 text-indigo-600 dark:text-indigo-400" />
+                        <span>Tampilkan</span>
+                      </>
+                    ) : (
+                      <>
+                        <EyeOff className="h-3 w-3 text-slate-500" />
+                        <span>Sembunyikan</span>
+                      </>
+                    )}
+                  </button>
+                  <span className="text-2xs font-bold text-slate-500 uppercase">
+                    Kelompok 0–6 Tahun
+                  </span>
+                </div>
               </div>
 
-              {/* Gender comparison for Non-enrolled */}
-              <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-2">
+              {hiddenCharts.umur_gender_tidak_sekolah ? (
+                <div className="py-12 text-center text-xs text-slate-500 dark:text-slate-400 bg-slate-50/50 dark:bg-slate-800/40 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700 flex items-center justify-center gap-2">
+                  <EyeOff className="h-4 w-4 text-slate-400" />
+                  <span>Grafik usia anak belum bersekolah disembunyikan.</span>
+                  <button
+                    type="button"
+                    onClick={() => toggleChart("umur_gender_tidak_sekolah")}
+                    className="font-bold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
+                  >
+                    Tampilkan kembali
+                  </button>
+                </div>
+              ) : (
+                <>
+                  {/* Gender comparison for Non-enrolled */}
+                  <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-2">
                 <div className="flex items-center justify-between text-xs font-extrabold">
                   <span className="text-sky-700 dark:text-sky-400 flex items-center gap-1.5">
                     <span className="h-2.5 w-2.5 rounded-full bg-sky-500" />
@@ -1123,6 +1367,8 @@ export function RekapDataAnakClientView({
                   );
                 })}
               </div>
+                </>
+              )}
             </div>
 
             {/* 6.2 Alasan Tidak / Belum Bersekolah */}
@@ -1139,31 +1385,63 @@ export function RekapDataAnakClientView({
                     </p>
                   </div>
                 </div>
+                <button
+                  type="button"
+                  onClick={() => toggleChart("alasan_tidak_sekolah")}
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700"
+                  title={hiddenCharts.alasan_tidak_sekolah ? "Tampilkan Grafik" : "Sembunyikan Grafik"}
+                >
+                  {hiddenCharts.alasan_tidak_sekolah ? (
+                    <>
+                      <Eye className="h-3 w-3 text-indigo-600 dark:text-indigo-400" />
+                      <span>Tampilkan</span>
+                    </>
+                  ) : (
+                    <>
+                      <EyeOff className="h-3 w-3 text-slate-500" />
+                      <span>Sembunyikan</span>
+                    </>
+                  )}
+                </button>
               </div>
 
-              <div className="space-y-2.5 pt-1">
-                {currentWilayahData.tidakBersekolahAlasan.map((r, idx) => (
-                  <div
-                    key={idx}
-                    className="p-3 rounded-2xl bg-blue-50/50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/30 space-y-1.5"
+              {hiddenCharts.alasan_tidak_sekolah ? (
+                <div className="py-12 text-center text-xs text-slate-500 dark:text-slate-400 bg-slate-50/50 dark:bg-slate-800/40 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700 flex items-center justify-center gap-2">
+                  <EyeOff className="h-4 w-4 text-slate-400" />
+                  <span>Grafik alasan belum / tidak bersekolah disembunyikan.</span>
+                  <button
+                    type="button"
+                    onClick={() => toggleChart("alasan_tidak_sekolah")}
+                    className="font-bold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
                   >
-                    <div className="flex items-start justify-between gap-2 text-xs font-bold">
-                      <span className="text-blue-950 dark:text-blue-200 leading-snug">
-                        {idx + 1}. {r.alasan}
-                      </span>
-                      <span className="font-mono text-blue-700 dark:text-blue-400 shrink-0 font-black">
-                        {r.jumlah} anak ({r.persentase}%)
-                      </span>
+                    Tampilkan kembali
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-2.5 pt-1">
+                  {currentWilayahData.tidakBersekolahAlasan.map((r, idx) => (
+                    <div
+                      key={idx}
+                      className="p-3 rounded-2xl bg-blue-50/50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/30 space-y-1.5"
+                    >
+                      <div className="flex items-start justify-between gap-2 text-xs font-bold">
+                        <span className="text-blue-950 dark:text-blue-200 leading-snug">
+                          {idx + 1}. {r.alasan}
+                        </span>
+                        <span className="font-mono text-blue-700 dark:text-blue-400 shrink-0 font-black">
+                          {r.jumlah} anak ({r.persentase}%)
+                        </span>
+                      </div>
+                      <div className="h-2 w-full bg-blue-200/50 dark:bg-blue-900/40 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-blue-600 rounded-full transition-all"
+                          style={{ width: `${Math.max(2, r.persentase)}%` }}
+                        />
+                      </div>
                     </div>
-                    <div className="h-2 w-full bg-blue-200/50 dark:bg-blue-900/40 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-blue-600 rounded-full transition-all"
-                        style={{ width: `${Math.max(2, r.persentase)}%` }}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
