@@ -152,9 +152,9 @@ export default async function KomunitasPage({
     },
     {
       id: "satuan_paud" as JenisKomunitas,
-      title: "Satuan PAUD & Kesetaraan",
+      title: "PAUD dan Kesetaraan",
       subtitle: "Lembaga KB, TK, TPA, SPS, PKBM & SKB Mitra Kota Tegal",
-      badgeText: "PAUD & PKBM",
+      badgeText: "PAUD, PKBM & SKB",
       icon: GraduationCap,
       activeColorBg: "bg-indigo-600 dark:bg-indigo-700",
       activeBorder: "border-indigo-500",
@@ -350,7 +350,7 @@ export default async function KomunitasPage({
               Eksplorasi Komunitas Kota Tegal
             </h1>
             <p className="text-xs sm:text-sm text-slate-300 max-w-lg leading-relaxed">
-              Jelajahi 209 Posyandu, Satuan PAUD &amp; Kesetaraan, dan Komunitas Warga 4 Tingkat se-Kota Tegal.
+              Jelajahi 209 Posyandu, PAUD dan Kesetaraan, dan Komunitas Warga 4 Tingkat se-Kota Tegal.
             </p>
           </div>
 
