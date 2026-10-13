@@ -13,13 +13,12 @@ import {
   GraduationCap,
   MapPin,
   CheckCircle2,
-  ShieldCheck,
+  Filter,
 } from "lucide-react";
 import { getKomunitasList } from "@/app/actions/komunitas";
 import { KomunitasFilter } from "@/components/komunitas/komunitas-filter";
 import { KomunitasCard } from "@/components/komunitas/komunitas-card";
 import { KomunitasRekapSection } from "@/components/komunitas/komunitas-rekap-section";
-import { SpmKomunitasSection } from "@/components/komunitas/spm-komunitas-section";
 import type { JenisKomunitas } from "@/types/database";
 
 interface KomunitasPageProps {
@@ -49,19 +48,42 @@ export default async function KomunitasPage({
   const currentPage = Math.max(1, Number(resolvedParams.page) || 1);
   const pageSize = 20;
 
-  const komunitasResult = await getKomunitasList({
-    jenis: currentTab || "semua",
-    kecamatan: currentKecamatan,
-    kelurahan: currentKelurahan,
-    rw: currentRw,
-    rt: currentRt,
-    bentuk: currentBentuk,
-    searchQuery: currentSearch,
-    page: currentPage,
-    limit: pageSize,
-  });
+  // Cek apakah filter wilayah atau pencarian telah dipilih pengguna
+  const hasActiveFilter = Boolean(
+    currentSearch ||
+    currentKecamatan !== "semua" ||
+    currentKelurahan !== "semua" ||
+    (currentTab === "satuan_paud" && currentBentuk !== "semua") ||
+    (currentTab === "warga_kita" && (currentRw !== "semua" || currentRt !== "semua"))
+  );
 
-  const { data: listKomunitas, currentUserId, pagination } = komunitasResult;
+  let listKomunitas: any[] = [];
+  let currentUserId: string | null = null;
+  let pagination = {
+    page: 1,
+    limit: pageSize,
+    totalCount: 0,
+    totalPages: 0,
+    hasMore: false,
+  };
+
+  // Hanya ambil data komunitas dari database jika filter atau pencarian telah dipilih
+  if (hasActiveFilter && currentTab) {
+    const komunitasResult = await getKomunitasList({
+      jenis: currentTab,
+      kecamatan: currentKecamatan,
+      kelurahan: currentKelurahan,
+      rw: currentRw,
+      rt: currentRt,
+      bentuk: currentBentuk,
+      searchQuery: currentSearch,
+      page: currentPage,
+      limit: pageSize,
+    });
+    listKomunitas = komunitasResult.data;
+    currentUserId = komunitasResult.currentUserId || null;
+    pagination = komunitasResult.pagination;
+  }
 
   // Helper untuk membuat URL dengan parameter yang konsisten
   const createPageUrl = (targetPage: number) => {
@@ -142,20 +164,6 @@ export default async function KomunitasPage({
       iconColor: "text-indigo-600 dark:text-indigo-400",
       iconBg: "bg-indigo-100 dark:bg-indigo-950",
     },
-    {
-      id: "bidang_spm" as JenisKomunitas,
-      title: "Komunitas 6 Bidang SPM",
-      subtitle: "Standar Pelayanan Minimal 6 Bidang Urusan Pemerintahan Wajib Kota Tegal",
-      badgeText: "6 Bidang SPM",
-      icon: ShieldCheck,
-      activeColorBg: "bg-teal-700 dark:bg-teal-800",
-      activeBorder: "border-teal-500",
-      badgeColor: "bg-teal-500/20 text-teal-100 border-teal-400/30",
-      hoverBorder: "hover:border-teal-400 dark:hover:border-teal-600",
-      hoverBg: "hover:bg-teal-50/50 dark:hover:bg-teal-950/20",
-      iconColor: "text-teal-600 dark:text-teal-400",
-      iconBg: "bg-teal-100 dark:bg-teal-950",
-    },
   ];
 
   // Urutkan kategori: Kartu yang terbuka posisinya otomatis berada di paling atas
@@ -164,146 +172,161 @@ export default async function KomunitasPage({
     ...accordionCategories.filter((c) => c.id !== currentTab),
   ];
 
+  const categoryTotalLabels: Record<string, string | number> = {
+    posyandu: 209,
+    warga_kita: "7.800+",
+    satuan_paud: 219,
+  };
+  const totalDisplay = hasActiveFilter
+    ? pagination.totalCount
+    : currentTab && categoryTotalLabels[currentTab]
+    ? categoryTotalLabels[currentTab]
+    : "460+";
+
   // Render konten di dalam Accordion yang aktif
   const renderActiveAccordionContent = (activeCatId: JenisKomunitas) => {
-    if (activeCatId === "bidang_spm") {
-      return (
-        <SpmKomunitasSection
-          komunitasList={listKomunitas}
-          currentUserId={currentUserId}
-          initialSearch={currentSearch}
-        />
-      );
-    }
-
     return (
       <div className="space-y-6 pt-2">
         {/* 1. REKAP JUMLAH KOMUNITAS PER KECAMATAN & KELURAHAN BESERTA BENTUK SATUAN */}
-      {activeCatId !== "warga_kita" && (
-        <KomunitasRekapSection
-          currentTab={activeCatId}
-          currentKecamatan={currentKecamatan}
-          currentKelurahan={currentKelurahan}
-          currentBentuk={currentBentuk}
-        />
-      )}
+        {activeCatId !== "warga_kita" && (
+          <KomunitasRekapSection
+            currentTab={activeCatId}
+            currentKecamatan={currentKecamatan}
+            currentKelurahan={currentKelurahan}
+            currentBentuk={currentBentuk}
+          />
+        )}
 
+        {/* 2. FILTER DROPDOWN & SEARCH WILAYAH */}
+        <Suspense fallback={<div className="min-h-[100px] animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-800" />}>
+          <KomunitasFilter
+            currentTab={activeCatId}
+            currentSearch={currentSearch}
+            currentKecamatan={currentKecamatan}
+            currentKelurahan={currentKelurahan}
+            currentRw={currentRw}
+            currentRt={currentRt}
+            currentBentuk={currentBentuk}
+          />
+        </Suspense>
 
-
-      {/* 3. FILTER DROPDOWN & SEARCH WILAYAH */}
-      <Suspense fallback={<div className="min-h-[100px] animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-800" />}>
-        <KomunitasFilter
-          currentTab={activeCatId}
-          currentSearch={currentSearch}
-          currentKecamatan={currentKecamatan}
-          currentKelurahan={currentKelurahan}
-          currentRw={currentRw}
-          currentRt={currentRt}
-          currentBentuk={currentBentuk}
-        />
-      </Suspense>
-
-      {/* 4. LIST KOMUNITAS STREAM */}
-      <main className="space-y-4 pb-4">
-        {/* Subheader Hasil & Paginasi Info */}
-        <div className="flex flex-wrap items-center justify-between gap-2 px-1 text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400">
-          <div className="flex items-center gap-2">
-            <span className="font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100">
-              Daftar Komunitas
-            </span>
-            {currentSearch && (
-              <span className="rounded-md bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 text-xs font-bold text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-                Pencarian: &ldquo;{currentSearch}&rdquo;
-              </span>
-            )}
-          </div>
-          <span className="font-mono text-slate-700 dark:text-slate-300 font-bold text-xs">
-            {pagination.totalCount > 0
-              ? `${startIndex}–${endIndex} dari ${pagination.totalCount} data`
-              : "0 data"}
-          </span>
-        </div>
-
-        {listKomunitas.length === 0 ? (
-          <div className="flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-900 p-12 text-center space-y-3 shadow-xs">
+        {/* 3. DAFTAR KOMUNITAS STREAM (SEMBUNYIKAN SECARA DEFAULT, TAMPILKAN SETELAH FILTER DIPILIH) */}
+        {!hasActiveFilter ? (
+          <div className="flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-900 p-8 sm:p-12 text-center space-y-3.5 shadow-xs">
             <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border-2 border-emerald-200 dark:border-emerald-900 text-emerald-700 dark:text-emerald-400">
-              <Search className="h-7 w-7" />
+              <Filter className="h-7 w-7" />
             </div>
-            <div className="space-y-1.5 max-w-sm">
-              <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
-                Tidak Ada Komunitas yang Cocok
+            <div className="space-y-1.5 max-w-md">
+              <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100">
+                Pilih Filter Wilayah Terlebih Dahulu
               </h3>
               <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                {currentSearch
-                  ? `Tidak ditemukan hasil untuk "${currentSearch}". Coba kata kunci lain atau reset filter.`
-                  : "Ubah pilihan kecamatan, kelurahan, atau RT/RW untuk melihat data lainnya."}
+                Daftar komunitas disembunyikan secara default. Silakan pilih Kecamatan, Kelurahan, {activeCatId === "satuan_paud" ? "Bentuk Pendidikan, " : activeCatId === "warga_kita" ? "RW/RT, " : ""}atau gunakan kolom pencarian di atas untuk menampilkan nama-nama komunitas.
               </p>
             </div>
-            {(currentSearch || currentKecamatan !== "semua" || currentKelurahan !== "semua") && (
-              <Link
-                href={`/komunitas?tab=${currentTab}`}
-                className="inline-flex min-h-[44px] items-center justify-center rounded-xl border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-5 text-xs font-bold text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
-              >
-                Reset Semua Filter
-              </Link>
-            )}
           </div>
         ) : (
-          <div className="space-y-3.5">
-            {listKomunitas.map((kom) => (
-              <KomunitasCard
-                key={kom.id}
-                komunitas={kom}
-                currentUserId={currentUserId}
-              />
-            ))}
-          </div>
-        )}
-
-        {/* Navigasi Pagination */}
-        {pagination.totalPages > 1 && (
-          <div className="flex items-center justify-between border-t-2 border-slate-200 dark:border-slate-800 pt-4 text-xs sm:text-sm font-bold">
-            <div>
-              {pagination.page > 1 ? (
-                <Link
-                  href={createPageUrl(pagination.page - 1)}
-                  className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                  <span>Sebelumnya</span>
-                </Link>
-              ) : (
-                <span className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border-2 border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 px-4 text-slate-400 dark:text-slate-600 cursor-not-allowed">
-                  <ChevronLeft className="h-4 w-4" />
-                  <span>Sebelumnya</span>
+          <main className="space-y-4 pb-4">
+            {/* Subheader Hasil & Paginasi Info */}
+            <div className="flex flex-wrap items-center justify-between gap-2 px-1 text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400">
+              <div className="flex items-center gap-2">
+                <span className="font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100">
+                  Daftar Komunitas
                 </span>
-              )}
+                {currentSearch && (
+                  <span className="rounded-md bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 text-xs font-bold text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                    Pencarian: &ldquo;{currentSearch}&rdquo;
+                  </span>
+                )}
+              </div>
+              <span className="font-mono text-slate-700 dark:text-slate-300 font-bold text-xs">
+                {pagination.totalCount > 0
+                  ? `${startIndex}–${endIndex} dari ${pagination.totalCount} data`
+                  : "0 data"}
+              </span>
             </div>
 
-            <span className="text-slate-600 dark:text-slate-400 font-mono text-xs">
-              Halaman {pagination.page} dari {pagination.totalPages}
-            </span>
+            {listKomunitas.length === 0 ? (
+              <div className="flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-900 p-12 text-center space-y-3 shadow-xs">
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border-2 border-emerald-200 dark:border-emerald-900 text-emerald-700 dark:text-emerald-400">
+                  <Search className="h-7 w-7" />
+                </div>
+                <div className="space-y-1.5 max-w-sm">
+                  <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
+                    Tidak Ada Komunitas yang Cocok
+                  </h3>
+                  <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                    {currentSearch
+                      ? `Tidak ditemukan hasil untuk "${currentSearch}". Coba kata kunci lain atau reset filter.`
+                      : "Ubah pilihan kecamatan, kelurahan, atau RT/RW untuk melihat data lainnya."}
+                  </p>
+                </div>
+                {(currentSearch || currentKecamatan !== "semua" || currentKelurahan !== "semua") && (
+                  <Link
+                    href={`/komunitas?tab=${currentTab}`}
+                    className="inline-flex min-h-[44px] items-center justify-center rounded-xl border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-5 text-xs font-bold text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                  >
+                    Reset Semua Filter
+                  </Link>
+                )}
+              </div>
+            ) : (
+              <div className="space-y-3.5">
+                {listKomunitas.map((kom) => (
+                  <KomunitasCard
+                    key={kom.id}
+                    komunitas={kom}
+                    currentUserId={currentUserId}
+                  />
+                ))}
+              </div>
+            )}
 
-            <div>
-              {pagination.hasMore ? (
-                <Link
-                  href={createPageUrl(pagination.page + 1)}
-                  className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
-                >
-                  <span>Berikutnya</span>
-                  <ChevronRight className="h-4 w-4" />
-                </Link>
-              ) : (
-                <span className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border-2 border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 px-4 text-slate-400 dark:text-slate-600 cursor-not-allowed">
-                  <span>Berikutnya</span>
-                  <ChevronRight className="h-4 w-4" />
+            {/* Navigasi Pagination */}
+            {pagination.totalPages > 1 && (
+              <div className="flex items-center justify-between border-t-2 border-slate-200 dark:border-slate-800 pt-4 text-xs sm:text-sm font-bold">
+                <div>
+                  {pagination.page > 1 ? (
+                    <Link
+                      href={createPageUrl(pagination.page - 1)}
+                      className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                      <span>Sebelumnya</span>
+                    </Link>
+                  ) : (
+                    <span className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border-2 border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 px-4 text-slate-400 dark:text-slate-600 cursor-not-allowed">
+                      <ChevronLeft className="h-4 w-4" />
+                      <span>Sebelumnya</span>
+                    </span>
+                  )}
+                </div>
+
+                <span className="text-slate-600 dark:text-slate-400 font-mono text-xs">
+                  Halaman {pagination.page} dari {pagination.totalPages}
                 </span>
-              )}
-            </div>
-          </div>
+
+                <div>
+                  {pagination.hasMore ? (
+                    <Link
+                      href={createPageUrl(pagination.page + 1)}
+                      className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                    >
+                      <span>Berikutnya</span>
+                      <ChevronRight className="h-4 w-4" />
+                    </Link>
+                  ) : (
+                    <span className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border-2 border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 px-4 text-slate-400 dark:text-slate-600 cursor-not-allowed">
+                      <span>Berikutnya</span>
+                      <ChevronRight className="h-4 w-4" />
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
+          </main>
         )}
-      </main>
-    </div>
+      </div>
     );
   };
 
@@ -327,7 +350,7 @@ export default async function KomunitasPage({
               Eksplorasi Komunitas Kota Tegal
             </h1>
             <p className="text-xs sm:text-sm text-slate-300 max-w-lg leading-relaxed">
-              Jelajahi 209 Posyandu, Satuan PAUD &amp; Kesetaraan, Komunitas Warga 4 Tingkat, dan 6 Bidang SPM se-Kota Tegal.
+              Jelajahi 209 Posyandu, Satuan PAUD &amp; Kesetaraan, dan Komunitas Warga 4 Tingkat se-Kota Tegal.
             </p>
           </div>
 
@@ -335,10 +358,10 @@ export default async function KomunitasPage({
             <div className="flex items-center gap-2">
               <div className="px-3.5 py-2 rounded-2xl bg-white/10 border border-white/20 backdrop-blur-xs text-center">
                 <span className="text-base sm:text-lg font-black block font-mono text-emerald-400">
-                  {pagination.totalCount}
+                  {totalDisplay}
                 </span>
                 <span className="text-[10px] text-slate-300 uppercase font-bold">
-                  Komunitas
+                  {hasActiveFilter ? "Ditemukan" : "Komunitas"}
                 </span>
               </div>
             </div>

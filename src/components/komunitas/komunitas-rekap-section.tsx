@@ -6,7 +6,6 @@ import {
   HeartPulse,
   Users,
   GraduationCap,
-  ShieldCheck,
   MapPin,
   ChevronDown,
   ChevronUp,
@@ -114,35 +113,20 @@ export function KomunitasRekapSection({
       countBadge:
         "bg-indigo-100 dark:bg-indigo-900/60 text-indigo-800 dark:text-indigo-200",
     },
-    bidang_spm: {
-      border: "border-teal-200 dark:border-teal-800/80",
-      bgGradient:
-        "bg-gradient-to-br from-teal-50/60 via-white to-emerald-50/40 dark:from-slate-900 dark:via-slate-900 dark:to-teal-950/20",
-      accentText: "text-teal-700 dark:text-teal-400",
-      icon: ShieldCheck,
-      badgeTotal: "bg-teal-600 text-white",
-      badgeKec:
-        "bg-teal-50 dark:bg-teal-950/60 border-teal-200 dark:border-teal-800 text-teal-800 dark:text-teal-300",
-      chipActive: "bg-teal-600 text-white font-black shadow-xs",
-      chipHover:
-        "hover:bg-teal-50 dark:hover:bg-teal-950/40 hover:border-teal-300 text-slate-700 dark:text-slate-300",
-      countBadge:
-        "bg-teal-100 dark:bg-teal-900/60 text-teal-800 dark:text-teal-200",
-    },
   }[currentTab] || {
-    border: "border-teal-200 dark:border-teal-800/80",
+    border: "border-emerald-200 dark:border-emerald-800/80",
     bgGradient:
-      "bg-gradient-to-br from-teal-50/60 via-white to-emerald-50/40 dark:from-slate-900 dark:via-slate-900 dark:to-teal-950/20",
-    accentText: "text-teal-700 dark:text-teal-400",
-    icon: ShieldCheck,
-    badgeTotal: "bg-teal-600 text-white",
+      "bg-gradient-to-br from-emerald-50/60 via-white to-teal-50/40 dark:from-slate-900 dark:via-slate-900 dark:to-emerald-950/20",
+    accentText: "text-emerald-700 dark:text-emerald-400",
+    icon: HeartPulse,
+    badgeTotal: "bg-emerald-600 text-white",
     badgeKec:
-      "bg-teal-50 dark:bg-teal-950/60 border-teal-200 dark:border-teal-800 text-teal-800 dark:text-teal-300",
-    chipActive: "bg-teal-600 text-white font-black shadow-xs",
+      "bg-emerald-50 dark:bg-emerald-950/60 border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300",
+    chipActive: "bg-emerald-600 text-white font-black shadow-xs",
     chipHover:
-      "hover:bg-teal-50 dark:hover:bg-teal-950/40 hover:border-teal-300 text-slate-700 dark:text-slate-300",
+      "hover:bg-emerald-50 dark:hover:bg-emerald-950/40 hover:border-emerald-300 text-slate-700 dark:text-slate-300",
     countBadge:
-      "bg-teal-100 dark:bg-teal-900/60 text-teal-800 dark:text-teal-200",
+      "bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200",
   };
 
   const IconComponent = theme.icon;

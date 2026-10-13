@@ -2,7 +2,7 @@ export type UserRole = "Super Admin" | "Admin Pusat" | "Pengurus" | "Kader" | "A
 export type MembershipStatus = "pending" | "approved" | "rejected";
 export type VisibilitasKabar = "publik" | "teman" | "komunitas";
 export type SortingKabar = "terbaru" | "terpopuler";
-export type JenisKomunitas = "warga_kita" | "posyandu" | "satuan_paud" | "bidang_spm";
+export type JenisKomunitas = "warga_kita" | "posyandu" | "satuan_paud";
 
 export const JARIMAS_BOT_ID = "00000000-0000-0000-0000-000000000001";
 export const JARIMAS_BOT_NAME = "Jarimas";

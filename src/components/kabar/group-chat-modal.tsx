@@ -6,7 +6,6 @@ import {
   Send,
   Sparkles,
   Users,
-  ShieldCheck,
   Building2,
   HeartPulse,
   GraduationCap,
@@ -204,8 +203,6 @@ export function GroupChatModal({
                 <HeartPulse className="h-6 w-6" />
               ) : room.jenis === "satuan_paud" ? (
                 <GraduationCap className="h-6 w-6" />
-              ) : room.jenis === "bidang_spm" ? (
-                <ShieldCheck className="h-6 w-6" />
               ) : (
                 <Building2 className="h-6 w-6" />
               )}

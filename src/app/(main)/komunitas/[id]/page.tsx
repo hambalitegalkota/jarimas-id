@@ -57,12 +57,8 @@ export default async function KomunitasDetailPage({
 
   // Ambil data anggota, data anak, data ATS, dan kabar secara paralel (hanya yang relevan dengan tipe komunitas)
   const isPaud = komunitas.jenis === "satuan_paud";
-  const isSpm = komunitas.jenis === "bidang_spm";
-  const isKomunitasPendidikan =
-    komunitas.id === "kom-spm-pendidikan" ||
-    komunitas.nama.toLowerCase().includes("pendidikan");
-  const shouldFetchDataAnak = !isSpm || isKomunitasPendidikan;
-  const shouldFetchDataAts = !isPaud && (!isSpm || isKomunitasPendidikan);
+  const shouldFetchDataAnak = true;
+  const shouldFetchDataAts = !isPaud;
 
   const [
     { data: anggotaList },

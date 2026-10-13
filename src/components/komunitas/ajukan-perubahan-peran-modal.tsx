@@ -94,33 +94,6 @@ const ROLE_OPTIONS_BY_TYPE: Record<string, RoleOptionItem[]> = {
       badge: "Umum",
     },
   ],
-  bidang_spm: [
-    {
-      role: "Tim Pembina",
-      description: "Tim Pembina SPM / Perangkat Daerah penanggung jawab",
-      badge: "Pembina",
-    },
-    {
-      role: "Pendamping",
-      description: "Tenaga pendamping lapangan dan fasilitator SPM",
-      badge: "Pendamping",
-    },
-    {
-      role: "Kader",
-      description: "Kader pelaksana program 6 bidang SPM di lapangan",
-      badge: "Kader",
-    },
-    {
-      role: "Mitra",
-      description: "Mitra kolaborasi, akademisi, atau organisasi pendukung",
-      badge: "Mitra",
-    },
-    {
-      role: "Pengunjung",
-      description: "Warga masyarakat umum pemerhati layanan SPM",
-      badge: "Umum",
-    },
-  ],
   warga_kita: [
     {
       role: "Penduduk",

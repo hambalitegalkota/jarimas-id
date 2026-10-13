@@ -3,7 +3,6 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/utils/supabase/server";
 import { toValidUUID, isAdminPusat, isSuperOrAdminPusat, isSuperAdmin as checkIsSuperAdmin } from "@/lib/utils";
-import { SEED_SPM_TEGAL } from "@/lib/constants/tegal-data";
 import type {
   GetRegisteredUsersResult,
   RegisteredUserItem,
@@ -1218,28 +1217,6 @@ export async function getGroupChatRooms(): Promise<{
 
     const communityList = [...(dbCommunities || [])];
     const existingIds = new Set(communityList.map((c) => c.id));
-
-    // Masukkan seed SPM ke daftar agar dapat diakses ruang percakapannya
-    if (Array.isArray(SEED_SPM_TEGAL)) {
-      for (const spm of SEED_SPM_TEGAL) {
-        const spmUuid = toValidUUID(spm.id);
-        if (!existingIds.has(spm.id) && !existingIds.has(spmUuid)) {
-          communityList.push({
-            id: spm.id,
-            nama: spm.nama,
-            jenis: spm.jenis,
-            deskripsi: spm.deskripsi,
-            logo_url: spm.logo_url || null,
-            kecamatan: spm.kecamatan,
-            kelurahan: spm.kelurahan,
-            rw: spm.rw || null,
-            rt: spm.rt || null,
-          } as any);
-          existingIds.add(spm.id);
-          existingIds.add(spmUuid);
-        }
-      }
-    }
 
     // Ambil jumlah anggota masing-masing komunitas & keanggotaan user saat ini
     const { data: memberCounts } = await supabase

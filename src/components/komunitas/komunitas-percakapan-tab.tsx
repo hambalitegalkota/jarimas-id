@@ -34,13 +34,6 @@ interface KomunitasPercakapanTabProps {
 
 // Rekomendasi pesan cepat sesuai jenis komunitas
 const QUICK_CHAT_PRESETS: Record<string, string[]> = {
-  bidang_spm: [
-    "Halo bapak/ibu Tim Pembina & Pendamping SPM! 👋",
-    "Koordinasi pemenuhan standar pelayanan dasar 📋",
-    "Verifikasi data faktual warga & balita lapangan 🔍",
-    "Laporan tindak lanjut dan kendala layanan ⚠️",
-    "Jadwal rapat koordinasi terpadu 🗓️",
-  ],
   posyandu: [
     "Halo ibu-ibu kader & bidan desa! 👋",
     "Bagaimana jadwal penimbangan & DDTK bulan ini? 🩺",
@@ -83,8 +76,6 @@ export function KomunitasPercakapanTab({
     isAdminOrKader;
   const userPeran = membership?.peran || (isAdminOrKader ? "Admin" : "Pengunjung");
   const isPendingApproval = Boolean(membership?.peran_diajukan);
-
-  const isSpm = komunitas.jenis === "bidang_spm";
   const presets = QUICK_CHAT_PRESETS[komunitas.jenis] || QUICK_CHAT_PRESETS.warga_kita;
 
   const scrollToBottom = (behavior: ScrollBehavior = "smooth") => {
@@ -311,9 +302,7 @@ export function KomunitasPercakapanTab({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-gradient-to-r from-slate-900 via-slate-800 to-teal-950 text-white shadow-xs border border-slate-700/50">
         <div className="flex items-center gap-3">
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-teal-500/20 text-teal-300 border border-teal-400/30">
-            {isSpm ? (
-              <ShieldCheck className="h-6 w-6" />
-            ) : komunitas.jenis === "posyandu" ? (
+            {komunitas.jenis === "posyandu" ? (
               <HeartPulse className="h-6 w-6" />
             ) : komunitas.jenis === "satuan_paud" ? (
               <GraduationCap className="h-6 w-6" />
@@ -324,7 +313,7 @@ export function KomunitasPercakapanTab({
           <div>
             <div className="flex items-center gap-2 flex-wrap">
               <h3 className="text-base font-black tracking-tight text-white">
-                Ruang Percakapan {isSpm ? "Bidang SPM" : "Komunitas"}
+                Ruang Percakapan Komunitas
               </h3>
               <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 text-2xs font-extrabold">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />

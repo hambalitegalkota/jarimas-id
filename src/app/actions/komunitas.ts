@@ -1965,21 +1965,6 @@ export async function applyForAdminKomunitas({
       }
     }
 
-    // 2b. SYARAT UNTUK BIDANG SPM: Hanya peran Pendamping yang berhak mengajukan permohonan sebagai Admin Bidang SPM kepada Super Admin
-    if (seed?.jenis === "bidang_spm") {
-      const isPendamping =
-        existingMember.peran?.toLowerCase() === "pendamping" ||
-        existingMember.peran?.toLowerCase().includes("pendamping");
-
-      if (!isPendamping) {
-        return {
-          success: false,
-          message:
-            "Akses ditolak: Hanya anggota dengan peran Pendamping yang berhak mengajukan diri sebagai Admin Bidang SPM kepada Super Admin.",
-        };
-      }
-    }
-
     // 3. Cek apakah komunitas tujuan sudah memiliki Admin aktif (Satu Komunitas Satu Admin)
     let candidateKomIds = [dbKomunitasId];
     if (seed) {

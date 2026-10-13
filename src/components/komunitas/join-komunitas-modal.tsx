@@ -43,13 +43,6 @@ const ROLE_OPTIONS_BY_TYPE: Record<string, string[]> = {
     "Alumni",
     "Pengunjung",
   ],
-  bidang_spm: [
-    "Tim Pembina",
-    "Pendamping",
-    "Kader",
-    "Mitra",
-    "Pengunjung",
-  ],
 };
 
 export function JoinKomunitasModal({
