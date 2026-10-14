@@ -326,7 +326,7 @@ export function DataAtsClientView({
           {/* Kop Center */}
           <div className="flex-1 text-center space-y-0.5">
             <h2 className="text-[11px] font-bold uppercase tracking-wider font-mono">
-              PEMERINTAH KOTA TEGAL
+              JARINGAN KOMUNITAS WARGA KOTA TEGAL
             </h2>
             <h1 className="text-sm sm:text-base font-black uppercase tracking-tight">
               LAPORAN DATA &amp; PEMETAAN ANAK TIDAK SEKOLAH (ATS)
@@ -738,7 +738,7 @@ export function DataAtsClientView({
 
       <div className="hidden print:flex mt-4 pt-1 border-t border-gray-400 text-[8px] font-mono text-gray-500 justify-between">
         <span>JARIMAS-ID • Dicetak otomatis sesuai tampilan layar dan filter aktif</span>
-        <span>Dokumen Sah Pemkot Tegal (A4)</span>
+        <span>Dokumen Laporan Warga Kota Tegal (A4)</span>
       </div>
 
       {/* 6. MENU CETAK PDF DATA ATS (HANYA 1 MENU, DI PALING BAWAH HALAMAN) */}

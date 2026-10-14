@@ -579,7 +579,7 @@ export async function ensureJarimasBotProfile(supabaseClient?: any): Promise<voi
 }
 
 /**
- * Server Action: Mengirimkan salam pembuka dari akun resmi Jarimas Indonesia kepada pengguna
+ * Server Action: Mengirimkan salam pembuka dari Jarimas Indonesia kepada pengguna
  * Format: "Selamat datang di jarimas.id, mari bergabung dengan komunitas, berbagi kabar dan memulai percakapan yang menyenangkan disini, terimakasih sudah berkunjung"
  */
 export async function sendJarimasWelcomeGreeting(
@@ -1116,7 +1116,7 @@ export async function getRecentConversations(): Promise<{
         let partnerCommunity: string | undefined = undefined;
 
         if (isJarimasBot) {
-          partnerRole = "Layanan Resmi";
+          partnerRole = "Layanan Komunitas Warga";
           partnerCommunity = "Sistem Informasi & Bantuan Warga";
         } else if (p.is_super_admin) {
           partnerRole = "Super Admin";
@@ -1639,7 +1639,7 @@ export async function getUnreadMessagesSummary(): Promise<{
         ? JARIMAS_BOT_NAME
         : (prof?.nama_lengkap || "Warga Jarimas");
       const senderRole = isBot
-        ? "Layanan Resmi"
+        ? "Layanan Komunitas Warga"
         : (affMap[row.sender_id] || "Warga");
 
       return {
@@ -1707,7 +1707,7 @@ export async function getUserProfileForChat(targetUserId: string): Promise<{
               id: "jarimas-official",
               nama: "Pusat Layanan & Bantuan Jarimas",
               jenis: "warga_kita",
-              peran: "Layanan Resmi",
+              peran: "Layanan Komunitas Warga",
             },
           ],
           friendship_status: "accepted",

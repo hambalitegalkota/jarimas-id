@@ -281,7 +281,7 @@ export function ChatDrawerModal({
                 {isJarimasBot ? (
                   <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/80 px-2 py-0.5 text-[9px] font-black text-emerald-900 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700">
                     <Sparkles className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
-                    Akun Resmi
+                    Bantuan Warga
                   </span>
                 ) : (targetUser.is_super_admin || isSuperAdmin(targetUser)) ? (
                   <span className="inline-flex items-center gap-0.5 rounded-full bg-amber-100 dark:bg-amber-950/80 px-2 py-0.5 text-[9px] font-black text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-700">

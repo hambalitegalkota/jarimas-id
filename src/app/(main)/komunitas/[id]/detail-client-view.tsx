@@ -665,7 +665,7 @@ export function KomunitasDetailClientView({
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <h4 className="text-sm font-bold text-emerald-950 uppercase tracking-wider">
-                  Admin / Pengurus Resmi Terdaftar
+                  Admin / Pengurus Terdaftar
                 </h4>
                 <span className="text-xs font-bold px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-900 border border-emerald-300">
                   Terverifikasi
@@ -673,7 +673,7 @@ export function KomunitasDetailClientView({
               </div>
               <p className="text-base font-bold text-slate-900 flex items-center gap-1.5">
                 <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
-                <span>{komunitas.adminName || "Pengurus Resmi Komunitas"}</span>
+                <span>{komunitas.adminName || "Pengurus Komunitas"}</span>
                 {komunitas.adminRole && (
                   <span className="text-slate-600 font-semibold text-sm">
                     • {komunitas.adminRole}
@@ -681,7 +681,7 @@ export function KomunitasDetailClientView({
                 )}
               </p>
               <p className="text-sm text-slate-600 leading-relaxed">
-                Pengurus resmi yang mengelola verifikasi anggota, jadwal kegiatan, dan layanan komunitas.
+                Pengurus yang mengelola verifikasi anggota, jadwal kegiatan, dan layanan komunitas.
               </p>
             </div>
           </div>
@@ -706,10 +706,10 @@ export function KomunitasDetailClientView({
                       Permohonan Anda sebagai Admin sedang menunggu verifikasi dan persetujuan Super Admin / Admin hierarki tingkat atas. (Tidak ada proses otomatisasi).
                     </span>
                   ) : (
-                    "Sebagai anggota berstatus Penduduk, Anda berhak mengajukan permohonan menjadi Admin/Pengurus resmi kepada Admin tingkat atas (melalui verifikasi manual, tanpa proses otomatisasi)."
+                    "Sebagai anggota berstatus Penduduk, Anda berhak mengajukan permohonan menjadi Admin/Pengurus kepada Admin tingkat atas (melalui verifikasi manual, tanpa proses otomatisasi)."
                   )
                 ) : (
-                  "Pengajuan Admin hanya dapat diajukan oleh anggota dengan status Penduduk resmi (KK & Domisili di Kota Tegal)."
+                  "Pengajuan Admin hanya dapat diajukan oleh anggota dengan status Penduduk (KK & Domisili di Kota Tegal)."
                 )}
               </p>
             </div>
@@ -987,12 +987,12 @@ export function KomunitasDetailClientView({
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
               <div className="space-y-0.5">
                 <h3 className="text-base font-bold text-slate-900 uppercase tracking-wider">
-                  Informasi Resmi &amp; Operasional
+                  Informasi &amp; Operasional
                 </h3>
                 <p className="text-xs text-slate-500 font-medium">
                   {komunitasData.jenis === "posyandu"
-                    ? "Informasi alamat lokasi, jadwal layanan, dan kontak resmi 6 bidang kader"
-                    : "Informasi alamat lokasi, jadwal layanan, dan kontak resmi"}
+                    ? "Informasi alamat lokasi, jadwal layanan, dan kontak 6 bidang kader"
+                    : "Informasi alamat lokasi, jadwal layanan, dan kontak pengurus"}
                 </p>
               </div>
 
@@ -1001,7 +1001,7 @@ export function KomunitasDetailClientView({
                   type="button"
                   onClick={() => setIsEditOperasionalOpen(true)}
                   className="inline-flex min-h-[40px] h-10 items-center justify-center gap-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white px-4 text-xs font-bold shadow-xs transition-all active:scale-98 cursor-pointer shrink-0"
-                  title="Edit Informasi Resmi & Operasional Komunitas"
+                  title="Edit Informasi & Operasional Komunitas"
                 >
                   <Pencil className="h-3.5 w-3.5" />
                   <span>Edit Informasi</span>
@@ -1038,7 +1038,7 @@ export function KomunitasDetailClientView({
               <div className="flex items-start gap-3.5 p-4 rounded-xl bg-slate-50 border border-slate-200">
                 <Phone className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />
                 <div className="space-y-1 w-full">
-                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">KONTAK RESMI UTAMA / SEKRETARIAT</span>
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">KONTAK UTAMA / SEKRETARIAT</span>
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <p className="text-slate-900 font-bold font-mono text-base">
                       {parsedKontak.utama || komunitasData.kontak || "-"}
@@ -1694,7 +1694,7 @@ export function KomunitasDetailClientView({
             <div className="space-y-3 text-sm text-slate-600">
               <p>
                 {isUserAdmin
-                  ? "Apakah Anda yakin ingin berhenti dari status Admin/Pengurus resmi di komunitas ini? Peran Anda akan dikembalikan menjadi warga/anggota biasa."
+                  ? "Apakah Anda yakin ingin berhenti dari status Admin/Pengurus di komunitas ini? Peran Anda akan dikembalikan menjadi warga/anggota biasa."
                   : "Apakah Anda yakin ingin membatalkan permohonan keanggotaan/pengajuan Admin ini?"}
               </p>
             </div>

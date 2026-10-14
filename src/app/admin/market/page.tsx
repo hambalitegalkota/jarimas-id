@@ -4,7 +4,7 @@ import { AdminMarketClient } from "./admin-market-client";
 
 export const metadata: Metadata = {
   title: "Kelola Produk Market | Super Admin Jarimas",
-  description: "Dashboard manajemen katalog dan stok produk resmi Jarimas Market.",
+  description: "Dashboard manajemen katalog dan stok produk Jarimas Market.",
 };
 
 export default async function AdminMarketPage() {

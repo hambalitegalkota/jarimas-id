@@ -1778,7 +1778,7 @@ export async function joinKomunitasWargaWithSurvey({
       const finalDeskripsi =
         deskripsi ||
         seedItem?.deskripsi ||
-        `Komunitas resmi warga ${finalNama}.`;
+        `Komunitas warga ${finalNama}.`;
 
       await supabase.from("komunitas").upsert(
         {
@@ -2015,7 +2015,7 @@ export async function applyForAdminKomunitas({
     if (isRoleAdmin(existingMember.peran)) {
       return {
         success: false,
-        message: `Anda sudah berstatus sebagai ${formatPeranDisplay(existingMember.peran)} resmi di komunitas ini.`,
+        message: `Anda sudah berstatus sebagai ${formatPeranDisplay(existingMember.peran)} di komunitas ini.`,
       };
     }
 
@@ -2093,7 +2093,7 @@ export async function applyForAdminKomunitas({
     const activeAdmin = (existingAdmins || []).find((m) => isRoleAdmin(m.peran));
 
     if (activeAdmin && activeAdmin.user_id !== user.id) {
-      let adminName = "Pengurus resmi";
+      let adminName = "Pengurus terdaftar";
       if (activeAdmin.user_id) {
         const { data: prof } = await supabase
           .from("profiles")
@@ -2459,7 +2459,7 @@ export async function kickMemberByAdmin({
       return {
         success: false,
         message:
-          "Akses ditolak: Hanya Admin/Pengurus resmi atau Super Admin yang berhak mengeluarkan anggota dari komunitas.",
+          "Akses ditolak: Hanya Admin/Pengurus atau Super Admin yang berhak mengeluarkan anggota dari komunitas.",
       };
     }
 
@@ -4073,7 +4073,7 @@ export async function updateKomunitasInformasiOperasional({
       return {
         success: false,
         message:
-          "Akses ditolak: Hanya Admin, Pengurus, Kader resmi atau Super Admin yang berhak mengedit Informasi Resmi & Operasional.",
+          "Akses ditolak: Hanya Admin, Pengurus, Kader atau Super Admin yang berhak mengedit Informasi & Operasional.",
       };
     }
 
@@ -4111,7 +4111,7 @@ export async function updateKomunitasInformasiOperasional({
 
     return {
       success: true,
-      message: "Informasi Resmi & Operasional berhasil disimpan!",
+      message: "Informasi & Operasional berhasil disimpan!",
     };
   } catch (err: any) {
     console.error("Error updateKomunitasInformasiOperasional:", err);

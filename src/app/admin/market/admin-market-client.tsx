@@ -153,7 +153,7 @@ export function AdminMarketClient({ initialProducts }: AdminMarketClientProps) {
             Manajemen Produk Jarimas Market
           </h1>
           <p className="text-xs text-muted-foreground">
-            Kelola inventaris sarana resmi Posyandu, PAUD, dan gizi balita Kota Tegal
+            Kelola inventaris sarana Posyandu, PAUD, dan gizi balita Kota Tegal
           </p>
         </div>
 

@@ -836,11 +836,11 @@ function buildMasterKomunitasSeed(): MasterKomunitasSeedItem[] {
       kelurahan: "Semua Kelurahan",
       rt: "",
       rw: "",
-      lokasi: "Pemerintah Kota Tegal, Jawa Tengah",
+      lokasi: "Kota Tegal, Jawa Tengah",
       deskripsi:
-        "Komunitas resmi seluruh warga masyarakat Kota Tegal, Jawa Tengah. Wadah kebersamaan, koordinasi layanan publik, kesehatan keluarga, dan partisipasi warga se-Kota Tegal.",
-      kontak: "Pemerintah Kota Tegal / Forum Warga Kota Tegal",
-      jadwal: "Forum Komunikasi & Pelayanan Warga Tingkat Kota Tegal",
+        "Komunitas kolaborasi seluruh warga masyarakat Kota Tegal, Jawa Tengah. Wadah kebersamaan dari warga, oleh warga, untuk warga dalam mendukung tumbuh kembang anak, kesehatan keluarga, dan kepedulian sosial.",
+      kontak: "Forum Komunikasi Warga Kota Tegal",
+      jadwal: "Forum Komunikasi & Silaturahmi Warga Tingkat Kota Tegal",
     },
     {
       id: "kom-warga-1",
@@ -1152,11 +1152,11 @@ export function generateWargaKomunitasHierarchy({
       kelurahan: "Semua Kelurahan",
       rt: "",
       rw: "",
-      lokasi: "Pemerintah Kota Tegal, Jawa Tengah",
+      lokasi: "Kota Tegal, Jawa Tengah",
       deskripsi:
-        "Komunitas resmi seluruh warga masyarakat Kota Tegal, Jawa Tengah. Wadah kebersamaan, koordinasi layanan publik, kesehatan keluarga, dan partisipasi warga se-Kota Tegal.",
-      kontak: "Pemerintah Kota Tegal / Forum Warga Kota Tegal",
-      jadwal: "Forum Komunikasi & Pelayanan Warga Tingkat Kota Tegal",
+        "Komunitas kolaborasi seluruh warga masyarakat Kota Tegal, Jawa Tengah. Wadah kebersamaan dari warga, oleh warga, untuk warga dalam mendukung tumbuh kembang anak, kesehatan keluarga, dan kepedulian sosial.",
+      kontak: "Forum Komunikasi Warga Kota Tegal",
+      jadwal: "Forum Komunikasi & Silaturahmi Warga Tingkat Kota Tegal",
     },
   ];
 
@@ -1265,11 +1265,11 @@ export function findOrGenerateKomunitasSeed(
       kelurahan: "Semua Kelurahan",
       rt: "",
       rw: "",
-      lokasi: "Pemerintah Kota Tegal, Jawa Tengah",
+      lokasi: "Kota Tegal, Jawa Tengah",
       deskripsi:
-        "Komunitas resmi seluruh warga masyarakat Kota Tegal, Jawa Tengah. Wadah kebersamaan, koordinasi layanan publik, kesehatan keluarga, dan partisipasi warga se-Kota Tegal.",
-      kontak: "Pemerintah Kota Tegal / Forum Warga Kota Tegal",
-      jadwal: "Forum Komunikasi & Pelayanan Warga Tingkat Kota Tegal",
+        "Komunitas kolaborasi seluruh warga masyarakat Kota Tegal, Jawa Tengah. Wadah kebersamaan dari warga, oleh warga, untuk warga dalam mendukung tumbuh kembang anak, kesehatan keluarga, dan kepedulian sosial.",
+      kontak: "Forum Komunikasi Warga Kota Tegal",
+      jadwal: "Forum Komunikasi & Silaturahmi Warga Tingkat Kota Tegal",
     });
   }
 
@@ -1425,11 +1425,11 @@ export function getWargaHierarchyChain(params: {
     kelurahan: "Semua Kelurahan",
     rt: "",
     rw: "",
-    lokasi: "Pemerintah Kota Tegal, Jawa Tengah",
+    lokasi: "Kota Tegal, Jawa Tengah",
     deskripsi:
-      "Komunitas resmi seluruh warga masyarakat Kota Tegal, Jawa Tengah. Wadah kebersamaan, koordinasi layanan publik, kesehatan keluarga, dan partisipasi warga se-Kota Tegal.",
-    kontak: "Pemerintah Kota Tegal / Forum Warga Kota Tegal",
-    jadwal: "Forum Komunikasi & Pelayanan Warga Tingkat Kota Tegal",
+      "Komunitas kolaborasi seluruh warga masyarakat Kota Tegal, Jawa Tengah. Wadah kebersamaan dari warga, oleh warga, untuk warga dalam mendukung tumbuh kembang anak, kesehatan keluarga, dan kepedulian sosial.",
+    kontak: "Forum Komunikasi Warga Kota Tegal",
+    jadwal: "Forum Komunikasi & Silaturahmi Warga Tingkat Kota Tegal",
   };
   chain.push(kotaItem);
 

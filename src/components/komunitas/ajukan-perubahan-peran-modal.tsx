@@ -65,7 +65,7 @@ const ROLE_OPTIONS_BY_TYPE: Record<string, RoleOptionItem[]> = {
   posyandu: [
     {
       role: "Kader",
-      description: "Kader Posyandu resmi dan pelaksana kegiatan 6 Bidang SPM",
+      description: "Kader Posyandu aktif pelaksana kegiatan 6 Bidang SPM",
       badge: "Kader Posyandu",
     },
     {
@@ -97,7 +97,7 @@ const ROLE_OPTIONS_BY_TYPE: Record<string, RoleOptionItem[]> = {
   warga_kita: [
     {
       role: "Penduduk",
-      description: "Warga ber-KTP & domisili resmi di wilayah ini",
+      description: "Warga ber-KTP atau berdomisili di wilayah ini",
       badge: "Penduduk",
     },
     {

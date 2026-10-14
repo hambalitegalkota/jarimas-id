@@ -112,7 +112,7 @@ export function PrintLaporanAts({
           {/* Kop Title */}
           <div className="flex-1 text-center space-y-0.5">
             <h2 className="text-[11px] font-bold uppercase tracking-wider font-mono">
-              PEMERINTAH KOTA TEGAL
+              JARINGAN KOMUNITAS WARGA KOTA TEGAL
             </h2>
             <h1 className="text-sm sm:text-base font-black uppercase tracking-tight">
               LAPORAN HASIL PENDATAAN & PEMETAAN ANAK TIDAK SEKOLAH (ATS)
@@ -337,8 +337,8 @@ export function PrintLaporanAts({
 
       {/* Catatan Kaki Dokumen */}
       <div className="mt-6 pt-2 border-t border-gray-400 text-[8px] font-mono text-gray-500 flex justify-between">
-        <span>JARIMAS-ID • Laporan Resmi Pendataan ATS Standar Kertas A4</span>
-        <span>Pemerintah Kota Tegal</span>
+        <span>JARIMAS-ID • Laporan Pendataan ATS Berbasis Warga (Kertas A4)</span>
+        <span>Inisiatif Warga Kota Tegal</span>
       </div>
     </div>
   );

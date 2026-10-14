@@ -132,7 +132,7 @@ export function DetailProdukClient({ produk }: DetailProdukClientProps) {
             {/* Harga */}
             <div className="rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 p-4">
               <span className="text-xs font-bold text-slate-500 block uppercase">
-                HARGA RESMI SATUAN
+                HARGA KATALOG SATUAN
               </span>
               <div className="text-2xl sm:text-3xl font-bold font-mono text-blue-700 dark:text-blue-400">
                 {formatRupiah(produk.harga)}

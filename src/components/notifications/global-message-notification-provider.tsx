@@ -172,7 +172,7 @@ export function GlobalMessageNotificationProvider({
         senderInfo?.komunitas_list?.[0]
           ? `${senderInfo.komunitas_list[0].peran} ${senderInfo.komunitas_list[0].nama}`
           : senderInfo?.id === "00000000-0000-0000-0000-000000000001"
-          ? "Pusat Layanan Resmi"
+          ? "Pusat Layanan Warga"
           : "Warga";
 
       const notifItem: IncomingMessageNotificationItem = {

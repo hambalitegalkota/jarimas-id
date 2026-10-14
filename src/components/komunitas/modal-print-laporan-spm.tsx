@@ -72,7 +72,7 @@ export function ModalPrintLaporanSpm({
                 Pratinjau Cetak Laporan Kader 6 Bidang SPM
               </h3>
               <p className="text-xs text-slate-500">
-                Format resmi surat laporan Posyandu Kota Tegal (Siap Cetak / Save to PDF)
+                Format surat laporan Posyandu Kota Tegal (Siap Cetak / Save to PDF)
               </p>
             </div>
           </div>
@@ -277,7 +277,7 @@ export function ModalPrintLaporanSpm({
             {/* Footer Cetak */}
             <div className="mt-8 pt-3 border-t border-slate-200 text-[10px] font-sans text-slate-400 flex items-center justify-between">
               <span>Sistem Informasi Posyandu Jarimas Kota Tegal</span>
-              <span>Dokumen Resmi 6 Bidang SPM</span>
+              <span>Dokumen Laporan 6 Bidang SPM</span>
             </div>
           </div>
         </div>

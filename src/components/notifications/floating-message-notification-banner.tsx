@@ -209,7 +209,7 @@ export function FloatingMessageNotificationBanner({
                 </span>
                 {isBot && (
                   <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-1.5 py-0.2 rounded-full">
-                    <ShieldCheck className="h-3 w-3 text-emerald-400" /> Resmi
+                    <Sparkles className="h-3 w-3 text-emerald-400" /> Komunitas
                   </span>
                 )}
                 {notification.senderRole && !isBot && (

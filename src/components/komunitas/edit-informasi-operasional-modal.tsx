@@ -152,14 +152,14 @@ export function EditInformasiOperasionalModal({
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-lg font-bold text-slate-900 leading-tight">
-                  Edit Informasi Resmi &amp; Operasional
+                  Edit Informasi &amp; Operasional
                 </h3>
                 <span className="text-xs font-bold px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 border border-emerald-200">
                   {komunitas.jenis === "posyandu" ? "ADMIN, PENGURUS & KADER" : "ADMIN & PENGURUS"}
                 </span>
               </div>
               <p className="text-xs text-slate-500 font-semibold line-clamp-1">
-                Kelola Informasi Resmi: {komunitas.nama}
+                Kelola Informasi: {komunitas.nama}
               </p>
             </div>
           </div>
@@ -200,7 +200,7 @@ export function EditInformasiOperasionalModal({
                 )}
               >
                 <Phone className="h-3.5 w-3.5 text-emerald-600" />
-                <span>Kontak Resmi &amp; 6 Kader Bidang</span>
+                <span>Kontak &amp; 6 Kader Bidang</span>
               </button>
             </div>
           </div>
@@ -263,12 +263,12 @@ export function EditInformasiOperasionalModal({
                   />
                 </div>
 
-                {/* Kontak Resmi Utama / Sekretariat (untuk Komunitas Non-Posyandu) */}
+                {/* Kontak Utama / Sekretariat (untuk Komunitas Non-Posyandu) */}
                 {komunitas.jenis !== "posyandu" && (
                   <div className="space-y-1.5">
                     <label className="flex items-center gap-1.5 font-bold text-slate-800 text-xs">
                       <Phone className="h-4 w-4 text-emerald-600" />
-                      <span>Kontak Resmi Utama / Sekretariat / Pengurus</span>
+                      <span>Kontak Pengurus Utama / Sekretariat</span>
                     </label>
                     <input
                       type="text"
@@ -278,7 +278,7 @@ export function EditInformasiOperasionalModal({
                       className="w-full px-3.5 py-2.5 rounded-xl border-2 border-slate-200 bg-white text-slate-900 font-mono text-sm font-bold focus:border-blue-600 focus:outline-none"
                     />
                     <p className="text-[11px] text-slate-500 font-medium">
-                      Nomor telepon atau WhatsApp resmi pengurus komunitas.
+                      Nomor telepon atau WhatsApp pengurus komunitas.
                     </p>
                   </div>
                 )}
@@ -300,14 +300,14 @@ export function EditInformasiOperasionalModal({
               </div>
             )}
 
-            {/* TAB 2: KONTAK RESMI & 6 KADER BIDANG SPM */}
+            {/* TAB 2: KONTAK & 6 KADER BIDANG SPM */}
             {activeTab === "kader_spm" && (
               <div className="space-y-4">
                 {/* Kontak Utama / Sekretariat */}
                 <div className="p-4 rounded-2xl border-2 border-emerald-200 bg-emerald-50/50 space-y-2">
                   <label className="flex items-center gap-2 font-bold text-emerald-950 text-xs uppercase tracking-wider">
                     <Phone className="h-4 w-4 text-emerald-700" />
-                    <span>Kontak Resmi Utama / Sekretariat</span>
+                    <span>Kontak Utama / Sekretariat</span>
                   </label>
                   <input
                     type="text"

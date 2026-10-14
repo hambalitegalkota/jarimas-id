@@ -40,7 +40,7 @@ import { formatRupiah, isSuperAdmin as checkIsSuperAdmin } from "@/lib/utils";
 import { SHOW_MARKET_FEATURE } from "@/components/layout/bottom-nav";
 import type { MarketProduk } from "@/types/database";
 
-// Fallback data produk resmi Jarimas Market
+// Fallback data produk katalog Jarimas Market
 const FALLBACK_SHOWCASE_PRODUCTS: MarketProduk[] = [
   {
     id: "sample-stadiometer-1",
@@ -801,7 +801,7 @@ export default async function HomePage() {
                   <div className="pt-2 flex items-center justify-between border-t border-slate-100 dark:border-slate-800 gap-2">
                     <div>
                       <span className="text-[10px] font-bold text-slate-400 block uppercase">
-                        Harga Resmi
+                        Harga Katalog
                       </span>
                       <span className="text-sm font-extrabold font-mono text-emerald-700 dark:text-emerald-400">
                         {formatRupiah(produk.harga)}
@@ -857,10 +857,10 @@ export default async function HomePage() {
               </div>
               <div>
                 <h4 className="text-xs font-bold text-slate-900 dark:text-slate-100">
-                  Transparan &amp; Resmi
+                  Transparan &amp; Amanah
                 </h4>
                 <p className="text-[11px] text-slate-500">
-                  Dukungan Pemkot &amp; verifikasi QRIS
+                  Dari warga untuk warga &amp; verifikasi QRIS
                 </p>
               </div>
             </div>

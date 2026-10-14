@@ -452,7 +452,7 @@ export function LaporanKaderSpmFormCard({
                 Alur Penyimpanan &amp; Distribusi Laporan:
               </strong>
               <span>
-                Laporan ini disimpan pada arsip Posyandu <strong>{komunitas.nama}</strong> dan terdistribusi otomatis ke Komunitas Kelurahan <strong>{komunitas.kelurahan}</strong>, Kecamatan <strong>{komunitas.kecamatan}</strong>, serta Komunitas Warga Kota Tegal. Setelah disimpan, Anda dapat langsung melakukan <strong>Pratinjau (Preview)</strong> dan <strong>Cetak Format PDF</strong> resmi.
+                Laporan ini disimpan pada arsip Posyandu <strong>{komunitas.nama}</strong> dan terdistribusi otomatis ke Komunitas Kelurahan <strong>{komunitas.kelurahan}</strong>, Kecamatan <strong>{komunitas.kecamatan}</strong>, serta Komunitas Warga Kota Tegal. Setelah disimpan, Anda dapat langsung melakukan <strong>Pratinjau (Preview)</strong> dan <strong>Cetak Format PDF</strong>.
               </span>
             </div>
           </div>

@@ -66,7 +66,7 @@ export function ProdukCard({ produk }: ProdukCardProps) {
         <div className="pt-3 flex items-center justify-between border-t border-slate-100 dark:border-slate-800 gap-3">
           <div>
             <span className="text-xs font-bold text-slate-500 block">
-              HARGA RESMI
+              HARGA KATALOG
             </span>
             <span className="text-lg sm:text-xl font-bold font-mono text-emerald-700 dark:text-emerald-400">
               {formatRupiah(produk.harga)}
