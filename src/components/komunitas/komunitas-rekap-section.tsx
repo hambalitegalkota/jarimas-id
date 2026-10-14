@@ -41,25 +41,27 @@ export function KomunitasRekapSection({
   currentKelurahan = "semua",
   currentBentuk = "semua",
 }: KomunitasRekapSectionProps) {
+  const isPaud = currentTab === "satuan_paud";
+  const isPkbm = currentTab === "pkbm_skb";
+  const isWarga = currentTab === "warga_kita";
+
   const isFiltered =
     currentKecamatan !== "semua" ||
     currentKelurahan !== "semua" ||
-    (currentTab === "satuan_paud" && currentBentuk !== "semua");
+    ((isPaud || isPkbm) && currentBentuk !== "semua");
 
   // Secara default collapsible terbuka
   const [isOpen, setIsOpen] = useState<boolean>(true);
-
-  const isPaud = currentTab === "satuan_paud";
-  const isWarga = currentTab === "warga_kita";
 
   const rekap = getKomunitasRekapData(currentTab, {
     bentuk: currentBentuk,
   });
 
-  const bentukRekap = isPaud
+  const bentukRekap = (isPaud || isPkbm)
     ? getBentukPendidikanRekap({
         kecamatan: currentKecamatan,
         kelurahan: currentKelurahan,
+        tab: currentTab,
       })
     : null;
 
@@ -110,6 +112,21 @@ export function KomunitasRekapSection({
       countBadge:
         "bg-indigo-100 dark:bg-indigo-900/60 text-indigo-800 dark:text-indigo-200",
     },
+    pkbm_skb: {
+      border: "border-amber-200 dark:border-amber-800/80",
+      bgGradient:
+        "bg-gradient-to-br from-amber-50/60 via-white to-orange-50/40 dark:from-slate-900 dark:via-slate-900 dark:to-amber-950/20",
+      accentText: "text-amber-700 dark:text-amber-400",
+      icon: BookOpen,
+      badgeTotal: "bg-amber-600 text-white",
+      badgeKec:
+        "bg-amber-50 dark:bg-amber-950/60 border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300",
+      chipActive: "bg-amber-600 text-white font-black shadow-xs",
+      chipHover:
+        "hover:bg-amber-50 dark:hover:bg-amber-950/40 hover:border-amber-300 text-slate-700 dark:text-slate-300",
+      countBadge:
+        "bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-200",
+    },
   }[currentTab] || {
     border: "border-emerald-200 dark:border-emerald-800/80",
     bgGradient:
@@ -138,7 +155,7 @@ export function KomunitasRekapSection({
     params.set("tab", currentTab);
 
     const targetBentuk = bentuk !== undefined ? bentuk : currentBentuk;
-    if (isPaud && targetBentuk && targetBentuk !== "semua") {
+    if ((isPaud || isPkbm) && targetBentuk && targetBentuk !== "semua") {
       params.set("bentuk", targetBentuk);
     }
 
@@ -203,6 +220,8 @@ export function KomunitasRekapSection({
             <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 mt-0.5">
               {isPaud
                 ? `Tersebar di 7 Bentuk Satuan Pendidikan, ${rekap.totalKecamatan} Kecamatan & ${rekap.totalKelurahan} Kelurahan se-Kota Tegal`
+                : isPkbm
+                ? `Tersebar di 12 PKBM & 1 SKB (${rekap.totalSemua} Lembaga), ${rekap.totalKecamatan} Kecamatan se-Kota Tegal`
                 : isWarga
                 ? `Tersebar di ${rekap.totalKecamatan} Kecamatan & ${rekap.totalKelurahan} Kelurahan (${rekap.totalSemua} RW & ${(rekap.totalRt || 1712).toLocaleString("id-ID")} RT) se-Kota Tegal`
                 : `Tersebar di ${rekap.totalKecamatan} Kecamatan & ${rekap.totalKelurahan} Kelurahan se-Kota Tegal`}
@@ -229,34 +248,61 @@ export function KomunitasRekapSection({
       {isOpen && (
         <div className="space-y-4 pt-1 animate-in fade-in duration-300">
           {/* ========================================================= */}
-          {/* 1. KHUSUS TAB PAUD: REKAP BENTUK SATUAN PENDIDIKAN        */}
+          {/* 1. KHUSUS TAB PAUD & TAB PKBM/SKB: REKAP BENTUK           */}
           {/* ========================================================= */}
-          {isPaud && bentukRekap && (
-            <div className="rounded-2xl border-2 border-indigo-200/80 dark:border-indigo-900/60 bg-white/90 dark:bg-slate-900/90 p-3.5 sm:p-4 shadow-xs space-y-2.5">
+          {(isPaud || isPkbm) && bentukRekap && (
+            <div
+              className={cn(
+                "rounded-2xl border-2 p-3.5 sm:p-4 shadow-xs space-y-2.5",
+                isPaud
+                  ? "border-indigo-200/80 dark:border-indigo-900/60 bg-white/90 dark:bg-slate-900/90"
+                  : "border-amber-200/80 dark:border-amber-900/60 bg-white/90 dark:bg-slate-900/90"
+              )}
+            >
               <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
                 <div className="flex items-center gap-2">
-                  <Layers className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                  <Layers
+                    className={cn(
+                      "h-4 w-4",
+                      isPaud
+                        ? "text-indigo-600 dark:text-indigo-400"
+                        : "text-amber-600 dark:text-amber-400"
+                    )}
+                  />
                   <h3 className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-slate-100">
-                    Bentuk Satuan Pendidikan (TK, RA, KB, SPS, TPA, PKBM, SKB)
+                    {isPaud
+                      ? "Bentuk Satuan Pendidikan (TK, RA, KB, SPS, TPA, PKBM, SKB)"
+                      : "Bentuk Satuan Pendidikan Kesetaraan (PKBM & SKB)"}
                   </h3>
                 </div>
                 <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">
                   {currentKecamatan !== "semua" || currentKelurahan !== "semua"
-                    ? `${bentukRekap.totalFiltered} dari total 219 Lembaga di wilayah ini`
-                    : "Total 219 Lembaga se-Kota Tegal"}
+                    ? `${bentukRekap.totalFiltered} dari total ${bentukRekap.totalSemua} Lembaga di wilayah ini`
+                    : `Total ${bentukRekap.totalSemua} Lembaga se-Kota Tegal`}
                 </span>
               </div>
 
-              {/* Grid 7 Bentuk Pendidikan + Opsi Semua */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2">
+              {/* Grid Bentuk Lembaga */}
+              <div
+                className={cn(
+                  "grid gap-2",
+                  isPkbm
+                    ? "grid-cols-1 sm:grid-cols-3"
+                    : "grid-cols-2 sm:grid-cols-4 lg:grid-cols-8"
+                )}
+              >
                 {/* Chip: Semua Bentuk */}
                 <Link
                   href={makeFilterUrl(currentKecamatan, currentKelurahan, "semua")}
                   className={cn(
                     "flex flex-col justify-between p-2.5 rounded-xl border-2 transition-all cursor-pointer text-left group",
                     currentBentuk === "semua"
-                      ? "border-indigo-600 bg-indigo-600 text-white shadow-xs"
-                      : "border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800 hover:border-indigo-300 dark:hover:border-indigo-700 hover:bg-indigo-50/40 text-slate-700 dark:text-slate-200"
+                      ? isPaud
+                        ? "border-indigo-600 bg-indigo-600 text-white shadow-xs"
+                        : "border-amber-600 bg-amber-600 text-white shadow-xs"
+                      : isPaud
+                      ? "border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800 hover:border-indigo-300 dark:hover:border-indigo-700 hover:bg-indigo-50/40 text-slate-700 dark:text-slate-200"
+                      : "border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800 hover:border-amber-300 dark:hover:border-amber-700 hover:bg-amber-50/40 text-slate-700 dark:text-slate-200"
                   )}
                   title="Tampilkan semua bentuk satuan pendidikan"
                 >
@@ -275,7 +321,11 @@ export function KomunitasRekapSection({
                     <span
                       className={cn(
                         "text-[9px] font-semibold block mt-1 line-clamp-1",
-                        currentBentuk === "semua" ? "text-indigo-100" : "text-slate-500 dark:text-slate-400"
+                        currentBentuk === "semua"
+                          ? isPaud
+                            ? "text-indigo-100"
+                            : "text-amber-100"
+                          : "text-slate-500 dark:text-slate-400"
                       )}
                     >
                       Semua Bentuk
@@ -283,7 +333,7 @@ export function KomunitasRekapSection({
                   </div>
                 </Link>
 
-                {/* 7 Bentuk Pendidikan */}
+                {/* List Bentuk Pendidikan / Kesetaraan */}
                 {bentukRekap.list.map((item) => {
                   const isSelected =
                     currentBentuk.toUpperCase() === item.bentuk.toUpperCase();
@@ -300,8 +350,12 @@ export function KomunitasRekapSection({
                       className={cn(
                         "flex flex-col justify-between p-2.5 rounded-xl border-2 transition-all cursor-pointer text-left group",
                         isSelected
-                          ? "border-indigo-600 bg-indigo-600 text-white shadow-xs ring-2 ring-indigo-400/40"
-                          : "border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800 hover:border-indigo-300 dark:hover:border-indigo-700 hover:bg-indigo-50/40 text-slate-700 dark:text-slate-200"
+                          ? isPaud
+                            ? "border-indigo-600 bg-indigo-600 text-white shadow-xs ring-2 ring-indigo-400/40"
+                            : "border-amber-600 bg-amber-600 text-white shadow-xs ring-2 ring-amber-400/40"
+                          : isPaud
+                          ? "border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800 hover:border-indigo-300 dark:hover:border-indigo-700 hover:bg-indigo-50/40 text-slate-700 dark:text-slate-200"
+                          : "border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800 hover:border-amber-300 dark:hover:border-amber-700 hover:bg-amber-50/40 text-slate-700 dark:text-slate-200"
                       )}
                       title={`Filter: ${item.namaLengkap} (${item.kategori}) - ${item.keterangan}`}
                     >
@@ -310,7 +364,11 @@ export function KomunitasRekapSection({
                           <ShapeIcon
                             className={cn(
                               "h-3 w-3 shrink-0",
-                              isSelected ? "text-white" : "text-indigo-600 dark:text-indigo-400"
+                              isSelected
+                                ? "text-white"
+                                : isPaud
+                                ? "text-indigo-600 dark:text-indigo-400"
+                                : "text-amber-600 dark:text-amber-400"
                             )}
                           />
                           <span className="text-[11px] font-black uppercase tracking-wider truncate">
@@ -330,7 +388,11 @@ export function KomunitasRekapSection({
                             <span
                               className={cn(
                                 "text-[9px] font-mono",
-                                isSelected ? "text-indigo-200" : "text-slate-400"
+                                isSelected
+                                  ? isPaud
+                                    ? "text-indigo-200"
+                                    : "text-amber-200"
+                                  : "text-slate-400"
                               )}
                             >
                               /{item.totalCount}
@@ -340,7 +402,11 @@ export function KomunitasRekapSection({
                         <span
                           className={cn(
                             "text-[9px] font-semibold block mt-1 line-clamp-1",
-                            isSelected ? "text-indigo-100" : "text-slate-500 dark:text-slate-400"
+                            isSelected
+                              ? isPaud
+                                ? "text-indigo-100"
+                                : "text-amber-100"
+                              : "text-slate-500 dark:text-slate-400"
                           )}
                         >
                           {item.namaLengkap.replace(/^Taman\s+/i, "")}

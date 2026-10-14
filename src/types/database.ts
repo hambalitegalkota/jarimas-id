@@ -2,7 +2,7 @@ export type UserRole = "Super Admin" | "Admin Pusat" | "Pengurus" | "Kader" | "A
 export type MembershipStatus = "pending" | "approved" | "rejected";
 export type VisibilitasKabar = "publik" | "teman" | "komunitas";
 export type SortingKabar = "terbaru" | "terpopuler";
-export type JenisKomunitas = "warga_kita" | "posyandu" | "satuan_paud";
+export type JenisKomunitas = "warga_kita" | "posyandu" | "satuan_paud" | "pkbm_skb";
 
 export const JARIMAS_BOT_ID = "00000000-0000-0000-0000-000000000001";
 export const JARIMAS_BOT_NAME = "Jarimas";
@@ -391,7 +391,7 @@ export interface PendingApprovalItem {
   peran_diajukan?: string | null;
   status: MembershipStatus;
   created_at: string;
-  tierLevel?: "RT" | "RW" | "Kelurahan" | "Kecamatan" | "Kota" | "Posyandu" | "Satuan PAUD" | "Umum";
+  tierLevel?: "RT" | "RW" | "Kelurahan" | "Kecamatan" | "Kota" | "Posyandu" | "Satuan PAUD" | "PKBM & SKB" | "Umum";
   targetApproverTitle?: string;
   berdomisili?: boolean;
   kk_terdaftar?: boolean;

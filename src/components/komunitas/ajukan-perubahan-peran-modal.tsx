@@ -62,6 +62,48 @@ const ROLE_OPTIONS_BY_TYPE: Record<string, RoleOptionItem[]> = {
       badge: "Umum",
     },
   ],
+  pkbm_skb: [
+    {
+      role: "Tutor / Instruktur",
+      description: "Tenaga pendidik / tutor pembelajaran kesetaraan Paket A/B/C dan vokasi",
+      badge: "Pendidik",
+    },
+    {
+      role: "Pamong Belajar",
+      description: "Pamong belajar atau tenaga fungsional pengembang kurikulum nonformal",
+      badge: "Pamong",
+    },
+    {
+      role: "Kepala PKBM / SKB",
+      description: "Pimpinan atau pengelola resmi lembaga PKBM / SKB",
+      badge: "Pimpinan",
+    },
+    {
+      role: "Warga Belajar",
+      description: "Peserta didik aktif program pendidikan kesetaraan atau kursus keterampilan",
+      badge: "Siswa",
+    },
+    {
+      role: "Komite",
+      description: "Pengurus komite / dewan pendidikan nonformal satuan ini",
+      badge: "Komite",
+    },
+    {
+      role: "Orangtua/Wali Murid",
+      description: "Orang tua atau wali warga belajar yang terdaftar",
+      badge: "Wali Murid",
+    },
+    {
+      role: "Alumni",
+      description: "Alumni lulusan Paket A, B, C, atau program kejuruan PKBM/SKB ini",
+      badge: "Alumni",
+    },
+    {
+      role: "Pengunjung",
+      description: "Masyarakat umum yang memantau informasi pendidikan kesetaraan",
+      badge: "Umum",
+    },
+  ],
   posyandu: [
     {
       role: "Kader",

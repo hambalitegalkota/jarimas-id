@@ -285,18 +285,20 @@ export function canManageDataAnakInKomunitas(
 
   const jenis = (jenisKomunitas || "").toLowerCase().trim();
 
-  if (jenis === "satuan_paud") {
-    // Admin, Kepala Sekolah, Guru PAUD / Pendidik -> Full Access
-    const isPaudStaff =
+  if (jenis === "satuan_paud" || jenis === "pkbm_skb") {
+    // Admin, Kepala Sekolah / PKBM, Guru PAUD / Tutor / Pamong Belajar -> Full Access
+    const isEducationStaff =
       p.includes("admin") ||
       p.includes("kepala") ||
       p.includes("guru") ||
       p.includes("pendidik") ||
       p.includes("tutor") ||
+      p.includes("instruktur") ||
+      p.includes("pamong") ||
       p.includes("pengelola") ||
       p.includes("pengurus");
 
-    if (isPaudStaff) {
+    if (isEducationStaff) {
       return { canCreate: true, canEdit: true, canDelete: true, isReadOnly: false };
     }
 

@@ -12,6 +12,7 @@ import {
   UserPlus,
   ArrowRight,
   Sparkles,
+  BookOpen,
 } from "lucide-react";
 import { JoinKomunitasModal } from "@/components/komunitas/join-komunitas-modal";
 import { WargaOnboardingModal } from "@/components/komunitas/warga-onboarding-modal";
@@ -38,6 +39,7 @@ export function KomunitasCard({
   const canJoin =
     komunitas.jenis === "posyandu" ||
     komunitas.jenis === "satuan_paud" ||
+    komunitas.jenis === "pkbm_skb" ||
     (komunitas.jenis === "warga_kita" &&
       Boolean(komunitas.rt && komunitas.rt.trim() !== "" && komunitas.rt !== "semua"));
 
@@ -62,7 +64,7 @@ export function KomunitasCard({
   } else if (komunitas.jenis === "posyandu") {
     const cleanName = (komunitas.nama || "").replace(/^(Posyandu\s*)+/gi, "").trim();
     formattedTitle = cleanName ? `Posyandu ${cleanName}` : "Posyandu";
-  } else if (komunitas.jenis === "satuan_paud") {
+  } else if (komunitas.jenis === "satuan_paud" || komunitas.jenis === "pkbm_skb") {
     formattedTitle = komunitas.nama;
   }
 
@@ -90,7 +92,9 @@ export function KomunitasCard({
           komunitas.jenis === "posyandu" &&
             "border-slate-200 dark:border-slate-800 hover:border-emerald-500 dark:hover:border-emerald-500",
           komunitas.jenis === "satuan_paud" &&
-            "border-slate-200 dark:border-slate-800 hover:border-indigo-500 dark:hover:border-indigo-500"
+            "border-slate-200 dark:border-slate-800 hover:border-indigo-500 dark:hover:border-indigo-500",
+          komunitas.jenis === "pkbm_skb" &&
+            "border-slate-200 dark:border-slate-800 hover:border-amber-500 dark:hover:border-amber-500"
         )}
       >
         {/* Kiri: Icon, Nama Posyandu & Alamat */}
@@ -103,12 +107,15 @@ export function KomunitasCard({
               komunitas.jenis === "posyandu" &&
                 "bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800",
               komunitas.jenis === "satuan_paud" &&
-                "bg-indigo-50 dark:bg-indigo-950/50 text-indigo-800 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800"
+                "bg-indigo-50 dark:bg-indigo-950/50 text-indigo-800 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800",
+              komunitas.jenis === "pkbm_skb" &&
+                "bg-amber-50 dark:bg-amber-950/50 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800"
             )}
           >
             {komunitas.jenis === "warga_kita" && <Users className="h-5 w-5" />}
             {komunitas.jenis === "posyandu" && <Sparkles className="h-5 w-5" />}
             {komunitas.jenis === "satuan_paud" && <Building2 className="h-5 w-5" />}
+            {komunitas.jenis === "pkbm_skb" && <BookOpen className="h-5 w-5" />}
           </div>
 
           <div className="space-y-0.5 min-w-0 flex-1">
@@ -118,6 +125,11 @@ export function KomunitasCard({
               </h3>
               {komunitas.jenis === "satuan_paud" && komunitas.jenis_institusi && (
                 <span className="inline-flex items-center px-1.5 py-0.2 rounded-md bg-indigo-50 dark:bg-indigo-950/70 border border-indigo-200 dark:border-indigo-800 text-[10px] font-black text-indigo-700 dark:text-indigo-300">
+                  {komunitas.jenis_institusi}
+                </span>
+              )}
+              {komunitas.jenis === "pkbm_skb" && komunitas.jenis_institusi && (
+                <span className="inline-flex items-center px-1.5 py-0.2 rounded-md bg-amber-50 dark:bg-amber-950/70 border border-amber-200 dark:border-amber-800 text-[10px] font-black text-amber-700 dark:text-amber-300">
                   {komunitas.jenis_institusi}
                 </span>
               )}

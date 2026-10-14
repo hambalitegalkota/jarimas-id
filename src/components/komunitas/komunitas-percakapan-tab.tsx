@@ -11,6 +11,7 @@ import {
   Building2,
   HeartPulse,
   GraduationCap,
+  BookOpen,
   Loader2,
   Lock,
   UserPlus,
@@ -45,6 +46,12 @@ const QUICK_CHAT_PRESETS: Record<string, string[]> = {
     "Koordinasi rencana kegiatan belajar minggu ini 📚",
     "Pembaruan data ATS & validasi peserta didik 🎓",
     "Jadwal pertemuan parenting & wali murid 👥",
+  ],
+  pkbm_skb: [
+    "Halo bapak/ibu pamong belajar, tutor & pengelola PKBM/SKB! 👋",
+    "Jadwal kegiatan pembelajaran kesetaraan Paket A/B/C minggu ini 📚",
+    "Pembaruan data warga belajar & pendaftaran kesetaraan 🎓",
+    "Informasi kursus, keterampilan vokasi & ujian kesetaraan 👥",
   ],
   warga_kita: [
     "Assalamu'alaikum wr. wb. salam hangat warga! 🙏",
@@ -83,6 +90,7 @@ export function KomunitasPercakapanTab({
   const canJoin =
     komunitas.jenis === "posyandu" ||
     komunitas.jenis === "satuan_paud" ||
+    komunitas.jenis === "pkbm_skb" ||
     (komunitas.jenis === "warga_kita" &&
       Boolean(komunitas.rt && komunitas.rt.trim() !== "" && komunitas.rt !== "semua"));
 
@@ -314,6 +322,8 @@ export function KomunitasPercakapanTab({
               <HeartPulse className="h-6 w-6" />
             ) : komunitas.jenis === "satuan_paud" ? (
               <GraduationCap className="h-6 w-6" />
+            ) : komunitas.jenis === "pkbm_skb" ? (
+              <BookOpen className="h-6 w-6" />
             ) : (
               <Building2 className="h-6 w-6" />
             )}

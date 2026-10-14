@@ -178,7 +178,7 @@ export function computeTierAndApprover(
   peranDiajukan?: string | null,
   peranBase?: string
 ): {
-  tierLevel: "RT" | "RW" | "Kelurahan" | "Kecamatan" | "Kota" | "Posyandu" | "Satuan PAUD" | "Umum";
+  tierLevel: "RT" | "RW" | "Kelurahan" | "Kecamatan" | "Kota" | "Posyandu" | "Satuan PAUD" | "PKBM & SKB" | "Umum";
   targetApproverTitle: string;
 } {
   const roleReq = (peranDiajukan || peranBase || "").toLowerCase();
@@ -250,6 +250,15 @@ export function computeTierAndApprover(
       targetApproverTitle: isAdmin
         ? "Super Admin"
         : "Admin / Kepala Sekolah / Guru",
+    };
+  }
+
+  if (meta.jenis === "pkbm_skb") {
+    return {
+      tierLevel: "PKBM & SKB",
+      targetApproverTitle: isAdmin
+        ? "Super Admin"
+        : "Admin / Kepala PKBM & SKB / Pamong Belajar",
     };
   }
 

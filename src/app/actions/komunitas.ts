@@ -11,6 +11,9 @@ import {
 import {
   RAW_PAUD_PKBM_TEGAL,
   SEED_PAUD_PKBM_TEGAL,
+  SEED_PAUD_TEGAL,
+  SEED_PKBM_SKB_TEGAL,
+  RAW_PKBM_SKB_TEGAL,
   INVALID_PAUD_IDS,
 } from "@/lib/constants/seed-paud-tegal";
 import {
@@ -334,11 +337,13 @@ export async function getKomunitasList(
       };
     }
 
-    // 5. Khusus jenis "satuan_paud", "posyandu", dan "semua": Gunakan Master Seed Resmi Kota Tegal
+    // 5. Khusus jenis "satuan_paud", "pkbm_skb", "posyandu", dan "semua": Gunakan Master Seed Resmi Kota Tegal
     let baseList: any[] = [];
 
-    if (params.jenis === "satuan_paud") {
-      baseList = SEED_PAUD_PKBM_TEGAL;
+    if (params.jenis === "pkbm_skb") {
+      baseList = SEED_PKBM_SKB_TEGAL;
+    } else if (params.jenis === "satuan_paud") {
+      baseList = SEED_PAUD_TEGAL;
     } else if (params.jenis === "posyandu") {
       baseList = SEED_POSYANDU_TEGAL;
     } else {
@@ -349,7 +354,12 @@ export async function getKomunitasList(
         rw: params.rw,
         rt: params.rt,
       });
-      baseList = [...hierarchyWarga, ...SEED_POSYANDU_TEGAL, ...SEED_PAUD_PKBM_TEGAL];
+      baseList = [
+        ...hierarchyWarga,
+        ...SEED_POSYANDU_TEGAL,
+        ...SEED_PAUD_TEGAL,
+        ...SEED_PKBM_SKB_TEGAL.filter((p) => !SEED_PAUD_TEGAL.some((x) => x.id === p.id)),
+      ];
     }
 
     let filteredList = [...baseList];

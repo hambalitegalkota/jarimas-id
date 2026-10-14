@@ -11,6 +11,7 @@ import {
   Compass,
   HeartPulse,
   GraduationCap,
+  BookOpen,
   MapPin,
   CheckCircle2,
   Filter,
@@ -42,7 +43,8 @@ export default async function KomunitasPage({
   const currentSearch = resolvedParams.search?.trim() || "";
   const currentKecamatan = resolvedParams.kecamatan || "semua";
   const currentKelurahan = resolvedParams.kelurahan || "semua";
-  const currentBentuk = currentTab === "satuan_paud" ? resolvedParams.bentuk || "semua" : "semua";
+  const isEducationalTab = currentTab === "satuan_paud" || currentTab === "pkbm_skb";
+  const currentBentuk = isEducationalTab ? resolvedParams.bentuk || "semua" : "semua";
   const currentRw = currentTab === "warga_kita" ? resolvedParams.rw || "semua" : "semua";
   const currentRt = currentTab === "warga_kita" ? resolvedParams.rt || "semua" : "semua";
   const currentPage = Math.max(1, Number(resolvedParams.page) || 1);
@@ -53,7 +55,7 @@ export default async function KomunitasPage({
     currentSearch ||
     currentKecamatan !== "semua" ||
     currentKelurahan !== "semua" ||
-    (currentTab === "satuan_paud" && currentBentuk !== "semua") ||
+    (isEducationalTab && currentBentuk !== "semua") ||
     (currentTab === "warga_kita" && (currentRw !== "semua" || currentRt !== "semua"))
   );
 
@@ -90,7 +92,9 @@ export default async function KomunitasPage({
     const params = new URLSearchParams();
     if (currentTab) params.set("tab", currentTab);
     if (currentSearch) params.set("search", currentSearch);
-    if (currentBentuk !== "semua") params.set("bentuk", currentBentuk);
+    if (currentBentuk !== "semua" && (currentTab === "satuan_paud" || currentTab === "pkbm_skb")) {
+      params.set("bentuk", currentBentuk);
+    }
     if (currentKecamatan !== "semua") params.set("kecamatan", currentKecamatan);
     if (currentKelurahan !== "semua") params.set("kelurahan", currentKelurahan);
     if (currentTab === "warga_kita") {
@@ -106,7 +110,9 @@ export default async function KomunitasPage({
     const params = new URLSearchParams();
     params.set("tab", targetTab);
     if (currentSearch) params.set("search", currentSearch);
-    if (targetTab === "satuan_paud" && currentBentuk !== "semua") params.set("bentuk", currentBentuk);
+    if ((targetTab === "satuan_paud" || targetTab === "pkbm_skb") && currentBentuk !== "semua") {
+      params.set("bentuk", currentBentuk);
+    }
     if (currentKecamatan !== "semua") params.set("kecamatan", currentKecamatan);
     if (currentKelurahan !== "semua") params.set("kelurahan", currentKelurahan);
     if (targetTab === "warga_kita") {
@@ -120,7 +126,7 @@ export default async function KomunitasPage({
   const startIndex = (pagination.page - 1) * pagination.limit + 1;
   const endIndex = Math.min(pagination.page * pagination.limit, pagination.totalCount);
 
-  // Definisi metadata ketiga kategori accordion
+  // Definisi metadata keempat kategori accordion
   const accordionCategories = [
     {
       id: "posyandu" as JenisKomunitas,
@@ -152,9 +158,9 @@ export default async function KomunitasPage({
     },
     {
       id: "satuan_paud" as JenisKomunitas,
-      title: "PAUD dan Kesetaraan",
-      subtitle: "Lembaga KB, TK, TPA, SPS, PKBM & SKB Mitra Kota Tegal",
-      badgeText: "PAUD, PKBM & SKB",
+      title: "Komunitas PAUD",
+      subtitle: "Lembaga TK, KB, TPA, SPS, RA, PKBM Star of Tomorrow & SKB Mitra Kota Tegal",
+      badgeText: "208 Satuan PAUD",
       icon: GraduationCap,
       activeColorBg: "bg-indigo-600 dark:bg-indigo-700",
       activeBorder: "border-indigo-500",
@@ -163,6 +169,20 @@ export default async function KomunitasPage({
       hoverBg: "hover:bg-indigo-50/50 dark:hover:bg-indigo-950/20",
       iconColor: "text-indigo-600 dark:text-indigo-400",
       iconBg: "bg-indigo-100 dark:bg-indigo-950",
+    },
+    {
+      id: "pkbm_skb" as JenisKomunitas,
+      title: "PKBM dan SKB",
+      subtitle: "Pusat Kegiatan Belajar Masyarakat (Paket A, B, C) & Sanggar Kegiatan Belajar Kota Tegal",
+      badgeText: "12 PKBM • 1 SKB",
+      icon: BookOpen,
+      activeColorBg: "bg-amber-600 dark:bg-amber-700",
+      activeBorder: "border-amber-500",
+      badgeColor: "bg-amber-500/20 text-amber-100 border-amber-400/30",
+      hoverBorder: "hover:border-amber-400 dark:hover:border-amber-600",
+      hoverBg: "hover:bg-amber-50/50 dark:hover:bg-amber-950/20",
+      iconColor: "text-amber-600 dark:text-amber-400",
+      iconBg: "bg-amber-100 dark:bg-amber-950",
     },
   ];
 
@@ -175,7 +195,8 @@ export default async function KomunitasPage({
   const categoryTotalLabels: Record<string, string | number> = {
     posyandu: 209,
     warga_kita: "167 RW • 1.712 RT",
-    satuan_paud: 219,
+    satuan_paud: 208,
+    pkbm_skb: 13,
   };
   const totalDisplay = hasActiveFilter
     ? pagination.totalCount
@@ -219,7 +240,7 @@ export default async function KomunitasPage({
                 Pilih Filter Wilayah Terlebih Dahulu
               </h3>
               <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                Daftar komunitas disembunyikan secara default. Silakan pilih Kecamatan, Kelurahan, {activeCatId === "satuan_paud" ? "Bentuk Pendidikan, " : activeCatId === "warga_kita" ? "RW/RT, " : ""}atau gunakan kolom pencarian di atas untuk menampilkan nama-nama komunitas.
+                Daftar komunitas disembunyikan secara default. Silakan pilih Kecamatan, Kelurahan, {activeCatId === "satuan_paud" || activeCatId === "pkbm_skb" ? "Bentuk Lembaga, " : activeCatId === "warga_kita" ? "RW/RT, " : ""}atau gunakan kolom pencarian di atas untuk menampilkan nama-nama komunitas.
               </p>
             </div>
           </div>
@@ -348,7 +369,7 @@ export default async function KomunitasPage({
               Eksplorasi Komunitas Kota Tegal
             </h1>
             <p className="text-xs sm:text-sm text-slate-300 max-w-lg leading-relaxed">
-              Jelajahi 209 Posyandu, PAUD dan Kesetaraan, dan Komunitas Warga 4 Tingkat se-Kota Tegal.
+              Jelajahi 209 Posyandu, 208 Satuan PAUD, 13 PKBM &amp; SKB, dan Komunitas Warga 4 Tingkat se-Kota Tegal.
             </p>
           </div>
 

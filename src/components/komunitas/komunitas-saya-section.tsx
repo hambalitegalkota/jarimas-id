@@ -6,6 +6,7 @@ import {
   Users,
   Sparkles,
   Building2,
+  BookOpen,
   MapPin,
   CheckCircle2,
   Clock,
@@ -86,7 +87,7 @@ export function KomunitasSayaSection({
               Ingin melihat komunitas yang Anda ikuti?
             </h3>
             <p className="text-sm text-slate-600 leading-relaxed">
-              Masuk ke akun Anda untuk mengakses Posyandu, RT/RW Warga Kita, dan PAUD dan Kesetaraan yang telah Anda ikuti.
+              Masuk ke akun Anda untuk mengakses Posyandu, RT/RW Warga Kita, PAUD, serta PKBM &amp; SKB yang telah Anda ikuti.
             </p>
           </div>
         </div>
@@ -114,7 +115,7 @@ export function KomunitasSayaSection({
             Komunitas Saya (0 Tergabung)
           </h3>
           <p className="text-sm text-slate-600 max-w-xl mx-auto leading-relaxed">
-            Anda belum bergabung dengan komunitas manapun. Temukan Posyandu di lingkungan Anda, Komunitas RT Warga Kita, atau Satuan PAUD pada daftar di bawah dan klik tombol <span className="font-bold text-blue-700">Gabung</span> untuk mulai terhubung.
+            Anda belum bergabung dengan komunitas manapun. Temukan Posyandu di lingkungan Anda, Komunitas RT Warga Kita, Satuan PAUD, atau PKBM &amp; SKB pada daftar di bawah dan klik tombol <span className="font-bold text-blue-700">Gabung</span> untuk mulai terhubung.
           </p>
         </div>
       </div>
@@ -371,13 +372,15 @@ export function KomunitasSayaSection({
           </div>
         )}
 
-        {/* 2. Kartu Komunitas Lainnya (Posyandu, PAUD) */}
+        {/* 2. Kartu Komunitas Lainnya (Posyandu, PAUD, PKBM & SKB) */}
         {otherItems.map((item) => {
           let formattedTitle = item.nama;
           if (item.jenis === "posyandu") {
             const cleanName = (item.nama || "").replace(/^(Posyandu\s*)+/gi, "").trim();
             formattedTitle = cleanName ? `Posyandu ${cleanName}` : "Posyandu";
           } else if (item.jenis === "satuan_paud") {
+            formattedTitle = item.nama;
+          } else if (item.jenis === "pkbm_skb") {
             formattedTitle = item.nama;
           }
 
@@ -398,6 +401,8 @@ export function KomunitasSayaSection({
                       item.jenis === "posyandu" &&
                         "bg-emerald-50 text-emerald-700 border-emerald-200",
                       item.jenis === "satuan_paud" &&
+                        "bg-sky-50 text-sky-800 border-sky-200",
+                      item.jenis === "pkbm_skb" &&
                         "bg-amber-50 text-amber-800 border-amber-200"
                     )}
                   >
@@ -406,6 +411,9 @@ export function KomunitasSayaSection({
                     )}
                     {item.jenis === "satuan_paud" && (
                       <Building2 className="h-5 w-5" />
+                    )}
+                    {item.jenis === "pkbm_skb" && (
+                      <BookOpen className="h-5 w-5" />
                     )}
                   </div>
 
@@ -475,8 +483,9 @@ export function KomunitasSayaSection({
                       "group flex min-h-[48px] h-12 w-full items-center justify-center gap-2 rounded-xl px-4 text-base font-bold text-white transition-all shadow-xs",
                       item.jenis === "warga_kita" && "bg-blue-700 hover:bg-blue-800",
                       item.jenis === "posyandu" && "bg-blue-700 hover:bg-blue-800",
-                      item.jenis === "satuan_paud" && "bg-amber-600 hover:bg-amber-700",
-                      !["warga_kita", "posyandu", "satuan_paud"].includes(item.jenis) && "bg-blue-700 hover:bg-blue-800"
+                      item.jenis === "satuan_paud" && "bg-sky-600 hover:bg-sky-700",
+                      item.jenis === "pkbm_skb" && "bg-amber-600 hover:bg-amber-700",
+                      !["warga_kita", "posyandu", "satuan_paud", "pkbm_skb"].includes(item.jenis) && "bg-blue-700 hover:bg-blue-800"
                     )}
                     title={`Masuk ke ${formattedTitle}`}
                   >

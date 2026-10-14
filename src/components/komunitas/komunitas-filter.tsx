@@ -223,18 +223,23 @@ export function KomunitasFilter({
     });
   };
 
+  const isPaudTab = activeTab === "satuan_paud";
+  const isPkbmTab = activeTab === "pkbm_skb";
+
   const hasFilter =
     Boolean(currentSearch) ||
     currentKecamatan !== "semua" ||
     currentKelurahan !== "semua" ||
-    (activeTab === "satuan_paud" && currentBentuk !== "semua") ||
+    ((isPaudTab || isPkbmTab) && currentBentuk !== "semua") ||
     (isWargaKita && (currentRw !== "semua" || currentRt !== "semua"));
 
   const searchPlaceholder = isWargaKita
     ? "Cari nama komunitas wilayah, kelurahan, atau jalan..."
     : activeTab === "posyandu"
     ? "Cari nama posyandu atau kelurahan..."
-    : "Cari nama PAUD, KB, TK, PKBM, atau kelurahan...";
+    : isPkbmTab
+    ? "Cari nama PKBM, SKB, atau kelurahan..."
+    : "Cari nama PAUD, KB, TK, SPS, RA, TPA...";
 
   return (
     <div className="rounded-2xl border-2 border-slate-200 bg-white p-5 sm:p-6 space-y-5 shadow-xs">
@@ -316,13 +321,13 @@ export function KomunitasFilter({
             "grid gap-3",
             isWargaKita
               ? "grid-cols-2 sm:grid-cols-4"
-              : activeTab === "satuan_paud"
+              : isPaudTab || isPkbmTab
               ? "grid-cols-1 sm:grid-cols-3"
               : "grid-cols-1 sm:grid-cols-2"
           )}
         >
           {/* Filter Bentuk Satuan Pendidikan (Khusus Satuan PAUD) */}
-          {activeTab === "satuan_paud" && (
+          {isPaudTab && (
             <div className="space-y-1">
               <label className="text-[11px] font-bold uppercase text-slate-500 block">
                 Bentuk Satuan
@@ -334,13 +339,34 @@ export function KomunitasFilter({
                   disabled={isPending}
                   className="w-full min-h-[44px] h-11 rounded-xl border-2 border-indigo-200 bg-white px-3 text-xs sm:text-sm font-bold text-indigo-900 focus:border-indigo-600 focus:outline-none disabled:opacity-60 cursor-pointer"
                 >
-                  <option value="semua">Semua Bentuk (219)</option>
+                  <option value="semua">Semua Bentuk (208)</option>
                   <option value="TK">TK - Taman Kanak-Kanak (75)</option>
                   <option value="KB">KB - Kelompok Bermain (58)</option>
                   <option value="SPS">SPS - Pos PAUD / SPS (51)</option>
                   <option value="RA">RA - Raudhatul Athfal (18)</option>
-                  <option value="PKBM">PKBM - Pusat Kegiatan Belajar (12)</option>
                   <option value="TPA">TPA - Taman Penitipan Anak (4)</option>
+                  <option value="PKBM">PKBM - Star of Tomorrow (1)</option>
+                  <option value="SKB">SKB - Sanggar Kegiatan Belajar (1)</option>
+                </select>
+              </div>
+            </div>
+          )}
+
+          {/* Filter Bentuk Lembaga Kesetaraan (Khusus PKBM & SKB) */}
+          {isPkbmTab && (
+            <div className="space-y-1">
+              <label className="text-[11px] font-bold uppercase text-slate-500 block">
+                Bentuk Lembaga
+              </label>
+              <div className="relative">
+                <select
+                  value={currentBentuk}
+                  onChange={handleBentukChange}
+                  disabled={isPending}
+                  className="w-full min-h-[44px] h-11 rounded-xl border-2 border-amber-200 bg-white px-3 text-xs sm:text-sm font-bold text-amber-900 focus:border-amber-600 focus:outline-none disabled:opacity-60 cursor-pointer"
+                >
+                  <option value="semua">Semua Bentuk (13)</option>
+                  <option value="PKBM">PKBM - Pusat Kegiatan Belajar (12)</option>
                   <option value="SKB">SKB - Sanggar Kegiatan Belajar (1)</option>
                 </select>
               </div>

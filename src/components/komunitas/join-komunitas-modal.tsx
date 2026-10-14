@@ -43,6 +43,16 @@ const ROLE_OPTIONS_BY_TYPE: Record<string, string[]> = {
     "Alumni",
     "Pengunjung",
   ],
+  pkbm_skb: [
+    "Tutor / Instruktur",
+    "Pamong Belajar",
+    "Kepala PKBM / SKB",
+    "Warga Belajar (Siswa)",
+    "Orangtua/Wali Murid",
+    "Komite",
+    "Alumni",
+    "Pengunjung",
+  ],
 };
 
 export function JoinKomunitasModal({

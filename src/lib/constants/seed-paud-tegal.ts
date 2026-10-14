@@ -133,7 +133,7 @@ export const INVALID_PAUD_IDS: string[] = [
 ];
 
 // Data Lengkap Resmi 219 Satuan PAUD (TK, KB, RA, SPS, TPA), PKBM, dan SKB se-Kota Tegal
-export const RAW_PAUD_PKBM_TEGAL: RawPaudItem[] = [
+export const RAW_ALL_PAUD_PKBM_TEGAL: RawPaudItem[] = [
   // ==========================================
   // 1. KECAMATAN TEGAL TIMUR (5 Kelurahan)
   // ==========================================
@@ -2407,8 +2407,24 @@ export const RAW_PAUD_PKBM_TEGAL: RawPaudItem[] = [
 
 ];
 
+// 1. Raw list khusus PAUD: semua TK, KB, SPS, RA, TPA + PKBM Star of Tomorrow + SKB (Total: 208 Lembaga)
+export const RAW_PAUD_TEGAL: RawPaudItem[] = RAW_ALL_PAUD_PKBM_TEGAL.filter((item) => {
+  if (item.jenis_institusi !== "PKBM") return true;
+  // Khusus PKBM: sisakan hanya PKBM Star of Tomorrow karena memiliki layanan PAUD
+  const namaLow = item.nama.toLowerCase();
+  return namaLow.includes("star of tomorrow");
+});
+
+// 2. Raw list khusus PKBM & SKB: seluruh 12 PKBM dan 1 SKB se-Kota Tegal (Total: 13 Lembaga)
+export const RAW_PKBM_SKB_TEGAL: RawPaudItem[] = RAW_ALL_PAUD_PKBM_TEGAL.filter((item) => {
+  return item.jenis_institusi === "PKBM" || item.jenis_institusi === "SKB";
+});
+
+// Alias untuk backwards compatibility
+export const RAW_PAUD_PKBM_TEGAL: RawPaudItem[] = RAW_PAUD_TEGAL;
+
 function buildPaudMasterSeed(): MasterKomunitasSeedItem[] {
-  return RAW_PAUD_PKBM_TEGAL.map((item, index) => {
+  return RAW_PAUD_TEGAL.map((item, index) => {
     const kecSlug = slugify(item.kecamatan);
     const kelSlug = slugify(item.kelurahan);
     const nameSlug = slugify(item.nama);
@@ -2434,7 +2450,7 @@ function buildPaudMasterSeed(): MasterKomunitasSeedItem[] {
         `Gedung ${item.nama}, Kel. ${item.kelurahan}, Kec. ${item.kecamatan}, Kota Tegal`,
       deskripsi:
         item.deskripsi ||
-        `Satuan Pendidikan Anak Usia Dini / Nonformal (${jenisDisplay}) ${item.nama}${npsnInfo} di Kelurahan ${item.kelurahan}, Kecamatan ${item.kecamatan}, Kota Tegal yang menyelenggarakan stimulasi tumbuh kembang, kesiapan belajar anak, dan pendidikan karakter.`,
+        `Satuan Pendidikan Anak Usia Dini / Layanan Dini (${jenisDisplay}) ${item.nama}${npsnInfo} di Kelurahan ${item.kelurahan}, Kecamatan ${item.kecamatan}, Kota Tegal yang menyelenggarakan stimulasi tumbuh kembang, kesiapan belajar anak, dan pendidikan karakter.`,
       kontak: item.kontak || `0813-5566-${String(2000 + index).padStart(4, "0")} (Pengelola / Kepala Sekolah)`,
       jadwal:
         item.jadwal ||
@@ -2445,4 +2461,46 @@ function buildPaudMasterSeed(): MasterKomunitasSeedItem[] {
   });
 }
 
-export const SEED_PAUD_PKBM_TEGAL: MasterKomunitasSeedItem[] = buildPaudMasterSeed();
+function buildPkbmSkbMasterSeed(): MasterKomunitasSeedItem[] {
+  return RAW_PKBM_SKB_TEGAL.map((item, index) => {
+    const kecSlug = slugify(item.kecamatan);
+    const kelSlug = slugify(item.kelurahan);
+    const nameSlug = slugify(item.nama);
+    const id = item.id || `kom-pkbm-${kecSlug}-${kelSlug}-${nameSlug}`;
+    const rw = item.rw || undefined;
+    const rt = item.rt || undefined;
+
+    const jenisDisplay =
+      item.jenis_institusi === "SKB"
+        ? "Sanggar Kegiatan Belajar"
+        : "Pusat Kegiatan Belajar Masyarakat";
+    const npsnInfo = item.npsn ? ` [NPSN: ${item.npsn}]` : "";
+
+    return {
+      id,
+      nama: item.nama,
+      jenis: "pkbm_skb",
+      jenis_institusi: item.jenis_institusi,
+      npsn: item.npsn,
+      kecamatan: item.kecamatan,
+      kelurahan: item.kelurahan,
+      rt,
+      rw,
+      lokasi:
+        item.lokasi ||
+        `Gedung ${item.nama}, Kel. ${item.kelurahan}, Kec. ${item.kecamatan}, Kota Tegal`,
+      deskripsi:
+        item.deskripsi ||
+        `${jenisDisplay} (${item.nama})${npsnInfo} di Kelurahan ${item.kelurahan}, Kecamatan ${item.kecamatan}, Kota Tegal yang menyelenggarakan pendidikan kesetaraan Paket A (setara SD), Paket B (setara SMP), Paket C (setara SMA), kursus vokasi, dan kecakapan hidup.`,
+      kontak: item.kontak || `0813-5566-${String(3000 + index).padStart(4, "0")} (Pengelola / Kepala ${item.jenis_institusi})`,
+      jadwal:
+        item.jadwal ||
+        "Senin s/d Sabtu, Pukul 08.00 - 16.00 WIB",
+    };
+  });
+}
+
+export const SEED_PAUD_TEGAL: MasterKomunitasSeedItem[] = buildPaudMasterSeed();
+export const SEED_PKBM_SKB_TEGAL: MasterKomunitasSeedItem[] = buildPkbmSkbMasterSeed();
+export const SEED_PAUD_PKBM_TEGAL: MasterKomunitasSeedItem[] = SEED_PAUD_TEGAL;
+

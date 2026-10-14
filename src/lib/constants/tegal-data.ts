@@ -1,8 +1,25 @@
 import { SEED_POSYANDU_TEGAL } from "./seed-posyandu-tegal";
-import { SEED_PAUD_PKBM_TEGAL, RAW_PAUD_PKBM_TEGAL } from "./seed-paud-tegal";
+import {
+  SEED_PAUD_PKBM_TEGAL,
+  SEED_PAUD_TEGAL,
+  SEED_PKBM_SKB_TEGAL,
+  RAW_PAUD_PKBM_TEGAL,
+  RAW_PAUD_TEGAL,
+  RAW_PKBM_SKB_TEGAL,
+  RAW_ALL_PAUD_PKBM_TEGAL,
+} from "./seed-paud-tegal";
 import { toValidUUID } from "@/lib/utils";
+import type { JenisKomunitas } from "@/types/database";
 
-export { SEED_PAUD_PKBM_TEGAL, RAW_PAUD_PKBM_TEGAL };
+export {
+  SEED_PAUD_PKBM_TEGAL,
+  SEED_PAUD_TEGAL,
+  SEED_PKBM_SKB_TEGAL,
+  RAW_PAUD_PKBM_TEGAL,
+  RAW_PAUD_TEGAL,
+  RAW_PKBM_SKB_TEGAL,
+  RAW_ALL_PAUD_PKBM_TEGAL,
+};
 
 export interface KelurahanData {
   nama: string;
@@ -775,7 +792,7 @@ export function getKelurahanByKecamatan(kecamatan: string): string[] {
 export interface MasterKomunitasSeedItem {
   id: string;
   nama: string;
-  jenis: "warga_kita" | "posyandu" | "satuan_paud";
+  jenis: JenisKomunitas;
   jenis_institusi?: "TK" | "KB" | "RA" | "SPS" | "TPA" | "PKBM" | "SKB" | string;
   npsn?: string;
   kecamatan: string;
@@ -963,12 +980,22 @@ function buildMasterKomunitasSeed(): MasterKomunitasSeedItem[] {
     }
   }
 
-  // Masukkan seluruh Satuan PAUD & PKBM resmi se-Kota Tegal dari SEED_PAUD_PKBM_TEGAL
-  if (Array.isArray(SEED_PAUD_PKBM_TEGAL)) {
-    for (const paud of SEED_PAUD_PKBM_TEGAL) {
+  // Masukkan seluruh Satuan PAUD resmi se-Kota Tegal dari SEED_PAUD_TEGAL
+  if (Array.isArray(SEED_PAUD_TEGAL)) {
+    for (const paud of SEED_PAUD_TEGAL) {
       if (!existingIds.has(paud.id)) {
         list.push(paud);
         existingIds.add(paud.id);
+      }
+    }
+  }
+
+  // Masukkan seluruh Satuan PKBM & SKB resmi se-Kota Tegal dari SEED_PKBM_SKB_TEGAL
+  if (Array.isArray(SEED_PKBM_SKB_TEGAL)) {
+    for (const pkbm of SEED_PKBM_SKB_TEGAL) {
+      if (!existingIds.has(pkbm.id)) {
+        list.push(pkbm);
+        existingIds.add(pkbm.id);
       }
     }
   }
@@ -1557,7 +1584,10 @@ export const DAFTAR_BENTUK_PENDIDIKAN = [
   "SKB",
 ] as const;
 
+export const DAFTAR_BENTUK_PKBM_SKB = ["PKBM", "SKB"] as const;
+
 export type BentukPendidikanType = (typeof DAFTAR_BENTUK_PENDIDIKAN)[number];
+export type BentukPkbmSkbType = (typeof DAFTAR_BENTUK_PKBM_SKB)[number];
 
 export interface BentukPendidikanRekapItem {
   bentuk: BentukPendidikanType;
@@ -1572,6 +1602,7 @@ export interface BentukPendidikanRekapItem {
 export function getBentukPendidikanRekap(filter?: {
   kecamatan?: string;
   kelurahan?: string;
+  tab?: string;
 }): {
   totalSemua: number;
   totalFiltered: number;
@@ -1585,6 +1616,10 @@ export function getBentukPendidikanRekap(filter?: {
     filter?.kelurahan && filter.kelurahan !== "semua"
       ? filter.kelurahan.toLowerCase().trim()
       : null;
+
+  const isPkbmTab = filter?.tab === "pkbm_skb";
+  const rawSource = isPkbmTab ? RAW_PKBM_SKB_TEGAL : RAW_PAUD_TEGAL;
+  const shapes = isPkbmTab ? DAFTAR_BENTUK_PKBM_SKB : DAFTAR_BENTUK_PENDIDIKAN;
 
   const metadata: Record<
     BentukPendidikanType,
@@ -1627,12 +1662,12 @@ export function getBentukPendidikanRekap(filter?: {
     },
   };
 
-  const list: BentukPendidikanRekapItem[] = DAFTAR_BENTUK_PENDIDIKAN.map((b) => {
-    const totalCount = RAW_PAUD_PKBM_TEGAL.filter(
+  const list: BentukPendidikanRekapItem[] = (shapes as readonly BentukPendidikanType[]).map((b) => {
+    const totalCount = rawSource.filter(
       (p) => (p.jenis_institusi || "").toUpperCase() === b
     ).length;
 
-    const filteredCount = RAW_PAUD_PKBM_TEGAL.filter((p) => {
+    const filteredCount = rawSource.filter((p) => {
       if ((p.jenis_institusi || "").toUpperCase() !== b) return false;
       if (kecTarget && p.kecamatan?.toLowerCase().trim() !== kecTarget)
         return false;
@@ -1644,9 +1679,9 @@ export function getBentukPendidikanRekap(filter?: {
     return {
       bentuk: b,
       labelSingkat: b,
-      namaLengkap: metadata[b].namaLengkap,
-      kategori: metadata[b].kategori,
-      keterangan: metadata[b].keterangan,
+      namaLengkap: metadata[b]?.namaLengkap || b,
+      kategori: metadata[b]?.kategori || "Nonformal",
+      keterangan: metadata[b]?.keterangan || "",
       totalCount,
       filteredCount,
     };
@@ -1663,7 +1698,7 @@ export function getBentukPendidikanRekap(filter?: {
 }
 
 export interface RekapTabSummary {
-  tab: "posyandu" | "warga_kita" | "satuan_paud";
+  tab: "posyandu" | "warga_kita" | "satuan_paud" | "pkbm_skb" | string;
   labelSingkat: string;
   satuanLabel: string;
   totalSemua: number;
@@ -1675,13 +1710,14 @@ export interface RekapTabSummary {
 }
 
 export function getKomunitasRekapData(
-  tab: "posyandu" | "warga_kita" | "satuan_paud" | string = "posyandu",
+  tab: "posyandu" | "warga_kita" | "satuan_paud" | "pkbm_skb" | string = "posyandu",
   filter?: {
     bentuk?: string;
   }
 ): RekapTabSummary {
   const isPosyandu = tab === "posyandu";
   const isPaud = tab === "satuan_paud";
+  const isPkbm = tab === "pkbm_skb";
   const isWarga = tab === "warga_kita";
   const activeBentuk =
     filter?.bentuk && filter.bentuk !== "semua"
@@ -1693,12 +1729,16 @@ export function getKomunitasRekapData(
     : isPaud
     ? activeBentuk
       ? `Satuan ${activeBentuk}`
-      : "Satuan PAUD & PKBM"
+      : "Satuan PAUD"
+    : isPkbm
+    ? activeBentuk
+      ? `Lembaga ${activeBentuk}`
+      : "PKBM & SKB"
     : "Komunitas Warga Kita";
 
   const satuanLabel = isPosyandu
     ? "Posyandu"
-    : isPaud
+    : isPaud || isPkbm
     ? "Lembaga"
     : "RW";
 
@@ -1730,7 +1770,17 @@ export function getKomunitasRekapData(
           count = kelData.posyandu.length;
         }
       } else if (isPaud) {
-        count = RAW_PAUD_PKBM_TEGAL.filter((p) => {
+        count = RAW_PAUD_TEGAL.filter((p) => {
+          if (p.kecamatan?.toLowerCase().trim() !== kecName.toLowerCase().trim())
+            return false;
+          if (p.kelurahan?.toLowerCase().trim() !== kelName.toLowerCase().trim())
+            return false;
+          if (activeBentuk && (p.jenis_institusi || "").toUpperCase() !== activeBentuk)
+            return false;
+          return true;
+        }).length;
+      } else if (isPkbm) {
+        count = RAW_PKBM_SKB_TEGAL.filter((p) => {
           if (p.kecamatan?.toLowerCase().trim() !== kecName.toLowerCase().trim())
             return false;
           if (p.kelurahan?.toLowerCase().trim() !== kelName.toLowerCase().trim())
