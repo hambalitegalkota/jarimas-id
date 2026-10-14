@@ -92,13 +92,19 @@ export function KomunitasDetailClientView({
   }, [currentUserId, currentSubtab]);
   const [activeTab, setActiveTab] = useState<string | null>(initialActiveTab);
 
-  // State untuk lazy loading profil data anak & ATS saat tab data dibuka
+  // State untuk data anak & ATS komunitas
   const [dataAnakState, setDataAnakState] = useState<DataAnakItem[]>(dataAnakList);
   const [dataAtsState, setDataAtsState] = useState<DataAtsItem[]>(dataAtsList);
   const [isLoadingChartsData, setIsLoadingChartsData] = useState(false);
-  const [hasLoadedChartsData, setHasLoadedChartsData] = useState(
-    (dataAnakList && dataAnakList.length > 0) || (dataAtsList && dataAtsList.length > 0)
-  );
+  const [hasLoadedChartsData, setHasLoadedChartsData] = useState(true);
+
+  useEffect(() => {
+    setDataAnakState(dataAnakList);
+  }, [dataAnakList]);
+
+  useEffect(() => {
+    setDataAtsState(dataAtsList);
+  }, [dataAtsList]);
 
   useEffect(() => {
     if (activeTab === "data" && !hasLoadedChartsData && !isLoadingChartsData) {
@@ -381,7 +387,7 @@ export function KomunitasDetailClientView({
           href: `/komunitas/${komunitas.id}/data`,
           title: "Data Anak (0–6 Tahun) & DDTK",
           subtitle: "Kelola pendaftaran balita, riwayat DDTK tumbuh kembang, dan validasi data",
-          badgeText: `${dataAnakList.length} Balita / Anak`,
+          badgeText: `${dataAnakState.length} Balita / Anak`,
           icon: Baby,
           hoverBorder: "hover:border-blue-400 dark:hover:border-blue-600",
           hoverBg: "hover:bg-blue-50/50 dark:hover:bg-blue-950/20",
@@ -399,7 +405,7 @@ export function KomunitasDetailClientView({
                 href: `/komunitas/${komunitas.id}/ats`,
                 title: "Data ATS (Anak Tidak Sekolah)",
                 subtitle: "Pendataan Anak Tidak Sekolah, pemantauan alasan, dan rencana intervensi kembali bersekolah",
-                badgeText: `${dataAtsList.length} Kasus ATS`,
+                badgeText: `${dataAtsState.length} Kasus ATS`,
                 icon: GraduationCap,
                 hoverBorder: "hover:border-amber-400 dark:hover:border-amber-600",
                 hoverBg: "hover:bg-amber-50/50 dark:hover:bg-amber-950/20",
