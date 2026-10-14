@@ -78,7 +78,6 @@ export function DataAtsClientView({
   const isWargaKita = komunitas.jenis === "warga_kita";
   const isApprovedMember = komunitas.currentUserMembership?.status === "approved";
   const userPeranLower = userPeran.toLowerCase();
-  const isPenduduk = userPeranLower.includes("penduduk");
   const isAdminOrPengurus =
     isRoleAdmin(userPeranLower) ||
     userPeranLower.includes("admin") ||
@@ -86,10 +85,10 @@ export function DataAtsClientView({
     userPeranLower.includes("kader") ||
     userPeranLower.includes("ketua");
 
-  // Hanya Admin Komunitas, Pengurus, dan Penduduk di Komunitas tersebut yang berhak membuka daftar rincian nama anak
+  // Hanya Admin Komunitas (di tingkat RT) dan Kader/Admin di Posyandu yang berhak membuka daftar rincian nama anak
   const canAccessDaftarNama = Boolean(
     initialCanAccessDaftarNama ??
-    (isSuperAdmin || canManage || (isApprovedMember && (isPenduduk || isAdminOrPengurus)))
+    (isSuperAdmin || canManage || (isApprovedMember && isAdminOrPengurus))
   );
 
   const hasFullAccess = canAccessDaftarNama;

@@ -1102,19 +1102,22 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
           .maybeSingle();
 
         const roleLower = (member?.peran || "").toLowerCase();
+        const isAdminRole = isRoleAdmin(member?.peran || "");
         const isKader =
+          isAdminRole ||
           roleLower.includes("kader") ||
           roleLower.includes("medis") ||
           roleLower.includes("nakes") ||
           roleLower.includes("bidan");
         const isPengurus =
-          roleLower.includes("pengurus") || roleLower.includes("admin") || isRoleAdmin(roleLower);
-        const isPenduduk = roleLower.includes("penduduk");
+          isAdminRole ||
+          roleLower.includes("pengurus") ||
+          roleLower.includes("admin") ||
+          roleLower.includes("ketua");
 
         canValidate = isSuperAdmin || isKader || isPengurus;
         canEditDdtk = isSuperAdmin || isKader;
         canManage = isSuperAdmin || isKader || isPengurus;
-        canAccessDaftarNama = isSuperAdmin || canManage || isPenduduk;
       }
     } catch {
       // Tamu
@@ -1141,6 +1144,7 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
         canValidate: false,
         canEditDdtk: false,
         canManage: false,
+        canAccessDaftarNama: false,
         message: "Data ATS tidak tersedia untuk Komunitas Satuan PAUD.",
       };
     }
@@ -1158,70 +1162,17 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
     );
     canValidate = (isRtCommunity || isPosyanduCommunity) && (isSuperAdmin || canManage);
 
-    // 2. Verifikasi wewenang membuka daftar rincian nama anak jika belum terotorisasi langsung
-    if (!canAccessDaftarNama && currentUserId) {
-      try {
-        const { data: userMems } = await supabase
-          .from("anggota_komunitas")
-          .select("komunitas_id, peran, status")
-          .eq("user_id", currentUserId)
-          .eq("status", "approved");
-
-        if (userMems && userMems.length > 0) {
-          for (const um of userMems) {
-            const rLow = (um.peran || "").toLowerCase();
-            const isUmPenduduk = rLow.includes("penduduk");
-            const isUmAdminOrPengurus =
-              isRoleAdmin(rLow) ||
-              rLow.includes("admin") ||
-              rLow.includes("pengurus") ||
-              rLow.includes("kader") ||
-              rLow.includes("ketua");
-
-            if (isUmPenduduk || isUmAdminOrPengurus) {
-              let umKom: any = findOrGenerateKomunitasSeed(um.komunitas_id);
-              if (!umKom) {
-                const { data: dbKom } = await supabase
-                  .from("komunitas")
-                  .select("id, nama, jenis, kecamatan, kelurahan, rw, rt")
-                  .eq("id", um.komunitas_id)
-                  .maybeSingle();
-                umKom = dbKom;
-              }
-              if (umKom) {
-                const umMeta = extractKomunitasMetadata(umKom);
-                if (meta.hasRt && umMeta.hasRt) {
-                  if (
-                    umMeta.kec === meta.kec &&
-                    umMeta.kel === meta.kel &&
-                    umMeta.rw === meta.rw &&
-                    umMeta.rt === meta.rt
-                  ) {
-                    canAccessDaftarNama = true;
-                    break;
-                  }
-                } else if (meta.hasRw && umMeta.hasRw) {
-                  if (
-                    umMeta.kec === meta.kec &&
-                    umMeta.kel === meta.kel &&
-                    umMeta.rw === meta.rw
-                  ) {
-                    canAccessDaftarNama = true;
-                    break;
-                  }
-                } else if (meta.hasKel && umMeta.hasKel) {
-                  if (umMeta.kec === meta.kec && umMeta.kel === meta.kel) {
-                    canAccessDaftarNama = true;
-                    break;
-                  }
-                }
-              }
-            }
-          }
-        }
-      } catch {
-        // Fallback pass
-      }
+    // 2. Otorisasi Daftar Rincian Lengkap Nama Anak:
+    // Sesuai ketentuan: Data lengkap hanya dapat dilihat di level RT oleh Admin Komunitas Warga Kita,
+    // serta Admin di PAUD dan Posyandu. Pada tingkat RW, Kelurahan, Kecamatan, dan Kota Tegal, data yang ditampilkan hanya data rekap saja.
+    if (isSuperAdmin) {
+      canAccessDaftarNama = true;
+    } else if (isPosyanduCommunity && canManage) {
+      canAccessDaftarNama = true;
+    } else if (isRtCommunity && canManage) {
+      canAccessDaftarNama = true;
+    } else {
+      canAccessDaftarNama = false;
     }
 
     // 3. Query data ATS dari data_anak dengan filter wilayah target

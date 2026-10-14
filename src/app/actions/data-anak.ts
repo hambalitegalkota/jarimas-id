@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/utils/supabase/server";
 import { DataAnakSchema, DdksSchema } from "@/lib/zod-schemas";
-import { toValidUUID, isSuperAdmin as checkIsSuperAdmin } from "@/lib/utils";
+import { toValidUUID, isSuperAdmin as checkIsSuperAdmin, isRoleAdmin } from "@/lib/utils";
 import { extractKomunitasMetadata } from "@/lib/admin-helpers";
 import { findOrGenerateKomunitasSeed } from "@/lib/constants/tegal-data";
 import {
@@ -663,12 +663,12 @@ export async function getDataAnakByKomunitas(komunitasId: string): Promise<{
           isReadOnly = false;
           canViewDetail = true;
         } else if (member && member.status === "approved") {
-          // Seluruh anggota resmi yang telah disetujui memiliki hak melihat rincian data anak
-          canViewDetail = true;
+          const isAdminRole = isRoleAdmin(member.peran);
 
           if (targetJenis === "satuan_paud") {
             // Admin, Kepala Sekolah, Guru PAUD / Pendidik -> Full Access
             const isPaudStaff =
+              isAdminRole ||
               roleLower.includes("admin") ||
               roleLower.includes("kepala") ||
               roleLower.includes("guru") ||
@@ -678,6 +678,7 @@ export async function getDataAnakByKomunitas(komunitasId: string): Promise<{
               roleLower.includes("pengurus");
 
             if (isPaudStaff) {
+              canViewDetail = true;
               canCreate = true;
               canEdit = true;
               canDelete = true;
@@ -685,7 +686,8 @@ export async function getDataAnakByKomunitas(komunitasId: string): Promise<{
               canEditDdks = true;
               isReadOnly = false;
             } else {
-              // Orangtua/Wali Murid, Komite, Alumni -> Read Only
+              // Orangtua/Wali Murid, Komite, Alumni, Pengunjung -> Hanya Agregat
+              canViewDetail = false;
               canCreate = false;
               canEdit = false;
               canDelete = false;
@@ -695,6 +697,7 @@ export async function getDataAnakByKomunitas(komunitasId: string): Promise<{
             }
           } else if (targetJenis === "posyandu") {
             const isKader =
+              isAdminRole ||
               roleLower.includes("kader") ||
               roleLower.includes("medis") ||
               roleLower.includes("kesehatan") ||
@@ -706,30 +709,50 @@ export async function getDataAnakByKomunitas(komunitasId: string): Promise<{
               roleLower.includes("admin");
 
             if (isKader) {
+              canViewDetail = true;
               canCreate = true;
               canEdit = true;
               canDelete = true;
               canValidate = true;
               canEditDdks = true;
               isReadOnly = false;
+            } else {
+              canViewDetail = false;
+              canCreate = false;
+              canEdit = false;
+              canDelete = false;
+              canValidate = false;
+              canEditDdks = false;
+              isReadOnly = true;
             }
           } else {
-            // Warga Kita (RT, RW, Kelurahan, Kecamatan)
-            const isWarga =
-              roleLower.includes("penduduk") ||
-              roleLower.includes("pengurus") ||
+            // Warga Kita (RT, RW, Kelurahan, Kecamatan, Kota Tegal)
+            // Ketentuan: Data lengkap hanya bisa dilihat di level RT oleh Admin Komunitas Warga Kita.
+            // Di level RW, Kelurahan, Kecamatan, dan Kota Tegal hanya data rekap saja.
+            const isRt = Boolean(targetMeta.hasRt);
+            const isWargaAdmin =
+              isAdminRole ||
               roleLower.includes("admin") ||
-              roleLower.includes("kader") ||
-              roleLower.includes("ketua") ||
-              roleLower.includes("pendatang");
+              roleLower.includes("pengurus") ||
+              roleLower.includes("ketua");
 
-            if (isWarga) {
+            if (isRt && isWargaAdmin) {
+              canViewDetail = true;
               canCreate = true;
               canEdit = true;
-              canDelete = roleLower.includes("pengurus") || roleLower.includes("admin") || roleLower.includes("ketua");
-              canValidate = roleLower.includes("pengurus") || roleLower.includes("admin") || roleLower.includes("kader") || roleLower.includes("ketua");
-              canEditDdks = roleLower.includes("kader") || roleLower.includes("pengurus");
+              canDelete = true;
+              canValidate = true;
+              canEditDdks = true;
               isReadOnly = false;
+            } else {
+              // Non-admin di RT atau di level RW, Kelurahan, Kecamatan, Kota Tegal: Data rekap saja, data lengkap terkunci
+              canViewDetail = false;
+              canCreate = false;
+              canEdit = false;
+              canDelete = false;
+              canValidate = false;
+              canEditDdks = false;
+              isReadOnly = true;
             }
           }
         }

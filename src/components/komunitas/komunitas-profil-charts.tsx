@@ -1008,31 +1008,47 @@ export function KomunitasProfilCharts({
               </div>
             ) : (
               <div className="space-y-2 pt-1 text-xs">
-              <div className="flex items-center justify-between p-2.5 rounded-xl bg-emerald-50 border border-emerald-200">
-                <span className="font-bold text-emerald-950">1. Penduduk (KK &amp; Domisili Kota Tegal)</span>
-                <span className="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-bold text-2xs">
-                  AKSES PENUH
-                </span>
+                <div className="flex items-center justify-between p-2.5 rounded-xl bg-emerald-50 border border-emerald-200">
+                  <div>
+                    <span className="font-bold text-emerald-950 block">1. Admin Komunitas Warga (Tingkat RT)</span>
+                    <span className="text-2xs text-emerald-700">PAUD, Posyandu, &amp; Pengurus RT</span>
+                  </div>
+                  <span className="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-bold text-2xs">
+                    DATA LENGKAP RT
+                  </span>
+                </div>
+                <div className="flex items-center justify-between p-2.5 rounded-xl bg-purple-50 border border-purple-200">
+                  <div>
+                    <span className="font-bold text-purple-950 block">2. Komunitas RW, Kelurahan, Kecamatan &amp; Kota</span>
+                    <span className="text-2xs text-purple-700">Tingkat di atas RT</span>
+                  </div>
+                  <span className="px-2 py-0.5 rounded-md bg-purple-100 text-purple-800 font-bold text-2xs">
+                    DATA REKAPITULASI
+                  </span>
+                </div>
+                <div className="flex items-center justify-between p-2.5 rounded-xl bg-blue-50 border border-blue-200">
+                  <div>
+                    <span className="font-bold text-blue-950 block">3. Warga / Penduduk (Anggota RT)</span>
+                    <span className="text-2xs text-blue-700">KK &amp; Domisili Terdata</span>
+                  </div>
+                  <span className="px-2 py-0.5 rounded-md bg-blue-100 text-blue-800 font-bold text-2xs">
+                    REKAP &amp; GRAFIK
+                  </span>
+                </div>
+                <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+                  <div>
+                    <span className="font-bold text-slate-800 block">4. Pendatang &amp; Pengunjung</span>
+                    <span className="text-2xs text-slate-600">KK Luar / Non-Domisili</span>
+                  </div>
+                  <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 font-bold text-2xs">
+                    GRAFIK PUBLIK
+                  </span>
+                </div>
+                <div className="p-2 rounded-lg bg-amber-50/80 border border-amber-200 text-2xs text-amber-800 flex items-center gap-1.5">
+                  <span className="font-bold">🔒 Kebijakan Privasi:</span>
+                  <span>Data by-name individual hanya dapat dilihat di tingkat RT oleh Admin terverifikasi demi perlindungan data anak.</span>
+                </div>
               </div>
-              <div className="flex items-center justify-between p-2.5 rounded-xl bg-blue-50 border border-blue-200">
-                <span className="font-bold text-blue-950">2. Penduduk Domisili Di Luar (KK Tegal, Domisili Luar)</span>
-                <span className="px-2 py-0.5 rounded-md bg-blue-100 text-blue-800 font-bold text-2xs">
-                  AKSES PENUH
-                </span>
-              </div>
-              <div className="flex items-center justify-between p-2.5 rounded-xl bg-amber-50 border border-amber-200">
-                <span className="font-bold text-amber-950">3. Pendatang (KK Luar, Domisili Kota Tegal)</span>
-                <span className="px-2 py-0.5 rounded-md bg-amber-100 text-amber-800 font-bold text-2xs">
-                  GRAFIK &amp; CHART
-                </span>
-              </div>
-              <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200">
-                <span className="font-bold text-slate-800">4. Pengunjung (KK Luar, Domisili Luar)</span>
-                <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 font-bold text-2xs">
-                  GRAFIK &amp; CHART
-                </span>
-              </div>
-            </div>
           )}
         </div>
       )}

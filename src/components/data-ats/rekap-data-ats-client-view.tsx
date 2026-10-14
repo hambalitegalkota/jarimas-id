@@ -24,6 +24,8 @@ import {
   ArrowRight,
   Eye,
   EyeOff,
+  ArrowLeft,
+  ShieldCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type {
@@ -34,21 +36,37 @@ import type {
 } from "@/app/actions/rekap-data-ats";
 import { KartuDaftarNamaAtsRekap } from "./kartu-daftar-nama-ats-rekap";
 
-interface RekapDataAtsClientViewProps {
+export interface RekapDataAtsClientViewProps {
   initialData: RekapDataAtsResult;
   canAccessDaftarNamaAts?: boolean;
   userPeran?: string;
+  initialTingkat?: "kota" | "kecamatan" | "kelurahan";
+  initialKecamatan?: string;
+  initialKelurahan?: string;
+  initialRw?: string;
+  backHref?: string;
+  backLabel?: string;
+  customScopeTitle?: string;
+  hideTingkatSelector?: boolean;
 }
 
 export function RekapDataAtsClientView({
   initialData,
   canAccessDaftarNamaAts = false,
   userPeran,
+  initialTingkat,
+  initialKecamatan,
+  initialKelurahan,
+  initialRw,
+  backHref,
+  backLabel,
+  customScopeTitle,
+  hideTingkatSelector = false,
 }: RekapDataAtsClientViewProps) {
   // State Filter Berjenjang
-  const [selectedTingkat, setSelectedTingkat] = useState<"kota" | "kecamatan" | "kelurahan">("kota");
-  const [selectedKecamatan, setSelectedKecamatan] = useState<string>("Tegal Timur");
-  const [selectedKelurahan, setSelectedKelurahan] = useState<string>("Kejambon");
+  const [selectedTingkat, setSelectedTingkat] = useState<"kota" | "kecamatan" | "kelurahan">(initialTingkat || "kota");
+  const [selectedKecamatan, setSelectedKecamatan] = useState<string>(initialKecamatan || "Tegal Timur");
+  const [selectedKelurahan, setSelectedKelurahan] = useState<string>(initialKelurahan || "Kejambon");
   const [activeTabSection, setActiveTabSection] = useState<"semua" | "kategori" | "jenjang_usia" | "tabel">("semua");
   const [tableSearch, setTableSearch] = useState<string>("");
 
@@ -161,6 +179,19 @@ export function RekapDataAtsClientView({
 
   return (
     <div className="flex flex-col flex-1 px-4 py-4 sm:px-6 md:px-8 gap-6 sm:gap-8 max-w-6xl mx-auto w-full pb-24">
+      {/* Tombol Kembali jika diakses dari Detail Komunitas */}
+      {backHref && (
+        <div className="flex items-center justify-between print:hidden">
+          <Link
+            href={backHref}
+            className="inline-flex min-h-[44px] h-11 items-center gap-2 rounded-xl bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 px-4 text-sm font-bold text-slate-800 dark:text-slate-200 transition-all hover:bg-slate-50 dark:hover:bg-slate-800 shadow-xs"
+          >
+            <ArrowLeft className="h-4 w-4 text-blue-700 dark:text-blue-400" />
+            <span>{backLabel || "Kembali ke Komunitas"}</span>
+          </Link>
+        </div>
+      )}
+
       {/* ========================================================= */}
       {/* 1. BREADCRUMB & HERO HEADER                               */}
       {/* ========================================================= */}
@@ -171,7 +202,7 @@ export function RekapDataAtsClientView({
           </Link>
           <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
           <span className="text-slate-900 dark:text-slate-200 font-bold">
-            Pantau Hasil Pendataan ATS
+            {customScopeTitle || "Pantau Hasil Pendataan ATS"}
           </span>
         </nav>
 
@@ -183,7 +214,7 @@ export function RekapDataAtsClientView({
           <div className="space-y-2 relative z-10 max-w-2xl">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="rounded-full bg-blue-500/20 border border-blue-400/30 px-3 py-0.5 text-xs font-black text-blue-300 tracking-wide uppercase">
-                PENDATAAN ANAK TIDAK SEKOLAH (ATS)
+                {customScopeTitle ? `BERJENJANG: ${customScopeTitle.toUpperCase()}` : "PENDATAAN ANAK TIDAK SEKOLAH (ATS)"}
               </span>
               <span className="text-xs text-slate-300 font-medium">
                 Pembaruan: {initialData.lastUpdated}
@@ -316,13 +347,31 @@ export function RekapDataAtsClientView({
             <strong className="text-sm font-black text-slate-900 dark:text-slate-100">
               {currentWilayahData.tingkat === "kota" && "Seluruh Wilayah Kota Tegal"}
               {currentWilayahData.tingkat === "kecamatan" && `Kecamatan ${currentWilayahData.nama}, Kota Tegal`}
-              {currentWilayahData.tingkat === "kelurahan" && `Kelurahan ${currentWilayahData.nama}, Kec. ${currentWilayahData.kecamatan}, Kota Tegal`}
+              {currentWilayahData.tingkat === "kelurahan" && (
+                <>
+                  {initialRw ? `RW ${initialRw} • ` : ""}
+                  Kelurahan {currentWilayahData.nama}, Kec. {currentWilayahData.kecamatan}, Kota Tegal
+                </>
+              )}
             </strong>
           </div>
 
           <div className="flex items-center gap-2 text-2xs font-bold text-slate-500">
-            <span>Intervensi Kesetaraan: SKB Kota Tegal &amp; PKBM Mitra</span>
+            <span>Cakupan: {initialRw ? `RW ${initialRw} (Kel. ${currentWilayahData.nama})` : "Intervensi: SKB & PKBM Kota Tegal"}</span>
           </div>
+        </div>
+      </div>
+
+      {/* Ketentuan Privasi & Tingkat Data Rekapitulasi ATS */}
+      <div className="rounded-2xl border-2 border-amber-200 dark:border-amber-900 bg-amber-50/70 dark:bg-amber-950/30 p-4 sm:p-5 flex items-start gap-3 shadow-xs">
+        <ShieldCheck className="h-5 w-5 text-amber-700 dark:text-amber-400 shrink-0 mt-0.5" />
+        <div className="space-y-1">
+          <h4 className="text-sm sm:text-base font-bold text-amber-950 dark:text-amber-200">
+            Data Rekapitulasi Wilayah &amp; Perlindungan Privasi ATS
+          </h4>
+          <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
+            Data yang ditampilkan pada halaman ini adalah <strong>Data Rekapitulasi Hasil Pendataan ATS</strong>. Sesuai ketentuan perlindungan privasi data, rincian identitas lengkap anak tidak sekolah hanya dapat diakses di <strong>Tingkat RT</strong> oleh <strong>Admin di Komunitas Warga Kita</strong>, <strong>Admin PAUD</strong>, dan <strong>Admin Posyandu</strong>.
+          </p>
         </div>
       </div>
 

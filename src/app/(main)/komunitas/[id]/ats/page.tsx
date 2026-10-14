@@ -3,8 +3,10 @@ import { notFound, redirect } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { getKomunitasDetail } from "@/app/actions/komunitas";
 import { getDataAtsByKomunitas } from "@/app/actions/data-ats";
+import { getRekapDataAtsAction } from "@/app/actions/rekap-data-ats";
 import { DataAtsClientView } from "@/components/data-ats/data-ats-client-view";
-
+import { RekapDataAtsClientView } from "@/components/data-ats/rekap-data-ats-client-view";
+import { extractKomunitasMetadata } from "@/lib/admin-helpers";
 import { isRoleAdmin } from "@/lib/utils";
 
 interface KomunitasDataAtsPageProps {
@@ -18,10 +20,7 @@ export default async function KomunitasDataAtsPage({
 }: KomunitasDataAtsPageProps) {
   const { id } = await params;
 
-  const [{ data: komunitas }, dataAtsResult] = await Promise.all([
-    getKomunitasDetail(id),
-    getDataAtsByKomunitas(id),
-  ]);
+  const { data: komunitas } = await getKomunitasDetail(id);
 
   if (!komunitas) {
     notFound();
@@ -30,6 +29,44 @@ export default async function KomunitasDataAtsPage({
   if (komunitas.jenis === "satuan_paud") {
     redirect(`/komunitas/${id}`);
   }
+
+  const meta = extractKomunitasMetadata(komunitas);
+  const isWargaKita = komunitas.jenis === "warga_kita";
+  const isRt = isWargaKita && meta.hasRt;
+  const isRekapOnlyTier = isWargaKita && !meta.hasRt;
+
+  // Untuk komunitas RW, Kelurahan, Kecamatan, dan Kota Tegal:
+  // Data yang ditampilkan HANYA DATA REKAP SAJA (seperti pada halaman Hasil Pendataan Anak Tidak Sekolah (ATS)) disesuaikan levelnya.
+  // Data lengkap rincian identitas anak hanya dapat diakses di level RT oleh Admin Komunitas Warga Kita.
+  if (isRekapOnlyTier) {
+    const { data: rekapData } = await getRekapDataAtsAction();
+
+    let initialTingkat: "kota" | "kecamatan" | "kelurahan" = "kota";
+    if (meta.hasRw || meta.hasKel) {
+      initialTingkat = "kelurahan";
+    } else if (meta.rawKec && meta.rawKec !== "Kota Tegal") {
+      initialTingkat = "kecamatan";
+    }
+
+    return (
+      <main className="w-full min-h-screen bg-slate-50 dark:bg-slate-950 py-4 sm:py-6">
+        <RekapDataAtsClientView
+          initialData={rekapData}
+          canAccessDaftarNamaAts={false}
+          initialTingkat={initialTingkat}
+          initialKecamatan={meta.rawKec || "Tegal Timur"}
+          initialKelurahan={meta.rawKel || "Kejambon"}
+          initialRw={meta.rawRw || undefined}
+          customScopeTitle={komunitas.nama}
+          backHref={`/komunitas/${id}`}
+          backLabel={`Kembali ke ${komunitas.nama}`}
+        />
+      </main>
+    );
+  }
+
+  // Khusus Komunitas Tingkat RT dan Posyandu:
+  const dataAtsResult = await getDataAtsByKomunitas(id);
 
   const {
     data: atsList,
@@ -41,23 +78,23 @@ export default async function KomunitasDataAtsPage({
     isSuperAdmin,
   } = dataAtsResult;
 
-  // Periksa otorisasi: Daftar Rincian Nama Anak hanya bisa dibuka oleh Admin Komunitas, Pengurus, dan Penduduk di Komunitas tersebut
+  // Otorisasi Akses Daftar Rincian Lengkap:
+  // Hanya Admin di Komunitas Warga Kita (level RT) dan Posyandu (Admin / Kader) yang berhak melihat rincian nama lengkap
   const membership = komunitas?.currentUserMembership;
   const isApprovedMember = membership?.status === "approved";
   const memberRoleLower = (membership?.peran || "").toLowerCase();
-  const isPenduduk = memberRoleLower.includes("penduduk");
   const isAdminOrPengurus =
     isRoleAdmin(memberRoleLower) ||
     memberRoleLower.includes("admin") ||
     memberRoleLower.includes("pengurus") ||
-    memberRoleLower.includes("kader") ||
     memberRoleLower.includes("ketua");
+  const isKader = memberRoleLower.includes("kader") || memberRoleLower.includes("medis");
 
   const canAccessDaftarNama = Boolean(
     isSuperAdmin ||
     serverCanAccess ||
     canManage ||
-    (isApprovedMember && (isPenduduk || isAdminOrPengurus))
+    (isApprovedMember && (isRt ? isAdminOrPengurus : isKader || isAdminOrPengurus))
   );
 
   return (
@@ -73,7 +110,7 @@ export default async function KomunitasDataAtsPage({
         </Link>
       </div>
 
-      {/* Header Info - Coursera Mobile */}
+      {/* Header Info */}
       <div className="flex items-start justify-between gap-3 border-b-2 border-slate-200 pb-5 print:hidden">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
@@ -88,7 +125,7 @@ export default async function KomunitasDataAtsPage({
             Data Anak Tidak Sekolah (ATS)
           </h1>
           <p className="text-sm text-slate-600 leading-relaxed max-w-lg">
-            Pendataan, verifikasi alasan tidak sekolah, dan perencanaan intervensi kembali bersekolah di Kota Tegal.
+            Pendataan, verifikasi alasan tidak sekolah, dan perencanaan intervensi kembali bersekolah di {komunitas.nama}.
           </p>
         </div>
       </div>

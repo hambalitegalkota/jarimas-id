@@ -242,7 +242,7 @@ export function DataAnakClientView({
               Akses Rincian Data Anak &amp; Pencarian Terkunci
             </h3>
             <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-              Sesuai dengan ketentuan perlindungan privasi dan keamanan data anak, pencarian data serta daftar rincian identitas anak (nama lengkap, orang tua/wali, alamat KK, domisili, dan rekam medis tumbuh kembang DDTK) hanya dapat diakses oleh <strong>anggota terdaftar dan terverifikasi</strong> di {komunitas.nama}.
+              Sesuai dengan ketentuan perlindungan privasi dan keamanan data anak, pencarian data serta daftar rincian identitas anak (nama lengkap, orang tua/wali, alamat KK, domisili, dan rekam medis tumbuh kembang DDTK) hanya dapat diakses oleh <strong>Admin di Komunitas Warga Kita (Tingkat RT)</strong>, <strong>Admin PAUD</strong>, dan <strong>Admin/Kader Posyandu</strong>.
             </p>
           </div>
 
@@ -274,7 +274,7 @@ export function DataAnakClientView({
                 <div className="flex items-start gap-2.5">
                   <AlertCircle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
                   <p className="text-xs text-slate-700 leading-relaxed">
-                    Status akun Anda saat ini di komunitas ini adalah <strong>Pengunjung</strong>. Silakan ajukan keanggotaan resmi (misal: <em>Orang Tua/Wali Murid</em>, <em>Pendidik/Guru</em>, <em>Penduduk RT</em>, atau <em>Kader</em>) untuk membuka akses rincian data anak.
+                    Status peran Anda saat ini di komunitas ini adalah <strong>{effectiveRole}</strong>. Data lengkap rincian identitas anak hanya dapat diakses oleh Admin Komunitas yang berwenang demi perlindungan privasi anak dan keluarga.
                   </p>
                 </div>
                 <Link

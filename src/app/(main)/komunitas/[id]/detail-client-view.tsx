@@ -60,6 +60,7 @@ import type {
   DataAtsItem,
 } from "@/types/database";
 import { cn, hasFullProfilDataAccess, parseKontakKomunitas, formatWhatsAppUrl, formatPeranDisplay, isRoleAdmin, isSuperAdmin } from "@/lib/utils";
+import { extractKomunitasMetadata } from "@/lib/admin-helpers";
 
 interface KomunitasDetailClientViewProps {
   komunitas: KomunitasWithMembership;
@@ -157,17 +158,48 @@ export function KomunitasDetailClientView({
   const isApprovedMember = membership?.status === "approved";
   const userPeran = membership?.peran || "Pengunjung";
   const isWargaKita = komunitasData.jenis === "warga_kita";
+  const isPaud = komunitasData.jenis === "satuan_paud";
+  const isPosyandu = komunitasData.jenis === "posyandu";
+
+  const meta = useMemo(() => extractKomunitasMetadata(komunitasData), [komunitasData]);
+  const isRt = isWargaKita && Boolean(komunitasData.rt && komunitasData.rt.trim() !== "" && komunitasData.rt !== "semua" && komunitasData.rt !== "00");
+  const isRekapOnlyTier = isWargaKita && !isRt;
+  const tierLevelLabel = isRt
+    ? `RT ${meta.rt || ""}`
+    : meta.hasRw
+    ? `RW ${meta.rw || ""}`
+    : meta.hasKel
+    ? `Kelurahan ${meta.rawKel || ""}`
+    : (meta.rawKec && meta.rawKec !== "Kota Tegal")
+    ? `Kecamatan ${meta.rawKec || ""}`
+    : "Kota Tegal";
 
   // Hanya Komunitas RT, Posyandu, dan Satuan PAUD yang memiliki fungsi gabung langsung.
   // Komunitas RW, Kelurahan, Kecamatan, dan Kota Tegal tidak memiliki fungsi gabung langsung.
   const canJoin =
-    komunitasData.jenis === "posyandu" ||
-    komunitasData.jenis === "satuan_paud" ||
-    (komunitasData.jenis === "warga_kita" &&
-      Boolean(komunitasData.rt && komunitasData.rt.trim() !== "" && komunitasData.rt !== "semua"));
+    isPosyandu ||
+    isPaud ||
+    (isWargaKita && isRt);
 
-  const hasFullAccess = !isWargaKita || hasFullProfilDataAccess(userPeran, isAdminOrKader);
-  const isChartOnly = isWargaKita && !hasFullAccess;
+  // Ketentuan Hak Akses:
+  // Data lengkap hanya dapat dilihat oleh Admin di Komunitas Warga Kita (khusus level RT), Admin PAUD, dan Admin/Kader Posyandu.
+  // Komunitas RW, Kelurahan, Kecamatan, dan Kota Tegal hanya menampilkan data rekap saja.
+  const hasFullAccess = useMemo(() => {
+    if (isPaud) {
+      const p = userPeran.toLowerCase();
+      return isAdminOrKader || isRoleAdmin(userPeran) || p.includes("kepala") || p.includes("guru") || p.includes("pendidik") || p.includes("pengelola");
+    }
+    if (isPosyandu) {
+      const p = userPeran.toLowerCase();
+      return isAdminOrKader || isRoleAdmin(userPeran) || p.includes("kader") || p.includes("bidan") || p.includes("medis") || p.includes("nakes");
+    }
+    if (isWargaKita) {
+      return isRt && (isAdminOrKader || isRoleAdmin(userPeran));
+    }
+    return false;
+  }, [isPaud, isPosyandu, isWargaKita, isRt, userPeran, isAdminOrKader]);
+
+  const isChartOnly = isRekapOnlyTier || !hasFullAccess;
   const isPenduduk =
     isApprovedMember &&
     (userPeran === "Penduduk" ||
@@ -383,42 +415,54 @@ export function KomunitasDetailClientView({
   };
   const detailLinkCards = [
     {
-          id: "data_anak",
-          href: `/komunitas/${komunitas.id}/data`,
-          title: "Data Anak (0–6 Tahun) & DDTK",
-          subtitle: "Kelola pendaftaran balita, riwayat DDTK tumbuh kembang, dan validasi data",
-          badgeText: `${dataAnakState.length} Balita / Anak`,
-          icon: Baby,
-          hoverBorder: "hover:border-blue-400 dark:hover:border-blue-600",
-          hoverBg: "hover:bg-blue-50/50 dark:hover:bg-blue-950/20",
-          iconColor: "text-blue-600 dark:text-blue-400",
-          iconBg: "bg-blue-100 dark:bg-blue-950",
-          arrowBg: "bg-slate-100 dark:bg-slate-800",
-          arrowHoverBg: "group-hover:bg-blue-600 group-hover:text-white dark:group-hover:bg-blue-600",
-          arrowColor: "text-slate-500 dark:text-slate-400",
-          textHoverColor: "group-hover:text-blue-600 dark:group-hover:text-blue-400",
-        },
-        ...(komunitas.jenis !== "satuan_paud"
-          ? [
-              {
-                id: "data_ats" as const,
-                href: `/komunitas/${komunitas.id}/ats`,
-                title: "Data ATS (Anak Tidak Sekolah)",
-                subtitle: "Pendataan Anak Tidak Sekolah, pemantauan alasan, dan rencana intervensi kembali bersekolah",
-                badgeText: `${dataAtsState.length} Kasus ATS`,
-                icon: GraduationCap,
-                hoverBorder: "hover:border-amber-400 dark:hover:border-amber-600",
-                hoverBg: "hover:bg-amber-50/50 dark:hover:bg-amber-950/20",
-                iconColor: "text-amber-600 dark:text-amber-400",
-                iconBg: "bg-amber-100 dark:bg-amber-950",
-                arrowBg: "bg-slate-100 dark:bg-slate-800",
-                arrowHoverBg: "group-hover:bg-amber-600 group-hover:text-white dark:group-hover:bg-amber-600",
-                arrowColor: "text-slate-500 dark:text-slate-400",
-                textHoverColor: "group-hover:text-amber-600 dark:group-hover:text-amber-400",
-              },
-            ]
-          : []),
-      ];
+      id: "data_anak",
+      href: `/komunitas/${komunitas.id}/data`,
+      title: isRekapOnlyTier
+        ? "Rekapitulasi Data Anak Usia Dini (0–6 Tahun)"
+        : "Data Anak (0–6 Tahun) & DDTK",
+      subtitle: isRekapOnlyTier
+        ? `Pantau rekapitulasi data agregat balita, sebaran satuan PAUD, dan capaian ${tierLevelLabel}`
+        : hasFullAccess
+        ? "Kelola pendaftaran balita RT, riwayat DDTK tumbuh kembang, dan validasi data"
+        : `Pantau data agregat balita dan catatan DDTK ${tierLevelLabel}`,
+      badgeText: isRekapOnlyTier ? "Data Rekapitulasi" : `${dataAnakState.length} Balita / Anak`,
+      icon: Baby,
+      hoverBorder: "hover:border-blue-400 dark:hover:border-blue-600",
+      hoverBg: "hover:bg-blue-50/50 dark:hover:bg-blue-950/20",
+      iconColor: "text-blue-600 dark:text-blue-400",
+      iconBg: "bg-blue-100 dark:bg-blue-950",
+      arrowBg: "bg-slate-100 dark:bg-slate-800",
+      arrowHoverBg: "group-hover:bg-blue-600 group-hover:text-white dark:group-hover:bg-blue-600",
+      arrowColor: "text-slate-500 dark:text-slate-400",
+      textHoverColor: "group-hover:text-blue-600 dark:group-hover:text-blue-400",
+    },
+    ...(komunitas.jenis !== "satuan_paud"
+      ? [
+          {
+            id: "data_ats" as const,
+            href: `/komunitas/${komunitas.id}/ats`,
+            title: isRekapOnlyTier
+              ? "Rekapitulasi Data ATS (Anak Tidak Sekolah)"
+              : "Data ATS (Anak Tidak Sekolah)",
+            subtitle: isRekapOnlyTier
+              ? `Pantau rekapitulasi penanganan ATS, kelompok umur, dan rekomendasi intervensi ${tierLevelLabel}`
+              : hasFullAccess
+              ? "Pendataan Anak Tidak Sekolah, pemantauan alasan, dan verifikasi data RT"
+              : `Pantau hasil pendataan kasus anak tidak sekolah ${tierLevelLabel}`,
+            badgeText: isRekapOnlyTier ? "Data Rekapitulasi" : `${dataAtsState.length} Kasus ATS`,
+            icon: GraduationCap,
+            hoverBorder: "hover:border-amber-400 dark:hover:border-amber-600",
+            hoverBg: "hover:bg-amber-50/50 dark:hover:bg-amber-950/20",
+            iconColor: "text-amber-600 dark:text-amber-400",
+            iconBg: "bg-amber-100 dark:bg-amber-950",
+            arrowBg: "bg-slate-100 dark:bg-slate-800",
+            arrowHoverBg: "group-hover:bg-amber-600 group-hover:text-white dark:group-hover:bg-amber-600",
+            arrowColor: "text-slate-500 dark:text-slate-400",
+            textHoverColor: "group-hover:text-amber-600 dark:group-hover:text-amber-400",
+          },
+        ]
+      : []),
+  ];
 
   const detailAccordionCategories = [
     {
@@ -1373,26 +1417,87 @@ export function KomunitasDetailClientView({
       {/* Subtab: PROFIL DATA */}
       {cat.id === "data" && (
         <section className="space-y-5 pb-4">
-          {/* Banner Hak Akses Penuh jika Penduduk / Penduduk Berdomisili Luar Kota */}
-          {hasFullAccess && isApprovedMember && isWargaKita && (
-            <div className="rounded-2xl border-2 border-emerald-200 bg-emerald-50/70 p-4 sm:p-5 flex items-start gap-3 shadow-xs">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-800 font-bold">
-                <ShieldCheck className="h-5 w-5" />
-              </div>
-              <div className="space-y-0.5">
-                <div className="flex flex-wrap items-center gap-2">
-                  <h4 className="text-sm sm:text-base font-bold text-emerald-950">
-                    Hak Akses Penuh: {userPeran.toUpperCase()}
-                  </h4>
-                  <span className="rounded-md px-2 py-0.5 text-xs font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300">
-                    AKSES SELURUH DATA
-                  </span>
+          {/* 1. Jika Komunitas Tingkat RW, Kelurahan, Kecamatan, atau Kota Tegal: Banner Data Rekapitulasi Wilayah */}
+          {isRekapOnlyTier && (
+            <div className="rounded-2xl border-2 border-indigo-200 bg-indigo-50/80 p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs">
+              <div className="flex items-start gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-100 text-indigo-800 font-bold">
+                  <Info className="h-5 w-5" />
                 </div>
-                <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">
-                  Sebagai <strong>{userPeran}</strong>, Anda memiliki hak akses penuh ke visualisasi Grafik &amp; Chart, rincian data anak &amp; DDTK, data ATS, penambahan data, dan pelaporan wilayah.
-                </p>
+                <div className="space-y-0.5">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h4 className="text-sm sm:text-base font-bold text-indigo-950">
+                      Data Rekapitulasi Wilayah {tierLevelLabel}
+                    </h4>
+                    <span className="rounded-md px-2 py-0.5 text-xs font-extrabold bg-indigo-100 text-indigo-800 border border-indigo-300">
+                      DATA REKAP SAJA
+                    </span>
+                  </div>
+                  <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">
+                    Pada komunitas tingkat <strong>{tierLevelLabel}</strong>, data yang ditampilkan adalah data rekapitulasi agregat wilayah (seperti pada halaman Rekapitulasi Hasil Pendataan Anak Usia Dini dan ATS). Data lengkap rincian anak hanya dapat diakses di <strong>tingkat RT</strong> oleh Admin Komunitas yang berwenang demi perlindungan privasi.
+                  </p>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2 w-full sm:w-auto shrink-0">
+                <Link
+                  href={`/komunitas/${komunitas.id}/data`}
+                  className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-blue-700 hover:bg-blue-800 text-white text-xs font-bold shadow-xs transition-all active:scale-95"
+                >
+                  <Baby className="h-4 w-4" />
+                  <span>Rekap Data Anak</span>
+                </Link>
+                <Link
+                  href={`/komunitas/${komunitas.id}/ats`}
+                  className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shadow-xs transition-all active:scale-95"
+                >
+                  <GraduationCap className="h-4 w-4" />
+                  <span>Rekap Data ATS</span>
+                </Link>
               </div>
             </div>
+          )}
+
+          {/* 2. Jika Komunitas Tingkat RT: Banner Hak Akses Admin RT vs Warga Biasa */}
+          {isRt && (
+            hasFullAccess ? (
+              <div className="rounded-2xl border-2 border-emerald-200 bg-emerald-50/70 p-4 sm:p-5 flex items-start gap-3 shadow-xs">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-800 font-bold">
+                  <ShieldCheck className="h-5 w-5" />
+                </div>
+                <div className="space-y-0.5">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h4 className="text-sm sm:text-base font-bold text-emerald-950">
+                      Hak Akses Admin RT: {userPeran.toUpperCase()}
+                    </h4>
+                    <span className="rounded-md px-2 py-0.5 text-xs font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                      AKSES DATA LENGKAP RT
+                    </span>
+                  </div>
+                  <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">
+                    Sebagai <strong>Admin di Komunitas RT</strong>, Anda memiliki hak akses penuh untuk mengelola rincian data anak &amp; DDTK, data ATS, validasi warga RT, dan pelaporan wilayah.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="rounded-2xl border-2 border-amber-200 bg-amber-50/80 p-4 sm:p-5 flex items-start gap-3 shadow-xs">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-800 font-bold">
+                  <ShieldAlert className="h-5 w-5" />
+                </div>
+                <div className="space-y-0.5">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h4 className="text-sm sm:text-base font-bold text-amber-950">
+                      Akses Warga RT: Tinjauan Statistik Agregat
+                    </h4>
+                    <span className="rounded-md px-2 py-0.5 text-xs font-extrabold bg-amber-100 text-amber-800 border border-amber-300">
+                      GRAFIK &amp; REKAP
+                    </span>
+                  </div>
+                  <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">
+                    Sesuai regulasi privasi data kependudukan, rincian data identitas lengkap anak hanya dapat diakses oleh <strong>Admin Komunitas RT</strong>. Anggota warga dapat memantau grafik capaian dan statistik wilayah.
+                  </p>
+                </div>
+              </div>
+            )
           )}
 
           {/* ========================================================= */}

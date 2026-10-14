@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import {
-  ArrowLeft,
-  Baby,
-} from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { getKomunitasDetail } from "@/app/actions/komunitas";
 import { getDataAnakByKomunitas } from "@/app/actions/data-anak";
+import { getRekapDataAnakUsiaDiniAction } from "@/app/actions/rekap-data-anak";
 import { DataAnakClientView } from "./data-anak-client-view";
+import { RekapDataAnakClientView } from "@/components/data-anak/rekap-data-anak-client-view";
+import { extractKomunitasMetadata } from "@/lib/admin-helpers";
 
 interface KomunitasDataAnakPageProps {
   params: Promise<{
@@ -19,14 +19,50 @@ export default async function KomunitasDataAnakPage({
 }: KomunitasDataAnakPageProps) {
   const { id } = await params;
 
-  const [{ data: komunitas }, dataAnakResult] = await Promise.all([
-    getKomunitasDetail(id),
-    getDataAnakByKomunitas(id),
-  ]);
+  const { data: komunitas } = await getKomunitasDetail(id);
 
   if (!komunitas) {
     notFound();
   }
+
+  const meta = extractKomunitasMetadata(komunitas);
+  const isWargaKita = komunitas.jenis === "warga_kita";
+  const isRt = isWargaKita && meta.hasRt;
+  const isRekapOnlyTier = isWargaKita && !meta.hasRt;
+
+  // Untuk komunitas RW, Kelurahan, Kecamatan, dan Kota Tegal:
+  // Data yang ditampilkan HANYA DATA REKAP SAJA (seperti pada halaman Rekapitulasi Hasil Pendataan Anak Usia Dini (0–6 Tahun)) disesuaikan levelnya.
+  // Data lengkap rincian identitas anak hanya dapat diakses di level RT oleh Admin Komunitas Warga Kita.
+  if (isRekapOnlyTier) {
+    const { data: rekapData } = await getRekapDataAnakUsiaDiniAction();
+
+    let initialTingkat: "kota" | "kecamatan" | "kelurahan" = "kota";
+    if (meta.hasRw || meta.hasKel) {
+      initialTingkat = "kelurahan";
+    } else if (meta.rawKec && meta.rawKec !== "Kota Tegal") {
+      initialTingkat = "kecamatan";
+    }
+
+    return (
+      <main className="w-full min-h-screen bg-slate-50 dark:bg-slate-950 py-4 sm:py-6">
+        <RekapDataAnakClientView
+          initialData={rekapData}
+          canAccessDaftarNamaAnak={false}
+          initialTingkat={initialTingkat}
+          initialKecamatan={meta.rawKec || "Tegal Timur"}
+          initialKelurahan={meta.rawKel || "Kejambon"}
+          initialRw={meta.rawRw || undefined}
+          customScopeTitle={komunitas.nama}
+          backHref={`/komunitas/${id}`}
+          backLabel={`Kembali ke ${komunitas.nama}`}
+        />
+      </main>
+    );
+  }
+
+  // Khusus Komunitas Tingkat RT, Satuan PAUD, dan Posyandu:
+  // Akses data lengkap hanya dibuka untuk Admin (Admin RT di Warga Kita, Staf/Admin di PAUD, dan Kader/Admin di Posyandu).
+  const dataAnakResult = await getDataAnakByKomunitas(id);
 
   const {
     data: childrenList,
@@ -55,7 +91,7 @@ export default async function KomunitasDataAnakPage({
         </Link>
       </div>
 
-      {/* Header Info - Coursera Mobile */}
+      {/* Header Info */}
       <div className="flex items-start justify-between gap-3 border-b-2 border-slate-200 pb-5">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
@@ -68,7 +104,7 @@ export default async function KomunitasDataAnakPage({
             Data Anak (0–6 Tahun)
           </h1>
           <p className="text-sm text-slate-600 leading-relaxed max-w-lg">
-            Pemantauan data anak usia dini, verifikasi lintas komunitas (PAUD, Posyandu, RT), dan catatan DDTK.
+            Pemantauan data anak usia dini, verifikasi data, dan catatan DDTK tumbuh kembang di {komunitas.nama}.
           </p>
         </div>
       </div>

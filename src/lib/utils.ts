@@ -234,8 +234,9 @@ export function isRoleAdmin(peran?: string | null): boolean {
 }
 
 /**
- * Mengecek apakah peran memiliki hak akses penuh ke seluruh unsur Profil Data Komunitas Warga Kita
- * (Penduduk & Penduduk Berdomisili Luar Kota, atau Pengurus/Admin/Kader)
+ * Mengecek apakah peran memiliki hak akses penuh ke seluruh unsur Profil Data Komunitas
+ * Sesuai regulasi: data lengkap hanya dapat dilihat oleh Admin Komunitas Warga Kita (di level RT),
+ * Admin PAUD, dan Admin/Kader Posyandu.
  */
 export function hasFullProfilDataAccess(
   peran?: string | null,
@@ -243,16 +244,7 @@ export function hasFullProfilDataAccess(
 ): boolean {
   if (isAdminOrKader) return true;
   if (!peran) return false;
-  const p = peran.toLowerCase().trim();
-  if (
-    p === "penduduk" ||
-    p === "penduduk berdomisili luar kota" ||
-    p === "penduduk domisili di luar" ||
-    p === "penduduk domisili diluar"
-  ) {
-    return true;
-  }
-  return isRoleAdmin(p);
+  return isRoleAdmin(peran);
 }
 
 /**

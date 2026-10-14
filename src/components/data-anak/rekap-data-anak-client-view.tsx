@@ -27,6 +27,8 @@ import {
   ChevronDown,
   BarChart2,
   Table as TableIcon,
+  ArrowLeft,
+  ShieldCheck,
   Eye,
   EyeOff,
 } from "lucide-react";
@@ -39,10 +41,18 @@ import type {
 } from "@/app/actions/rekap-data-anak";
 import { KartuDaftarNamaAnakRekap } from "./kartu-daftar-nama-anak-rekap";
 
-interface RekapDataAnakClientViewProps {
+export interface RekapDataAnakClientViewProps {
   initialData: RekapDataAnakUsiaDiniResult;
   canAccessDaftarNamaAnak?: boolean;
   userPeran?: string;
+  initialTingkat?: "kota" | "kecamatan" | "kelurahan";
+  initialKecamatan?: string;
+  initialKelurahan?: string;
+  initialRw?: string;
+  backHref?: string;
+  backLabel?: string;
+  customScopeTitle?: string;
+  hideTingkatSelector?: boolean;
 }
 
 const JENJANG_COLORS: Record<keyof SchoolTypeBreakdown, { bg: string; text: string; fill: string; border: string; label: string }> = {
@@ -85,11 +95,19 @@ export function RekapDataAnakClientView({
   initialData,
   canAccessDaftarNamaAnak = false,
   userPeran,
+  initialTingkat,
+  initialKecamatan,
+  initialKelurahan,
+  initialRw,
+  backHref,
+  backLabel,
+  customScopeTitle,
+  hideTingkatSelector = false,
 }: RekapDataAnakClientViewProps) {
   // State Filter Berjenjang
-  const [selectedTingkat, setSelectedTingkat] = useState<"kota" | "kecamatan" | "kelurahan">("kota");
-  const [selectedKecamatan, setSelectedKecamatan] = useState<string>("Tegal Timur");
-  const [selectedKelurahan, setSelectedKelurahan] = useState<string>("Kejambon");
+  const [selectedTingkat, setSelectedTingkat] = useState<"kota" | "kecamatan" | "kelurahan">(initialTingkat || "kota");
+  const [selectedKecamatan, setSelectedKecamatan] = useState<string>(initialKecamatan || "Tegal Timur");
+  const [selectedKelurahan, setSelectedKelurahan] = useState<string>(initialKelurahan || "Kejambon");
   const [activeTabSection, setActiveTabSection] = useState<"semua" | "bersekolah" | "tidak_sekolah" | "tabel">("semua");
   const [tableSearch, setTableSearch] = useState<string>("");
   const [viewModeDiagramUsia, setViewModeDiagramUsia] = useState<"diagram" | "matriks">("diagram");
@@ -187,6 +205,19 @@ export function RekapDataAnakClientView({
 
   return (
     <div className="flex flex-col flex-1 px-4 py-4 sm:px-6 md:px-8 gap-6 sm:gap-8 max-w-6xl mx-auto w-full pb-24">
+      {/* Tombol Kembali jika diakses dari Detail Komunitas */}
+      {backHref && (
+        <div className="flex items-center justify-between print:hidden">
+          <Link
+            href={backHref}
+            className="inline-flex min-h-[44px] h-11 items-center gap-2 rounded-xl bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 px-4 text-sm font-bold text-slate-800 dark:text-slate-200 transition-all hover:bg-slate-50 dark:hover:bg-slate-800 shadow-xs"
+          >
+            <ArrowLeft className="h-4 w-4 text-blue-700 dark:text-blue-400" />
+            <span>{backLabel || "Kembali ke Komunitas"}</span>
+          </Link>
+        </div>
+      )}
+
       {/* ========================================================= */}
       {/* 1. BREADCRUMB & TOP HERO HEADER                           */}
       {/* ========================================================= */}
@@ -197,7 +228,7 @@ export function RekapDataAnakClientView({
           </Link>
           <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
           <span className="text-slate-900 dark:text-slate-200 font-bold">
-            Pantau Pendataan Anak Usia Dini
+            {customScopeTitle || "Pantau Pendataan Anak Usia Dini"}
           </span>
         </nav>
 
@@ -209,7 +240,7 @@ export function RekapDataAnakClientView({
           <div className="space-y-2 relative z-10 max-w-2xl">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="rounded-full bg-emerald-500/20 border border-emerald-400/30 px-3 py-0.5 text-xs font-black text-emerald-300 tracking-wide uppercase">
-                BERJENJANG KOTA TEGAL
+                {customScopeTitle ? `BERJENJANG: ${customScopeTitle.toUpperCase()}` : "BERJENJANG KOTA TEGAL"}
               </span>
               <span className="text-xs text-slate-300 font-medium">
                 Pembaruan: {initialData.lastUpdated}
@@ -343,13 +374,31 @@ export function RekapDataAnakClientView({
             <strong className="text-sm font-black text-slate-900 dark:text-slate-100">
               {currentWilayahData.tingkat === "kota" && "Seluruh Wilayah Kota Tegal"}
               {currentWilayahData.tingkat === "kecamatan" && `Kecamatan ${currentWilayahData.nama}, Kota Tegal`}
-              {currentWilayahData.tingkat === "kelurahan" && `Kelurahan ${currentWilayahData.nama}, Kec. ${currentWilayahData.kecamatan}, Kota Tegal`}
+              {currentWilayahData.tingkat === "kelurahan" && (
+                <>
+                  {initialRw ? `RW ${initialRw} • ` : ""}
+                  Kelurahan {currentWilayahData.nama}, Kec. {currentWilayahData.kecamatan}, Kota Tegal
+                </>
+              )}
             </strong>
           </div>
 
           <div className="flex items-center gap-2 text-2xs font-bold text-slate-500">
-            <span>Cakupan: 4 Kecamatan (27 Kelurahan)</span>
+            <span>Cakupan: {initialRw ? `RW ${initialRw} (Kel. ${currentWilayahData.nama})` : "4 Kecamatan (27 Kelurahan)"}</span>
           </div>
+        </div>
+      </div>
+
+      {/* Ketentuan Privasi & Tingkat Data Rekapitulasi */}
+      <div className="rounded-2xl border-2 border-blue-200 dark:border-blue-900 bg-blue-50/70 dark:bg-blue-950/30 p-4 sm:p-5 flex items-start gap-3 shadow-xs">
+        <ShieldCheck className="h-5 w-5 text-blue-700 dark:text-blue-400 shrink-0 mt-0.5" />
+        <div className="space-y-1">
+          <h4 className="text-sm sm:text-base font-bold text-blue-950 dark:text-blue-200">
+            Data Rekapitulasi Wilayah &amp; Perlindungan Privasi Anak
+          </h4>
+          <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
+            Data yang ditampilkan pada halaman ini adalah <strong>Data Rekapitulasi Berjenjang</strong>. Sesuai ketentuan perlindungan privasi data anak, rincian data identitas lengkap hanya dapat diakses di <strong>Tingkat RT</strong> oleh <strong>Admin di Komunitas Warga Kita</strong>, <strong>Admin PAUD</strong>, dan <strong>Admin Posyandu</strong>.
+          </p>
         </div>
       </div>
 
