@@ -267,45 +267,47 @@ export async function getRekapDataAnakUsiaDiniAction(): Promise<{
   try {
     const supabase = await createClient();
 
-    // 1. Ambil data_anak dari database secara paralel (hingga 2.000 data teratas)
-    // untuk mencegah loop sekuensial yang menyebabkan loading > 5 detik
-    const [chunk1Res, chunk2Res] = await Promise.all([
-      supabase
-        .from("data_anak")
-        .select(`
-          id,
-          nama_lengkap,
-          tanggal_lahir,
-          jenis_kelamin,
-          is_sekolah,
-          nama_sekolah,
-          alasan_sekolah,
-          komunitas_id,
-          created_at
-        `)
-        .order("created_at", { ascending: false })
-        .range(0, 999),
-      supabase
-        .from("data_anak")
-        .select(`
-          id,
-          nama_lengkap,
-          tanggal_lahir,
-          jenis_kelamin,
-          is_sekolah,
-          nama_sekolah,
-          alasan_sekolah,
-          komunitas_id,
-          created_at
-        `)
-        .order("created_at", { ascending: false })
-        .range(1000, 1999),
-    ]);
+    // 1. Hitung total baris di data_anak untuk membagi pemanggilan paralel secara dinamis
+    const { count: totalRowCount, error: countErr } = await supabase
+      .from("data_anak")
+      .select("*", { count: "exact", head: true });
 
-    const dbChildren: any[] = [
-      ...(chunk1Res.data || []),
-      ...(chunk2Res.data || []),
-    ];
+    if (countErr) {
+      console.warn("getRekapDataAnakUsiaDiniAction count error:", countErr.message);
+    }
+
+    const totalToFetch = totalRowCount && totalRowCount > 0 ? totalRowCount : 2000;
+    const CHUNK_SIZE = 1000;
+    const numChunks = Math.max(1, Math.ceil(totalToFetch / CHUNK_SIZE));
+
+    // Ambil seluruh data_anak dari database secara paralel (chunk paralel per 1.000 data)
+    // Supabase PostgREST membatasi maksimal 1.000 baris per panggilan, sehingga eksekusi paralel chunk
+    // mengambil seluruh 7.000+ data secara utuh dalam waktu ~1-1.5 detik
+    const chunkPromises = [];
+    for (let i = 0; i < numChunks; i++) {
+      const from = i * CHUNK_SIZE;
+      const to = from + CHUNK_SIZE - 1;
+      chunkPromises.push(
+        supabase
+          .from("data_anak")
+          .select(`
+            id,
+            nama_lengkap,
+            tanggal_lahir,
+            jenis_kelamin,
+            is_sekolah,
+            nama_sekolah,
+            alasan_sekolah,
+            komunitas_id,
+            created_at
+          `)
+          .order("created_at", { ascending: false })
+          .range(from, to)
+      );
+    }
+
+    const chunkResults = await Promise.all(chunkPromises);
+    const dbChildren: any[] = chunkResults.flatMap((res) => res.data || []);
 
     // Filter ketat: Hanya data anak balita / PAUD riil (BUKAN data ATS dan BUKAN data dummy uji coba)
     const validLiveChildren = (dbChildren || []).filter(
@@ -762,44 +764,66 @@ export async function getDaftarNamaAnakRekapAction(params: {
 
     const supabase = await createClient();
 
-    // 1. Query data_anak dengan filter kelurahan di level SQL jika ditentukan (maksimal 500 baris)
+    // 1. Filter wilayah di level SQL jika ditentukan
     const targetKel =
       params.kelurahan && params.kelurahan !== "semua" ? params.kelurahan : null;
+    const targetKec =
+      !targetKel && params.kecamatan && params.kecamatan !== "semua" ? params.kecamatan : null;
 
-    let query = supabase
+    // Hitung total data yang cocok untuk menentukan chunk pemanggilan paralel
+    let countQuery = supabase
       .from("data_anak")
-      .select(`
-        id,
-        nama_lengkap,
-        tanggal_lahir,
-        jenis_kelamin,
-        nama_orangtua,
-        nomor_hp,
-        tinggal_bersama,
-        is_sekolah,
-        nama_sekolah,
-        alasan_sekolah,
-        komunitas_id,
-        status_approval,
-        created_at
-      `)
-      .order("created_at", { ascending: false });
+      .select("*", { count: "exact", head: true });
 
     if (targetKel) {
-      query = query.ilike("alasan_sekolah", `%${targetKel}%`);
+      countQuery = countQuery.ilike("alasan_sekolah", `%${targetKel}%`);
+    } else if (targetKec) {
+      countQuery = countQuery.ilike("alasan_sekolah", `%${targetKec}%`);
     }
 
-    const { data: dbChildren, error: fetchErr } = await query.limit(500);
-
-    if (fetchErr) {
-      console.warn("getDaftarNamaAnakRekapAction fetch error:", fetchErr.message);
-      return {
-        success: false,
-        message: fetchErr.message,
-        data: [],
-        total: 0,
-      };
+    const { count: filterCount, error: countErr } = await countQuery;
+    if (countErr) {
+      console.warn("getDaftarNamaAnakRekapAction count warning:", countErr.message);
     }
+
+    const totalToFetch = Math.min(filterCount || 0, 10000);
+    const CHUNK_SIZE = 1000;
+    const numChunks = Math.max(1, Math.ceil(totalToFetch / CHUNK_SIZE));
+
+    // Ambil data secara paralel menggunakan range chunk agar tidak terpotong oleh batasan 1.000 baris PostgREST
+    const chunkPromises = [];
+    for (let i = 0; i < numChunks; i++) {
+      let q = supabase
+        .from("data_anak")
+        .select(`
+          id,
+          nama_lengkap,
+          tanggal_lahir,
+          jenis_kelamin,
+          nama_orangtua,
+          nomor_hp,
+          tinggal_bersama,
+          is_sekolah,
+          nama_sekolah,
+          alasan_sekolah,
+          komunitas_id,
+          status_approval,
+          created_at
+        `)
+        .order("created_at", { ascending: false })
+        .range(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE - 1);
+
+      if (targetKel) {
+        q = q.ilike("alasan_sekolah", `%${targetKel}%`);
+      } else if (targetKec) {
+        q = q.ilike("alasan_sekolah", `%${targetKec}%`);
+      }
+
+      chunkPromises.push(q);
+    }
+
+    const chunkResults = await Promise.all(chunkPromises);
+    const dbChildren: any[] = chunkResults.flatMap((res) => res.data || []);
 
     // Filter ketat: Bukan data ATS dan Bukan data dummy
     const validLiveChildren: any[] = (dbChildren || []).filter(

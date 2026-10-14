@@ -495,39 +495,54 @@ export async function GET(req: NextRequest) {
 
     const supabase = getSupabaseAdmin();
 
-    // Ambil seluruh data anak (0–6 tahun) beserta riwayat DDTK terakhir
-    const { data: children, error } = await supabase
+    // Ambil seluruh data anak (0–6 tahun) beserta riwayat DDTK terakhir secara paralel chunk
+    // untuk mencegah batasan maksimal 1.000 baris PostgREST
+    const { count: totalRowCount, error: countErr } = await supabase
       .from("data_anak")
-      .select(`
-        id,
-        nama_lengkap,
-        tanggal_lahir,
-        jenis_kelamin,
-        nama_orangtua,
-        nomor_hp,
-        tinggal_bersama,
-        jarak_rumah_km,
-        is_sekolah,
-        nama_sekolah,
-        alasan_sekolah,
-        status_approval,
-        created_at,
-        updated_at,
-        ddks_records (
-          berat_badan,
-          tinggi_badan,
-          lingkar_kepala,
-          created_at
-        )
-      `)
-      .order("created_at", { ascending: false });
+      .select("*", { count: "exact", head: true });
 
-    if (error) {
-      return NextResponse.json(
-        { success: false, message: "Gagal mengambil data dari database: " + error.message },
-        { status: 500 }
+    if (countErr) {
+      console.warn("API GET data_anak count warning:", countErr.message);
+    }
+
+    const totalToFetch = totalRowCount && totalRowCount > 0 ? totalRowCount : 1000;
+    const CHUNK_SIZE = 1000;
+    const numChunks = Math.max(1, Math.ceil(totalToFetch / CHUNK_SIZE));
+
+    const chunkPromises = [];
+    for (let i = 0; i < numChunks; i++) {
+      chunkPromises.push(
+        supabase
+          .from("data_anak")
+          .select(`
+            id,
+            nama_lengkap,
+            tanggal_lahir,
+            jenis_kelamin,
+            nama_orangtua,
+            nomor_hp,
+            tinggal_bersama,
+            jarak_rumah_km,
+            is_sekolah,
+            nama_sekolah,
+            alasan_sekolah,
+            status_approval,
+            created_at,
+            updated_at,
+            ddks_records (
+              berat_badan,
+              tinggi_badan,
+              lingkar_kepala,
+              created_at
+            )
+          `)
+          .order("created_at", { ascending: false })
+          .range(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE - 1)
       );
     }
+
+    const chunkResults = await Promise.all(chunkPromises);
+    const children = chunkResults.flatMap((res) => res.data || []);
 
     // Filter hanya anak balita/PAUD riil (bukan data ATS dan bukan data dummy)
     const validChildren = ((children as any[]) || []).filter(
