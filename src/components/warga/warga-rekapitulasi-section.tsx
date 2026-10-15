@@ -58,7 +58,7 @@ export function WargaRekapitulasiSection({
       {/* ========================================================= */}
       {/* 2. FIVE STATISTIC CARDS (REKAPITULASI DATA)               */}
       {/* ========================================================= */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5 sm:gap-4">
         {/* KARTU 1: WARGA REGISTRASI */}
         <div className="relative overflow-hidden rounded-2xl border-2 border-emerald-200 dark:border-emerald-900/60 bg-gradient-to-br from-emerald-50/60 via-white to-teal-50/40 dark:from-slate-900 dark:via-slate-900 dark:to-emerald-950/30 p-5 space-y-4 shadow-2xs hover:shadow-md transition-all group">
           <div className="flex items-start justify-between gap-3">
