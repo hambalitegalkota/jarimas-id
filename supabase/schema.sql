@@ -26,6 +26,7 @@ ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS email TEXT;
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS nomor_hp TEXT;
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS avatar_url TEXT;
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS is_super_admin BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS is_admin_pusat BOOLEAN NOT NULL DEFAULT FALSE;
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT now();
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT now();
 
@@ -101,6 +102,7 @@ ALTER TABLE public.komunitas ADD COLUMN IF NOT EXISTS deskripsi TEXT;
 ALTER TABLE public.komunitas ADD COLUMN IF NOT EXISTS logo_url TEXT;
 ALTER TABLE public.komunitas ADD COLUMN IF NOT EXISTS kontak TEXT;
 ALTER TABLE public.komunitas ADD COLUMN IF NOT EXISTS jadwal TEXT;
+ALTER TABLE public.komunitas ADD COLUMN IF NOT EXISTS created_by UUID REFERENCES public.profiles(id) ON DELETE SET NULL;
 ALTER TABLE public.komunitas ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT now();
 ALTER TABLE public.komunitas ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT now();
 
@@ -548,7 +550,15 @@ DROP POLICY IF EXISTS "Anggota komunitas dapat dibaca oleh semua pengguna" ON pu
 CREATE POLICY "Anggota komunitas dapat dibaca oleh semua pengguna" ON public.anggota_komunitas FOR SELECT USING (true);
 
 DROP POLICY IF EXISTS "Pengguna dapat mendaftar ke komunitas" ON public.anggota_komunitas;
-CREATE POLICY "Pengguna dapat mendaftar ke komunitas" ON public.anggota_komunitas FOR INSERT WITH CHECK (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Pengguna dapat mendaftar atau didaftarkan admin ke komunitas" ON public.anggota_komunitas;
+CREATE POLICY "Pengguna dapat mendaftar atau didaftarkan admin ke komunitas" ON public.anggota_komunitas FOR INSERT WITH CHECK (
+  auth.uid() = user_id OR
+  EXISTS (
+    SELECT 1 FROM public.profiles
+    WHERE id = auth.uid() AND (is_super_admin = true OR is_admin_pusat = true)
+  ) OR
+  public.check_user_can_manage_community(auth.uid(), komunitas_id)
+);
 
 -- Helper function: Cek wewenang hierarkis admin komunitas
 CREATE OR REPLACE FUNCTION public.check_user_can_manage_community(

@@ -9,6 +9,7 @@ import {
   ArrowLeft,
   Store,
   Sparkles,
+  MessageSquare,
 } from "lucide-react";
 import { isSuperOrAdminPusat, isAdminPusat, isSuperAdmin } from "@/lib/utils";
 
@@ -114,6 +115,14 @@ export default async function AdminLayout({
             >
               <Users className="h-3.5 w-3.5" />
               <span>[03] APPROVAL KOMUNITAS</span>
+            </Link>
+
+            <Link
+              href="/kabar?tab=percakapan"
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-mono font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-950/30 border border-emerald-300 dark:border-emerald-800 transition-all hover:bg-emerald-100 dark:hover:bg-emerald-900/50"
+            >
+              <MessageSquare className="h-3.5 w-3.5" />
+              <span>[04] GRUP KEGIATAN & CHAT</span>
             </Link>
           </div>
         </div>

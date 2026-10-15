@@ -1172,12 +1172,16 @@ export async function getGroupChatRooms(): Promise<{
   message?: string;
   rooms: import("@/types/database").GrupChatRoom[];
   currentUserId?: string | null;
+  isSuperAdmin?: boolean;
+  isAdminPusat?: boolean;
+  canManageGrupKegiatan?: boolean;
 }> {
   try {
     const supabase = await createClient();
 
     let currentUserId: string | null = null;
     let isSuperAdmin = false;
+    let isAdminPusatUser = false;
     try {
       const {
         data: { user },
@@ -1189,18 +1193,58 @@ export async function getGroupChatRooms(): Promise<{
           .select("id, is_super_admin, is_admin_pusat, nama_lengkap, email")
           .eq("id", user.id)
           .maybeSingle();
-        isSuperAdmin = checkIsSuperAdmin({
+        const userCtx = {
           ...prof,
           id: user.id,
           email: prof?.email || user.email,
           nama_lengkap: prof?.nama_lengkap || user.user_metadata?.nama_lengkap,
-        });
+        };
+        isSuperAdmin = checkIsSuperAdmin(userCtx);
+        isAdminPusatUser = !isSuperAdmin && isAdminPusat(userCtx);
       }
     } catch {
       // Tamu
     }
 
-    // Ambil komunitas aktif dari database
+    const canManageKegiatan = isSuperAdmin || isAdminPusatUser;
+
+    // 1. Ambil seluruh grup kegiatan (jenis = 'kegiatan')
+    const { data: dbKegiatanGroups } = await supabase
+      .from("komunitas")
+      .select(`
+        id,
+        nama,
+        jenis,
+        deskripsi,
+        logo_url,
+        kecamatan,
+        kelurahan,
+        rw,
+        rt,
+        created_at,
+        created_by
+      `)
+      .eq("jenis", "kegiatan")
+      .order("created_at", { ascending: false });
+
+    // 2. Ambil profil pembuat grup kegiatan untuk menampilkan nama pembuat
+    const creatorIds = Array.from(
+      new Set(
+        (dbKegiatanGroups || [])
+          .map((g) => g.created_by)
+          .filter((id): id is string => Boolean(id))
+      )
+    );
+    const { data: creatorProfiles } =
+      creatorIds.length > 0
+        ? await supabase
+            .from("profiles")
+            .select("id, nama_lengkap, is_admin_pusat, is_super_admin")
+            .in("id", creatorIds)
+        : { data: [] };
+    const creatorMap = new Map((creatorProfiles || []).map((p) => [p.id, p]));
+
+    // 3. Ambil komunitas umum (Posyandu, Warga Kita, PAUD, PKBM)
     const { data: dbCommunities } = await supabase
       .from("komunitas")
       .select(`
@@ -1214,13 +1258,13 @@ export async function getGroupChatRooms(): Promise<{
         rw,
         rt
       `)
+      .neq("jenis", "kegiatan")
       .order("nama", { ascending: true })
       .limit(60);
 
     const communityList = [...(dbCommunities || [])];
-    const existingIds = new Set(communityList.map((c) => c.id));
 
-    // Ambil jumlah anggota masing-masing komunitas & keanggotaan user saat ini
+    // 4. Ambil keanggotaan user saat ini & jumlah anggota
     const { data: memberCounts } = await supabase
       .from("anggota_komunitas")
       .select("komunitas_id, user_id, status")
@@ -1238,9 +1282,15 @@ export async function getGroupChatRooms(): Promise<{
       });
     }
 
-    // Filter komunitas yang relevan:
-    // Super Admin: seluruh komunitas
-    // User reguler: HANYA komunitas yang telah diikuti (approved)
+    // Filter grup kegiatan yang relevan:
+    // - Super Admin & Admin Pusat: melihat SEMUA grup kegiatan untuk kemudahan monitoring & kelola
+    // - Pengguna umum: HANYA grup kegiatan di mana mereka telah diundang / berstatus approved
+    const relevantKegiatan = (dbKegiatanGroups || []).filter((g) => {
+      if (canManageKegiatan) return true;
+      return myMembershipSet.has(g.id);
+    });
+
+    // Filter komunitas reguler:
     let relevantCommunities = communityList;
     if (!isSuperAdmin) {
       relevantCommunities = communityList.filter((c) => {
@@ -1249,8 +1299,8 @@ export async function getGroupChatRooms(): Promise<{
       });
     }
 
-    // Ambil pesan terakhir grup jika ada
-    let lastMsgMap: Record<string, { pesan: string; sender_name: string; created_at: string }> = {};
+    // 5. Ambil pesan terakhir dari grup
+    const lastMsgMap: Record<string, { pesan: string; sender_name: string; created_at: string }> = {};
     try {
       const { data: lastMessages } = await supabase
         .from("pesan_grup")
@@ -1279,7 +1329,36 @@ export async function getGroupChatRooms(): Promise<{
       // Fallback
     }
 
-    const rooms: import("@/types/database").GrupChatRoom[] = relevantCommunities.map((c) => {
+    // Format Grup Kegiatan Rooms (Prioritas Atas)
+    const kegiatanRooms: import("@/types/database").GrupChatRoom[] = relevantKegiatan.map((g) => {
+      const creatorProf = g.created_by ? creatorMap.get(g.created_by) : null;
+      const creatorName =
+        creatorProf?.nama_lengkap ||
+        (creatorProf?.is_super_admin ? "Super Admin" : "Admin Pusat");
+      const totalAnggota = countMap[g.id] || 0;
+      const isMember = myMembershipSet.has(g.id);
+
+      return {
+        id: g.id,
+        nama: g.nama || "Percakapan Grup Kegiatan",
+        jenis: "kegiatan",
+        deskripsi: g.deskripsi,
+        logo_url: g.logo_url,
+        kecamatan: g.kecamatan,
+        kelurahan: g.kelurahan,
+        rw: g.rw,
+        rt: g.rt,
+        jumlah_anggota: totalAnggota,
+        last_message: lastMsgMap[g.id] || null,
+        is_member: isMember,
+        created_by: g.created_by || null,
+        creator_name: creatorName,
+        is_kegiatan: true,
+      };
+    });
+
+    // Format Regular Community Rooms
+    const regularRooms: import("@/types/database").GrupChatRoom[] = relevantCommunities.map((c) => {
       const cUuid = toValidUUID(c.id);
       const totalAnggota = (countMap[c.id] || 0) + (countMap[cUuid] || 0);
       const isMember = myMembershipSet.has(c.id) || myMembershipSet.has(cUuid);
@@ -1297,13 +1376,20 @@ export async function getGroupChatRooms(): Promise<{
         jumlah_anggota: totalAnggota,
         last_message: lastMsgMap[c.id] || lastMsgMap[cUuid] || null,
         is_member: isMember,
+        is_kegiatan: false,
       };
     });
+
+    // Urutkan: Grup Kegiatan di bagian atas, disusul Grup Komunitas reguler
+    const rooms = [...kegiatanRooms, ...regularRooms];
 
     return {
       success: true,
       rooms,
       currentUserId,
+      isSuperAdmin,
+      isAdminPusat: isAdminPusatUser,
+      canManageGrupKegiatan: canManageKegiatan,
     };
   } catch (err: any) {
     console.error("Error getGroupChatRooms:", err);
@@ -1311,6 +1397,9 @@ export async function getGroupChatRooms(): Promise<{
       success: false,
       message: err?.message || "Gagal memuat grup komunitas.",
       rooms: [],
+      isSuperAdmin: false,
+      isAdminPusat: false,
+      canManageGrupKegiatan: false,
     };
   }
 }

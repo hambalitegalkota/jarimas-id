@@ -66,7 +66,7 @@ export function KomunitasRekapSection({
     : null;
 
   // Tema warna dinamis sesuai tab aktif
-  const theme = {
+  const themeMap: Record<string, any> = {
     posyandu: {
       border: "border-emerald-200 dark:border-emerald-800/80",
       bgGradient:
@@ -127,7 +127,9 @@ export function KomunitasRekapSection({
       countBadge:
         "bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-200",
     },
-  }[currentTab] || {
+  };
+
+  const theme = themeMap[currentTab] || {
     border: "border-emerald-200 dark:border-emerald-800/80",
     bgGradient:
       "bg-gradient-to-br from-emerald-50/60 via-white to-teal-50/40 dark:from-slate-900 dark:via-slate-900 dark:to-emerald-950/20",

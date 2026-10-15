@@ -68,7 +68,7 @@ export default async function KabarPage({ searchParams }: KabarPageProps) {
     }),
     currentTab === "warga" || currentTab === "percakapan"
       ? getRegisteredUsers()
-      : Promise.resolve({ success: true, users: [], currentUserId: null, isSuperAdmin: false, totalCount: 0 }),
+      : Promise.resolve({ success: true, users: [], currentUserId: null, isSuperAdmin: false, isAdminPusat: false, totalCount: 0 }),
     currentTab === "percakapan"
       ? getRecentConversations()
       : Promise.resolve({ conversations: [] }),
@@ -80,6 +80,8 @@ export default async function KabarPage({ searchParams }: KabarPageProps) {
   const feedItems = feedResult.data;
   const currentUserId = feedResult.currentUserId || registeredUsersResult.currentUserId;
   const isSuperAdmin = Boolean(feedResult.isSuperAdmin ?? registeredUsersResult.isSuperAdmin);
+  const isAdminPusat = Boolean(registeredUsersResult.isAdminPusat ?? (groupRoomsResult as any)?.isAdminPusat);
+  const canManageGrupKegiatan = isSuperAdmin || isAdminPusat;
 
   const totalUnreadChat = (convResult.conversations || []).reduce(
     (acc, c) => acc + c.unreadCount,
@@ -364,6 +366,8 @@ export default async function KabarPage({ searchParams }: KabarPageProps) {
                           allUsers={registeredUsersResult.users || []}
                           currentUserId={currentUserId}
                           isSuperAdmin={isSuperAdmin}
+                          isAdminPusat={isAdminPusat}
+                          canManageGrupKegiatan={canManageGrupKegiatan}
                         />
                       )}
                     </div>

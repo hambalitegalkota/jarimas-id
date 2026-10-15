@@ -2,7 +2,7 @@ export type UserRole = "Super Admin" | "Admin Pusat" | "Pengurus" | "Kader" | "A
 export type MembershipStatus = "pending" | "approved" | "rejected";
 export type VisibilitasKabar = "publik" | "teman" | "komunitas";
 export type SortingKabar = "terbaru" | "terpopuler";
-export type JenisKomunitas = "warga_kita" | "posyandu" | "satuan_paud" | "pkbm_skb";
+export type JenisKomunitas = "warga_kita" | "posyandu" | "satuan_paud" | "pkbm_skb" | "kegiatan";
 
 export const JARIMAS_BOT_ID = "00000000-0000-0000-0000-000000000001";
 export const JARIMAS_BOT_NAME = "Jarimas";
@@ -634,6 +634,27 @@ export interface GrupChatRoom {
     created_at: string;
   } | null;
   is_member?: boolean;
+  created_by?: string | null;
+  creator_name?: string | null;
+  is_kegiatan?: boolean;
+  kategori?: string | null;
+}
+
+export interface GrupKegiatanMemberItem {
+  id: string;
+  user_id: string;
+  komunitas_id: string;
+  peran: string;
+  status: string;
+  created_at: string;
+  profile?: {
+    id: string;
+    nama_lengkap: string;
+    email?: string | null;
+    avatar_url?: string | null;
+    is_super_admin?: boolean;
+    is_admin_pusat?: boolean;
+  } | null;
 }
 
 export interface RecentConversationItem {
