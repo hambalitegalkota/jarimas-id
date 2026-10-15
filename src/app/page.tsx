@@ -203,18 +203,7 @@ export default async function HomePage() {
       {/* 2. HORIZONTAL QUICK-ACTION STORY CHIPS (RATA KIRI KANAN) */}
       {/* ========================================================= */}
       <section className="flex items-center justify-between gap-2 sm:gap-2.5 overflow-x-auto pb-1 scrollbar-none w-full">
-        {/* 1. Posyandu */}
-        <Link
-          href="/komunitas?tab=posyandu"
-          className="flex-1 min-w-max inline-flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-2xl bg-emerald-50/80 dark:bg-emerald-950/30 border-2 border-emerald-200 dark:border-emerald-800/80 hover:border-emerald-500 text-emerald-950 dark:text-emerald-200 text-xs font-extrabold whitespace-nowrap transition-all shadow-2xs shrink-0 sm:shrink active:scale-95 text-center"
-        >
-          <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-emerald-600 text-white font-bold shrink-0">
-            <HeartPulse className="h-3.5 w-3.5" />
-          </div>
-          <span>Posyandu</span>
-        </Link>
-
-        {/* 2. Warga Kita */}
+        {/* 1. Warga Kita */}
         <Link
           href="/komunitas?tab=warga_kita"
           className="flex-1 min-w-max inline-flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-2xl bg-sky-50/80 dark:bg-sky-950/30 border-2 border-sky-200 dark:border-sky-800/80 hover:border-sky-500 text-sky-950 dark:text-sky-200 text-xs font-extrabold whitespace-nowrap transition-all shadow-2xs shrink-0 sm:shrink active:scale-95 text-center"
@@ -223,6 +212,17 @@ export default async function HomePage() {
             <Building2 className="h-3.5 w-3.5" />
           </div>
           <span>Warga Kita</span>
+        </Link>
+
+        {/* 2. Posyandu */}
+        <Link
+          href="/komunitas?tab=posyandu"
+          className="flex-1 min-w-max inline-flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-2xl bg-emerald-50/80 dark:bg-emerald-950/30 border-2 border-emerald-200 dark:border-emerald-800/80 hover:border-emerald-500 text-emerald-950 dark:text-emerald-200 text-xs font-extrabold whitespace-nowrap transition-all shadow-2xs shrink-0 sm:shrink active:scale-95 text-center"
+        >
+          <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-emerald-600 text-white font-bold shrink-0">
+            <HeartPulse className="h-3.5 w-3.5" />
+          </div>
+          <span>Posyandu</span>
         </Link>
 
         {/* 3. PAUD */}
@@ -236,7 +236,18 @@ export default async function HomePage() {
           <span>PAUD</span>
         </Link>
 
-        {/* 4. Jarimas Market */}
+        {/* 4. PKBM & SKB */}
+        <Link
+          href="/komunitas?tab=pkbm_skb"
+          className="flex-1 min-w-max inline-flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-2xl bg-amber-50/80 dark:bg-amber-950/30 border-2 border-amber-200 dark:border-amber-800/80 hover:border-amber-500 text-amber-950 dark:text-amber-200 text-xs font-extrabold whitespace-nowrap transition-all shadow-2xs shrink-0 sm:shrink active:scale-95 text-center"
+        >
+          <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-amber-600 text-white font-bold shrink-0">
+            <BookOpen className="h-3.5 w-3.5" />
+          </div>
+          <span>PKBM &amp; SKB</span>
+        </Link>
+
+        {/* 5. Jarimas Market */}
         {SHOW_MARKET_FEATURE && (
           <Link
             href="/market"
@@ -249,7 +260,7 @@ export default async function HomePage() {
           </Link>
         )}
 
-        {/* 5. Kabar Warga */}
+        {/* 6. Kabar Warga */}
         <Link
           href="/kabar"
           className="flex-1 min-w-max inline-flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-2xl bg-emerald-50/80 dark:bg-emerald-950/30 border-2 border-emerald-200 dark:border-emerald-800/80 hover:border-emerald-500 text-emerald-950 dark:text-emerald-200 text-xs font-extrabold whitespace-nowrap transition-all shadow-2xs shrink-0 sm:shrink active:scale-95 text-center"
@@ -258,17 +269,6 @@ export default async function HomePage() {
             <MessageSquare className="h-3.5 w-3.5" />
           </div>
           <span>Kabar Warga</span>
-        </Link>
-
-        {/* 6. PKBM & SKB */}
-        <Link
-          href="/komunitas?tab=pkbm_skb"
-          className="flex-1 min-w-max inline-flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-2xl bg-amber-50/80 dark:bg-amber-950/30 border-2 border-amber-200 dark:border-amber-800/80 hover:border-amber-500 text-amber-950 dark:text-amber-200 text-xs font-extrabold whitespace-nowrap transition-all shadow-2xs shrink-0 sm:shrink active:scale-95 text-center"
-        >
-          <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-amber-600 text-white font-bold shrink-0">
-            <BookOpen className="h-3.5 w-3.5" />
-          </div>
-          <span>PKBM &amp; SKB</span>
         </Link>
       </section>
 
