@@ -3,6 +3,7 @@ import {
   Users,
   HeartPulse,
   GraduationCap,
+  BookOpen,
   Sparkles,
   ArrowRight,
   ShieldCheck,
@@ -37,8 +38,8 @@ export function WargaRekapitulasiSection({
           <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
             Partisipasi Warga &amp; Jejaring Komunitas
           </h2>
-          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 max-w-xl leading-relaxed">
-            Ringkasan data warga yang telah registrasi dan keaktifan masyarakat yang tergabung dalam Komunitas Posyandu serta Satuan PAUD Kota Tegal.
+          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 max-w-2xl leading-relaxed">
+            Ringkasan data warga yang telah registrasi dan keaktifan masyarakat yang tergabung dalam Komunitas RT, Posyandu, Satuan PAUD, serta PKBM &amp; SKB Kota Tegal.
           </p>
         </div>
 
@@ -55,9 +56,9 @@ export function WargaRekapitulasiSection({
       </div>
 
       {/* ========================================================= */}
-      {/* 2. THREE STATISTIC CARDS (REKAPITULASI DATA)              */}
+      {/* 2. FIVE STATISTIC CARDS (REKAPITULASI DATA)               */}
       {/* ========================================================= */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
         {/* KARTU 1: WARGA REGISTRASI */}
         <div className="relative overflow-hidden rounded-2xl border-2 border-emerald-200 dark:border-emerald-900/60 bg-gradient-to-br from-emerald-50/60 via-white to-teal-50/40 dark:from-slate-900 dark:via-slate-900 dark:to-emerald-950/30 p-5 space-y-4 shadow-2xs hover:shadow-md transition-all group">
           <div className="flex items-start justify-between gap-3">
@@ -98,7 +99,46 @@ export function WargaRekapitulasiSection({
           </div>
         </div>
 
-        {/* KARTU 2: WARGA KOMUNITAS POSYANDU */}
+        {/* KARTU 2: WARGA KOMUNITAS RT */}
+        <div className="relative overflow-hidden rounded-2xl border-2 border-sky-200 dark:border-sky-900/60 bg-gradient-to-br from-sky-50/60 via-white to-blue-50/40 dark:from-slate-900 dark:via-slate-900 dark:to-sky-950/30 p-5 space-y-4 shadow-2xs hover:shadow-md transition-all group">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-tr from-sky-600 to-blue-600 text-white font-black shadow-md shadow-sky-600/20 group-hover:scale-105 transition-transform">
+              <Building2 className="h-6 w-6" />
+            </div>
+            <span className="inline-flex items-center gap-1 rounded-full bg-sky-100 dark:bg-sky-950 px-2.5 py-0.5 text-[10px] font-black text-sky-800 dark:text-sky-300 border border-sky-300 dark:border-sky-800 font-mono">
+              {rekap.totalKomunitasRt ?? rekap.totalKomunitasWargaKita ?? 0} Lingkungan RT
+            </span>
+          </div>
+
+          <div className="space-y-1">
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl sm:text-4xl font-black font-mono tracking-tight text-slate-900 dark:text-slate-100">
+                {rekap.totalWargaRt ?? rekap.totalWargaWargaKita ?? 0}
+              </span>
+              <span className="text-xs font-bold text-slate-500 uppercase">
+                Warga RT
+              </span>
+            </div>
+            <h4 className="text-sm font-black text-slate-900 dark:text-slate-100">
+              Tergabung di Komunitas RT
+            </h4>
+            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+              Warga dan pengurus rukun tetangga yang terhubung untuk koordinasi lingkungan dan aspirasi warga.
+            </p>
+          </div>
+
+          <div className="pt-3 border-t border-sky-200/60 dark:border-sky-900/40 flex items-center justify-between text-xs font-bold text-sky-800 dark:text-sky-300">
+            <Link
+              href="/komunitas?tab=warga_kita"
+              className="inline-flex items-center gap-1 hover:underline group-hover:translate-x-0.5 transition-transform"
+            >
+              <span>Jelajahi Warga RT</span>
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+        </div>
+
+        {/* KARTU 3: WARGA KOMUNITAS POSYANDU */}
         <div className="relative overflow-hidden rounded-2xl border-2 border-rose-200 dark:border-rose-900/60 bg-gradient-to-br from-rose-50/60 via-white to-pink-50/40 dark:from-slate-900 dark:via-slate-900 dark:to-rose-950/30 p-5 space-y-4 shadow-2xs hover:shadow-md transition-all group">
           <div className="flex items-start justify-between gap-3">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-tr from-rose-600 to-pink-600 text-white font-black shadow-md shadow-rose-600/20 group-hover:scale-105 transition-transform">
@@ -167,10 +207,49 @@ export function WargaRekapitulasiSection({
 
           <div className="pt-3 border-t border-indigo-200/60 dark:border-indigo-900/40 flex items-center justify-between text-xs font-bold text-indigo-800 dark:text-indigo-300">
             <Link
-              href="/komunitas?tab=paud"
+              href="/komunitas?tab=satuan_paud"
               className="inline-flex items-center gap-1 hover:underline group-hover:translate-x-0.5 transition-transform"
             >
               <span>Jelajahi Satuan PAUD</span>
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+        </div>
+
+        {/* KARTU 4: WARGA KOMUNITAS PKBM & SKB */}
+        <div className="relative overflow-hidden rounded-2xl border-2 border-amber-200 dark:border-amber-900/60 bg-gradient-to-br from-amber-50/60 via-white to-yellow-50/40 dark:from-slate-900 dark:via-slate-900 dark:to-amber-950/30 p-5 space-y-4 shadow-2xs hover:shadow-md transition-all group">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-tr from-amber-600 to-yellow-600 text-white font-black shadow-md shadow-amber-600/20 group-hover:scale-105 transition-transform">
+              <BookOpen className="h-6 w-6" />
+            </div>
+            <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 dark:bg-amber-950 px-2.5 py-0.5 text-[10px] font-black text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-800 font-mono">
+              {rekap.totalKomunitasPkbmSkb ?? 0} PKBM &amp; SKB
+            </span>
+          </div>
+
+          <div className="space-y-1">
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl sm:text-4xl font-black font-mono tracking-tight text-slate-900 dark:text-slate-100">
+                {rekap.totalWargaPkbmSkb ?? 0}
+              </span>
+              <span className="text-xs font-bold text-slate-500 uppercase">
+                Pamong / Warga
+              </span>
+            </div>
+            <h4 className="text-sm font-black text-slate-900 dark:text-slate-100">
+              Tergabung di PKBM &amp; SKB
+            </h4>
+            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+              Pamong belajar, pendidik, dan warga belajar yang terhubung untuk pendidikan kesetaraan &amp; vokasi.
+            </p>
+          </div>
+
+          <div className="pt-3 border-t border-amber-200/60 dark:border-amber-900/40 flex items-center justify-between text-xs font-bold text-amber-800 dark:text-amber-300">
+            <Link
+              href="/komunitas?tab=pkbm_skb"
+              className="inline-flex items-center gap-1 hover:underline group-hover:translate-x-0.5 transition-transform"
+            >
+              <span>Jelajahi PKBM &amp; SKB</span>
               <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </div>

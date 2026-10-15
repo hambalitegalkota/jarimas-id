@@ -1855,9 +1855,12 @@ export async function getRekapitulasiWargaKomunitas(): Promise<
 
     const posyanduUserSet = new Set<string>();
     const paudUserSet = new Set<string>();
+    const pkbmSkbUserSet = new Set<string>();
     const wargaKitaUserSet = new Set<string>();
     const posyanduIdSet = new Set<string>();
     const paudIdSet = new Set<string>();
+    const pkbmSkbIdSet = new Set<string>();
+    const wargaKitaIdSet = new Set<string>();
 
     if (memberships) {
       memberships.forEach((m: any) => {
@@ -1869,8 +1872,13 @@ export async function getRekapitulasiWargaKomunitas(): Promise<
         } else if (jenis === "satuan_paud") {
           paudUserSet.add(m.user_id);
           if (m.komunitas.id) paudIdSet.add(m.komunitas.id);
+        } else if (jenis === "pkbm_skb") {
+          pkbmSkbUserSet.add(m.user_id);
+          if (m.komunitas.id) pkbmSkbIdSet.add(m.komunitas.id);
         } else {
+          // Komunitas Warga Kita / RT
           wargaKitaUserSet.add(m.user_id);
+          if (m.komunitas.id) wargaKitaIdSet.add(m.komunitas.id);
         }
       });
     }
@@ -1879,9 +1887,14 @@ export async function getRekapitulasiWargaKomunitas(): Promise<
       totalRegisteredUsers: userCount || 0,
       totalWargaPosyandu: posyanduUserSet.size,
       totalWargaPaud: paudUserSet.size,
+      totalWargaPkbmSkb: pkbmSkbUserSet.size,
+      totalWargaRt: wargaKitaUserSet.size,
+      totalWargaWargaKita: wargaKitaUserSet.size,
       totalKomunitasPosyandu: posyanduIdSet.size,
       totalKomunitasPaud: paudIdSet.size,
-      totalWargaWargaKita: wargaKitaUserSet.size,
+      totalKomunitasPkbmSkb: pkbmSkbIdSet.size,
+      totalKomunitasRt: wargaKitaIdSet.size,
+      totalKomunitasWargaKita: wargaKitaIdSet.size,
     };
   } catch (err) {
     console.error("Error getRekapitulasiWargaKomunitas:", err);
@@ -1889,9 +1902,14 @@ export async function getRekapitulasiWargaKomunitas(): Promise<
       totalRegisteredUsers: 0,
       totalWargaPosyandu: 0,
       totalWargaPaud: 0,
+      totalWargaPkbmSkb: 0,
+      totalWargaRt: 0,
+      totalWargaWargaKita: 0,
       totalKomunitasPosyandu: 0,
       totalKomunitasPaud: 0,
-      totalWargaWargaKita: 0,
+      totalKomunitasPkbmSkb: 0,
+      totalKomunitasRt: 0,
+      totalKomunitasWargaKita: 0,
     };
   }
 }

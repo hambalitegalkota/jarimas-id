@@ -666,8 +666,13 @@ export interface RekapitulasiWargaKomunitasResult {
   totalRegisteredUsers: number;
   totalWargaPosyandu: number;
   totalWargaPaud: number;
+  totalWargaPkbmSkb?: number;
+  totalWargaRt?: number;
   totalKomunitasPosyandu: number;
   totalKomunitasPaud: number;
+  totalKomunitasPkbmSkb?: number;
+  totalKomunitasRt?: number;
+  totalKomunitasWargaKita?: number;
   totalWargaWargaKita?: number;
 }
 
