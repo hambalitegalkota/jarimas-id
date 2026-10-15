@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/utils/supabase/server";
 import { DataAtsSchema, DdtkSchema } from "@/lib/zod-schemas";
-import { toValidUUID, isSuperAdmin as checkIsSuperAdmin, isRoleAdmin } from "@/lib/utils";
+import { toValidUUID, isSuperAdmin as checkIsSuperAdmin, isAdminPusat as checkIsAdminPusat, isSuperOrAdminPusat, isRoleAdmin } from "@/lib/utils";
 import { normalizeKeinginanSekolah } from "@/lib/data-anak-helpers";
 import { getKomunitasDetail } from "./komunitas";
 import type {
@@ -359,14 +359,14 @@ export async function validateDataAts(dataAtsId: string): Promise<{
       .eq("id", user.id)
       .maybeSingle();
 
-    const isSuperAdmin = checkIsSuperAdmin({
+    const isSuperOrPusat = isSuperOrAdminPusat({
       ...profile,
       id: user.id,
       email: profile?.email || user.email,
       nama_lengkap: profile?.nama_lengkap || user.user_metadata?.nama_lengkap,
     });
 
-    if (!isSuperAdmin) {
+    if (!isSuperOrPusat) {
       const { data: memberships } = await supabase
         .from("anggota_komunitas")
         .select("peran, status")
@@ -582,7 +582,7 @@ export async function updateDataAts(
       .eq("id", user.id)
       .maybeSingle();
 
-    const isSuperAdmin = checkIsSuperAdmin({
+    const isSuperOrPusat = isSuperOrAdminPusat({
       ...profile,
       id: user.id,
       email: profile?.email || user.email,
@@ -590,7 +590,7 @@ export async function updateDataAts(
     });
     const isCreator = existingChild.created_by === user.id;
 
-    if (!isSuperAdmin && !isCreator) {
+    if (!isSuperOrPusat && !isCreator) {
       const { data: memberships } = await supabase
         .from("anggota_komunitas")
         .select("peran, status")
@@ -832,7 +832,7 @@ export async function kembaliBersekolah(
       .eq("id", user.id)
       .maybeSingle();
 
-    const isSuperAdmin = checkIsSuperAdmin({
+    const isSuperOrPusat = isSuperOrAdminPusat({
       ...profile,
       id: user.id,
       email: profile?.email || user.email,
@@ -840,7 +840,7 @@ export async function kembaliBersekolah(
     });
     const isCreator = existingChild.created_by === user.id;
 
-    if (!isSuperAdmin && !isCreator) {
+    if (!isSuperOrPusat && !isCreator) {
       const { data: membership } = await supabase
         .from("anggota_komunitas")
         .select("peran, status")
@@ -964,15 +964,16 @@ export async function deleteDataAts(
       .eq("id", user.id)
       .maybeSingle();
 
-    const isSuperAdmin = checkIsSuperAdmin({
+    const userProfileCtx = {
       ...profile,
       id: user.id,
       email: profile?.email || user.email,
       nama_lengkap: profile?.nama_lengkap || user.user_metadata?.nama_lengkap,
-    });
+    };
+    const isSuperOrPusat = isSuperOrAdminPusat(userProfileCtx);
     const isCreator = existingChild.created_by === user.id;
 
-    if (!isSuperAdmin && !isCreator) {
+    if (!isSuperOrPusat && !isCreator) {
       const { data: membership } = await supabase
         .from("anggota_komunitas")
         .select("peran, status")
@@ -1085,12 +1086,14 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
           .eq("id", user.id)
           .maybeSingle();
 
-        isSuperAdmin = checkIsSuperAdmin({
+        const profileCtx = {
           ...profile,
           id: user.id,
           email: profile?.email || user.email,
           nama_lengkap: profile?.nama_lengkap || user.user_metadata?.nama_lengkap,
-        });
+        };
+        const isSuperOrPusat = isSuperOrAdminPusat(profileCtx);
+        isSuperAdmin = isSuperOrPusat;
         const dbKomunitasId = toValidUUID(komunitasId);
 
         const { data: member } = await supabase
@@ -1115,9 +1118,9 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
           roleLower.includes("admin") ||
           roleLower.includes("ketua");
 
-        canValidate = isSuperAdmin || isKader || isPengurus;
-        canEditDdtk = isSuperAdmin || isKader;
-        canManage = isSuperAdmin || isKader || isPengurus;
+        canValidate = isSuperOrPusat || isKader || isPengurus;
+        canEditDdtk = isSuperOrPusat || isKader;
+        canManage = isSuperOrPusat || isKader || isPengurus;
       }
     } catch {
       // Tamu
@@ -1160,7 +1163,7 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
     const isPosyanduCommunity = Boolean(
       meta.jenis === "posyandu" || targetKomunitas?.jenis === "posyandu"
     );
-    canValidate = (isRtCommunity || isPosyanduCommunity) && (isSuperAdmin || canManage);
+    canValidate = isSuperAdmin || ((isRtCommunity || isPosyanduCommunity) && canManage);
 
     // 2. Otorisasi Daftar Rincian Lengkap Nama Anak:
     // Sesuai ketentuan: Data lengkap hanya dapat dilihat di level RT oleh Admin Komunitas Warga Kita,

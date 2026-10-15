@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/utils/supabase/server";
 import { DataAnakSchema, DdksSchema } from "@/lib/zod-schemas";
-import { toValidUUID, isSuperAdmin as checkIsSuperAdmin, isRoleAdmin } from "@/lib/utils";
+import { toValidUUID, isSuperAdmin as checkIsSuperAdmin, isAdminPusat as checkIsAdminPusat, isSuperOrAdminPusat, isRoleAdmin } from "@/lib/utils";
 import { extractKomunitasMetadata } from "@/lib/admin-helpers";
 import { findOrGenerateKomunitasSeed } from "@/lib/constants/tegal-data";
 import {
@@ -314,18 +314,18 @@ export async function validateDataAnak(dataAnakId: string): Promise<{
     // Verifikasi otorisasi: Apakah user adalah Super Admin, Kader Posyandu, atau Pengurus RT
     const { data: profile } = await supabase
       .from("profiles")
-      .select("is_super_admin, nama_lengkap, email")
+      .select("is_super_admin, is_admin_pusat, nama_lengkap, email")
       .eq("id", user.id)
       .maybeSingle();
 
-    const isSuperAdmin = checkIsSuperAdmin({
+    const isSuperOrPusat = isSuperOrAdminPusat({
       ...profile,
       id: user.id,
       email: profile?.email || user.email,
       nama_lengkap: profile?.nama_lengkap || user.user_metadata?.nama_lengkap,
     });
 
-    if (!isSuperAdmin) {
+    if (!isSuperOrPusat) {
       const { data: memberships } = await supabase
         .from("anggota_komunitas")
         .select("peran, status")
@@ -449,18 +449,18 @@ export async function addDdksRecord(formData: FormData): Promise<{
     // Verifikasi otorisasi Kader/Nakes
     const { data: profile } = await supabase
       .from("profiles")
-      .select("is_super_admin, nama_lengkap, email")
+      .select("is_super_admin, is_admin_pusat, nama_lengkap, email")
       .eq("id", user.id)
       .maybeSingle();
 
-    const isSuperAdmin = checkIsSuperAdmin({
+    const isSuperOrPusat = isSuperOrAdminPusat({
       ...profile,
       id: user.id,
       email: profile?.email || user.email,
       nama_lengkap: profile?.nama_lengkap || user.user_metadata?.nama_lengkap,
     });
 
-    if (!isSuperAdmin) {
+    if (!isSuperOrPusat) {
       const { data: memberships } = await supabase
         .from("anggota_komunitas")
         .select("peran, status")
@@ -635,12 +635,15 @@ export async function getDataAnakByKomunitas(komunitasId: string): Promise<{
           .eq("id", user.id)
           .maybeSingle();
 
-        const isSuperAdmin = checkIsSuperAdmin({
+        const userProfileCtx = {
           ...profile,
           id: user.id,
           email: profile?.email || user.email,
           nama_lengkap: profile?.nama_lengkap || user.user_metadata?.nama_lengkap,
-        });
+        };
+        const isSuperAdmin = checkIsSuperAdmin(userProfileCtx);
+        const isAdminPusat = checkIsAdminPusat(userProfileCtx);
+        const isSuperOrPusat = isSuperAdmin || isAdminPusat;
 
         const dbKomunitasId = toValidUUID(komunitasId);
         const { data: member } = await supabase
@@ -651,10 +654,10 @@ export async function getDataAnakByKomunitas(komunitasId: string): Promise<{
           .eq("status", "approved")
           .maybeSingle();
 
-        userRole = member?.peran || (isSuperAdmin ? "Super Admin" : "Pengunjung");
+        userRole = member?.peran || (isSuperAdmin ? "Super Admin" : isAdminPusat ? "Admin Pusat" : "Pengunjung");
         const roleLower = (member?.peran || "").toLowerCase();
 
-        if (isSuperAdmin) {
+        if (isSuperOrPusat) {
           canCreate = true;
           canEdit = true;
           canDelete = true;
@@ -1091,7 +1094,7 @@ export async function updateDataAnak(
       .eq("id", user.id)
       .maybeSingle();
 
-    const isSuperAdmin = checkIsSuperAdmin({
+    const isSuperOrPusat = isSuperOrAdminPusat({
       ...profile,
       id: user.id,
       email: profile?.email || user.email,
@@ -1099,7 +1102,7 @@ export async function updateDataAnak(
     });
     const isCreator = existingChild.created_by === user.id;
 
-    if (!isSuperAdmin && !isCreator) {
+    if (!isSuperOrPusat && !isCreator) {
       const { data: membership } = await supabase
         .from("anggota_komunitas")
         .select("peran, status")
@@ -1371,7 +1374,7 @@ export async function keluarDataAnak(
       .eq("id", user.id)
       .maybeSingle();
 
-    const isSuperAdmin = checkIsSuperAdmin({
+    const isSuperOrPusat = isSuperOrAdminPusat({
       ...profile,
       id: user.id,
       email: profile?.email || user.email,
@@ -1379,7 +1382,7 @@ export async function keluarDataAnak(
     });
     const isCreator = existingChild.created_by === user.id;
 
-    if (!isSuperAdmin && !isCreator) {
+    if (!isSuperOrPusat && !isCreator) {
       const { data: membership } = await supabase
         .from("anggota_komunitas")
         .select("peran, status")
@@ -1494,7 +1497,7 @@ export async function deleteDataAnak(
       .eq("id", user.id)
       .maybeSingle();
 
-    const isSuperAdmin = checkIsSuperAdmin({
+    const isSuperOrPusat = isSuperOrAdminPusat({
       ...profile,
       id: user.id,
       email: profile?.email || user.email,
@@ -1502,7 +1505,7 @@ export async function deleteDataAnak(
     });
     const isCreator = existingChild.created_by === user.id;
 
-    if (!isSuperAdmin && !isCreator) {
+    if (!isSuperOrPusat && !isCreator) {
       const { data: membership } = await supabase
         .from("anggota_komunitas")
         .select("peran, status")

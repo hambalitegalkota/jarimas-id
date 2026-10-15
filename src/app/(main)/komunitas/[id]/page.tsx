@@ -49,6 +49,9 @@ export default async function KomunitasDetailPage({
     data: komunitas,
     currentUserId,
     isAdminOrKader,
+    isSuperAdmin,
+    isAdminPusat,
+    isSuperOrAdminPusat,
   } = await getKomunitasDetail(id);
 
   if (!komunitas) {
@@ -109,6 +112,9 @@ export default async function KomunitasDetailPage({
         komunitas={komunitas}
         currentUserId={currentUserId}
         isAdminOrKader={isAdminOrKader}
+        isSuperAdmin={isSuperAdmin}
+        isAdminPusat={isAdminPusat}
+        isSuperOrAdminPusat={isSuperOrAdminPusat}
         currentSubtab={currentSubtab}
         anggotaList={anggotaList}
         kabarKomunitas={kabarKomunitas}

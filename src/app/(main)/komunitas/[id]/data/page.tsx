@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { getKomunitasDetail } from "@/app/actions/komunitas";
 import { getDataAnakByKomunitas } from "@/app/actions/data-anak";
-import { getRekapDataAnakUsiaDiniAction } from "@/app/actions/rekap-data-anak";
+import { getRekapDataAnakUsiaDiniAction, checkUserRekapAdminAccess } from "@/app/actions/rekap-data-anak";
 import { DataAnakClientView } from "./data-anak-client-view";
 import { RekapDataAnakClientView } from "@/components/data-anak/rekap-data-anak-client-view";
 import { extractKomunitasMetadata } from "@/lib/admin-helpers";
@@ -19,7 +19,12 @@ export default async function KomunitasDataAnakPage({
 }: KomunitasDataAnakPageProps) {
   const { id } = await params;
 
-  const { data: komunitas } = await getKomunitasDetail(id);
+  const {
+    data: komunitas,
+    isSuperAdmin,
+    isAdminPusat,
+    isSuperOrAdminPusat,
+  } = await getKomunitasDetail(id);
 
   if (!komunitas) {
     notFound();
@@ -31,10 +36,13 @@ export default async function KomunitasDataAnakPage({
   const isRekapOnlyTier = isWargaKita && !meta.hasRt;
 
   // Untuk komunitas RW, Kelurahan, Kecamatan, dan Kota Tegal:
-  // Data yang ditampilkan HANYA DATA REKAP SAJA (seperti pada halaman Rekapitulasi Hasil Pendataan Anak Usia Dini (0–6 Tahun)) disesuaikan levelnya.
-  // Data lengkap rincian identitas anak hanya dapat diakses di level RT oleh Admin Komunitas Warga Kita.
+  // Data yang ditampilkan HANYA DATA REKAP SAJA disesuaikan levelnya.
+  // Super Admin dan Admin Pusat memiliki akses penuh ke daftar nama & rincian di seluruh level.
   if (isRekapOnlyTier) {
-    const { data: rekapData } = await getRekapDataAnakUsiaDiniAction();
+    const [{ data: rekapData }, authAccess] = await Promise.all([
+      getRekapDataAnakUsiaDiniAction(),
+      checkUserRekapAdminAccess(),
+    ]);
 
     let initialTingkat: "kota" | "kecamatan" | "kelurahan" = "kota";
     if (meta.hasRw || meta.hasKel) {
@@ -43,11 +51,25 @@ export default async function KomunitasDataAnakPage({
       initialTingkat = "kecamatan";
     }
 
+    const canAccessNames = Boolean(
+      isSuperOrAdminPusat ||
+      isSuperAdmin ||
+      isAdminPusat ||
+      authAccess.canAccess
+    );
+
     return (
       <main className="w-full min-h-screen bg-slate-50 dark:bg-slate-950 py-4 sm:py-6">
         <RekapDataAnakClientView
           initialData={rekapData}
-          canAccessDaftarNamaAnak={false}
+          canAccessDaftarNamaAnak={canAccessNames}
+          userPeran={
+            isSuperAdmin
+              ? "Super Admin"
+              : isAdminPusat
+              ? "Admin Pusat"
+              : authAccess.userPeran
+          }
           initialTingkat={initialTingkat}
           initialKecamatan={meta.rawKec || "Tegal Timur"}
           initialKelurahan={meta.rawKel || "Kejambon"}
@@ -61,7 +83,6 @@ export default async function KomunitasDataAnakPage({
   }
 
   // Khusus Komunitas Tingkat RT, Satuan PAUD, dan Posyandu:
-  // Akses data lengkap hanya dibuka untuk Admin (Admin RT di Warga Kita, Staf/Admin di PAUD, dan Kader/Admin di Posyandu).
   const dataAnakResult = await getDataAnakByKomunitas(id);
 
   const {
@@ -77,6 +98,8 @@ export default async function KomunitasDataAnakPage({
     isReadOnly,
     userRole,
   } = dataAnakResult;
+
+  const hasRootAccess = Boolean(isSuperOrAdminPusat || isSuperAdmin || isAdminPusat);
 
   return (
     <div className="flex flex-col flex-1 px-4 py-6 sm:px-6 md:px-8 gap-6 max-w-4xl mx-auto w-full">
@@ -114,15 +137,21 @@ export default async function KomunitasDataAnakPage({
         komunitas={komunitas}
         initialChildren={childrenList}
         stats={stats}
-        canViewDetail={canViewDetail}
-        isAuthenticated={isAuthenticated}
-        canValidate={canValidate}
-        canEditDdks={canEditDdks}
-        canCreate={canCreate}
-        canEdit={canEdit}
-        canDelete={canDelete}
-        isReadOnly={isReadOnly}
-        userRole={userRole}
+        canViewDetail={hasRootAccess ? true : canViewDetail}
+        isAuthenticated={hasRootAccess ? true : isAuthenticated}
+        canValidate={hasRootAccess ? true : canValidate}
+        canEditDdks={hasRootAccess ? true : canEditDdks}
+        canCreate={hasRootAccess ? true : canCreate}
+        canEdit={hasRootAccess ? true : canEdit}
+        canDelete={hasRootAccess ? true : canDelete}
+        isReadOnly={hasRootAccess ? false : isReadOnly}
+        userRole={
+          isSuperAdmin
+            ? "Super Admin"
+            : isAdminPusat
+            ? "Admin Pusat"
+            : userRole
+        }
       />
     </div>
   );

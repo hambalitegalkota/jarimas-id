@@ -4,6 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import { getKomunitasDetail } from "@/app/actions/komunitas";
 import { getDataAtsByKomunitas } from "@/app/actions/data-ats";
 import { getRekapDataAtsAction } from "@/app/actions/rekap-data-ats";
+import { checkUserRekapAdminAccess } from "@/app/actions/rekap-data-anak";
 import { DataAtsClientView } from "@/components/data-ats/data-ats-client-view";
 import { RekapDataAtsClientView } from "@/components/data-ats/rekap-data-ats-client-view";
 import { extractKomunitasMetadata } from "@/lib/admin-helpers";
@@ -20,7 +21,12 @@ export default async function KomunitasDataAtsPage({
 }: KomunitasDataAtsPageProps) {
   const { id } = await params;
 
-  const { data: komunitas } = await getKomunitasDetail(id);
+  const {
+    data: komunitas,
+    isSuperAdmin,
+    isAdminPusat,
+    isSuperOrAdminPusat,
+  } = await getKomunitasDetail(id);
 
   if (!komunitas) {
     notFound();
@@ -36,10 +42,13 @@ export default async function KomunitasDataAtsPage({
   const isRekapOnlyTier = isWargaKita && !meta.hasRt;
 
   // Untuk komunitas RW, Kelurahan, Kecamatan, dan Kota Tegal:
-  // Data yang ditampilkan HANYA DATA REKAP SAJA (seperti pada halaman Hasil Pendataan Anak Tidak Sekolah (ATS)) disesuaikan levelnya.
-  // Data lengkap rincian identitas anak hanya dapat diakses di level RT oleh Admin Komunitas Warga Kita.
+  // Data yang ditampilkan HANYA DATA REKAP SAJA disesuaikan levelnya.
+  // Super Admin dan Admin Pusat memiliki akses penuh ke daftar rincian nama ATS di seluruh level.
   if (isRekapOnlyTier) {
-    const { data: rekapData } = await getRekapDataAtsAction();
+    const [{ data: rekapData }, authAccess] = await Promise.all([
+      getRekapDataAtsAction(),
+      checkUserRekapAdminAccess(),
+    ]);
 
     let initialTingkat: "kota" | "kecamatan" | "kelurahan" = "kota";
     if (meta.hasRw || meta.hasKel) {
@@ -48,11 +57,25 @@ export default async function KomunitasDataAtsPage({
       initialTingkat = "kecamatan";
     }
 
+    const canAccessNames = Boolean(
+      isSuperOrAdminPusat ||
+      isSuperAdmin ||
+      isAdminPusat ||
+      authAccess.canAccess
+    );
+
     return (
       <main className="w-full min-h-screen bg-slate-50 dark:bg-slate-950 py-4 sm:py-6">
         <RekapDataAtsClientView
           initialData={rekapData}
-          canAccessDaftarNamaAts={false}
+          canAccessDaftarNamaAts={canAccessNames}
+          userPeran={
+            isSuperAdmin
+              ? "Super Admin"
+              : isAdminPusat
+              ? "Admin Pusat"
+              : authAccess.userPeran
+          }
           initialTingkat={initialTingkat}
           initialKecamatan={meta.rawKec || "Tegal Timur"}
           initialKelurahan={meta.rawKel || "Kejambon"}
@@ -75,11 +98,17 @@ export default async function KomunitasDataAtsPage({
     canManage,
     canAccessDaftarNama: serverCanAccess,
     currentUserId,
-    isSuperAdmin,
+    isSuperAdmin: serverIsSuper,
   } = dataAtsResult;
 
+  const hasRootAccess = Boolean(
+    isSuperOrAdminPusat ||
+    isSuperAdmin ||
+    isAdminPusat ||
+    serverIsSuper
+  );
+
   // Otorisasi Akses Daftar Rincian Lengkap:
-  // Hanya Admin di Komunitas Warga Kita (level RT) dan Posyandu (Admin / Kader) yang berhak melihat rincian nama lengkap
   const membership = komunitas?.currentUserMembership;
   const isApprovedMember = membership?.status === "approved";
   const memberRoleLower = (membership?.peran || "").toLowerCase();
@@ -91,7 +120,7 @@ export default async function KomunitasDataAtsPage({
   const isKader = memberRoleLower.includes("kader") || memberRoleLower.includes("medis");
 
   const canAccessDaftarNama = Boolean(
-    isSuperAdmin ||
+    hasRootAccess ||
     serverCanAccess ||
     canManage ||
     (isApprovedMember && (isRt ? isAdminOrPengurus : isKader || isAdminOrPengurus))
@@ -134,12 +163,12 @@ export default async function KomunitasDataAtsPage({
       <DataAtsClientView
         komunitas={komunitas}
         initialAts={atsList}
-        canValidate={canValidate}
-        canEditDdtk={canEditDdtk}
-        canManage={canManage}
+        canValidate={hasRootAccess ? true : canValidate}
+        canEditDdtk={hasRootAccess ? true : canEditDdtk}
+        canManage={hasRootAccess ? true : canManage}
         canAccessDaftarNama={canAccessDaftarNama}
         currentUserId={currentUserId}
-        isSuperAdmin={isSuperAdmin}
+        isSuperAdmin={hasRootAccess}
       />
     </div>
   );

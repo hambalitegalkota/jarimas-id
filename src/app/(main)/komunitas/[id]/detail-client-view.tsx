@@ -66,6 +66,9 @@ interface KomunitasDetailClientViewProps {
   komunitas: KomunitasWithMembership;
   currentUserId?: string | null;
   isAdminOrKader: boolean;
+  isSuperAdmin?: boolean;
+  isAdminPusat?: boolean;
+  isSuperOrAdminPusat?: boolean;
   currentSubtab: string;
   anggotaList: AnggotaKomunitasDetail[];
   kabarKomunitas: KabarItem[];
@@ -77,6 +80,9 @@ export function KomunitasDetailClientView({
   komunitas,
   currentUserId,
   isAdminOrKader,
+  isSuperAdmin: isSuperAdminProp,
+  isAdminPusat: isAdminPusatProp,
+  isSuperOrAdminPusat: isSuperOrAdminPusatProp,
   currentSubtab,
   anggotaList,
   kabarKomunitas,
@@ -157,6 +163,30 @@ export function KomunitasDetailClientView({
   const membership = membershipState;
   const isApprovedMember = membership?.status === "approved";
   const userPeran = membership?.peran || "Pengunjung";
+  const roleLower = userPeran.toLowerCase().trim();
+
+  // Root Authority: Super Admin & Admin Pusat memiliki akses bebas mutlak ke seluruh komunitas tanpa harus bergabung
+  const isSuperOrPusat = Boolean(
+    isSuperOrAdminPusatProp ||
+    isSuperAdminProp ||
+    isAdminPusatProp ||
+    roleLower === "super admin" ||
+    roleLower === "super_admin" ||
+    roleLower === "admin pusat" ||
+    roleLower === "admin_pusat" ||
+    (membership && isSuperAdmin(membership as any))
+  );
+  const isActualSuperAdmin = Boolean(
+    isSuperAdminProp ||
+    roleLower === "super admin" ||
+    roleLower === "super_admin" ||
+    (membership && isSuperAdmin(membership as any))
+  );
+  const isActualAdminPusat = Boolean(
+    isAdminPusatProp ||
+    (!isActualSuperAdmin && (roleLower === "admin pusat" || roleLower === "admin_pusat"))
+  );
+
   const isWargaKita = komunitasData.jenis === "warga_kita";
   const isPaud = komunitasData.jenis === "satuan_paud";
   const isPosyandu = komunitasData.jenis === "posyandu";
@@ -176,15 +206,19 @@ export function KomunitasDetailClientView({
 
   // Hanya Komunitas RT, Posyandu, dan Satuan PAUD yang memiliki fungsi gabung langsung.
   // Komunitas RW, Kelurahan, Kecamatan, dan Kota Tegal tidak memiliki fungsi gabung langsung.
+  // Super Admin dan Admin Pusat tidak perlu bergabung ke komunitas manapun
   const canJoin =
-    isPosyandu ||
+    !isSuperOrPusat &&
+    (isPosyandu ||
     isPaud ||
-    (isWargaKita && isRt);
+    (isWargaKita && isRt));
 
   // Ketentuan Hak Akses:
+  // Super Admin & Admin Pusat: Hak akses penuh ke seluruh data dan komunitas.
   // Data lengkap hanya dapat dilihat oleh Admin di Komunitas Warga Kita (khusus level RT), Admin PAUD, dan Admin/Kader Posyandu.
-  // Komunitas RW, Kelurahan, Kecamatan, dan Kota Tegal hanya menampilkan data rekap saja.
+  // Komunitas RW, Kelurahan, Kecamatan, dan Kota Tegal menampilkan data rekap agregat.
   const hasFullAccess = useMemo(() => {
+    if (isSuperOrPusat) return true;
     if (isPaud) {
       const p = userPeran.toLowerCase();
       return isAdminOrKader || isRoleAdmin(userPeran) || p.includes("kepala") || p.includes("guru") || p.includes("pendidik") || p.includes("pengelola");
@@ -197,7 +231,7 @@ export function KomunitasDetailClientView({
       return isRt && (isAdminOrKader || isRoleAdmin(userPeran));
     }
     return false;
-  }, [isPaud, isPosyandu, isWargaKita, isRt, userPeran, isAdminOrKader]);
+  }, [isSuperOrPusat, isPaud, isPosyandu, isWargaKita, isRt, userPeran, isAdminOrKader]);
 
   const isChartOnly = isRekapOnlyTier || !hasFullAccess;
   const isPenduduk =
@@ -217,19 +251,21 @@ export function KomunitasDetailClientView({
 
   // Otorisasi Edit Informasi Resmi & Operasional (Super Admin, Admin Hierarki, Admin Langsung, Pengurus, Kader, dll.)
   const canEditOperasional = useMemo(() => {
+    if (isSuperOrPusat) return true;
     if (isAdminOrKader) return true;
     if (!currentUserId) return false;
     if (!isApprovedMember) return false;
     return isRoleAdmin(userPeran) || isKader;
-  }, [isAdminOrKader, currentUserId, isApprovedMember, userPeran, isKader]);
+  }, [isSuperOrPusat, isAdminOrKader, currentUserId, isApprovedMember, userPeran, isKader]);
 
   // Otorisasi Akses Laporan Kader Posyandu 6 Bidang SPM:
   // Hanya Admin / Pengurus dan Kader Komunitas Posyandu yang bersangkutan (serta Super Admin & Admin Wilayah yang menaunginya)
   const canAccessLaporanPosyandu = useMemo(() => {
+    if (isSuperOrPusat) return true;
     if (!currentUserId) return false;
     if (isAdminOrKader) return true;
     return isApprovedMember && (isUserAdmin || isKader);
-  }, [isAdminOrKader, currentUserId, isApprovedMember, isUserAdmin, isKader]);
+  }, [isSuperOrPusat, isAdminOrKader, currentUserId, isApprovedMember, userPeran, isKader]);
 
   const parsedKontak = useMemo(
     () => parseKontakKomunitas(komunitasData.kontak),
@@ -336,6 +372,7 @@ export function KomunitasDetailClientView({
   // Otorisasi Kelola Anggota
   const canManageMembers = useMemo(() => {
     if (!currentUserId) return false;
+    if (isSuperOrPusat) return true;
 
     const roleLower = (membership?.peran || "").toLowerCase().trim();
     const isApproved = membership?.status === "approved";
@@ -378,7 +415,7 @@ export function KomunitasDetailClientView({
     }
 
     return isAdminOrKader;
-  }, [komunitas.jenis, membership, isAdminOrKader, currentUserId]);
+  }, [isSuperOrPusat, komunitas.jenis, membership, isAdminOrKader, currentUserId]);
 
   const handleApplyAdmin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -588,7 +625,25 @@ export function KomunitasDetailClientView({
 
           {/* Status Badge & Aksi Keanggotaan User */}
           <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2 shrink-0">
-            {isApprovedMember ? (
+            {isSuperOrPusat ? (
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 rounded-xl bg-amber-500 text-white px-3 py-1.5 text-xs font-black shadow-xs">
+                  <ShieldCheck className="h-4 w-4 text-white" />
+                  <span>{isActualSuperAdmin ? "SUPER ADMIN" : "ADMIN PUSAT"}</span>
+                </span>
+
+                {/* Shortcut Buka Ruang Percakapan */}
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("percakapan")}
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-teal-300 bg-teal-50 hover:bg-teal-100 text-teal-800 px-3 py-1.5 text-xs font-bold shadow-2xs transition-all active:scale-98 cursor-pointer"
+                  title="Buka Ruang Percakapan Komunitas"
+                >
+                  <MessageCircle className="h-3.5 w-3.5 text-teal-600" />
+                  <span className="hidden sm:inline">Percakapan</span>
+                </button>
+              </div>
+            ) : isApprovedMember ? (
               <div className="flex flex-wrap items-center gap-2">
                 <span className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-800 border-2 border-emerald-300">
                   <CheckCircle2 className="h-4 w-4 text-emerald-600" />
@@ -733,7 +788,7 @@ export function KomunitasDetailClientView({
       )}
 
       {/* ALERT JIKA BELUM MEMILIKI ADMIN (UNTUK WARGA KITA) */}
-      {Boolean(currentUserId) && isApprovedMember && !komunitas.hasAdmin && isWargaKita && (
+      {Boolean(currentUserId) && !isSuperOrPusat && isApprovedMember && !komunitas.hasAdmin && isWargaKita && (
         <section className="rounded-2xl border-2 border-amber-200 bg-amber-50/70 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
           <div className="flex items-start gap-3.5">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-900">
@@ -783,7 +838,12 @@ export function KomunitasDetailClientView({
         {/* KARTU LINK DATA UTAMA (POSISI PALING ATAS, TIDAK IKUT BERGESER) */}
         {detailLinkCards.map((cat) => {
           const Icon = cat.icon;
-          if (hasFullAccess) {
+          const canAccessCard =
+            isSuperOrPusat ||
+            hasFullAccess ||
+            (isRekapOnlyTier && (isApprovedMember || isPenduduk || isAdminOrKader));
+
+          if (canAccessCard) {
             return (
               <div
                 key={cat.id}

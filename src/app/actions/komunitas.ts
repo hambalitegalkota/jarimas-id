@@ -673,6 +673,9 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
   data: KomunitasWithMembership | null;
   currentUserId?: string | null;
   isAdminOrKader: boolean;
+  isSuperAdmin?: boolean;
+  isAdminPusat?: boolean;
+  isSuperOrAdminPusat?: boolean;
 }> {
   try {
     const supabase = await createClient();
@@ -680,6 +683,8 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
 
     let currentUserId: string | null = null;
     let isSuperAdmin = false;
+    let isUserAdminPusat = false;
+    let isSuperOrPusat = false;
 
     try {
       const {
@@ -692,12 +697,15 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
           .select("id, is_super_admin, is_admin_pusat, nama_lengkap, email")
           .eq("id", user.id)
           .maybeSingle();
-        isSuperAdmin = checkIsSuperAdmin({
+        const profileObj = {
           ...prof,
           id: user.id,
           email: prof?.email || user.email,
           nama_lengkap: prof?.nama_lengkap || user.user_metadata?.nama_lengkap,
-        });
+        };
+        isSuperAdmin = checkIsSuperAdmin(profileObj);
+        isUserAdminPusat = checkIsAdminPusat(profileObj);
+        isSuperOrPusat = isSuperAdmin || isUserAdminPusat;
       }
     } catch {
       // User tamu
@@ -1074,7 +1082,7 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
     }
 
     // 7. Hitung status keanggotaan user saat ini & wewenang Admin
-    let isPengurusOrKader = isSuperAdmin;
+    let isPengurusOrKader = isSuperOrPusat;
     let currentUserMembership = null;
 
     if (currentUserId) {
@@ -1101,20 +1109,20 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
 
         currentUserMembership = {
           id: directMember.id,
-          status: directMember.status as MembershipStatus,
-          peran: directMember.peran,
-          peran_diajukan: directMember.peran_diajukan || null,
-          berdomisili: directMember.berdomisili ?? undefined,
-          kk_terdaftar: directMember.kk_terdaftar ?? undefined,
+          status: (isSuperOrPusat ? "approved" : directMember.status) as MembershipStatus,
+          peran: isSuperOrPusat ? (isSuperAdmin ? "Super Admin" : "Admin Pusat") : directMember.peran,
+          peran_diajukan: isSuperOrPusat ? null : (directMember.peran_diajukan || null),
+          berdomisili: isSuperOrPusat ? true : (directMember.berdomisili ?? undefined),
+          kk_terdaftar: isSuperOrPusat ? true : (directMember.kk_terdaftar ?? undefined),
         };
       }
 
-      // Root bypass: Super Admin otomatis berstatus approved di seluruh komunitas tanpa harus mendaftar
-      if (isSuperAdmin && !currentUserMembership) {
+      // Root bypass: Super Admin dan Admin Pusat otomatis berstatus approved di seluruh komunitas tanpa harus mendaftar
+      if (isSuperOrPusat && !currentUserMembership) {
         currentUserMembership = {
-          id: `super-admin-${currentUserId}`,
+          id: `${isSuperAdmin ? "super-admin" : "admin-pusat"}-${currentUserId}`,
           status: "approved" as MembershipStatus,
-          peran: "Super Admin",
+          peran: isSuperAdmin ? "Super Admin" : "Admin Pusat",
           peran_diajukan: null,
           berdomisili: true,
           kk_terdaftar: true,
@@ -1149,7 +1157,10 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
       success: true,
       data: fullData,
       currentUserId,
-      isAdminOrKader: isSuperAdmin || isPengurusOrKader,
+      isAdminOrKader: isSuperOrPusat || isPengurusOrKader,
+      isSuperAdmin,
+      isAdminPusat: isUserAdminPusat,
+      isSuperOrAdminPusat: isSuperOrPusat,
     };
   } catch (err: any) {
     console.error("Error getKomunitasDetail:", err);
@@ -1204,13 +1215,25 @@ export async function getAnggotaKomunitas(komunitasId: string): Promise<{
       userIds.length > 0
         ? await supabase
             .from("profiles")
-            .select("id, nama_lengkap, email")
+            .select("id, is_super_admin, is_admin_pusat, nama_lengkap, email")
             .in("id", userIds)
         : { data: [] };
 
     const profileMap = new Map((profilesData || []).map((p: any) => [p.id, p]));
 
-    const items: AnggotaKomunitasDetail[] = rawMembers.map((row: any) => {
+    // Saring Super Admin dan Admin Pusat agar tidak terlihat dalam daftar publik anggota oleh warga lain
+    const publicMembers = rawMembers.filter((row: any) => {
+      const prof = profileMap.get(row.user_id);
+      const isSuper = prof ? checkIsSuperAdmin({ ...prof, id: row.user_id }) : false;
+      const isPusat = prof ? checkIsAdminPusat({ ...prof, id: row.user_id }) : false;
+      const roleLower = (row.peran || "").toLowerCase();
+      if (isSuper || isPusat || roleLower === "super admin" || roleLower === "admin pusat" || roleLower === "super_admin" || roleLower === "admin_pusat") {
+        return false;
+      }
+      return true;
+    });
+
+    const items: AnggotaKomunitasDetail[] = publicMembers.map((row: any) => {
       const prof = profileMap.get(row.user_id);
       return {
         id: row.id,
@@ -3396,13 +3419,15 @@ export async function createKomunitasAdminAction(formData: FormData): Promise<{
       .eq("id", user.id)
       .maybeSingle();
 
-    if (!checkIsSuperAdmin({
+    const userProfileCtx = {
       ...profile,
       id: user.id,
       email: profile?.email || user.email,
       nama_lengkap: profile?.nama_lengkap || user.user_metadata?.nama_lengkap,
-    })) {
-      return { success: false, message: "Akses ditolak: Hanya Super Admin yang dapat menambahkan komunitas baru." };
+    };
+
+    if (!checkIsSuperAdmin(userProfileCtx) && !checkIsAdminPusat(userProfileCtx)) {
+      return { success: false, message: "Akses ditolak: Hanya Super Admin dan Admin Pusat yang dapat menambahkan komunitas baru." };
     }
 
     const nama = formData.get("nama")?.toString()?.trim();
@@ -3501,13 +3526,15 @@ export async function updateKomunitasAdminAction(
       .eq("id", user.id)
       .maybeSingle();
 
-    if (!checkIsSuperAdmin({
+    const userProfileCtx = {
       ...profile,
       id: user.id,
       email: profile?.email || user.email,
       nama_lengkap: profile?.nama_lengkap || user.user_metadata?.nama_lengkap,
-    })) {
-      return { success: false, message: "Akses ditolak: Hanya Super Admin yang dapat mengubah data komunitas." };
+    };
+
+    if (!checkIsSuperAdmin(userProfileCtx) && !checkIsAdminPusat(userProfileCtx)) {
+      return { success: false, message: "Akses ditolak: Hanya Super Admin dan Admin Pusat yang dapat mengubah data komunitas." };
     }
 
     const nama = formData.get("nama")?.toString()?.trim();
@@ -3596,13 +3623,15 @@ export async function deleteKomunitasAdminAction(komunitasId: string): Promise<{
       .eq("id", user.id)
       .maybeSingle();
 
-    if (!checkIsSuperAdmin({
+    const userProfileCtx = {
       ...profile,
       id: user.id,
       email: profile?.email || user.email,
       nama_lengkap: profile?.nama_lengkap || user.user_metadata?.nama_lengkap,
-    })) {
-      return { success: false, message: "Akses ditolak: Hanya Super Admin yang dapat menghapus komunitas." };
+    };
+
+    if (!checkIsSuperAdmin(userProfileCtx) && !checkIsAdminPusat(userProfileCtx)) {
+      return { success: false, message: "Akses ditolak: Hanya Super Admin dan Admin Pusat yang dapat menghapus komunitas." };
     }
 
     // 1. Bersihkan anggota terkait
@@ -3997,16 +4026,19 @@ export async function updateKomunitasInformasiOperasional({
       .eq("id", user.id)
       .maybeSingle();
 
-    const isSuperAdmin = checkIsSuperAdmin({
+    const userProfileCtx = {
       ...profile,
       id: user.id,
       email: profile?.email || user.email,
       nama_lengkap: profile?.nama_lengkap || user.user_metadata?.nama_lengkap,
-    });
+    };
+    const isSuperAdmin = checkIsSuperAdmin(userProfileCtx);
+    const isUserAdminPusat = checkIsAdminPusat(userProfileCtx);
+    const isSuperOrAdminPusat = isSuperAdmin || isUserAdminPusat;
     const dbKomunitasId = toValidUUID(komunitasId);
 
-    // Cek wewenang Admin, Pengurus, Kader jika bukan Super Admin
-    let hasAdminAuth = isSuperAdmin;
+    // Cek wewenang Admin, Pengurus, Kader jika bukan Super Admin / Admin Pusat
+    let hasAdminAuth = isSuperOrAdminPusat;
     if (!hasAdminAuth) {
       const { data: myMembership } = await supabase
         .from("anggota_komunitas")
