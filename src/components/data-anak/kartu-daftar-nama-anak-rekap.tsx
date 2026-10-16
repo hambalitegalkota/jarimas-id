@@ -262,7 +262,7 @@ export function KartuDaftarNamaAnakRekap({
 
       {/* Konten Terbuka (Expanded Panel) */}
       {isOpen && (
-        <div className="border-t-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-6 space-y-4 animate-in fade-in slide-in-from-top-2 duration-200 print:border-none print:p-0 print:space-y-2 print:bg-white">
+        <div className="border-t-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3.5 sm:p-4.5 space-y-3.5 animate-in fade-in slide-in-from-top-2 duration-200 print:border-none print:p-0 print:space-y-2 print:bg-white">
           {/* Controls: Search, Filters & Print */}
           <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 print:hidden">
             {/* Search Bar */}
@@ -411,14 +411,14 @@ export function KartuDaftarNamaAnakRekap({
                 <table className="w-full text-left text-xs border-collapse table-fixed print:text-[9.5px]">
                   <thead>
                     <tr className="bg-slate-100 dark:bg-slate-800/90 text-slate-700 dark:text-slate-300 font-bold border-b border-slate-200 dark:border-slate-700 print:bg-slate-200 print:text-black print:border-slate-400">
-                      <th className="py-3 px-2 w-[4%] text-center font-bold print:py-2">No</th>
-                      <th className="py-3 px-3 w-[24%] font-bold print:py-2">Nama Lengkap &amp; Usia</th>
-                      <th className="py-3 px-3 w-[20%] font-bold print:py-2">
+                      <th className="py-2 px-1.5 w-[4%] text-center font-bold print:py-1.5">No</th>
+                      <th className="py-2 px-2.5 w-[24%] font-bold print:py-1.5">Nama Lengkap &amp; Usia</th>
+                      <th className="py-2 px-2 w-[20%] font-bold print:py-1.5">
                         {isBersekolah ? "Satuan PAUD / TK" : "Alasan Belum Sekolah"}
                       </th>
-                      <th className="py-3 px-3 w-[18%] font-bold print:py-2">Orang Tua / Wali &amp; Kontak</th>
-                      <th className="py-3 px-3 w-[21%] font-bold print:py-2">Alamat Domisili</th>
-                      <th className="py-3 px-3 w-[13%] font-bold print:py-2">Komunitas Pencatat</th>
+                      <th className="py-2 px-2 w-[18%] font-bold print:py-1.5">Orang Tua / Wali &amp; Kontak</th>
+                      <th className="py-2 px-2 w-[21%] font-bold print:py-1.5">Alamat Domisili</th>
+                      <th className="py-2 px-2 w-[13%] font-bold print:py-1.5">Komunitas Pencatat</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 print:divide-slate-200">
@@ -429,10 +429,10 @@ export function KartuDaftarNamaAnakRekap({
                           key={item.id}
                           className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors print:break-inside-avoid print:bg-white"
                         >
-                          <td className="py-3 px-2 text-center font-mono text-slate-500 print:text-black print:py-1.5 align-top">
+                          <td className="py-2 px-1.5 text-center font-mono text-slate-500 print:text-black print:py-1 align-top text-xs">
                             {idx + 1}
                           </td>
-                          <td className="py-3 px-3 align-top break-words print:py-1.5">
+                          <td className="py-2 px-2.5 align-top break-words print:py-1">
                             <div className="space-y-1">
                               <div className="flex flex-wrap items-center gap-1.5">
                                 <span className="font-bold text-slate-900 dark:text-slate-100 text-xs sm:text-sm print:text-black leading-tight">
@@ -463,11 +463,11 @@ export function KartuDaftarNamaAnakRekap({
                           </td>
 
                           {/* Sekolah / Alasan */}
-                          <td className="py-3 px-3 align-top break-words print:py-1.5">
+                          <td className="py-2 px-2 align-top break-words print:py-1">
                             <div className="space-y-0.5">
                               {isBersekolah ? (
                                 <>
-                                  <div className="font-bold text-emerald-700 dark:text-emerald-400 print:text-black flex items-start gap-1 leading-tight">
+                                  <div className="font-bold text-emerald-700 dark:text-emerald-400 print:text-black flex items-start gap-1 leading-tight text-xs">
                                     <School className="h-3.5 w-3.5 shrink-0 mt-0.5 print:hidden" />
                                     <span className="break-words">{item.namaSekolah}</span>
                                   </div>
@@ -479,7 +479,7 @@ export function KartuDaftarNamaAnakRekap({
                                 </>
                               ) : (
                                 <>
-                                  <div className="font-bold text-blue-700 dark:text-blue-400 print:text-black flex items-start gap-1 leading-tight">
+                                  <div className="font-bold text-blue-700 dark:text-blue-400 print:text-black flex items-start gap-1 leading-tight text-xs">
                                     <Baby className="h-3.5 w-3.5 shrink-0 mt-0.5 print:hidden" />
                                     <span className="break-words">{item.alasan}</span>
                                   </div>
@@ -492,9 +492,9 @@ export function KartuDaftarNamaAnakRekap({
                           </td>
 
                           {/* Orang Tua */}
-                          <td className="py-3 px-3 align-top break-words print:py-1.5">
+                          <td className="py-2 px-2 align-top break-words print:py-1">
                             <div className="space-y-0.5">
-                              <div className="font-semibold text-slate-800 dark:text-slate-200 print:text-black leading-tight break-words">
+                              <div className="font-semibold text-slate-800 dark:text-slate-200 print:text-black leading-tight break-words text-xs">
                                 {item.namaOrangtua}
                               </div>
                               {item.nomorHp && item.nomorHp !== "-" && (
@@ -517,7 +517,7 @@ export function KartuDaftarNamaAnakRekap({
                           </td>
 
                           {/* Alamat Domisili */}
-                          <td className="py-3 px-3 align-top break-words print:py-1.5">
+                          <td className="py-2 px-2 align-top break-words print:py-1">
                             <div className="space-y-0.5 text-[11px] text-slate-600 dark:text-slate-300 print:text-black leading-tight">
                               <div className="font-medium text-slate-800 dark:text-slate-200 print:text-black break-words">
                                 {item.domisiliJalan || "Alamat belum tercatat lengkap"}
@@ -532,7 +532,7 @@ export function KartuDaftarNamaAnakRekap({
                           </td>
 
                           {/* Komunitas */}
-                          <td className="py-3 px-3 align-top break-words print:py-1.5">
+                          <td className="py-2 px-2 align-top break-words print:py-1">
                             <div className="space-y-1">
                               <span className="font-medium text-slate-700 dark:text-slate-300 print:text-black text-[11px] leading-tight break-words block">
                                 {item.komunitasNama}

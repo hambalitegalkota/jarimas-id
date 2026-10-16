@@ -217,7 +217,7 @@ export function RekapDataAnakClientView({
     col: TableSortColumn,
     label: string,
     align: "left" | "center" = "center",
-    paddingClass: string = "px-3"
+    paddingClass: string = "px-2"
   ) => {
     const isActive = sortColumn === col;
     const isText = col === "nama" || col === "kecamatan";
@@ -229,7 +229,7 @@ export function RekapDataAnakClientView({
         scope="col"
         onClick={() => handleSort(col)}
         className={cn(
-          "py-3.5 select-none cursor-pointer transition-colors group",
+          "py-2 sm:py-2.5 text-2xs sm:text-xs select-none cursor-pointer transition-colors group",
           paddingClass,
           align === "center" ? "text-center" : "text-left",
           isActive
@@ -396,7 +396,7 @@ export function RekapDataAnakClientView({
   }, [currentWilayahData]);
 
   return (
-    <div className="flex flex-col flex-1 px-3 sm:px-6 md:px-8 gap-6 sm:gap-8 max-w-7xl mx-auto w-full pb-24 print:max-w-none print:w-full print:p-0 print:m-0 print:gap-0 print:pb-0">
+    <div className="flex flex-col flex-1 px-4 sm:px-6 md:px-8 gap-5 sm:gap-6 max-w-4xl mx-auto w-full pb-24 print:max-w-none print:w-full print:p-0 print:m-0 print:gap-0 print:pb-0">
       {/* Tombol Kembali jika diakses dari Detail Komunitas */}
       {backHref && (
         <div className="flex items-center justify-between print:hidden print-hide-on-daftar-nama">
@@ -1768,14 +1768,14 @@ export function RekapDataAnakClientView({
                       scope="col"
                       onClick={handleResetSort}
                       className={cn(
-                        "py-3.5 px-4 select-none cursor-pointer transition-colors group",
+                        "py-2 sm:py-2.5 px-2 select-none cursor-pointer transition-colors group",
                         sortColumn === "default"
                           ? "hover:bg-slate-200/60 dark:hover:bg-slate-700/60"
                           : "hover:bg-rose-50 dark:hover:bg-rose-950/30 text-rose-600 dark:text-rose-400"
                       )}
                       title={sortColumn === "default" ? "Nomor Urut Default" : "Klik untuk reset ke nomor urut asli"}
                     >
-                      <div className="inline-flex items-center gap-1">
+                      <div className="inline-flex items-center gap-1 justify-center w-full">
                         <span>No</span>
                         {sortColumn !== "default" ? (
                           <RotateCcw className="h-3 w-3 text-rose-500" />
@@ -1784,19 +1784,19 @@ export function RekapDataAnakClientView({
                         )}
                       </div>
                     </th>
-                    {renderSortTh("nama", "Kelurahan", "left", "px-4")}
-                    {renderSortTh("kecamatan", "Kecamatan", "left", "px-4")}
-                    {renderSortTh("totalAnak", "Total Anak (0-6 Thn)", "center", "px-4")}
-                    {renderSortTh("totalBersekolah", "Bersekolah", "center", "px-4")}
-                    {renderSortTh("tk", "TK", "center", "px-3")}
-                    {renderSortTh("ra", "RA", "center", "px-3")}
-                    {renderSortTh("kb", "KB", "center", "px-3")}
-                    {renderSortTh("sps", "SPS", "center", "px-3")}
-                    {renderSortTh("tpa", "TPA", "center", "px-3")}
-                    {renderSortTh("skb", "SKB", "center", "px-3")}
-                    {renderSortTh("pkbm", "PKBM", "center", "px-3")}
-                    {renderSortTh("totalTidakBersekolah", "Belum Sekolah", "center", "px-4")}
-                    {renderSortTh("persenBersekolah", "Cakupan PAUD", "center", "px-4")}
+                    {renderSortTh("nama", "Kelurahan", "left", "px-2")}
+                    {renderSortTh("kecamatan", "Kecamatan", "left", "px-2")}
+                    {renderSortTh("totalAnak", "Total", "center", "px-1.5")}
+                    {renderSortTh("totalBersekolah", "Sekolah", "center", "px-1.5")}
+                    {renderSortTh("tk", "TK", "center", "px-1")}
+                    {renderSortTh("ra", "RA", "center", "px-1")}
+                    {renderSortTh("kb", "KB", "center", "px-1")}
+                    {renderSortTh("sps", "SPS", "center", "px-1")}
+                    {renderSortTh("tpa", "TPA", "center", "px-1")}
+                    {renderSortTh("skb", "SKB", "center", "px-1")}
+                    {renderSortTh("pkbm", "PKBM", "center", "px-1")}
+                    {renderSortTh("totalTidakBersekolah", "Belum", "center", "px-1.5")}
+                    {renderSortTh("persenBersekolah", "Cakupan", "center", "px-1.5")}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
@@ -1815,47 +1815,47 @@ export function RekapDataAnakClientView({
                           isSelected ? "bg-emerald-50/70 dark:bg-emerald-950/30 font-bold" : ""
                         )}
                       >
-                        <td className="py-3 px-4 font-mono text-slate-500">{idx + 1}</td>
-                        <td className={cn("py-3 px-4", sortColumn === "nama" && "bg-blue-50/40 dark:bg-blue-950/20")}>
+                        <td className="py-2 px-2 text-center font-mono text-2xs sm:text-xs text-slate-500">{idx + 1}</td>
+                        <td className={cn("py-2 px-2 text-2xs sm:text-xs", sortColumn === "nama" && "bg-blue-50/40 dark:bg-blue-950/20")}>
                           <strong className="text-slate-900 dark:text-slate-100">{kel.nama}</strong>
                         </td>
-                        <td className={cn("py-3 px-4 text-slate-600 dark:text-slate-400", sortColumn === "kecamatan" && "bg-blue-50/40 dark:bg-blue-950/20 font-bold")}>
+                        <td className={cn("py-2 px-2 text-2xs sm:text-xs text-slate-600 dark:text-slate-400", sortColumn === "kecamatan" && "bg-blue-50/40 dark:bg-blue-950/20 font-bold")}>
                           {kel.kecamatan}
                         </td>
-                        <td className={cn("py-3 px-4 text-center font-mono font-bold text-slate-900 dark:text-slate-100", sortColumn === "totalAnak" && "bg-blue-50/60 dark:bg-blue-950/30 text-blue-950 dark:text-blue-100 font-black")}>
+                        <td className={cn("py-2 px-1.5 text-center font-mono font-bold text-slate-900 dark:text-slate-100 text-2xs sm:text-xs", sortColumn === "totalAnak" && "bg-blue-50/60 dark:bg-blue-950/30 text-blue-950 dark:text-blue-100 font-black")}>
                           {kel.totalAnak}
                         </td>
-                        <td className={cn("py-3 px-4 text-center font-mono font-bold text-emerald-700 dark:text-emerald-400", sortColumn === "totalBersekolah" && "bg-emerald-50/60 dark:bg-emerald-950/30 font-black")}>
+                        <td className={cn("py-2 px-1.5 text-center font-mono font-bold text-emerald-700 dark:text-emerald-400 text-2xs sm:text-xs", sortColumn === "totalBersekolah" && "bg-emerald-50/60 dark:bg-emerald-950/30 font-black")}>
                           {kel.totalBersekolah}
                         </td>
-                        <td className={cn("py-3 px-3 text-center font-mono text-slate-700 dark:text-slate-300", sortColumn === "tk" && "bg-blue-50/60 dark:bg-blue-950/30 font-bold text-blue-950 dark:text-blue-100")}>
+                        <td className={cn("py-2 px-1 text-center font-mono text-slate-700 dark:text-slate-300 text-2xs sm:text-xs", sortColumn === "tk" && "bg-blue-50/60 dark:bg-blue-950/30 font-bold text-blue-950 dark:text-blue-100")}>
                           {kel.bersekolahJenjang.tk}
                         </td>
-                        <td className={cn("py-3 px-3 text-center font-mono text-slate-700 dark:text-slate-300", sortColumn === "ra" && "bg-blue-50/60 dark:bg-blue-950/30 font-bold text-blue-950 dark:text-blue-100")}>
+                        <td className={cn("py-2 px-1 text-center font-mono text-slate-700 dark:text-slate-300 text-2xs sm:text-xs", sortColumn === "ra" && "bg-blue-50/60 dark:bg-blue-950/30 font-bold text-blue-950 dark:text-blue-100")}>
                           {kel.bersekolahJenjang.ra}
                         </td>
-                        <td className={cn("py-3 px-3 text-center font-mono text-slate-700 dark:text-slate-300", sortColumn === "kb" && "bg-blue-50/60 dark:bg-blue-950/30 font-bold text-blue-950 dark:text-blue-100")}>
+                        <td className={cn("py-2 px-1 text-center font-mono text-slate-700 dark:text-slate-300 text-2xs sm:text-xs", sortColumn === "kb" && "bg-blue-50/60 dark:bg-blue-950/30 font-bold text-blue-950 dark:text-blue-100")}>
                           {kel.bersekolahJenjang.kb}
                         </td>
-                        <td className={cn("py-3 px-3 text-center font-mono text-slate-700 dark:text-slate-300", sortColumn === "sps" && "bg-blue-50/60 dark:bg-blue-950/30 font-bold text-blue-950 dark:text-blue-100")}>
+                        <td className={cn("py-2 px-1 text-center font-mono text-slate-700 dark:text-slate-300 text-2xs sm:text-xs", sortColumn === "sps" && "bg-blue-50/60 dark:bg-blue-950/30 font-bold text-blue-950 dark:text-blue-100")}>
                           {kel.bersekolahJenjang.sps}
                         </td>
-                        <td className={cn("py-3 px-3 text-center font-mono text-slate-700 dark:text-slate-300", sortColumn === "tpa" && "bg-blue-50/60 dark:bg-blue-950/30 font-bold text-blue-950 dark:text-blue-100")}>
+                        <td className={cn("py-2 px-1 text-center font-mono text-slate-700 dark:text-slate-300 text-2xs sm:text-xs", sortColumn === "tpa" && "bg-blue-50/60 dark:bg-blue-950/30 font-bold text-blue-950 dark:text-blue-100")}>
                           {kel.bersekolahJenjang.tpa}
                         </td>
-                        <td className={cn("py-3 px-3 text-center font-mono text-slate-700 dark:text-slate-300", sortColumn === "skb" && "bg-blue-50/60 dark:bg-blue-950/30 font-bold text-blue-950 dark:text-blue-100")}>
+                        <td className={cn("py-2 px-1 text-center font-mono text-slate-700 dark:text-slate-300 text-2xs sm:text-xs", sortColumn === "skb" && "bg-blue-50/60 dark:bg-blue-950/30 font-bold text-blue-950 dark:text-blue-100")}>
                           {kel.bersekolahJenjang.skb}
                         </td>
-                        <td className={cn("py-3 px-3 text-center font-mono text-slate-700 dark:text-slate-300", sortColumn === "pkbm" && "bg-blue-50/60 dark:bg-blue-950/30 font-bold text-blue-950 dark:text-blue-100")}>
+                        <td className={cn("py-2 px-1 text-center font-mono text-slate-700 dark:text-slate-300 text-2xs sm:text-xs", sortColumn === "pkbm" && "bg-blue-50/60 dark:bg-blue-950/30 font-bold text-blue-950 dark:text-blue-100")}>
                           {kel.bersekolahJenjang.pkbm}
                         </td>
-                        <td className={cn("py-3 px-4 text-center font-mono font-bold text-blue-700 dark:text-blue-400", sortColumn === "totalTidakBersekolah" && "bg-blue-50/60 dark:bg-blue-950/30 font-black")}>
+                        <td className={cn("py-2 px-1.5 text-center font-mono font-bold text-blue-700 dark:text-blue-400 text-2xs sm:text-xs", sortColumn === "totalTidakBersekolah" && "bg-blue-50/60 dark:bg-blue-950/30 font-black")}>
                           {kel.totalTidakBersekolah}
                         </td>
-                        <td className={cn("py-3 px-4 text-center", sortColumn === "persenBersekolah" && "bg-blue-50/60 dark:bg-blue-950/30 font-black")}>
+                        <td className={cn("py-2 px-1.5 text-center", sortColumn === "persenBersekolah" && "bg-blue-50/60 dark:bg-blue-950/30 font-black")}>
                           <span
                             className={cn(
-                              "inline-block px-2 py-0.5 rounded-full font-black text-2xs font-mono",
+                              "inline-block px-1.5 py-0.5 rounded-full font-black text-[10px] font-mono",
                               kel.persenBersekolah >= 70
                                 ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
                                 : kel.persenBersekolah >= 50

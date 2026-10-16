@@ -81,7 +81,7 @@ export default async function KelolaAnggotaPage({
   }
 
   return (
-    <div className="flex flex-col flex-1 px-4 py-8 sm:px-6 md:px-8 gap-6">
+    <div className="flex flex-col flex-1 px-4 py-4 sm:px-6 md:px-8 gap-5 max-w-4xl mx-auto w-full pb-20">
       {/* Back Button */}
       <div className="flex items-center justify-between">
         <Link

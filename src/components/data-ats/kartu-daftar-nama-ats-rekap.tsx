@@ -245,7 +245,7 @@ export function KartuDaftarNamaAtsRekap({
 
       {/* Konten Terbuka (Expanded Panel) */}
       {isOpen && (
-        <div className="border-t-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-6 space-y-4 animate-in fade-in slide-in-from-top-2 duration-200 print:border-none print:p-0 print:space-y-2 print:bg-white">
+        <div className="border-t-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3.5 sm:p-4.5 space-y-3.5 animate-in fade-in slide-in-from-top-2 duration-200 print:border-none print:p-0 print:space-y-2 print:bg-white">
           {/* Controls: Search, Filters & Print */}
           <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 print:hidden">
             {/* Search Bar */}
@@ -399,13 +399,13 @@ export function KartuDaftarNamaAtsRekap({
                 <table className="w-full text-left text-xs border-collapse table-fixed print:text-[9px]">
                   <thead>
                     <tr className="bg-slate-100 dark:bg-slate-800/90 text-slate-700 dark:text-slate-300 font-bold border-b border-slate-200 dark:border-slate-700 print:bg-slate-200 print:text-black print:border-slate-400">
-                      <th className="py-3 px-2 w-[4%] text-center font-bold print:py-2">No</th>
-                      <th className="py-3 px-3 w-[21%] font-bold print:py-2">Nama Lengkap &amp; Usia</th>
-                      <th className="py-3 px-3 w-[15%] font-bold print:py-2">Kategori &amp; Keinginan</th>
-                      <th className="py-3 px-3 w-[17%] font-bold print:py-2">Sekolah Asal &amp; Alasan</th>
-                      <th className="py-3 px-3 w-[16%] font-bold print:py-2">Orang Tua / Wali &amp; Kontak</th>
-                      <th className="py-3 px-3 w-[15%] font-bold print:py-2">Alamat Domisili</th>
-                      <th className="py-3 px-3 w-[12%] font-bold print:py-2">Komunitas</th>
+                      <th className="py-2 px-1.5 w-[4%] text-center font-bold print:py-1.5">No</th>
+                      <th className="py-2 px-2.5 w-[21%] font-bold print:py-1.5">Nama Lengkap &amp; Usia</th>
+                      <th className="py-2 px-2 w-[15%] font-bold print:py-1.5">Kategori &amp; Keinginan</th>
+                      <th className="py-2 px-2 w-[17%] font-bold print:py-1.5">Sekolah Asal &amp; Alasan</th>
+                      <th className="py-2 px-2 w-[16%] font-bold print:py-1.5">Orang Tua / Wali &amp; Kontak</th>
+                      <th className="py-2 px-2 w-[15%] font-bold print:py-1.5">Alamat Domisili</th>
+                      <th className="py-2 px-2 w-[12%] font-bold print:py-1.5">Komunitas</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 print:divide-slate-200">
@@ -418,10 +418,10 @@ export function KartuDaftarNamaAtsRekap({
                           key={item.id}
                           className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors print:break-inside-avoid print:bg-white"
                         >
-                          <td className="py-3 px-2 text-center font-mono text-slate-500 print:text-black print:py-1.5 align-top">
+                          <td className="py-2 px-1.5 text-center font-mono text-slate-500 print:text-black print:py-1 align-top text-xs">
                             {idx + 1}
                           </td>
-                          <td className="py-3 px-3 align-top break-words print:py-1.5">
+                          <td className="py-2 px-2.5 align-top break-words print:py-1">
                             <div className="space-y-1">
                               <div className="flex flex-wrap items-center gap-1.5">
                                 <span className="font-bold text-slate-900 dark:text-slate-100 text-xs sm:text-sm print:text-black leading-tight">
@@ -452,7 +452,7 @@ export function KartuDaftarNamaAtsRekap({
                           </td>
 
                           {/* Kategori & Keinginan */}
-                          <td className="py-3 px-3 align-top break-words print:py-1.5">
+                          <td className="py-2 px-2 align-top break-words print:py-1">
                             <div className="space-y-1">
                               <span
                                 className={cn(
@@ -481,7 +481,7 @@ export function KartuDaftarNamaAtsRekap({
                           </td>
 
                           {/* Sekolah Asal & Alasan */}
-                          <td className="py-3 px-3 align-top break-words print:py-1.5">
+                          <td className="py-2 px-2 align-top break-words print:py-1">
                             <div className="space-y-0.5">
                               <div className="font-semibold text-slate-800 dark:text-slate-200 print:text-black flex items-start gap-1 leading-tight break-words">
                                 <School className="h-3.5 w-3.5 text-slate-500 shrink-0 mt-0.5 print:hidden" />
@@ -504,7 +504,7 @@ export function KartuDaftarNamaAtsRekap({
                           </td>
 
                           {/* Orang Tua */}
-                          <td className="py-3 px-3 align-top break-words print:py-1.5">
+                          <td className="py-2 px-2 align-top break-words print:py-1">
                             <div className="space-y-0.5">
                               <div className="font-semibold text-slate-800 dark:text-slate-200 print:text-black leading-tight break-words">
                                 {item.namaOrangtua}
@@ -529,7 +529,7 @@ export function KartuDaftarNamaAtsRekap({
                           </td>
 
                           {/* Alamat Domisili */}
-                          <td className="py-3 px-3 align-top break-words print:py-1.5">
+                          <td className="py-2 px-2 align-top break-words print:py-1">
                             <div className="space-y-0.5 text-[11px] text-slate-600 dark:text-slate-300 print:text-black leading-tight">
                               <div className="font-medium text-slate-800 dark:text-slate-200 print:text-black break-words">
                                 {item.alamat || "Alamat belum tercatat lengkap"}
@@ -550,7 +550,7 @@ export function KartuDaftarNamaAtsRekap({
                           </td>
 
                           {/* Komunitas */}
-                          <td className="py-3 px-3 align-top break-words print:py-1.5">
+                          <td className="py-2 px-2 align-top break-words print:py-1">
                             <div className="space-y-1">
                               <span className="font-medium text-slate-700 dark:text-slate-300 print:text-black text-[11px] leading-tight break-words block">
                                 {item.komunitasNama}

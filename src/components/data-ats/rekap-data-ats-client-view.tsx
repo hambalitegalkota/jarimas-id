@@ -166,7 +166,7 @@ export function RekapDataAtsClientView({
     col: TableAtsSortColumn,
     label: string,
     align: "left" | "center" = "center",
-    paddingClass: string = "px-3"
+    paddingClass: string = "px-2"
   ) => {
     const isActive = sortColumn === col;
     const isText = col === "nama" || col === "kecamatan";
@@ -178,7 +178,7 @@ export function RekapDataAtsClientView({
         scope="col"
         onClick={() => handleSort(col)}
         className={cn(
-          "py-3.5 select-none cursor-pointer transition-colors group",
+          "py-2 sm:py-2.5 text-2xs sm:text-xs select-none cursor-pointer transition-colors group",
           paddingClass,
           align === "center" ? "text-center" : "text-left",
           isActive
@@ -357,7 +357,7 @@ export function RekapDataAtsClientView({
   }, [currentWilayahData]);
 
   return (
-    <div className="flex flex-col flex-1 px-3 sm:px-6 md:px-8 gap-6 sm:gap-8 max-w-7xl mx-auto w-full pb-24 print:max-w-none print:w-full print:p-0 print:m-0 print:gap-0 print:pb-0">
+    <div className="flex flex-col flex-1 px-4 sm:px-6 md:px-8 gap-5 sm:gap-6 max-w-4xl mx-auto w-full pb-24 print:max-w-none print:w-full print:p-0 print:m-0 print:gap-0 print:pb-0">
       {/* Tombol Kembali jika diakses dari Detail Komunitas */}
       {backHref && (
         <div className="flex items-center justify-between print:hidden print-hide-on-daftar-nama">
@@ -1519,14 +1519,14 @@ export function RekapDataAtsClientView({
                       scope="col"
                       onClick={handleResetSort}
                       className={cn(
-                        "py-3.5 px-4 select-none cursor-pointer transition-colors group",
+                        "py-2 sm:py-2.5 px-2 select-none cursor-pointer transition-colors group",
                         sortColumn === "default"
                           ? "hover:bg-slate-200/60 dark:hover:bg-slate-700/60"
                           : "hover:bg-rose-50 dark:hover:bg-rose-950/30 text-rose-600 dark:text-rose-400"
                       )}
                       title={sortColumn === "default" ? "Nomor Urut Default" : "Klik untuk reset ke nomor urut asli"}
                     >
-                      <div className="inline-flex items-center gap-1">
+                      <div className="inline-flex items-center gap-1 justify-center w-full">
                         <span>No</span>
                         {sortColumn !== "default" ? (
                           <RotateCcw className="h-3 w-3 text-rose-500" />
@@ -1535,16 +1535,16 @@ export function RekapDataAtsClientView({
                         )}
                       </div>
                     </th>
-                    {renderSortTh("nama", "Kelurahan", "left", "px-4")}
-                    {renderSortTh("kecamatan", "Kecamatan", "left", "px-4")}
-                    {renderSortTh("totalAts", "Total ATS", "center", "px-4")}
-                    {renderSortTh("putusSekolah", "Putus Sekolah (DO)", "center", "px-3")}
-                    {renderSortTh("lulusTidakLanjut", "Lulus Tdk Lanjut (LTM)", "center", "px-3")}
-                    {renderSortTh("belumPernahSekolah", "Belum Pernah (BPB)", "center", "px-3")}
-                    {renderSortTh("keinginan", "Ingin Sekolah Kembali", "center", "px-4")}
-                    {renderSortTh("lakiLaki", "Laki-laki", "center", "px-3")}
-                    {renderSortTh("perempuan", "Perempuan", "center", "px-3")}
-                    {renderSortTh("prioritas", "Prioritas Intervensi", "center", "px-4")}
+                    {renderSortTh("nama", "Kelurahan", "left", "px-2")}
+                    {renderSortTh("kecamatan", "Kecamatan", "left", "px-2")}
+                    {renderSortTh("totalAts", "Total", "center", "px-1.5")}
+                    {renderSortTh("putusSekolah", "DO", "center", "px-1 sm:px-1.5")}
+                    {renderSortTh("lulusTidakLanjut", "LTM", "center", "px-1 sm:px-1.5")}
+                    {renderSortTh("belumPernahSekolah", "BPB", "center", "px-1 sm:px-1.5")}
+                    {renderSortTh("keinginan", "Ingin Kembali", "center", "px-1.5")}
+                    {renderSortTh("lakiLaki", "L", "center", "px-1")}
+                    {renderSortTh("perempuan", "P", "center", "px-1")}
+                    {renderSortTh("prioritas", "Prioritas", "center", "px-1.5")}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
@@ -1563,40 +1563,40 @@ export function RekapDataAtsClientView({
                           isSelected ? "bg-blue-50/70 dark:bg-blue-950/30 font-bold" : ""
                         )}
                       >
-                        <td className="py-3 px-4 font-mono text-slate-500">{idx + 1}</td>
-                        <td className={cn("py-3 px-4", sortColumn === "nama" && "bg-blue-50/40 dark:bg-blue-950/20")}>
+                        <td className="py-2 px-2 text-center font-mono text-2xs sm:text-xs text-slate-500">{idx + 1}</td>
+                        <td className={cn("py-2 px-2 text-2xs sm:text-xs", sortColumn === "nama" && "bg-blue-50/40 dark:bg-blue-950/20")}>
                           <strong className="text-slate-900 dark:text-slate-100">{kel.nama}</strong>
                         </td>
-                        <td className={cn("py-3 px-4 text-slate-600 dark:text-slate-400", sortColumn === "kecamatan" && "bg-blue-50/40 dark:bg-blue-950/20 font-bold")}>
+                        <td className={cn("py-2 px-2 text-2xs sm:text-xs text-slate-600 dark:text-slate-400", sortColumn === "kecamatan" && "bg-blue-50/40 dark:bg-blue-950/20 font-bold")}>
                           {kel.kecamatan}
                         </td>
-                        <td className={cn("py-3 px-4 text-center font-mono font-bold text-slate-900 dark:text-slate-100", sortColumn === "totalAts" && "bg-blue-50/60 dark:bg-blue-950/30 text-blue-950 dark:text-blue-100 font-black")}>
+                        <td className={cn("py-2 px-1.5 text-center font-mono font-bold text-slate-900 dark:text-slate-100 text-2xs sm:text-xs", sortColumn === "totalAts" && "bg-blue-50/60 dark:bg-blue-950/30 text-blue-950 dark:text-blue-100 font-black")}>
                           {kel.totalAts}
                         </td>
-                        <td className={cn("py-3 px-3 text-center font-mono text-rose-600 font-bold", sortColumn === "putusSekolah" && "bg-rose-50/60 dark:bg-rose-950/30 font-black ring-1 ring-inset ring-rose-300")}>
+                        <td className={cn("py-2 px-1 sm:px-1.5 text-center font-mono text-rose-600 font-bold text-2xs sm:text-xs", sortColumn === "putusSekolah" && "bg-rose-50/60 dark:bg-rose-950/30 font-black ring-1 ring-inset ring-rose-300")}>
                           {kel.kategori.putusSekolah}
                         </td>
-                        <td className={cn("py-3 px-3 text-center font-mono text-amber-600 font-bold", sortColumn === "lulusTidakLanjut" && "bg-amber-50/60 dark:bg-amber-950/30 font-black ring-1 ring-inset ring-amber-300")}>
+                        <td className={cn("py-2 px-1 sm:px-1.5 text-center font-mono text-amber-600 font-bold text-2xs sm:text-xs", sortColumn === "lulusTidakLanjut" && "bg-amber-50/60 dark:bg-amber-950/30 font-black ring-1 ring-inset ring-amber-300")}>
                           {kel.kategori.lulusTidakLanjut}
                         </td>
-                        <td className={cn("py-3 px-3 text-center font-mono text-blue-600 font-bold", sortColumn === "belumPernahSekolah" && "bg-blue-50/60 dark:bg-blue-950/30 font-black ring-1 ring-inset ring-blue-300")}>
+                        <td className={cn("py-2 px-1 sm:px-1.5 text-center font-mono text-blue-600 font-bold text-2xs sm:text-xs", sortColumn === "belumPernahSekolah" && "bg-blue-50/60 dark:bg-blue-950/30 font-black ring-1 ring-inset ring-blue-300")}>
                           {kel.kategori.belumPernahSekolah}
                         </td>
-                        <td className={cn("py-3 px-4 text-center", sortColumn === "keinginan" && "bg-emerald-50/60 dark:bg-emerald-950/30 ring-1 ring-inset ring-emerald-300")}>
-                          <span className="font-mono font-bold text-emerald-700 dark:text-emerald-400">
+                        <td className={cn("py-2 px-1.5 text-center", sortColumn === "keinginan" && "bg-emerald-50/60 dark:bg-emerald-950/30 ring-1 ring-inset ring-emerald-300")}>
+                          <span className="font-mono font-bold text-emerald-700 dark:text-emerald-400 text-2xs sm:text-xs">
                             {kel.keinginan.masihAda} ({kel.persenInginSekolah}%)
                           </span>
                         </td>
-                        <td className={cn("py-3 px-3 text-center font-mono text-slate-700 dark:text-slate-300", sortColumn === "lakiLaki" && "bg-blue-50/60 dark:bg-blue-950/30 font-bold")}>
+                        <td className={cn("py-2 px-1 text-center font-mono text-slate-700 dark:text-slate-300 text-2xs sm:text-xs", sortColumn === "lakiLaki" && "bg-blue-50/60 dark:bg-blue-950/30 font-bold")}>
                           {kel.gender.lakiLaki}
                         </td>
-                        <td className={cn("py-3 px-3 text-center font-mono text-slate-700 dark:text-slate-300", sortColumn === "perempuan" && "bg-blue-50/60 dark:bg-blue-950/30 font-bold")}>
+                        <td className={cn("py-2 px-1 text-center font-mono text-slate-700 dark:text-slate-300 text-2xs sm:text-xs", sortColumn === "perempuan" && "bg-blue-50/60 dark:bg-blue-950/30 font-bold")}>
                           {kel.gender.perempuan}
                         </td>
-                        <td className={cn("py-3 px-4 text-center", sortColumn === "prioritas" && "bg-blue-50/60 dark:bg-blue-950/30")}>
+                        <td className={cn("py-2 px-1.5 text-center", sortColumn === "prioritas" && "bg-blue-50/60 dark:bg-blue-950/30")}>
                           <span
                             className={cn(
-                              "inline-block px-2.5 py-0.5 rounded-full font-black text-2xs font-mono uppercase",
+                              "inline-block px-1.5 py-0.5 rounded-full font-black text-[10px] font-mono uppercase",
                               kel.totalAts === 0
                                 ? "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
                                 : kel.totalAts >= 25
@@ -1606,7 +1606,7 @@ export function RekapDataAtsClientView({
                                 : "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
                             )}
                           >
-                            {kel.totalAts === 0 ? "0 ATS" : kel.totalAts >= 25 ? "Prioritas Tinggi" : kel.totalAts >= 15 ? "Prioritas Sedang" : "Terkendali"}
+                            {kel.totalAts === 0 ? "0 ATS" : kel.totalAts >= 25 ? "Tinggi" : kel.totalAts >= 15 ? "Sedang" : "Terkendali"}
                           </span>
                         </td>
                       </tr>

@@ -631,24 +631,24 @@ export function KomunitasDetailClientView({
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-5">
       {/* 1. HERO HEADER CARD */}
-      <section className="relative overflow-hidden rounded-2xl border-2 border-slate-200 bg-white p-5 sm:p-6 space-y-5 shadow-xs">
+      <section className="relative overflow-hidden rounded-2xl border-2 border-slate-200 bg-white p-4 sm:p-5 space-y-4 shadow-xs">
         <div className="flex items-start justify-between gap-3">
-          <div className="flex items-start gap-4">
+          <div className="flex items-start gap-3 sm:gap-3.5">
             <div
               className={cn(
-                "flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl font-bold border-2",
+                "flex h-11 w-11 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-2xl font-bold border-2",
                 komunitas.jenis === "warga_kita" && "bg-blue-50 text-blue-700 border-blue-200",
                 komunitas.jenis === "posyandu" && "bg-emerald-50 text-emerald-700 border-emerald-200",
                 isPkbmOrSkb && "bg-amber-50 text-amber-800 border-amber-200",
                 isPureSatuanPaud && "bg-indigo-50 text-indigo-800 border-indigo-200"
               )}
             >
-              {komunitas.jenis === "warga_kita" && <Users className="h-7 w-7" />}
-              {komunitas.jenis === "posyandu" && <Sparkles className="h-7 w-7" />}
-              {isPkbmOrSkb && <BookOpen className="h-7 w-7" />}
-              {isPureSatuanPaud && <Building2 className="h-7 w-7" />}
+              {komunitas.jenis === "warga_kita" && <Users className="h-5 w-5 sm:h-6 sm:w-6" />}
+              {komunitas.jenis === "posyandu" && <Sparkles className="h-5 w-5 sm:h-6 sm:w-6" />}
+              {isPkbmOrSkb && <BookOpen className="h-5 w-5 sm:h-6 sm:w-6" />}
+              {isPureSatuanPaud && <Building2 className="h-5 w-5 sm:h-6 sm:w-6" />}
             </div>
 
             <div className="space-y-1">
@@ -681,7 +681,7 @@ export function KomunitasDetailClientView({
                 </span>
               </div>
 
-              <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+              <h1 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">
                 {formattedTitle}
               </h1>
 
@@ -831,61 +831,61 @@ export function KomunitasDetailClientView({
 
       {/* INFORMASI ADMIN / PENGURUS KOMUNITAS */}
       {hasCommunityAdmin && (
-        <section className="rounded-2xl border-2 border-emerald-300 dark:border-emerald-800 bg-gradient-to-r from-emerald-50/90 via-teal-50/70 to-emerald-50/90 dark:from-emerald-950/30 dark:via-teal-950/20 dark:to-emerald-950/30 p-5 sm:p-6 shadow-xs transition-all duration-300">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
-            <div className="flex items-start gap-4 min-w-0">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-600 text-white shadow-xs">
-                <ShieldCheck className="h-6 w-6" />
+        <section className="rounded-2xl border-2 border-emerald-300 dark:border-emerald-800 bg-gradient-to-r from-emerald-50/90 via-teal-50/70 to-emerald-50/90 dark:from-emerald-950/30 dark:via-teal-950/20 dark:to-emerald-950/30 p-3.5 sm:p-4.5 shadow-xs transition-all duration-300">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-start gap-3 sm:gap-3.5 min-w-0">
+              <div className="flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-600 text-white shadow-xs">
+                <ShieldCheck className="h-5 w-5 sm:h-5.5 sm:w-5.5" />
               </div>
-              <div className="space-y-1.5 min-w-0">
+              <div className="space-y-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h4 className="text-xs font-black text-emerald-950 dark:text-emerald-300 uppercase tracking-widest">
+                  <h4 className="text-[11px] font-black text-emerald-950 dark:text-emerald-300 uppercase tracking-widest">
                     Admin / Pengurus Komunitas
                   </h4>
-                  <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-900 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-700">
+                  <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-900 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-700">
                     <CheckCircle2 className="h-3 w-3 text-emerald-700 dark:text-emerald-400" />
                     <span>Terverifikasi</span>
                   </span>
                 </div>
-                <div className="flex items-center gap-2.5 flex-wrap">
-                  <h3 className="text-lg font-black text-slate-900 dark:text-white tracking-tight">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white tracking-tight">
                     {effectiveAdminName}
                   </h3>
                   {effectiveAdminRole && (
-                    <span className="text-xs font-bold px-2.5 py-0.5 rounded-lg bg-white/80 dark:bg-slate-800/80 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 shadow-2xs">
+                    <span className="text-2xs font-bold px-2 py-0.5 rounded-lg bg-white/80 dark:bg-slate-800/80 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 shadow-2xs">
                       {effectiveAdminRole}
                     </span>
                   )}
                 </div>
-                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed max-w-xl">
+                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed max-w-xl">
                   Pengurus resmi yang telah diverifikasi dan disetujui untuk mengelola keanggotaan, verifikasi profil, serta koordinasi layanan warga.
                 </p>
               </div>
             </div>
 
             {/* Kotak Nomor HP & Tombol Hubungi Admin untuk Semua Warga */}
-            <div className="shrink-0 flex flex-col sm:flex-row md:flex-col lg:flex-row items-stretch sm:items-center gap-2.5 bg-white/90 dark:bg-slate-900/80 p-3.5 rounded-2xl border border-emerald-200 dark:border-emerald-800/60 shadow-2xs">
-              <div className="flex items-center gap-2.5 px-1 min-w-0">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300">
-                  <Phone className="h-4 w-4" />
+            <div className="shrink-0 flex flex-col sm:flex-row md:flex-col lg:flex-row items-stretch sm:items-center gap-2 bg-white/90 dark:bg-slate-900/80 p-2.5 sm:p-3 rounded-2xl border border-emerald-200 dark:border-emerald-800/60 shadow-2xs">
+              <div className="flex items-center gap-2 px-1 min-w-0">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300">
+                  <Phone className="h-3.5 w-3.5" />
                 </div>
                 <div className="min-w-0">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">
                     No. Handphone / WhatsApp
                   </span>
-                  <span className="text-sm font-extrabold text-slate-900 dark:text-slate-100 font-mono tracking-tight block truncate">
+                  <span className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-slate-100 font-mono tracking-tight block truncate">
                     {effectiveAdminHp || "Belum dicantumkan"}
                   </span>
                 </div>
               </div>
 
               {effectiveAdminHp ? (
-                <div className="flex items-center gap-2 pt-1 sm:pt-0">
+                <div className="flex items-center gap-1.5 pt-1 sm:pt-0">
                   <a
                     href={formatWhatsAppUrl(effectiveAdminHp, `Halo Admin ${effectiveAdminName}, saya warga di ${komunitasData.nama}...`) || `https://wa.me/${effectiveAdminHp.replace(/\D/g, "")}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex-1 sm:flex-none inline-flex min-h-[38px] items-center justify-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs transition-all active:scale-95 cursor-pointer"
+                    className="flex-1 sm:flex-none inline-flex min-h-[34px] items-center justify-center gap-1.5 px-3 py-1 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs transition-all active:scale-95 cursor-pointer"
                     title={`Chat WhatsApp dengan ${effectiveAdminName}`}
                   >
                     <MessageSquare className="h-3.5 w-3.5" />
@@ -893,7 +893,7 @@ export function KomunitasDetailClientView({
                   </a>
                   <a
                     href={`tel:${effectiveAdminHp.replace(/[^0-9+]/g, "")}`}
-                    className="inline-flex min-h-[38px] items-center justify-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold border border-slate-200 dark:border-slate-700 shadow-2xs transition-all active:scale-95 cursor-pointer"
+                    className="inline-flex min-h-[34px] items-center justify-center gap-1.5 px-3 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold border border-slate-200 dark:border-slate-700 shadow-2xs transition-all active:scale-95 cursor-pointer"
                     title={`Telepon langsung ${effectiveAdminName}`}
                   >
                     <Phone className="h-3.5 w-3.5 text-slate-600 dark:text-slate-300" />
@@ -966,24 +966,24 @@ export function KomunitasDetailClientView({
             return (
               <div
                 key={cat.id}
-                className={`rounded-3xl border-2 transition-all duration-500 overflow-hidden border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xs hover:shadow-xs ${cat.hoverBorder}`}
+                className={`rounded-2xl border-2 transition-all duration-300 overflow-hidden border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xs hover:shadow-xs ${cat.hoverBorder}`}
               >
                 <Link
                   href={cat.href}
-                  className={`w-full flex items-center justify-between gap-3 p-4 sm:p-5 text-slate-800 dark:text-slate-100 transition-all cursor-pointer group ${cat.hoverBg} text-left`}
+                  className={`w-full flex items-center justify-between gap-3 p-3.5 sm:p-4 text-slate-800 dark:text-slate-100 transition-all cursor-pointer group ${cat.hoverBg} text-left`}
                 >
-                  <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                  <div className="flex items-center gap-3 sm:gap-3.5 min-w-0">
                     <div
-                      className={`flex h-11 w-11 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-2xl ${cat.iconBg} ${cat.iconColor} group-hover:scale-105 transition-transform shadow-2xs`}
+                      className={`flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl sm:rounded-2xl ${cat.iconBg} ${cat.iconColor} group-hover:scale-105 transition-transform shadow-2xs`}
                     >
-                      <Icon className="h-6 w-6" />
+                      <Icon className="h-5 w-5 sm:h-5.5 sm:w-5.5" />
                     </div>
                     <div className="space-y-0.5 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h2 className={`text-base sm:text-lg font-black tracking-tight text-slate-900 dark:text-slate-100 ${cat.textHoverColor} transition-colors`}>
+                        <h2 className={`text-sm sm:text-base font-black tracking-tight text-slate-900 dark:text-slate-100 ${cat.textHoverColor} transition-colors`}>
                           {cat.title}
                         </h2>
-                        <span className="text-2xs font-bold px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+                        <span className="text-2xs font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
                           {cat.badgeText}
                         </span>
                       </div>
@@ -997,8 +997,8 @@ export function KomunitasDetailClientView({
                     <span className={`hidden sm:inline-block text-xs font-bold text-slate-400 ${cat.textHoverColor} transition-colors`}>
                       Buka Data
                     </span>
-                    <div className={`h-8 w-8 sm:h-9 sm:w-9 rounded-xl ${cat.arrowBg} ${cat.arrowHoverBg} flex items-center justify-center ${cat.arrowColor} transition-all duration-300 shadow-2xs`}>
-                      <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5 transform group-hover:translate-x-0.5 transition-transform duration-300" />
+                    <div className={`h-7 w-7 sm:h-8 sm:w-8 rounded-lg sm:rounded-xl ${cat.arrowBg} ${cat.arrowHoverBg} flex items-center justify-center ${cat.arrowColor} transition-all duration-300 shadow-2xs`}>
+                      <ArrowRight className="h-4 w-4 transform group-hover:translate-x-0.5 transition-transform duration-300" />
                     </div>
                   </div>
                 </Link>
@@ -1008,22 +1008,22 @@ export function KomunitasDetailClientView({
             return (
               <div
                 key={cat.id}
-                className="rounded-3xl border-2 transition-all duration-500 overflow-hidden border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xs hover:shadow-xs hover:border-slate-300 dark:hover:border-slate-700"
+                className="rounded-2xl border-2 transition-all duration-300 overflow-hidden border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xs hover:shadow-xs hover:border-slate-300 dark:hover:border-slate-700"
               >
                 <button
                   type="button"
                   onClick={() => setIsWargaOnboardingOpen(true)}
-                  className="w-full flex items-center justify-between gap-3 p-4 sm:p-5 text-slate-800 dark:text-slate-100 transition-all cursor-pointer group hover:bg-slate-50/60 dark:hover:bg-slate-800/30 text-left"
+                  className="w-full flex items-center justify-between gap-3 p-3.5 sm:p-4 text-slate-800 dark:text-slate-100 transition-all cursor-pointer group hover:bg-slate-50/60 dark:hover:bg-slate-800/30 text-left"
                 >
-                  <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                  <div className="flex items-center gap-3 sm:gap-3.5 min-w-0">
                     <div
-                      className={`flex h-11 w-11 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-2xl ${cat.iconBg} ${cat.iconColor} opacity-70 group-hover:opacity-100 group-hover:scale-105 transition-all shadow-2xs`}
+                      className={`flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl sm:rounded-2xl ${cat.iconBg} ${cat.iconColor} opacity-70 group-hover:opacity-100 group-hover:scale-105 transition-all shadow-2xs`}
                     >
-                      <Icon className="h-6 w-6" />
+                      <Icon className="h-5 w-5 sm:h-5.5 sm:w-5.5" />
                     </div>
                     <div className="space-y-0.5 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h2 className="text-base sm:text-lg font-black tracking-tight text-slate-900 dark:text-slate-100 group-hover:text-blue-600 transition-colors">
+                        <h2 className="text-sm sm:text-base font-black tracking-tight text-slate-900 dark:text-slate-100 group-hover:text-blue-600 transition-colors">
                           {cat.title}
                         </h2>
                         <span className="inline-flex items-center gap-1 text-2xs font-extrabold px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200">
@@ -1041,8 +1041,8 @@ export function KomunitasDetailClientView({
                     <span className="hidden sm:inline-block text-xs font-bold text-amber-700 group-hover:text-amber-800 transition-colors">
                       Buka Akses
                     </span>
-                    <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-xl bg-amber-50 dark:bg-amber-950/50 group-hover:bg-amber-600 group-hover:text-white flex items-center justify-center text-amber-600 dark:text-amber-400 transition-all duration-300 shadow-2xs">
-                      <Lock className="h-4 w-4 transform group-hover:scale-110 transition-transform duration-300" />
+                    <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-lg sm:rounded-xl bg-amber-50 dark:bg-amber-950/50 group-hover:bg-amber-600 group-hover:text-white flex items-center justify-center text-amber-600 dark:text-amber-400 transition-all duration-300 shadow-2xs">
+                      <Lock className="h-3.5 w-3.5 transform group-hover:scale-110 transition-transform duration-300" />
                     </div>
                   </div>
                 </button>
@@ -1059,9 +1059,9 @@ export function KomunitasDetailClientView({
           return (
             <div
               key={cat.id}
-              className={`rounded-3xl border-2 transition-all duration-500 overflow-hidden ${
+              className={`rounded-2xl border-2 transition-all duration-300 overflow-hidden ${
                 isOpen
-                  ? `border-slate-300 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/40 p-2 sm:p-3 shadow-md`
+                  ? `border-slate-300 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/40 p-1.5 sm:p-2 shadow-md`
                   : `border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xs hover:shadow-xs ${cat.hoverBorder}`
               }`}
             >
@@ -1071,19 +1071,19 @@ export function KomunitasDetailClientView({
                   type="button"
                   onClick={() => setActiveTab(null)}
                   title="Klik untuk menutup bagian ini"
-                  className={`w-full flex items-center justify-between gap-3 p-4 sm:p-5 rounded-2xl text-white ${cat.activeColorBg} shadow-sm cursor-pointer transition-all hover:opacity-95 group text-left`}
+                  className={`w-full flex items-center justify-between gap-3 p-3.5 sm:p-4 rounded-xl sm:rounded-2xl text-white ${cat.activeColorBg} shadow-sm cursor-pointer transition-all hover:opacity-95 group text-left`}
                 >
-                  <div className="flex items-center gap-3 sm:gap-4 min-w-0">
-                    <div className="flex h-11 w-11 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-2xl bg-white/20 text-white backdrop-blur-xs shadow-2xs group-hover:scale-105 transition-transform">
-                      <Icon className="h-6 w-6" />
+                  <div className="flex items-center gap-3 sm:gap-3.5 min-w-0">
+                    <div className="flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl sm:rounded-2xl bg-white/20 text-white backdrop-blur-xs shadow-2xs group-hover:scale-105 transition-transform">
+                      <Icon className="h-5 w-5 sm:h-5.5 sm:w-5.5" />
                     </div>
                     <div className="space-y-0.5 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h2 className="text-base sm:text-lg font-black tracking-tight truncate">
+                        <h2 className="text-sm sm:text-base font-black tracking-tight truncate">
                           {cat.title}
                         </h2>
                         <span
-                          className={`text-2xs font-extrabold px-2.5 py-0.5 rounded-full border backdrop-blur-xs ${cat.badgeColor}`}
+                          className={`text-2xs font-extrabold px-2 py-0.5 rounded-full border backdrop-blur-xs ${cat.badgeColor}`}
                         >
                           {cat.badgeText}
                         </span>
@@ -1102,8 +1102,8 @@ export function KomunitasDetailClientView({
                     <span className="hidden sm:inline-block text-xs font-bold text-white/90 group-hover:text-white transition-colors">
                       Tutup Bagian
                     </span>
-                    <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-xl bg-white/20 flex items-center justify-center text-white backdrop-blur-xs group-hover:bg-white/30 transition-colors">
-                      <ChevronDown className="h-5 w-5 transform rotate-180 transition-transform duration-300" />
+                    <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-lg sm:rounded-xl bg-white/20 flex items-center justify-center text-white backdrop-blur-xs group-hover:bg-white/30 transition-colors">
+                      <ChevronDown className="h-4 w-4 transform rotate-180 transition-transform duration-300" />
                     </div>
                   </div>
                 </button>
@@ -1111,20 +1111,20 @@ export function KomunitasDetailClientView({
                 <button
                   type="button"
                   onClick={() => setActiveTab(cat.id)}
-                  className={`w-full flex items-center justify-between gap-3 p-4 sm:p-5 text-slate-800 dark:text-slate-100 transition-all cursor-pointer group ${cat.hoverBg} text-left`}
+                  className={`w-full flex items-center justify-between gap-3 p-3.5 sm:p-4 text-slate-800 dark:text-slate-100 transition-all cursor-pointer group ${cat.hoverBg} text-left`}
                 >
-                  <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                  <div className="flex items-center gap-3 sm:gap-3.5 min-w-0">
                     <div
-                      className={`flex h-11 w-11 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-2xl ${cat.iconBg} ${cat.iconColor} group-hover:scale-105 transition-transform shadow-2xs`}
+                      className={`flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl sm:rounded-2xl ${cat.iconBg} ${cat.iconColor} group-hover:scale-105 transition-transform shadow-2xs`}
                     >
-                      <Icon className="h-6 w-6" />
+                      <Icon className="h-5 w-5 sm:h-5.5 sm:w-5.5" />
                     </div>
                     <div className="space-y-0.5 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h2 className="text-base sm:text-lg font-black tracking-tight text-slate-900 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                        <h2 className="text-sm sm:text-base font-black tracking-tight text-slate-900 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                           {cat.title}
                         </h2>
-                        <span className="text-2xs font-bold px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+                        <span className="text-2xs font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
                           {cat.badgeText}
                         </span>
                       </div>
@@ -1138,8 +1138,8 @@ export function KomunitasDetailClientView({
                     <span className="hidden sm:inline-block text-xs font-bold text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200 transition-colors">
                       Buka Bagian
                     </span>
-                    <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-xl bg-slate-100 dark:bg-slate-800 group-hover:bg-slate-200 dark:group-hover:bg-slate-700 flex items-center justify-center text-slate-500 dark:text-slate-400 transition-colors">
-                      <ChevronDown className="h-5 w-5 transform rotate-0 transition-transform duration-300" />
+                    <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-lg sm:rounded-xl bg-slate-100 dark:bg-slate-800 group-hover:bg-slate-200 dark:group-hover:bg-slate-700 flex items-center justify-center text-slate-500 dark:text-slate-400 transition-colors">
+                      <ChevronDown className="h-4 w-4 transform rotate-0 transition-transform duration-300" />
                     </div>
                   </div>
                 </button>
