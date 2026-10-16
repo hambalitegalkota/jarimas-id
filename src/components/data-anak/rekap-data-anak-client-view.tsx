@@ -396,10 +396,10 @@ export function RekapDataAnakClientView({
   }, [currentWilayahData]);
 
   return (
-    <div className="flex flex-col flex-1 px-4 py-4 sm:px-6 md:px-8 gap-6 sm:gap-8 max-w-6xl mx-auto w-full pb-24">
+    <div className="flex flex-col flex-1 px-3 sm:px-6 md:px-8 gap-6 sm:gap-8 max-w-7xl mx-auto w-full pb-24 print:max-w-none print:w-full print:p-0 print:m-0 print:gap-0 print:pb-0">
       {/* Tombol Kembali jika diakses dari Detail Komunitas */}
       {backHref && (
-        <div className="flex items-center justify-between print:hidden">
+        <div className="flex items-center justify-between print:hidden print-hide-on-daftar-nama">
           <Link
             href={backHref}
             className="inline-flex min-h-[44px] h-11 items-center gap-2 rounded-xl bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 px-4 text-sm font-bold text-slate-800 dark:text-slate-200 transition-all hover:bg-slate-50 dark:hover:bg-slate-800 shadow-xs"
@@ -413,7 +413,7 @@ export function RekapDataAnakClientView({
       {/* ========================================================= */}
       {/* 1. BREADCRUMB & TOP HERO HEADER                           */}
       {/* ========================================================= */}
-      <div className="space-y-3">
+      <div className="space-y-3 print-hide-on-daftar-nama">
         <nav className="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
           <Link href="/" className="hover:text-emerald-600 transition-colors flex items-center gap-1">
             <span>Beranda</span>
@@ -465,7 +465,7 @@ export function RekapDataAnakClientView({
       {/* ========================================================= */}
       {/* 2. LEVEL SELECTOR CONTROLS (KOTA / KECAMATAN / KELURAHAN) */}
       {/* ========================================================= */}
-      <div className="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-3xl border-2 border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+      <div className="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-3xl border-2 border-slate-200 dark:border-slate-800 shadow-sm space-y-4 print-hide-on-daftar-nama">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           {/* Level Hierarchy Buttons */}
           <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
@@ -582,7 +582,7 @@ export function RekapDataAnakClientView({
       </div>
 
       {/* Ketentuan Privasi & Tingkat Data Rekapitulasi */}
-      <div className="rounded-2xl border-2 border-blue-200 dark:border-blue-900 bg-blue-50/70 dark:bg-blue-950/30 p-4 sm:p-5 flex items-start gap-3 shadow-xs">
+      <div className="rounded-2xl border-2 border-blue-200 dark:border-blue-900 bg-blue-50/70 dark:bg-blue-950/30 p-4 sm:p-5 flex items-start gap-3 shadow-xs print-hide-on-daftar-nama">
         <ShieldCheck className="h-5 w-5 text-blue-700 dark:text-blue-400 shrink-0 mt-0.5" />
         <div className="space-y-1">
           <h4 className="text-sm sm:text-base font-bold text-blue-950 dark:text-blue-200">
@@ -597,7 +597,7 @@ export function RekapDataAnakClientView({
       {/* ========================================================= */}
       {/* 3. KEY SUMMARY METRIC CARDS                               */}
       {/* ========================================================= */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 print-hide-on-daftar-nama">
         {/* Card 1: Total Anak Usia Dini */}
         <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 space-y-2 shadow-xs hover:border-slate-300 transition-colors">
           <div className="flex items-center justify-between">
@@ -705,7 +705,7 @@ export function RekapDataAnakClientView({
       {/* ========================================================= */}
       {/* 4. NAVIGATION SECTION TABS                                */}
       {/* ========================================================= */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 bg-slate-100 dark:bg-slate-800/80 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-700">
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 bg-slate-100 dark:bg-slate-800/80 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-700 print-hide-on-daftar-nama">
         <button
           type="button"
           onClick={() => setActiveTabSection("semua")}
@@ -764,7 +764,7 @@ export function RekapDataAnakClientView({
       {/* ========================================================= */}
       {(activeTabSection === "semua" || activeTabSection === "bersekolah") && (
         <div className="space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 print-hide-on-daftar-nama">
             <div className="flex items-center gap-2">
               <div className="h-8 w-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold">
                 <School className="h-4 w-4" />
@@ -802,7 +802,7 @@ export function RekapDataAnakClientView({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 print-hide-on-daftar-nama">
             {/* 5.1 Grafik Distribusi Jenjang Institusi PAUD */}
             <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-5 shadow-xs">
               <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
@@ -1462,7 +1462,7 @@ export function RekapDataAnakClientView({
       {/* ========================================================= */}
       {(activeTabSection === "semua" || activeTabSection === "tidak_sekolah") && (
         <div className="space-y-4 pt-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 print-hide-on-daftar-nama">
             <div className="flex items-center gap-2">
               <div className="h-8 w-8 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold">
                 <HeartHandshake className="h-4 w-4" />
@@ -1500,7 +1500,7 @@ export function RekapDataAnakClientView({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 print-hide-on-daftar-nama">
             {/* 6.1 Kelompok Umur Anak Belum Bersekolah */}
             <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-5 shadow-xs">
               <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
@@ -1704,7 +1704,7 @@ export function RekapDataAnakClientView({
       {/* 7. TABEL KOMPARATIF BERJENJANG (27 KELURAHAN SE-KOTA TEGAL)*/}
       {/* ========================================================= */}
       {(activeTabSection === "semua" || activeTabSection === "tabel") && (
-        <div className="space-y-4 pt-4">
+        <div className="space-y-4 pt-4 print-hide-on-daftar-nama">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <div className="h-8 w-8 rounded-xl bg-slate-900 dark:bg-slate-700 text-white flex items-center justify-center font-bold">
@@ -1910,7 +1910,7 @@ export function RekapDataAnakClientView({
       {/* ========================================================= */}
       {/* 8. FOOTER CALL-TO-ACTION & LINK TO ATS / POSYANDU         */}
       {/* ========================================================= */}
-      <div className="p-6 rounded-3xl bg-slate-100 dark:bg-slate-800/60 border-2 border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div className="p-6 rounded-3xl bg-slate-100 dark:bg-slate-800/60 border-2 border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row items-center justify-between gap-4 print-hide-on-daftar-nama">
         <div className="space-y-1 text-center sm:text-left">
           <h4 className="text-sm sm:text-base font-black text-slate-900 dark:text-slate-100">
             Ingin Mendaftarkan Balita atau Menemukan Anak Tidak Sekolah?

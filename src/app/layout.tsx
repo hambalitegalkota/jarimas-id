@@ -70,7 +70,7 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${jakartaSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-slate-50 text-slate-900 font-sans pb-20 sm:pb-24 transition-colors duration-150">
+      <body className="min-h-full flex flex-col bg-slate-50 text-slate-900 font-sans pb-20 sm:pb-24 transition-colors duration-150 print:pb-0 print:bg-white">
         <ThemeProvider
           attribute="class"
           defaultTheme="light"
@@ -79,7 +79,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <GlobalMessageNotificationProvider>
-            <main className="flex-1 w-full max-w-md mx-auto sm:max-w-xl md:max-w-3xl lg:max-w-5xl flex flex-col">
+            <main className="flex-1 w-full flex flex-col print:max-w-none print:w-full print:m-0 print:p-0">
               {children}
             </main>
             <BottomNav />

@@ -110,7 +110,7 @@ export function BottomNav() {
 
   return (
     <div
-      className="fixed bottom-0 left-0 right-0 z-40 group pointer-events-none"
+      className="fixed bottom-0 left-0 right-0 z-40 group pointer-events-none print:hidden"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >

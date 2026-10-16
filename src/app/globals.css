@@ -234,4 +234,24 @@ button, input, select, textarea {
     page-break-inside: avoid !important;
     break-inside: avoid !important;
   }
+
+  /* Khusus Cetak Daftar Nama Anak Rekapitulasi (Penuh & Terisolasi) */
+  body.print-daftar-nama-only .print-hide-on-daftar-nama {
+    display: none !important;
+  }
+
+  body.print-daftar-nama-only .print-daftar-nama-container:not(.print-target-active) {
+    display: none !important;
+  }
+
+  body.print-daftar-nama-only .print-daftar-nama-container.print-target-active {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: #ffffff !important;
+  }
 }
