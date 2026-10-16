@@ -26,6 +26,10 @@ import {
   EyeOff,
   ArrowLeft,
   ShieldCheck,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
+  RotateCcw,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type {
@@ -35,6 +39,35 @@ import type {
   AtsJenjangAsalBreakdown,
 } from "@/app/actions/rekap-data-ats";
 import { KartuDaftarNamaAtsRekap } from "./kartu-daftar-nama-ats-rekap";
+
+export type TableAtsSortColumn =
+  | "default"
+  | "nama"
+  | "kecamatan"
+  | "totalAts"
+  | "putusSekolah"
+  | "lulusTidakLanjut"
+  | "belumPernahSekolah"
+  | "keinginan"
+  | "lakiLaki"
+  | "perempuan"
+  | "prioritas";
+
+export type SortDirection = "asc" | "desc";
+
+const TABLE_ATS_SORT_LABELS: Record<TableAtsSortColumn, string> = {
+  default: "Nomor Urut Default",
+  nama: "Kelurahan",
+  kecamatan: "Kecamatan",
+  totalAts: "Total ATS",
+  putusSekolah: "Putus Sekolah (DO)",
+  lulusTidakLanjut: "Lulus Tdk Lanjut (LTM)",
+  belumPernahSekolah: "Belum Pernah (BPB)",
+  keinginan: "Ingin Sekolah Kembali",
+  lakiLaki: "Laki-laki",
+  perempuan: "Perempuan",
+  prioritas: "Prioritas Intervensi",
+};
 
 export interface RekapDataAtsClientViewProps {
   initialData: RekapDataAtsResult;
@@ -69,6 +102,8 @@ export function RekapDataAtsClientView({
   const [selectedKelurahan, setSelectedKelurahan] = useState<string>(initialKelurahan || "Kejambon");
   const [activeTabSection, setActiveTabSection] = useState<"semua" | "kategori" | "jenjang_usia" | "tabel">("semua");
   const [tableSearch, setTableSearch] = useState<string>("");
+  const [sortColumn, setSortColumn] = useState<TableAtsSortColumn>("default");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
 
   const [isAllHidden, setIsAllHidden] = useState(false);
   const [hiddenCharts, setHiddenCharts] = useState<Record<string, boolean>>({});
@@ -96,6 +131,98 @@ export function RekapDataAtsClientView({
     }
   };
 
+  // Handler Sort Kolom Tabel ATS
+  const handleSort = (column: TableAtsSortColumn) => {
+    if (sortColumn === column) {
+      const isTextCol = column === "nama" || column === "kecamatan";
+      const firstDir: SortDirection = isTextCol ? "asc" : "desc";
+      const secondDir: SortDirection = isTextCol ? "desc" : "asc";
+
+      if (sortDirection === firstDir) {
+        setSortDirection(secondDir);
+      } else {
+        // Siklus ke-3: reset kembali ke urutan default
+        setSortColumn("default");
+        setSortDirection(firstDir);
+      }
+    } else {
+      setSortColumn(column);
+      if (column === "nama" || column === "kecamatan") {
+        setSortDirection("asc");
+      } else {
+        // Kolom angka dimulai dari nilai tertinggi (desc)
+        setSortDirection("desc");
+      }
+    }
+  };
+
+  const handleResetSort = () => {
+    setSortColumn("default");
+    setSortDirection("desc");
+  };
+
+  // Helper render header kolom sortable
+  const renderSortTh = (
+    col: TableAtsSortColumn,
+    label: string,
+    align: "left" | "center" = "center",
+    paddingClass: string = "px-3"
+  ) => {
+    const isActive = sortColumn === col;
+    const isText = col === "nama" || col === "kecamatan";
+    const descTitle = isText ? "Z ke A" : "tertinggi ke terendah";
+    const ascTitle = isText ? "A ke Z" : "terendah ke tertinggi";
+
+    return (
+      <th
+        scope="col"
+        onClick={() => handleSort(col)}
+        className={cn(
+          "py-3.5 select-none cursor-pointer transition-colors group",
+          paddingClass,
+          align === "center" ? "text-center" : "text-left",
+          isActive
+            ? "bg-blue-100/80 dark:bg-blue-950/70 text-blue-900 dark:text-blue-200 border-b-2 border-blue-600 dark:border-blue-400"
+            : "hover:bg-slate-200/60 dark:hover:bg-slate-700/60"
+        )}
+        title={`Urutkan berdasarkan ${label} (${
+          isActive
+            ? `Saat ini ${sortDirection === "desc" ? descTitle : ascTitle}. Klik untuk ${sortDirection === "desc" ? ascTitle : "kembali normal"}`
+            : `Klik untuk urutkan ${isText ? "A-Z" : "tertinggi ke terendah"}`
+        })`}
+      >
+        <div
+          className={cn(
+            "inline-flex items-center gap-1.5",
+            align === "center" ? "justify-center w-full" : "justify-start"
+          )}
+        >
+          <span className={cn(isActive && "font-black text-blue-900 dark:text-blue-100")}>
+            {label}
+          </span>
+          <span
+            className={cn(
+              "p-0.5 rounded transition-all inline-flex items-center justify-center shrink-0",
+              isActive
+                ? "bg-blue-600 text-white dark:bg-blue-500 shadow-2xs"
+                : "text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300"
+            )}
+          >
+            {isActive ? (
+              sortDirection === "desc" ? (
+                <ArrowDown className="h-3 w-3 stroke-[2.5]" />
+              ) : (
+                <ArrowUp className="h-3 w-3 stroke-[2.5]" />
+              )
+            ) : (
+              <ArrowUpDown className="h-3 w-3 opacity-40 group-hover:opacity-100 transition-opacity" />
+            )}
+          </span>
+        </div>
+      </th>
+    );
+  };
+
   // Daftar opsi kecamatan & kelurahan
   const daftarKecamatan = useMemo(() => {
     return initialData.kecamatanList.map((k) => k.nama);
@@ -119,16 +246,68 @@ export function RekapDataAtsClientView({
     return match || initialData.kelurahanList[0] || initialData.kota;
   }, [selectedTingkat, selectedKecamatan, selectedKelurahan, initialData]);
 
-  // Data Tabel Komparatif yang difilter
+  // Data Tabel Komparatif yang difilter dan diurutkan
   const filteredTableRows = useMemo(() => {
     const q = tableSearch.toLowerCase().trim();
-    if (!q) return initialData.kelurahanList;
-    return initialData.kelurahanList.filter(
-      (k) =>
-        k.nama.toLowerCase().includes(q) ||
-        (k.kecamatan && k.kecamatan.toLowerCase().includes(q))
-    );
-  }, [initialData, tableSearch]);
+    let rows = initialData.kelurahanList;
+
+    if (q) {
+      rows = rows.filter(
+        (k) =>
+          k.nama.toLowerCase().includes(q) ||
+          (k.kecamatan && k.kecamatan.toLowerCase().includes(q))
+      );
+    }
+
+    if (sortColumn === "default") {
+      return rows;
+    }
+
+    const getColValue = (item: WilayahRekapAtsItem, col: TableAtsSortColumn): number | string => {
+      switch (col) {
+        case "nama":
+          return item.nama || "";
+        case "kecamatan":
+          return item.kecamatan || "";
+        case "totalAts":
+        case "prioritas":
+          return item.totalAts ?? 0;
+        case "putusSekolah":
+          return item.kategori?.putusSekolah ?? 0;
+        case "lulusTidakLanjut":
+          return item.kategori?.lulusTidakLanjut ?? 0;
+        case "belumPernahSekolah":
+          return item.kategori?.belumPernahSekolah ?? 0;
+        case "keinginan":
+          return item.keinginan?.masihAda ?? 0;
+        case "lakiLaki":
+          return item.gender?.lakiLaki ?? 0;
+        case "perempuan":
+          return item.gender?.perempuan ?? 0;
+        default:
+          return 0;
+      }
+    };
+
+    return [...rows].sort((a, b) => {
+      const valA = getColValue(a, sortColumn);
+      const valB = getColValue(b, sortColumn);
+
+      let cmp = 0;
+      if (typeof valA === "string" && typeof valB === "string") {
+        cmp = valA.localeCompare(valB, "id", { sensitivity: "base" });
+      } else {
+        cmp = (valA as number) - (valB as number);
+      }
+
+      if (cmp === 0) {
+        // Secondary tie breaker: nama alfabetis
+        cmp = a.nama.localeCompare(b.nama, "id");
+      }
+
+      return sortDirection === "asc" ? cmp : -cmp;
+    });
+  }, [initialData.kelurahanList, tableSearch, sortColumn, sortDirection]);
 
   const kategoriEntries = useMemo(() => {
     const k = currentWilayahData.kategori;
@@ -1292,16 +1471,42 @@ export function RekapDataAtsClientView({
               </div>
             </div>
 
-            {/* Table Search Input */}
-            <div className="relative w-full sm:w-64">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
-              <input
-                type="text"
-                value={tableSearch}
-                onChange={(e) => setTableSearch(e.target.value)}
-                placeholder="Cari Kelurahan / Kecamatan..."
-                className="w-full bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 rounded-2xl pl-9 pr-3 py-1.5 text-xs font-bold text-slate-900 dark:text-slate-100 focus:outline-hidden focus:border-blue-500"
-              />
+            {/* Table Search Input & Sort Badge */}
+            <div className="flex flex-wrap items-center gap-2">
+              {sortColumn !== "default" && (
+                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 text-xs font-bold text-blue-800 dark:text-blue-300 shadow-2xs animate-in fade-in">
+                  <span>
+                    Urutan: <strong>{TABLE_ATS_SORT_LABELS[sortColumn]}</strong> (
+                    {sortDirection === "desc"
+                      ? sortColumn === "nama" || sortColumn === "kecamatan"
+                        ? "Z ke A"
+                        : "Tertinggi ke Terendah ↓"
+                      : sortColumn === "nama" || sortColumn === "kecamatan"
+                      ? "A ke Z"
+                      : "Terendah ke Tertinggi ↑"}
+                    )
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleResetSort}
+                    className="ml-1 px-1.5 py-0.5 rounded-md bg-blue-200 hover:bg-blue-300 dark:bg-blue-900 dark:hover:bg-blue-800 text-blue-900 dark:text-blue-200 cursor-pointer transition-colors text-2xs"
+                    title="Reset urutan ke nomor asli"
+                  >
+                    ✕ Reset
+                  </button>
+                </div>
+              )}
+
+              <div className="relative w-full sm:w-64">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+                <input
+                  type="text"
+                  value={tableSearch}
+                  onChange={(e) => setTableSearch(e.target.value)}
+                  placeholder="Cari Kelurahan / Kecamatan..."
+                  className="w-full bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 rounded-2xl pl-9 pr-3 py-1.5 text-xs font-bold text-slate-900 dark:text-slate-100 focus:outline-hidden focus:border-blue-500"
+                />
+              </div>
             </div>
           </div>
 
@@ -1310,17 +1515,36 @@ export function RekapDataAtsClientView({
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
                   <tr className="bg-slate-100 dark:bg-slate-800/80 border-b-2 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-black">
-                    <th className="py-3.5 px-4">No</th>
-                    <th className="py-3.5 px-4">Kelurahan</th>
-                    <th className="py-3.5 px-4">Kecamatan</th>
-                    <th className="py-3.5 px-4 text-center">Total ATS</th>
-                    <th className="py-3.5 px-3 text-center">Putus Sekolah (DO)</th>
-                    <th className="py-3.5 px-3 text-center">Lulus Tdk Lanjut (LTM)</th>
-                    <th className="py-3.5 px-3 text-center">Belum Pernah (BPB)</th>
-                    <th className="py-3.5 px-4 text-center">Ingin Sekolah Kembali</th>
-                    <th className="py-3.5 px-3 text-center">Laki-laki</th>
-                    <th className="py-3.5 px-3 text-center">Perempuan</th>
-                    <th className="py-3.5 px-4 text-center">Prioritas Intervensi</th>
+                    <th
+                      scope="col"
+                      onClick={handleResetSort}
+                      className={cn(
+                        "py-3.5 px-4 select-none cursor-pointer transition-colors group",
+                        sortColumn === "default"
+                          ? "hover:bg-slate-200/60 dark:hover:bg-slate-700/60"
+                          : "hover:bg-rose-50 dark:hover:bg-rose-950/30 text-rose-600 dark:text-rose-400"
+                      )}
+                      title={sortColumn === "default" ? "Nomor Urut Default" : "Klik untuk reset ke nomor urut asli"}
+                    >
+                      <div className="inline-flex items-center gap-1">
+                        <span>No</span>
+                        {sortColumn !== "default" ? (
+                          <RotateCcw className="h-3 w-3 text-rose-500" />
+                        ) : (
+                          <span className="opacity-0 group-hover:opacity-40 text-2xs">#</span>
+                        )}
+                      </div>
+                    </th>
+                    {renderSortTh("nama", "Kelurahan", "left", "px-4")}
+                    {renderSortTh("kecamatan", "Kecamatan", "left", "px-4")}
+                    {renderSortTh("totalAts", "Total ATS", "center", "px-4")}
+                    {renderSortTh("putusSekolah", "Putus Sekolah (DO)", "center", "px-3")}
+                    {renderSortTh("lulusTidakLanjut", "Lulus Tdk Lanjut (LTM)", "center", "px-3")}
+                    {renderSortTh("belumPernahSekolah", "Belum Pernah (BPB)", "center", "px-3")}
+                    {renderSortTh("keinginan", "Ingin Sekolah Kembali", "center", "px-4")}
+                    {renderSortTh("lakiLaki", "Laki-laki", "center", "px-3")}
+                    {renderSortTh("perempuan", "Perempuan", "center", "px-3")}
+                    {renderSortTh("prioritas", "Prioritas Intervensi", "center", "px-4")}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
@@ -1340,24 +1564,36 @@ export function RekapDataAtsClientView({
                         )}
                       >
                         <td className="py-3 px-4 font-mono text-slate-500">{idx + 1}</td>
-                        <td className="py-3 px-4">
+                        <td className={cn("py-3 px-4", sortColumn === "nama" && "bg-blue-50/40 dark:bg-blue-950/20")}>
                           <strong className="text-slate-900 dark:text-slate-100">{kel.nama}</strong>
                         </td>
-                        <td className="py-3 px-4 text-slate-600 dark:text-slate-400">{kel.kecamatan}</td>
-                        <td className="py-3 px-4 text-center font-mono font-bold text-slate-900 dark:text-slate-100">
+                        <td className={cn("py-3 px-4 text-slate-600 dark:text-slate-400", sortColumn === "kecamatan" && "bg-blue-50/40 dark:bg-blue-950/20 font-bold")}>
+                          {kel.kecamatan}
+                        </td>
+                        <td className={cn("py-3 px-4 text-center font-mono font-bold text-slate-900 dark:text-slate-100", sortColumn === "totalAts" && "bg-blue-50/60 dark:bg-blue-950/30 text-blue-950 dark:text-blue-100 font-black")}>
                           {kel.totalAts}
                         </td>
-                        <td className="py-3 px-3 text-center font-mono text-rose-600 font-bold">{kel.kategori.putusSekolah}</td>
-                        <td className="py-3 px-3 text-center font-mono text-amber-600 font-bold">{kel.kategori.lulusTidakLanjut}</td>
-                        <td className="py-3 px-3 text-center font-mono text-blue-600 font-bold">{kel.kategori.belumPernahSekolah}</td>
-                        <td className="py-3 px-4 text-center">
+                        <td className={cn("py-3 px-3 text-center font-mono text-rose-600 font-bold", sortColumn === "putusSekolah" && "bg-rose-50/60 dark:bg-rose-950/30 font-black ring-1 ring-inset ring-rose-300")}>
+                          {kel.kategori.putusSekolah}
+                        </td>
+                        <td className={cn("py-3 px-3 text-center font-mono text-amber-600 font-bold", sortColumn === "lulusTidakLanjut" && "bg-amber-50/60 dark:bg-amber-950/30 font-black ring-1 ring-inset ring-amber-300")}>
+                          {kel.kategori.lulusTidakLanjut}
+                        </td>
+                        <td className={cn("py-3 px-3 text-center font-mono text-blue-600 font-bold", sortColumn === "belumPernahSekolah" && "bg-blue-50/60 dark:bg-blue-950/30 font-black ring-1 ring-inset ring-blue-300")}>
+                          {kel.kategori.belumPernahSekolah}
+                        </td>
+                        <td className={cn("py-3 px-4 text-center", sortColumn === "keinginan" && "bg-emerald-50/60 dark:bg-emerald-950/30 ring-1 ring-inset ring-emerald-300")}>
                           <span className="font-mono font-bold text-emerald-700 dark:text-emerald-400">
                             {kel.keinginan.masihAda} ({kel.persenInginSekolah}%)
                           </span>
                         </td>
-                        <td className="py-3 px-3 text-center font-mono text-slate-700 dark:text-slate-300">{kel.gender.lakiLaki}</td>
-                        <td className="py-3 px-3 text-center font-mono text-slate-700 dark:text-slate-300">{kel.gender.perempuan}</td>
-                        <td className="py-3 px-4 text-center">
+                        <td className={cn("py-3 px-3 text-center font-mono text-slate-700 dark:text-slate-300", sortColumn === "lakiLaki" && "bg-blue-50/60 dark:bg-blue-950/30 font-bold")}>
+                          {kel.gender.lakiLaki}
+                        </td>
+                        <td className={cn("py-3 px-3 text-center font-mono text-slate-700 dark:text-slate-300", sortColumn === "perempuan" && "bg-blue-50/60 dark:bg-blue-950/30 font-bold")}>
+                          {kel.gender.perempuan}
+                        </td>
+                        <td className={cn("py-3 px-4 text-center", sortColumn === "prioritas" && "bg-blue-50/60 dark:bg-blue-950/30")}>
                           <span
                             className={cn(
                               "inline-block px-2.5 py-0.5 rounded-full font-black text-2xs font-mono uppercase",
@@ -1380,9 +1616,35 @@ export function RekapDataAtsClientView({
               </table>
             </div>
 
-            <div className="p-4 bg-slate-50 dark:bg-slate-800/40 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500 font-medium">
-              <span>Menampilkan {filteredTableRows.length} kelurahan se-Kota Tegal</span>
-              <span>Klik pada baris kelurahan untuk memfokuskan grafik di atas.</span>
+            <div className="p-4 bg-slate-50 dark:bg-slate-800/40 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-slate-500 font-medium">
+              <div className="flex flex-wrap items-center gap-2">
+                <span>Menampilkan {filteredTableRows.length} kelurahan se-Kota Tegal</span>
+                {sortColumn !== "default" && (
+                  <span className="font-bold text-blue-600 dark:text-blue-400">
+                    • Diurutkan berdasarkan {TABLE_ATS_SORT_LABELS[sortColumn]} (
+                    {sortDirection === "desc"
+                      ? sortColumn === "nama" || sortColumn === "kecamatan"
+                        ? "Z ke A"
+                        : "Tertinggi ke Terendah"
+                      : sortColumn === "nama" || sortColumn === "kecamatan"
+                      ? "A ke Z"
+                      : "Terendah ke Tertinggi"}
+                    )
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-3">
+                {sortColumn !== "default" && (
+                  <button
+                    type="button"
+                    onClick={handleResetSort}
+                    className="font-bold text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 underline cursor-pointer"
+                  >
+                    Kembalikan Urutan Asli
+                  </button>
+                )}
+                <span>Klik judul kolom untuk mengubah urutan • Klik baris kelurahan untuk fokus grafik.</span>
+              </div>
             </div>
           </div>
         </div>
