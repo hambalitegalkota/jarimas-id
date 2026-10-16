@@ -298,8 +298,10 @@ export async function getGrupKegiatanMembers(komunitasId: string): Promise<{
     );
     if (validUuids.length === 0) validUuids.push(dbKomunitasId);
 
-    // Ambil data anggota komunitas
-    const { data, error } = await clientToUse
+    // 1. Ambil data anggota komunitas:
+    // Gunakan relasi spesifik 'profile:user_id' untuk mencegah benturan PGRST201 (multiple foreign keys ke profiles)
+    let rawList: any[] = [];
+    const { data: memberData, error: memberErr } = await clientToUse
       .from("anggota_komunitas")
       .select(`
         id,
@@ -308,7 +310,7 @@ export async function getGrupKegiatanMembers(komunitasId: string): Promise<{
         peran,
         status,
         created_at,
-        profiles (
+        profile:user_id (
           id,
           nama_lengkap,
           email,
@@ -320,29 +322,25 @@ export async function getGrupKegiatanMembers(komunitasId: string): Promise<{
       .in("komunitas_id", validUuids)
       .order("created_at", { ascending: true });
 
-    if (error) {
-      console.error("Gagal getGrupKegiatanMembers:", error);
-      return { success: false, message: error.message, members: [] };
-    }
+    if (!memberErr && memberData) {
+      rawList = memberData;
+    } else {
+      console.warn("Query dengan profile:user_id gagal, mencoba direct select:", memberErr?.message);
+      // Fallback tanpa embed relation agar 100% aman jika skema relation berbeda
+      const { data: fallbackData, error: fallbackErr } = await clientToUse
+        .from("anggota_komunitas")
+        .select("id, user_id, komunitas_id, peran, status, created_at")
+        .in("komunitas_id", validUuids)
+        .order("created_at", { ascending: true });
 
-    // Auto-approve: di grup kegiatan, semua anggota berstatus approved
-    const pendingIds = (data || [])
-      .filter((m: any) => m.status !== "approved")
-      .map((m: any) => m.id);
-    if (pendingIds.length > 0) {
-      try {
-        await clientToUse
-          .from("anggota_komunitas")
-          .update({ status: "approved", updated_at: new Date().toISOString() })
-          .in("id", pendingIds);
-      } catch (err) {
-        console.warn("Gagal auto-update status anggota ke approved:", err);
+      if (fallbackErr) {
+        console.error("Gagal fallback getGrupKegiatanMembers:", fallbackErr);
+      } else {
+        rawList = fallbackData || [];
       }
     }
 
-    let rawList: any[] = data || [];
-
-    // Auto-heal: Jika daftar anggota masih kosong (misal insert awal terkendala),
+    // 2. Auto-heal: Jika daftar anggota masih kosong (misal insert awal terkendala),
     // daftarkan pembuat grup (creator) sebagai Admin ke tabel anggota_komunitas
     if (rawList.length === 0) {
       const { data: groupInfo } = await clientToUse
@@ -358,7 +356,12 @@ export async function getGrupKegiatanMembers(komunitasId: string): Promise<{
           .eq("id", groupInfo.created_by)
           .maybeSingle();
 
-        const creatorRole = creatorProf?.is_super_admin ? "Super Admin" : "Admin Pusat";
+        const creatorRole = creatorProf?.is_super_admin
+          ? "Super Admin"
+          : creatorProf?.is_admin_pusat
+          ? "Admin Pusat"
+          : "Admin Grup";
+
         const { data: insertedCreator } = await clientToUse
           .from("anggota_komunitas")
           .insert({
@@ -370,26 +373,11 @@ export async function getGrupKegiatanMembers(komunitasId: string): Promise<{
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
           })
-          .select(`
-            id,
-            user_id,
-            komunitas_id,
-            peran,
-            status,
-            created_at,
-            profiles (
-              id,
-              nama_lengkap,
-              email,
-              avatar_url,
-              is_super_admin,
-              is_admin_pusat
-            )
-          `)
+          .select("id, user_id, komunitas_id, peran, status, created_at")
           .maybeSingle();
 
         if (insertedCreator) {
-          rawList = [insertedCreator];
+          rawList = [{ ...insertedCreator, profile: creatorProf }];
         } else {
           rawList = [
             {
@@ -399,27 +387,31 @@ export async function getGrupKegiatanMembers(komunitasId: string): Promise<{
               peran: creatorRole,
               status: "approved",
               created_at: new Date().toISOString(),
-              profiles: creatorProf,
+              profile: creatorProf,
             },
           ];
         }
       }
     }
 
-    // Pastikan jika profiles null (misal relasi RLS), enrich dari profiles table
+    // 3. Format anggota dan siapkan data profile
     const formattedMembers: GrupKegiatanMemberItem[] = rawList.map((m: any) => {
-      const prof = Array.isArray(m.profiles) ? m.profiles[0] : m.profiles || null;
+      const prof =
+        m.profile ||
+        (Array.isArray(m.profiles) ? m.profiles[0] : m.profiles) ||
+        null;
       return {
         id: m.id,
         user_id: m.user_id,
         komunitas_id: m.komunitas_id,
-        peran: m.peran,
+        peran: m.peran || "anggota",
         status: m.status || "approved",
         created_at: m.created_at,
         profile: prof,
       };
     });
 
+    // 4. Pastikan jika profile masih belum ada nama_lengkap, enrich dari tabel profiles
     const missingProfUids = formattedMembers
       .filter((m) => !m.profile || !m.profile.nama_lengkap)
       .map((m) => m.user_id);
@@ -442,8 +434,23 @@ export async function getGrupKegiatanMembers(komunitasId: string): Promise<{
             }
           });
         }
-      } catch {
-        // Fallback
+      } catch (e) {
+        console.warn("Fallback enrich profiles gagal:", e);
+      }
+    }
+
+    // 5. Auto-approve: di grup kegiatan, semua anggota berstatus approved
+    const pendingIds = formattedMembers
+      .filter((m) => m.status !== "approved")
+      .map((m) => m.id);
+    if (pendingIds.length > 0) {
+      try {
+        await clientToUse
+          .from("anggota_komunitas")
+          .update({ status: "approved", updated_at: new Date().toISOString() })
+          .in("id", pendingIds);
+      } catch (err) {
+        console.warn("Gagal auto-update status anggota ke approved:", err);
       }
     }
 

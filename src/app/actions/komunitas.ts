@@ -2595,7 +2595,7 @@ export async function kickMemberByAdmin({
     // Ambil data anggota target yang akan dikeluarkan
     const { data: targetMember } = await supabase
       .from("anggota_komunitas")
-      .select("id, user_id, komunitas_id, peran, profiles (nama_lengkap, is_super_admin)")
+      .select("id, user_id, komunitas_id, peran, profile:user_id(nama_lengkap, is_super_admin)")
       .eq("id", membershipId)
       .maybeSingle();
 
@@ -2606,16 +2606,18 @@ export async function kickMemberByAdmin({
       };
     }
 
+    const memberProf: any =
+      (targetMember as any).profile || (targetMember as any).profiles;
+
     // Cegah mengeluarkan akun Super Admin
-    if ((targetMember.profiles as any)?.is_super_admin === true) {
+    if (memberProf?.is_super_admin === true) {
       return {
         success: false,
         message: "Tidak dapat mengeluarkan akun Super Admin.",
       };
     }
 
-    const targetName =
-      (targetMember.profiles as any)?.nama_lengkap || "Pengguna";
+    const targetName = memberProf?.nama_lengkap || "Pengguna";
 
     // Hapus data keanggotaan target
     const adminClient = createAdminClient();
