@@ -588,12 +588,11 @@ export function PercakapanHubSection({
                         Percakapan Grup Kegiatan
                       </h3>
                       <span className="rounded-full bg-emerald-600 text-white px-2 py-0.5 text-[9px] font-black tracking-wider uppercase font-mono shadow-2xs">
-                        FITUR ADMIN
+                        FORUM KEGIATAN & WARGA
                       </span>
                     </div>
                     <p className="text-xs text-slate-600 dark:text-slate-400 max-w-xl leading-relaxed">
-                      Buat ruang percakapan kegiatan baru (penanganan ATS, rakor posyandu, pelatihan kader)
-                      dan undang pengguna terpilih secara langsung tanpa perlu konfirmasi manual.
+                      Buat ruang percakapan kegiatan baru (penanganan stunting, posyandu, kelompok ronda, kegiatan warga, dll) dan undang anggota untuk koordinasi obrolan bersama.
                     </p>
                   </div>
                 </div>
@@ -705,8 +704,8 @@ export function PercakapanHubSection({
                           )}
                         </div>
 
-                        {/* Admin Action Shortcut for Kegiatan Room */}
-                        {isKegiatan && canManage && (
+                        {/* Creator / Admin Action Shortcut for Kegiatan Room */}
+                        {isKegiatan && (isSuperAdmin || isAdminPusat || (Boolean(currentUserId) && room.created_by === currentUserId)) && (
                           <div className="flex items-center gap-1">
                             <button
                               type="button"

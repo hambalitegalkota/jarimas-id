@@ -199,8 +199,8 @@ export function CreateGrupKegiatanModal({
                 <h3 className="text-base sm:text-lg font-black tracking-tight text-slate-900 dark:text-slate-100">
                   Buat Percakapan Grup Kegiatan
                 </h3>
-                <span className="rounded-full bg-amber-500/15 border border-amber-400/40 px-2.5 py-0.5 text-[10px] font-black text-amber-700 dark:text-amber-300 uppercase tracking-wider">
-                  Admin Pusat & Super Admin
+                <span className="rounded-full bg-emerald-500/15 border border-emerald-400/40 px-2.5 py-0.5 text-[10px] font-black text-emerald-700 dark:text-emerald-300 uppercase tracking-wider">
+                  Semua Pengguna Terdaftar
                 </span>
               </div>
               <p className="text-xs text-slate-500 dark:text-slate-400">

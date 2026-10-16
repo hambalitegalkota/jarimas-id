@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/utils/supabase/server";
+import { createClient, createAdminClient } from "@/utils/supabase/server";
 import { toValidUUID, isAdminPusat, isSuperOrAdminPusat, isSuperAdmin as checkIsSuperAdmin } from "@/lib/utils";
 import type {
   GetRegisteredUsersResult,
@@ -1178,6 +1178,8 @@ export async function getGroupChatRooms(): Promise<{
 }> {
   try {
     const supabase = await createClient();
+    const adminClient = createAdminClient();
+    const clientToUse = adminClient || supabase;
 
     let currentUserId: string | null = null;
     let isSuperAdmin = false;
@@ -1209,7 +1211,7 @@ export async function getGroupChatRooms(): Promise<{
     const canManageKegiatan = isSuperAdmin || isAdminPusatUser;
 
     // 1. Ambil seluruh grup kegiatan (jenis = 'kegiatan')
-    const { data: dbKegiatanGroups } = await supabase
+    const { data: dbKegiatanGroups } = await clientToUse
       .from("komunitas")
       .select(`
         id,
@@ -1231,21 +1233,21 @@ export async function getGroupChatRooms(): Promise<{
     const creatorIds = Array.from(
       new Set(
         (dbKegiatanGroups || [])
-          .map((g) => g.created_by)
-          .filter((id): id is string => Boolean(id))
+          .map((g: any) => g.created_by)
+          .filter((id: any): id is string => Boolean(id))
       )
     );
     const { data: creatorProfiles } =
       creatorIds.length > 0
-        ? await supabase
+        ? await clientToUse
             .from("profiles")
             .select("id, nama_lengkap, is_admin_pusat, is_super_admin")
             .in("id", creatorIds)
         : { data: [] };
-    const creatorMap = new Map((creatorProfiles || []).map((p) => [p.id, p]));
+    const creatorMap = new Map<string, any>((creatorProfiles || []).map((p: any) => [p.id, p]));
 
     // 3. Ambil komunitas umum (Posyandu, Warga Kita, PAUD, PKBM)
-    const { data: dbCommunities } = await supabase
+    const { data: dbCommunities } = await clientToUse
       .from("komunitas")
       .select(`
         id,
@@ -1265,7 +1267,7 @@ export async function getGroupChatRooms(): Promise<{
     const communityList = [...(dbCommunities || [])];
 
     // 4. Ambil keanggotaan user saat ini & jumlah anggota
-    const { data: memberCounts } = await supabase
+    const { data: memberCounts } = await clientToUse
       .from("anggota_komunitas")
       .select("komunitas_id, user_id, status")
       .eq("status", "approved");
@@ -1274,7 +1276,7 @@ export async function getGroupChatRooms(): Promise<{
     const myMembershipSet = new Set<string>();
 
     if (memberCounts) {
-      memberCounts.forEach((m) => {
+      memberCounts.forEach((m: any) => {
         countMap[m.komunitas_id] = (countMap[m.komunitas_id] || 0) + 1;
         if (currentUserId && m.user_id === currentUserId) {
           myMembershipSet.add(m.komunitas_id);
@@ -1284,16 +1286,17 @@ export async function getGroupChatRooms(): Promise<{
 
     // Filter grup kegiatan yang relevan:
     // - Super Admin & Admin Pusat: melihat SEMUA grup kegiatan untuk kemudahan monitoring & kelola
-    // - Pengguna umum: HANYA grup kegiatan di mana mereka telah diundang / berstatus approved
-    const relevantKegiatan = (dbKegiatanGroups || []).filter((g) => {
+    // - Pengguna umum: HANYA grup kegiatan di mana mereka telah diundang / berstatus approved atau mereka pembuatnya
+    const relevantKegiatan = (dbKegiatanGroups || []).filter((g: any) => {
       if (canManageKegiatan) return true;
+      if (currentUserId && g.created_by === currentUserId) return true;
       return myMembershipSet.has(g.id);
     });
 
     // Filter komunitas reguler:
     let relevantCommunities = communityList;
     if (!isSuperAdmin) {
-      relevantCommunities = communityList.filter((c) => {
+      relevantCommunities = communityList.filter((c: any) => {
         const cUuid = toValidUUID(c.id);
         return myMembershipSet.has(c.id) || myMembershipSet.has(cUuid);
       });
@@ -1302,7 +1305,7 @@ export async function getGroupChatRooms(): Promise<{
     // 5. Ambil pesan terakhir dari grup
     const lastMsgMap: Record<string, { pesan: string; sender_name: string; created_at: string }> = {};
     try {
-      const { data: lastMessages } = await supabase
+      const { data: lastMessages } = await clientToUse
         .from("pesan_grup")
         .select(`
           komunitas_id,
@@ -1330,13 +1333,13 @@ export async function getGroupChatRooms(): Promise<{
     }
 
     // Format Grup Kegiatan Rooms (Prioritas Atas)
-    const kegiatanRooms: import("@/types/database").GrupChatRoom[] = relevantKegiatan.map((g) => {
+    const kegiatanRooms: import("@/types/database").GrupChatRoom[] = relevantKegiatan.map((g: any) => {
       const creatorProf = g.created_by ? creatorMap.get(g.created_by) : null;
       const creatorName =
         creatorProf?.nama_lengkap ||
         (creatorProf?.is_super_admin ? "Super Admin" : "Admin Pusat");
-      const totalAnggota = countMap[g.id] || 0;
-      const isMember = myMembershipSet.has(g.id);
+      const totalAnggota = Math.max(countMap[g.id] || 0, g.created_by ? 1 : 0);
+      const isMember = myMembershipSet.has(g.id) || (Boolean(currentUserId) && g.created_by === currentUserId);
 
       return {
         id: g.id,

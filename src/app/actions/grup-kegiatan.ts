@@ -48,7 +48,7 @@ export async function createGrupKegiatan(
       };
     }
 
-    // 2. Verifikasi Hak Akses: Super Admin atau Admin Pusat
+    // 2. Verifikasi Profil Pengguna
     const { data: profile } = await supabase
       .from("profiles")
       .select("id, is_super_admin, is_admin_pusat, nama_lengkap, email")
@@ -65,14 +65,6 @@ export async function createGrupKegiatan(
     const isSuper = checkIsSuperAdmin(userProfileCtx);
     const isAdminP = checkIsAdminPusat(userProfileCtx);
 
-    if (!isSuper && !isAdminP) {
-      return {
-        success: false,
-        message:
-          "Akses ditolak: Hanya Admin Pusat dan Super Admin yang berwenang membuat Percakapan Grup Kegiatan.",
-      };
-    }
-
     const cleanNama = (params.nama || "").trim();
     if (!cleanNama) {
       return {
@@ -83,8 +75,8 @@ export async function createGrupKegiatan(
 
     const cleanDeskripsi = (params.deskripsi || "").trim();
     const creatorName =
-      profile?.nama_lengkap || user.user_metadata?.nama_lengkap || "Admin Pusat";
-    const creatorRole = isSuper ? "Super Admin" : "Admin Pusat";
+      profile?.nama_lengkap || user.user_metadata?.nama_lengkap || "Pengguna Jarimas";
+    const creatorRole = isSuper ? "Super Admin" : isAdminP ? "Admin Pusat" : "Admin Grup";
 
     // 3. Buat UUID unik untuk Komunitas Grup Kegiatan
     const newGroupId = crypto.randomUUID();
@@ -158,21 +150,45 @@ export async function createGrupKegiatan(
       });
     });
 
-    // Coba insert anggota secara batch / upsert
+    // Coba insert anggota secara batch
     let insertMembersErr: any = null;
     const { error: batchErr } = await clientToUse
       .from("anggota_komunitas")
-      .upsert(membersToInsert, { onConflict: "user_id,komunitas_id" });
+      .insert(membersToInsert);
 
     if (batchErr) {
-      console.warn("Direct insert anggota_komunitas terkendala, mencoba RPC fallback:", batchErr);
+      console.warn("Direct batch insert anggota_komunitas terkendala, mencoba insert satuan:", batchErr);
       insertMembersErr = batchErr;
 
+      let successCount = 0;
+      for (const m of membersToInsert) {
+        const { error: singleErr } = await clientToUse
+          .from("anggota_komunitas")
+          .insert(m);
+        if (!singleErr) {
+          successCount++;
+        } else {
+          // Jika baris sudah ada sebelumnya, pastikan statusnya diset ke approved
+          await clientToUse
+            .from("anggota_komunitas")
+            .update({ status: "approved", peran: m.peran, updated_at: new Date().toISOString() })
+            .eq("user_id", m.user_id)
+            .eq("komunitas_id", newGroupId);
+          successCount++;
+        }
+      }
+
+      if (successCount > 0) {
+        insertMembersErr = null;
+      }
+    }
+
+    if (insertMembersErr) {
       // Fallback: Panggil fungsi PostgreSQL dengan SECURITY DEFINER jika tersedia
       try {
         const { error: rpcErr } = await supabase.rpc("tambah_anggota_grup_kegiatan", {
           p_komunitas_id: newGroupId,
-          p_user_ids: validTargetUserIds,
+          p_user_ids: [user.id, ...validTargetUserIds],
           p_approved_by: user.id,
         });
         if (!rpcErr) {
@@ -258,6 +274,8 @@ export async function createGrupKegiatan(
 
 /**
  * Server Action: Mengambil daftar anggota dalam satu grup kegiatan
+ * Dilengkapi auto-healing jika pembuat grup belum terdaftar di anggota_komunitas
+ * dan auto-approval status anggota.
  */
 export async function getGrupKegiatanMembers(komunitasId: string): Promise<{
   success: boolean;
@@ -266,9 +284,22 @@ export async function getGrupKegiatanMembers(komunitasId: string): Promise<{
 }> {
   try {
     const supabase = await createClient();
-    const dbKomunitasId = toValidUUID(komunitasId);
+    const adminClient = createAdminClient();
+    const clientToUse = adminClient || supabase;
 
-    const { data, error } = await supabase
+    const rawId = (komunitasId || "").trim();
+    const dbKomunitasId = toValidUUID(rawId);
+    const validUuids = Array.from(
+      new Set(
+        [rawId, dbKomunitasId].filter((id) =>
+          /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)
+        )
+      )
+    );
+    if (validUuids.length === 0) validUuids.push(dbKomunitasId);
+
+    // Ambil data anggota komunitas
+    const { data, error } = await clientToUse
       .from("anggota_komunitas")
       .select(`
         id,
@@ -286,8 +317,7 @@ export async function getGrupKegiatanMembers(komunitasId: string): Promise<{
           is_admin_pusat
         )
       `)
-      .in("komunitas_id", [komunitasId, dbKomunitasId])
-      .eq("status", "approved")
+      .in("komunitas_id", validUuids)
       .order("created_at", { ascending: true });
 
     if (error) {
@@ -295,15 +325,127 @@ export async function getGrupKegiatanMembers(komunitasId: string): Promise<{
       return { success: false, message: error.message, members: [] };
     }
 
-    const formattedMembers: GrupKegiatanMemberItem[] = (data || []).map((m: any) => ({
-      id: m.id,
-      user_id: m.user_id,
-      komunitas_id: m.komunitas_id,
-      peran: m.peran,
-      status: m.status,
-      created_at: m.created_at,
-      profile: m.profiles || null,
-    }));
+    // Auto-approve: di grup kegiatan, semua anggota berstatus approved
+    const pendingIds = (data || [])
+      .filter((m: any) => m.status !== "approved")
+      .map((m: any) => m.id);
+    if (pendingIds.length > 0) {
+      try {
+        await clientToUse
+          .from("anggota_komunitas")
+          .update({ status: "approved", updated_at: new Date().toISOString() })
+          .in("id", pendingIds);
+      } catch (err) {
+        console.warn("Gagal auto-update status anggota ke approved:", err);
+      }
+    }
+
+    let rawList: any[] = data || [];
+
+    // Auto-heal: Jika daftar anggota masih kosong (misal insert awal terkendala),
+    // daftarkan pembuat grup (creator) sebagai Admin ke tabel anggota_komunitas
+    if (rawList.length === 0) {
+      const { data: groupInfo } = await clientToUse
+        .from("komunitas")
+        .select("id, nama, created_by, jenis")
+        .in("id", validUuids)
+        .maybeSingle();
+
+      if (groupInfo && groupInfo.created_by) {
+        const { data: creatorProf } = await clientToUse
+          .from("profiles")
+          .select("id, nama_lengkap, email, avatar_url, is_super_admin, is_admin_pusat")
+          .eq("id", groupInfo.created_by)
+          .maybeSingle();
+
+        const creatorRole = creatorProf?.is_super_admin ? "Super Admin" : "Admin Pusat";
+        const { data: insertedCreator } = await clientToUse
+          .from("anggota_komunitas")
+          .insert({
+            user_id: groupInfo.created_by,
+            komunitas_id: groupInfo.id,
+            peran: creatorRole,
+            status: "approved",
+            approved_by: groupInfo.created_by,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          })
+          .select(`
+            id,
+            user_id,
+            komunitas_id,
+            peran,
+            status,
+            created_at,
+            profiles (
+              id,
+              nama_lengkap,
+              email,
+              avatar_url,
+              is_super_admin,
+              is_admin_pusat
+            )
+          `)
+          .maybeSingle();
+
+        if (insertedCreator) {
+          rawList = [insertedCreator];
+        } else {
+          rawList = [
+            {
+              id: crypto.randomUUID(),
+              user_id: groupInfo.created_by,
+              komunitas_id: groupInfo.id,
+              peran: creatorRole,
+              status: "approved",
+              created_at: new Date().toISOString(),
+              profiles: creatorProf,
+            },
+          ];
+        }
+      }
+    }
+
+    // Pastikan jika profiles null (misal relasi RLS), enrich dari profiles table
+    const formattedMembers: GrupKegiatanMemberItem[] = rawList.map((m: any) => {
+      const prof = Array.isArray(m.profiles) ? m.profiles[0] : m.profiles || null;
+      return {
+        id: m.id,
+        user_id: m.user_id,
+        komunitas_id: m.komunitas_id,
+        peran: m.peran,
+        status: m.status || "approved",
+        created_at: m.created_at,
+        profile: prof,
+      };
+    });
+
+    const missingProfUids = formattedMembers
+      .filter((m) => !m.profile || !m.profile.nama_lengkap)
+      .map((m) => m.user_id);
+
+    if (missingProfUids.length > 0) {
+      try {
+        const { data: profs } = await clientToUse
+          .from("profiles")
+          .select("id, nama_lengkap, email, avatar_url, is_super_admin, is_admin_pusat")
+          .in("id", missingProfUids);
+
+        if (profs && profs.length > 0) {
+          const pMap = new Map<string, any>(profs.map((p: any) => [p.id, p]));
+          formattedMembers.forEach((m) => {
+            if (!m.profile || !m.profile.nama_lengkap) {
+              const matched = pMap.get(m.user_id);
+              if (matched) {
+                m.profile = matched;
+              }
+            }
+          });
+        }
+      } catch {
+        // Fallback
+      }
+    }
 
     return {
       success: true,
@@ -321,6 +463,7 @@ export async function getGrupKegiatanMembers(komunitasId: string): Promise<{
 
 /**
  * Server Action: Mengundang / Menambahkan Pengguna Tambahan ke Grup Kegiatan yang Sudah Ada
+ * Dilengkapi safe-insert tanpa onConflict constraint dan auto-approval langsung.
  */
 export async function addMembersToGrupKegiatan(params: {
   komunitasId: string;
@@ -367,10 +510,21 @@ export async function addMembersToGrupKegiatan(params: {
     const isSuper = checkIsSuperAdmin(userProfileCtx);
     const isAdminP = checkIsAdminPusat(userProfileCtx);
 
-    const { data: groupInfo } = await supabase
+    const rawId = (komunitasId || "").trim();
+    const dbKomId = toValidUUID(rawId);
+    const validUuids = Array.from(
+      new Set(
+        [rawId, dbKomId].filter((id) =>
+          /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)
+        )
+      )
+    );
+    if (validUuids.length === 0) validUuids.push(dbKomId);
+
+    const { data: groupInfo } = await clientToUse
       .from("komunitas")
       .select("id, nama, created_by")
-      .eq("id", komunitasId)
+      .in("id", validUuids)
       .maybeSingle();
 
     const isCreator = groupInfo?.created_by === user.id;
@@ -382,18 +536,50 @@ export async function addMembersToGrupKegiatan(params: {
       };
     }
 
-    // 3. Filter pengguna yang sudah tergabung
-    const { data: existingMembers } = await supabase
-      .from("anggota_komunitas")
-      .select("user_id")
-      .eq("komunitas_id", komunitasId);
+    const targetGroupId = groupInfo?.id || validUuids[0];
 
-    const existingUserSet = new Set((existingMembers || []).map((m) => m.user_id));
+    // 3. Filter pengguna yang sudah tergabung
+    const { data: existingMembers } = await clientToUse
+      .from("anggota_komunitas")
+      .select("id, user_id, status")
+      .in("komunitas_id", validUuids);
+
+    const existingMap = new Map((existingMembers || []).map((m: any) => [m.user_id, m]));
+
+    // Pastikan pembuat grup terdaftar jika sebelumnya belum ada
+    if (groupInfo?.created_by && !existingMap.has(groupInfo.created_by)) {
+      try {
+        await clientToUse.from("anggota_komunitas").insert({
+          user_id: groupInfo.created_by,
+          komunitas_id: targetGroupId,
+          peran: isSuper ? "Super Admin" : "Admin Pusat",
+          status: "approved",
+          approved_by: user.id,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        });
+      } catch (err) {
+        console.warn("Creator auto-heal di addMembers dilewati:", err);
+      }
+    }
+
+    // Jika ada pengguna yang sudah ada di anggota_komunitas tapi statusnya belum approved, update jadi approved
+    const toApproveIds = (existingMembers || [])
+      .filter((m: any) => memberUserIds.includes(m.user_id) && m.status !== "approved")
+      .map((m: any) => m.id);
+
+    if (toApproveIds.length > 0) {
+      await clientToUse
+        .from("anggota_komunitas")
+        .update({ status: "approved", updated_at: new Date().toISOString() })
+        .in("id", toApproveIds);
+    }
+
     const newMembersToInvite = Array.from(
-      new Set(memberUserIds.filter((uid) => uid && !existingUserSet.has(uid)))
+      new Set(memberUserIds.filter((uid) => uid && !existingMap.has(uid)))
     );
 
-    if (newMembersToInvite.length === 0) {
+    if (newMembersToInvite.length === 0 && toApproveIds.length === 0) {
       return {
         success: true,
         message: "Semua pengguna yang dipilih sudah tergabung dalam grup ini.",
@@ -403,7 +589,7 @@ export async function addMembersToGrupKegiatan(params: {
 
     const payload = newMembersToInvite.map((uid) => ({
       user_id: uid,
-      komunitas_id: komunitasId,
+      komunitas_id: targetGroupId,
       peran: "anggota",
       status: "approved",
       approved_by: user.id,
@@ -411,17 +597,47 @@ export async function addMembersToGrupKegiatan(params: {
       updated_at: new Date().toISOString(),
     }));
 
-    const { error: insertErr } = await clientToUse
-      .from("anggota_komunitas")
-      .upsert(payload, { onConflict: "user_id,komunitas_id" });
+    let insertedCount = toApproveIds.length;
 
-    if (insertErr) {
-      // Coba fallback RPC
-      await supabase.rpc("tambah_anggota_grup_kegiatan", {
-        p_komunitas_id: komunitasId,
-        p_user_ids: newMembersToInvite,
-        p_approved_by: user.id,
-      });
+    if (payload.length > 0) {
+      const { error: insertErr } = await clientToUse
+        .from("anggota_komunitas")
+        .insert(payload);
+
+      if (insertErr) {
+        console.warn("Direct batch insert anggota_komunitas gagal, mencoba insert satuan:", insertErr);
+        for (const item of payload) {
+          const { error: singleErr } = await clientToUse
+            .from("anggota_komunitas")
+            .insert(item);
+          if (!singleErr) {
+            insertedCount++;
+          } else {
+            console.error("Gagal insert anggota satuan:", item.user_id, singleErr);
+            // Fallback jika sudah ada
+            await clientToUse
+              .from("anggota_komunitas")
+              .update({ status: "approved", updated_at: new Date().toISOString() })
+              .eq("user_id", item.user_id)
+              .in("komunitas_id", validUuids);
+          }
+        }
+      } else {
+        insertedCount += payload.length;
+      }
+    }
+
+    // Fallback RPC jika direct insert gagal
+    if (insertedCount === 0 && newMembersToInvite.length > 0) {
+      try {
+        await supabase.rpc("tambah_anggota_grup_kegiatan", {
+          p_komunitas_id: targetGroupId,
+          p_user_ids: newMembersToInvite,
+          p_approved_by: user.id,
+        });
+      } catch (e) {
+        console.warn("RPC fallback tambah_anggota_grup_kegiatan gagal:", e);
+      }
     }
 
     // Kirim notifikasi pesan di grup
@@ -498,10 +714,21 @@ export async function removeMemberFromGrupKegiatan(params: {
     const isSuper = checkIsSuperAdmin(profile);
     const isAdminP = checkIsAdminPusat(profile);
 
-    const { data: groupInfo } = await supabase
+    const rawId = (komunitasId || "").trim();
+    const dbKomId = toValidUUID(rawId);
+    const validUuids = Array.from(
+      new Set(
+        [rawId, dbKomId].filter((id) =>
+          /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)
+        )
+      )
+    );
+    if (validUuids.length === 0) validUuids.push(dbKomId);
+
+    const { data: groupInfo } = await clientToUse
       .from("komunitas")
       .select("created_by")
-      .eq("id", komunitasId)
+      .in("id", validUuids)
       .maybeSingle();
 
     const isCreator = groupInfo?.created_by === user.id;
@@ -516,7 +743,7 @@ export async function removeMemberFromGrupKegiatan(params: {
     const { error: delErr } = await clientToUse
       .from("anggota_komunitas")
       .delete()
-      .eq("komunitas_id", komunitasId)
+      .in("komunitas_id", validUuids)
       .eq("user_id", targetUserId);
 
     if (delErr) {
@@ -567,10 +794,21 @@ export async function deleteGrupKegiatan(komunitasId: string): Promise<{
     const isSuper = checkIsSuperAdmin(profile);
     const isAdminP = checkIsAdminPusat(profile);
 
-    const { data: groupInfo } = await supabase
+    const rawId = (komunitasId || "").trim();
+    const dbKomId = toValidUUID(rawId);
+    const validUuids = Array.from(
+      new Set(
+        [rawId, dbKomId].filter((id) =>
+          /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)
+        )
+      )
+    );
+    if (validUuids.length === 0) validUuids.push(dbKomId);
+
+    const { data: groupInfo } = await clientToUse
       .from("komunitas")
       .select("nama, created_by, jenis")
-      .eq("id", komunitasId)
+      .in("id", validUuids)
       .maybeSingle();
 
     if (!groupInfo) {
@@ -593,10 +831,31 @@ export async function deleteGrupKegiatan(komunitasId: string): Promise<{
       };
     }
 
+    // 1. Bersihkan seluruh riwayat pesan di grup kegiatan ini
+    try {
+      await clientToUse
+        .from("pesan_grup")
+        .delete()
+        .in("komunitas_id", validUuids);
+    } catch (msgDelErr) {
+      console.warn("Gagal membersihkan pesan grup:", msgDelErr);
+    }
+
+    // 2. Bersihkan seluruh keanggotaan grup kegiatan ini
+    try {
+      await clientToUse
+        .from("anggota_komunitas")
+        .delete()
+        .in("komunitas_id", validUuids);
+    } catch (memDelErr) {
+      console.warn("Gagal membersihkan anggota grup:", memDelErr);
+    }
+
+    // 3. Hapus record komunitas grup kegiatan
     const { error: delErr } = await clientToUse
       .from("komunitas")
       .delete()
-      .eq("id", komunitasId);
+      .in("id", validUuids);
 
     if (delErr) {
       throw delErr;

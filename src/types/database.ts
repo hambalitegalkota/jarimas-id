@@ -126,6 +126,7 @@ export interface AnggotaKomunitasDetail {
     id?: string;
     nama_lengkap?: string;
     email?: string;
+    nomor_hp?: string | null;
     avatar_url?: string | null;
   } | null;
 }
@@ -137,6 +138,8 @@ export interface HierarchyAdminTierInfo {
   komunitasId: string;
   komunitasNama: string;
   adminName: string | null;
+  adminRole?: string | null;
+  adminHp?: string | null;
   hasAdmin: boolean;
   canApply: boolean;
   userStatusAtTier?: {
@@ -159,6 +162,8 @@ export interface KomunitasWithMembership extends Komunitas {
   hasAdmin?: boolean;
   adminName?: string | null;
   adminRole?: string | null;
+  adminHp?: string | null;
+  adminUserId?: string | null;
   currentUserMembership?: {
     id: string;
     status: MembershipStatus;
@@ -193,6 +198,7 @@ export interface UserJoinedKomunitas {
   hasAdmin?: boolean;
   adminName?: string | null;
   adminRole?: string | null;
+  adminHp?: string | null;
   joinedAt: string;
   jumlah_anggota: number;
 }

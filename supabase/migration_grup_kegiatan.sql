@@ -30,17 +30,36 @@ ALTER TABLE public.komunitas ALTER COLUMN kecamatan SET DEFAULT 'Kota Tegal';
 ALTER TABLE public.komunitas ALTER COLUMN kelurahan SET DEFAULT 'Semua Kelurahan';
 ALTER TABLE public.komunitas ALTER COLUMN lokasi SET DEFAULT 'Kota Tegal';
 
--- 4. Perbarui Policy RLS pada public.komunitas agar Admin Pusat & Super Admin dapat membuat & mengelola grup
+-- 4. Perbarui Policy RLS pada public.komunitas agar Semua Pengguna Terdaftar dapat membuat grup kegiatan
+--    serta Pembuat Grup (created_by) dan Admin dapat mengelola & menghapus grup
 DROP POLICY IF EXISTS "Admin dapat mengelola komunitas" ON public.komunitas;
-CREATE POLICY "Admin dapat mengelola komunitas" ON public.komunitas 
-FOR ALL USING (
+DROP POLICY IF EXISTS "Pengguna dapat membuat komunitas kegiatan" ON public.komunitas;
+CREATE POLICY "Pengguna dapat membuat komunitas kegiatan" ON public.komunitas 
+FOR INSERT WITH CHECK (
+  auth.uid() IS NOT NULL
+);
+
+DROP POLICY IF EXISTS "Pembuat atau Admin dapat mengelola komunitas" ON public.komunitas;
+CREATE POLICY "Pembuat atau Admin dapat mengelola komunitas" ON public.komunitas 
+FOR UPDATE USING (
+  auth.uid() = created_by OR
   EXISTS (
     SELECT 1 FROM public.profiles 
     WHERE id = auth.uid() AND (is_super_admin = true OR is_admin_pusat = true)
   )
 );
 
--- 5. Perbarui Policy RLS pada public.anggota_komunitas agar Admin Pusat & Super Admin
+DROP POLICY IF EXISTS "Pembuat atau Admin dapat menghapus komunitas" ON public.komunitas;
+CREATE POLICY "Pembuat atau Admin dapat menghapus komunitas" ON public.komunitas 
+FOR DELETE USING (
+  auth.uid() = created_by OR
+  EXISTS (
+    SELECT 1 FROM public.profiles 
+    WHERE id = auth.uid() AND (is_super_admin = true OR is_admin_pusat = true)
+  )
+);
+
+-- 5. Perbarui Policy RLS pada public.anggota_komunitas agar Pembuat Grup & Admin
 --    dapat langsung menambahkan pengguna terpilih ke dalam anggota komunitas / grup
 DROP POLICY IF EXISTS "Pengguna dapat mendaftar ke komunitas" ON public.anggota_komunitas;
 DROP POLICY IF EXISTS "Pengguna dapat mendaftar atau didaftarkan admin ke komunitas" ON public.anggota_komunitas;
@@ -52,6 +71,10 @@ WITH CHECK (
   EXISTS (
     SELECT 1 FROM public.profiles
     WHERE id = auth.uid() AND (is_super_admin = true OR is_admin_pusat = true)
+  ) OR
+  EXISTS (
+    SELECT 1 FROM public.komunitas
+    WHERE id = komunitas_id AND created_by = auth.uid()
   ) OR
   public.check_user_can_manage_community(auth.uid(), komunitas_id)
 );
@@ -68,6 +91,10 @@ USING (
     SELECT 1 FROM public.profiles 
     WHERE id = auth.uid() AND (is_super_admin = true OR is_admin_pusat = true)
   ) OR
+  EXISTS (
+    SELECT 1 FROM public.komunitas
+    WHERE id = komunitas_id AND created_by = auth.uid()
+  ) OR
   public.check_user_can_manage_community(auth.uid(), komunitas_id)
 );
 
@@ -83,17 +110,23 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
 DECLARE
-  v_caller_is_admin BOOLEAN := FALSE;
+  v_caller_can_manage BOOLEAN := FALSE;
   v_inserted_count INTEGER := 0;
   v_uid UUID;
 BEGIN
-  -- Verifikasi pemanggil adalah Super Admin atau Admin Pusat
-  SELECT (is_super_admin OR is_admin_pusat) INTO v_caller_is_admin
+  -- Verifikasi pemanggil adalah Super Admin, Admin Pusat, atau Pembuat Grup
+  SELECT (is_super_admin OR is_admin_pusat) INTO v_caller_can_manage
   FROM public.profiles
   WHERE id = auth.uid();
 
-  IF NOT v_caller_is_admin THEN
-    RAISE EXCEPTION 'Akses ditolak: Hanya Admin Pusat dan Super Admin yang dapat menambahkan anggota ke grup kegiatan';
+  IF NOT v_caller_can_manage THEN
+    SELECT (created_by = auth.uid()) INTO v_caller_can_manage
+    FROM public.komunitas
+    WHERE id = p_komunitas_id;
+  END IF;
+
+  IF NOT v_caller_can_manage THEN
+    RAISE EXCEPTION 'Akses ditolak: Hanya Admin atau pembuat grup yang dapat menambahkan anggota ke grup kegiatan';
   END IF;
 
   FOREACH v_uid IN ARRAY p_user_ids LOOP

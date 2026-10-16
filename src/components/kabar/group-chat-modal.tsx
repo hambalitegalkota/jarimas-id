@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import {
   X,
   Send,
@@ -14,8 +15,10 @@ import {
   UserPlus,
   ShieldCheck,
   Crown,
+  Trash2,
 } from "lucide-react";
 import { getGroupMessages, sendGroupMessage } from "@/app/actions/pertemanan";
+import { deleteGrupKegiatan } from "@/app/actions/grup-kegiatan";
 import { createClient } from "@/utils/supabase/client";
 import type { PesanGrup, GrupChatRoom, RegisteredUserItem } from "@/types/database";
 import { ManageGrupMembersModal } from "./manage-grup-members-modal";
@@ -51,11 +54,37 @@ export function GroupChatModal({
   allUsers = [],
   canManage = false,
 }: GroupChatModalProps) {
+  const router = useRouter();
   const [messages, setMessages] = useState<PesanGrup[]>([]);
   const [inputMessage, setInputMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [showMembersModal, setShowMembersModal] = useState(false);
+
+  const isCreatorOrAdmin =
+    Boolean(canManage) ||
+    Boolean(currentUserId && room?.created_by === currentUserId);
+
+  const handleDeleteGroup = async () => {
+    if (!room) return;
+    const confirm = window.confirm(
+      `Apakah Anda yakin ingin menghapus grup kegiatan "${room.nama}"? Seluruh riwayat percakapan dan keanggotaan dalam grup ini akan dihapus secara permanen.`
+    );
+    if (!confirm) return;
+
+    try {
+      const res = await deleteGrupKegiatan(room.id);
+      if (res.success) {
+        alert(res.message || "Grup kegiatan berhasil dihapus.");
+        onClose();
+        router.refresh();
+      } else {
+        alert(res.message || "Gagal menghapus grup kegiatan.");
+      }
+    } catch (err: any) {
+      alert(err?.message || "Terjadi kesalahan saat menghapus grup.");
+    }
+  };
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -273,7 +302,7 @@ export function GroupChatModal({
               </div>
             </div>
 
-            {/* Header Actions: Kelola Anggota & Tutup */}
+            {/* Header Actions: Kelola Anggota, Hapus Grup & Tutup */}
             <div className="flex items-center gap-1.5 shrink-0">
               <button
                 type="button"
@@ -284,6 +313,17 @@ export function GroupChatModal({
                 <Users className="h-3.5 w-3.5 text-emerald-600" />
                 <span className="hidden sm:inline">Anggota ({room.jumlah_anggota})</span>
               </button>
+
+              {isKegiatan && isCreatorOrAdmin && (
+                <button
+                  type="button"
+                  onClick={handleDeleteGroup}
+                  title="Hapus Grup Kegiatan Ini"
+                  className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950 transition-colors cursor-pointer"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
+              )}
 
               <button
                 type="button"
@@ -464,8 +504,9 @@ export function GroupChatModal({
         onClose={() => setShowMembersModal(false)}
         room={room}
         allUsers={allUsers}
-        canManage={canManage}
+        canManage={isCreatorOrAdmin}
         currentUserId={currentUserId}
+        onMembersUpdated={() => router.refresh()}
       />
     </>
   );

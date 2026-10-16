@@ -21,7 +21,7 @@ import {
   cancelPerubahanPeran,
 } from "@/app/actions/komunitas";
 import type { KomunitasWithMembership } from "@/types/database";
-import { cn, formatPeranDisplay } from "@/lib/utils";
+import { cn, formatPeranDisplay, isRoleAdmin } from "@/lib/utils";
 
 interface RoleOptionItem {
   role: string;
@@ -184,10 +184,18 @@ export function AjukanPerubahanPeranModal({
       { role: "Pengurus", description: "Pengurus komunitas", badge: "Pengurus" },
     ];
 
+  const availableRoles = roleList.filter((r) => {
+    if (r.role.toLowerCase() === currentPeran.toLowerCase()) return false;
+    if (isRoleAdmin(r.role) && Boolean(komunitas.hasAdmin)) return false;
+    return true;
+  });
+
   // Default target role: peran_diajukan sebelumnya atau opsi pertama yang bukan peran saat ini
   const initialTargetRole =
-    currentPeranDiajukan ||
-    roleList.find((r) => r.role.toLowerCase() !== currentPeran.toLowerCase())?.role ||
+    (currentPeranDiajukan && availableRoles.some((r) => r.role.toLowerCase() === currentPeranDiajukan.toLowerCase())
+      ? currentPeranDiajukan
+      : null) ||
+    availableRoles[0]?.role ||
     roleList[0]?.role ||
     "Anggota";
 
@@ -366,28 +374,32 @@ export function AjukanPerubahanPeranModal({
               <div className="space-y-2">
                 {roleList.map((item) => {
                   const isCurrentRole = item.role.toLowerCase() === currentPeran.toLowerCase();
+                  const isAdminRole = isRoleAdmin(item.role);
+                  const isOccupiedAdmin = isAdminRole && Boolean(komunitas.hasAdmin) && !isCurrentRole;
                   const isSelected = selectedRole === item.role;
+                  const isDisabled = isCurrentRole || isOccupiedAdmin;
 
                   return (
                     <div
                       key={item.role}
-                      onClick={() => !isCurrentRole && setSelectedRole(item.role)}
+                      onClick={() => !isDisabled && setSelectedRole(item.role)}
                       className={cn(
-                        "rounded-2xl border-2 p-3.5 transition-all cursor-pointer flex items-start justify-between gap-3 shadow-2xs",
-                        isCurrentRole &&
-                          "border-slate-200 bg-slate-100/60 opacity-60 cursor-not-allowed",
-                        isSelected && !isCurrentRole &&
+                        "rounded-2xl border-2 p-3.5 transition-all flex items-start justify-between gap-3 shadow-2xs",
+                        isDisabled
+                          ? "border-slate-200 bg-slate-100/60 opacity-60 cursor-not-allowed"
+                          : "cursor-pointer",
+                        isSelected && !isDisabled &&
                           "border-blue-600 bg-blue-50/50 shadow-xs",
-                        !isSelected && !isCurrentRole &&
+                        !isSelected && !isDisabled &&
                           "border-slate-200 bg-white hover:border-blue-300 hover:bg-slate-50/80"
                       )}
                     >
                       <div className="space-y-0.5 flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <h4
                             className={cn(
                               "text-sm font-bold",
-                              isSelected ? "text-blue-950" : "text-slate-900"
+                              isSelected && !isDisabled ? "text-blue-950" : "text-slate-900"
                             )}
                           >
                             {item.role}
@@ -402,9 +414,16 @@ export function AjukanPerubahanPeranModal({
                               Peran Saat Ini
                             </span>
                           )}
+                          {isOccupiedAdmin && (
+                            <span className="text-2xs font-extrabold px-2 py-0.5 rounded-md bg-amber-100 text-amber-900 border border-amber-300">
+                              Admin Sudah Terdaftar
+                            </span>
+                          )}
                         </div>
                         <p className="text-xs text-slate-600 leading-relaxed">
-                          {item.description}
+                          {isOccupiedAdmin
+                            ? "Posisi Admin / Pengurus untuk komunitas ini sudah terisi dan aktif."
+                            : item.description}
                         </p>
                       </div>
 
@@ -412,12 +431,12 @@ export function AjukanPerubahanPeranModal({
                         <div
                           className={cn(
                             "h-5 w-5 rounded-full border-2 flex items-center justify-center transition-all",
-                            isSelected && !isCurrentRole
+                            isSelected && !isDisabled
                               ? "border-blue-600 bg-blue-600 text-white"
                               : "border-slate-300 bg-white"
                           )}
                         >
-                          {isSelected && !isCurrentRole && (
+                          {isSelected && !isDisabled && (
                             <Check className="h-3 w-3 stroke-[3px]" />
                           )}
                         </div>

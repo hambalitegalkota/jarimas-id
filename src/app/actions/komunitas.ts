@@ -34,6 +34,7 @@ import {
   isRoleAdmin,
   isSuperAdmin as checkIsSuperAdmin,
   isAdminPusat as checkIsAdminPusat,
+  parseKontakKomunitas,
 } from "@/lib/utils";
 import {
   approveMemberRole,
@@ -183,7 +184,7 @@ export async function getKomunitasList(
         adminUserIds.size > 0
           ? await supabase
               .from("profiles")
-              .select("id, nama_lengkap, email")
+              .select("id, nama_lengkap, email, nomor_hp, avatar_url")
               .in("id", Array.from(adminUserIds))
           : { data: [] };
 
@@ -297,9 +298,9 @@ export async function getKomunitasList(
         }
 
         const hasAdmin = Boolean(adminFound);
-        const adminName = adminFound
-          ? adminProfileMap.get(adminFound.user_id)?.nama_lengkap || "Pengurus Terdaftar"
-          : null;
+        const adminProf = adminFound ? adminProfileMap.get(adminFound.user_id) : null;
+        const adminName = adminProf?.nama_lengkap || (adminFound ? "Pengurus Terdaftar" : null);
+        const adminHp = adminProf?.nomor_hp || null;
 
         return {
           id: validId,
@@ -320,6 +321,7 @@ export async function getKomunitasList(
           hasAdmin,
           adminName,
           adminRole: adminFound ? formatPeranDisplay(adminFound.peran) : null,
+          adminHp,
         };
       });
 
@@ -591,7 +593,7 @@ export async function getUserJoinedKomunitas(): Promise<{
       joinedAdminUserIds.size > 0
         ? await supabase
             .from("profiles")
-            .select("id, nama_lengkap")
+            .select("id, nama_lengkap, nomor_hp")
             .in("id", Array.from(joinedAdminUserIds))
         : { data: [] };
 
@@ -616,9 +618,9 @@ export async function getUserJoinedKomunitas(): Promise<{
 
         const adminFound = adminMap[k.id];
         const hasAdmin = Boolean(adminFound);
-        const adminName = adminFound
-          ? joinedProfileMap.get(adminFound.user_id)?.nama_lengkap || "Pengurus Terdaftar"
-          : null;
+        const adminProf = adminFound ? joinedProfileMap.get(adminFound.user_id) : null;
+        const adminName = adminProf?.nama_lengkap || (adminFound ? "Pengurus Terdaftar" : null);
+        const adminHp = adminProf?.nomor_hp || null;
 
         return {
           id: k.id,
@@ -642,6 +644,7 @@ export async function getUserJoinedKomunitas(): Promise<{
           hasAdmin,
           adminName,
           adminRole: adminFound ? formatPeranDisplay(adminFound.peran) : null,
+          adminHp,
           joinedAt: m.created_at,
           jumlah_anggota: countsMap[k.id] || 0,
         };
@@ -797,6 +800,10 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
 
     // 1. Identifikasi komunitas yang relevan (hanya untuk detail ini dan hierarkinya jika warga_kita)
     const relevantKomIds = new Set<string>([komunitasId, dbKomunitasId]);
+    if (komunitas?.id) {
+      relevantKomIds.add(komunitas.id);
+      relevantKomIds.add(toValidUUID(komunitas.id));
+    }
     let dbRelevantKomunitas: any[] = [];
 
     if (jenis === "warga_kita") {
@@ -811,20 +818,48 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
         relevantKomIds.add(toValidUUID(item.id));
       });
 
-      // Ambil komunitas DB hanya di wilayah kelurahan/kecamatan yang sama (bukan seluruh Kota Tegal)
+      // Ambil komunitas DB di wilayah kelurahan/kecamatan yang sama
       let komQuery = supabase
         .from("komunitas")
         .select("id, nama, jenis, kecamatan, kelurahan, rw, rt, lokasi, deskripsi");
 
-      if (komunitas.kecamatan && komunitas.kecamatan !== "semua" && komunitas.kecamatan !== "Kota Tegal") {
-        komQuery = komQuery.eq("kecamatan", komunitas.kecamatan);
+      const cleanKec = (komunitas.kecamatan || "")
+        .toLowerCase()
+        .replace(/kota\s+tegal/gi, "")
+        .replace(/^kecamatan\s+/i, "")
+        .replace(/^kec\.\s*/i, "")
+        .trim();
+      const cleanKel = (komunitas.kelurahan || "")
+        .toLowerCase()
+        .replace(/^kelurahan\s+/i, "")
+        .replace(/^kel\.\s*/i, "")
+        .trim();
+
+      if (cleanKec && cleanKec !== "semua" && cleanKec !== "kota tegal") {
+        komQuery = komQuery.ilike("kecamatan", `%${cleanKec}%`);
       }
-      if (komunitas.kelurahan && komunitas.kelurahan !== "semua" && komunitas.kelurahan !== "Semua Kelurahan") {
-        komQuery = komQuery.eq("kelurahan", komunitas.kelurahan);
+      if (cleanKel && cleanKel !== "semua" && cleanKel !== "semua kelurahan") {
+        komQuery = komQuery.ilike("kelurahan", `%${cleanKel}%`);
       }
-      const { data: dbKoms } = await komQuery.limit(50);
+      const { data: dbKoms } = await komQuery.limit(500);
       dbRelevantKomunitas = dbKoms || [];
-      dbRelevantKomunitas.forEach((k) => relevantKomIds.add(k.id));
+      dbRelevantKomunitas.forEach((k) => {
+        relevantKomIds.add(k.id);
+        relevantKomIds.add(toValidUUID(k.id));
+      });
+    } else if (komunitas?.nama) {
+      // Untuk komunitas non-warga_kita (misal Posyandu, Satuan PAUD, dll)
+      const { data: dbSameTypeKoms } = await supabase
+        .from("komunitas")
+        .select("id, nama, jenis, kecamatan, kelurahan, rw, rt, lokasi, deskripsi")
+        .eq("jenis", jenis)
+        .ilike("nama", `%${komunitas.nama.trim()}%`)
+        .limit(20);
+      (dbSameTypeKoms || []).forEach((k) => {
+        relevantKomIds.add(k.id);
+        relevantKomIds.add(toValidUUID(k.id));
+        dbRelevantKomunitas.push(k);
+      });
     }
 
     const dbKomMap = new Map((dbRelevantKomunitas || []).map((k) => [k.id, k]));
@@ -853,7 +888,7 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
       isRoleAdmin(m.peran)
     );
 
-    // Ambil profiles untuk admin yang relevan saja
+    // Ambil profiles untuk admin yang relevan saja (termasuk nomor_hp dan avatar_url)
     const adminUserIds = [
       ...new Set(approvedAdmins.map((ca) => ca.user_id).filter(Boolean)),
     ];
@@ -862,7 +897,7 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
       adminUserIds.length > 0
         ? await supabase
             .from("profiles")
-            .select("id, nama_lengkap, email")
+            .select("id, nama_lengkap, email, nomor_hp, avatar_url")
             .in("id", adminUserIds)
         : { data: [] };
 
@@ -1036,6 +1071,8 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
           komunitasId: item.id,
           komunitasNama: item.nama,
           adminName: adminNameTier,
+          adminRole: adminFound ? formatPeranDisplay(adminFound.peran) : null,
+          adminHp: adminProf?.nomor_hp || null,
           hasAdmin: hasAdminTier,
           canApply: !hasAdminTier,
           userStatusAtTier: userAtTier
@@ -1055,8 +1092,18 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
     }
 
     // 6. Cek apakah komunitas ini memiliki admin langsung / sesuai tingkatannya
+    const isSameKomId = (id1?: string | null, id2?: string | null) => {
+      if (!id1 || !id2) return false;
+      if (id1.toLowerCase() === id2.toLowerCase()) return true;
+      return toValidUUID(id1) === toValidUUID(id2);
+    };
+
     const directAdmin = (approvedAdmins || []).find((ca) => {
-      if (ca.komunitas_id === dbKomunitasId || ca.komunitas_id === komunitasId) {
+      if (
+        isSameKomId(ca.komunitas_id, dbKomunitasId) ||
+        isSameKomId(ca.komunitas_id, komunitasId) ||
+        (komunitas?.id && isSameKomId(ca.komunitas_id, komunitas.id))
+      ) {
         return true;
       }
       const caKom = dbKomMap.get(ca.komunitas_id) || findOrGenerateKomunitasSeed(ca.komunitas_id);
@@ -1096,12 +1143,17 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
     let hasAdmin = Boolean(directAdmin);
     let adminName: string | null = null;
     let adminRole: string | null = null;
+    let adminHp: string | null = null;
 
     if (directAdmin?.user_id) {
       const prof = chainProfileMap.get(directAdmin.user_id);
       adminName = prof?.nama_lengkap || "Pengurus Terdaftar";
       adminRole = formatPeranDisplay(directAdmin.peran);
+      adminHp = prof?.nomor_hp || null;
     }
+
+    const parsedKontak = parseKontakKomunitas(komunitas.kontak);
+    const resolvedAdminHp = adminHp || (parsedKontak.utama ? parsedKontak.utama : null);
 
     // 7. Hitung status keanggotaan user saat ini & wewenang Admin
     let isPengurusOrKader = isSuperOrPusat;
@@ -1172,6 +1224,8 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
       hasAdmin,
       adminName,
       adminRole,
+      adminHp: resolvedAdminHp,
+      adminUserId: directAdmin?.user_id || null,
       currentUserMembership,
       hierarchyAdmins,
       hierarchyAdminList,
@@ -1239,7 +1293,7 @@ export async function getAnggotaKomunitas(komunitasId: string): Promise<{
       userIds.length > 0
         ? await supabase
             .from("profiles")
-            .select("id, is_super_admin, is_admin_pusat, nama_lengkap, email")
+            .select("id, is_super_admin, is_admin_pusat, nama_lengkap, email, nomor_hp, avatar_url")
             .in("id", userIds)
         : { data: [] };
 
@@ -1273,7 +1327,8 @@ export async function getAnggotaKomunitas(komunitasId: string): Promise<{
           id: row.user_id,
           nama_lengkap: prof?.nama_lengkap || "Pengguna JARIMAS",
           email: prof?.email || "-",
-          avatar_url: null,
+          nomor_hp: prof?.nomor_hp || null,
+          avatar_url: prof?.avatar_url || null,
         },
       };
     });
@@ -1593,6 +1648,23 @@ export async function requestPerubahanPeran({
 
     if (memberErr) {
       throw memberErr;
+    }
+
+    if (isRoleAdmin(targetPeran)) {
+      // Cek apakah komunitas sudah memiliki admin aktif
+      const { data: existingAdmins } = await supabase
+        .from("anggota_komunitas")
+        .select("id, user_id, peran")
+        .eq("komunitas_id", dbKomunitasId)
+        .eq("status", "approved");
+
+      const activeAdmin = (existingAdmins || []).find((m) => isRoleAdmin(m.peran));
+      if (activeAdmin && activeAdmin.user_id !== user.id) {
+        return {
+          success: false,
+          message: "Komunitas ini sudah memiliki Admin aktif. Pengajuan diri sebagai Admin tidak dapat diproses.",
+        };
+      }
     }
 
     if (member) {

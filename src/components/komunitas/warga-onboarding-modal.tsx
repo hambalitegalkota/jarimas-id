@@ -134,8 +134,9 @@ export function WargaOnboardingModal({
     identifiedRole = "Penduduk";
     roleBadgeColor = "bg-emerald-100 text-emerald-900 border-emerald-300";
     roleCardColor = "bg-emerald-50/70 border-emerald-200";
-    roleExplanation =
-      "Pengguna teridentifikasi sebagai Penduduk. Anda dapat mengakses seluruh Profil Data dan berhak mengajukan diri sebagai Admin jika posisi Admin masih kosong.";
+    roleExplanation = komunitas.hasAdmin
+      ? "Pengguna teridentifikasi sebagai Penduduk. Anda dapat mengakses seluruh Profil Data Komunitas ini."
+      : "Pengguna teridentifikasi sebagai Penduduk. Anda dapat mengakses seluruh Profil Data dan berhak mengajukan diri sebagai Admin jika posisi Admin masih kosong.";
   } else if (kkType === "kota_tegal" && effectiveDomisiliType === "luar_kota_tegal") {
     identifiedRole = "Penduduk Berdomisili Luar Kota";
     roleBadgeColor = "bg-blue-100 text-blue-900 border-blue-300";

@@ -86,7 +86,7 @@ export default async function KabarPage({ searchParams }: KabarPageProps) {
   const currentUserId = feedResult.currentUserId || registeredUsersResult.currentUserId;
   const isSuperAdmin = Boolean(feedResult.isSuperAdmin ?? registeredUsersResult.isSuperAdmin);
   const isAdminPusat = Boolean(registeredUsersResult.isAdminPusat ?? (groupRoomsResult as any)?.isAdminPusat);
-  const canManageGrupKegiatan = isSuperAdmin || isAdminPusat;
+  const canManageGrupKegiatan = Boolean(currentUserId);
 
   const totalUnreadChat = (convResult.conversations || []).reduce(
     (acc, c) => acc + c.unreadCount,

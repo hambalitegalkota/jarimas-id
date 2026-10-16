@@ -309,6 +309,33 @@ export function KomunitasDetailClientView({
     return me?.profiles?.nama_lengkap || "Kader Posyandu";
   }, [anggotaState, currentUserId]);
 
+  // Cek apakah komunitas sudah memiliki admin terverifikasi/disetujui,
+  // baik dari payload server (komunitas.hasAdmin) maupun dari daftar anggota approved
+  const adminMemberFromList = useMemo(() => {
+    return anggotaState.find(
+      (m) => m.status === "approved" && isRoleAdmin(m.peran)
+    );
+  }, [anggotaState]);
+
+  const hasCommunityAdmin = Boolean(
+    komunitas.hasAdmin || adminMemberFromList
+  );
+
+  const effectiveAdminName =
+    komunitas.adminName ||
+    adminMemberFromList?.profiles?.nama_lengkap ||
+    "Pengurus Komunitas";
+
+  const effectiveAdminRole =
+    komunitas.adminRole ||
+    (adminMemberFromList ? formatPeranDisplay(adminMemberFromList.peran) : "Pengurus");
+
+  const effectiveAdminHp =
+    komunitas.adminHp ||
+    adminMemberFromList?.profiles?.nomor_hp ||
+    parsedKontak.utama ||
+    null;
+
   const approvedMembers = anggotaState.filter((m) => m.status === "approved");
 
   const handleLeave = async () => {
@@ -803,40 +830,84 @@ export function KomunitasDetailClientView({
       </section>
 
       {/* INFORMASI ADMIN / PENGURUS KOMUNITAS */}
-      {komunitas.hasAdmin && (
-        <section className="rounded-2xl border-2 border-emerald-200 bg-emerald-50/60 p-5 space-y-2 shadow-xs">
-          <div className="flex items-start gap-3.5">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-800">
-              <ShieldCheck className="h-5 w-5" />
-            </div>
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <h4 className="text-sm font-bold text-emerald-950 uppercase tracking-wider">
-                  Admin / Pengurus Terdaftar
-                </h4>
-                <span className="text-xs font-bold px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-900 border border-emerald-300">
-                  Terverifikasi
-                </span>
+      {hasCommunityAdmin && (
+        <section className="rounded-2xl border-2 border-emerald-300 dark:border-emerald-800 bg-gradient-to-r from-emerald-50/90 via-teal-50/70 to-emerald-50/90 dark:from-emerald-950/30 dark:via-teal-950/20 dark:to-emerald-950/30 p-5 sm:p-6 shadow-xs transition-all duration-300">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
+            <div className="flex items-start gap-4 min-w-0">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-600 text-white shadow-xs">
+                <ShieldCheck className="h-6 w-6" />
               </div>
-              <p className="text-base font-bold text-slate-900 flex items-center gap-1.5">
-                <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
-                <span>{komunitas.adminName || "Pengurus Komunitas"}</span>
-                {komunitas.adminRole && (
-                  <span className="text-slate-600 font-semibold text-sm">
-                    • {komunitas.adminRole}
+              <div className="space-y-1.5 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h4 className="text-xs font-black text-emerald-950 dark:text-emerald-300 uppercase tracking-widest">
+                    Admin / Pengurus Komunitas
+                  </h4>
+                  <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-900 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-700">
+                    <CheckCircle2 className="h-3 w-3 text-emerald-700 dark:text-emerald-400" />
+                    <span>Terverifikasi</span>
                   </span>
-                )}
-              </p>
-              <p className="text-sm text-slate-600 leading-relaxed">
-                Pengurus yang mengelola verifikasi anggota, jadwal kegiatan, dan layanan komunitas.
-              </p>
+                </div>
+                <div className="flex items-center gap-2.5 flex-wrap">
+                  <h3 className="text-lg font-black text-slate-900 dark:text-white tracking-tight">
+                    {effectiveAdminName}
+                  </h3>
+                  {effectiveAdminRole && (
+                    <span className="text-xs font-bold px-2.5 py-0.5 rounded-lg bg-white/80 dark:bg-slate-800/80 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 shadow-2xs">
+                      {effectiveAdminRole}
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed max-w-xl">
+                  Pengurus resmi yang telah diverifikasi dan disetujui untuk mengelola keanggotaan, verifikasi profil, serta koordinasi layanan warga.
+                </p>
+              </div>
+            </div>
+
+            {/* Kotak Nomor HP & Tombol Hubungi Admin untuk Semua Warga */}
+            <div className="shrink-0 flex flex-col sm:flex-row md:flex-col lg:flex-row items-stretch sm:items-center gap-2.5 bg-white/90 dark:bg-slate-900/80 p-3.5 rounded-2xl border border-emerald-200 dark:border-emerald-800/60 shadow-2xs">
+              <div className="flex items-center gap-2.5 px-1 min-w-0">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300">
+                  <Phone className="h-4 w-4" />
+                </div>
+                <div className="min-w-0">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                    No. Handphone / WhatsApp
+                  </span>
+                  <span className="text-sm font-extrabold text-slate-900 dark:text-slate-100 font-mono tracking-tight block truncate">
+                    {effectiveAdminHp || "Belum dicantumkan"}
+                  </span>
+                </div>
+              </div>
+
+              {effectiveAdminHp ? (
+                <div className="flex items-center gap-2 pt-1 sm:pt-0">
+                  <a
+                    href={formatWhatsAppUrl(effectiveAdminHp, `Halo Admin ${effectiveAdminName}, saya warga di ${komunitasData.nama}...`) || `https://wa.me/${effectiveAdminHp.replace(/\D/g, "")}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 sm:flex-none inline-flex min-h-[38px] items-center justify-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs transition-all active:scale-95 cursor-pointer"
+                    title={`Chat WhatsApp dengan ${effectiveAdminName}`}
+                  >
+                    <MessageSquare className="h-3.5 w-3.5" />
+                    <span>WhatsApp</span>
+                  </a>
+                  <a
+                    href={`tel:${effectiveAdminHp.replace(/[^0-9+]/g, "")}`}
+                    className="inline-flex min-h-[38px] items-center justify-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold border border-slate-200 dark:border-slate-700 shadow-2xs transition-all active:scale-95 cursor-pointer"
+                    title={`Telepon langsung ${effectiveAdminName}`}
+                  >
+                    <Phone className="h-3.5 w-3.5 text-slate-600 dark:text-slate-300" />
+                    <span className="hidden sm:inline">Telepon</span>
+                  </a>
+                </div>
+              ) : null}
             </div>
           </div>
         </section>
       )}
 
-      {/* ALERT JIKA BELUM MEMILIKI ADMIN (UNTUK WARGA KITA) */}
-      {Boolean(currentUserId) && !isSuperOrPusat && isApprovedMember && !komunitas.hasAdmin && isWargaKita && (
+      {/* ALERT JIKA BELUM MEMILIKI ADMIN (HANYA MUNCUL JIKA KOMUNITAS BELUM MEMILIKI ADMIN) */}
+      {!hasCommunityAdmin && Boolean(currentUserId) && !isSuperOrPusat && isApprovedMember && isWargaKita && (
         <section className="rounded-2xl border-2 border-amber-200 bg-amber-50/70 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
           <div className="flex items-start gap-3.5">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-900">
@@ -1190,14 +1261,21 @@ export function KomunitasDetailClientView({
               <div className="flex items-start gap-3.5 p-4 rounded-xl bg-slate-50 border border-slate-200">
                 <Phone className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />
                 <div className="space-y-1 w-full">
-                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">KONTAK UTAMA / SEKRETARIAT</span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">KONTAK UTAMA / SEKRETARIAT</span>
+                    {effectiveAdminName && (
+                      <span className="text-2xs font-bold px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800">
+                        Admin: {effectiveAdminName}
+                      </span>
+                    )}
+                  </div>
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <p className="text-slate-900 font-bold font-mono text-base">
-                      {parsedKontak.utama || komunitasData.kontak || "-"}
+                      {effectiveAdminHp || parsedKontak.utama || komunitasData.kontak || "-"}
                     </p>
-                    {parsedKontak.utama && (
+                    {(effectiveAdminHp || parsedKontak.utama) && (
                       <a
-                        href={formatWhatsAppUrl(parsedKontak.utama, `Halo Pengurus ${komunitasData.nama}, saya ingin menanyakan informasi layanan.`) || `tel:${parsedKontak.utama}`}
+                        href={formatWhatsAppUrl(effectiveAdminHp || parsedKontak.utama, `Halo Pengurus ${komunitasData.nama}, saya ingin menanyakan informasi layanan.`) || `tel:${effectiveAdminHp || parsedKontak.utama}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-2xs transition-all active:scale-95"
@@ -1472,14 +1550,27 @@ export function KomunitasDetailClientView({
                             </span>
                           )}
                         </div>
-                        <p className="text-sm font-semibold text-slate-500 truncate">
-                          {member.profiles?.email || "-"}
-                        </p>
+                        <div className="flex items-center gap-2 text-xs text-slate-500 font-medium">
+                          <span>{member.profiles?.email || "-"}</span>
+                          {member.profiles?.nomor_hp && (
+                            <>
+                              <span>•</span>
+                              <span className="font-mono font-bold text-emerald-800 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200">
+                                HP: {member.profiles.nomor_hp}
+                              </span>
+                            </>
+                          )}
+                        </div>
                       </div>
                     </div>
 
                     <div className="flex flex-wrap items-center gap-2 shrink-0">
-                      <span className="rounded-xl bg-slate-100 px-3 py-1.5 text-xs font-bold text-slate-800 border border-slate-200">
+                      <span className={cn(
+                        "rounded-xl px-3 py-1.5 text-xs font-bold border",
+                        isRoleAdmin(member.peran)
+                          ? "bg-emerald-100 text-emerald-950 border-emerald-300 font-black shadow-2xs"
+                          : "bg-slate-100 text-slate-800 border-slate-200"
+                      )}>
                         {formatPeranDisplay(member.peran)}
                       </span>
                       {member.peran_diajukan && (
@@ -2043,7 +2134,10 @@ export function KomunitasDetailClientView({
       {/* Modal Ajukan Perubahan Peran (misal Pengunjung -> Guru/Kepala Sekolah di PAUD, atau Kader/Nakes di Posyandu) */}
       {isUbahPeranOpen && (
         <AjukanPerubahanPeranModal
-          komunitas={komunitasData}
+          komunitas={{
+            ...komunitasData,
+            hasAdmin: hasCommunityAdmin,
+          }}
           currentPeran={userPeran}
           currentPeranDiajukan={membershipState?.peran_diajukan}
           isOpen={isUbahPeranOpen}
