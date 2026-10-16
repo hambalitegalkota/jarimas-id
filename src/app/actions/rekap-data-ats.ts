@@ -752,7 +752,8 @@ export async function getDaftarNamaAtsRekapAction(params: {
     if (!authStatus.canAccess) {
       return {
         success: false,
-        message: "Akses Ditolak: Fitur Daftar Anak Tidak Sekolah hanya dapat diakses oleh Admin Komunitas dan Super Admin.",
+        message:
+          "Akses Ditolak: Sesuai ketentuan perlindungan privasi data, rincian identitas lengkap anak tidak sekolah hanya dapat diakses di Tingkat KELURAHAN oleh Admin di Komunitas Warga Kita, Admin PAUD, Admin Posyandu dan Admin PKBM & SKBM.",
         data: [],
         total: 0,
       };

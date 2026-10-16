@@ -102,7 +102,7 @@ export default async function KomunitasDataAtsPage({
     );
   }
 
-  // Khusus Komunitas Tingkat RT dan Posyandu:
+  // Khusus Komunitas Tingkat Kelurahan / RT, Posyandu, dan PKBM & SKBM:
   const dataAtsResult = await getDataAtsByKomunitas(id);
 
   const {
@@ -130,14 +130,16 @@ export default async function KomunitasDataAtsPage({
     isRoleAdmin(memberRoleLower) ||
     memberRoleLower.includes("admin") ||
     memberRoleLower.includes("pengurus") ||
-    memberRoleLower.includes("ketua");
+    memberRoleLower.includes("ketua") ||
+    memberRoleLower.includes("tutor") ||
+    memberRoleLower.includes("pengelola");
   const isKader = memberRoleLower.includes("kader") || memberRoleLower.includes("medis");
 
   const canAccessDaftarNama = Boolean(
     hasRootAccess ||
     serverCanAccess ||
     canManage ||
-    (isApprovedMember && (isRt ? isAdminOrPengurus : isKader || isAdminOrPengurus))
+    (isApprovedMember && (isWargaKita || isPkbmOrSkb ? isAdminOrPengurus : isKader || isAdminOrPengurus))
   );
 
   return (

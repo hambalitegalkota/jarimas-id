@@ -1087,17 +1087,17 @@ export function KomunitasProfilCharts({
               <div className="space-y-2 pt-1 text-xs">
                 <div className="flex items-center justify-between p-2.5 rounded-xl bg-emerald-50 border border-emerald-200">
                   <div>
-                    <span className="font-bold text-emerald-950 block">1. Admin Komunitas Warga (Tingkat RT)</span>
-                    <span className="text-2xs text-emerald-700">PAUD, Posyandu, &amp; Pengurus RT</span>
+                    <span className="font-bold text-emerald-950 block">1. Admin Komunitas (Tingkat Kelurahan / RT)</span>
+                    <span className="text-2xs text-emerald-700">Warga Kita, PAUD, Posyandu, PKBM &amp; SKBM</span>
                   </div>
                   <span className="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-bold text-2xs">
-                    DATA LENGKAP RT
+                    DATA RINCIAN LENGKAP
                   </span>
                 </div>
                 <div className="flex items-center justify-between p-2.5 rounded-xl bg-purple-50 border border-purple-200">
                   <div>
-                    <span className="font-bold text-purple-950 block">2. Komunitas RW, Kelurahan, Kecamatan &amp; Kota</span>
-                    <span className="text-2xs text-purple-700">Tingkat di atas RT</span>
+                    <span className="font-bold text-purple-950 block">2. Komunitas Kecamatan &amp; Kota</span>
+                    <span className="text-2xs text-purple-700">Tingkat di atas Kelurahan</span>
                   </div>
                   <span className="px-2 py-0.5 rounded-md bg-purple-100 text-purple-800 font-bold text-2xs">
                     DATA REKAPITULASI
@@ -1105,7 +1105,7 @@ export function KomunitasProfilCharts({
                 </div>
                 <div className="flex items-center justify-between p-2.5 rounded-xl bg-blue-50 border border-blue-200">
                   <div>
-                    <span className="font-bold text-blue-950 block">3. Warga / Penduduk (Anggota RT)</span>
+                    <span className="font-bold text-blue-950 block">3. Warga / Penduduk (Anggota Terdaftar)</span>
                     <span className="text-2xs text-blue-700">KK &amp; Domisili Terdata</span>
                   </div>
                   <span className="px-2 py-0.5 rounded-md bg-blue-100 text-blue-800 font-bold text-2xs">
@@ -1123,7 +1123,7 @@ export function KomunitasProfilCharts({
                 </div>
                 <div className="p-2 rounded-lg bg-amber-50/80 border border-amber-200 text-2xs text-amber-800 flex items-center gap-1.5">
                   <span className="font-bold">🔒 Kebijakan Privasi:</span>
-                  <span>Data by-name individual hanya dapat dilihat di tingkat RT oleh Admin terverifikasi demi perlindungan data anak.</span>
+                  <span>Sesuai ketentuan perlindungan privasi data, rincian identitas lengkap anak tidak sekolah hanya dapat diakses di Tingkat KELURAHAN oleh Admin di Komunitas Warga Kita, Admin PAUD, Admin Posyandu dan Admin PKBM &amp; SKBM.</span>
                 </div>
               </div>
           )}

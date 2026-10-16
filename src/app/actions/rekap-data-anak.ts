@@ -717,6 +717,11 @@ export async function checkUserRekapAdminAccess(): Promise<{
         p.includes("guru") ||
         p.includes("pendidik") ||
         p.includes("tutor") ||
+        p.includes("pamong") ||
+        p.includes("penilik") ||
+        p.includes("instruktur") ||
+        p.includes("pkbm") ||
+        p.includes("skb") ||
         p.includes("tenaga medis") ||
         p.includes("tenaga kesehatan") ||
         p.includes("plkb") ||
@@ -756,7 +761,8 @@ export async function getDaftarNamaAnakRekapAction(params: {
     if (!authStatus.canAccess) {
       return {
         success: false,
-        message: "Akses Ditolak: Fitur Daftar Nama Anak hanya dapat diakses oleh Admin Komunitas dan Super Admin.",
+        message:
+          "Akses Ditolak: Sesuai ketentuan perlindungan privasi data, rincian identitas lengkap anak hanya dapat diakses di Tingkat KELURAHAN oleh Admin di Komunitas Warga Kita, Admin PAUD, Admin Posyandu dan Admin PKBM & SKBM.",
         data: [],
         total: 0,
       };

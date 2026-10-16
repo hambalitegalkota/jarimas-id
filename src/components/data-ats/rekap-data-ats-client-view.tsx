@@ -370,7 +370,7 @@ export function RekapDataAtsClientView({
             Data Rekapitulasi Wilayah &amp; Perlindungan Privasi ATS
           </h4>
           <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
-            Data yang ditampilkan pada halaman ini adalah <strong>Data Rekapitulasi Hasil Pendataan ATS</strong>. Sesuai ketentuan perlindungan privasi data, rincian identitas lengkap anak tidak sekolah hanya dapat diakses di <strong>Tingkat RT</strong> oleh <strong>Admin di Komunitas Warga Kita</strong>, <strong>Admin PAUD</strong>, dan <strong>Admin Posyandu</strong>.
+            Data yang ditampilkan pada halaman ini adalah <strong>Data Rekapitulasi Hasil Pendataan ATS</strong>. Sesuai ketentuan perlindungan privasi data, rincian identitas lengkap anak tidak sekolah hanya dapat diakses di <strong>Tingkat KELURAHAN</strong> oleh <strong>Admin di Komunitas Warga Kita</strong>, <strong>Admin PAUD</strong>, <strong>Admin Posyandu</strong> dan <strong>Admin PKBM &amp; SKBM</strong>.
           </p>
         </div>
       </div>

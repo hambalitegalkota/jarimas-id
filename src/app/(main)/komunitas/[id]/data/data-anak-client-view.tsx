@@ -242,7 +242,7 @@ export function DataAnakClientView({
               Akses Rincian Data Anak &amp; Pencarian Terkunci
             </h3>
             <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-              Sesuai dengan ketentuan perlindungan privasi dan keamanan data anak, pencarian data serta daftar rincian identitas anak (nama lengkap, orang tua/wali, alamat KK, domisili, dan rekam medis tumbuh kembang DDTK) hanya dapat diakses oleh <strong>Admin di Komunitas Warga Kita (Tingkat RT)</strong>, <strong>Admin PAUD</strong>, dan <strong>Admin/Kader Posyandu</strong>.
+              Sesuai ketentuan perlindungan privasi data, rincian identitas lengkap hanya dapat diakses di <strong>Tingkat KELURAHAN</strong> oleh <strong>Admin di Komunitas Warga Kita</strong>, <strong>Admin PAUD</strong>, <strong>Admin Posyandu</strong> dan <strong>Admin PKBM &amp; SKBM</strong>.
             </p>
           </div>
 
