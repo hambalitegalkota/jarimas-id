@@ -753,7 +753,7 @@ export async function getDaftarNamaAtsRekapAction(params: {
       return {
         success: false,
         message:
-          "Akses Ditolak: Sesuai ketentuan perlindungan privasi data, rincian identitas lengkap anak tidak sekolah hanya dapat diakses di Tingkat KELURAHAN oleh Admin di Komunitas Warga Kita, Admin PAUD, Admin Posyandu dan Admin PKBM & SKBM.",
+          "Akses Ditolak: Sesuai ketentuan perlindungan privasi data, rincian identitas lengkap anak tidak sekolah hanya dapat diakses di Tingkat KELURAHAN oleh Admin di Komunitas Warga Kita, Admin PAUD, Admin Posyandu dan Admin PKBM dan SKB.",
         data: [],
         total: 0,
       };

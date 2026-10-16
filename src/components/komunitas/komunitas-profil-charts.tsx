@@ -1088,7 +1088,7 @@ export function KomunitasProfilCharts({
                 <div className="flex items-center justify-between p-2.5 rounded-xl bg-emerald-50 border border-emerald-200">
                   <div>
                     <span className="font-bold text-emerald-950 block">1. Admin Komunitas (Tingkat Kelurahan / RT)</span>
-                    <span className="text-2xs text-emerald-700">Warga Kita, PAUD, Posyandu, PKBM &amp; SKBM</span>
+                    <span className="text-2xs text-emerald-700">Warga Kita, PAUD, Posyandu, PKBM dan SKB</span>
                   </div>
                   <span className="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-bold text-2xs">
                     DATA RINCIAN LENGKAP
@@ -1123,7 +1123,7 @@ export function KomunitasProfilCharts({
                 </div>
                 <div className="p-2 rounded-lg bg-amber-50/80 border border-amber-200 text-2xs text-amber-800 flex items-center gap-1.5">
                   <span className="font-bold">🔒 Kebijakan Privasi:</span>
-                  <span>Sesuai ketentuan perlindungan privasi data, rincian identitas lengkap anak tidak sekolah hanya dapat diakses di Tingkat KELURAHAN oleh Admin di Komunitas Warga Kita, Admin PAUD, Admin Posyandu dan Admin PKBM &amp; SKBM.</span>
+                  <span>Sesuai ketentuan perlindungan privasi data, rincian identitas lengkap anak tidak sekolah hanya dapat diakses di Tingkat KELURAHAN oleh Admin di Komunitas Warga Kita, Admin PAUD, Admin Posyandu dan Admin PKBM dan SKB.</span>
                 </div>
               </div>
           )}

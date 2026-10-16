@@ -102,7 +102,7 @@ export default async function KomunitasDataAtsPage({
     );
   }
 
-  // Khusus Komunitas Tingkat Kelurahan / RT, Posyandu, dan PKBM & SKBM:
+  // Khusus Komunitas Tingkat Kelurahan / RT, Posyandu, dan PKBM dan SKB:
   const dataAtsResult = await getDataAtsByKomunitas(id);
 
   const {

@@ -85,7 +85,7 @@ export function DataAtsClientView({
     userPeranLower.includes("kader") ||
     userPeranLower.includes("ketua");
 
-  // Sesuai ketentuan perlindungan privasi data, rincian identitas lengkap anak tidak sekolah hanya dapat diakses di Tingkat KELURAHAN oleh Admin di Komunitas Warga Kita, Admin PAUD, Admin Posyandu dan Admin PKBM & SKBM
+  // Sesuai ketentuan perlindungan privasi data, rincian identitas lengkap anak tidak sekolah hanya dapat diakses di Tingkat KELURAHAN oleh Admin di Komunitas Warga Kita, Admin PAUD, Admin Posyandu dan Admin PKBM dan SKB
   const canAccessDaftarNama = Boolean(
     initialCanAccessDaftarNama ??
     (isSuperAdmin || canManage || (isApprovedMember && isAdminOrPengurus))

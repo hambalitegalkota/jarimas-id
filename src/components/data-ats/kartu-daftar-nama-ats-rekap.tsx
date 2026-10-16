@@ -152,7 +152,7 @@ export function KartuDaftarNamaAtsRekap({
             <div className="flex flex-wrap items-center gap-2 mb-1">
               <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-700">
                 <ShieldCheck className="h-3.5 w-3.5 text-amber-600" />
-                <span>Khusus Admin Komunitas (Warga Kita, PAUD, Posyandu, PKBM &amp; SKBM) &amp; Super Admin</span>
+                <span>Khusus Admin Komunitas (Warga Kita, PAUD, Posyandu, PKBM dan SKB) &amp; Super Admin</span>
               </span>
               <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full border bg-indigo-100 text-indigo-900 border-indigo-300 dark:bg-indigo-900/60 dark:text-indigo-300 dark:border-indigo-700">
                 Wilayah: {currentWilayahNama}
@@ -162,7 +162,7 @@ export function KartuDaftarNamaAtsRekap({
               Daftar Rincian Anak Tidak Sekolah (ATS)
             </h3>
             <p className="text-xs text-slate-600 dark:text-slate-400 font-medium">
-              Sesuai ketentuan perlindungan privasi data, rincian identitas lengkap anak tidak sekolah hanya dapat diakses di Tingkat KELURAHAN oleh Admin di Komunitas Warga Kita, Admin PAUD, Admin Posyandu dan Admin PKBM &amp; SKBM.
+              Sesuai ketentuan perlindungan privasi data, rincian identitas lengkap anak tidak sekolah hanya dapat diakses di Tingkat KELURAHAN oleh Admin di Komunitas Warga Kita, Admin PAUD, Admin Posyandu dan Admin PKBM dan SKB.
             </p>
           </div>
         </div>

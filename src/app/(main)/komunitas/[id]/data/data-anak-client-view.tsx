@@ -242,7 +242,7 @@ export function DataAnakClientView({
               Akses Rincian Data Anak &amp; Pencarian Terkunci
             </h3>
             <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-              Sesuai ketentuan perlindungan privasi data, rincian identitas lengkap hanya dapat diakses di <strong>Tingkat KELURAHAN</strong> oleh <strong>Admin di Komunitas Warga Kita</strong>, <strong>Admin PAUD</strong>, <strong>Admin Posyandu</strong> dan <strong>Admin PKBM &amp; SKBM</strong>.
+              Sesuai ketentuan perlindungan privasi data, rincian identitas lengkap hanya dapat diakses di <strong>Tingkat KELURAHAN</strong> oleh <strong>Admin di Komunitas Warga Kita</strong>, <strong>Admin PAUD</strong>, <strong>Admin Posyandu</strong> dan <strong>Admin PKBM dan SKB</strong>.
             </p>
           </div>
 

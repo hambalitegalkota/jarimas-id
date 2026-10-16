@@ -1633,7 +1633,7 @@ export function KomunitasDetailClientView({
                     </span>
                   </div>
                   <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">
-                    Pada komunitas tingkat <strong>{tierLevelLabel}</strong>, data yang ditampilkan adalah data rekapitulasi agregat wilayah (seperti pada halaman Rekapitulasi Hasil Pendataan Anak Usia Dini dan ATS). Sesuai ketentuan perlindungan privasi data, rincian identitas lengkap anak tidak sekolah hanya dapat diakses di <strong>Tingkat KELURAHAN</strong> oleh <strong>Admin di Komunitas Warga Kita</strong>, <strong>Admin PAUD</strong>, <strong>Admin Posyandu</strong> dan <strong>Admin PKBM &amp; SKBM</strong>.
+                    Pada komunitas tingkat <strong>{tierLevelLabel}</strong>, data yang ditampilkan adalah data rekapitulasi agregat wilayah (seperti pada halaman Rekapitulasi Hasil Pendataan Anak Usia Dini dan ATS). Sesuai ketentuan perlindungan privasi data, rincian identitas lengkap anak tidak sekolah hanya dapat diakses di <strong>Tingkat KELURAHAN</strong> oleh <strong>Admin di Komunitas Warga Kita</strong>, <strong>Admin PAUD</strong>, <strong>Admin Posyandu</strong> dan <strong>Admin PKBM dan SKB</strong>.
                   </p>
                 </div>
               </div>
