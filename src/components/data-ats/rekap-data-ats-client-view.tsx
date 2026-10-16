@@ -385,10 +385,10 @@ export function RekapDataAtsClientView({
           </span>
         </nav>
 
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-br from-slate-900 via-indigo-950 to-blue-950 p-6 sm:p-8 rounded-3xl text-white shadow-xl shadow-slate-950/10 border border-slate-700/50 relative overflow-hidden">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-br from-slate-900 via-indigo-950 to-blue-950 p-6 sm:p-8 rounded-3xl text-white shadow-xl shadow-slate-950/10 border border-slate-700/50 relative overflow-hidden print-card-item break-inside-avoid">
           {/* Background Glow */}
-          <div className="absolute -right-16 -top-16 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute -left-16 -bottom-16 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -right-16 -top-16 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl pointer-events-none print:hidden" />
+          <div className="absolute -left-16 -bottom-16 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none print:hidden" />
 
           <div className="space-y-2 relative z-10 max-w-2xl">
             <div className="flex items-center gap-2 flex-wrap">
@@ -407,7 +407,7 @@ export function RekapDataAtsClientView({
             </p>
           </div>
 
-          <div className="flex flex-row md:flex-col items-start md:items-end gap-2 shrink-0 relative z-10">
+          <div className="flex flex-row md:flex-col items-start md:items-end gap-2 shrink-0 relative z-10 print:hidden">
             <button
               type="button"
               onClick={() => window.print()}
@@ -426,8 +426,8 @@ export function RekapDataAtsClientView({
       {/* ========================================================= */}
       {/* 2. LEVEL SELECTOR CONTROLS (KOTA / KECAMATAN / KELURAHAN) */}
       {/* ========================================================= */}
-      <div className="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-3xl border-2 border-slate-200 dark:border-slate-800 shadow-sm space-y-4 print-hide-on-daftar-nama">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+      <div className="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-3xl border-2 border-slate-200 dark:border-slate-800 shadow-sm space-y-4 print-hide-on-daftar-nama print-card-item break-inside-avoid print:p-3 print:space-y-0 print:border-slate-300 print:rounded-2xl">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 print:hidden">
           {/* Level Hierarchy Buttons */}
           <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
             <span className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase mr-1 flex items-center gap-1 shrink-0">
@@ -519,9 +519,9 @@ export function RekapDataAtsClientView({
         </div>
 
         {/* Selected Wilayah Indicator Badge */}
-        <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800 flex-wrap gap-2 text-xs">
+        <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800 flex-wrap gap-2 text-xs print:pt-0 print:border-none">
           <div className="flex items-center gap-2">
-            <span className="h-2.5 w-2.5 rounded-full bg-blue-500 animate-pulse" />
+            <span className="h-2.5 w-2.5 rounded-full bg-blue-500 animate-pulse print:hidden" />
             <span className="font-bold text-slate-500 dark:text-slate-400">Wilayah Rekap ATS:</span>
             <strong className="text-sm font-black text-slate-900 dark:text-slate-100">
               {currentWilayahData.tingkat === "kota" && "Seluruh Wilayah Kota Tegal"}
@@ -542,7 +542,7 @@ export function RekapDataAtsClientView({
       </div>
 
       {/* Ketentuan Privasi & Tingkat Data Rekapitulasi ATS */}
-      <div className="rounded-2xl border-2 border-amber-200 dark:border-amber-900 bg-amber-50/70 dark:bg-amber-950/30 p-4 sm:p-5 flex items-start gap-3 shadow-xs print-hide-on-daftar-nama">
+      <div className="rounded-2xl border-2 border-amber-200 dark:border-amber-900 bg-amber-50/70 dark:bg-amber-950/30 p-4 sm:p-5 flex items-start gap-3 shadow-xs print-hide-on-daftar-nama print-card-item break-inside-avoid print:p-3">
         <ShieldCheck className="h-5 w-5 text-amber-700 dark:text-amber-400 shrink-0 mt-0.5" />
         <div className="space-y-1">
           <h4 className="text-sm sm:text-base font-bold text-amber-950 dark:text-amber-200">
@@ -559,7 +559,7 @@ export function RekapDataAtsClientView({
       {/* ========================================================= */}
       {/* 4. SECTION NAVIGATION TABS                                */}
       {/* ========================================================= */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 bg-slate-100 dark:bg-slate-800/80 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-700 print-hide-on-daftar-nama">
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 bg-slate-100 dark:bg-slate-800/80 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-700 print:hidden print-hide-on-daftar-nama">
         <button
           type="button"
           onClick={() => setActiveTabSection("semua")}
@@ -619,7 +619,7 @@ export function RekapDataAtsClientView({
       {/* ========================================================= */}
       {(activeTabSection === "semua" || activeTabSection === "kategori") && (
         <div className="space-y-4 print-hide-on-daftar-nama">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between print-section-header break-after-avoid">
             <div className="flex items-center gap-2">
               <div className="h-8 w-8 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold">
                 <PieChartIcon className="h-4 w-4" />
@@ -638,7 +638,7 @@ export function RekapDataAtsClientView({
                 type="button"
                 onClick={toggleAll}
                 className={cn(
-                  "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all border cursor-pointer",
+                  "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all border cursor-pointer print:hidden",
                   isAllHidden
                     ? "bg-blue-600 hover:bg-blue-700 text-white border-blue-600 shadow-xs"
                     : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 shadow-2xs"
@@ -657,15 +657,15 @@ export function RekapDataAtsClientView({
                   </>
                 )}
               </button>
-              <span className="hidden sm:inline-block text-xs font-extrabold px-3 py-1 rounded-full bg-blue-50 text-blue-800 border border-blue-200">
+              <span className="hidden sm:inline-block text-xs font-extrabold px-3 py-1 rounded-full bg-blue-50 text-blue-800 border border-blue-200 print:inline-block">
                 Total: {currentWilayahData.totalAts} Anak
               </span>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 print-cards-grid">
             {/* 5.1 Kategori ATS Breakdown */}
-            <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-5 shadow-xs">
+            <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-5 shadow-xs print-card-item break-inside-avoid print:p-5 print:rounded-2xl">
               <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
                 <div className="flex items-center gap-2">
                   <BarChart3 className="h-5 w-5 text-blue-600" />
@@ -682,7 +682,7 @@ export function RekapDataAtsClientView({
                   <button
                     type="button"
                     onClick={() => toggleChart("kategori")}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700"
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700 print:hidden"
                     title={hiddenCharts.kategori ? "Tampilkan Grafik" : "Sembunyikan Grafik"}
                   >
                     {hiddenCharts.kategori ? (
@@ -779,7 +779,7 @@ export function RekapDataAtsClientView({
             </div>
 
             {/* 5.2 Keinginan Bersekolah Kembali & Rasio Gender */}
-            <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-5 shadow-xs">
+            <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-5 shadow-xs print-card-item break-inside-avoid print:p-5 print:rounded-2xl">
               <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="h-5 w-5 text-emerald-600" />
@@ -796,7 +796,7 @@ export function RekapDataAtsClientView({
                   <button
                     type="button"
                     onClick={() => toggleChart("keinginan")}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700"
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700 print:hidden"
                     title={hiddenCharts.keinginan ? "Tampilkan Grafik" : "Sembunyikan Grafik"}
                   >
                     {hiddenCharts.keinginan ? (
@@ -907,7 +907,7 @@ export function RekapDataAtsClientView({
       {/* ========================================================= */}
       {(activeTabSection === "semua" || activeTabSection === "jenjang_usia") && (
         <div className="space-y-4 pt-4 print-hide-on-daftar-nama">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 print-section-header break-after-avoid">
             <div className="flex items-center gap-2">
               <div className="h-8 w-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold">
                 <BookOpen className="h-4 w-4" />
@@ -924,7 +924,7 @@ export function RekapDataAtsClientView({
             <button
               type="button"
               onClick={toggleAll}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition-all shadow-2xs cursor-pointer shrink-0"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition-all shadow-2xs cursor-pointer shrink-0 print:hidden"
             >
               {isAllHidden ? (
                 <>
@@ -940,9 +940,9 @@ export function RekapDataAtsClientView({
             </button>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 print-cards-grid">
             {/* 6.1 Diagram Batang: Jenjang Sekolah Asal / Kelas Terakhir ATS */}
-            <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-4 shadow-xs">
+            <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-4 shadow-xs print-card-item break-inside-avoid print:p-5 print:rounded-2xl">
               <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
                 <div className="flex items-center gap-2">
                   <School className="h-5 w-5 text-indigo-600" />
@@ -959,7 +959,7 @@ export function RekapDataAtsClientView({
                   <button
                     type="button"
                     onClick={() => toggleChart("kelas")}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700"
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700 print:hidden"
                     title={hiddenCharts.kelas ? "Tampilkan Grafik" : "Sembunyikan Grafik"}
                   >
                     {hiddenCharts.kelas ? (
@@ -1141,7 +1141,7 @@ export function RekapDataAtsClientView({
             </div>
 
             {/* 6.2 Diagram Batang: Distribusi Usia ATS (6 - 18 Tahun) */}
-            <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-4 shadow-xs">
+            <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-4 shadow-xs print-card-item break-inside-avoid print:p-5 print:rounded-2xl">
               <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
                 <div className="flex items-center gap-2">
                   <BarChart3 className="h-5 w-5 text-indigo-600" />
@@ -1158,7 +1158,7 @@ export function RekapDataAtsClientView({
                   <button
                     type="button"
                     onClick={() => toggleChart("usia")}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700"
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700 print:hidden"
                     title={hiddenCharts.usia ? "Tampilkan Grafik" : "Sembunyikan Grafik"}
                   >
                     {hiddenCharts.usia ? (
@@ -1304,7 +1304,7 @@ export function RekapDataAtsClientView({
           </div>
 
           {/* 6.3 Diagram Batang Faktor Penyebab & Alasan Tidak Sekolah (Urutan Terbanyak s/d Tersedikit) */}
-          <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-4 shadow-xs">
+          <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-4 shadow-xs print-card-item break-inside-avoid print:p-5 print:rounded-2xl">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-3">
               <div className="flex items-center gap-2">
                 <AlertCircle className="h-5 w-5 text-rose-600" />
@@ -1321,7 +1321,7 @@ export function RekapDataAtsClientView({
                 <button
                   type="button"
                   onClick={() => toggleChart("alasan")}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700"
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700 print:hidden"
                   title={hiddenCharts.alasan ? "Tampilkan Grafik" : "Sembunyikan Grafik"}
                 >
                   {hiddenCharts.alasan ? (
@@ -1456,7 +1456,7 @@ export function RekapDataAtsClientView({
       {/* ========================================================= */}
       {(activeTabSection === "semua" || activeTabSection === "tabel") && (
         <div className="space-y-4 pt-4 print-hide-on-daftar-nama">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 print-section-header break-after-avoid">
             <div className="flex items-center gap-2">
               <div className="h-8 w-8 rounded-xl bg-slate-900 dark:bg-slate-700 text-white flex items-center justify-center font-bold">
                 <Building2 className="h-4 w-4" />
@@ -1472,7 +1472,7 @@ export function RekapDataAtsClientView({
             </div>
 
             {/* Table Search Input & Sort Badge */}
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2 print:hidden">
               {sortColumn !== "default" && (
                 <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 text-xs font-bold text-blue-800 dark:text-blue-300 shadow-2xs animate-in fade-in">
                   <span>
@@ -1510,7 +1510,7 @@ export function RekapDataAtsClientView({
             </div>
           </div>
 
-          <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-xs">
+          <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-xs print-card-item print:rounded-2xl">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
@@ -1672,7 +1672,7 @@ export function RekapDataAtsClientView({
       {/* ========================================================= */}
       {/* 9. FOOTER CALL-TO-ACTION & LINK TO ATS / PKBM             */}
       {/* ========================================================= */}
-      <div className="p-6 rounded-3xl bg-slate-100 dark:bg-slate-800/60 border-2 border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row items-center justify-between gap-4 print-hide-on-daftar-nama">
+      <div className="p-6 rounded-3xl bg-slate-100 dark:bg-slate-800/60 border-2 border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row items-center justify-between gap-4 print:hidden print-hide-on-daftar-nama">
         <div className="space-y-1 text-center sm:text-left">
           <h4 className="text-sm sm:text-base font-black text-slate-900 dark:text-slate-100">
             Kader RT/RW Menemukan Anak Putus Sekolah di Lingkungan Anda?

@@ -163,7 +163,10 @@ export function KartuDaftarNamaAtsRekap({
   return (
     <div
       ref={cardRef}
-      className="rounded-3xl border-2 border-indigo-300 dark:border-indigo-800 bg-indigo-50/70 dark:bg-indigo-950/20 transition-all duration-200 overflow-hidden shadow-sm print:border-none print:shadow-none print:bg-white print:p-0 print:m-0 print:w-full print:rounded-none print-daftar-nama-container"
+      className={cn(
+        "rounded-3xl border-2 border-indigo-300 dark:border-indigo-800 bg-indigo-50/70 dark:bg-indigo-950/20 transition-all duration-200 overflow-hidden shadow-sm break-inside-avoid print:break-inside-avoid print:border-none print:shadow-none print:bg-white print:p-0 print:m-0 print:w-full print:rounded-none print-daftar-nama-container",
+        isOpen ? "is-open" : ""
+      )}
     >
       {/* KOP RESMI LAPORAN A4 (HANYA MUNCUL SAAT CETAK / PRINT) */}
       <div className="hidden print:block border-b-2 border-slate-900 pb-3 mb-3 text-center">

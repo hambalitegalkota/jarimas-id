@@ -424,10 +424,10 @@ export function RekapDataAnakClientView({
           </span>
         </nav>
 
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-br from-slate-900 via-slate-800 to-teal-950 p-6 sm:p-8 rounded-3xl text-white shadow-xl shadow-slate-950/10 border border-slate-700/50 relative overflow-hidden">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-br from-slate-900 via-slate-800 to-teal-950 p-6 sm:p-8 rounded-3xl text-white shadow-xl shadow-slate-950/10 border border-slate-700/50 relative overflow-hidden print-card-item break-inside-avoid">
           {/* Background Glow */}
-          <div className="absolute -right-16 -top-16 w-64 h-64 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute -left-16 -bottom-16 w-64 h-64 bg-sky-500/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -right-16 -top-16 w-64 h-64 bg-teal-500/10 rounded-full blur-3xl pointer-events-none print:hidden" />
+          <div className="absolute -left-16 -bottom-16 w-64 h-64 bg-sky-500/10 rounded-full blur-3xl pointer-events-none print:hidden" />
 
           <div className="space-y-2 relative z-10 max-w-2xl">
             <div className="flex items-center gap-2 flex-wrap">
@@ -446,7 +446,7 @@ export function RekapDataAnakClientView({
             </p>
           </div>
 
-          <div className="flex flex-row md:flex-col items-start md:items-end gap-2 shrink-0 relative z-10">
+          <div className="flex flex-row md:flex-col items-start md:items-end gap-2 shrink-0 relative z-10 print:hidden">
             <button
               type="button"
               onClick={() => window.print()}
@@ -465,8 +465,8 @@ export function RekapDataAnakClientView({
       {/* ========================================================= */}
       {/* 2. LEVEL SELECTOR CONTROLS (KOTA / KECAMATAN / KELURAHAN) */}
       {/* ========================================================= */}
-      <div className="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-3xl border-2 border-slate-200 dark:border-slate-800 shadow-sm space-y-4 print-hide-on-daftar-nama">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+      <div className="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-3xl border-2 border-slate-200 dark:border-slate-800 shadow-sm space-y-4 print-hide-on-daftar-nama print-card-item break-inside-avoid print:p-3 print:space-y-0 print:border-slate-300 print:rounded-2xl">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 print:hidden">
           {/* Level Hierarchy Buttons */}
           <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
             <span className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase mr-1 flex items-center gap-1 shrink-0">
@@ -559,9 +559,9 @@ export function RekapDataAnakClientView({
         </div>
 
         {/* Selected Wilayah Indicator Badge */}
-        <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800 flex-wrap gap-2 text-xs">
+        <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800 flex-wrap gap-2 text-xs print:pt-0 print:border-none">
           <div className="flex items-center gap-2">
-            <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse print:hidden" />
             <span className="font-bold text-slate-500 dark:text-slate-400">Wilayah Aktif:</span>
             <strong className="text-sm font-black text-slate-900 dark:text-slate-100">
               {currentWilayahData.tingkat === "kota" && "Seluruh Wilayah Kota Tegal"}
@@ -582,7 +582,7 @@ export function RekapDataAnakClientView({
       </div>
 
       {/* Ketentuan Privasi & Tingkat Data Rekapitulasi */}
-      <div className="rounded-2xl border-2 border-blue-200 dark:border-blue-900 bg-blue-50/70 dark:bg-blue-950/30 p-4 sm:p-5 flex items-start gap-3 shadow-xs print-hide-on-daftar-nama">
+      <div className="rounded-2xl border-2 border-blue-200 dark:border-blue-900 bg-blue-50/70 dark:bg-blue-950/30 p-4 sm:p-5 flex items-start gap-3 shadow-xs print-hide-on-daftar-nama print-card-item break-inside-avoid print:p-3">
         <ShieldCheck className="h-5 w-5 text-blue-700 dark:text-blue-400 shrink-0 mt-0.5" />
         <div className="space-y-1">
           <h4 className="text-sm sm:text-base font-bold text-blue-950 dark:text-blue-200">
@@ -597,9 +597,9 @@ export function RekapDataAnakClientView({
       {/* ========================================================= */}
       {/* 3. KEY SUMMARY METRIC CARDS                               */}
       {/* ========================================================= */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 print-hide-on-daftar-nama">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 print-hide-on-daftar-nama print-metric-grid break-inside-avoid">
         {/* Card 1: Total Anak Usia Dini */}
-        <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 space-y-2 shadow-xs hover:border-slate-300 transition-colors">
+        <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 space-y-2 shadow-xs hover:border-slate-300 transition-colors print-card-item break-inside-avoid print:p-3.5 print:rounded-2xl">
           <div className="flex items-center justify-between">
             <span className="text-2xs sm:text-xs font-black text-slate-500 uppercase tracking-wider">
               TOTAL ANAK (0–6 THN)
@@ -621,7 +621,7 @@ export function RekapDataAnakClientView({
         </div>
 
         {/* Card 2: Anak Bersekolah */}
-        <div className="rounded-3xl border-2 border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/20 p-5 space-y-2 shadow-xs hover:border-emerald-300 transition-colors">
+        <div className="rounded-3xl border-2 border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/20 p-5 space-y-2 shadow-xs hover:border-emerald-300 transition-colors print-card-item break-inside-avoid print:p-3.5 print:rounded-2xl">
           <div className="flex items-center justify-between">
             <span className="text-2xs sm:text-xs font-black text-emerald-800 dark:text-emerald-300 uppercase tracking-wider">
               ANAK BERSEKOLAH (PAUD)
@@ -646,7 +646,7 @@ export function RekapDataAnakClientView({
         </div>
 
         {/* Card 3: Belum / Tidak Bersekolah */}
-        <div className="rounded-3xl border-2 border-blue-200 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-950/20 p-5 space-y-2 shadow-xs hover:border-blue-300 transition-colors">
+        <div className="rounded-3xl border-2 border-blue-200 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-950/20 p-5 space-y-2 shadow-xs hover:border-blue-300 transition-colors print-card-item break-inside-avoid print:p-3.5 print:rounded-2xl">
           <div className="flex items-center justify-between">
             <span className="text-2xs sm:text-xs font-black text-blue-800 dark:text-blue-300 uppercase tracking-wider">
               BELUM / TIDAK BERSEKOLAH
@@ -671,7 +671,7 @@ export function RekapDataAnakClientView({
         </div>
 
         {/* Card 4: Angka Partisipasi PAUD */}
-        <div className="rounded-3xl border-2 border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-950/20 p-5 space-y-2 shadow-xs hover:border-amber-300 transition-colors">
+        <div className="rounded-3xl border-2 border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-950/20 p-5 space-y-2 shadow-xs hover:border-amber-300 transition-colors print-card-item break-inside-avoid print:p-3.5 print:rounded-2xl">
           <div className="flex items-center justify-between">
             <span className="text-2xs sm:text-xs font-black text-amber-900 dark:text-amber-300 uppercase tracking-wider">
               ANGKA PARTISIPASI PAUD
@@ -705,7 +705,7 @@ export function RekapDataAnakClientView({
       {/* ========================================================= */}
       {/* 4. NAVIGATION SECTION TABS                                */}
       {/* ========================================================= */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 bg-slate-100 dark:bg-slate-800/80 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-700 print-hide-on-daftar-nama">
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 bg-slate-100 dark:bg-slate-800/80 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-700 print:hidden print-hide-on-daftar-nama">
         <button
           type="button"
           onClick={() => setActiveTabSection("semua")}
@@ -764,7 +764,7 @@ export function RekapDataAnakClientView({
       {/* ========================================================= */}
       {(activeTabSection === "semua" || activeTabSection === "bersekolah") && (
         <div className="space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 print-hide-on-daftar-nama">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 print-hide-on-daftar-nama print-section-header break-after-avoid">
             <div className="flex items-center gap-2">
               <div className="h-8 w-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold">
                 <School className="h-4 w-4" />
@@ -782,7 +782,7 @@ export function RekapDataAnakClientView({
               <button
                 type="button"
                 onClick={toggleAll}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition-all shadow-2xs cursor-pointer shrink-0"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition-all shadow-2xs cursor-pointer shrink-0 print:hidden"
               >
                 {isAllHidden ? (
                   <>
@@ -796,15 +796,15 @@ export function RekapDataAnakClientView({
                   </>
                 )}
               </button>
-              <span className="hidden sm:inline-block text-xs font-extrabold px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 font-mono">
+              <span className="hidden sm:inline-block text-xs font-extrabold px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 font-mono print:inline-block">
                 Total: {currentWilayahData.totalBersekolah} Anak
               </span>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 print-hide-on-daftar-nama">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 print-hide-on-daftar-nama print-cards-grid">
             {/* 5.1 Grafik Distribusi Jenjang Institusi PAUD */}
-            <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-5 shadow-xs">
+            <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-5 shadow-xs print-card-item break-inside-avoid print:p-5 print:rounded-2xl">
               <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
                 <div className="flex items-center gap-2">
                   <PieChartIcon className="h-5 w-5 text-emerald-600" />
@@ -816,7 +816,7 @@ export function RekapDataAnakClientView({
                   <button
                     type="button"
                     onClick={() => toggleChart("satuan_paud")}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700"
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700 print:hidden"
                     title={hiddenCharts.satuan_paud ? "Tampilkan Grafik" : "Sembunyikan Grafik"}
                   >
                     {hiddenCharts.satuan_paud ? (
@@ -907,7 +907,7 @@ export function RekapDataAnakClientView({
             </div>
 
             {/* 5.2 Grafik Kelompok Umur & Gender Anak Bersekolah */}
-            <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-5 shadow-xs">
+            <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-5 shadow-xs print-card-item break-inside-avoid print:p-5 print:rounded-2xl">
               <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
                 <div className="flex items-center gap-2">
                   <BarChart3 className="h-5 w-5 text-emerald-600" />
@@ -919,7 +919,7 @@ export function RekapDataAnakClientView({
                   <button
                     type="button"
                     onClick={() => toggleChart("umur_gender_bersekolah")}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700"
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700 print:hidden"
                     title={hiddenCharts.umur_gender_bersekolah ? "Tampilkan Grafik" : "Sembunyikan Grafik"}
                   >
                     {hiddenCharts.umur_gender_bersekolah ? (
@@ -1027,7 +1027,7 @@ export function RekapDataAnakClientView({
           {/* DIAGRAM BATANG TEGAK PANJANG: SEBARAN SATUAN PAUD         */}
           {/* PER RENTANG USIA 0 - 6 TAHUN (TK, RA, KB, SPS, TPA, DLL) */}
           {/* ========================================================= */}
-          <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-6 shadow-xs">
+          <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-6 shadow-xs print-card-item break-inside-avoid print:p-5 print:rounded-2xl">
             {/* Header Card */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
               <div className="flex items-center gap-3">
@@ -1044,7 +1044,7 @@ export function RekapDataAnakClientView({
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
+              <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap print:hidden">
                 <button
                   type="button"
                   onClick={() => toggleChart("sebaran_usia_satuan")}
@@ -1371,7 +1371,7 @@ export function RekapDataAnakClientView({
           </div>
 
           {/* 5.3 Grafik / Chart Alasan Anak Bersekolah */}
-          <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-4 shadow-xs">
+          <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-4 shadow-xs print-card-item break-inside-avoid print:p-5 print:rounded-2xl">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
               <div className="flex items-center gap-2">
                 <Sparkles className="h-5 w-5 text-emerald-600" />
@@ -1387,7 +1387,7 @@ export function RekapDataAnakClientView({
               <button
                 type="button"
                 onClick={() => toggleChart("alasan_bersekolah")}
-                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700"
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700 print:hidden"
                 title={hiddenCharts.alasan_bersekolah ? "Tampilkan Grafik" : "Sembunyikan Grafik"}
               >
                 {hiddenCharts.alasan_bersekolah ? (
@@ -1462,7 +1462,7 @@ export function RekapDataAnakClientView({
       {/* ========================================================= */}
       {(activeTabSection === "semua" || activeTabSection === "tidak_sekolah") && (
         <div className="space-y-4 pt-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 print-hide-on-daftar-nama">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 print-hide-on-daftar-nama print-section-header break-after-avoid">
             <div className="flex items-center gap-2">
               <div className="h-8 w-8 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold">
                 <HeartHandshake className="h-4 w-4" />
@@ -1480,7 +1480,7 @@ export function RekapDataAnakClientView({
               <button
                 type="button"
                 onClick={toggleAll}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition-all shadow-2xs cursor-pointer shrink-0"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition-all shadow-2xs cursor-pointer shrink-0 print:hidden"
               >
                 {isAllHidden ? (
                   <>
@@ -1494,15 +1494,15 @@ export function RekapDataAnakClientView({
                   </>
                 )}
               </button>
-              <span className="hidden sm:inline-block text-xs font-extrabold px-3 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-800 dark:text-blue-300 border border-blue-200 dark:border-blue-800 font-mono">
+              <span className="hidden sm:inline-block text-xs font-extrabold px-3 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-800 dark:text-blue-300 border border-blue-200 dark:border-blue-800 font-mono print:inline-block">
                 Total: {currentWilayahData.totalTidakBersekolah} Anak
               </span>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 print-hide-on-daftar-nama">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 print-hide-on-daftar-nama print-cards-grid">
             {/* 6.1 Kelompok Umur Anak Belum Bersekolah */}
-            <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-5 shadow-xs">
+            <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-5 shadow-xs print-card-item break-inside-avoid print:p-5 print:rounded-2xl">
               <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
                 <div className="flex items-center gap-2">
                   <Baby className="h-5 w-5 text-blue-600" />
@@ -1514,7 +1514,7 @@ export function RekapDataAnakClientView({
                   <button
                     type="button"
                     onClick={() => toggleChart("umur_gender_tidak_sekolah")}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700"
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700 print:hidden"
                     title={hiddenCharts.umur_gender_tidak_sekolah ? "Tampilkan Grafik" : "Sembunyikan Grafik"}
                   >
                     {hiddenCharts.umur_gender_tidak_sekolah ? (
@@ -1613,7 +1613,7 @@ export function RekapDataAnakClientView({
             </div>
 
             {/* 6.2 Alasan Tidak / Belum Bersekolah */}
-            <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-4 shadow-xs">
+            <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-4 shadow-xs print-card-item break-inside-avoid print:p-5 print:rounded-2xl">
               <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
                 <div className="flex items-center gap-2">
                   <AlertCircle className="h-5 w-5 text-blue-600" />
@@ -1629,7 +1629,7 @@ export function RekapDataAnakClientView({
                 <button
                   type="button"
                   onClick={() => toggleChart("alasan_tidak_sekolah")}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700"
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700 print:hidden"
                   title={hiddenCharts.alasan_tidak_sekolah ? "Tampilkan Grafik" : "Sembunyikan Grafik"}
                 >
                   {hiddenCharts.alasan_tidak_sekolah ? (
@@ -1705,7 +1705,7 @@ export function RekapDataAnakClientView({
       {/* ========================================================= */}
       {(activeTabSection === "semua" || activeTabSection === "tabel") && (
         <div className="space-y-4 pt-4 print-hide-on-daftar-nama">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 print-section-header break-after-avoid">
             <div className="flex items-center gap-2">
               <div className="h-8 w-8 rounded-xl bg-slate-900 dark:bg-slate-700 text-white flex items-center justify-center font-bold">
                 <Building2 className="h-4 w-4" />
@@ -1721,7 +1721,7 @@ export function RekapDataAnakClientView({
             </div>
 
             {/* Table Search Input & Sort Badge */}
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2 print:hidden">
               {sortColumn !== "default" && (
                 <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 text-xs font-bold text-blue-800 dark:text-blue-300 shadow-2xs animate-in fade-in">
                   <span>
@@ -1759,7 +1759,7 @@ export function RekapDataAnakClientView({
             </div>
           </div>
 
-          <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-xs">
+          <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-xs print-card-item print:rounded-2xl">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
@@ -1910,7 +1910,7 @@ export function RekapDataAnakClientView({
       {/* ========================================================= */}
       {/* 8. FOOTER CALL-TO-ACTION & LINK TO ATS / POSYANDU         */}
       {/* ========================================================= */}
-      <div className="p-6 rounded-3xl bg-slate-100 dark:bg-slate-800/60 border-2 border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row items-center justify-between gap-4 print-hide-on-daftar-nama">
+      <div className="p-6 rounded-3xl bg-slate-100 dark:bg-slate-800/60 border-2 border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row items-center justify-between gap-4 print:hidden print-hide-on-daftar-nama">
         <div className="space-y-1 text-center sm:text-left">
           <h4 className="text-sm sm:text-base font-black text-slate-900 dark:text-slate-100">
             Ingin Mendaftarkan Balita atau Menemukan Anak Tidak Sekolah?
