@@ -32,12 +32,15 @@ interface KabarPageProps {
     tab?: string;
     sort?: string;
     visibility?: string;
+    groupId?: string;
+    room?: string;
   }>;
 }
 
 export default async function KabarPage({ searchParams }: KabarPageProps) {
   const resolvedParams = await searchParams;
   const rawTab = resolvedParams.tab;
+  const targetGroupId = resolvedParams.groupId || resolvedParams.room || null;
   const isExplicitlyClosed =
     rawTab === "closed" ||
     rawTab === "none" ||
@@ -46,8 +49,10 @@ export default async function KabarPage({ searchParams }: KabarPageProps) {
 
   const currentTab: "kabar" | "percakapan" | "warga" | null = isExplicitlyClosed
     ? null
-    : rawTab === "percakapan" || rawTab === "warga"
-    ? rawTab
+    : rawTab === "percakapan" || Boolean(targetGroupId)
+    ? "percakapan"
+    : rawTab === "warga"
+    ? "warga"
     : "kabar";
   const currentSort = (resolvedParams.sort as SortingKabar) || "terbaru";
   const currentVisibility =
@@ -66,13 +71,13 @@ export default async function KabarPage({ searchParams }: KabarPageProps) {
       filterVisibilitas: currentVisibility,
       limit: 30,
     }),
-    currentTab === "warga" || currentTab === "percakapan"
+    currentTab === "warga" || currentTab === "percakapan" || Boolean(targetGroupId)
       ? getRegisteredUsers()
       : Promise.resolve({ success: true, users: [], currentUserId: null, isSuperAdmin: false, isAdminPusat: false, totalCount: 0 }),
-    currentTab === "percakapan"
+    currentTab === "percakapan" || Boolean(targetGroupId)
       ? getRecentConversations()
       : Promise.resolve({ conversations: [] }),
-    currentTab === "percakapan"
+    currentTab === "percakapan" || Boolean(targetGroupId)
       ? getGroupChatRooms()
       : Promise.resolve({ rooms: [] }),
   ]);
@@ -368,6 +373,7 @@ export default async function KabarPage({ searchParams }: KabarPageProps) {
                           isSuperAdmin={isSuperAdmin}
                           isAdminPusat={isAdminPusat}
                           canManageGrupKegiatan={canManageGrupKegiatan}
+                          initialGroupId={targetGroupId}
                         />
                       )}
                     </div>

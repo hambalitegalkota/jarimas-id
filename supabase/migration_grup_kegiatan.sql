@@ -17,7 +17,30 @@ CREATE INDEX IF NOT EXISTS idx_komunitas_jenis_kegiatan ON public.komunitas(jeni
 ALTER TABLE public.profiles 
 ADD COLUMN IF NOT EXISTS is_admin_pusat BOOLEAN NOT NULL DEFAULT FALSE;
 
--- 3. Perbarui Policy RLS pada public.anggota_komunitas agar Admin Pusat & Super Admin
+-- 3. HILANGKAN SEMUA HAMBATAN NOT NULL PADA TABEL KOMUNITAS
+-- Kolom wilayah (kecamatan, kelurahan, rt, rw, lokasi) tidak boleh memblokir pembentukan grup kegiatan
+ALTER TABLE public.komunitas ALTER COLUMN kecamatan DROP NOT NULL;
+ALTER TABLE public.komunitas ALTER COLUMN kelurahan DROP NOT NULL;
+ALTER TABLE public.komunitas ALTER COLUMN rt DROP NOT NULL;
+ALTER TABLE public.komunitas ALTER COLUMN rw DROP NOT NULL;
+ALTER TABLE public.komunitas ALTER COLUMN lokasi DROP NOT NULL;
+
+-- Tetapkan nilai default yang ramah bagi grup kegiatan tingkat kota
+ALTER TABLE public.komunitas ALTER COLUMN kecamatan SET DEFAULT 'Kota Tegal';
+ALTER TABLE public.komunitas ALTER COLUMN kelurahan SET DEFAULT 'Semua Kelurahan';
+ALTER TABLE public.komunitas ALTER COLUMN lokasi SET DEFAULT 'Kota Tegal';
+
+-- 4. Perbarui Policy RLS pada public.komunitas agar Admin Pusat & Super Admin dapat membuat & mengelola grup
+DROP POLICY IF EXISTS "Admin dapat mengelola komunitas" ON public.komunitas;
+CREATE POLICY "Admin dapat mengelola komunitas" ON public.komunitas 
+FOR ALL USING (
+  EXISTS (
+    SELECT 1 FROM public.profiles 
+    WHERE id = auth.uid() AND (is_super_admin = true OR is_admin_pusat = true)
+  )
+);
+
+-- 5. Perbarui Policy RLS pada public.anggota_komunitas agar Admin Pusat & Super Admin
 --    dapat langsung menambahkan pengguna terpilih ke dalam anggota komunitas / grup
 DROP POLICY IF EXISTS "Pengguna dapat mendaftar ke komunitas" ON public.anggota_komunitas;
 DROP POLICY IF EXISTS "Pengguna dapat mendaftar atau didaftarkan admin ke komunitas" ON public.anggota_komunitas;
@@ -33,8 +56,7 @@ WITH CHECK (
   public.check_user_can_manage_community(auth.uid(), komunitas_id)
 );
 
--- 4. Perbarui Policy RLS DELETE pada public.anggota_komunitas agar Admin Pusat & Super Admin
---    dapat mengeluarkan anggota dari grup jika diperlukan
+-- 6. Perbarui Policy RLS UPDATE & DELETE pada public.anggota_komunitas
 DROP POLICY IF EXISTS "Pengguna dapat menghapus keanggotaan sendiri" ON public.anggota_komunitas;
 DROP POLICY IF EXISTS "Pengguna atau Admin dapat menghapus keanggotaan" ON public.anggota_komunitas;
 
@@ -49,7 +71,7 @@ USING (
   public.check_user_can_manage_community(auth.uid(), komunitas_id)
 );
 
--- 5. Helper Function dengan SECURITY DEFINER: tambah_anggota_grup_kegiatan
+-- 7. Helper Function dengan SECURITY DEFINER: tambah_anggota_grup_kegiatan
 --    Menjamin operasi undang anggota berjalan tanpa terhalang pembatasan RLS
 CREATE OR REPLACE FUNCTION public.tambah_anggota_grup_kegiatan(
   p_komunitas_id UUID,
@@ -89,5 +111,22 @@ $$;
 
 GRANT EXECUTE ON FUNCTION public.tambah_anggota_grup_kegiatan(UUID, UUID[], UUID) TO authenticated, service_role;
 
--- 6. Refresh Schema Cache
+-- 8. Pastikan Supabase Realtime mereplikasi perubahan pesan dan keanggotaan grup
+DO $$
+BEGIN
+  BEGIN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.anggota_komunitas;
+  EXCEPTION WHEN OTHERS THEN NULL; END;
+  BEGIN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.komunitas;
+  EXCEPTION WHEN OTHERS THEN NULL; END;
+  BEGIN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.pesan_pribadi;
+  EXCEPTION WHEN OTHERS THEN NULL; END;
+  BEGIN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.pesan_grup;
+  EXCEPTION WHEN OTHERS THEN NULL; END;
+END $$;
+
+-- 9. Refresh Schema Cache
 NOTIFY pgrst, 'reload schema';

@@ -32,7 +32,21 @@ export default async function KomunitasDataAtsPage({
     notFound();
   }
 
-  if (komunitas.jenis === "satuan_paud") {
+  const cleanNama = (komunitas.nama || "").toLowerCase().trim();
+  const isSkb =
+    komunitas.jenis_institusi === "SKB" ||
+    cleanNama.includes("skb") ||
+    cleanNama.includes("sanggar kegiatan belajar");
+  const isPkbmOrSkb =
+    komunitas.jenis === "pkbm_skb" ||
+    komunitas.jenis_institusi === "PKBM" ||
+    komunitas.jenis_institusi === "SKB" ||
+    cleanNama.includes("pkbm") ||
+    isSkb;
+
+  const isPurePaud = komunitas.jenis === "satuan_paud" && !isPkbmOrSkb;
+
+  if (isPurePaud) {
     redirect(`/komunitas/${id}`);
   }
 

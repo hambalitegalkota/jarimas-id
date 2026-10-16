@@ -15,6 +15,7 @@ import {
   Loader2,
   MessageCircle,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import type { IncomingMessageNotificationItem } from "@/types/database";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
@@ -44,6 +45,7 @@ export function FloatingMessageNotificationBanner({
   onOpenFullChat,
   onToggleMute,
 }: FloatingMessageNotificationBannerProps) {
+  const router = useRouter();
   const [replyText, setReplyText] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [sendSuccess, setSendSuccess] = useState(false);
@@ -52,6 +54,15 @@ export function FloatingMessageNotificationBanner({
   const [progress, setProgress] = useState(100);
 
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const isGroupInvite =
+    notification.pesan.includes("Undangan Grup Kegiatan") ||
+    notification.senderRole === "Undangan Grup Kegiatan" ||
+    notification.pesan.includes("/kabar?tab=percakapan");
+
+  const groupLinkMatch = notification.pesan.match(
+    /\/kabar\?tab=percakapan&(?:groupId|room)=[a-zA-Z0-9-]+/
+  )?.[0];
 
   // Auto-dismiss countdown timer with pause on hover/focus
   useEffect(() => {
@@ -150,12 +161,12 @@ export function FloatingMessageNotificationBanner({
                 <div className="flex items-center gap-1.5">
                   <span className="text-[11px] font-black uppercase tracking-wider text-emerald-400 flex items-center gap-1">
                     <Sparkles className="h-3 w-3 animate-spin duration-1000" />
-                    Pesan Baru Masuk
+                    {isGroupInvite ? "Undangan Grup Kegiatan" : "Pesan Baru Masuk"}
                   </span>
                 </div>
                 <span className="text-[10px] text-slate-400 flex items-center gap-1 font-medium">
                   <Clock className="h-2.5 w-2.5 text-emerald-400" />
-                  Menunggu tanggapan Anda
+                  {isGroupInvite ? "Anda otomatis tergabung di obrolan grup" : "Menunggu tanggapan Anda"}
                 </span>
               </div>
             </div>
@@ -296,18 +307,42 @@ export function FloatingMessageNotificationBanner({
             </p>
           )}
 
-          {/* Action Footer: Open Full Chat Modal */}
-          <div className="pt-1 flex items-center justify-between gap-2 border-t border-slate-800/80">
-            <button
-              type="button"
-              onClick={onOpenFullChat}
-              className="w-full flex items-center justify-center gap-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/90 border border-slate-700/60 px-3 py-2 text-xs font-bold text-emerald-400 hover:text-emerald-300 transition-all group"
-            >
-              <MessageCircle className="h-3.5 w-3.5 text-emerald-400 group-hover:scale-110 transition-transform" />
-              <span>Buka Obrolan Lengkap &amp; Riwayat</span>
-              <ArrowRight className="h-3.5 w-3.5 ml-auto text-slate-400 group-hover:translate-x-1 transition-transform" />
-            </button>
-          </div>
+          {/* Action Footer: Direct Group Join or Open Full Chat */}
+          {groupLinkMatch ? (
+            <div className="pt-1 flex flex-col gap-2 border-t border-slate-800/80">
+              <button
+                type="button"
+                onClick={() => {
+                  onDismiss();
+                  router.push(groupLinkMatch);
+                }}
+                className="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold px-3 py-2.5 text-xs shadow-lg shadow-emerald-950/60 transition-all cursor-pointer group active:scale-98"
+              >
+                <Sparkles className="h-4 w-4 text-amber-300 animate-pulse" />
+                <span>Buka &amp; Masuk ke Obrolan Grup Sekarang</span>
+                <ArrowRight className="h-4 w-4 ml-auto group-hover:translate-x-1 transition-transform" />
+              </button>
+              <button
+                type="button"
+                onClick={onOpenFullChat}
+                className="w-full text-center text-[10px] font-semibold text-slate-400 hover:text-slate-200 transition-colors py-0.5"
+              >
+                Buka pesan pribadi pengirim
+              </button>
+            </div>
+          ) : (
+            <div className="pt-1 flex items-center justify-between gap-2 border-t border-slate-800/80">
+              <button
+                type="button"
+                onClick={onOpenFullChat}
+                className="w-full flex items-center justify-center gap-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/90 border border-slate-700/60 px-3 py-2 text-xs font-bold text-emerald-400 hover:text-emerald-300 transition-all group"
+              >
+                <MessageCircle className="h-3.5 w-3.5 text-emerald-400 group-hover:scale-110 transition-transform" />
+                <span>Buka Obrolan Lengkap &amp; Riwayat</span>
+                <ArrowRight className="h-3.5 w-3.5 ml-auto text-slate-400 group-hover:translate-x-1 transition-transform" />
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </aside>

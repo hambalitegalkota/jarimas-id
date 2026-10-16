@@ -627,6 +627,7 @@ export interface GrupChatRoom {
   kelurahan?: string;
   rw?: string | null;
   rt?: string | null;
+  lokasi?: string | null;
   jumlah_anggota: number;
   last_message?: {
     pesan: string;

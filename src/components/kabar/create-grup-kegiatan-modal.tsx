@@ -27,7 +27,7 @@ interface CreateGrupKegiatanModalProps {
   onClose: () => void;
   allUsers: RegisteredUserItem[];
   currentUserId: string | null;
-  onGroupCreated?: (newRoomId: string) => void;
+  onGroupCreated?: (newRoomId: string, newRoom?: GrupChatRoom) => void;
 }
 
 const KATEGORI_PRESETS = [
@@ -167,7 +167,7 @@ export function CreateGrupKegiatanModal({
       onClose();
 
       if (onGroupCreated && res.groupId) {
-        onGroupCreated(res.groupId);
+        onGroupCreated(res.groupId, res.room);
       }
     } catch (err: any) {
       console.error("Gagal submit create grup kegiatan:", err);

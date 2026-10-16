@@ -39,7 +39,26 @@ export function KomunitasProfilCharts({
   userRole = "Pengunjung",
   isChartOnly = false,
 }: KomunitasProfilChartsProps) {
-  const [activeChartFilter, setActiveChartFilter] = useState<"semua" | "usia" | "paud" | "ats" | "ddtk">("semua");
+  const cleanNama = (komunitas.nama || "").toLowerCase().trim();
+  const isSkb =
+    komunitas.jenis_institusi === "SKB" ||
+    cleanNama.includes("skb") ||
+    cleanNama.includes("sanggar kegiatan belajar");
+  const isStarOfTomorrow = cleanNama.includes("star of tomorrow");
+  const isPkbmOrSkb =
+    komunitas.jenis === "pkbm_skb" ||
+    komunitas.jenis_institusi === "PKBM" ||
+    komunitas.jenis_institusi === "SKB" ||
+    cleanNama.includes("pkbm") ||
+    isSkb;
+
+  const isPurePaud = komunitas.jenis === "satuan_paud" && !isPkbmOrSkb;
+  const canShowDataAnak = !isPkbmOrSkb || isSkb || isStarOfTomorrow;
+  const canShowDataAts = !isPurePaud;
+
+  const [activeChartFilter, setActiveChartFilter] = useState<"semua" | "usia" | "paud" | "ats" | "ddtk">(
+    canShowDataAnak ? "semua" : "ats"
+  );
   const [isAllHidden, setIsAllHidden] = useState(false);
   const [hiddenCharts, setHiddenCharts] = useState<Record<string, boolean>>({});
 
@@ -182,7 +201,9 @@ export function KomunitasProfilCharts({
             <span>Grafik &amp; Chart Statistik Komunitas</span>
           </h3>
           <p className="text-xs sm:text-sm text-slate-600 font-medium">
-            Rekapitulasi data anak usia dini (0–6 tahun), partisipasi PAUD, pemantauan DDTK, dan pendataan ATS se-wilayah.
+            {!canShowDataAnak
+              ? "Rekapitulasi penanganan dan pendataan Anak Tidak Sekolah (ATS) se-wilayah."
+              : "Rekapitulasi data anak usia dini (0–6 tahun), partisipasi PAUD, pemantauan DDTK, dan pendataan ATS se-wilayah."}
           </p>
         </div>
 
@@ -200,54 +221,62 @@ export function KomunitasProfilCharts({
           >
             Semua
           </button>
-          <button
-            type="button"
-            onClick={() => setActiveChartFilter("usia")}
-            className={cn(
-              "px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer",
-              activeChartFilter === "usia"
-                ? "bg-white text-blue-700 shadow-xs border border-slate-200 font-black"
-                : "text-slate-600 hover:text-slate-900"
-            )}
-          >
-            Kelompok Usia
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveChartFilter("paud")}
-            className={cn(
-              "px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer",
-              activeChartFilter === "paud"
-                ? "bg-white text-blue-700 shadow-xs border border-slate-200 font-black"
-                : "text-slate-600 hover:text-slate-900"
-            )}
-          >
-            Partisipasi PAUD
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveChartFilter("ats")}
-            className={cn(
-              "px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer",
-              activeChartFilter === "ats"
-                ? "bg-white text-amber-700 shadow-xs border border-slate-200 font-black"
-                : "text-slate-600 hover:text-slate-900"
-            )}
-          >
-            Data ATS
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveChartFilter("ddtk")}
-            className={cn(
-              "px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer",
-              activeChartFilter === "ddtk"
-                ? "bg-white text-blue-700 shadow-xs border border-slate-200 font-black"
-                : "text-slate-600 hover:text-slate-900"
-            )}
-          >
-            Tumbuh Kembang
-          </button>
+          {canShowDataAnak && (
+            <>
+              <button
+                type="button"
+                onClick={() => setActiveChartFilter("usia")}
+                className={cn(
+                  "px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer",
+                  activeChartFilter === "usia"
+                    ? "bg-white text-blue-700 shadow-xs border border-slate-200 font-black"
+                    : "text-slate-600 hover:text-slate-900"
+                )}
+              >
+                Kelompok Usia
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveChartFilter("paud")}
+                className={cn(
+                  "px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer",
+                  activeChartFilter === "paud"
+                    ? "bg-white text-blue-700 shadow-xs border border-slate-200 font-black"
+                    : "text-slate-600 hover:text-slate-900"
+                )}
+              >
+                Partisipasi PAUD
+              </button>
+            </>
+          )}
+          {canShowDataAts && (
+            <button
+              type="button"
+              onClick={() => setActiveChartFilter("ats")}
+              className={cn(
+                "px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer",
+                activeChartFilter === "ats"
+                  ? "bg-white text-amber-700 shadow-xs border border-slate-200 font-black"
+                  : "text-slate-600 hover:text-slate-900"
+              )}
+            >
+              Data ATS
+            </button>
+          )}
+          {canShowDataAnak && (
+            <button
+              type="button"
+              onClick={() => setActiveChartFilter("ddtk")}
+              className={cn(
+                "px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer",
+                activeChartFilter === "ddtk"
+                  ? "bg-white text-blue-700 shadow-xs border border-slate-200 font-black"
+                  : "text-slate-600 hover:text-slate-900"
+              )}
+            >
+              Tumbuh Kembang
+            </button>
+          )}
 
           {/* Tombol Toggle Sembunyikan/Tampilkan Semua Grafik */}
           <button
@@ -277,78 +306,126 @@ export function KomunitasProfilCharts({
       </div>
 
       {/* Ringkasan Metrik Angka Kunci */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <div className="rounded-2xl border-2 border-slate-200 bg-white p-4 space-y-1 shadow-xs">
-          <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
-            TOTAL ANAK (0–6 THN)
-          </span>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl sm:text-3xl font-black font-mono text-slate-900">
-              {totalBalita}
+      {canShowDataAnak ? (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="rounded-2xl border-2 border-slate-200 bg-white p-4 space-y-1 shadow-xs">
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
+              TOTAL ANAK (0–6 THN)
             </span>
-            <span className="text-xs font-bold text-slate-500">Jiwa</span>
+            <div className="flex items-baseline gap-2">
+              <span className="text-2xl sm:text-3xl font-black font-mono text-slate-900">
+                {totalBalita}
+              </span>
+              <span className="text-xs font-bold text-slate-500">Jiwa</span>
+            </div>
+            <span className="text-xs font-semibold text-blue-700 block">
+              Populasi Terdata
+            </span>
           </div>
-          <span className="text-xs font-semibold text-blue-700 block">
-            Populasi Terdata
-          </span>
-        </div>
 
-        <div className="rounded-2xl border-2 border-emerald-200 bg-emerald-50/50 p-4 space-y-1 shadow-xs">
-          <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider block">
-            SUDAH BER-PAUD
-          </span>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl sm:text-3xl font-black font-mono text-emerald-700">
-              {sudahPaud}
+          <div className="rounded-2xl border-2 border-emerald-200 bg-emerald-50/50 p-4 space-y-1 shadow-xs">
+            <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider block">
+              SUDAH BER-PAUD
             </span>
-            <span className="text-xs font-bold text-emerald-800">
-              ({pctPaud}%)
+            <div className="flex items-baseline gap-2">
+              <span className="text-2xl sm:text-3xl font-black font-mono text-emerald-700">
+                {sudahPaud}
+              </span>
+              <span className="text-xs font-bold text-emerald-800">
+                ({pctPaud}%)
+              </span>
+            </div>
+            <span className="text-xs font-semibold text-emerald-700 block">
+              Akses Pendidikan
             </span>
           </div>
-          <span className="text-xs font-semibold text-emerald-700 block">
-            Akses Pendidikan
-          </span>
-        </div>
 
-        <div className="rounded-2xl border-2 border-blue-200 bg-blue-50/50 p-4 space-y-1 shadow-xs">
-          <span className="text-xs font-bold text-blue-800 uppercase tracking-wider block">
-            DDTK SESUAI USIA
-          </span>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl sm:text-3xl font-black font-mono text-blue-700">
-              {ddtkSesuai}
+          <div className="rounded-2xl border-2 border-blue-200 bg-blue-50/50 p-4 space-y-1 shadow-xs">
+            <span className="text-xs font-bold text-blue-800 uppercase tracking-wider block">
+              DDTK SESUAI USIA
             </span>
-            <span className="text-xs font-bold text-blue-800">
-              ({pctDdtk}%)
+            <div className="flex items-baseline gap-2">
+              <span className="text-2xl sm:text-3xl font-black font-mono text-blue-700">
+                {ddtkSesuai}
+              </span>
+              <span className="text-xs font-bold text-blue-800">
+                ({pctDdtk}%)
+              </span>
+            </div>
+            <span className="text-xs font-semibold text-blue-700 block">
+              Tumbuh Kembang Normal
             </span>
           </div>
-          <span className="text-xs font-semibold text-blue-700 block">
-            Tumbuh Kembang Normal
-          </span>
-        </div>
 
-        <div className="rounded-2xl border-2 border-amber-200 bg-amber-50/50 p-4 space-y-1 shadow-xs">
-          <span className="text-xs font-bold text-amber-900 uppercase tracking-wider block">
-            ANAK TIDAK SEKOLAH &amp; ATS
-          </span>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl sm:text-3xl font-black font-mono text-amber-700">
-              {combinedAtsCount}
+          <div className="rounded-2xl border-2 border-amber-200 bg-amber-50/50 p-4 space-y-1 shadow-xs">
+            <span className="text-xs font-bold text-amber-900 uppercase tracking-wider block">
+              ANAK TIDAK SEKOLAH &amp; ATS
             </span>
-            <span className="text-xs font-bold text-amber-800">
-              {totalAts > 0 ? "Anak ATS Terdata" : "Anak"}
+            <div className="flex items-baseline gap-2">
+              <span className="text-2xl sm:text-3xl font-black font-mono text-amber-700">
+                {combinedAtsCount}
+              </span>
+              <span className="text-xs font-bold text-amber-800">
+                {totalAts > 0 ? "Anak ATS Terdata" : "Anak"}
+              </span>
+            </div>
+            <span className="text-xs font-semibold text-amber-900 block">
+              {totalAts > 0 ? "Data ATS Terverifikasi" : "Pendampingan PAUD / ATS"}
             </span>
           </div>
-          <span className="text-xs font-semibold text-amber-900 block">
-            {totalAts > 0 ? "Data ATS Terverifikasi" : "Pendampingan PAUD / ATS"}
-          </span>
         </div>
-      </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div className="rounded-2xl border-2 border-amber-200 bg-amber-50/50 p-4 space-y-1 shadow-xs">
+            <span className="text-xs font-bold text-amber-900 uppercase tracking-wider block">
+              TOTAL KASUS ATS
+            </span>
+            <div className="flex items-baseline gap-2">
+              <span className="text-2xl sm:text-3xl font-black font-mono text-amber-700">
+                {totalAts}
+              </span>
+              <span className="text-xs font-bold text-amber-800">Anak Terdata</span>
+            </div>
+            <span className="text-xs font-semibold text-amber-900 block">
+              Pusat Kegiatan Belajar Masyarakat (PKBM)
+            </span>
+          </div>
+
+          <div className="rounded-2xl border-2 border-slate-200 bg-white p-4 space-y-1 shadow-xs">
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
+              ANGGOTA KOMUNITAS
+            </span>
+            <div className="flex items-baseline gap-2">
+              <span className="text-2xl sm:text-3xl font-black font-mono text-slate-900">
+                {totalWarga}
+              </span>
+              <span className="text-xs font-bold text-slate-500">Orang</span>
+            </div>
+            <span className="text-xs font-semibold text-blue-700 block">
+              Pengurus, Tutor &amp; Anggota
+            </span>
+          </div>
+
+          <div className="rounded-2xl border-2 border-emerald-200 bg-emerald-50/50 p-4 space-y-1 shadow-xs">
+            <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider block">
+              LAYANAN KESETARAAN
+            </span>
+            <div className="flex items-baseline gap-2">
+              <span className="text-base sm:text-lg font-black text-emerald-800">
+                Paket A / B / C
+              </span>
+            </div>
+            <span className="text-xs font-semibold text-emerald-700 block">
+              Pendidikan Non-Formal &amp; Vokasi
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Grid Kartu Grafik & Chart Visual */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Chart 1: Distribusi Kelompok Usia (0–6 Tahun) */}
-        {(activeChartFilter === "semua" || activeChartFilter === "usia") && (
+        {canShowDataAnak && (activeChartFilter === "semua" || activeChartFilter === "usia") && (
           <div className="rounded-2xl border-2 border-slate-200 bg-white p-5 space-y-4 shadow-xs">
             <div className="flex items-center justify-between border-b-2 border-slate-100 pb-3">
               <div className="flex items-center gap-2">
@@ -472,7 +549,7 @@ export function KomunitasProfilCharts({
         )}
 
         {/* Chart 2: Status Partisipasi PAUD & ATS */}
-        {(activeChartFilter === "semua" || activeChartFilter === "paud") && (
+        {canShowDataAnak && (activeChartFilter === "semua" || activeChartFilter === "paud") && (
           <div className="rounded-2xl border-2 border-slate-200 bg-white p-5 space-y-4 shadow-xs">
             <div className="flex items-center justify-between border-b-2 border-slate-100 pb-3">
               <div className="flex items-center gap-2">
@@ -586,7 +663,7 @@ export function KomunitasProfilCharts({
         )}
 
         {/* Chart 3: Indikator Tumbuh Kembang (DDTK) */}
-        {(activeChartFilter === "semua" || activeChartFilter === "ddtk") && (
+        {canShowDataAnak && (activeChartFilter === "semua" || activeChartFilter === "ddtk") && (
           <div className="rounded-2xl border-2 border-slate-200 bg-white p-5 space-y-4 shadow-xs">
             <div className="flex items-center justify-between border-b-2 border-slate-100 pb-3">
               <div className="flex items-center gap-2">
@@ -682,7 +759,7 @@ export function KomunitasProfilCharts({
         )}
 
         {/* Chart 4: Statistik Anak Tidak Sekolah (ATS) */}
-        {(activeChartFilter === "semua" || activeChartFilter === "ats") && komunitas.jenis !== "satuan_paud" && (
+        {canShowDataAts && (activeChartFilter === "semua" || activeChartFilter === "ats") && (
           <div className="rounded-2xl border-2 border-amber-200 bg-white p-5 space-y-4 shadow-xs">
             <div className="flex items-center justify-between border-b-2 border-amber-100 pb-3">
               <div className="flex items-center gap-2">

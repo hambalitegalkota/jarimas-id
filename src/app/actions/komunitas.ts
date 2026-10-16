@@ -718,11 +718,11 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
       .eq("id", dbKomunitasId)
       .maybeSingle();
 
+    const seedItem = findOrGenerateKomunitasSeed(komunitasId);
     let komunitas = komunitasFromDb;
 
     // Fallback: Jika data belum ada di database, coba cari/generate dari Master Seed
     if (!komunitas) {
-      const seedItem = findOrGenerateKomunitasSeed(komunitasId);
       if (seedItem) {
         const insertPayload = {
           id: dbKomunitasId,
@@ -757,7 +757,29 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
     }
 
     let nama = komunitas.nama || komunitas.nama_komunitas || "Komunitas";
-    const jenis = komunitas.jenis || komunitas.jenis_komunitas || "posyandu";
+    let jenis = komunitas.jenis || komunitas.jenis_komunitas || seedItem?.jenis || "posyandu";
+
+    const cleanNamaCheck = nama.toLowerCase();
+    const isSkbEntity =
+      (komunitas as any).jenis_institusi === "SKB" ||
+      seedItem?.jenis_institusi === "SKB" ||
+      cleanNamaCheck.includes("skb") ||
+      cleanNamaCheck.includes("sanggar kegiatan belajar");
+
+    const isPkbmEntity =
+      (komunitas as any).jenis_institusi === "PKBM" ||
+      seedItem?.jenis_institusi === "PKBM" ||
+      cleanNamaCheck.includes("pkbm");
+
+    const jenisInstitusi =
+      (komunitas as any).jenis_institusi ||
+      seedItem?.jenis_institusi ||
+      (isSkbEntity ? "SKB" : isPkbmEntity ? "PKBM" : undefined);
+
+    if (isPkbmEntity || isSkbEntity) {
+      jenis = "pkbm_skb";
+    }
+
     if (jenis === "posyandu") {
       const coreName = extractCorePosyanduName(nama);
       nama = coreName ? `Posyandu ${coreName}` : "Posyandu";
@@ -1134,6 +1156,8 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
       id: dbKomunitasId,
       nama,
       jenis,
+      jenis_institusi: jenisInstitusi,
+      npsn: (komunitas as any).npsn || seedItem?.npsn,
       kecamatan: komunitas.kecamatan,
       kelurahan: komunitas.kelurahan,
       rt: komunitas.rt,

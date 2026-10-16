@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   MessageSquare,
   Users,
@@ -27,6 +27,8 @@ import { GroupChatModal } from "./group-chat-modal";
 import { CreateGrupKegiatanModal } from "./create-grup-kegiatan-modal";
 import { ManageGrupMembersModal } from "./manage-grup-members-modal";
 import { deleteGrupKegiatan } from "@/app/actions/grup-kegiatan";
+import { getGroupMessages } from "@/app/actions/pertemanan";
+import { createClient } from "@/utils/supabase/client";
 import { useGlobalMessageNotification } from "@/components/notifications/global-message-notification-provider";
 import {
   RecentConversationItem,
@@ -44,6 +46,7 @@ interface PercakapanHubSectionProps {
   isSuperAdmin?: boolean;
   isAdminPusat?: boolean;
   canManageGrupKegiatan?: boolean;
+  initialGroupId?: string | null;
 }
 
 export function PercakapanHubSection({
@@ -54,6 +57,7 @@ export function PercakapanHubSection({
   isSuperAdmin = false,
   isAdminPusat = false,
   canManageGrupKegiatan = false,
+  initialGroupId = null,
 }: PercakapanHubSectionProps) {
   const router = useRouter();
   const { onlineUserIds, isUserOnline } = useGlobalMessageNotification();
@@ -178,16 +182,111 @@ export function PercakapanHubSection({
     }
   };
 
+  const searchParams = useSearchParams();
+  const urlGroupId = initialGroupId || searchParams.get("groupId") || searchParams.get("room");
+
+  // 1. Sinkronisasi URL groupId / room agar obrolan langsung terbuka otomatis
+  useEffect(() => {
+    if (urlGroupId) {
+      setSubTab("grup");
+      const matched = rooms.find((r) => r.id === urlGroupId);
+      if (matched) {
+        setSelectedGroupRoom(matched);
+      } else {
+        getGroupMessages(urlGroupId).then((res) => {
+          if (res.success && res.komunitas) {
+            setSelectedGroupRoom({
+              id: res.komunitas.id,
+              nama: res.komunitas.nama || "Percakapan Grup Kegiatan",
+              jenis: res.komunitas.jenis || "kegiatan",
+              deskripsi: res.komunitas.deskripsi,
+              is_kegiatan: true,
+              jumlah_anggota: 1,
+              is_member: true,
+            } as GrupChatRoom);
+          }
+        });
+      }
+    }
+  }, [urlGroupId, rooms]);
+
+  // 2. Supabase Realtime Listener untuk memperbarui daftar grup saat ada grup/pesan baru
+  useEffect(() => {
+    if (!currentUserId) return;
+    let channel: any = null;
+    try {
+      const supabase = createClient();
+      channel = supabase
+        .channel(`hub_percakapan_sync_${currentUserId}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "INSERT",
+            schema: "public",
+            table: "pesan_grup",
+          },
+          () => {
+            router.refresh();
+          }
+        )
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "anggota_komunitas",
+            filter: `user_id=eq.${currentUserId}`,
+          },
+          () => {
+            router.refresh();
+          }
+        )
+        .subscribe();
+    } catch (err) {
+      console.warn("Realtime sync percakapan hub notice:", err);
+    }
+
+    return () => {
+      if (channel) {
+        try {
+          const supabase = createClient();
+          supabase.removeChannel(channel);
+        } catch {
+          // Cleanup
+        }
+      }
+    };
+  }, [currentUserId, router]);
+
   const handleOpenManageMembers = (e: React.MouseEvent, room: GrupChatRoom) => {
     e.stopPropagation();
     setManagingMembersRoom(room);
   };
 
-  const handleNewGroupCreated = (newGroupId: string) => {
+  const handleNewGroupCreated = (newGroupId: string, newRoom?: GrupChatRoom) => {
+    // 1. Langsung alihkan tab ke obrolan grup
+    setSubTab("grup");
+
+    // 2. Refresh server data agar daftar room diperbarui
     router.refresh();
-    const created = rooms.find((r) => r.id === newGroupId);
-    if (created) {
-      setSelectedGroupRoom(created);
+
+    // 3. Admin LANGSUNG dibawa ke modal obrolan grup yang baru dibuat
+    if (newRoom) {
+      setSelectedGroupRoom(newRoom);
+    } else {
+      const created = rooms.find((r) => r.id === newGroupId);
+      if (created) {
+        setSelectedGroupRoom(created);
+      } else {
+        setSelectedGroupRoom({
+          id: newGroupId,
+          nama: "Percakapan Grup Kegiatan",
+          jenis: "kegiatan",
+          is_kegiatan: true,
+          jumlah_anggota: 1,
+          is_member: true,
+        } as GrupChatRoom);
+      }
     }
   };
 

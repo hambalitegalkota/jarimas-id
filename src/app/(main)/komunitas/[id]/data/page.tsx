@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { getKomunitasDetail } from "@/app/actions/komunitas";
 import { getDataAnakByKomunitas } from "@/app/actions/data-anak";
@@ -28,6 +28,24 @@ export default async function KomunitasDataAnakPage({
 
   if (!komunitas) {
     notFound();
+  }
+
+  const cleanNama = (komunitas.nama || "").toLowerCase().trim();
+  const isSkb =
+    komunitas.jenis_institusi === "SKB" ||
+    cleanNama.includes("skb") ||
+    cleanNama.includes("sanggar kegiatan belajar");
+  const isStarOfTomorrow = cleanNama.includes("star of tomorrow");
+  const isPkbmOrSkb =
+    komunitas.jenis === "pkbm_skb" ||
+    komunitas.jenis_institusi === "PKBM" ||
+    komunitas.jenis_institusi === "SKB" ||
+    cleanNama.includes("pkbm") ||
+    isSkb;
+
+  // Komunitas PKBM (kecuali SKB dan PKBM Star of Tomorrow) tidak memiliki layanan Data Anak (0-6 Tahun) & DDTK
+  if (isPkbmOrSkb && !isSkb && !isStarOfTomorrow) {
+    redirect(`/komunitas/${id}`);
   }
 
   const meta = extractKomunitasMetadata(komunitas);

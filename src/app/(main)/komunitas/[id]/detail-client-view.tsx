@@ -17,6 +17,7 @@ import {
   UserPlus,
   Info,
   Baby,
+  BookOpen,
   GraduationCap,
   ArrowRight,
   Loader2,
@@ -113,12 +114,37 @@ export function KomunitasDetailClientView({
     setDataAtsState(dataAtsList);
   }, [dataAtsList]);
 
+  // Helper identifikasi Komunitas PKBM & SKB
+  const cleanKomNama = (komunitasData.nama || "").toLowerCase().trim();
+  const isSkb =
+    komunitasData.jenis_institusi === "SKB" ||
+    cleanKomNama.includes("skb") ||
+    cleanKomNama.includes("sanggar kegiatan belajar");
+
+  const isStarOfTomorrow = cleanKomNama.includes("star of tomorrow");
+
+  const isPkbmOrSkb =
+    komunitasData.jenis === "pkbm_skb" ||
+    komunitasData.jenis_institusi === "PKBM" ||
+    komunitasData.jenis_institusi === "SKB" ||
+    cleanKomNama.includes("pkbm") ||
+    isSkb;
+
+  // Hapus kartu Data Anak (0-6 Tahun) & DDTK dari semua Komunitas PKBM & SKB kecuali SKB dan PKBM Star Of Tomorrow
+  const canShowDataAnakCard = !isPkbmOrSkb || isSkb || isStarOfTomorrow;
+
+  // Satuan PAUD murni (TK, KB, RA, SPS, TPA non-PKBM/SKB) tidak menyelenggarakan ATS
+  const isPureSatuanPaud = komunitasData.jenis === "satuan_paud" && !isPkbmOrSkb;
+  const canShowDataAtsCard = !isPureSatuanPaud;
+
   useEffect(() => {
     if (activeTab === "data" && !hasLoadedChartsData && !isLoadingChartsData) {
       setIsLoadingChartsData(true);
       Promise.all([
-        getDataAnakByKomunitas(komunitasData.id),
-        komunitasData.jenis !== "satuan_paud"
+        canShowDataAnakCard
+          ? getDataAnakByKomunitas(komunitasData.id)
+          : Promise.resolve({ data: [] }),
+        canShowDataAtsCard
           ? getDataAtsByKomunitas(komunitasData.id)
           : Promise.resolve({ data: [] }),
       ])
@@ -134,7 +160,7 @@ export function KomunitasDetailClientView({
           setIsLoadingChartsData(false);
         });
     }
-  }, [activeTab, hasLoadedChartsData, isLoadingChartsData, komunitasData.id, komunitasData.jenis]);
+  }, [activeTab, hasLoadedChartsData, isLoadingChartsData, komunitasData.id, canShowDataAnakCard, canShowDataAtsCard]);
 
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
   const [membershipState, setMembershipState] = useState(komunitas.currentUserMembership);
@@ -388,13 +414,15 @@ export function KomunitasDetailClientView({
       );
     }
 
-    if (komunitas.jenis === "satuan_paud") {
+    if (komunitas.jenis === "satuan_paud" || isPkbmOrSkb) {
       return (
         isAdminOrKader ||
         (isApproved &&
           (roleLower.includes("kepala") ||
             roleLower.includes("pimpinan") ||
             roleLower.includes("pengelola") ||
+            roleLower.includes("tutor") ||
+            roleLower.includes("pamong") ||
             roleLower.includes("guru") ||
             roleLower.includes("pendidik") ||
             roleLower.includes("admin")))
@@ -415,7 +443,7 @@ export function KomunitasDetailClientView({
     }
 
     return isAdminOrKader;
-  }, [isSuperOrPusat, komunitas.jenis, membership, isAdminOrKader, currentUserId]);
+  }, [isSuperOrPusat, komunitas.jenis, isPkbmOrSkb, membership, isAdminOrKader, currentUserId]);
 
   const handleApplyAdmin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -451,29 +479,33 @@ export function KomunitasDetailClientView({
     });
   };
   const detailLinkCards = [
-    {
-      id: "data_anak",
-      href: `/komunitas/${komunitas.id}/data`,
-      title: isRekapOnlyTier
-        ? "Rekapitulasi Data Anak Usia Dini (0–6 Tahun)"
-        : "Data Anak (0–6 Tahun) & DDTK",
-      subtitle: isRekapOnlyTier
-        ? `Pantau rekapitulasi data agregat balita, sebaran satuan PAUD, dan capaian ${tierLevelLabel}`
-        : hasFullAccess
-        ? "Kelola pendaftaran balita RT, riwayat DDTK tumbuh kembang, dan validasi data"
-        : `Pantau data agregat balita dan catatan DDTK ${tierLevelLabel}`,
-      badgeText: isRekapOnlyTier ? "Data Rekapitulasi" : `${dataAnakState.length} Balita / Anak`,
-      icon: Baby,
-      hoverBorder: "hover:border-blue-400 dark:hover:border-blue-600",
-      hoverBg: "hover:bg-blue-50/50 dark:hover:bg-blue-950/20",
-      iconColor: "text-blue-600 dark:text-blue-400",
-      iconBg: "bg-blue-100 dark:bg-blue-950",
-      arrowBg: "bg-slate-100 dark:bg-slate-800",
-      arrowHoverBg: "group-hover:bg-blue-600 group-hover:text-white dark:group-hover:bg-blue-600",
-      arrowColor: "text-slate-500 dark:text-slate-400",
-      textHoverColor: "group-hover:text-blue-600 dark:group-hover:text-blue-400",
-    },
-    ...(komunitas.jenis !== "satuan_paud"
+    ...(canShowDataAnakCard
+      ? [
+          {
+            id: "data_anak" as const,
+            href: `/komunitas/${komunitas.id}/data`,
+            title: isRekapOnlyTier
+              ? "Rekapitulasi Data Anak Usia Dini (0–6 Tahun)"
+              : "Data Anak (0–6 Tahun) & DDTK",
+            subtitle: isRekapOnlyTier
+              ? `Pantau rekapitulasi data agregat balita, sebaran satuan PAUD, dan capaian ${tierLevelLabel}`
+              : hasFullAccess
+              ? "Kelola pendaftaran balita RT, riwayat DDTK tumbuh kembang, dan validasi data"
+              : `Pantau data agregat balita dan catatan DDTK ${tierLevelLabel}`,
+            badgeText: isRekapOnlyTier ? "Data Rekapitulasi" : `${dataAnakState.length} Balita / Anak`,
+            icon: Baby,
+            hoverBorder: "hover:border-blue-400 dark:hover:border-blue-600",
+            hoverBg: "hover:bg-blue-50/50 dark:hover:bg-blue-950/20",
+            iconColor: "text-blue-600 dark:text-blue-400",
+            iconBg: "bg-blue-100 dark:bg-blue-950",
+            arrowBg: "bg-slate-100 dark:bg-slate-800",
+            arrowHoverBg: "group-hover:bg-blue-600 group-hover:text-white dark:group-hover:bg-blue-600",
+            arrowColor: "text-slate-500 dark:text-slate-400",
+            textHoverColor: "group-hover:text-blue-600 dark:group-hover:text-blue-400",
+          },
+        ]
+      : []),
+    ...(canShowDataAtsCard
       ? [
           {
             id: "data_ats" as const,
@@ -549,7 +581,9 @@ export function KomunitasDetailClientView({
           {
             id: "data" as const,
             title: "Profil Data & Rekapitulasi",
-            subtitle: "Data agregat balita, ATS, dan grafik capaian komunitas",
+            subtitle: !canShowDataAnakCard
+              ? "Data penanganan ATS dan grafik capaian komunitas"
+              : "Data agregat balita, ATS, dan grafik capaian komunitas",
             badgeText: "Data Agregat",
             icon: Info,
             activeColorBg: "bg-indigo-600 dark:bg-indigo-700",
@@ -580,21 +614,35 @@ export function KomunitasDetailClientView({
                 "flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl font-bold border-2",
                 komunitas.jenis === "warga_kita" && "bg-blue-50 text-blue-700 border-blue-200",
                 komunitas.jenis === "posyandu" && "bg-emerald-50 text-emerald-700 border-emerald-200",
-                komunitas.jenis === "satuan_paud" && "bg-amber-50 text-amber-800 border-amber-200"
+                isPkbmOrSkb && "bg-amber-50 text-amber-800 border-amber-200",
+                isPureSatuanPaud && "bg-indigo-50 text-indigo-800 border-indigo-200"
               )}
             >
               {komunitas.jenis === "warga_kita" && <Users className="h-7 w-7" />}
               {komunitas.jenis === "posyandu" && <Sparkles className="h-7 w-7" />}
-              {komunitas.jenis === "satuan_paud" && <Building2 className="h-7 w-7" />}
+              {isPkbmOrSkb && <BookOpen className="h-7 w-7" />}
+              {isPureSatuanPaud && <Building2 className="h-7 w-7" />}
             </div>
 
             <div className="space-y-1">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded-md bg-blue-50 px-2 py-0.5 text-xs font-bold text-blue-800 border border-blue-200">
+                <span
+                  className={cn(
+                    "rounded-md px-2 py-0.5 text-xs font-bold border",
+                    komunitas.jenis === "warga_kita" && "bg-blue-50 text-blue-800 border-blue-200",
+                    komunitas.jenis === "posyandu" && "bg-emerald-50 text-emerald-800 border-emerald-200",
+                    isPkbmOrSkb && "bg-amber-50 text-amber-800 border-amber-200",
+                    isPureSatuanPaud && "bg-indigo-50 text-indigo-800 border-indigo-200"
+                  )}
+                >
                   {komunitas.jenis === "warga_kita"
                     ? "WARGA KITA"
                     : komunitas.jenis === "posyandu"
                     ? "POSYANDU"
+                    : isSkb
+                    ? "SKB"
+                    : isPkbmOrSkb
+                    ? (isStarOfTomorrow ? "PKBM & SATUAN PAUD" : "PKBM")
                     : "SATUAN PAUD"}
                 </span>
                 <span className="text-xs font-semibold text-slate-500">
@@ -1499,20 +1547,24 @@ export function KomunitasDetailClientView({
                 </div>
               </div>
               <div className="flex flex-wrap gap-2 w-full sm:w-auto shrink-0">
-                <Link
-                  href={`/komunitas/${komunitas.id}/data`}
-                  className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-blue-700 hover:bg-blue-800 text-white text-xs font-bold shadow-xs transition-all active:scale-95"
-                >
-                  <Baby className="h-4 w-4" />
-                  <span>Rekap Data Anak</span>
-                </Link>
-                <Link
-                  href={`/komunitas/${komunitas.id}/ats`}
-                  className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shadow-xs transition-all active:scale-95"
-                >
-                  <GraduationCap className="h-4 w-4" />
-                  <span>Rekap Data ATS</span>
-                </Link>
+                {canShowDataAnakCard && (
+                  <Link
+                    href={`/komunitas/${komunitas.id}/data`}
+                    className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-blue-700 hover:bg-blue-800 text-white text-xs font-bold shadow-xs transition-all active:scale-95"
+                  >
+                    <Baby className="h-4 w-4" />
+                    <span>Rekap Data Anak</span>
+                  </Link>
+                )}
+                {canShowDataAtsCard && (
+                  <Link
+                    href={`/komunitas/${komunitas.id}/ats`}
+                    className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shadow-xs transition-all active:scale-95"
+                  >
+                    <GraduationCap className="h-4 w-4" />
+                    <span>Rekap Data ATS</span>
+                  </Link>
+                )}
               </div>
             </div>
           )}

@@ -58,9 +58,24 @@ export default async function KomunitasDetailPage({
     notFound();
   }
 
-  // Ambil data anggota, data anak, data ATS, dan kabar secara paralel untuk render awal yang cepat dan akurat
-  const isPaud = komunitas.jenis === "satuan_paud";
+  const cleanNama = (komunitas.nama || "").toLowerCase().trim();
+  const isSkb =
+    komunitas.jenis_institusi === "SKB" ||
+    cleanNama.includes("skb") ||
+    cleanNama.includes("sanggar kegiatan belajar");
+  const isStarOfTomorrow = cleanNama.includes("star of tomorrow");
+  const isPkbmOrSkb =
+    komunitas.jenis === "pkbm_skb" ||
+    komunitas.jenis_institusi === "PKBM" ||
+    komunitas.jenis_institusi === "SKB" ||
+    cleanNama.includes("pkbm") ||
+    isSkb;
 
+  const isPurePaud = komunitas.jenis === "satuan_paud" && !isPkbmOrSkb;
+  const canShowDataAnak = !isPkbmOrSkb || isSkb || isStarOfTomorrow;
+  const canShowDataAts = !isPurePaud;
+
+  // Ambil data anggota, data anak, data ATS, dan kabar secara paralel untuk render awal yang cepat dan akurat
   const [
     { data: anggotaList },
     dataAnakRes,
@@ -68,15 +83,14 @@ export default async function KomunitasDetailPage({
     { data: allKabar },
   ] = await Promise.all([
     getAnggotaKomunitas(id),
-    getDataAnakByKomunitas(id),
-    !isPaud ? getDataAtsByKomunitas(id) : Promise.resolve({ data: [] }),
+    canShowDataAnak ? getDataAnakByKomunitas(id) : Promise.resolve({ data: [] }),
+    canShowDataAts ? getDataAtsByKomunitas(id) : Promise.resolve({ data: [] }),
     getKabarFeed({ filterVisibilitas: "semua", limit: 20 }),
   ]);
 
   const dataAnakList = dataAnakRes?.data || [];
   const dataAtsList = dataAtsRes?.data || [];
   const dbKomunitasId = toValidUUID(id);
-  const cleanNama = (komunitas.nama || "").toLowerCase().trim();
 
   const kabarKomunitas = (allKabar || []).filter((k) => {
     // 1. Cocok langsung dengan ID komunitas

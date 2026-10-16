@@ -20,6 +20,7 @@ export interface CreateGrupKegiatanResult {
   success: boolean;
   message: string;
   groupId?: string;
+  room?: import("@/types/database").GrupChatRoom;
 }
 
 /**
@@ -88,14 +89,26 @@ export async function createGrupKegiatan(
     // 3. Buat UUID unik untuk Komunitas Grup Kegiatan
     const newGroupId = crypto.randomUUID();
 
+    const categoryPrefix = params.kategori ? `[${params.kategori}] ` : "";
+    const fullDescription = cleanDeskripsi
+      ? `${categoryPrefix}${cleanDeskripsi}`
+      : params.kategori
+      ? `Kegiatan: ${params.kategori}`
+      : null;
+
+    // Sertakan kecamatan, kelurahan, lokasi, rt, rw untuk mencegah pelanggaran not-null constraint
     const groupPayload = {
       id: newGroupId,
       nama: cleanNama,
       nama_komunitas: cleanNama,
       jenis: "kegiatan",
       jenis_komunitas: "kegiatan",
-      deskripsi: cleanDeskripsi || null,
+      kecamatan: "Kota Tegal",
+      kelurahan: "Semua Kelurahan",
       lokasi: "Kota Tegal",
+      rt: "-",
+      rw: "-",
+      deskripsi: fullDescription,
       created_by: user.id,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -145,11 +158,11 @@ export async function createGrupKegiatan(
       });
     });
 
-    // Coba insert anggota secara batch
+    // Coba insert anggota secara batch / upsert
     let insertMembersErr: any = null;
     const { error: batchErr } = await clientToUse
       .from("anggota_komunitas")
-      .insert(membersToInsert);
+      .upsert(membersToInsert, { onConflict: "user_id,komunitas_id" });
 
     if (batchErr) {
       console.warn("Direct insert anggota_komunitas terkendala, mencoba RPC fallback:", batchErr);
@@ -171,8 +184,8 @@ export async function createGrupKegiatan(
     }
 
     // 7. Buat Pesan Pembuka Inaugurasi di pesan_grup
+    const welcomeMessage = `🎉 Percakapan Grup Kegiatan "${cleanNama}" telah resmi dibentuk oleh ${creatorName} (${creatorRole}). Seluruh pengguna yang diundang telah otomatis terhubung dan dapat langsung memulai koordinasi obrolan di sini.`;
     try {
-      const welcomeMessage = `🎉 Percakapan Grup Kegiatan "${cleanNama}" telah resmi dibentuk oleh ${creatorName} (${creatorRole}). Pengguna yang diundang telah tergabung dan dapat langsung memulai koordinasi obrolan di sini.`;
       await clientToUse.from("pesan_grup").insert({
         komunitas_id: newGroupId,
         user_id: user.id,
@@ -183,15 +196,56 @@ export async function createGrupKegiatan(
       console.warn("Pesan awal grup kegiatan dilewati:", msgErr);
     }
 
-    // 8. Revalidasi halaman terkait
+    // 8. Kirim Notifikasi Langsung (Realtime Banner & Audio Chime) ke Setiap Pengguna yang Diundang
+    if (validTargetUserIds.length > 0) {
+      const inviteNotifications = validTargetUserIds.map((targetId) => ({
+        sender_id: user.id,
+        receiver_id: targetId,
+        pesan: `🎉 Undangan Grup Kegiatan: Anda telah resmi dimasukkan ke dalam obrolan grup "${cleanNama}" oleh ${creatorName} (${creatorRole}).\n\nKlik di sini untuk langsung bergabung ke obrolan grup: /kabar?tab=percakapan&groupId=${newGroupId}`,
+        dibaca: false,
+        created_at: new Date().toISOString(),
+      }));
+
+      try {
+        await clientToUse.from("pesan_pribadi").insert(inviteNotifications);
+      } catch (notifErr) {
+        console.warn("Pesan notifikasi undangan ke pengguna dilewati:", notifErr);
+      }
+    }
+
+    // 9. Revalidasi halaman terkait
     revalidatePath("/kabar");
     revalidatePath("/komunitas");
     revalidatePath("/profil");
+
+    // 10. Siapkan Objek Room Lengkap agar Admin Langsung Masuk ke Ruang Obrolan
+    const createdRoom: import("@/types/database").GrupChatRoom = {
+      id: newGroupId,
+      nama: cleanNama,
+      jenis: "kegiatan",
+      deskripsi: fullDescription,
+      kecamatan: "Kota Tegal",
+      kelurahan: "Semua Kelurahan",
+      rw: "-",
+      rt: "-",
+      jumlah_anggota: validTargetUserIds.length + 1,
+      last_message: {
+        pesan: welcomeMessage,
+        sender_name: creatorName,
+        created_at: new Date().toISOString(),
+      },
+      is_member: true,
+      created_by: user.id,
+      creator_name: creatorName,
+      is_kegiatan: true,
+      kategori: params.kategori || null,
+    };
 
     return {
       success: true,
       message: `Percakapan Grup Kegiatan "${cleanNama}" berhasil dibuat dengan ${validTargetUserIds.length} pengguna terundang!`,
       groupId: newGroupId,
+      room: createdRoom,
     };
   } catch (err: any) {
     console.error("Error createGrupKegiatan:", err);
@@ -379,6 +433,16 @@ export async function addMembersToGrupKegiatan(params: {
         pesan: `👋 ${adminName} telah menambahkan ${newMembersToInvite.length} pengguna baru ke dalam percakapan grup kegiatan ini.`,
         created_at: new Date().toISOString(),
       });
+
+      // Kirim pesan notifikasi undangan personal ke setiap anggota baru
+      const inviteNotifications = newMembersToInvite.map((uid) => ({
+        sender_id: user.id,
+        receiver_id: uid,
+        pesan: `🎉 Undangan Grup Kegiatan: Anda telah ditambahkan ke dalam grup "${groupInfo?.nama || "Kegiatan"}" oleh ${adminName}.\n\nKlik di sini untuk langsung bergabung ke obrolan grup: /kabar?tab=percakapan&groupId=${komunitasId}`,
+        dibaca: false,
+        created_at: new Date().toISOString(),
+      }));
+      await clientToUse.from("pesan_pribadi").insert(inviteNotifications);
     } catch {
       // Abaikan jika pesan otomatis gagal
     }
