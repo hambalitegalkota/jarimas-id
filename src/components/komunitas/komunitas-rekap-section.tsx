@@ -18,6 +18,8 @@ import {
   HeartHandshake,
   Layers,
   X,
+  ArrowRight,
+  Filter,
 } from "lucide-react";
 import type { JenisKomunitas } from "@/types/database";
 import {
@@ -225,7 +227,7 @@ export function KomunitasRekapSection({
                 : isPkbm
                 ? `Tersebar di 12 PKBM & 1 SKB (${rekap.totalSemua} Lembaga), ${rekap.totalKecamatan} Kecamatan se-Kota Tegal`
                 : isWarga
-                ? `Tersebar di ${rekap.totalKecamatan} Kecamatan & ${rekap.totalKelurahan} Kelurahan (${rekap.totalSemua} RW & ${(rekap.totalRt || 1712).toLocaleString("id-ID")} RT) se-Kota Tegal`
+                ? `Komunitas Warga Kota Tegal menaungi 4 Kecamatan & 27 Kelurahan (${rekap.totalSemua} RW & ${(rekap.totalRt || 1712).toLocaleString("id-ID")} RT) se-Kota Tegal`
                 : `Tersebar di ${rekap.totalKecamatan} Kecamatan & ${rekap.totalKelurahan} Kelurahan se-Kota Tegal`}
             </p>
           </div>
@@ -422,6 +424,110 @@ export function KomunitasRekapSection({
           )}
 
           {/* ========================================================= */}
+          {/* 1.B. KHUSUS TAB WARGA KITA: KOMUNITAS WARGA KOTA TEGAL    */}
+          {/* ========================================================= */}
+          {isWarga && (
+            <div
+              className={cn(
+                "rounded-2xl border-2 p-3.5 sm:p-4.5 shadow-xs transition-all",
+                currentKecamatan === "Kota Tegal"
+                  ? "border-blue-600 bg-white dark:bg-slate-900 shadow-md ring-2 ring-blue-500/25"
+                  : "border-blue-200/90 dark:border-blue-900/60 bg-white/95 dark:bg-slate-900/95 hover:border-blue-300 dark:hover:border-blue-700"
+              )}
+            >
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-3.5">
+                {/* Informasi Komunitas Kota Tegal */}
+                <div className="flex items-start sm:items-center gap-3 min-w-0">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-sky-600 text-white shadow-xs shrink-0 ring-4 ring-blue-500/10">
+                    <Building2 className="h-5 w-5" />
+                  </div>
+                  <div className="min-w-0 space-y-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Link
+                        href="/komunitas/kom-warga-kota-tegal"
+                        className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-slate-100 hover:text-blue-600 dark:hover:text-blue-400 transition-colors tracking-tight inline-flex items-center gap-1.5"
+                        title="Buka Komunitas Warga Kota Tegal"
+                      >
+                        <span>Komunitas Warga Kota Tegal</span>
+                        <ArrowRight className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+                      </Link>
+                      <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-600 text-white shadow-2xs">
+                        Tingkat Kota Tegal
+                      </span>
+                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                        Induk Seluruh Warga
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-2 leading-relaxed">
+                      Wadah kolaborasi, gotong royong, pemantauan tumbuh kembang anak &amp; kepedulian sosial seluruh warga masyarakat se-Kota Tegal.
+                    </p>
+                    {/* Ringkasan Hierarki Wilayah */}
+                    <div className="flex items-center gap-1.5 pt-0.5 flex-wrap text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold">
+                        4 Kecamatan
+                      </span>
+                      <span>•</span>
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold">
+                        27 Kelurahan
+                      </span>
+                      <span>•</span>
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold">
+                        167 RW
+                      </span>
+                      <span>•</span>
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold">
+                        1.712 RT
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Tombol Aksi */}
+                <div className="flex items-center gap-2 self-start md:self-center shrink-0">
+                  <Link
+                    href={
+                      currentKecamatan === "Kota Tegal"
+                        ? makeFilterUrl("semua", "semua")
+                        : makeFilterUrl("Kota Tegal", "semua")
+                    }
+                    className={cn(
+                      "inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-bold transition-all cursor-pointer shadow-2xs active:scale-95",
+                      currentKecamatan === "Kota Tegal"
+                        ? "bg-blue-50 dark:bg-blue-950/70 border-blue-500 text-blue-700 dark:text-blue-300 ring-2 ring-blue-400/30 font-black"
+                        : "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300"
+                    )}
+                    title={
+                      currentKecamatan === "Kota Tegal"
+                        ? "Hapus filter wilayah Kota Tegal"
+                        : "Tampilkan Komunitas Tingkat Kota Tegal"
+                    }
+                  >
+                    {currentKecamatan === "Kota Tegal" ? (
+                      <>
+                        <CheckCircle2 className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+                        <span>Filter Aktif</span>
+                      </>
+                    ) : (
+                      <>
+                        <Filter className="h-3.5 w-3.5 text-slate-500 dark:text-slate-400" />
+                        <span>Filter Wilayah</span>
+                      </>
+                    )}
+                  </Link>
+                  <Link
+                    href="/komunitas/kom-warga-kota-tegal"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs transition-all active:scale-95 group cursor-pointer"
+                    title="Buka Halaman Komunitas Warga Kota Tegal"
+                  >
+                    <span>Buka Komunitas</span>
+                    <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
+                  </Link>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ========================================================= */}
           {/* 2. GRID 4 KECAMATAN & 27 KELURAHAN                        */}
           {/* ========================================================= */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
@@ -548,8 +654,19 @@ export function KomunitasRekapSection({
 
                 {/* Tag Kecamatan */}
                 {currentKecamatan !== "semua" && (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 font-bold border border-emerald-200 dark:border-emerald-800 text-[11px]">
-                    <span>Kec. {currentKecamatan}</span>
+                  <span
+                    className={cn(
+                      "inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-bold text-[11px] border",
+                      isWarga
+                        ? "bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-300 border-blue-200 dark:border-blue-800"
+                        : "bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800"
+                    )}
+                  >
+                    <span>
+                      {currentKecamatan === "Kota Tegal"
+                        ? "Tingkat Kota Tegal"
+                        : `Kec. ${currentKecamatan}`}
+                    </span>
                     <Link
                       href={makeFilterUrl("semua", "semua")}
                       className="hover:text-red-600 ml-0.5"

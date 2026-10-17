@@ -848,7 +848,7 @@ function buildMasterKomunitasSeed(): MasterKomunitasSeedItem[] {
     // --- SPECIAL PRE-CONFIGURED SEED ITEMS (Warga Kita) ---
     {
       id: "kom-warga-kota-tegal",
-      nama: "Warga Kota Tegal",
+      nama: "Komunitas Warga Kota Tegal",
       jenis: "warga_kita",
       kecamatan: "Kota Tegal",
       kelurahan: "Semua Kelurahan",
@@ -1127,8 +1127,46 @@ export function generateWargaKomunitasHierarchy({
     return items;
   }
 
-  // 4. Kasus 1 Filter: Kecamatan
+  // 4. Kasus 1 Filter: Kecamatan (atau Tingkat Kota Tegal)
   if (hasKec) {
+    if (kecamatan === "Kota Tegal" || kecamatan === "kota-tegal") {
+      const items: MasterKomunitasSeedItem[] = [
+        {
+          id: "kom-warga-kota-tegal",
+          nama: "Komunitas Warga Kota Tegal",
+          jenis: "warga_kita",
+          kecamatan: "Kota Tegal",
+          kelurahan: "Semua Kelurahan",
+          rt: "",
+          rw: "",
+          lokasi: "Kota Tegal, Jawa Tengah",
+          deskripsi:
+            "Komunitas kolaborasi seluruh warga masyarakat Kota Tegal, Jawa Tengah. Wadah kebersamaan dari warga, oleh warga, untuk warga dalam mendukung tumbuh kembang anak, kesehatan keluarga, dan kepedulian sosial.",
+          kontak: "Forum Komunikasi Warga Kota Tegal",
+          jadwal: "Forum Komunikasi & Silaturahmi Warga Tingkat Kota Tegal",
+        },
+      ];
+
+      const kecamatans = ["Tegal Timur", "Tegal Barat", "Tegal Selatan", "Margadana"];
+      kecamatans.forEach((kec) => {
+        items.push({
+          id: `kom-warga-${slugify(kec)}`,
+          nama: `Warga Kecamatan: ${kec}`,
+          jenis: "warga_kita",
+          kecamatan: kec,
+          kelurahan: "Semua Kelurahan",
+          rt: "",
+          rw: "",
+          lokasi: `Kecamatan ${kec}, Kota Tegal`,
+          deskripsi: `Komunitas paguyuban warga se-Kecamatan ${kec}, Kota Tegal.`,
+          kontak: `Sekretariat Kecamatan ${kec}`,
+          jadwal: "Pertemuan Komunitas Warga Tingkat Kecamatan",
+        });
+      });
+
+      return items;
+    }
+
     const mainId = `kom-warga-${slugify(kecamatan!)}`;
     const items: MasterKomunitasSeedItem[] = [
       {
@@ -1174,7 +1212,7 @@ export function generateWargaKomunitasHierarchy({
   const items: MasterKomunitasSeedItem[] = [
     {
       id: "kom-warga-kota-tegal",
-      nama: "Warga Kota Tegal",
+      nama: "Komunitas Warga Kota Tegal",
       jenis: "warga_kita",
       kecamatan: "Kota Tegal",
       kelurahan: "Semua Kelurahan",
@@ -1287,7 +1325,7 @@ export function findOrGenerateKomunitasSeed(
   ) {
     return setAndReturn({
       id: "kom-warga-kota-tegal",
-      nama: "Warga Kota Tegal",
+      nama: "Komunitas Warga Kota Tegal",
       jenis: "warga_kita",
       kecamatan: "Kota Tegal",
       kelurahan: "Semua Kelurahan",
@@ -1447,7 +1485,7 @@ export function getWargaHierarchyChain(params: {
   // 0. Tingkat Kota Tegal (Puncak Hierarki Warga)
   const kotaItem: MasterKomunitasSeedItem = {
     id: "kom-warga-kota-tegal",
-    nama: "Warga Kota Tegal",
+    nama: "Komunitas Warga Kota Tegal",
     jenis: "warga_kita",
     kecamatan: "Kota Tegal",
     kelurahan: "Semua Kelurahan",

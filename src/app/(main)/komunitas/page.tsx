@@ -145,7 +145,7 @@ export default async function KomunitasPage({
     {
       id: "warga_kita" as JenisKomunitas,
       title: "Komunitas Warga Kita",
-      subtitle: "Struktur Komunitas 4 Tingkat: RT, RW, Kelurahan & Kecamatan",
+      subtitle: "Struktur Komunitas 5 Tingkat: RT, RW, Kelurahan, Kecamatan & Kota Tegal",
       badgeText: "167 RW • 1.712 RT",
       icon: Users,
       activeColorBg: "bg-blue-600 dark:bg-blue-700",

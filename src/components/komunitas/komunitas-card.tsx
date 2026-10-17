@@ -46,7 +46,7 @@ export function KomunitasCard({
   // Format Nama Komunitas sesuai tipe
   let formattedTitle = komunitas.nama;
   if (komunitas.jenis === "warga_kita") {
-    if (!formattedTitle.startsWith("Warga")) {
+    if (!formattedTitle.startsWith("Warga") && !formattedTitle.startsWith("Komunitas Warga")) {
       const rt = komunitas.rt;
       const rw = komunitas.rw;
       const kel = komunitas.kelurahan;
@@ -57,6 +57,8 @@ export function KomunitasCard({
         formattedTitle = `Warga RW: ${rw}, Kelurahan: ${kel}, Kecamatan: ${kec}`;
       } else if (kel) {
         formattedTitle = `Warga Kelurahan: ${kel}, Kecamatan: ${kec}`;
+      } else if (kec === "Kota Tegal" || !kec) {
+        formattedTitle = "Komunitas Warga Kota Tegal";
       } else {
         formattedTitle = `Warga Kecamatan: ${kec}`;
       }

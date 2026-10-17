@@ -60,7 +60,7 @@ export function KomunitasFilter({
   }, [currentSearch]);
 
   const availableKelurahan =
-    currentKecamatan && currentKecamatan !== "semua"
+    currentKecamatan && currentKecamatan !== "semua" && currentKecamatan !== "Kota Tegal"
       ? getKelurahanByKecamatan(currentKecamatan)
       : [];
 
@@ -386,9 +386,12 @@ export function KomunitasFilter({
                 className="w-full min-h-[44px] h-11 rounded-xl border-2 border-slate-200 bg-white px-3 text-xs sm:text-sm font-semibold text-slate-900 focus:border-blue-600 focus:outline-none disabled:opacity-60 cursor-pointer"
               >
                 <option value="semua">Semua Kecamatan</option>
+                {isWargaKita && (
+                  <option value="Kota Tegal">🏙️ Tingkat Kota Tegal (Seluruh Kota)</option>
+                )}
                 {DAFTAR_KECAMATAN_TEGAL.map((kec) => (
                   <option key={kec} value={kec}>
-                    {kec}
+                    Kecamatan {kec}
                   </option>
                 ))}
               </select>
@@ -404,12 +407,14 @@ export function KomunitasFilter({
               <select
                 value={currentKelurahan}
                 onChange={handleKelurahanChange}
-                disabled={isPending || currentKecamatan === "semua"}
+                disabled={isPending || currentKecamatan === "semua" || currentKecamatan === "Kota Tegal"}
                 className="w-full min-h-[44px] h-11 rounded-xl border-2 border-slate-200 bg-white px-3 text-xs sm:text-sm font-semibold text-slate-900 focus:border-blue-600 focus:outline-none disabled:opacity-50 cursor-pointer"
               >
                 <option value="semua">
                   {currentKecamatan === "semua"
                     ? "Pilih Kecamatan Dahulu"
+                    : currentKecamatan === "Kota Tegal"
+                    ? "Mencakup Seluruh Kelurahan"
                     : "Semua Kelurahan"}
                 </option>
                 {availableKelurahan.map((kel) => (
@@ -431,10 +436,14 @@ export function KomunitasFilter({
                 <select
                   value={currentRw}
                   onChange={handleRwChange}
-                  disabled={isPending}
+                  disabled={isPending || currentKecamatan === "Kota Tegal"}
                   className="w-full min-h-[44px] h-11 rounded-xl border-2 border-slate-200 bg-white px-3 text-xs sm:text-sm font-semibold text-slate-900 focus:border-blue-600 focus:outline-none disabled:opacity-60 cursor-pointer"
                 >
-                  <option value="semua">Semua RW</option>
+                  <option value="semua">
+                    {currentKecamatan === "Kota Tegal"
+                      ? "Mencakup Seluruh RW"
+                      : "Semua RW"}
+                  </option>
                   {availableRwList.map((rwNum) => (
                     <option key={rwNum} value={rwNum}>
                       RW {rwNum}
@@ -455,10 +464,14 @@ export function KomunitasFilter({
                 <select
                   value={currentRt}
                   onChange={handleRtChange}
-                  disabled={isPending}
+                  disabled={isPending || currentKecamatan === "Kota Tegal"}
                   className="w-full min-h-[44px] h-11 rounded-xl border-2 border-slate-200 bg-white px-3 text-xs sm:text-sm font-semibold text-slate-900 focus:border-blue-600 focus:outline-none disabled:opacity-60 cursor-pointer"
                 >
-                  <option value="semua">Semua RT</option>
+                  <option value="semua">
+                    {currentKecamatan === "Kota Tegal"
+                      ? "Mencakup Seluruh RT"
+                      : "Semua RT"}
+                  </option>
                   {availableRtList.map((rtNum) => (
                     <option key={rtNum} value={rtNum}>
                       RT {rtNum}
