@@ -7,7 +7,7 @@ import { getRekapDataAtsAction } from "@/app/actions/rekap-data-ats";
 import { checkUserRekapAdminAccess } from "@/app/actions/rekap-data-anak";
 import { DataAtsClientView } from "@/components/data-ats/data-ats-client-view";
 import { RekapDataAtsClientView } from "@/components/data-ats/rekap-data-ats-client-view";
-import { extractKomunitasMetadata } from "@/lib/admin-helpers";
+import { extractKomunitasMetadata, getKomunitasFeatureCards } from "@/lib/admin-helpers";
 import { isRoleAdmin } from "@/lib/utils";
 
 interface KomunitasDataAtsPageProps {
@@ -32,6 +32,11 @@ export default async function KomunitasDataAtsPage({
     notFound();
   }
 
+  const { canShowDataAts } = getKomunitasFeatureCards(komunitas);
+  if (!canShowDataAts) {
+    redirect(`/komunitas/${id}`);
+  }
+
   const cleanNama = (komunitas.nama || "").toLowerCase().trim();
   const isSkb =
     komunitas.jenis_institusi === "SKB" ||
@@ -43,12 +48,6 @@ export default async function KomunitasDataAtsPage({
     komunitas.jenis_institusi === "SKB" ||
     cleanNama.includes("pkbm") ||
     isSkb;
-
-  const isPurePaud = komunitas.jenis === "satuan_paud" && !isPkbmOrSkb;
-
-  if (isPurePaud) {
-    redirect(`/komunitas/${id}`);
-  }
 
   const meta = extractKomunitasMetadata(komunitas);
   const isWargaKita = komunitas.jenis === "warga_kita";

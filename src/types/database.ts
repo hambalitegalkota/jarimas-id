@@ -98,6 +98,8 @@ export interface Komunitas {
   jadwal?: string | null;
   created_at?: string;
   updated_at?: string;
+  created_by?: string | null;
+  is_created_by_admin?: boolean;
 }
 
 export interface AnggotaKomunitas {

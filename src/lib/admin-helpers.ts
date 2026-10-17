@@ -449,3 +449,122 @@ export function checkUserCanApproveItem({
     )
   );
 }
+
+/**
+ * Pembersih deskripsi komunitas dari tag internal fitur kartu
+ */
+export function cleanDeskripsiDisplay(rawDesc?: string | null): string {
+  if (!rawDesc) return "";
+  return rawDesc
+    .replace(/\[kartu:(data_anak|data_ats)\]/gi, "")
+    .replace(/\[fitur:(data_anak|data_ats)\]/gi, "")
+    .trim();
+}
+
+/**
+ * Menentukan hak visibilitas kartu layanan (Data Anak dan Data ATS) di komunitas:
+ * 1. Komunitas The Orbit Sixty: Kartu Data Anak dan Data ATS tidak ditampilkan.
+ * 2. Komunitas baru/grup yang dibentuk oleh selain Admin Pusat & Super Admin:
+ *    Hanya menampilkan Percakapan Komunitas, Kabar Komunitas, dan Daftar Anggota & Informasi Operasional.
+ * 3. Kartu Data Anak / Data ATS dapat diaktifkan secara spesifik oleh Admin Pusat / Super Admin.
+ * 4. Komunitas resmi kelembagaan Kota Tegal (Posyandu, PAUD, PKBM/SKB, Warga Kita) tetap menampilkan kartu layanan sesuai ranahnya.
+ */
+export function getKomunitasFeatureCards(komunitas: any) {
+  if (!komunitas) {
+    return {
+      canShowDataAnak: false,
+      canShowDataAts: false,
+      isTheOrbitSixty: false,
+      isKegiatan: false,
+      hasCustomDataAnak: false,
+      hasCustomDataAts: false,
+    };
+  }
+
+  const cleanNama = (komunitas.nama || komunitas.nama_komunitas || "").toLowerCase().trim();
+  const deskripsi = komunitas.deskripsi || "";
+  const jenis = (komunitas.jenis || komunitas.jenis_komunitas || "").toLowerCase().trim();
+
+  // 1. Cek spesifik Komunitas "The Orbit Sixty"
+  const isTheOrbitSixty =
+    komunitas.id === "6b73e2b8-e708-4d31-a467-333b068b4fd8" ||
+    cleanNama.includes("the orbit sixty") ||
+    cleanNama.includes("orbit sixty");
+
+  // Tag kustom yang diaktifkan oleh Super Admin / Admin Pusat
+  const hasCustomDataAnak =
+    deskripsi.includes("[kartu:data_anak]") || deskripsi.includes("[fitur:data_anak]");
+  const hasCustomDataAts =
+    deskripsi.includes("[kartu:data_ats]") || deskripsi.includes("[fitur:data_ats]");
+
+  // Untuk The Orbit Sixty: Hapus kartu Data Anak dan Data ATS secara mutlak
+  if (isTheOrbitSixty) {
+    return {
+      canShowDataAnak: false,
+      canShowDataAts: false,
+      isTheOrbitSixty: true,
+      isKegiatan: true,
+      hasCustomDataAnak: false,
+      hasCustomDataAts: false,
+    };
+  }
+
+  const isKegiatan = jenis === "kegiatan";
+
+  // Komunitas baru yang dibentuk oleh selain Admin Pusat dan Super Admin:
+  // Cukup ditampilkan kartu Percakapan Komunitas, Kabar Komunitas dan Daftar Anggota & Informasi Operasional.
+  const isCreatedByNonAdmin = Boolean(
+    komunitas.created_by && komunitas.is_created_by_admin === false
+  );
+
+  const isRestrictedCommunity = isKegiatan || isCreatedByNonAdmin;
+
+  // Komunitas Resmi Kelembagaan
+  const isOfficialPosyandu = jenis === "posyandu";
+  const isOfficialPaud = jenis === "satuan_paud";
+  const isOfficialWarga = jenis === "warga_kita";
+
+  const isSkb =
+    komunitas.jenis_institusi === "SKB" ||
+    cleanNama.includes("skb") ||
+    cleanNama.includes("sanggar kegiatan belajar");
+  const isStarOfTomorrow = cleanNama.includes("star of tomorrow");
+  const isPkbmOrSkb =
+    jenis === "pkbm_skb" ||
+    komunitas.jenis_institusi === "PKBM" ||
+    komunitas.jenis_institusi === "SKB" ||
+    cleanNama.includes("pkbm") ||
+    isSkb;
+
+  const isPurePaud = isOfficialPaud && !isPkbmOrSkb;
+
+  let canShowDataAnak = false;
+  let canShowDataAts = false;
+
+  // Logika Data Anak:
+  if (hasCustomDataAnak) {
+    canShowDataAnak = true;
+  } else if (!isRestrictedCommunity) {
+    if (isOfficialPosyandu || isOfficialPaud || isSkb || isStarOfTomorrow || isOfficialWarga) {
+      canShowDataAnak = true;
+    }
+  }
+
+  // Logika Data ATS:
+  if (hasCustomDataAts) {
+    canShowDataAts = true;
+  } else if (!isRestrictedCommunity) {
+    if ((isPkbmOrSkb || isOfficialWarga) && !isPurePaud && !isOfficialPosyandu) {
+      canShowDataAts = true;
+    }
+  }
+
+  return {
+    canShowDataAnak,
+    canShowDataAts,
+    isTheOrbitSixty: false,
+    isKegiatan,
+    hasCustomDataAnak,
+    hasCustomDataAts,
+  };
+}

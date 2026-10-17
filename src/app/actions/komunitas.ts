@@ -860,6 +860,18 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
       .eq("id", dbKomunitasId)
       .maybeSingle();
 
+    let isCreatedByAdmin = false;
+    if (komunitasFromDb?.created_by) {
+      const { data: creatorProf } = await supabase
+        .from("profiles")
+        .select("is_super_admin, is_admin_pusat")
+        .eq("id", komunitasFromDb.created_by)
+        .maybeSingle();
+      if (creatorProf) {
+        isCreatedByAdmin = Boolean(creatorProf.is_super_admin || creatorProf.is_admin_pusat);
+      }
+    }
+
     const seedItem = findOrGenerateKomunitasSeed(komunitasId);
     let komunitas = komunitasFromDb;
 
@@ -1359,6 +1371,8 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
       kontak: komunitas.kontak || null,
       jadwal: komunitas.jadwal || null,
       created_at: komunitas.created_at,
+      created_by: komunitas.created_by || null,
+      is_created_by_admin: isCreatedByAdmin,
       jumlah_anggota: count || 0,
       hasAdmin,
       adminName,
@@ -3704,6 +3718,7 @@ export async function createKomunitasAdminAction(formData: FormData): Promise<{
       deskripsi,
       kontak,
       jadwal,
+      created_by: user.id,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
@@ -3897,6 +3912,100 @@ export async function deleteKomunitasAdminAction(komunitasId: string): Promise<{
     return {
       success: false,
       message: err.message || "Gagal menghapus komunitas.",
+    };
+  }
+}
+
+/**
+ * Server Action: Mengaktifkan atau Menonaktifkan Kartu Layanan (Data Anak / Data ATS) oleh Super Admin & Admin Pusat
+ */
+export async function toggleKomunitasKartuLayananAction(
+  komunitasId: string,
+  kartu: "data_anak" | "data_ats",
+  enable: boolean
+): Promise<{
+  success: boolean;
+  message: string;
+}> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return { success: false, message: "Akses ditolak: Anda harus masuk terlebih dahulu." };
+    }
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("id, is_super_admin, is_admin_pusat, nama_lengkap, email")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    const userProfileCtx = {
+      ...profile,
+      id: user.id,
+      email: profile?.email || user.email,
+      nama_lengkap: profile?.nama_lengkap || user.user_metadata?.nama_lengkap,
+    };
+
+    if (!checkIsSuperAdmin(userProfileCtx) && !checkIsAdminPusat(userProfileCtx)) {
+      return {
+        success: false,
+        message: "Akses ditolak: Hanya Super Admin dan Admin Pusat yang dapat menambah atau mengubah kartu layanan komunitas.",
+      };
+    }
+
+    const validId = toValidUUID(komunitasId);
+    const { data: kom, error: fetchErr } = await supabase
+      .from("komunitas")
+      .select("id, deskripsi")
+      .eq("id", validId)
+      .maybeSingle();
+
+    if (fetchErr || !kom) {
+      return { success: false, message: "Komunitas tidak ditemukan di database." };
+    }
+
+    let currentDesc = kom.deskripsi || "";
+    const tag = `[kartu:${kartu}]`;
+
+    if (enable) {
+      if (!currentDesc.includes(tag)) {
+        currentDesc = `${tag} ${currentDesc}`.trim();
+      }
+    } else {
+      currentDesc = currentDesc.replace(new RegExp(`\\[kartu:${kartu}\\]\\s*`, "g"), "").trim();
+      currentDesc = currentDesc.replace(new RegExp(`\\[fitur:${kartu}\\]\\s*`, "g"), "").trim();
+    }
+
+    const { error: updateErr } = await supabase
+      .from("komunitas")
+      .update({
+        deskripsi: currentDesc || null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", validId);
+
+    if (updateErr) {
+      throw updateErr;
+    }
+
+    revalidatePath(`/komunitas/${komunitasId}`);
+    revalidatePath("/komunitas");
+
+    const kartuNama = kartu === "data_anak" ? "Data Anak (0–6 Tahun)" : "Data ATS (Anak Tidak Sekolah)";
+    return {
+      success: true,
+      message: `Kartu ${kartuNama} berhasil ${enable ? "diaktifkan" : "dinonaktifkan"}.`,
+    };
+  } catch (err: any) {
+    console.error("Error toggleKomunitasKartuLayananAction:", err);
+    return {
+      success: false,
+      message: err.message || "Gagal mengubah kartu layanan komunitas.",
     };
   }
 }

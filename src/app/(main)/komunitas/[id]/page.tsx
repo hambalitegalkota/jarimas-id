@@ -27,6 +27,7 @@ import { toValidUUID } from "@/lib/utils";
 import { KabarCard } from "@/components/kabar/kabar-card";
 import { CreateKabarModal } from "@/components/kabar/create-kabar-modal";
 import { KomunitasDetailClientView } from "./detail-client-view";
+import { getKomunitasFeatureCards } from "@/lib/admin-helpers";
 
 interface KomunitasDetailPageProps {
   params: Promise<{
@@ -58,22 +59,7 @@ export default async function KomunitasDetailPage({
     notFound();
   }
 
-  const cleanNama = (komunitas.nama || "").toLowerCase().trim();
-  const isSkb =
-    komunitas.jenis_institusi === "SKB" ||
-    cleanNama.includes("skb") ||
-    cleanNama.includes("sanggar kegiatan belajar");
-  const isStarOfTomorrow = cleanNama.includes("star of tomorrow");
-  const isPkbmOrSkb =
-    komunitas.jenis === "pkbm_skb" ||
-    komunitas.jenis_institusi === "PKBM" ||
-    komunitas.jenis_institusi === "SKB" ||
-    cleanNama.includes("pkbm") ||
-    isSkb;
-
-  const isPurePaud = komunitas.jenis === "satuan_paud" && !isPkbmOrSkb;
-  const canShowDataAnak = !isPkbmOrSkb || isSkb || isStarOfTomorrow;
-  const canShowDataAts = !isPurePaud;
+  const { canShowDataAnak, canShowDataAts } = getKomunitasFeatureCards(komunitas);
 
   // Ambil data anggota, data anak, data ATS, dan kabar secara paralel untuk render awal yang cepat dan akurat
   const [
@@ -91,6 +77,7 @@ export default async function KomunitasDetailPage({
   const dataAnakList = dataAnakRes?.data || [];
   const dataAtsList = dataAtsRes?.data || [];
   const dbKomunitasId = toValidUUID(id);
+  const cleanNama = (komunitas.nama || "").toLowerCase().trim();
 
   const kabarKomunitas = (allKabar || []).filter((k) => {
     // 1. Cocok langsung dengan ID komunitas

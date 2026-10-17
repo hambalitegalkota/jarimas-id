@@ -6,7 +6,7 @@ import { getDataAnakByKomunitas } from "@/app/actions/data-anak";
 import { getRekapDataAnakUsiaDiniAction, checkUserRekapAdminAccess } from "@/app/actions/rekap-data-anak";
 import { DataAnakClientView } from "./data-anak-client-view";
 import { RekapDataAnakClientView } from "@/components/data-anak/rekap-data-anak-client-view";
-import { extractKomunitasMetadata } from "@/lib/admin-helpers";
+import { extractKomunitasMetadata, getKomunitasFeatureCards } from "@/lib/admin-helpers";
 
 interface KomunitasDataAnakPageProps {
   params: Promise<{
@@ -30,21 +30,8 @@ export default async function KomunitasDataAnakPage({
     notFound();
   }
 
-  const cleanNama = (komunitas.nama || "").toLowerCase().trim();
-  const isSkb =
-    komunitas.jenis_institusi === "SKB" ||
-    cleanNama.includes("skb") ||
-    cleanNama.includes("sanggar kegiatan belajar");
-  const isStarOfTomorrow = cleanNama.includes("star of tomorrow");
-  const isPkbmOrSkb =
-    komunitas.jenis === "pkbm_skb" ||
-    komunitas.jenis_institusi === "PKBM" ||
-    komunitas.jenis_institusi === "SKB" ||
-    cleanNama.includes("pkbm") ||
-    isSkb;
-
-  // Komunitas PKBM (kecuali SKB dan PKBM Star of Tomorrow) tidak memiliki layanan Data Anak (0-6 Tahun) & DDTK
-  if (isPkbmOrSkb && !isSkb && !isStarOfTomorrow) {
+  const { canShowDataAnak } = getKomunitasFeatureCards(komunitas);
+  if (!canShowDataAnak) {
     redirect(`/komunitas/${id}`);
   }
 

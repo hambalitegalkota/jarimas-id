@@ -49,6 +49,7 @@ import {
   leaveKomunitas,
   resignAdminKomunitas,
   kickMemberByAdmin,
+  toggleKomunitasKartuLayananAction,
 } from "@/app/actions/komunitas";
 import type {
   KomunitasWithMembership,
@@ -58,7 +59,7 @@ import type {
   DataAtsItem,
 } from "@/types/database";
 import { cn, hasFullProfilDataAccess, parseKontakKomunitas, formatWhatsAppUrl, formatPeranDisplay, isRoleAdmin, isSuperAdmin } from "@/lib/utils";
-import { extractKomunitasMetadata } from "@/lib/admin-helpers";
+import { extractKomunitasMetadata, getKomunitasFeatureCards, cleanDeskripsiDisplay } from "@/lib/admin-helpers";
 
 interface KomunitasDetailClientViewProps {
   komunitas: KomunitasWithMembership;
@@ -112,7 +113,14 @@ export function KomunitasDetailClientView({
     setDataAtsState(dataAtsList);
   }, [dataAtsList]);
 
-  // Helper identifikasi Komunitas PKBM & SKB
+  // Helper identifikasi fitur & kartu komunitas
+  const featureCards = useMemo(
+    () => getKomunitasFeatureCards(komunitasData),
+    [komunitasData]
+  );
+  const canShowDataAnakCard = featureCards.canShowDataAnak;
+  const canShowDataAtsCard = featureCards.canShowDataAts;
+
   const cleanKomNama = (komunitasData.nama || "").toLowerCase().trim();
   const isSkb =
     komunitasData.jenis_institusi === "SKB" ||
@@ -128,18 +136,45 @@ export function KomunitasDetailClientView({
     cleanKomNama.includes("pkbm") ||
     isSkb;
 
-  // Hapus kartu Data Anak (0-6 Tahun) & DDTK dari semua Komunitas PKBM & SKB kecuali SKB dan PKBM Star Of Tomorrow
-  const canShowDataAnakCard = !isPkbmOrSkb || isSkb || isStarOfTomorrow;
-
-  // Satuan PAUD murni (TK, KB, RA, SPS, TPA non-PKBM/SKB) tidak menyelenggarakan ATS
   const isPureSatuanPaud = komunitasData.jenis === "satuan_paud" && !isPkbmOrSkb;
-  const canShowDataAtsCard = !isPureSatuanPaud;
 
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
   const [membershipState, setMembershipState] = useState(komunitas.currentUserMembership);
   const [isWargaOnboardingOpen, setIsWargaOnboardingOpen] = useState(false);
   const [isEditOperasionalOpen, setIsEditOperasionalOpen] = useState(false);
   const [isUbahPeranOpen, setIsUbahPeranOpen] = useState(false);
+  const [isManageCardsOpen, setIsManageCardsOpen] = useState(false);
+  const [cardActionLoading, setCardActionLoading] = useState(false);
+
+  const handleToggleCard = async (kartu: "data_anak" | "data_ats", enable: boolean) => {
+    setCardActionLoading(true);
+    try {
+      const res = await toggleKomunitasKartuLayananAction(komunitasData.id, kartu, enable);
+      if (res.success) {
+        let currentDesc = komunitasData.deskripsi || "";
+        const tag = `[kartu:${kartu}]`;
+        if (enable) {
+          if (!currentDesc.includes(tag)) {
+            currentDesc = `${tag} ${currentDesc}`.trim();
+          }
+        } else {
+          currentDesc = currentDesc.replace(new RegExp(`\\[kartu:${kartu}\\]\\s*`, "g"), "").trim();
+          currentDesc = currentDesc.replace(new RegExp(`\\[fitur:${kartu}\\]\\s*`, "g"), "").trim();
+        }
+        setKomunitasData((prev) => ({
+          ...prev,
+          deskripsi: currentDesc,
+        }));
+        setActionFeedback({ type: "success", message: res.message });
+      } else {
+        setActionFeedback({ type: "error", message: res.message });
+      }
+    } catch (err: any) {
+      setActionFeedback({ type: "error", message: err.message || "Gagal mengubah kartu layanan." });
+    } finally {
+      setCardActionLoading(false);
+    }
+  };
 
   // State untuk modal Ajukan Diri Sebagai Admin
   const [isApplyAdminOpen, setIsApplyAdminOpen] = useState(false);
@@ -597,21 +632,24 @@ export function KomunitasDetailClientView({
             <span
               className={cn(
                 "rounded-md px-2 py-0.5 text-2xs font-bold border shrink-0",
-                komunitas.jenis === "warga_kita" && "bg-blue-50 text-blue-800 border-blue-200",
-                komunitas.jenis === "posyandu" && "bg-emerald-50 text-emerald-800 border-emerald-200",
+                komunitasData.jenis === "warga_kita" && "bg-blue-50 text-blue-800 border-blue-200",
+                komunitasData.jenis === "posyandu" && "bg-emerald-50 text-emerald-800 border-emerald-200",
                 isPkbmOrSkb && "bg-amber-50 text-amber-800 border-amber-200",
-                isPureSatuanPaud && "bg-indigo-50 text-indigo-800 border-indigo-200"
+                isPureSatuanPaud && "bg-indigo-50 text-indigo-800 border-indigo-200",
+                komunitasData.jenis === "kegiatan" && "bg-purple-50 text-purple-800 border-purple-200"
               )}
             >
-              {komunitas.jenis === "warga_kita"
+              {komunitasData.jenis === "warga_kita"
                 ? "WARGA KITA"
-                : komunitas.jenis === "posyandu"
+                : komunitasData.jenis === "posyandu"
                 ? "POSYANDU"
                 : isSkb
                 ? "SKB"
                 : isPkbmOrSkb
                 ? (isStarOfTomorrow ? "PKBM & SATUAN PAUD" : "PKBM")
-                : "SATUAN PAUD"}
+                : komunitasData.jenis === "kegiatan"
+                ? "GRUP KEGIATAN"
+                : "KOMUNITAS"}
             </span>
             <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 truncate">
               {komunitas.kelurahan && komunitas.kelurahan !== "Semua Kelurahan"
@@ -634,6 +672,16 @@ export function KomunitasDetailClientView({
                   <ShieldCheck className="h-3.5 w-3.5 text-white" />
                   <span>{isActualSuperAdmin ? "SUPER ADMIN" : "ADMIN PUSAT"}</span>
                 </span>
+
+                <button
+                  type="button"
+                  onClick={() => setIsManageCardsOpen(true)}
+                  className="inline-flex items-center gap-1 rounded-lg border border-purple-300 bg-purple-50 hover:bg-purple-100 text-purple-800 px-2.5 py-1 text-xs font-bold shadow-2xs transition-all active:scale-98 cursor-pointer"
+                  title="Kelola Kartu Layanan (Data Anak & ATS)"
+                >
+                  <Settings2 className="h-3.5 w-3.5 text-purple-600" />
+                  <span>Kelola Kartu</span>
+                </button>
 
                 <button
                   type="button"
@@ -1432,7 +1480,7 @@ export function KomunitasDetailClientView({
                   <div className="space-y-0.5">
                     <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">PROFIL &amp; VISI</span>
                     <p className="text-slate-900 font-medium leading-relaxed">
-                      {komunitasData.deskripsi}
+                      {cleanDeskripsiDisplay(komunitasData.deskripsi)}
                     </p>
                   </div>
                 </div>
@@ -1996,6 +2044,112 @@ export function KomunitasDetailClientView({
             );
           }}
         />
+      )}
+      {/* MODAL KELOLA KARTU LAYANAN (SUPER ADMIN & ADMIN PUSAT) */}
+      {isManageCardsOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl border-2 border-slate-200 dark:border-slate-800 p-6 max-w-md w-full space-y-4 shadow-xl">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-400 border border-purple-200 dark:border-purple-800">
+                  <Settings2 className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-slate-900 dark:text-slate-100 text-sm">
+                    Kelola Kartu Layanan
+                  </h3>
+                  <p className="text-[11px] text-slate-500">
+                    Khusus Super Admin & Admin Pusat
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsManageCardsOpen(false)}
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+              Atur kartu layanan khusus yang diaktifkan untuk komunitas{" "}
+              <strong className="text-slate-900 dark:text-slate-100">{komunitasData.nama}</strong>.
+            </p>
+
+            <div className="space-y-3 pt-1">
+              {/* Toggle Data Anak */}
+              <div className="flex items-center justify-between p-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40">
+                <div className="flex items-center gap-2.5">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-400">
+                    <Baby className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-900 dark:text-slate-100">
+                      Data Anak (0–6 Tahun) & DDTK
+                    </h4>
+                    <p className="text-2xs text-slate-500">
+                      Pendataan balita dan tumbuh kembang
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  disabled={cardActionLoading}
+                  onClick={() => handleToggleCard("data_anak", !canShowDataAnakCard)}
+                  className={cn(
+                    "px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer disabled:opacity-50",
+                    canShowDataAnakCard
+                      ? "bg-rose-100 text-rose-700 hover:bg-rose-200 border border-rose-300 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800"
+                      : "bg-emerald-600 text-white hover:bg-emerald-700 shadow-2xs"
+                  )}
+                >
+                  {cardActionLoading ? "..." : canShowDataAnakCard ? "Hapus Kartu" : "Tambah Kartu"}
+                </button>
+              </div>
+
+              {/* Toggle Data ATS */}
+              <div className="flex items-center justify-between p-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40">
+                <div className="flex items-center gap-2.5">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-400">
+                    <GraduationCap className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-900 dark:text-slate-100">
+                      Data ATS (Anak Tidak Sekolah)
+                    </h4>
+                    <p className="text-2xs text-slate-500">
+                      Kasus anak putus sekolah / tidak sekolah
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  disabled={cardActionLoading}
+                  onClick={() => handleToggleCard("data_ats", !canShowDataAtsCard)}
+                  className={cn(
+                    "px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer disabled:opacity-50",
+                    canShowDataAtsCard
+                      ? "bg-rose-100 text-rose-700 hover:bg-rose-200 border border-rose-300 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800"
+                      : "bg-emerald-600 text-white hover:bg-emerald-700 shadow-2xs"
+                  )}
+                >
+                  {cardActionLoading ? "..." : canShowDataAtsCard ? "Hapus Kartu" : "Tambah Kartu"}
+                </button>
+              </div>
+            </div>
+
+            <div className="pt-2 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setIsManageCardsOpen(false)}
+                className="px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold cursor-pointer"
+              >
+                Tutup
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
