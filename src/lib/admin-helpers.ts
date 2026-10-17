@@ -554,7 +554,7 @@ export function getKomunitasFeatureCards(komunitas: any) {
   if (hasCustomDataAts) {
     canShowDataAts = true;
   } else if (!isRestrictedCommunity) {
-    if ((isPkbmOrSkb || isOfficialWarga) && !isPurePaud && !isOfficialPosyandu) {
+    if ((isPkbmOrSkb || isOfficialWarga || isOfficialPosyandu) && !isPurePaud) {
       canShowDataAts = true;
     }
   }
