@@ -40,7 +40,6 @@ import { WargaOnboardingModal } from "@/components/komunitas/warga-onboarding-mo
 import { EditInformasiOperasionalModal } from "@/components/komunitas/edit-informasi-operasional-modal";
 import { KabarCard } from "@/components/kabar/kabar-card";
 import { CreateKabarModal } from "@/components/kabar/create-kabar-modal";
-import { KomunitasProfilCharts } from "@/components/komunitas/komunitas-profil-charts";
 import { LaporanKaderSpmFormCard } from "@/components/komunitas/laporan-kader-spm-form-card";
 import { RekapLaporanKaderWilayahCard } from "@/components/komunitas/rekap-laporan-kader-wilayah-card";
 import { KomunitasPercakapanTab } from "@/components/komunitas/komunitas-percakapan-tab";
@@ -51,8 +50,6 @@ import {
   resignAdminKomunitas,
   kickMemberByAdmin,
 } from "@/app/actions/komunitas";
-import { getDataAnakByKomunitas } from "@/app/actions/data-anak";
-import { getDataAtsByKomunitas } from "@/app/actions/data-ats";
 import type {
   KomunitasWithMembership,
   AnggotaKomunitasDetail,
@@ -93,7 +90,10 @@ export function KomunitasDetailClientView({
   const [komunitasData, setKomunitasData] = useState(komunitas);
 
   const initialActiveTab = useMemo(() => {
-    if (!currentUserId && (currentSubtab === "anggota" || currentSubtab === "data")) {
+    if (currentSubtab === "data") {
+      return "kabar";
+    }
+    if (!currentUserId && currentSubtab === "anggota") {
       return "kabar";
     }
     return currentSubtab || null;
@@ -103,8 +103,6 @@ export function KomunitasDetailClientView({
   // State untuk data anak & ATS komunitas
   const [dataAnakState, setDataAnakState] = useState<DataAnakItem[]>(dataAnakList);
   const [dataAtsState, setDataAtsState] = useState<DataAtsItem[]>(dataAtsList);
-  const [isLoadingChartsData, setIsLoadingChartsData] = useState(false);
-  const [hasLoadedChartsData, setHasLoadedChartsData] = useState(true);
 
   useEffect(() => {
     setDataAnakState(dataAnakList);
@@ -136,31 +134,6 @@ export function KomunitasDetailClientView({
   // Satuan PAUD murni (TK, KB, RA, SPS, TPA non-PKBM/SKB) tidak menyelenggarakan ATS
   const isPureSatuanPaud = komunitasData.jenis === "satuan_paud" && !isPkbmOrSkb;
   const canShowDataAtsCard = !isPureSatuanPaud;
-
-  useEffect(() => {
-    if (activeTab === "data" && !hasLoadedChartsData && !isLoadingChartsData) {
-      setIsLoadingChartsData(true);
-      Promise.all([
-        canShowDataAnakCard
-          ? getDataAnakByKomunitas(komunitasData.id)
-          : Promise.resolve({ data: [] }),
-        canShowDataAtsCard
-          ? getDataAtsByKomunitas(komunitasData.id)
-          : Promise.resolve({ data: [] }),
-      ])
-        .then(([anakRes, atsRes]) => {
-          if (anakRes?.data) setDataAnakState(anakRes.data);
-          if (atsRes?.data) setDataAtsState(atsRes.data);
-          setHasLoadedChartsData(true);
-        })
-        .catch((err) => {
-          console.error("Gagal memuat profil data komunitas:", err);
-        })
-        .finally(() => {
-          setIsLoadingChartsData(false);
-        });
-    }
-  }, [activeTab, hasLoadedChartsData, isLoadingChartsData, komunitasData.id, canShowDataAnakCard, canShowDataAtsCard]);
 
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
   const [membershipState, setMembershipState] = useState(komunitas.currentUserMembership);
@@ -259,7 +232,6 @@ export function KomunitasDetailClientView({
     return false;
   }, [isSuperOrPusat, isPaud, isPosyandu, isWargaKita, isRt, userPeran, isAdminOrKader]);
 
-  const isChartOnly = isRekapOnlyTier || !hasFullAccess;
   const isPenduduk =
     isApprovedMember &&
     (userPeran === "Penduduk" ||
@@ -604,21 +576,6 @@ export function KomunitasDetailClientView({
             hoverBg: "hover:bg-emerald-50/50 dark:hover:bg-emerald-950/20",
             iconColor: "text-emerald-600 dark:text-emerald-400",
             iconBg: "bg-emerald-100 dark:bg-emerald-950",
-          },
-          {
-            id: "data" as const,
-            title: "Profil Data & Rekapitulasi",
-            subtitle: !canShowDataAnakCard
-              ? "Data penanganan ATS dan grafik capaian komunitas"
-              : "Data agregat balita, ATS, dan grafik capaian komunitas",
-            badgeText: "Data Agregat",
-            icon: Info,
-            activeColorBg: "bg-indigo-600 dark:bg-indigo-700",
-            badgeColor: "bg-indigo-500/20 text-indigo-100 border-indigo-400/30",
-            hoverBorder: "hover:border-indigo-400 dark:hover:border-indigo-600",
-            hoverBg: "hover:bg-indigo-50/50 dark:hover:bg-indigo-950/20",
-            iconColor: "text-indigo-600 dark:text-indigo-400",
-            iconBg: "bg-indigo-100 dark:bg-indigo-950",
           },
         ]
       : []),
@@ -1051,7 +1008,7 @@ export function KomunitasDetailClientView({
           }
         })}
 
-        {/* ACCORDION SUB-TABS (KABAR, ANGGOTA, PROFIL DATA) */}
+        {/* ACCORDION SUB-TABS (PERCAKAPAN, KABAR, ANGGOTA) */}
         {sortedDetailCategories.map((cat) => {
           const isOpen = activeTab === cat.id;
           const Icon = cat.icon;
@@ -1496,6 +1453,28 @@ export function KomunitasDetailClientView({
             </div>
           </div>
 
+          {/* ========================================================= */}
+          {/* LAPORAN KADER POSYANDU 6 BIDANG SPM                       */}
+          {/* ========================================================= */}
+          {/* 1. Komunitas Posyandu: Formulir Input & Riwayat Laporan (Khusus Admin / Pengurus & Kader) */}
+          {komunitasData.jenis === "posyandu" && canAccessLaporanPosyandu && (
+            <LaporanKaderSpmFormCard
+              komunitas={komunitasData}
+              currentUserId={currentUserId}
+              userName={myProfileName}
+              isAdminOrKader={canAccessLaporanPosyandu}
+            />
+          )}
+
+          {/* 2. Komunitas Kelurahan, Kecamatan, dan Kota Tegal: Rekap Laporan Wilayah */}
+          {komunitasData.jenis === "warga_kita" && isAdminOrKader && (
+            <RekapLaporanKaderWilayahCard
+              komunitas={komunitasData}
+              isAdminOrKader={isAdminOrKader}
+              currentUserId={currentUserId}
+            />
+          )}
+
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 sm:p-5 rounded-2xl border-2 border-slate-200 shadow-xs">
             <div className="space-y-0.5">
               <h3 className="text-base font-bold text-slate-900">
@@ -1609,136 +1588,6 @@ export function KomunitasDetailClientView({
                 );
               })}
             </div>
-          )}
-        </section>
-      )}
-
-      {/* Subtab: PROFIL DATA */}
-      {cat.id === "data" && (
-        <section className="space-y-5 pb-4">
-          {/* 1. Jika Komunitas Tingkat RW, Kelurahan, Kecamatan, atau Kota Tegal: Banner Data Rekapitulasi Wilayah */}
-          {isRekapOnlyTier && (
-            <div className="rounded-2xl border-2 border-indigo-200 bg-indigo-50/80 p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs">
-              <div className="flex items-start gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-100 text-indigo-800 font-bold">
-                  <Info className="h-5 w-5" />
-                </div>
-                <div className="space-y-0.5">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h4 className="text-sm sm:text-base font-bold text-indigo-950">
-                      Data Rekapitulasi Wilayah {tierLevelLabel}
-                    </h4>
-                    <span className="rounded-md px-2 py-0.5 text-xs font-extrabold bg-indigo-100 text-indigo-800 border border-indigo-300">
-                      DATA REKAP SAJA
-                    </span>
-                  </div>
-                  <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">
-                    Pada komunitas tingkat <strong>{tierLevelLabel}</strong>, data yang ditampilkan adalah data rekapitulasi agregat wilayah (seperti pada halaman Rekapitulasi Hasil Pendataan Anak Usia Dini dan ATS). Sesuai ketentuan perlindungan privasi data, rincian identitas lengkap anak tidak sekolah hanya dapat diakses di <strong>Tingkat KELURAHAN</strong> oleh <strong>Admin di Komunitas Warga Kita</strong>, <strong>Admin PAUD</strong>, <strong>Admin Posyandu</strong> dan <strong>Admin PKBM dan SKB</strong>.
-                  </p>
-                </div>
-              </div>
-              <div className="flex flex-wrap gap-2 w-full sm:w-auto shrink-0">
-                {canShowDataAnakCard && (
-                  <Link
-                    href={`/komunitas/${komunitas.id}/data`}
-                    className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-blue-700 hover:bg-blue-800 text-white text-xs font-bold shadow-xs transition-all active:scale-95"
-                  >
-                    <Baby className="h-4 w-4" />
-                    <span>Rekap Data Anak</span>
-                  </Link>
-                )}
-                {canShowDataAtsCard && (
-                  <Link
-                    href={`/komunitas/${komunitas.id}/ats`}
-                    className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shadow-xs transition-all active:scale-95"
-                  >
-                    <GraduationCap className="h-4 w-4" />
-                    <span>Rekap Data ATS</span>
-                  </Link>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* 2. Jika Komunitas Tingkat RT: Banner Hak Akses Admin RT vs Warga Biasa */}
-          {isRt && (
-            hasFullAccess ? (
-              <div className="rounded-2xl border-2 border-emerald-200 bg-emerald-50/70 p-4 sm:p-5 flex items-start gap-3 shadow-xs">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-800 font-bold">
-                  <ShieldCheck className="h-5 w-5" />
-                </div>
-                <div className="space-y-0.5">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h4 className="text-sm sm:text-base font-bold text-emerald-950">
-                      Hak Akses Admin RT: {userPeran.toUpperCase()}
-                    </h4>
-                    <span className="rounded-md px-2 py-0.5 text-xs font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300">
-                      AKSES DATA LENGKAP RT
-                    </span>
-                  </div>
-                  <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">
-                    Sebagai <strong>Admin di Komunitas RT</strong>, Anda memiliki hak akses penuh untuk mengelola rincian data anak &amp; DDTK, data ATS, validasi warga RT, dan pelaporan wilayah.
-                  </p>
-                </div>
-              </div>
-            ) : (
-              <div className="rounded-2xl border-2 border-amber-200 bg-amber-50/80 p-4 sm:p-5 flex items-start gap-3 shadow-xs">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-800 font-bold">
-                  <ShieldAlert className="h-5 w-5" />
-                </div>
-                <div className="space-y-0.5">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h4 className="text-sm sm:text-base font-bold text-amber-950">
-                      Akses Warga RT: Tinjauan Statistik Agregat
-                    </h4>
-                    <span className="rounded-md px-2 py-0.5 text-xs font-extrabold bg-amber-100 text-amber-800 border border-amber-300">
-                      GRAFIK &amp; REKAP
-                    </span>
-                  </div>
-                  <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">
-                    Sesuai regulasi privasi data kependudukan, rincian data identitas lengkap anak hanya dapat diakses oleh <strong>Admin Komunitas RT</strong>. Anggota warga dapat memantau grafik capaian dan statistik wilayah.
-                  </p>
-                </div>
-              </div>
-            )
-          )}
-
-          {/* ========================================================= */}
-          {/* LAPORAN KADER POSYANDU 6 BIDANG SPM                       */}
-          {/* ========================================================= */}
-          {/* 1. Komunitas Posyandu: Formulir Input & Riwayat Laporan (Khusus Admin / Pengurus & Kader) */}
-          {komunitasData.jenis === "posyandu" && canAccessLaporanPosyandu && (
-            <LaporanKaderSpmFormCard
-              komunitas={komunitasData}
-              currentUserId={currentUserId}
-              userName={myProfileName}
-              isAdminOrKader={canAccessLaporanPosyandu}
-            />
-          )}
-
-          {/* 2. Komunitas Kelurahan, Kecamatan, dan Kota Tegal: Rekap Laporan Wilayah */}
-          {komunitasData.jenis === "warga_kita" && isAdminOrKader && (
-            <RekapLaporanKaderWilayahCard
-              komunitas={komunitasData}
-              isAdminOrKader={isAdminOrKader}
-              currentUserId={currentUserId}
-            />
-          )}
-
-          {/* Visualisasi Grafik & Chart Statistik Wilayah */}
-          {isLoadingChartsData ? (
-            <div className="flex flex-col items-center justify-center p-12 bg-white dark:bg-slate-900 rounded-2xl border-2 border-slate-200 dark:border-slate-800 text-slate-500 gap-3 shadow-xs">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              <p className="text-sm font-semibold">Memuat data agregat wilayah &amp; grafik...</p>
-            </div>
-          ) : (
-            <KomunitasProfilCharts
-              komunitas={komunitas}
-              dataAnakList={dataAnakState}
-              dataAtsList={dataAtsState}
-              userRole={userPeran}
-              isChartOnly={isChartOnly}
-            />
           )}
         </section>
       )}
