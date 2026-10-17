@@ -588,87 +588,57 @@ export function KomunitasDetailClientView({
   ];
 
   return (
-    <div className="space-y-4 sm:space-y-5">
-      {/* 1. HERO HEADER CARD */}
-      <section className="relative overflow-hidden rounded-2xl border-2 border-slate-200 bg-white p-4 sm:p-5 space-y-4 shadow-xs">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex items-start gap-3 sm:gap-3.5">
-            <div
+    <div className="space-y-3 sm:space-y-3.5">
+      {/* 1. HERO HEADER CARD (PADAT, RAPI, EFISIEN RUANG) */}
+      <section className="relative overflow-hidden rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 sm:p-4 shadow-xs">
+        {/* Baris Atas: Kategori, Lokasi, Jumlah Anggota & Tombol Aksi */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2.5 mb-2.5 border-b border-slate-100 dark:border-slate-800/80">
+          <div className="flex items-center gap-2 flex-wrap min-w-0">
+            <span
               className={cn(
-                "flex h-11 w-11 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-2xl font-bold border-2",
-                komunitas.jenis === "warga_kita" && "bg-blue-50 text-blue-700 border-blue-200",
-                komunitas.jenis === "posyandu" && "bg-emerald-50 text-emerald-700 border-emerald-200",
+                "rounded-md px-2 py-0.5 text-2xs font-bold border shrink-0",
+                komunitas.jenis === "warga_kita" && "bg-blue-50 text-blue-800 border-blue-200",
+                komunitas.jenis === "posyandu" && "bg-emerald-50 text-emerald-800 border-emerald-200",
                 isPkbmOrSkb && "bg-amber-50 text-amber-800 border-amber-200",
                 isPureSatuanPaud && "bg-indigo-50 text-indigo-800 border-indigo-200"
               )}
             >
-              {komunitas.jenis === "warga_kita" && <Users className="h-5 w-5 sm:h-6 sm:w-6" />}
-              {komunitas.jenis === "posyandu" && <Sparkles className="h-5 w-5 sm:h-6 sm:w-6" />}
-              {isPkbmOrSkb && <BookOpen className="h-5 w-5 sm:h-6 sm:w-6" />}
-              {isPureSatuanPaud && <Building2 className="h-5 w-5 sm:h-6 sm:w-6" />}
-            </div>
-
-            <div className="space-y-1">
-              <div className="flex flex-wrap items-center gap-2">
-                <span
-                  className={cn(
-                    "rounded-md px-2 py-0.5 text-xs font-bold border",
-                    komunitas.jenis === "warga_kita" && "bg-blue-50 text-blue-800 border-blue-200",
-                    komunitas.jenis === "posyandu" && "bg-emerald-50 text-emerald-800 border-emerald-200",
-                    isPkbmOrSkb && "bg-amber-50 text-amber-800 border-amber-200",
-                    isPureSatuanPaud && "bg-indigo-50 text-indigo-800 border-indigo-200"
-                  )}
-                >
-                  {komunitas.jenis === "warga_kita"
-                    ? "WARGA KITA"
-                    : komunitas.jenis === "posyandu"
-                    ? "POSYANDU"
-                    : isSkb
-                    ? "SKB"
-                    : isPkbmOrSkb
-                    ? (isStarOfTomorrow ? "PKBM & SATUAN PAUD" : "PKBM")
-                    : "SATUAN PAUD"}
-                </span>
-                <span className="text-xs font-semibold text-slate-500">
-                  {komunitas.kelurahan && komunitas.kelurahan !== "Semua Kelurahan"
-                    ? `${komunitas.kelurahan}, ${komunitas.kecamatan || "Kota Tegal"}`
-                    : komunitas.kecamatan && komunitas.kecamatan !== "Kota Tegal"
-                    ? `Kecamatan ${komunitas.kecamatan}, Kota Tegal`
-                    : "Kota Tegal, Jawa Tengah"}
-                </span>
-              </div>
-
-              <h1 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">
-                {formattedTitle}
-              </h1>
-
-              <div className="flex flex-wrap items-center gap-3 text-sm text-slate-600 font-semibold pt-0.5">
-                <span className="flex items-center gap-1">
-                  <MapPin className="h-4 w-4 text-slate-500" />
-                  <span>{komunitas.lokasi}</span>
-                </span>
-                <span>•</span>
-                <span className="font-mono text-slate-900 font-bold">
-                  {komunitas.jumlah_anggota} Anggota
-                </span>
-              </div>
-            </div>
+              {komunitas.jenis === "warga_kita"
+                ? "WARGA KITA"
+                : komunitas.jenis === "posyandu"
+                ? "POSYANDU"
+                : isSkb
+                ? "SKB"
+                : isPkbmOrSkb
+                ? (isStarOfTomorrow ? "PKBM & SATUAN PAUD" : "PKBM")
+                : "SATUAN PAUD"}
+            </span>
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 truncate">
+              {komunitas.kelurahan && komunitas.kelurahan !== "Semua Kelurahan"
+                ? `${komunitas.kelurahan}, ${komunitas.kecamatan || "Kota Tegal"}`
+                : komunitas.kecamatan && komunitas.kecamatan !== "Kota Tegal"
+                ? `Kecamatan ${komunitas.kecamatan}, Kota Tegal`
+                : "Kota Tegal, Jawa Tengah"}
+            </span>
+            <span className="text-slate-300 dark:text-slate-600 hidden sm:inline">•</span>
+            <span className="text-xs font-bold text-slate-700 dark:text-slate-300 font-mono hidden sm:inline">
+              {komunitas.jumlah_anggota} Anggota
+            </span>
           </div>
 
-          {/* Status Badge & Aksi Keanggotaan User */}
-          <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2 shrink-0">
+          {/* Status Badge & Aksi Keanggotaan User (Rapi & Terstruktur) */}
+          <div className="flex flex-wrap items-center gap-1.5 shrink-0">
             {isSuperOrPusat ? (
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 rounded-xl bg-amber-500 text-white px-3 py-1.5 text-xs font-black shadow-xs">
-                  <ShieldCheck className="h-4 w-4 text-white" />
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className="inline-flex items-center gap-1.5 rounded-lg bg-amber-500 text-white px-2.5 py-1 text-2xs font-black shadow-2xs">
+                  <ShieldCheck className="h-3.5 w-3.5 text-white" />
                   <span>{isActualSuperAdmin ? "SUPER ADMIN" : "ADMIN PUSAT"}</span>
                 </span>
 
-                {/* Shortcut Buka Ruang Percakapan */}
                 <button
                   type="button"
                   onClick={() => setActiveTab("percakapan")}
-                  className="inline-flex items-center gap-1.5 rounded-xl border border-teal-300 bg-teal-50 hover:bg-teal-100 text-teal-800 px-3 py-1.5 text-xs font-bold shadow-2xs transition-all active:scale-98 cursor-pointer"
+                  className="inline-flex items-center gap-1 rounded-lg border border-teal-300 bg-teal-50 hover:bg-teal-100 text-teal-800 px-2.5 py-1 text-xs font-bold shadow-2xs transition-all active:scale-98 cursor-pointer"
                   title="Buka Ruang Percakapan Komunitas"
                 >
                   <MessageCircle className="h-3.5 w-3.5 text-teal-600" />
@@ -676,17 +646,16 @@ export function KomunitasDetailClientView({
                 </button>
               </div>
             ) : isApprovedMember ? (
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-800 border-2 border-emerald-300">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className="inline-flex items-center gap-1 rounded-lg bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-800 border border-emerald-300 shadow-2xs">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
                   <span>{formatPeranDisplay(userPeran).toUpperCase()}</span>
                 </span>
 
-                {/* Badge Menunggu Verifikasi Perubahan Peran */}
                 {membershipState?.peran_diajukan &&
                   membershipState.peran_diajukan.toLowerCase() !== userPeran.toLowerCase() && (
                     <span
-                      className="inline-flex items-center gap-1.5 rounded-xl bg-amber-50 px-3 py-1.5 text-xs font-bold text-amber-900 border-2 border-amber-300"
+                      className="inline-flex items-center gap-1 rounded-lg bg-amber-50 px-2 py-1 text-xs font-bold text-amber-900 border border-amber-300"
                       title="Permohonan perubahan peran sedang menunggu verifikasi Admin/Pengurus"
                     >
                       <Clock className="h-3.5 w-3.5 text-amber-600 animate-pulse" />
@@ -694,11 +663,10 @@ export function KomunitasDetailClientView({
                     </span>
                   )}
 
-                {/* Tombol Ajukan Perubahan Peran (misal Pengunjung -> Guru / Kepala Sekolah di PAUD, Kader / Nakes di Posyandu) */}
                 <button
                   type="button"
                   onClick={() => setIsUbahPeranOpen(true)}
-                  className="inline-flex items-center gap-1.5 rounded-xl border border-blue-300 bg-blue-50 hover:bg-blue-100 text-blue-800 px-3 py-1.5 text-xs font-bold shadow-2xs transition-all active:scale-98 cursor-pointer"
+                  className="inline-flex items-center gap-1 rounded-lg border border-blue-300 bg-blue-50 hover:bg-blue-100 text-blue-800 px-2.5 py-1 text-xs font-bold shadow-2xs transition-all active:scale-98 cursor-pointer"
                   title="Ajukan perubahan peran kepada Admin"
                 >
                   <Sparkles className="h-3.5 w-3.5 text-blue-600" />
@@ -710,23 +678,21 @@ export function KomunitasDetailClientView({
                   </span>
                 </button>
 
-                {/* Shortcut Buka Ruang Percakapan */}
                 <button
                   type="button"
                   onClick={() => setActiveTab("percakapan")}
-                  className="inline-flex items-center gap-1.5 rounded-xl border border-teal-300 bg-teal-50 hover:bg-teal-100 text-teal-800 px-3 py-1.5 text-xs font-bold shadow-2xs transition-all active:scale-98 cursor-pointer"
+                  className="inline-flex items-center gap-1 rounded-lg border border-teal-300 bg-teal-50 hover:bg-teal-100 text-teal-800 px-2.5 py-1 text-xs font-bold shadow-2xs transition-all active:scale-98 cursor-pointer"
                   title="Buka Ruang Percakapan Komunitas"
                 >
                   <MessageCircle className="h-3.5 w-3.5 text-teal-600" />
                   <span className="hidden sm:inline">Percakapan</span>
                 </button>
 
-                {/* Tombol Berhenti Jadi Admin jika user adalah Admin */}
                 {isUserAdmin && (
                   <button
                     type="button"
                     onClick={() => setIsResignModalOpen(true)}
-                    className="inline-flex items-center gap-1.5 rounded-xl border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 px-3 py-1.5 text-xs font-bold shadow-2xs transition-all active:scale-98 cursor-pointer"
+                    className="inline-flex items-center gap-1 rounded-lg border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 px-2.5 py-1 text-xs font-bold shadow-2xs transition-all active:scale-98 cursor-pointer"
                     title="Berhenti dari jabatan Admin komunitas"
                   >
                     <UserMinus className="h-3.5 w-3.5 text-amber-700" />
@@ -734,11 +700,10 @@ export function KomunitasDetailClientView({
                   </button>
                 )}
 
-                {/* Tombol Keluar Komunitas */}
                 <button
                   type="button"
                   onClick={() => setIsLeaveModalOpen(true)}
-                  className="inline-flex items-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 px-3 py-1.5 text-xs font-bold shadow-2xs transition-all active:scale-98 cursor-pointer"
+                  className="inline-flex items-center gap-1 rounded-lg border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 px-2.5 py-1 text-xs font-bold shadow-2xs transition-all active:scale-98 cursor-pointer"
                   title="Keluar dari komunitas ini"
                 >
                   <LogOut className="h-3.5 w-3.5 text-rose-600" />
@@ -746,15 +711,15 @@ export function KomunitasDetailClientView({
                 </button>
               </div>
             ) : membership?.status === "pending" || membership?.peran_diajukan ? (
-              <div className="flex items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 rounded-xl bg-amber-50 px-3 py-1.5 text-xs font-bold text-amber-900 border-2 border-amber-300">
-                  <Clock className="h-4 w-4 text-amber-600" />
+              <div className="flex items-center gap-1.5">
+                <span className="inline-flex items-center gap-1 rounded-lg bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-900 border border-amber-300">
+                  <Clock className="h-3.5 w-3.5 text-amber-600" />
                   <span>MENUNGGU</span>
                 </span>
                 <button
                   type="button"
                   onClick={() => setIsResignModalOpen(true)}
-                  className="inline-flex items-center gap-1 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 px-2.5 py-1.5 text-xs font-bold shadow-2xs transition-all cursor-pointer"
+                  className="inline-flex items-center gap-1 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 px-2 py-1 text-xs font-bold shadow-2xs transition-all cursor-pointer"
                   title="Batalkan permohonan keanggotaan/admin"
                 >
                   <X className="h-3.5 w-3.5 text-slate-500" />
@@ -771,93 +736,115 @@ export function KomunitasDetailClientView({
                     setIsJoinModalOpen(true);
                   }
                 }}
-                className="inline-flex items-center gap-1.5 rounded-xl bg-blue-700 hover:bg-blue-800 px-4 py-2 text-xs font-bold text-white shadow-xs transition-all active:scale-98 cursor-pointer"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-blue-700 hover:bg-blue-800 px-3 py-1.5 text-xs font-bold text-white shadow-2xs transition-all active:scale-98 cursor-pointer"
               >
-                <UserPlus className="h-4 w-4" />
+                <UserPlus className="h-3.5 w-3.5" />
                 <span>Bergabung</span>
               </button>
             ) : (
-              <div className="inline-flex items-center gap-1.5 rounded-xl bg-slate-100 dark:bg-slate-800/80 px-3 py-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
-                <Info className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
+              <div className="inline-flex items-center gap-1 rounded-lg bg-slate-100 dark:bg-slate-800/80 px-2.5 py-1 text-2xs font-semibold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                <Info className="h-3 w-3 text-blue-600 dark:text-blue-400 shrink-0" />
                 <span>Keanggotaan Otomatis dari RT / Posyandu / PAUD</span>
               </div>
             )}
           </div>
         </div>
+
+        {/* Baris Utama: Icon + Judul Komunitas + Alamat */}
+        <div className="flex items-center gap-3">
+          <div
+            className={cn(
+              "flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl font-bold border-2",
+              komunitas.jenis === "warga_kita" && "bg-blue-50 text-blue-700 border-blue-200",
+              komunitas.jenis === "posyandu" && "bg-emerald-50 text-emerald-700 border-emerald-200",
+              isPkbmOrSkb && "bg-amber-50 text-amber-800 border-amber-200",
+              isPureSatuanPaud && "bg-indigo-50 text-indigo-800 border-indigo-200"
+            )}
+          >
+            {komunitas.jenis === "warga_kita" && <Users className="h-5 w-5" />}
+            {komunitas.jenis === "posyandu" && <Sparkles className="h-5 w-5" />}
+            {isPkbmOrSkb && <BookOpen className="h-5 w-5" />}
+            {isPureSatuanPaud && <Building2 className="h-5 w-5" />}
+          </div>
+
+          <div className="min-w-0 flex-1 space-y-0.5">
+            <h1 className="text-base sm:text-lg font-black text-slate-900 dark:text-white tracking-tight leading-snug">
+              {formattedTitle}
+            </h1>
+
+            <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 dark:text-slate-400 font-medium">
+              <span className="flex items-center gap-1 truncate max-w-xl">
+                <MapPin className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                <span className="truncate">{komunitas.lokasi}</span>
+              </span>
+              <span className="sm:hidden text-slate-300">•</span>
+              <span className="sm:hidden font-mono text-slate-700 dark:text-slate-300 font-bold">
+                {komunitas.jumlah_anggota} Anggota
+              </span>
+            </div>
+          </div>
+        </div>
       </section>
 
-      {/* INFORMASI ADMIN / PENGURUS KOMUNITAS */}
+      {/* INFORMASI ADMIN / PENGURUS KOMUNITAS (KOMPAK, PADAT & BEBAS RUANG KOSONG) */}
       {hasCommunityAdmin && (
-        <section className="rounded-2xl border-2 border-emerald-300 dark:border-emerald-800 bg-gradient-to-r from-emerald-50/90 via-teal-50/70 to-emerald-50/90 dark:from-emerald-950/30 dark:via-teal-950/20 dark:to-emerald-950/30 p-3.5 sm:p-4.5 shadow-xs transition-all duration-300">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="flex items-start gap-3 sm:gap-3.5 min-w-0">
-              <div className="flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-600 text-white shadow-xs">
-                <ShieldCheck className="h-5 w-5 sm:h-5.5 sm:w-5.5" />
+        <section className="rounded-xl border border-emerald-300/80 dark:border-emerald-800/80 bg-emerald-50/70 dark:bg-emerald-950/25 px-3 py-2 sm:px-3.5 sm:py-2.5 shadow-2xs transition-all">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+            {/* Info Admin */}
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-600 text-white shadow-2xs">
+                <ShieldCheck className="h-4 w-4 sm:h-4.5 sm:w-4.5" />
               </div>
-              <div className="space-y-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h4 className="text-[11px] font-black text-emerald-950 dark:text-emerald-300 uppercase tracking-widest">
-                    Admin / Pengurus Komunitas
-                  </h4>
-                  <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-900 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-700">
-                    <CheckCircle2 className="h-3 w-3 text-emerald-700 dark:text-emerald-400" />
-                    <span>Terverifikasi</span>
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className="text-[10px] font-black text-emerald-950 dark:text-emerald-300 uppercase tracking-wider">
+                    Admin / Pengurus:
                   </span>
-                </div>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white tracking-tight">
+                  <h3 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white truncate">
                     {effectiveAdminName}
                   </h3>
                   {effectiveAdminRole && (
-                    <span className="text-2xs font-bold px-2 py-0.5 rounded-lg bg-white/80 dark:bg-slate-800/80 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 shadow-2xs">
+                    <span className="text-[9px] font-bold px-1.5 py-0.2 rounded-md bg-white dark:bg-slate-800 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-700">
                       {effectiveAdminRole}
                     </span>
                   )}
+                  <span className="inline-flex items-center gap-1 text-[9px] font-extrabold px-1.5 py-0.2 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200 border border-emerald-300/60">
+                    <CheckCircle2 className="h-2.5 w-2.5 text-emerald-600 dark:text-emerald-400" />
+                    Terverifikasi
+                  </span>
                 </div>
-                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed max-w-xl">
-                  Pengurus resmi yang telah diverifikasi dan disetujui untuk mengelola keanggotaan, verifikasi profil, serta koordinasi layanan warga.
-                </p>
               </div>
             </div>
 
-            {/* Kotak Nomor HP & Tombol Hubungi Admin untuk Semua Warga */}
-            <div className="shrink-0 flex flex-col sm:flex-row md:flex-col lg:flex-row items-stretch sm:items-center gap-2 bg-white/90 dark:bg-slate-900/80 p-2.5 sm:p-3 rounded-2xl border border-emerald-200 dark:border-emerald-800/60 shadow-2xs">
-              <div className="flex items-center gap-2 px-1 min-w-0">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300">
-                  <Phone className="h-3.5 w-3.5" />
-                </div>
-                <div className="min-w-0">
-                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">
-                    No. Handphone / WhatsApp
-                  </span>
-                  <span className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-slate-100 font-mono tracking-tight block truncate">
-                    {effectiveAdminHp || "Belum dicantumkan"}
-                  </span>
-                </div>
-              </div>
-
+            {/* Kontak Admin: WhatsApp & Telepon Ringkas */}
+            <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
               {effectiveAdminHp ? (
-                <div className="flex items-center gap-1.5 pt-1 sm:pt-0">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs font-mono font-bold text-slate-700 dark:text-slate-300 hidden md:inline-block px-2 py-1 rounded-md bg-white/90 dark:bg-slate-800/90 border border-emerald-200 dark:border-emerald-800 text-[11px]">
+                    {effectiveAdminHp}
+                  </span>
                   <a
                     href={formatWhatsAppUrl(effectiveAdminHp, `Halo Admin ${effectiveAdminName}, saya warga di ${komunitasData.nama}...`) || `https://wa.me/${effectiveAdminHp.replace(/\D/g, "")}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex-1 sm:flex-none inline-flex min-h-[34px] items-center justify-center gap-1.5 px-3 py-1 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs transition-all active:scale-95 cursor-pointer"
+                    className="inline-flex items-center justify-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-2xs transition-all active:scale-95 cursor-pointer"
                     title={`Chat WhatsApp dengan ${effectiveAdminName}`}
                   >
-                    <MessageSquare className="h-3.5 w-3.5" />
+                    <MessageSquare className="h-3 w-3" />
                     <span>WhatsApp</span>
                   </a>
                   <a
                     href={`tel:${effectiveAdminHp.replace(/[^0-9+]/g, "")}`}
-                    className="inline-flex min-h-[34px] items-center justify-center gap-1.5 px-3 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold border border-slate-200 dark:border-slate-700 shadow-2xs transition-all active:scale-95 cursor-pointer"
+                    className="inline-flex items-center justify-center gap-1 px-2.5 py-1 rounded-lg bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold border border-slate-200 dark:border-slate-700 shadow-2xs transition-all active:scale-95 cursor-pointer"
                     title={`Telepon langsung ${effectiveAdminName}`}
                   >
-                    <Phone className="h-3.5 w-3.5 text-slate-600 dark:text-slate-300" />
+                    <Phone className="h-3 w-3 text-slate-500" />
                     <span className="hidden sm:inline">Telepon</span>
                   </a>
                 </div>
-              ) : null}
+              ) : (
+                <span className="text-[11px] text-slate-500 italic">Kontak belum dicantumkan</span>
+              )}
             </div>
           </div>
         </section>
@@ -865,23 +852,23 @@ export function KomunitasDetailClientView({
 
       {/* ALERT JIKA BELUM MEMILIKI ADMIN (HANYA MUNCUL JIKA KOMUNITAS BELUM MEMILIKI ADMIN) */}
       {!hasCommunityAdmin && Boolean(currentUserId) && !isSuperOrPusat && isApprovedMember && isWargaKita && (
-        <section className="rounded-2xl border-2 border-amber-200 bg-amber-50/70 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
-          <div className="flex items-start gap-3.5">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-900">
-              <ShieldAlert className="h-5 w-5" />
+        <section className="rounded-xl border border-amber-300/80 bg-amber-50/70 p-3 sm:p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+          <div className="flex items-start gap-2.5">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-900">
+              <ShieldAlert className="h-4 w-4" />
             </div>
-            <div className="space-y-1">
-              <h4 className="text-base font-bold text-amber-950">
+            <div className="space-y-0.5">
+              <h4 className="text-xs sm:text-sm font-bold text-amber-950">
                 Komunitas Belum Memiliki Admin / Pengurus
               </h4>
-              <p className="text-sm text-slate-700 leading-relaxed">
+              <p className="text-xs text-slate-700 leading-relaxed">
                 {isPenduduk ? (
                   membership?.peran_diajukan ? (
                     <span className="font-semibold text-emerald-800">
-                      Permohonan Anda sebagai Admin sedang menunggu verifikasi dan persetujuan Super Admin / Admin hierarki tingkat atas. (Tidak ada proses otomatisasi).
+                      Permohonan Anda sebagai Admin sedang menunggu verifikasi Super Admin / Admin hierarki tingkat atas.
                     </span>
                   ) : (
-                    "Sebagai anggota berstatus Penduduk, Anda berhak mengajukan permohonan menjadi Admin/Pengurus kepada Admin tingkat atas (melalui verifikasi manual, tanpa proses otomatisasi)."
+                    "Sebagai anggota berstatus Penduduk, Anda berhak mengajukan diri menjadi Admin/Pengurus."
                   )
                 ) : (
                   "Pengajuan Admin hanya dapat diajukan oleh anggota dengan status Penduduk (KK & Domisili di Kota Tegal)."
@@ -895,14 +882,14 @@ export function KomunitasDetailClientView({
             <button
               type="button"
               onClick={() => setIsApplyAdminOpen(true)}
-              className="inline-flex min-h-[44px] h-11 items-center justify-center gap-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white px-5 text-sm font-bold shadow-xs transition-all active:scale-98 shrink-0 cursor-pointer"
+              className="inline-flex min-h-[36px] h-9 items-center justify-center gap-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white px-3.5 text-xs font-bold shadow-2xs transition-all active:scale-98 shrink-0 cursor-pointer"
             >
-              <ShieldCheck className="h-4 w-4" />
+              <ShieldCheck className="h-3.5 w-3.5" />
               <span>Ajukan Diri Sebagai Admin</span>
             </button>
           ) : membership?.peran_diajukan ? (
-            <span className="inline-flex items-center gap-1.5 rounded-xl bg-amber-100 px-3.5 py-2 text-xs font-bold text-amber-900 border border-amber-300 shrink-0">
-              <Clock className="h-4 w-4 text-amber-700" />
+            <span className="inline-flex items-center gap-1 rounded-lg bg-amber-100 px-2.5 py-1 text-xs font-bold text-amber-900 border border-amber-300 shrink-0">
+              <Clock className="h-3.5 w-3.5 text-amber-700" />
               <span>Menunggu Persetujuan</span>
             </span>
           ) : null}
@@ -910,7 +897,7 @@ export function KomunitasDetailClientView({
       )}
 
       {/* 2. DAFTAR KARTU UTAMA (DATA ANAK & ATS) DAN ACCORDION SUB-TABS KOMUNITAS */}
-      <div className="space-y-3.5 transition-all duration-500 ease-in-out">
+      <div className="space-y-2.5 transition-all duration-300 ease-in-out">
         {/* KARTU LINK DATA UTAMA (POSISI PALING ATAS, TIDAK IKUT BERGESER) */}
         {detailLinkCards.map((cat) => {
           const Icon = cat.icon;
@@ -923,39 +910,39 @@ export function KomunitasDetailClientView({
             return (
               <div
                 key={cat.id}
-                className={`rounded-2xl border-2 transition-all duration-300 overflow-hidden border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xs hover:shadow-xs ${cat.hoverBorder}`}
+                className={`rounded-xl border-2 transition-all duration-300 overflow-hidden border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xs hover:shadow-xs ${cat.hoverBorder}`}
               >
                 <Link
                   href={cat.href}
-                  className={`w-full flex items-center justify-between gap-3 p-3.5 sm:p-4 text-slate-800 dark:text-slate-100 transition-all cursor-pointer group ${cat.hoverBg} text-left`}
+                  className={`w-full flex items-center justify-between gap-3 p-2.5 sm:p-3 text-slate-800 dark:text-slate-100 transition-all cursor-pointer group ${cat.hoverBg} text-left`}
                 >
-                  <div className="flex items-center gap-3 sm:gap-3.5 min-w-0">
+                  <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
                     <div
-                      className={`flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl sm:rounded-2xl ${cat.iconBg} ${cat.iconColor} group-hover:scale-105 transition-transform shadow-2xs`}
+                      className={`flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-xl ${cat.iconBg} ${cat.iconColor} group-hover:scale-105 transition-transform shadow-2xs`}
                     >
-                      <Icon className="h-5 w-5 sm:h-5.5 sm:w-5.5" />
+                      <Icon className="h-4.5 w-4.5 sm:h-5 sm:w-5" />
                     </div>
                     <div className="space-y-0.5 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h2 className={`text-sm sm:text-base font-black tracking-tight text-slate-900 dark:text-slate-100 ${cat.textHoverColor} transition-colors`}>
+                        <h2 className={`text-xs sm:text-sm font-black tracking-tight text-slate-900 dark:text-slate-100 ${cat.textHoverColor} transition-colors`}>
                           {cat.title}
                         </h2>
-                        <span className="text-2xs font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+                        <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
                           {cat.badgeText}
                         </span>
                       </div>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 font-medium line-clamp-1">
+                      <p className="text-2xs sm:text-xs text-slate-500 dark:text-slate-400 font-medium line-clamp-1">
                         {cat.subtitle}
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2 shrink-0">
+                  <div className="flex items-center gap-1.5 shrink-0">
                     <span className={`hidden sm:inline-block text-xs font-bold text-slate-400 ${cat.textHoverColor} transition-colors`}>
                       Buka Data
                     </span>
-                    <div className={`h-7 w-7 sm:h-8 sm:w-8 rounded-lg sm:rounded-xl ${cat.arrowBg} ${cat.arrowHoverBg} flex items-center justify-center ${cat.arrowColor} transition-all duration-300 shadow-2xs`}>
-                      <ArrowRight className="h-4 w-4 transform group-hover:translate-x-0.5 transition-transform duration-300" />
+                    <div className={`h-7 w-7 rounded-lg ${cat.arrowBg} ${cat.arrowHoverBg} flex items-center justify-center ${cat.arrowColor} transition-all duration-300 shadow-2xs`}>
+                      <ArrowRight className="h-3.5 w-3.5 transform group-hover:translate-x-0.5 transition-transform duration-300" />
                     </div>
                   </div>
                 </Link>
@@ -965,40 +952,40 @@ export function KomunitasDetailClientView({
             return (
               <div
                 key={cat.id}
-                className="rounded-2xl border-2 transition-all duration-300 overflow-hidden border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xs hover:shadow-xs hover:border-slate-300 dark:hover:border-slate-700"
+                className="rounded-xl border-2 transition-all duration-300 overflow-hidden border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xs hover:shadow-xs hover:border-slate-300 dark:hover:border-slate-700"
               >
                 <button
                   type="button"
                   onClick={() => setIsWargaOnboardingOpen(true)}
-                  className="w-full flex items-center justify-between gap-3 p-3.5 sm:p-4 text-slate-800 dark:text-slate-100 transition-all cursor-pointer group hover:bg-slate-50/60 dark:hover:bg-slate-800/30 text-left"
+                  className="w-full flex items-center justify-between gap-3 p-2.5 sm:p-3 text-slate-800 dark:text-slate-100 transition-all cursor-pointer group hover:bg-slate-50/60 dark:hover:bg-slate-800/30 text-left"
                 >
-                  <div className="flex items-center gap-3 sm:gap-3.5 min-w-0">
+                  <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
                     <div
-                      className={`flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl sm:rounded-2xl ${cat.iconBg} ${cat.iconColor} opacity-70 group-hover:opacity-100 group-hover:scale-105 transition-all shadow-2xs`}
+                      className={`flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-xl ${cat.iconBg} ${cat.iconColor} opacity-70 group-hover:opacity-100 group-hover:scale-105 transition-all shadow-2xs`}
                     >
-                      <Icon className="h-5 w-5 sm:h-5.5 sm:w-5.5" />
+                      <Icon className="h-4.5 w-4.5 sm:h-5 sm:w-5" />
                     </div>
                     <div className="space-y-0.5 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h2 className="text-sm sm:text-base font-black tracking-tight text-slate-900 dark:text-slate-100 group-hover:text-blue-600 transition-colors">
+                        <h2 className="text-xs sm:text-sm font-black tracking-tight text-slate-900 dark:text-slate-100 group-hover:text-blue-600 transition-colors">
                           {cat.title}
                         </h2>
-                        <span className="inline-flex items-center gap-1 text-2xs font-extrabold px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200">
+                        <span className="inline-flex items-center gap-1 text-[10px] font-extrabold px-1.5 py-0.2 rounded-full bg-amber-50 text-amber-800 border border-amber-200">
                           <Lock className="h-3 w-3 text-amber-600" />
                           Khusus Penduduk
                         </span>
                       </div>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 font-medium line-clamp-1">
+                      <p className="text-2xs sm:text-xs text-slate-500 dark:text-slate-400 font-medium line-clamp-1">
                         {cat.subtitle}
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2 shrink-0">
+                  <div className="flex items-center gap-1.5 shrink-0">
                     <span className="hidden sm:inline-block text-xs font-bold text-amber-700 group-hover:text-amber-800 transition-colors">
                       Buka Akses
                     </span>
-                    <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-lg sm:rounded-xl bg-amber-50 dark:bg-amber-950/50 group-hover:bg-amber-600 group-hover:text-white flex items-center justify-center text-amber-600 dark:text-amber-400 transition-all duration-300 shadow-2xs">
+                    <div className="h-7 w-7 rounded-lg bg-amber-50 dark:bg-amber-950/50 group-hover:bg-amber-600 group-hover:text-white flex items-center justify-center text-amber-600 dark:text-amber-400 transition-all duration-300 shadow-2xs">
                       <Lock className="h-3.5 w-3.5 transform group-hover:scale-110 transition-transform duration-300" />
                     </div>
                   </div>
@@ -1016,9 +1003,9 @@ export function KomunitasDetailClientView({
           return (
             <div
               key={cat.id}
-              className={`rounded-2xl border-2 transition-all duration-300 overflow-hidden ${
+              className={`rounded-xl border-2 transition-all duration-300 overflow-hidden ${
                 isOpen
-                  ? `border-slate-300 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/40 p-1.5 sm:p-2 shadow-md`
+                  ? `border-slate-300 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/40 p-1 sm:p-1.5 shadow-xs`
                   : `border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xs hover:shadow-xs ${cat.hoverBorder}`
               }`}
             >
@@ -1028,39 +1015,39 @@ export function KomunitasDetailClientView({
                   type="button"
                   onClick={() => setActiveTab(null)}
                   title="Klik untuk menutup bagian ini"
-                  className={`w-full flex items-center justify-between gap-3 p-3.5 sm:p-4 rounded-xl sm:rounded-2xl text-white ${cat.activeColorBg} shadow-sm cursor-pointer transition-all hover:opacity-95 group text-left`}
+                  className={`w-full flex items-center justify-between gap-2.5 p-2.5 sm:p-3 rounded-lg text-white ${cat.activeColorBg} shadow-2xs cursor-pointer transition-all hover:opacity-95 group text-left`}
                 >
-                  <div className="flex items-center gap-3 sm:gap-3.5 min-w-0">
-                    <div className="flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl sm:rounded-2xl bg-white/20 text-white backdrop-blur-xs shadow-2xs group-hover:scale-105 transition-transform">
-                      <Icon className="h-5 w-5 sm:h-5.5 sm:w-5.5" />
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-lg bg-white/20 text-white backdrop-blur-xs shadow-2xs group-hover:scale-105 transition-transform">
+                      <Icon className="h-4.5 w-4.5" />
                     </div>
                     <div className="space-y-0.5 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h2 className="text-sm sm:text-base font-black tracking-tight truncate">
+                        <h2 className="text-xs sm:text-sm font-black tracking-tight truncate">
                           {cat.title}
                         </h2>
                         <span
-                          className={`text-2xs font-extrabold px-2 py-0.5 rounded-full border backdrop-blur-xs ${cat.badgeColor}`}
+                          className={`text-[10px] font-extrabold px-1.5 py-0.2 rounded-full border backdrop-blur-xs ${cat.badgeColor}`}
                         >
                           {cat.badgeText}
                         </span>
-                        <span className="inline-flex items-center gap-1 text-2xs font-extrabold px-2 py-0.5 rounded-full bg-white/20 text-white">
+                        <span className="inline-flex items-center gap-1 text-[10px] font-extrabold px-1.5 py-0.2 rounded-full bg-white/20 text-white">
                           <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
                           Aktif Terbuka
                         </span>
                       </div>
-                      <p className="text-xs text-white/90 font-medium line-clamp-1">
+                      <p className="text-2xs text-white/90 font-medium line-clamp-1">
                         {cat.subtitle}
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2 shrink-0">
+                  <div className="flex items-center gap-1.5 shrink-0">
                     <span className="hidden sm:inline-block text-xs font-bold text-white/90 group-hover:text-white transition-colors">
                       Tutup Bagian
                     </span>
-                    <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-lg sm:rounded-xl bg-white/20 flex items-center justify-center text-white backdrop-blur-xs group-hover:bg-white/30 transition-colors">
-                      <ChevronDown className="h-4 w-4 transform rotate-180 transition-transform duration-300" />
+                    <div className="h-6 w-6 sm:h-7 sm:w-7 rounded-lg bg-white/20 flex items-center justify-center text-white backdrop-blur-xs group-hover:bg-white/30 transition-colors">
+                      <ChevronDown className="h-3.5 w-3.5 transform rotate-180 transition-transform duration-300" />
                     </div>
                   </div>
                 </button>
@@ -1068,35 +1055,35 @@ export function KomunitasDetailClientView({
                 <button
                   type="button"
                   onClick={() => setActiveTab(cat.id)}
-                  className={`w-full flex items-center justify-between gap-3 p-3.5 sm:p-4 text-slate-800 dark:text-slate-100 transition-all cursor-pointer group ${cat.hoverBg} text-left`}
+                  className={`w-full flex items-center justify-between gap-2.5 p-2.5 sm:p-3 text-slate-800 dark:text-slate-100 transition-all cursor-pointer group ${cat.hoverBg} text-left`}
                 >
-                  <div className="flex items-center gap-3 sm:gap-3.5 min-w-0">
+                  <div className="flex items-center gap-2.5 min-w-0">
                     <div
-                      className={`flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl sm:rounded-2xl ${cat.iconBg} ${cat.iconColor} group-hover:scale-105 transition-transform shadow-2xs`}
+                      className={`flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-lg ${cat.iconBg} ${cat.iconColor} group-hover:scale-105 transition-transform shadow-2xs`}
                     >
-                      <Icon className="h-5 w-5 sm:h-5.5 sm:w-5.5" />
+                      <Icon className="h-4.5 w-4.5" />
                     </div>
                     <div className="space-y-0.5 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h2 className="text-sm sm:text-base font-black tracking-tight text-slate-900 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                        <h2 className="text-xs sm:text-sm font-black tracking-tight text-slate-900 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                           {cat.title}
                         </h2>
-                        <span className="text-2xs font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+                        <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
                           {cat.badgeText}
                         </span>
                       </div>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 font-medium line-clamp-1">
+                      <p className="text-2xs text-slate-500 dark:text-slate-400 font-medium line-clamp-1">
                         {cat.subtitle}
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2 shrink-0">
+                  <div className="flex items-center gap-1.5 shrink-0">
                     <span className="hidden sm:inline-block text-xs font-bold text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200 transition-colors">
                       Buka Bagian
                     </span>
-                    <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-lg sm:rounded-xl bg-slate-100 dark:bg-slate-800 group-hover:bg-slate-200 dark:group-hover:bg-slate-700 flex items-center justify-center text-slate-500 dark:text-slate-400 transition-colors">
-                      <ChevronDown className="h-4 w-4 transform rotate-0 transition-transform duration-300" />
+                    <div className="h-6 w-6 sm:h-7 sm:w-7 rounded-lg bg-slate-100 dark:bg-slate-800 group-hover:bg-slate-200 dark:group-hover:bg-slate-700 flex items-center justify-center text-slate-500 dark:text-slate-400 transition-colors">
+                      <ChevronDown className="h-3.5 w-3.5 transform rotate-0 transition-transform duration-300" />
                     </div>
                   </div>
                 </button>
@@ -1104,7 +1091,7 @@ export function KomunitasDetailClientView({
 
               {/* Accordion Body Content */}
               {isOpen && (
-                <div className="p-2 sm:p-4 animate-in fade-in-50 duration-300">
+                <div className="p-2 sm:p-2.5 animate-in fade-in-50 duration-200">
                   {/* Subtab: RUANG PERCAKAPAN KOMUNITAS */}
                   {cat.id === "percakapan" && (
                     <section className="space-y-4 pb-4">
@@ -1163,13 +1150,13 @@ export function KomunitasDetailClientView({
       {cat.id === "anggota" && (
         <section className="space-y-4 pb-4">
           {/* Informasi Resmi & Operasional Wilayah */}
-          <div className="rounded-2xl border-2 border-slate-200 bg-white p-5 sm:p-6 space-y-4 shadow-xs">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
+          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3.5 sm:p-4 space-y-3 shadow-2xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 border-b border-slate-100 dark:border-slate-800 pb-2.5">
               <div className="space-y-0.5">
-                <h3 className="text-base font-bold text-slate-900 uppercase tracking-wider">
+                <h3 className="text-xs sm:text-sm font-black text-slate-900 dark:text-slate-100 uppercase tracking-wider">
                   Informasi &amp; Operasional
                 </h3>
-                <p className="text-xs text-slate-500 font-medium">
+                <p className="text-2xs text-slate-500 font-medium">
                   {komunitasData.jenis === "posyandu"
                     ? "Informasi alamat lokasi, jadwal layanan, dan kontak 6 bidang kader"
                     : "Informasi alamat lokasi, jadwal layanan, dan kontak pengurus"}
@@ -1180,22 +1167,22 @@ export function KomunitasDetailClientView({
                 <button
                   type="button"
                   onClick={() => setIsEditOperasionalOpen(true)}
-                  className="inline-flex min-h-[40px] h-10 items-center justify-center gap-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white px-4 text-xs font-bold shadow-xs transition-all active:scale-98 cursor-pointer shrink-0"
+                  className="inline-flex min-h-[34px] h-8 items-center justify-center gap-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white px-3 text-xs font-bold shadow-2xs transition-all active:scale-98 cursor-pointer shrink-0"
                   title="Edit Informasi & Operasional Komunitas"
                 >
-                  <Pencil className="h-3.5 w-3.5" />
+                  <Pencil className="h-3 w-3" />
                   <span>Edit Informasi</span>
                 </button>
               )}
             </div>
 
-            <div className="space-y-3 text-sm">
+            <div className="space-y-2.5 text-xs">
               {/* Alamat Lokasi */}
-              <div className="flex items-start gap-3.5 p-4 rounded-xl bg-slate-50 border border-slate-200">
-                <MapPin className="h-5 w-5 text-slate-500 shrink-0 mt-0.5" />
-                <div className="space-y-0.5">
-                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">ALAMAT LOKASI</span>
-                  <p className="text-slate-900 font-semibold leading-relaxed">
+              <div className="flex items-start gap-2.5 p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
+                <MapPin className="h-4 w-4 text-slate-500 shrink-0 mt-0.5" />
+                <div className="space-y-0.5 min-w-0">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">ALAMAT LOKASI</span>
+                  <p className="text-slate-900 dark:text-slate-100 font-semibold leading-relaxed">
                     {komunitasData.lokasi}
                   </p>
                 </div>
@@ -1203,11 +1190,11 @@ export function KomunitasDetailClientView({
 
               {/* Jadwal Layanan */}
               {komunitasData.jadwal && (
-                <div className="flex items-start gap-3.5 p-4 rounded-xl bg-slate-50 border border-slate-200">
-                  <Calendar className="h-5 w-5 text-blue-700 shrink-0 mt-0.5" />
-                  <div className="space-y-0.5">
-                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">JADWAL LAYANAN</span>
-                    <p className="text-slate-900 font-semibold leading-relaxed">
+                <div className="flex items-start gap-2.5 p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
+                  <Calendar className="h-4 w-4 text-blue-700 shrink-0 mt-0.5" />
+                  <div className="space-y-0.5 min-w-0">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">JADWAL LAYANAN</span>
+                    <p className="text-slate-900 dark:text-slate-100 font-semibold leading-relaxed">
                       {komunitasData.jadwal}
                     </p>
                   </div>
@@ -1215,19 +1202,19 @@ export function KomunitasDetailClientView({
               )}
 
               {/* Kontak Resmi Utama */}
-              <div className="flex items-start gap-3.5 p-4 rounded-xl bg-slate-50 border border-slate-200">
-                <Phone className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />
-                <div className="space-y-1 w-full">
+              <div className="flex items-start gap-2.5 p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
+                <Phone className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
+                <div className="space-y-0.5 w-full min-w-0">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">KONTAK UTAMA / SEKRETARIAT</span>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">KONTAK UTAMA / SEKRETARIAT</span>
                     {effectiveAdminName && (
-                      <span className="text-2xs font-bold px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800">
+                      <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-md bg-emerald-100 text-emerald-800">
                         Admin: {effectiveAdminName}
                       </span>
                     )}
                   </div>
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <p className="text-slate-900 font-bold font-mono text-base">
+                  <div className="flex flex-wrap items-center justify-between gap-2 pt-0.5">
+                    <p className="text-slate-900 dark:text-slate-100 font-bold font-mono text-xs sm:text-sm">
                       {effectiveAdminHp || parsedKontak.utama || komunitasData.kontak || "-"}
                     </p>
                     {(effectiveAdminHp || parsedKontak.utama) && (
@@ -1235,10 +1222,10 @@ export function KomunitasDetailClientView({
                         href={formatWhatsAppUrl(effectiveAdminHp || parsedKontak.utama, `Halo Pengurus ${komunitasData.nama}, saya ingin menanyakan informasi layanan.`) || `tel:${effectiveAdminHp || parsedKontak.utama}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-2xs transition-all active:scale-95"
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-2xs transition-all active:scale-95"
                       >
-                        <Phone className="h-3.5 w-3.5" />
-                        <span>Hubungi WhatsApp</span>
+                        <Phone className="h-3 w-3" />
+                        <span>WhatsApp</span>
                       </a>
                     )}
                   </div>
@@ -1247,15 +1234,15 @@ export function KomunitasDetailClientView({
 
               {/* Kontak 6 Bidang Kader SPM (Permendagri No. 13 Tahun 2024) - Khusus Komunitas Posyandu */}
               {komunitasData.jenis === "posyandu" && (
-                <div className="rounded-2xl border-2 border-emerald-100 bg-emerald-50/40 p-4 sm:p-5 space-y-3.5">
+                <div className="rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50/40 dark:bg-emerald-950/20 p-3 sm:p-3.5 space-y-2.5">
                 <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="h-4 w-4 text-emerald-700" />
-                    <h4 className="text-xs sm:text-sm font-bold text-emerald-950 uppercase tracking-wider">
+                  <div className="flex items-center gap-1.5">
+                    <Sparkles className="h-3.5 w-3.5 text-emerald-700" />
+                    <h4 className="text-[11px] font-black text-emerald-950 dark:text-emerald-300 uppercase tracking-wider">
                       Kontak Kader 6 Bidang SPM
                     </h4>
                   </div>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-900 border border-emerald-300">
+                  <span className="text-[9px] font-bold px-1.5 py-0.2 rounded-md bg-emerald-100 text-emerald-900 border border-emerald-300">
                     6 Bidang SPM
                   </span>
                 </div>
@@ -1475,12 +1462,12 @@ export function KomunitasDetailClientView({
             />
           )}
 
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 sm:p-5 rounded-2xl border-2 border-slate-200 shadow-xs">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 bg-white dark:bg-slate-900 p-3 sm:p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xs">
             <div className="space-y-0.5">
-              <h3 className="text-base font-bold text-slate-900">
+              <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100">
                 Daftar Anggota Komunitas
               </h3>
-              <p className="text-sm text-slate-500 font-medium">
+              <p className="text-2xs text-slate-500 font-medium">
                 Total {approvedMembers.length} anggota aktif terdaftar
               </p>
             </div>
@@ -1488,20 +1475,20 @@ export function KomunitasDetailClientView({
             {canManageMembers && (
               <Link
                 href={`/komunitas/${komunitas.id}/anggota`}
-                className="inline-flex min-h-[44px] h-11 items-center justify-center gap-2 rounded-xl bg-blue-700 hover:bg-blue-800 text-white px-5 text-sm font-bold shadow-xs transition-all active:scale-98 shrink-0 cursor-pointer"
+                className="inline-flex min-h-[36px] h-9 items-center justify-center gap-1.5 rounded-lg bg-blue-700 hover:bg-blue-800 text-white px-3.5 text-xs font-bold shadow-2xs transition-all active:scale-98 shrink-0 cursor-pointer"
               >
-                <Settings2 className="h-4 w-4" />
+                <Settings2 className="h-3.5 w-3.5" />
                 <span>KELOLA ANGGOTA</span>
               </Link>
             )}
           </div>
 
           {approvedMembers.length === 0 ? (
-            <div className="rounded-2xl border-2 border-dashed border-slate-300 bg-white p-12 text-center text-sm font-semibold text-slate-500">
+            <div className="rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-8 text-center text-xs font-semibold text-slate-400">
               Belum ada anggota terdaftar secara daring
             </div>
           ) : (
-            <div className="space-y-2.5">
+            <div className="space-y-2">
               {approvedMembers.map((member) => {
                 const name = member.profiles?.nama_lengkap || "Warga Komunitas";
                 const initial = name.charAt(0).toUpperCase();
@@ -1512,30 +1499,30 @@ export function KomunitasDetailClientView({
                 return (
                   <div
                     key={member.id}
-                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border-2 border-slate-200 bg-white p-4 shadow-xs"
+                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-2.5 sm:p-3 shadow-2xs"
                   >
-                    <div className="flex items-center gap-3.5 min-w-0">
-                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 border-2 border-blue-200 text-blue-700 font-bold text-base">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-50 border border-blue-200 text-blue-700 font-bold text-sm">
                         {initial}
                       </div>
                       <div className="min-w-0">
-                        <div className="flex items-center gap-2">
-                          <h4 className="text-base font-bold text-slate-900 truncate">
+                        <div className="flex items-center gap-1.5">
+                          <h4 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 truncate">
                             {name}
                           </h4>
                           {isMe && (
-                            <span className="text-[10px] font-extrabold bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded-md">
+                            <span className="text-[9px] font-extrabold bg-blue-100 text-blue-800 px-1.5 py-0.2 rounded">
                               ANDA
                             </span>
                           )}
                         </div>
-                        <div className="flex items-center gap-2 text-xs text-slate-500 font-medium">
-                          <span>{member.profiles?.email || "-"}</span>
+                        <div className="flex items-center gap-2 text-2xs text-slate-500 font-medium">
+                          <span className="truncate">{member.profiles?.email || "-"}</span>
                           {member.profiles?.nomor_hp && (
                             <>
                               <span>•</span>
-                              <span className="font-mono font-bold text-emerald-800 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200">
-                                HP: {member.profiles.nomor_hp}
+                              <span className="font-mono font-bold text-emerald-800 bg-emerald-50 px-1 py-0.2 rounded border border-emerald-200">
+                                {member.profiles.nomor_hp}
                               </span>
                             </>
                           )}
@@ -1543,17 +1530,17 @@ export function KomunitasDetailClientView({
                       </div>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-2 shrink-0">
+                    <div className="flex flex-wrap items-center gap-1.5 shrink-0 self-end sm:self-center">
                       <span className={cn(
-                        "rounded-xl px-3 py-1.5 text-xs font-bold border",
+                        "rounded-lg px-2.5 py-1 text-2xs font-bold border",
                         isRoleAdmin(member.peran)
-                          ? "bg-emerald-100 text-emerald-950 border-emerald-300 font-black shadow-2xs"
+                          ? "bg-emerald-100 text-emerald-950 border-emerald-300 font-black"
                           : "bg-slate-100 text-slate-800 border-slate-200"
                       )}>
                         {formatPeranDisplay(member.peran)}
                       </span>
                       {member.peran_diajukan && (
-                        <span className="rounded-xl bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-900 border border-amber-200">
+                        <span className="rounded-lg bg-amber-50 px-2 py-0.5 text-2xs font-bold text-amber-900 border border-amber-200">
                           Diajukan: {formatPeranDisplay(member.peran_diajukan)}
                         </span>
                       )}
@@ -1563,7 +1550,7 @@ export function KomunitasDetailClientView({
                         <button
                           type="button"
                           onClick={() => setIsUbahPeranOpen(true)}
-                          className="inline-flex items-center gap-1 rounded-xl border border-blue-200 bg-blue-50 hover:bg-blue-100 text-blue-700 px-2.5 py-1.5 text-xs font-bold transition-all shadow-2xs active:scale-95 cursor-pointer"
+                          className="inline-flex items-center gap-1 rounded-lg border border-blue-200 bg-blue-50 hover:bg-blue-100 text-blue-700 px-2 py-1 text-2xs font-bold transition-all shadow-2xs active:scale-95 cursor-pointer"
                           title="Ajukan perubahan peran kepada Admin"
                         >
                           <Sparkles className="h-3 w-3 text-blue-600" />
@@ -1576,10 +1563,10 @@ export function KomunitasDetailClientView({
                         <button
                           type="button"
                           onClick={() => setKickTargetMember(member)}
-                          className="inline-flex items-center gap-1.5 rounded-xl border border-rose-300 bg-rose-50 hover:bg-rose-100 text-rose-700 px-3 py-1.5 text-xs font-bold shadow-2xs transition-all active:scale-98 cursor-pointer"
+                          className="inline-flex items-center gap-1 rounded-lg border border-rose-300 bg-rose-50 hover:bg-rose-100 text-rose-700 px-2 py-1 text-2xs font-bold shadow-2xs transition-all active:scale-98 cursor-pointer"
                           title={`Keluarkan ${name} dari komunitas`}
                         >
-                          <UserX className="h-3.5 w-3.5 text-rose-600" />
+                          <UserX className="h-3 w-3 text-rose-600" />
                           <span>Keluarkan</span>
                         </button>
                       )}
