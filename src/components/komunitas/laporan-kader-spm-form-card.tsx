@@ -116,7 +116,7 @@ export function LaporanKaderSpmFormCard({
   isAdminOrKader,
 }: LaporanKaderSpmFormCardProps) {
   const [activeSection, setActiveSection] = useState<"form" | "riwayat">("form");
-  const [isOpen, setIsOpen] = useState<boolean>(true);
+  const [isOpen, setIsOpen] = useState<boolean>(false);
 
   // Form State
   const [selectedBidang, setSelectedBidang] = useState<BidangSpmType>("Pendidikan");
@@ -370,25 +370,35 @@ export function LaporanKaderSpmFormCard({
   }
 
   return (
-    <section className="rounded-3xl border-2 border-emerald-300/80 dark:border-emerald-800/80 bg-gradient-to-br from-emerald-50/60 via-white to-teal-50/40 dark:from-slate-900 dark:via-slate-900 dark:to-emerald-950/20 p-4 sm:p-6 shadow-sm space-y-5 transition-all">
+    <section
+      className={cn(
+        "rounded-2xl sm:rounded-3xl border-2 border-emerald-300/80 dark:border-emerald-800/80 bg-gradient-to-br from-emerald-50/60 via-white to-teal-50/40 dark:from-slate-900 dark:via-slate-900 dark:to-emerald-950/20 p-3.5 sm:p-5 shadow-2xs hover:shadow-xs transition-all",
+        isOpen ? "space-y-4 sm:space-y-5" : ""
+      )}
+    >
       {/* ========================================================= */}
       {/* 1. HEADER CARD                                            */}
       {/* ========================================================= */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-emerald-200/80 dark:border-slate-800 pb-4">
+      <div
+        className={cn(
+          "flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-all",
+          isOpen ? "border-b border-emerald-200/80 dark:border-slate-800 pb-3.5 sm:pb-4" : ""
+        )}
+      >
         <div className="flex items-start sm:items-center gap-3">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-600 text-white shadow-2xs border border-emerald-500">
-            <FileText className="h-6 w-6" />
+          <div className="flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-600 text-white shadow-2xs border border-emerald-500">
+            <FileText className="h-5 w-5 sm:h-6 sm:w-6" />
           </div>
           <div className="space-y-0.5">
             <div className="flex items-center gap-2 flex-wrap">
-              <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-slate-100 tracking-tight">
+              <h3 className="text-sm sm:text-base font-black text-slate-900 dark:text-slate-100 tracking-tight">
                 Laporan Kader Posyandu 6 Bidang SPM
               </h3>
-              <span className="rounded-full bg-emerald-600 text-white text-[10px] font-black px-2.5 py-0.5 shadow-2xs">
+              <span className="rounded-full bg-emerald-600 text-white text-[10px] font-black px-2 py-0.5 shadow-2xs">
                 Permendagri 13/2024
               </span>
             </div>
-            <p className="text-xs text-slate-600 dark:text-slate-400">
+            <p className="text-2xs sm:text-xs text-slate-600 dark:text-slate-400">
               {komunitas.nama} &bull; Kelurahan {komunitas.kelurahan || "-"}, Kecamatan{" "}
               {komunitas.kecamatan || "-"}, Kota Tegal
             </p>
@@ -400,10 +410,13 @@ export function LaporanKaderSpmFormCard({
           <div className="inline-flex rounded-xl bg-slate-100 dark:bg-slate-800 p-1 border border-slate-200 dark:border-slate-700">
             <button
               type="button"
-              onClick={() => setActiveSection("form")}
+              onClick={() => {
+                setActiveSection("form");
+                if (!isOpen) setIsOpen(true);
+              }}
               className={cn(
-                "px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer",
-                activeSection === "form"
+                "px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer",
+                activeSection === "form" && isOpen
                   ? "bg-white dark:bg-slate-700 text-emerald-700 dark:text-emerald-300 shadow-2xs"
                   : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
               )}
@@ -415,10 +428,11 @@ export function LaporanKaderSpmFormCard({
               onClick={() => {
                 setActiveSection("riwayat");
                 fetchRiwayat();
+                if (!isOpen) setIsOpen(true);
               }}
               className={cn(
-                "px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1",
-                activeSection === "riwayat"
+                "px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1",
+                activeSection === "riwayat" && isOpen
                   ? "bg-white dark:bg-slate-700 text-emerald-700 dark:text-emerald-300 shadow-2xs"
                   : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
               )}
@@ -433,7 +447,8 @@ export function LaporanKaderSpmFormCard({
           <button
             type="button"
             onClick={() => setIsOpen(!isOpen)}
-            className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
+            title={isOpen ? "Tutup Laporan Kader" : "Buka Laporan Kader"}
+            className="p-1.5 sm:p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
           >
             {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
           </button>

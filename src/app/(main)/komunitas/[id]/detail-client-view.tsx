@@ -68,7 +68,7 @@ interface KomunitasDetailClientViewProps {
   isSuperAdmin?: boolean;
   isAdminPusat?: boolean;
   isSuperOrAdminPusat?: boolean;
-  currentSubtab: string;
+  currentSubtab?: string | null;
   anggotaList: AnggotaKomunitasDetail[];
   kabarKomunitas: KabarItem[];
   dataAnakList?: DataAnakItem[];
@@ -91,13 +91,13 @@ export function KomunitasDetailClientView({
   const [komunitasData, setKomunitasData] = useState(komunitas);
 
   const initialActiveTab = useMemo(() => {
-    if (currentSubtab === "data") {
-      return "kabar";
+    if (!currentSubtab || currentSubtab === "data") {
+      return null;
     }
     if (!currentUserId && currentSubtab === "anggota") {
-      return "kabar";
+      return null;
     }
-    return currentSubtab || null;
+    return currentSubtab;
   }, [currentUserId, currentSubtab]);
   const [activeTab, setActiveTab] = useState<string | null>(initialActiveTab);
 
@@ -944,125 +944,9 @@ export function KomunitasDetailClientView({
         </section>
       )}
 
-      {/* 2. DAFTAR KARTU UTAMA (DATA ANAK & ATS) DAN ACCORDION SUB-TABS KOMUNITAS */}
+      {/* 2. DAFTAR KARTU UTAMA DAN ACCORDION SUB-TABS KOMUNITAS */}
       <div className="space-y-2.5 transition-all duration-300 ease-in-out">
-        {/* KARTU LAPORAN KADER POSYANDU 6 BIDANG SPM (POSISI PALING ATAS TIAP KOMUNITAS POSYANDU) */}
-        {komunitasData.jenis === "posyandu" && (
-          <LaporanKaderSpmFormCard
-            komunitas={komunitasData}
-            currentUserId={currentUserId}
-            userName={myProfileName}
-            isAdminOrKader={canAccessLaporanPosyandu}
-          />
-        )}
-
-        {/* REKAP LAPORAN KADER WILAYAH (KELURAHAN, KECAMATAN, KOTA TEGAL) */}
-        {komunitasData.jenis === "warga_kita" && isAdminOrKader && (
-          <RekapLaporanKaderWilayahCard
-            komunitas={komunitasData}
-            isAdminOrKader={isAdminOrKader}
-            currentUserId={currentUserId}
-          />
-        )}
-
-        {/* KARTU LINK DATA UTAMA (POSISI PALING ATAS, TIDAK IKUT BERGESER) */}
-        {detailLinkCards.map((cat) => {
-          const Icon = cat.icon;
-          const canAccessCard =
-            isSuperOrPusat ||
-            hasFullAccess ||
-            (isRekapOnlyTier && (isApprovedMember || isPenduduk || isAdminOrKader));
-
-          if (canAccessCard) {
-            return (
-              <div
-                key={cat.id}
-                className={`rounded-xl border-2 transition-all duration-300 overflow-hidden border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xs hover:shadow-xs ${cat.hoverBorder}`}
-              >
-                <Link
-                  href={cat.href}
-                  className={`w-full flex items-center justify-between gap-3 p-2.5 sm:p-3 text-slate-800 dark:text-slate-100 transition-all cursor-pointer group ${cat.hoverBg} text-left`}
-                >
-                  <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-                    <div
-                      className={`flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-xl ${cat.iconBg} ${cat.iconColor} group-hover:scale-105 transition-transform shadow-2xs`}
-                    >
-                      <Icon className="h-4.5 w-4.5 sm:h-5 sm:w-5" />
-                    </div>
-                    <div className="space-y-0.5 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <h2 className={`text-xs sm:text-sm font-black tracking-tight text-slate-900 dark:text-slate-100 ${cat.textHoverColor} transition-colors`}>
-                          {cat.title}
-                        </h2>
-                        <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
-                          {cat.badgeText}
-                        </span>
-                      </div>
-                      <p className="text-2xs sm:text-xs text-slate-500 dark:text-slate-400 font-medium line-clamp-1">
-                        {cat.subtitle}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-1.5 shrink-0">
-                    <span className={`hidden sm:inline-block text-xs font-bold text-slate-400 ${cat.textHoverColor} transition-colors`}>
-                      Buka Data
-                    </span>
-                    <div className={`h-7 w-7 rounded-lg ${cat.arrowBg} ${cat.arrowHoverBg} flex items-center justify-center ${cat.arrowColor} transition-all duration-300 shadow-2xs`}>
-                      <ArrowRight className="h-3.5 w-3.5 transform group-hover:translate-x-0.5 transition-transform duration-300" />
-                    </div>
-                  </div>
-                </Link>
-              </div>
-            );
-          } else {
-            return (
-              <div
-                key={cat.id}
-                className="rounded-xl border-2 transition-all duration-300 overflow-hidden border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xs hover:shadow-xs hover:border-slate-300 dark:hover:border-slate-700"
-              >
-                <button
-                  type="button"
-                  onClick={() => setIsWargaOnboardingOpen(true)}
-                  className="w-full flex items-center justify-between gap-3 p-2.5 sm:p-3 text-slate-800 dark:text-slate-100 transition-all cursor-pointer group hover:bg-slate-50/60 dark:hover:bg-slate-800/30 text-left"
-                >
-                  <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-                    <div
-                      className={`flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-xl ${cat.iconBg} ${cat.iconColor} opacity-70 group-hover:opacity-100 group-hover:scale-105 transition-all shadow-2xs`}
-                    >
-                      <Icon className="h-4.5 w-4.5 sm:h-5 sm:w-5" />
-                    </div>
-                    <div className="space-y-0.5 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <h2 className="text-xs sm:text-sm font-black tracking-tight text-slate-900 dark:text-slate-100 group-hover:text-blue-600 transition-colors">
-                          {cat.title}
-                        </h2>
-                        <span className="inline-flex items-center gap-1 text-[10px] font-extrabold px-1.5 py-0.2 rounded-full bg-amber-50 text-amber-800 border border-amber-200">
-                          <Lock className="h-3 w-3 text-amber-600" />
-                          Khusus Penduduk
-                        </span>
-                      </div>
-                      <p className="text-2xs sm:text-xs text-slate-500 dark:text-slate-400 font-medium line-clamp-1">
-                        {cat.subtitle}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-1.5 shrink-0">
-                    <span className="hidden sm:inline-block text-xs font-bold text-amber-700 group-hover:text-amber-800 transition-colors">
-                      Buka Akses
-                    </span>
-                    <div className="h-7 w-7 rounded-lg bg-amber-50 dark:bg-amber-950/50 group-hover:bg-amber-600 group-hover:text-white flex items-center justify-center text-amber-600 dark:text-amber-400 transition-all duration-300 shadow-2xs">
-                      <Lock className="h-3.5 w-3.5 transform group-hover:scale-110 transition-transform duration-300" />
-                    </div>
-                  </div>
-                </button>
-              </div>
-            );
-          }
-        })}
-
-        {/* ACCORDION SUB-TABS (PERCAKAPAN, KABAR, ANGGOTA) */}
+        {/* DERETAN ATAS: ACCORDION SUB-TABS (PERCAKAPAN, KABAR, ANGGOTA) */}
         {sortedDetailCategories.map((cat) => {
           const isOpen = activeTab === cat.id;
           const Icon = cat.icon;
@@ -1650,6 +1534,122 @@ export function KomunitasDetailClientView({
             </div>
           );
         })}
+
+        {/* DI BAWAH 3 KARTU: KARTU LINK DATA UTAMA (DATA ANAK & ATS) */}
+        {detailLinkCards.map((cat) => {
+          const Icon = cat.icon;
+          const canAccessCard =
+            isSuperOrPusat ||
+            hasFullAccess ||
+            (isRekapOnlyTier && (isApprovedMember || isPenduduk || isAdminOrKader));
+
+          if (canAccessCard) {
+            return (
+              <div
+                key={cat.id}
+                className={`rounded-xl border-2 transition-all duration-300 overflow-hidden border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xs hover:shadow-xs ${cat.hoverBorder}`}
+              >
+                <Link
+                  href={cat.href}
+                  className={`w-full flex items-center justify-between gap-3 p-2.5 sm:p-3 text-slate-800 dark:text-slate-100 transition-all cursor-pointer group ${cat.hoverBg} text-left`}
+                >
+                  <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                    <div
+                      className={`flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-xl ${cat.iconBg} ${cat.iconColor} group-hover:scale-105 transition-transform shadow-2xs`}
+                    >
+                      <Icon className="h-4.5 w-4.5 sm:h-5 sm:w-5" />
+                    </div>
+                    <div className="space-y-0.5 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h2 className={`text-xs sm:text-sm font-black tracking-tight text-slate-900 dark:text-slate-100 ${cat.textHoverColor} transition-colors`}>
+                          {cat.title}
+                        </h2>
+                        <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+                          {cat.badgeText}
+                        </span>
+                      </div>
+                      <p className="text-2xs sm:text-xs text-slate-500 dark:text-slate-400 font-medium line-clamp-1">
+                        {cat.subtitle}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <span className={`hidden sm:inline-block text-xs font-bold text-slate-400 ${cat.textHoverColor} transition-colors`}>
+                      Buka Data
+                    </span>
+                    <div className={`h-7 w-7 rounded-lg ${cat.arrowBg} ${cat.arrowHoverBg} flex items-center justify-center ${cat.arrowColor} transition-all duration-300 shadow-2xs`}>
+                      <ArrowRight className="h-3.5 w-3.5 transform group-hover:translate-x-0.5 transition-transform duration-300" />
+                    </div>
+                  </div>
+                </Link>
+              </div>
+            );
+          } else {
+            return (
+              <div
+                key={cat.id}
+                className="rounded-xl border-2 transition-all duration-300 overflow-hidden border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xs hover:shadow-xs hover:border-slate-300 dark:hover:border-slate-700"
+              >
+                <button
+                  type="button"
+                  onClick={() => setIsWargaOnboardingOpen(true)}
+                  className="w-full flex items-center justify-between gap-3 p-2.5 sm:p-3 text-slate-800 dark:text-slate-100 transition-all cursor-pointer group hover:bg-slate-50/60 dark:hover:bg-slate-800/30 text-left"
+                >
+                  <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                    <div
+                      className={`flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-xl ${cat.iconBg} ${cat.iconColor} opacity-70 group-hover:opacity-100 group-hover:scale-105 transition-all shadow-2xs`}
+                    >
+                      <Icon className="h-4.5 w-4.5 sm:h-5 sm:w-5" />
+                    </div>
+                    <div className="space-y-0.5 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h2 className="text-xs sm:text-sm font-black tracking-tight text-slate-900 dark:text-slate-100 group-hover:text-blue-600 transition-colors">
+                          {cat.title}
+                        </h2>
+                        <span className="inline-flex items-center gap-1 text-[10px] font-extrabold px-1.5 py-0.2 rounded-full bg-amber-50 text-amber-800 border border-amber-200">
+                          <Lock className="h-3 w-3 text-amber-600" />
+                          Khusus Penduduk
+                        </span>
+                      </div>
+                      <p className="text-2xs sm:text-xs text-slate-500 dark:text-slate-400 font-medium line-clamp-1">
+                        {cat.subtitle}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <span className="hidden sm:inline-block text-xs font-bold text-amber-700 group-hover:text-amber-800 transition-colors">
+                      Buka Akses
+                    </span>
+                    <div className="h-7 w-7 rounded-lg bg-amber-50 dark:bg-amber-950/50 group-hover:bg-amber-600 group-hover:text-white flex items-center justify-center text-amber-600 dark:text-amber-400 transition-all duration-300 shadow-2xs">
+                      <Lock className="h-3.5 w-3.5 transform group-hover:scale-110 transition-transform duration-300" />
+                    </div>
+                  </div>
+                </button>
+              </div>
+            );
+          }
+        })}
+
+        {/* PALING BAWAH: KARTU LAPORAN KADER POSYANDU 6 BIDANG SPM */}
+        {komunitasData.jenis === "posyandu" && (
+          <LaporanKaderSpmFormCard
+            komunitas={komunitasData}
+            currentUserId={currentUserId}
+            userName={myProfileName}
+            isAdminOrKader={canAccessLaporanPosyandu}
+          />
+        )}
+
+        {/* REKAP LAPORAN KADER WILAYAH (KELURAHAN, KECAMATAN, KOTA TEGAL) */}
+        {komunitasData.jenis === "warga_kita" && isAdminOrKader && (
+          <RekapLaporanKaderWilayahCard
+            komunitas={komunitasData}
+            isAdminOrKader={isAdminOrKader}
+            currentUserId={currentUserId}
+          />
+        )}
       </div>
 
       {/* Modal Ajukan Diri Sebagai Admin (Hanya untuk Penduduk) */}

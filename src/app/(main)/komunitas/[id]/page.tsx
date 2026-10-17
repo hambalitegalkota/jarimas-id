@@ -44,7 +44,7 @@ export default async function KomunitasDetailPage({
 }: KomunitasDetailPageProps) {
   const { id } = await params;
   const { subtab } = await searchParams;
-  const currentSubtab = subtab || "kabar";
+  const currentSubtab = subtab || null;
 
   const {
     data: komunitas,
