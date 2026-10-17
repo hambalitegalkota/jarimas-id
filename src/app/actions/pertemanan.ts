@@ -24,7 +24,7 @@ import type {
  * - "kota": Warga Kita tingkat Kota Tegal
  * - "komunitas_lain": Posyandu, Satuan PAUD, PKBM & SKB, Kegiatan / Minat, dll.
  */
-export function getKomunitasTierCategory(kom: any): KomunitasTierCategory {
+function getKomunitasTierCategory(kom: any): KomunitasTierCategory {
   if (!kom) return "komunitas_lain";
   const jenis = (kom.jenis || "").toLowerCase();
   if (jenis !== "warga_kita") {

@@ -44,6 +44,7 @@ export const KOTA_TEGAL_DATA: Record<string, KecamatanData> = {
           "Posyandu Kamboja 2",
           "Posyandu Kemuning 1",
           "Posyandu Kemuning 2",
+          "Posyandu Mawar Melati",
           "Posyandu Seruni",
           "Posyandu Tanjungsari",
           "Posyandu Teratai Merah"

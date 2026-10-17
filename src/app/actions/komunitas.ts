@@ -472,12 +472,14 @@ export async function getKomunitasList(
       if (matched) {
         matched.id = dbItem.id;
         if (dbItem.nama) matched.nama = dbItem.nama;
-        if (dbItem.lokasi) matched.lokasi = dbItem.lokasi;
+        if (dbItem.lokasi && (!matched.lokasi || !dbItem.lokasi.startsWith(dbItem.kelurahan + ", Kecamatan"))) {
+          matched.lokasi = dbItem.lokasi;
+        }
         if (dbItem.deskripsi) matched.deskripsi = dbItem.deskripsi;
         if (dbItem.kontak) matched.kontak = dbItem.kontak;
         if (dbItem.jadwal) matched.jadwal = dbItem.jadwal;
-        if (dbItem.rw !== undefined && dbItem.rw !== null) matched.rw = dbItem.rw;
-        if (dbItem.rt !== undefined && dbItem.rt !== null) matched.rt = dbItem.rt;
+        if (dbItem.rw !== undefined && dbItem.rw !== null && dbItem.rw !== "") matched.rw = dbItem.rw;
+        if (dbItem.rt !== undefined && dbItem.rt !== null && dbItem.rt !== "") matched.rt = dbItem.rt;
         if (dbItem.created_at) matched.created_at = dbItem.created_at;
       } else {
         let dbNama = dbItem.nama || "Komunitas";
@@ -1363,13 +1365,13 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
       npsn: (komunitas as any).npsn || seedItem?.npsn,
       kecamatan: komunitas.kecamatan,
       kelurahan: komunitas.kelurahan,
-      rt: komunitas.rt,
-      rw: komunitas.rw,
+      rt: komunitas.rt || seedItem?.rt,
+      rw: komunitas.rw || seedItem?.rw,
       lokasi,
       deskripsi,
       logo_url: komunitas.logo_url || null,
-      kontak: komunitas.kontak || null,
-      jadwal: komunitas.jadwal || null,
+      kontak: komunitas.kontak || seedItem?.kontak || null,
+      jadwal: komunitas.jadwal || seedItem?.jadwal || null,
       created_at: komunitas.created_at,
       created_by: komunitas.created_by || null,
       is_created_by_admin: isCreatedByAdmin,

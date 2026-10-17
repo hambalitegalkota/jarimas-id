@@ -2,6 +2,8 @@ import { Metadata } from "next";
 import { getMarketProduk } from "@/app/actions/market";
 import { AdminMarketClient } from "./admin-market-client";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Kelola Produk Market | Super Admin Jarimas",
   description: "Dashboard manajemen katalog dan stok produk Jarimas Market.",
