@@ -946,6 +946,25 @@ export function KomunitasDetailClientView({
 
       {/* 2. DAFTAR KARTU UTAMA (DATA ANAK & ATS) DAN ACCORDION SUB-TABS KOMUNITAS */}
       <div className="space-y-2.5 transition-all duration-300 ease-in-out">
+        {/* KARTU LAPORAN KADER POSYANDU 6 BIDANG SPM (POSISI PALING ATAS TIAP KOMUNITAS POSYANDU) */}
+        {komunitasData.jenis === "posyandu" && (
+          <LaporanKaderSpmFormCard
+            komunitas={komunitasData}
+            currentUserId={currentUserId}
+            userName={myProfileName}
+            isAdminOrKader={canAccessLaporanPosyandu}
+          />
+        )}
+
+        {/* REKAP LAPORAN KADER WILAYAH (KELURAHAN, KECAMATAN, KOTA TEGAL) */}
+        {komunitasData.jenis === "warga_kita" && isAdminOrKader && (
+          <RekapLaporanKaderWilayahCard
+            komunitas={komunitasData}
+            isAdminOrKader={isAdminOrKader}
+            currentUserId={currentUserId}
+          />
+        )}
+
         {/* KARTU LINK DATA UTAMA (POSISI PALING ATAS, TIDAK IKUT BERGESER) */}
         {detailLinkCards.map((cat) => {
           const Icon = cat.icon;
