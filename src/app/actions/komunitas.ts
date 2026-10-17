@@ -204,7 +204,53 @@ export async function getKomunitasList(
         rt: params.rt,
       });
 
-      let filteredWarga = hierarchyItems;
+      let filteredWarga = [...hierarchyItems];
+
+      // Ambil komunitas kustom warga_kita dari database jika ada
+      let dbWargaQuery = supabase
+        .from("komunitas")
+        .select("id, nama, jenis, kecamatan, kelurahan, rw, rt, lokasi, deskripsi, logo_url, kontak, jadwal, created_at")
+        .eq("jenis", "warga_kita");
+
+      if (params.kecamatan && params.kecamatan !== "semua") {
+        dbWargaQuery = dbWargaQuery.ilike("kecamatan", params.kecamatan.trim());
+      }
+      if (params.kelurahan && params.kelurahan !== "semua") {
+        dbWargaQuery = dbWargaQuery.ilike("kelurahan", params.kelurahan.trim());
+      }
+      if (params.rw && params.rw !== "semua") {
+        dbWargaQuery = dbWargaQuery.eq("rw", params.rw.trim());
+      }
+      if (params.rt && params.rt !== "semua") {
+        dbWargaQuery = dbWargaQuery.eq("rt", params.rt.trim());
+      }
+
+      const { data: dbWargaList } = await dbWargaQuery;
+      if (dbWargaList && dbWargaList.length > 0) {
+        const hierarchyIdSet = new Set(filteredWarga.flatMap((w) => [w.id, toValidUUID(w.id)]));
+        for (const w of dbWargaList) {
+          if (!hierarchyIdSet.has(w.id) && !hierarchyIdSet.has(toValidUUID(w.id))) {
+            filteredWarga.push({
+              id: w.id,
+              nama: w.nama,
+              jenis: "warga_kita",
+              kecamatan: w.kecamatan,
+              kelurahan: w.kelurahan,
+              rw: w.rw || undefined,
+              rt: w.rt || undefined,
+              lokasi: w.lokasi || `${w.kelurahan}, Kecamatan ${w.kecamatan}, Kota Tegal`,
+              deskripsi: w.deskripsi || null,
+              logo_url: w.logo_url || null,
+              kontak: w.kontak || null,
+              jadwal: w.jadwal || null,
+              created_at: w.created_at || new Date().toISOString(),
+            });
+            hierarchyIdSet.add(w.id);
+            hierarchyIdSet.add(toValidUUID(w.id));
+          }
+        }
+      }
+
       if (params.searchQuery && params.searchQuery.trim()) {
         const sq = params.searchQuery.toLowerCase().trim();
         filteredWarga = filteredWarga.filter(
@@ -339,7 +385,7 @@ export async function getKomunitasList(
       };
     }
 
-    // 5. Khusus jenis "satuan_paud", "pkbm_skb", "posyandu", dan "semua": Gunakan Master Seed Resmi Kota Tegal
+    // 5. Khusus jenis "satuan_paud", "pkbm_skb", "posyandu", dan "semua": Gunakan Master Seed Resmi Kota Tegal digabung data kustom dari DB
     let baseList: any[] = [];
 
     if (params.jenis === "pkbm_skb") {
@@ -364,7 +410,100 @@ export async function getKomunitasList(
       ];
     }
 
-    let filteredList = [...baseList];
+    // Ambil data komunitas dari database Supabase (termasuk komunitas kustom baru yang ditambahkan Super Admin)
+    let dbKomunitasQuery = supabase
+      .from("komunitas")
+      .select("id, nama, nama_komunitas, jenis, jenis_komunitas, kecamatan, kelurahan, rw, rt, lokasi, deskripsi, logo_url, kontak, jadwal, created_at");
+
+    if (params.jenis && params.jenis !== "semua") {
+      dbKomunitasQuery = dbKomunitasQuery.eq("jenis", params.jenis);
+    }
+    if (params.kecamatan && params.kecamatan !== "semua") {
+      dbKomunitasQuery = dbKomunitasQuery.ilike("kecamatan", params.kecamatan.trim());
+    }
+    if (params.kelurahan && params.kelurahan !== "semua") {
+      dbKomunitasQuery = dbKomunitasQuery.ilike("kelurahan", params.kelurahan.trim());
+    }
+
+    const { data: dbKomunitasRaw } = await dbKomunitasQuery;
+
+    const allInvalidIds = [...(INVALID_POSYANDU_IDS || []), ...(INVALID_PAUD_IDS || [])];
+    const invalidIdsSet = new Set(allInvalidIds.map((id) => toValidUUID(id)));
+    allInvalidIds.forEach((id) => invalidIdsSet.add(id));
+
+    const validDbItems = (dbKomunitasRaw || []).filter(
+      (item) => !invalidIdsSet.has(item.id) && !invalidIdsSet.has(toValidUUID(item.id))
+    );
+
+    const mergedList: any[] = baseList.map((item) => ({ ...item }));
+    const seedIdMap = new Map<string, any>();
+    const seedKeyMap = new Map<string, any>();
+
+    const getMatchKey = (item: { nama?: string | null; kelurahan?: string | null; jenis?: string | null }) => {
+      const kel = (item.kelurahan || "").toLowerCase().trim();
+      const jenis = (item.jenis || "").toLowerCase().trim();
+      let coreName = (item.nama || "").toLowerCase().trim();
+      if (jenis === "posyandu") {
+        coreName = extractCorePosyanduName(coreName).toLowerCase().trim();
+      } else {
+        coreName = coreName.replace(/[^a-z0-9]/g, "");
+      }
+      return `${jenis}|${kel}|${coreName}`;
+    };
+
+    mergedList.forEach((item) => {
+      seedIdMap.set(item.id, item);
+      seedIdMap.set(toValidUUID(item.id), item);
+      const key = getMatchKey(item);
+      if (key) {
+        seedKeyMap.set(key, item);
+      }
+    });
+
+    for (const dbItem of validDbItems) {
+      const itemJenis = dbItem.jenis || dbItem.jenis_komunitas || params.jenis || "posyandu";
+      const normalizedDbItem = { ...dbItem, jenis: itemJenis };
+
+      const matched =
+        seedIdMap.get(dbItem.id) ||
+        seedIdMap.get(toValidUUID(dbItem.id)) ||
+        seedKeyMap.get(getMatchKey(normalizedDbItem));
+
+      if (matched) {
+        matched.id = dbItem.id;
+        if (dbItem.nama) matched.nama = dbItem.nama;
+        if (dbItem.lokasi) matched.lokasi = dbItem.lokasi;
+        if (dbItem.deskripsi) matched.deskripsi = dbItem.deskripsi;
+        if (dbItem.kontak) matched.kontak = dbItem.kontak;
+        if (dbItem.jadwal) matched.jadwal = dbItem.jadwal;
+        if (dbItem.rw !== undefined && dbItem.rw !== null) matched.rw = dbItem.rw;
+        if (dbItem.rt !== undefined && dbItem.rt !== null) matched.rt = dbItem.rt;
+        if (dbItem.created_at) matched.created_at = dbItem.created_at;
+      } else {
+        let dbNama = dbItem.nama || "Komunitas";
+        if (itemJenis === "posyandu") {
+          const core = extractCorePosyanduName(dbNama);
+          dbNama = core ? `Posyandu ${core}` : dbNama;
+        }
+        mergedList.push({
+          id: dbItem.id,
+          nama: dbNama,
+          jenis: itemJenis,
+          kecamatan: dbItem.kecamatan,
+          kelurahan: dbItem.kelurahan,
+          rw: dbItem.rw || undefined,
+          rt: dbItem.rt || undefined,
+          lokasi: dbItem.lokasi || `${dbItem.kelurahan}, Kecamatan ${dbItem.kecamatan}, Kota Tegal`,
+          deskripsi: dbItem.deskripsi || null,
+          logo_url: dbItem.logo_url || null,
+          kontak: dbItem.kontak || null,
+          jadwal: dbItem.jadwal || null,
+          created_at: dbItem.created_at || new Date().toISOString(),
+        });
+      }
+    }
+
+    let filteredList = [...mergedList];
 
     if (params.kecamatan && params.kecamatan !== "semua") {
       const kecLow = params.kecamatan.toLowerCase().trim();

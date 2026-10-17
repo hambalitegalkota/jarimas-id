@@ -58,8 +58,7 @@ export default async function KabarPage({ searchParams }: KabarPageProps) {
   const currentVisibility =
     (resolvedParams.visibility as "semua" | VisibilitasKabar) || "semua";
 
-  // 1. Ambil feed kabar utama. Tab Percakapan & Warga hanya di-load jika user membuka tab tersebut
-  // untuk memastikan proses buka halaman kabar selalu di bawah 1 detik tanpa membebani server
+  // 1. Ambil feed kabar utama dan daftar warga terdaftar secara paralel
   const [
     feedResult,
     registeredUsersResult,
@@ -71,9 +70,7 @@ export default async function KabarPage({ searchParams }: KabarPageProps) {
       filterVisibilitas: currentVisibility,
       limit: 30,
     }),
-    currentTab === "warga" || currentTab === "percakapan" || Boolean(targetGroupId)
-      ? getRegisteredUsers()
-      : Promise.resolve({ success: true, users: [], currentUserId: null, isSuperAdmin: false, isAdminPusat: false, totalCount: 0 }),
+    getRegisteredUsers(),
     currentTab === "percakapan" || Boolean(targetGroupId)
       ? getRecentConversations()
       : Promise.resolve({ conversations: [] }),
@@ -267,6 +264,29 @@ export default async function KabarPage({ searchParams }: KabarPageProps) {
                       <p className="text-xs text-white/90 font-medium line-clamp-1">
                         {cat.subtitle}
                       </p>
+                      {cat.id === "warga" && registeredUsersResult.rekapKomunitas && (
+                        <div className="flex items-center gap-1.5 flex-wrap pt-1 text-[10px] font-medium text-white/90">
+                          <span className="font-bold text-white">Sebaran:</span>
+                          <span className="px-1.5 py-0.5 rounded-md bg-white/20 border border-white/20">
+                            Kota Tegal: {registeredUsersResult.rekapKomunitas.kotaTegal}
+                          </span>
+                          <span className="px-1.5 py-0.5 rounded-md bg-white/20 border border-white/20">
+                            Kecamatan: {registeredUsersResult.rekapKomunitas.kecamatan}
+                          </span>
+                          <span className="px-1.5 py-0.5 rounded-md bg-white/20 border border-white/20">
+                            Kelurahan: {registeredUsersResult.rekapKomunitas.kelurahan}
+                          </span>
+                          <span className="px-1.5 py-0.5 rounded-md bg-white/20 border border-white/20">
+                            RW: {registeredUsersResult.rekapKomunitas.rw}
+                          </span>
+                          <span className="px-1.5 py-0.5 rounded-md bg-white/20 border border-white/20">
+                            RT: {registeredUsersResult.rekapKomunitas.rt}
+                          </span>
+                          <span className="px-1.5 py-0.5 rounded-md bg-white/20 border border-white/20">
+                            Komunitas Lain: {registeredUsersResult.rekapKomunitas.komunitasLain}
+                          </span>
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -302,6 +322,29 @@ export default async function KabarPage({ searchParams }: KabarPageProps) {
                       <p className="text-xs text-slate-500 dark:text-slate-400 font-medium line-clamp-1">
                         {cat.subtitle}
                       </p>
+                      {cat.id === "warga" && registeredUsersResult.rekapKomunitas && (
+                        <div className="flex items-center gap-1.5 flex-wrap pt-1 text-[10px] font-medium">
+                          <span className="font-bold text-slate-700 dark:text-slate-300">Sebaran:</span>
+                          <span className="px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                            Kota Tegal: {registeredUsersResult.rekapKomunitas.kotaTegal}
+                          </span>
+                          <span className="px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                            Kecamatan: {registeredUsersResult.rekapKomunitas.kecamatan}
+                          </span>
+                          <span className="px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                            Kelurahan: {registeredUsersResult.rekapKomunitas.kelurahan}
+                          </span>
+                          <span className="px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                            RW: {registeredUsersResult.rekapKomunitas.rw}
+                          </span>
+                          <span className="px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                            RT: {registeredUsersResult.rekapKomunitas.rt}
+                          </span>
+                          <span className="px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                            Komunitas Lain: {registeredUsersResult.rekapKomunitas.komunitasLain}
+                          </span>
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -387,6 +430,8 @@ export default async function KabarPage({ searchParams }: KabarPageProps) {
                         <DaftarWargaKabarSection
                           initialUsers={registeredUsersResult.users || []}
                           currentUserId={currentUserId}
+                          rekapKomunitas={registeredUsersResult.rekapKomunitas}
+                          isSuperAdmin={isSuperAdmin}
                         />
                       )}
                     </div>

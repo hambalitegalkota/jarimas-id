@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient, createAdminClient } from "@/utils/supabase/server";
 import { toValidUUID, isAdminPusat, isSuperOrAdminPusat, isSuperAdmin as checkIsSuperAdmin } from "@/lib/utils";
+import { extractKomunitasMetadata } from "@/lib/admin-helpers";
 import type {
   GetRegisteredUsersResult,
   RegisteredUserItem,
@@ -10,7 +11,58 @@ import type {
   PesanPribadi,
   Profile,
   IncomingMessageNotificationItem,
+  KomunitasTierCategory,
+  RekapWargaSatuKomunitas,
 } from "@/types/database";
+
+/**
+ * Mengelompokkan komunitas ke dalam kategori hierarki wilayah / institusi:
+ * - "rt": Warga Kita tingkat RT
+ * - "rw": Warga Kita tingkat RW
+ * - "kelurahan": Warga Kita tingkat Kelurahan
+ * - "kecamatan": Warga Kita tingkat Kecamatan
+ * - "kota": Warga Kita tingkat Kota Tegal
+ * - "komunitas_lain": Posyandu, Satuan PAUD, PKBM & SKB, Kegiatan / Minat, dll.
+ */
+export function getKomunitasTierCategory(kom: any): KomunitasTierCategory {
+  if (!kom) return "komunitas_lain";
+  const jenis = (kom.jenis || "").toLowerCase();
+  if (jenis !== "warga_kita") {
+    return "komunitas_lain";
+  }
+
+  const meta = extractKomunitasMetadata(kom);
+
+  if (meta.hasRt || (kom.rt && kom.rt !== "00" && kom.rt !== "0" && kom.rt !== "")) {
+    return "rt";
+  }
+  if (meta.hasRw || (kom.rw && kom.rw !== "00" && kom.rw !== "0" && kom.rw !== "")) {
+    return "rw";
+  }
+  if (
+    meta.hasKel ||
+    (kom.kelurahan &&
+      kom.kelurahan.toLowerCase() !== "semua kelurahan" &&
+      kom.kelurahan.toLowerCase() !== "semua" &&
+      kom.kelurahan.trim() !== "")
+  ) {
+    return "kelurahan";
+  }
+  if (
+    (meta.rawKec &&
+      meta.rawKec.toLowerCase() !== "kota tegal" &&
+      meta.rawKec.toLowerCase() !== "semua" &&
+      meta.rawKec.trim() !== "") ||
+    (kom.kecamatan &&
+      kom.kecamatan.toLowerCase() !== "kota tegal" &&
+      kom.kecamatan.toLowerCase() !== "semua" &&
+      kom.kecamatan.trim() !== "")
+  ) {
+    return "kecamatan";
+  }
+
+  return "kota";
+}
 
 /**
  * Mengambil daftar pengguna yang telah registrasi di Jarimas-ID.
@@ -21,6 +73,7 @@ import type {
 export async function getRegisteredUsers(params?: {
   searchQuery?: string;
   tab?: "semua" | "teman" | "permintaan";
+  category?: KomunitasTierCategory;
 }): Promise<GetRegisteredUsersResult> {
   try {
     const supabase = await createClient();
@@ -69,6 +122,7 @@ export async function getRegisteredUsers(params?: {
 
     // 3. Ambil data keanggotaan komunitas seluruh pengguna untuk badge identitas & filter satu komunitas
     let communityMap: Record<string, UserKomunitasAffiliation[]> = {};
+    const userCategoriesMap: Record<string, Set<KomunitasTierCategory>> = {};
     const myCommunityIds = new Set<string>();
     const sameCommunityUserIds = new Set<string>();
 
@@ -110,6 +164,13 @@ export async function getRegisteredUsers(params?: {
             rt: m.komunitas.rt,
           });
 
+          // Petakan kategori tingkatan komunitas
+          const tier = getKomunitasTierCategory(m.komunitas);
+          if (!userCategoriesMap[m.user_id]) {
+            userCategoriesMap[m.user_id] = new Set();
+          }
+          userCategoriesMap[m.user_id].add(tier);
+
           if (m.user_id === currentUserId && m.komunitas_id) {
             myCommunityIds.add(m.komunitas_id);
           }
@@ -125,6 +186,43 @@ export async function getRegisteredUsers(params?: {
     } catch (commErr) {
       console.warn("Gagal memetakan komunitas user:", commErr);
     }
+
+    // 3b. Hitung rekapitulasi sebaran warga satu komunitas (Kota Tegal, Kecamatan, Kelurahan, RW, RT, Komunitas Lain)
+    // Aturan penting: Warga yang sama hanya dihitung satu kali (tidak dihitung ganda jika terdaftar di beberapa komunitas)
+    const kotaSet = new Set<string>();
+    const kecSet = new Set<string>();
+    const kelSet = new Set<string>();
+    const rwSet = new Set<string>();
+    const rtSet = new Set<string>();
+    const lainSet = new Set<string>();
+    const totalUniqueSet = new Set<string>();
+
+    const targetRekapUserIds =
+      isSuperAdmin || isAdminPusatUser || sameCommunityUserIds.size === 0
+        ? new Set(Object.keys(userCategoriesMap))
+        : sameCommunityUserIds;
+
+    targetRekapUserIds.forEach((uid) => {
+      const catSet = userCategoriesMap[uid];
+      if (!catSet || catSet.size === 0) return;
+      totalUniqueSet.add(uid);
+      if (catSet.has("kota")) kotaSet.add(uid);
+      if (catSet.has("kecamatan")) kecSet.add(uid);
+      if (catSet.has("kelurahan")) kelSet.add(uid);
+      if (catSet.has("rw")) rwSet.add(uid);
+      if (catSet.has("rt")) rtSet.add(uid);
+      if (catSet.has("komunitas_lain")) lainSet.add(uid);
+    });
+
+    const rekapKomunitas: RekapWargaSatuKomunitas = {
+      totalUnique: totalUniqueSet.size,
+      kotaTegal: kotaSet.size,
+      kecamatan: kecSet.size,
+      kelurahan: kelSet.size,
+      rw: rwSet.size,
+      rt: rtSet.size,
+      komunitasLain: lainSet.size,
+    };
 
     // 4. Ambil profil pengguna sesuai hak akses:
     // - Super Admin: Mengambil semua profil terdaftar
@@ -262,6 +360,7 @@ export async function getRegisteredUsers(params?: {
         is_admin_pusat: userIsAdminPusat,
         created_at: p.created_at || new Date().toISOString(),
         komunitas_list: communityMap[p.id] || [],
+        categories: Array.from(userCategoriesMap[p.id] || []),
         friendship_status,
         friendship_id,
         unread_messages_count: unreadMap[p.id] || 0,
@@ -292,6 +391,11 @@ export async function getRegisteredUsers(params?: {
       mappedUsers = mappedUsers.filter((u) => u.friendship_status === "pending_received");
     }
 
+    // 10. Filter berdasarkan kategori tingkatan komunitas jika ada
+    if (params?.category) {
+      mappedUsers = mappedUsers.filter((u) => u.categories?.includes(params.category!));
+    }
+
     // Hitung total orang lain (kecuali diri sendiri)
     const otherUsersCount = targetProfiles.filter((p) => p.id !== currentUserId).length;
 
@@ -301,10 +405,11 @@ export async function getRegisteredUsers(params?: {
       isAdminPusat: isAdminPusatUser,
       currentUserId,
       users: mappedUsers,
-      totalCount: otherUsersCount,
+      totalCount: totalUniqueSet.size > 0 ? totalUniqueSet.size : otherUsersCount,
       totalFriendsCount,
       totalPendingRequestsCount,
       userCommunitiesCount: myCommunityIds.size,
+      rekapKomunitas,
     };
   } catch (err) {
     console.error("Error pada getRegisteredUsers:", err);
@@ -317,6 +422,15 @@ export async function getRegisteredUsers(params?: {
       totalFriendsCount: 0,
       totalPendingRequestsCount: 0,
       userCommunitiesCount: 0,
+      rekapKomunitas: {
+        totalUnique: 0,
+        kotaTegal: 0,
+        kecamatan: 0,
+        kelurahan: 0,
+        rw: 0,
+        rt: 0,
+        komunitasLain: 0,
+      },
     };
   }
 }

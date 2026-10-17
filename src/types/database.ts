@@ -585,6 +585,24 @@ export interface UserKomunitasAffiliation {
   rt?: string | null;
 }
 
+export type KomunitasTierCategory =
+  | "kota"
+  | "kecamatan"
+  | "kelurahan"
+  | "rw"
+  | "rt"
+  | "komunitas_lain";
+
+export interface RekapWargaSatuKomunitas {
+  totalUnique: number;
+  kotaTegal: number;
+  kecamatan: number;
+  kelurahan: number;
+  rw: number;
+  rt: number;
+  komunitasLain: number;
+}
+
 export interface RegisteredUserItem {
   id: string;
   nama_lengkap: string;
@@ -598,6 +616,7 @@ export interface RegisteredUserItem {
   friendship_status?: "none" | "pending_sent" | "pending_received" | "accepted" | "self";
   friendship_id?: string | null;
   unread_messages_count?: number;
+  categories?: KomunitasTierCategory[];
 }
 
 export interface GetRegisteredUsersResult {
@@ -610,6 +629,7 @@ export interface GetRegisteredUsersResult {
   totalFriendsCount: number;
   totalPendingRequestsCount: number;
   userCommunitiesCount?: number;
+  rekapKomunitas?: RekapWargaSatuKomunitas;
 }
 
 export interface PesanGrup {
