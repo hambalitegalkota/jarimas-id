@@ -332,6 +332,41 @@ export function normalizeKeinginanSekolah(val?: string | null): "Masih Ada" | "T
   return "Masih Ada";
 }
 
+export interface DataAtsAlasanParams {
+  keinginanSekolah?: string | null;
+  alasanTidakSekolah?: string | null;
+  alamat?: string | null;
+  rt?: string | null;
+  rw?: string | null;
+  kelurahan?: string | null;
+  kecamatan?: string | null;
+  jenjangAsal?: string | null;
+  sekolahSebelumnya?: string | null;
+  kelasTerakhir?: string | null;
+  keterangan?: string | null;
+}
+
+/**
+ * Format string alasan_sekolah terstruktur untuk Data ATS
+ */
+export function serializeDataAtsAlasan(params: DataAtsAlasanParams): string {
+  const keinginan = normalizeKeinginanSekolah(params.keinginanSekolah);
+  const alasan = (params.alasanTidakSekolah || "Tidak ada biaya").trim();
+
+  let formatted = `[KEINGINAN:${keinginan}] [ALASAN:${alasan}]`;
+  if (params.alamat) formatted += ` [ALAMAT:${params.alamat.trim()}]`;
+  if (params.rt) formatted += ` [RT:${params.rt.trim()}]`;
+  if (params.rw) formatted += ` [RW:${params.rw.trim()}]`;
+  if (params.kelurahan) formatted += ` [KEL:${params.kelurahan.trim()}]`;
+  if (params.kecamatan) formatted += ` [KEC:${params.kecamatan.trim()}]`;
+  if (params.jenjangAsal) formatted += ` [JENJANG_ASAL:${params.jenjangAsal.trim()}]`;
+  if (params.sekolahSebelumnya) formatted += ` [SEKOLAH_ASAL:${params.sekolahSebelumnya.trim()}]`;
+  if (params.kelasTerakhir) formatted += ` [KELAS:${params.kelasTerakhir.trim()}]`;
+  if (params.keterangan) formatted += ` [KET:${params.keterangan.trim()}]`;
+
+  return formatted;
+}
+
 export const DAFTAR_15_KELAS_ATS = [
   { key: "bpb", label: "Belum Pernah Bersekolah", shortLabel: "BPB", jenjang: "BPB" as const },
   { key: "sd1_do", label: "Kelas 1 SD DO", shortLabel: "1 DO", jenjang: "SD" as const },

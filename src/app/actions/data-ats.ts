@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/utils/supabase/server";
 import { DataAtsSchema, DdtkSchema } from "@/lib/zod-schemas";
 import { toValidUUID, isSuperAdmin as checkIsSuperAdmin, isAdminPusat as checkIsAdminPusat, isSuperOrAdminPusat, isRoleAdmin } from "@/lib/utils";
-import { normalizeKeinginanSekolah } from "@/lib/data-anak-helpers";
+import { normalizeKeinginanSekolah, serializeDataAtsAlasan } from "@/lib/data-anak-helpers";
 import { getKomunitasDetail } from "./komunitas";
 import type {
   DataAtsItem,
@@ -173,16 +173,19 @@ export async function createDataAts(formData: FormData): Promise<{
     }
 
     // Format alasan_sekolah string untuk interoperabilitas database
-    let formattedAlasan = `[KEINGINAN:${keinginanSekolah}] [ALASAN:${alasanTidakSekolah}]`;
-    if (alamat) formattedAlasan += ` [ALAMAT:${alamat}]`;
-    if (rt) formattedAlasan += ` [RT:${rt}]`;
-    if (rw) formattedAlasan += ` [RW:${rw}]`;
-    if (kelurahan) formattedAlasan += ` [KEL:${kelurahan}]`;
-    if (kecamatan) formattedAlasan += ` [KEC:${kecamatan}]`;
-    if (jenjangAsal) formattedAlasan += ` [JENJANG_ASAL:${jenjangAsal}]`;
-    if (sekolahSebelumnya) formattedAlasan += ` [SEKOLAH_ASAL:${sekolahSebelumnya}]`;
-    if (kelasTerakhir) formattedAlasan += ` [KELAS:${kelasTerakhir}]`;
-    if (keterangan) formattedAlasan += ` [KET:${keterangan}]`;
+    const formattedAlasan = serializeDataAtsAlasan({
+      keinginanSekolah,
+      alasanTidakSekolah,
+      alamat,
+      rt,
+      rw,
+      kelurahan,
+      kecamatan,
+      jenjangAsal,
+      sekolahSebelumnya,
+      kelasTerakhir,
+      keterangan,
+    });
 
     // Simpan ke Supabase Data Anak
     const atsPayload = {
@@ -678,16 +681,19 @@ export async function updateDataAts(
     }
 
     // Format alasan_sekolah
-    let formattedAlasan = `[KEINGINAN:${keinginanSekolah}] [ALASAN:${alasanTidakSekolah}]`;
-    if (alamat) formattedAlasan += ` [ALAMAT:${alamat}]`;
-    if (rt) formattedAlasan += ` [RT:${rt}]`;
-    if (rw) formattedAlasan += ` [RW:${rw}]`;
-    if (kelurahan) formattedAlasan += ` [KEL:${kelurahan}]`;
-    if (kecamatan) formattedAlasan += ` [KEC:${kecamatan}]`;
-    if (jenjangAsal) formattedAlasan += ` [JENJANG_ASAL:${jenjangAsal}]`;
-    if (sekolahSebelumnya) formattedAlasan += ` [SEKOLAH_ASAL:${sekolahSebelumnya}]`;
-    if (kelasTerakhir) formattedAlasan += ` [KELAS:${kelasTerakhir}]`;
-    if (keterangan) formattedAlasan += ` [KET:${keterangan}]`;
+    const formattedAlasan = serializeDataAtsAlasan({
+      keinginanSekolah,
+      alasanTidakSekolah,
+      alamat,
+      rt,
+      rw,
+      kelurahan,
+      kecamatan,
+      jenjangAsal,
+      sekolahSebelumnya,
+      kelasTerakhir,
+      keterangan,
+    });
 
     // Reset status_approval kembali ke "pending" pada setiap perubahan data agar perlu divalidasi ulang di jenjang RT
     const updatePayload = {
