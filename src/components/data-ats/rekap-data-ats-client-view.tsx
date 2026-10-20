@@ -34,6 +34,8 @@ import {
   X,
   Award,
   Info,
+  MapPin,
+  ChevronDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type {
@@ -595,96 +597,184 @@ export function RekapDataAtsClientView({
       {/* 2. LEVEL SELECTOR CONTROLS (KOTA / KECAMATAN / KELURAHAN) */}
       {/* ========================================================= */}
       <div className="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-3xl border-2 border-slate-200 dark:border-slate-800 shadow-xs space-y-4 print-hide-on-daftar-nama print-card-item break-inside-avoid print:p-3 print:space-y-0 print:border-slate-300 print:rounded-2xl">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 print:hidden">
-          {/* Level Hierarchy Buttons */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
-            <span className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase mr-1 flex items-center gap-1 shrink-0">
-              <Layers className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-              <span>Tingkat:</span>
-            </span>
-
-            <button
-              type="button"
-              onClick={() => setSelectedTingkat("kota")}
-              className={cn(
-                "px-3.5 py-2 rounded-2xl text-xs font-extrabold transition-all cursor-pointer shrink-0 border-2",
-                selectedTingkat === "kota"
-                  ? "bg-slate-900 text-white border-slate-900 dark:bg-blue-600 dark:border-blue-600 shadow-md shadow-slate-900/10"
-                  : "bg-slate-50 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600"
-              )}
-            >
-              🏢 Kota Tegal (Agregat)
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setSelectedTingkat("kecamatan")}
-              className={cn(
-                "px-3.5 py-2 rounded-2xl text-xs font-extrabold transition-all cursor-pointer shrink-0 border-2",
-                selectedTingkat === "kecamatan"
-                  ? "bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-600/20"
-                  : "bg-slate-50 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600"
-              )}
-            >
-              🏛️ Tingkat Kecamatan
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setSelectedTingkat("kelurahan")}
-              className={cn(
-                "px-3.5 py-2 rounded-2xl text-xs font-extrabold transition-all cursor-pointer shrink-0 border-2",
-                selectedTingkat === "kelurahan"
-                  ? "bg-indigo-600 text-white border-indigo-600 shadow-md shadow-indigo-600/20"
-                  : "bg-slate-50 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600"
-              )}
-            >
-              🏘️ Tingkat Kelurahan
-            </button>
-          </div>
-
-          {/* Sub-Filters for Kecamatan & Kelurahan */}
-          <div className="flex flex-wrap items-center gap-3">
-            {selectedTingkat !== "kota" && (
+        {!hideTingkatSelector && (
+          <div className="space-y-3.5 print:hidden">
+            {/* Header / Selector Label */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
               <div className="flex items-center gap-2">
-                <label className="text-xs font-bold text-slate-500 dark:text-slate-400">Kecamatan:</label>
-                <select
-                  value={selectedKecamatan}
-                  onChange={(e) => {
-                    const newKec = e.target.value;
-                    setSelectedKecamatan(newKec);
-                    const firstKel = initialData.kelurahanList.find((k) => k.kecamatan === newKec);
-                    if (firstKel) setSelectedKelurahan(firstKel.nama);
-                  }}
-                  className="bg-slate-50 dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 text-xs font-bold rounded-xl px-3 py-1.5 focus:outline-hidden focus:border-blue-500 cursor-pointer shadow-2xs"
-                >
+                <div className="p-1.5 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border border-blue-200/50 dark:border-blue-800/50">
+                  <Layers className="h-4 w-4" />
+                </div>
+                <div>
+                  <span className="text-2xs font-black uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                    Filter Tingkat Analisis ATS
+                  </span>
+                  <h3 className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-slate-100">
+                    Pilih Cakupan Wilayah Rekapitulasi ATS
+                  </h3>
+                </div>
+              </div>
+              <span className="text-2xs text-slate-400 dark:text-slate-500 font-medium">
+                Pilih tingkat agregasi untuk memperbarui grafik &amp; data ATS
+              </span>
+            </div>
+
+            {/* Level Hierarchy Buttons (Grid 3 Cols, Zero Overflow, No Scrollbar) */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 p-1.5 bg-slate-100/80 dark:bg-slate-800/60 rounded-2xl border border-slate-200/80 dark:border-slate-700/80">
+              <button
+                type="button"
+                onClick={() => setSelectedTingkat("kota")}
+                className={cn(
+                  "py-2.5 px-3 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-2 cursor-pointer border",
+                  selectedTingkat === "kota"
+                    ? "bg-slate-900 text-white border-slate-900 dark:bg-blue-600 dark:border-blue-600 shadow-xs"
+                    : "bg-transparent border-transparent text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-white/80 dark:hover:bg-slate-700/60"
+                )}
+              >
+                <span>🏢</span>
+                <span>Kota Tegal (Agregat)</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setSelectedTingkat("kecamatan")}
+                className={cn(
+                  "py-2.5 px-3 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-2 cursor-pointer border",
+                  selectedTingkat === "kecamatan"
+                    ? "bg-blue-600 text-white border-blue-600 shadow-xs"
+                    : "bg-transparent border-transparent text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white/80 dark:hover:bg-slate-700/60"
+                )}
+              >
+                <span>🏛️</span>
+                <span>Tingkat Kecamatan</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setSelectedTingkat("kelurahan")}
+                className={cn(
+                  "py-2.5 px-3 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-2 cursor-pointer border",
+                  selectedTingkat === "kelurahan"
+                    ? "bg-indigo-600 text-white border-indigo-600 shadow-xs"
+                    : "bg-transparent border-transparent text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-white/80 dark:hover:bg-slate-700/60"
+                )}
+              >
+                <span>🏘️</span>
+                <span>Tingkat Kelurahan</span>
+              </button>
+            </div>
+
+            {/* Sub-Filters: Dedicated Panel for Kecamatan */}
+            {selectedTingkat === "kecamatan" && (
+              <div className="p-3.5 sm:p-4 rounded-2xl bg-blue-50/70 dark:bg-blue-950/25 border-2 border-blue-200/80 dark:border-blue-900/50 space-y-2.5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                  <span className="text-xs font-extrabold text-blue-900 dark:text-blue-200 flex items-center gap-1.5">
+                    <MapPin className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+                    Pilih Kecamatan:
+                  </span>
+                  <span className="text-2xs text-slate-500 dark:text-slate-400 font-medium">
+                    Klik salah satu kecamatan untuk melihat data spesifik
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {daftarKecamatan.map((kec) => (
-                    <option key={kec} value={kec}>
-                      Kec. {kec}
-                    </option>
+                    <button
+                      key={kec}
+                      type="button"
+                      onClick={() => setSelectedKecamatan(kec)}
+                      className={cn(
+                        "px-3 py-2.5 rounded-xl text-xs font-extrabold transition-all text-center border-2 cursor-pointer flex items-center justify-center gap-1.5",
+                        selectedKecamatan === kec
+                          ? "bg-blue-600 text-white border-blue-600 shadow-xs"
+                          : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-blue-300 hover:bg-blue-50/50 dark:hover:bg-slate-700/60"
+                      )}
+                    >
+                      <span>Kec. {kec}</span>
+                    </button>
                   ))}
-                </select>
+                </div>
               </div>
             )}
 
+            {/* Sub-Filters: Dedicated 2-Step Panel for Kelurahan */}
             {selectedTingkat === "kelurahan" && (
-              <div className="flex items-center gap-2">
-                <label className="text-xs font-bold text-slate-500 dark:text-slate-400">Kelurahan:</label>
-                <select
-                  value={selectedKelurahan}
-                  onChange={(e) => setSelectedKelurahan(e.target.value)}
-                  className="bg-slate-50 dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 text-xs font-bold rounded-xl px-3 py-1.5 focus:outline-hidden focus:border-indigo-500 cursor-pointer shadow-2xs"
-                >
-                  {daftarKelurahanInSelectedKecamatan.map((kel) => (
-                    <option key={kel.nama} value={kel.nama}>
-                      Kel. {kel.nama}
-                    </option>
-                  ))}
-                </select>
+              <div className="p-3.5 sm:p-4 rounded-2xl bg-indigo-50/70 dark:bg-indigo-950/25 border-2 border-indigo-200/80 dark:border-indigo-900/50 space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                  <span className="text-xs font-extrabold text-indigo-900 dark:text-indigo-200 flex items-center gap-1.5">
+                    <MapPin className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
+                    Filter Wilayah Kelurahan ATS:
+                  </span>
+                  <span className="text-2xs text-slate-500 dark:text-slate-400 font-medium">
+                    Langkah 1: Tentukan Kecamatan &bull; Langkah 2: Pilih Kelurahan
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 items-end">
+                  {/* Step 1: Pilih Kecamatan */}
+                  <div className="lg:col-span-7 space-y-1.5">
+                    <label className="text-2xs font-black uppercase tracking-wider text-slate-600 dark:text-slate-400 flex items-center gap-1.5">
+                      <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-indigo-600 text-white text-[10px] font-black">
+                        1
+                      </span>
+                      <span>Kecamatan:</span>
+                    </label>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+                      {daftarKecamatan.map((kec) => (
+                        <button
+                          key={kec}
+                          type="button"
+                          onClick={() => {
+                            setSelectedKecamatan(kec);
+                            const firstKel = initialData.kelurahanList.find((k) => k.kecamatan === kec);
+                            if (firstKel) setSelectedKelurahan(firstKel.nama);
+                          }}
+                          className={cn(
+                            "px-2.5 py-2 rounded-xl text-2xs font-extrabold transition-all text-center border-2 truncate cursor-pointer",
+                            selectedKecamatan === kec
+                              ? "bg-indigo-700 text-white border-indigo-700 shadow-xs"
+                              : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-indigo-300 hover:bg-indigo-50/50 dark:hover:bg-slate-700/60"
+                          )}
+                        >
+                          {kec}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Step 2: Pilih Kelurahan */}
+                  <div className="lg:col-span-5 space-y-1.5">
+                    <div className="flex items-center justify-between text-2xs font-black uppercase tracking-wider text-slate-600 dark:text-slate-400">
+                      <label className="flex items-center gap-1.5">
+                        <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-indigo-600 text-white text-[10px] font-black">
+                          2
+                        </span>
+                        <span>Kelurahan ({selectedKecamatan}):</span>
+                      </label>
+                      <span className="text-indigo-700 dark:text-indigo-400 font-extrabold">
+                        {daftarKelurahanInSelectedKecamatan.length} Kel.
+                      </span>
+                    </div>
+                    <div className="relative">
+                      <select
+                        value={selectedKelurahan}
+                        onChange={(e) => setSelectedKelurahan(e.target.value)}
+                        className="w-full bg-white dark:bg-slate-800 border-2 border-indigo-300 dark:border-indigo-700 text-slate-900 dark:text-slate-100 text-xs font-bold rounded-xl px-3.5 py-2.5 focus:outline-hidden focus:border-indigo-500 cursor-pointer shadow-xs appearance-none pr-9 transition-colors"
+                      >
+                        {daftarKelurahanInSelectedKecamatan.map((kel) => (
+                          <option key={kel.nama} value={kel.nama}>
+                            Kel. {kel.nama} {kel.totalAts ? `(${kel.totalAts} ATS)` : ""}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDown className="h-4 w-4 text-indigo-600 dark:text-indigo-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
           </div>
-        </div>
+        )}
 
         {/* Selected Wilayah Indicator Badge */}
         <div className="flex items-center justify-between pt-2.5 border-t border-slate-100 dark:border-slate-800/80 flex-wrap gap-2 text-xs print:pt-0 print:border-none">
