@@ -13,6 +13,7 @@ import {
   isDataAtsRecord,
   isDummyDataAnak,
   isSchoolNameMatching,
+  extractSchoolNumberToken,
 } from "@/lib/data-anak-helpers";
 import type {
   DataAnakItem,
@@ -571,7 +572,13 @@ export async function addDdksRecord(formData: FormData): Promise<{
  * Mendukung pemetaan lintas komunitas:
  * - Data yang di-input di PAUD akan muncul di Komunitas Kabupaten/Kota, Kecamatan, Kelurahan, RW, RT sesuai alamat KK / Domisili dan Komunitas Posyandu
  */
-export async function getDataAnakByKomunitas(komunitasId: string): Promise<{
+export async function getDataAnakByKomunitas(
+  komunitasId: string,
+  options?: {
+    countOnly?: boolean;
+    preloadedKomunitas?: any;
+  }
+): Promise<{
   success: boolean;
   data: DataAnakItem[];
   stats?: {
@@ -604,17 +611,19 @@ export async function getDataAnakByKomunitas(komunitasId: string): Promise<{
     let canViewDetail = false;
 
     // 1. Ekstraksi metadata komunitas target
-    let targetKomunitas: any = null;
-    const { data: dbKom } = await supabase
-      .from("komunitas")
-      .select("*")
-      .eq("id", toValidUUID(komunitasId))
-      .maybeSingle();
+    let targetKomunitas: any = options?.preloadedKomunitas || null;
+    if (!targetKomunitas) {
+      const { data: dbKom } = await supabase
+        .from("komunitas")
+        .select("*")
+        .eq("id", toValidUUID(komunitasId))
+        .maybeSingle();
 
-    if (dbKom) {
-      targetKomunitas = dbKom;
-    } else {
-      targetKomunitas = findOrGenerateKomunitasSeed(komunitasId);
+      if (dbKom) {
+        targetKomunitas = dbKom;
+      } else {
+        targetKomunitas = findOrGenerateKomunitasSeed(komunitasId);
+      }
     }
 
     const targetMeta = extractKomunitasMetadata(
@@ -769,43 +778,116 @@ export async function getDataAnakByKomunitas(komunitasId: string): Promise<{
     let dbChildren: any[] = [];
     let childError: any = null;
 
+    const selectFields = options?.countOnly
+      ? `
+        id,
+        nama_lengkap,
+        nama_sekolah,
+        is_sekolah,
+        alasan_sekolah,
+        komunitas_id,
+        status_approval,
+        created_at
+      `
+      : `
+        id,
+        nama_lengkap,
+        tanggal_lahir,
+        jenis_kelamin,
+        nama_orangtua,
+        nomor_hp,
+        tinggal_bersama,
+        jarak_rumah_km,
+        is_sekolah,
+        nama_sekolah,
+        alasan_sekolah,
+        komunitas_id,
+        status_approval,
+        validated_by,
+        validated_at,
+        created_by,
+        created_at,
+        ddks_records (*)
+      `;
+
     if (targetJenis === "satuan_paud") {
       const rawPaudName = (targetKomunitas?.nama || "").trim();
       const cleanPaudName = rawPaudName
         .replace(/^(KB|TK|TPA|SPS|RA|PKBM|SKB|POS PAUD)\s+/i, "")
         .trim();
 
+      const numToken = extractSchoolNumberToken(rawPaudName);
+
+      const orConditions: string[] = [
+        `komunitas_id.eq.${validKomId}`,
+      ];
+
+      if (numToken) {
+        // Jika PAUD memiliki nomor cabang (contoh: "I", "II", "1", "2"):
+        // JANGAN gunakan trailing wildcard '%' langsung di belakang nomor cabang,
+        // karena '%...I%' di SQL LIKE akan mencocokkan cabang IV, IX, XI, XII, XIII, II, III, dst.
+        const numTokenLower = numToken.toLowerCase();
+        const romanToArabic: Record<string, string> = {
+          i: "1", ii: "2", iii: "3", iv: "4", v: "5", vi: "6",
+          vii: "7", viii: "8", ix: "9", x: "10", xi: "11", xii: "12", xiii: "13"
+        };
+        const arabicToRoman: Record<string, string> = {
+          "1": "I", "2": "II", "3": "III", "4": "IV", "5": "V", "6": "VI",
+          "7": "VII", "8": "VIII", "9": "IX", "10": "X", "11": "XI", "12": "XII", "13": "XIII"
+        };
+
+        const arabNum = romanToArabic[numTokenLower];
+        const romanNum = arabicToRoman[numTokenLower];
+
+        // 1. Variasi Nama Asli (persis atau tanpa awalan TK/KB)
+        if (rawPaudName) {
+          orConditions.push(`nama_sekolah.ilike.${rawPaudName}`);
+        }
+        if (cleanPaudName) {
+          orConditions.push(`nama_sekolah.ilike.%${cleanPaudName}`);
+          orConditions.push(`nama_sekolah.ilike.%${cleanPaudName} %`);
+        }
+
+        // 2. Variasi Angka Arab jika tokennya Romawi
+        if (arabNum) {
+          const rawArab = rawPaudName.replace(new RegExp(`\\b${numToken}\\b`, "i"), arabNum);
+          const cleanArab = cleanPaudName.replace(new RegExp(`\\b${numToken}\\b`, "i"), arabNum);
+          if (rawArab) orConditions.push(`nama_sekolah.ilike.${rawArab}`);
+          if (cleanArab) {
+            orConditions.push(`nama_sekolah.ilike.%${cleanArab}`);
+            orConditions.push(`nama_sekolah.ilike.%${cleanArab} %`);
+          }
+        }
+
+        // 3. Variasi Angka Romawi jika tokennya Arab
+        if (romanNum) {
+          const rawRoman = rawPaudName.replace(new RegExp(`\\b${numToken}\\b`, "i"), romanNum);
+          const cleanRoman = cleanPaudName.replace(new RegExp(`\\b${numToken}\\b`, "i"), romanNum);
+          if (rawRoman) orConditions.push(`nama_sekolah.ilike.${rawRoman}`);
+          if (cleanRoman) {
+            orConditions.push(`nama_sekolah.ilike.%${cleanRoman}`);
+            orConditions.push(`nama_sekolah.ilike.%${cleanRoman} %`);
+          }
+        }
+      } else {
+        // Sekolah tanpa nomor cabang (misal: "TK Pembina", "KB Kartini", dsb.)
+        if (cleanPaudName) {
+          orConditions.push(`nama_sekolah.ilike.%${cleanPaudName}%`);
+        }
+      }
+
       let query = supabase
         .from("data_anak")
-        .select(`
-          id,
-          nama_lengkap,
-          tanggal_lahir,
-          jenis_kelamin,
-          nama_orangtua,
-          nomor_hp,
-          tinggal_bersama,
-          jarak_rumah_km,
-          is_sekolah,
-          nama_sekolah,
-          alasan_sekolah,
-          komunitas_id,
-          status_approval,
-          validated_by,
-          validated_at,
-          created_by,
-          created_at,
-          ddks_records (*)
-        `)
+        .select(selectFields)
         .order("created_at", { ascending: false });
 
-      if (cleanPaudName) {
-        query = query.or(`komunitas_id.eq.${validKomId},nama_sekolah.ilike.%${cleanPaudName}%`);
+      if (orConditions.length > 0) {
+        query = query.or(orConditions.join(","));
       } else {
         query = query.eq("komunitas_id", validKomId);
       }
 
-      const { data: paudDirect, error: paudDirectError } = await query.limit(150);
+      const { data: paudDirect, error: paudDirectError } = await query.limit(300);
 
       if (paudDirectError) {
         childError = paudDirectError;
@@ -820,26 +902,7 @@ export async function getDataAnakByKomunitas(komunitasId: string): Promise<{
 
       let directQuery = supabase
         .from("data_anak")
-        .select(`
-          id,
-          nama_lengkap,
-          tanggal_lahir,
-          jenis_kelamin,
-          nama_orangtua,
-          nomor_hp,
-          tinggal_bersama,
-          jarak_rumah_km,
-          is_sekolah,
-          nama_sekolah,
-          alasan_sekolah,
-          komunitas_id,
-          status_approval,
-          validated_by,
-          validated_at,
-          created_by,
-          created_at,
-          ddks_records (*)
-        `)
+        .select(selectFields)
         .order("created_at", { ascending: false });
 
       if (targetKel) {
@@ -857,26 +920,7 @@ export async function getDataAnakByKomunitas(komunitasId: string): Promise<{
         // Fallback hanya jika di level kota (tanpa kelurahan), dibatasi maksimal 200 data terbaru
         const { data: fallbackChunk, error: fallbackErr } = await supabase
           .from("data_anak")
-          .select(`
-            id,
-            nama_lengkap,
-            tanggal_lahir,
-            jenis_kelamin,
-            nama_orangtua,
-            nomor_hp,
-            tinggal_bersama,
-            jarak_rumah_km,
-            is_sekolah,
-            nama_sekolah,
-            alasan_sekolah,
-            komunitas_id,
-            status_approval,
-            validated_by,
-            validated_at,
-            created_by,
-            created_at,
-            ddks_records (*)
-          `)
+          .select(selectFields)
           .order("created_at", { ascending: false })
           .limit(200);
 
@@ -927,6 +971,81 @@ export async function getDataAnakByKomunitas(komunitasId: string): Promise<{
     }
 
     // 4. Format dan filter data_anak sesuai hierarki & interoperabilitas wilayah
+    if (options?.countOnly) {
+      const items: DataAnakItem[] = nonAtsChildren
+        .map((row: any) => {
+          const parsed = parseDataAnakDetails(
+            row.alasan_sekolah,
+            targetKomunitas || { id: row.komunitas_id }
+          );
+
+          return {
+            id: row.id,
+            nama_lengkap: row.nama_lengkap,
+            tanggal_lahir: row.tanggal_lahir || "",
+            jenis_kelamin: row.jenis_kelamin || "L",
+            nama_orangtua: row.nama_orangtua || "",
+            nomor_hp: row.nomor_hp || "",
+            tinggal_bersama: row.tinggal_bersama || "Orang Tua",
+            jarak_rumah_km: row.jarak_rumah_km || 0,
+            is_sekolah: row.is_sekolah ?? true,
+            nama_sekolah: row.nama_sekolah || "",
+            alasan_sekolah: parsed.alasan,
+            kk_kabupaten: parsed.kkKabupaten,
+            kk_kecamatan: parsed.kkKecamatan,
+            kk_kelurahan: parsed.kkKelurahan,
+            kk_rw: parsed.kkRw,
+            kk_rt: parsed.kkRt,
+            kk_jalan: parsed.kkJalan,
+            domisili_kabupaten: parsed.domisiliKabupaten,
+            domisili_kecamatan: parsed.domisiliKecamatan,
+            domisili_kelurahan: parsed.domisiliKelurahan,
+            domisili_rw: parsed.domisiliRw,
+            domisili_rt: parsed.domisiliRt,
+            domisili_jalan: parsed.domisiliJalan,
+            komunitas_id: row.komunitas_id,
+            status_approval: row.status_approval || "pending",
+            validated_by: row.validated_by,
+            validated_at: row.validated_at,
+            created_by: row.created_by,
+            created_at: row.created_at,
+            latest_ddks: null,
+            ddks_history: [],
+          };
+        })
+        .filter((item) => {
+          return isDataAnakMatchingKomunitas(
+            item,
+            targetKomunitas,
+            targetMeta,
+            validKomId
+          );
+        });
+
+      const totalCount = items.length;
+      const approvedCount = items.filter((c) => c.status_approval === "approved").length;
+      const pendingCount = totalCount - approvedCount;
+
+      return {
+        success: true,
+        data: items,
+        stats: {
+          total: totalCount,
+          approved: approvedCount,
+          pending: pendingCount,
+        },
+        canViewDetail,
+        isAuthenticated,
+        canValidate,
+        canEditDdks,
+        canCreate: canViewDetail ? canCreate : false,
+        canEdit: canViewDetail ? canEdit : false,
+        canDelete: canViewDetail ? canDelete : false,
+        isReadOnly,
+        userRole,
+      };
+    }
+
     const childKomIds = [...new Set(dbChildren.map((c: any) => c.komunitas_id).filter(Boolean))];
     const missingKomIds = childKomIds.filter((cid: string) => !findOrGenerateKomunitasSeed(cid));
     const { data: missingDbKoms } = missingKomIds.length > 0

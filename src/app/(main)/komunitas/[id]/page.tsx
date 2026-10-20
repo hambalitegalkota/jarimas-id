@@ -69,7 +69,9 @@ export default async function KomunitasDetailPage({
     { data: allKabar },
   ] = await Promise.all([
     getAnggotaKomunitas(id),
-    canShowDataAnak ? getDataAnakByKomunitas(id) : Promise.resolve({ data: [] }),
+    canShowDataAnak
+      ? getDataAnakByKomunitas(id, { countOnly: true, preloadedKomunitas: komunitas })
+      : Promise.resolve({ data: [] }),
     canShowDataAts ? getDataAtsByKomunitas(id) : Promise.resolve({ data: [] }),
     getKabarFeed({ filterVisibilitas: "semua", limit: 20 }),
   ]);

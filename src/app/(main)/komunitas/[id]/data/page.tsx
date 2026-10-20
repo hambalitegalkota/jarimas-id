@@ -88,7 +88,9 @@ export default async function KomunitasDataAnakPage({
   }
 
   // Khusus Komunitas Tingkat RT, Satuan PAUD, dan Posyandu:
-  const dataAnakResult = await getDataAnakByKomunitas(id);
+  const dataAnakResult = await getDataAnakByKomunitas(id, {
+    preloadedKomunitas: komunitas,
+  });
 
   const {
     data: childrenList,
