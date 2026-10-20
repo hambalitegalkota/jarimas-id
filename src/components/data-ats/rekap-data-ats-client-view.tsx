@@ -30,6 +30,10 @@ import {
   ArrowUp,
   ArrowDown,
   RotateCcw,
+  Filter,
+  X,
+  Award,
+  Info,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type {
@@ -144,11 +148,17 @@ export function RekapDataAtsClientView({
   const [selectedKelurahan, setSelectedKelurahan] = useState<string>(initialKelurahan || "Kejambon");
   const [activeTabSection, setActiveTabSection] = useState<"semua" | "kategori" | "jenjang_usia" | "tabel">("semua");
   const [tableSearch, setTableSearch] = useState<string>("");
+  const [tablePriorityFilter, setTablePriorityFilter] = useState<"semua" | "tinggi" | "sedang" | "terkendali">("semua");
   const [sortColumn, setSortColumn] = useState<TableAtsSortColumn>("default");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
 
   const [hoveredKategori, setHoveredKategori] = useState<string | null>(null);
   const [hoveredKeinginan, setHoveredKeinginan] = useState<string | null>(null);
+  const [hoveredKelas, setHoveredKelas] = useState<string | null>(null);
+  const [hoveredUsia, setHoveredUsia] = useState<number | null>(null);
+  const [hoveredReason, setHoveredReason] = useState<string | null>(null);
+  const [kelasViewMode, setKelasViewMode] = useState<"15_kelas" | "jenjang">("15_kelas");
+  const [showAllReasons, setShowAllReasons] = useState<boolean>(false);
 
   const [isAllHidden, setIsAllHidden] = useState(false);
   const [hiddenCharts, setHiddenCharts] = useState<Record<string, boolean>>({});
@@ -291,10 +301,35 @@ export function RekapDataAtsClientView({
     return match || initialData.kelurahanList[0] || initialData.kota;
   }, [selectedTingkat, selectedKecamatan, selectedKelurahan, initialData]);
 
+  // Statistik Prioritas Kelurahan untuk Quick Filter di Tabel
+  const priorityCounts = useMemo(() => {
+    const list = initialData.kelurahanList;
+    let tinggi = 0;
+    let sedang = 0;
+    let terkendali = 0;
+    list.forEach((k) => {
+      const tot = k.totalAts ?? 0;
+      if (tot >= 25) tinggi++;
+      else if (tot >= 15) sedang++;
+      else terkendali++;
+    });
+    return { tinggi, sedang, terkendali, total: list.length };
+  }, [initialData.kelurahanList]);
+
   // Data Tabel Komparatif yang difilter dan diurutkan
   const filteredTableRows = useMemo(() => {
     const q = tableSearch.toLowerCase().trim();
     let rows = initialData.kelurahanList;
+
+    if (tablePriorityFilter !== "semua") {
+      rows = rows.filter((k) => {
+        const tot = k.totalAts ?? 0;
+        if (tablePriorityFilter === "tinggi") return tot >= 25;
+        if (tablePriorityFilter === "sedang") return tot >= 15 && tot < 25;
+        if (tablePriorityFilter === "terkendali") return tot < 15;
+        return true;
+      });
+    }
 
     if (q) {
       rows = rows.filter(
@@ -466,6 +501,16 @@ export function RekapDataAtsClientView({
     return keinginanDonutData.find((item) => item.id === hoveredKeinginan) || null;
   }, [hoveredKeinginan, keinginanDonutData]);
 
+  const activeHoveredKelasItem = useMemo(() => {
+    if (!hoveredKelas) return null;
+    return (currentWilayahData.kelasPerJenjang || []).find((k) => k.key === hoveredKelas) || null;
+  }, [hoveredKelas, currentWilayahData]);
+
+  const activeHoveredUsiaItem = useMemo(() => {
+    if (hoveredUsia === null) return null;
+    return (currentWilayahData.usiaPerTahun || []).find((u) => u.usia === hoveredUsia) || null;
+  }, [hoveredUsia, currentWilayahData]);
+
   const jenjangEntries = useMemo(() => {
     const j = currentWilayahData.jenjangAsal;
     const total = currentWilayahData.totalAts || 1;
@@ -549,12 +594,12 @@ export function RekapDataAtsClientView({
       {/* ========================================================= */}
       {/* 2. LEVEL SELECTOR CONTROLS (KOTA / KECAMATAN / KELURAHAN) */}
       {/* ========================================================= */}
-      <div className="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-3xl border-2 border-slate-200 dark:border-slate-800 shadow-sm space-y-4 print-hide-on-daftar-nama print-card-item break-inside-avoid print:p-3 print:space-y-0 print:border-slate-300 print:rounded-2xl">
+      <div className="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-3xl border-2 border-slate-200 dark:border-slate-800 shadow-xs space-y-4 print-hide-on-daftar-nama print-card-item break-inside-avoid print:p-3 print:space-y-0 print:border-slate-300 print:rounded-2xl">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 print:hidden">
           {/* Level Hierarchy Buttons */}
           <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
             <span className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase mr-1 flex items-center gap-1 shrink-0">
-              <Layers className="h-4 w-4" />
+              <Layers className="h-4 w-4 text-blue-600 dark:text-blue-400" />
               <span>Tingkat:</span>
             </span>
 
@@ -562,10 +607,10 @@ export function RekapDataAtsClientView({
               type="button"
               onClick={() => setSelectedTingkat("kota")}
               className={cn(
-                "px-4 py-2 rounded-2xl text-xs font-extrabold transition-all cursor-pointer shrink-0 border-2",
+                "px-3.5 py-2 rounded-2xl text-xs font-extrabold transition-all cursor-pointer shrink-0 border-2",
                 selectedTingkat === "kota"
-                  ? "bg-slate-900 text-white border-slate-900 shadow-md shadow-slate-900/20"
-                  : "bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-slate-300"
+                  ? "bg-slate-900 text-white border-slate-900 dark:bg-blue-600 dark:border-blue-600 shadow-md shadow-slate-900/10"
+                  : "bg-slate-50 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600"
               )}
             >
               🏢 Kota Tegal (Agregat)
@@ -575,10 +620,10 @@ export function RekapDataAtsClientView({
               type="button"
               onClick={() => setSelectedTingkat("kecamatan")}
               className={cn(
-                "px-4 py-2 rounded-2xl text-xs font-extrabold transition-all cursor-pointer shrink-0 border-2",
+                "px-3.5 py-2 rounded-2xl text-xs font-extrabold transition-all cursor-pointer shrink-0 border-2",
                 selectedTingkat === "kecamatan"
                   ? "bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-600/20"
-                  : "bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-slate-300"
+                  : "bg-slate-50 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600"
               )}
             >
               🏛️ Tingkat Kecamatan
@@ -588,10 +633,10 @@ export function RekapDataAtsClientView({
               type="button"
               onClick={() => setSelectedTingkat("kelurahan")}
               className={cn(
-                "px-4 py-2 rounded-2xl text-xs font-extrabold transition-all cursor-pointer shrink-0 border-2",
+                "px-3.5 py-2 rounded-2xl text-xs font-extrabold transition-all cursor-pointer shrink-0 border-2",
                 selectedTingkat === "kelurahan"
                   ? "bg-indigo-600 text-white border-indigo-600 shadow-md shadow-indigo-600/20"
-                  : "bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-slate-300"
+                  : "bg-slate-50 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600"
               )}
             >
               🏘️ Tingkat Kelurahan
@@ -602,7 +647,7 @@ export function RekapDataAtsClientView({
           <div className="flex flex-wrap items-center gap-3">
             {selectedTingkat !== "kota" && (
               <div className="flex items-center gap-2">
-                <label className="text-xs font-bold text-slate-500">Kecamatan:</label>
+                <label className="text-xs font-bold text-slate-500 dark:text-slate-400">Kecamatan:</label>
                 <select
                   value={selectedKecamatan}
                   onChange={(e) => {
@@ -611,7 +656,7 @@ export function RekapDataAtsClientView({
                     const firstKel = initialData.kelurahanList.find((k) => k.kecamatan === newKec);
                     if (firstKel) setSelectedKelurahan(firstKel.nama);
                   }}
-                  className="bg-slate-50 dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 text-xs font-bold rounded-xl px-3 py-1.5 focus:outline-hidden focus:border-blue-500 cursor-pointer"
+                  className="bg-slate-50 dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 text-xs font-bold rounded-xl px-3 py-1.5 focus:outline-hidden focus:border-blue-500 cursor-pointer shadow-2xs"
                 >
                   {daftarKecamatan.map((kec) => (
                     <option key={kec} value={kec}>
@@ -624,11 +669,11 @@ export function RekapDataAtsClientView({
 
             {selectedTingkat === "kelurahan" && (
               <div className="flex items-center gap-2">
-                <label className="text-xs font-bold text-slate-500">Kelurahan:</label>
+                <label className="text-xs font-bold text-slate-500 dark:text-slate-400">Kelurahan:</label>
                 <select
                   value={selectedKelurahan}
                   onChange={(e) => setSelectedKelurahan(e.target.value)}
-                  className="bg-slate-50 dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 text-xs font-bold rounded-xl px-3 py-1.5 focus:outline-hidden focus:border-indigo-500 cursor-pointer"
+                  className="bg-slate-50 dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 text-xs font-bold rounded-xl px-3 py-1.5 focus:outline-hidden focus:border-indigo-500 cursor-pointer shadow-2xs"
                 >
                   {daftarKelurahanInSelectedKecamatan.map((kel) => (
                     <option key={kel.nama} value={kel.nama}>
@@ -642,9 +687,9 @@ export function RekapDataAtsClientView({
         </div>
 
         {/* Selected Wilayah Indicator Badge */}
-        <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800 flex-wrap gap-2 text-xs print:pt-0 print:border-none">
-          <div className="flex items-center gap-2">
-            <span className="h-2.5 w-2.5 rounded-full bg-blue-500 animate-pulse print:hidden" />
+        <div className="flex items-center justify-between pt-2.5 border-t border-slate-100 dark:border-slate-800/80 flex-wrap gap-2 text-xs print:pt-0 print:border-none">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="h-2.5 w-2.5 rounded-full bg-blue-500 animate-pulse print:hidden shrink-0" />
             <span className="font-bold text-slate-500 dark:text-slate-400">Wilayah Rekap ATS:</span>
             <strong className="text-sm font-black text-slate-900 dark:text-slate-100">
               {currentWilayahData.tingkat === "kota" && "Seluruh Wilayah Kota Tegal"}
@@ -658,8 +703,10 @@ export function RekapDataAtsClientView({
             </strong>
           </div>
 
-          <div className="flex items-center gap-2 text-2xs font-bold text-slate-500">
-            <span>Cakupan: {initialRw ? `RW ${initialRw} (Kel. ${currentWilayahData.nama})` : "Intervensi: SKB & PKBM Kota Tegal"}</span>
+          <div className="flex items-center gap-2 text-2xs font-bold text-slate-500 dark:text-slate-400">
+            <span className="px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono">
+              {initialRw ? `RW ${initialRw} (Kel. ${currentWilayahData.nama})` : "Intervensi: SKB & PKBM Kota Tegal"}
+            </span>
           </div>
         </div>
       </div>
@@ -677,8 +724,6 @@ export function RekapDataAtsClientView({
         </div>
       </div>
 
-
-
       {/* ========================================================= */}
       {/* 4. SECTION NAVIGATION TABS                                */}
       {/* ========================================================= */}
@@ -690,7 +735,7 @@ export function RekapDataAtsClientView({
             "px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0",
             activeTabSection === "semua"
               ? "bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-xs font-black"
-              : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
+              : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
           )}
         >
           📊 Ringkasan Visual ATS
@@ -703,7 +748,7 @@ export function RekapDataAtsClientView({
             "px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0",
             activeTabSection === "kategori"
               ? "bg-blue-600 text-white shadow-xs font-black"
-              : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
+              : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
           )}
         >
           🎯 Kategori &amp; Keinginan Sekolah
@@ -716,12 +761,11 @@ export function RekapDataAtsClientView({
             "px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0",
             activeTabSection === "jenjang_usia"
               ? "bg-indigo-600 text-white shadow-xs font-black"
-              : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
+              : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
           )}
         >
           📚 Jenjang Asal &amp; Kelompok Usia
         </button>
-
 
         <button
           type="button"
@@ -730,7 +774,7 @@ export function RekapDataAtsClientView({
             "px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0",
             activeTabSection === "tabel"
               ? "bg-slate-900 text-white dark:bg-slate-700 shadow-xs font-black"
-              : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
+              : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
           )}
         >
           📑 Tabel Rekapitulasi Berjenjang (27 Kelurahan)
@@ -1204,403 +1248,613 @@ export function RekapDataAtsClientView({
       {/* ========================================================= */}
       {(activeTabSection === "semua" || activeTabSection === "jenjang_usia") && (
         <div className="space-y-4 pt-4 print-hide-on-daftar-nama">
+          {/* Section 6 Header */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 print-section-header break-after-avoid">
-            <div className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold">
-                <BookOpen className="h-4 w-4" />
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-indigo-600 to-violet-700 text-white flex items-center justify-center font-bold shadow-xs shrink-0">
+                <BookOpen className="h-4.5 w-4.5" />
               </div>
-              <div>
-                <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-slate-100">
+              <div className="min-w-0">
+                <h2 className="text-base sm:text-lg font-black text-slate-900 dark:text-slate-100 truncate">
                   Jenjang Sekolah Asal, Kelompok Usia &amp; Alasan Tidak Sekolah
                 </h2>
-                <p className="text-xs text-slate-500 font-medium">
-                  Rincian tingkatan sekolah terakhir, distribusi rentang umur, dan faktor penyebab putus sekolah.
+                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium truncate">
+                  Rincian tingkatan kelas terakhir, distribusi rentang umur, dan faktor penyebab putus sekolah.
                 </p>
               </div>
             </div>
-            <button
-              type="button"
-              onClick={toggleAll}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition-all shadow-2xs cursor-pointer shrink-0 print:hidden"
-            >
-              {isAllHidden ? (
-                <>
-                  <Eye className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
-                  <span>Tampilkan Semua Grafik</span>
-                </>
-              ) : (
-                <>
-                  <EyeOff className="h-3.5 w-3.5 text-slate-500" />
-                  <span>Sembunyikan Semua Grafik</span>
-                </>
-              )}
-            </button>
+            <div className="flex items-center gap-2 self-start sm:self-center shrink-0">
+              <button
+                type="button"
+                onClick={toggleAll}
+                className={cn(
+                  "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all border cursor-pointer print:hidden shrink-0",
+                  isAllHidden
+                    ? "bg-indigo-600 hover:bg-indigo-700 text-white border-indigo-600 shadow-xs"
+                    : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 shadow-2xs"
+                )}
+                title={isAllHidden ? "Tampilkan Seluruh Grafik" : "Sembunyikan Seluruh Grafik"}
+              >
+                {isAllHidden ? (
+                  <>
+                    <Eye className="h-3.5 w-3.5 text-white" />
+                    <span>Tampilkan Semua Grafik</span>
+                  </>
+                ) : (
+                  <>
+                    <EyeOff className="h-3.5 w-3.5 text-slate-500" />
+                    <span>Sembunyikan Semua Grafik</span>
+                  </>
+                )}
+              </button>
+              <span className="hidden sm:inline-block text-xs font-extrabold px-3 py-1.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-800 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 font-mono print:inline-block shrink-0">
+                Total: {currentWilayahData.totalAts} Anak
+              </span>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 print-cards-grid">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 print-cards-grid">
             {/* 6.1 Diagram Batang: Jenjang Sekolah Asal / Kelas Terakhir ATS */}
-            <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-6 space-y-4 shadow-xs print-card-item break-inside-avoid print:p-5 print:rounded-2xl">
-              <div className="flex items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3.5">
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <div className="h-8 w-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
-                    <School className="h-4.5 w-4.5" />
+            <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-6 space-y-4 shadow-xs print-card-item break-inside-avoid print:p-5 print:rounded-2xl flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3.5">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white flex items-center justify-center shrink-0 shadow-2xs">
+                      <School className="h-4.5 w-4.5" />
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-slate-100 truncate">
+                        Jenjang &amp; Kelas Terakhir ATS
+                      </h3>
+                      <p className="text-2xs sm:text-xs text-slate-500 font-medium truncate">
+                        Tingkat kelas DO, LTM, dan belum pernah sekolah
+                      </p>
+                    </div>
                   </div>
-                  <div className="min-w-0">
-                    <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-slate-100 truncate">
-                      Jenjang &amp; Kelas Terakhir ATS
-                    </h3>
-                    <p className="text-2xs sm:text-xs text-slate-500 font-medium truncate">
-                      Tingkat kelas putus sekolah (DO), lulus tidak lanjut (LTM), &amp; belum sekolah
-                    </p>
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    {/* View Mode Toggle (15 Kelas vs 4 Jenjang) */}
+                    <div className="hidden sm:inline-flex items-center p-0.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                      <button
+                        type="button"
+                        onClick={() => setKelasViewMode("15_kelas")}
+                        className={cn(
+                          "px-2 py-0.5 rounded-lg text-2xs font-extrabold transition-all cursor-pointer",
+                          kelasViewMode === "15_kelas"
+                            ? "bg-white dark:bg-slate-900 text-indigo-700 dark:text-indigo-300 shadow-2xs"
+                            : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
+                        )}
+                        title="Tampilkan rincian 15 tingkatan kelas"
+                      >
+                        15 Kelas
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setKelasViewMode("jenjang")}
+                        className={cn(
+                          "px-2 py-0.5 rounded-lg text-2xs font-extrabold transition-all cursor-pointer",
+                          kelasViewMode === "jenjang"
+                            ? "bg-white dark:bg-slate-900 text-indigo-700 dark:text-indigo-300 shadow-2xs"
+                            : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
+                        )}
+                        title="Tampilkan ringkasan 4 jenjang pendidikan"
+                      >
+                        4 Jenjang
+                      </button>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => toggleChart("kelas")}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700 print:hidden"
+                      title={hiddenCharts.kelas ? "Tampilkan Grafik" : "Sembunyikan Grafik"}
+                    >
+                      {hiddenCharts.kelas ? (
+                        <>
+                          <Eye className="h-3 w-3 text-indigo-600 dark:text-indigo-400" />
+                          <span>Tampilkan</span>
+                        </>
+                      ) : (
+                        <>
+                          <EyeOff className="h-3 w-3 text-slate-400" />
+                          <span>Sembunyikan</span>
+                        </>
+                      )}
+                    </button>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <span className="text-2xs sm:text-xs font-black px-2.5 py-1 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 font-mono">
-                    15 Kategori
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => toggleChart("kelas")}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700 print:hidden"
-                    title={hiddenCharts.kelas ? "Tampilkan Grafik" : "Sembunyikan Grafik"}
-                  >
-                    {hiddenCharts.kelas ? (
-                      <>
-                        <Eye className="h-3 w-3 text-indigo-600 dark:text-indigo-400" />
-                        <span>Tampilkan</span>
-                      </>
-                    ) : (
-                      <>
-                        <EyeOff className="h-3 w-3 text-slate-400" />
-                        <span>Sembunyikan</span>
-                      </>
-                    )}
-                  </button>
-                </div>
-              </div>
 
-              {hiddenCharts.kelas ? (
-                <div className="py-12 text-center text-xs text-slate-500 dark:text-slate-400 bg-slate-50/50 dark:bg-slate-800/40 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700 flex items-center justify-center gap-2">
-                  <EyeOff className="h-4 w-4 text-slate-400" />
-                  <span>Grafik jenjang &amp; kelas terakhir ATS disembunyikan.</span>
-                  <button
-                    type="button"
-                    onClick={() => toggleChart("kelas")}
-                    className="font-bold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
-                  >
-                    Tampilkan kembali
-                  </button>
-                </div>
-              ) : (
-                <>
-                  {/* Bar Chart Grafik Batang 15 Kategori Kelas */}
-                  {(() => {
-                    const kelasList = currentWilayahData.kelasPerJenjang || [];
-                const maxKelasCount = Math.max(
-                  ...kelasList.map((k) => k.jumlah),
-                  1
-                );
+                {hiddenCharts.kelas ? (
+                  <div className="py-12 text-center text-xs text-slate-500 dark:text-slate-400 bg-slate-50/50 dark:bg-slate-800/40 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700 flex items-center justify-center gap-2 mt-4">
+                    <EyeOff className="h-4 w-4 text-slate-400" />
+                    <span>Grafik jenjang &amp; kelas terakhir ATS disembunyikan.</span>
+                    <button
+                      type="button"
+                      onClick={() => toggleChart("kelas")}
+                      className="font-bold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
+                    >
+                      Tampilkan kembali
+                    </button>
+                  </div>
+                ) : (
+                  <div className="pt-3.5 space-y-3.5">
+                    {(() => {
+                      const kelasList = currentWilayahData.kelasPerJenjang || [];
+                      const maxKelasCount = Math.max(...kelasList.map((k) => k.jumlah), 1);
+                      const total = currentWilayahData.totalAts || 1;
 
-                // Hitung total ringkasan jenjang
-                const countBPB = kelasList.find((k) => k.key === "bpb")?.jumlah || 0;
-                const countSD = kelasList
-                  .filter((k) => k.jenjang === "SD")
-                  .reduce((acc, curr) => acc + curr.jumlah, 0);
-                const countSMP = kelasList
-                  .filter((k) => k.jenjang === "SMP")
-                  .reduce((acc, curr) => acc + curr.jumlah, 0);
-                const countSMA = kelasList
-                  .filter((k) => k.jenjang === "SMA")
-                  .reduce((acc, curr) => acc + curr.jumlah, 0);
+                      // Hitung total ringkasan jenjang
+                      const countBPB = kelasList.find((k) => k.key === "bpb")?.jumlah || 0;
+                      const countSD = kelasList
+                        .filter((k) => k.jenjang === "SD")
+                        .reduce((acc, curr) => acc + curr.jumlah, 0);
+                      const countSMP = kelasList
+                        .filter((k) => k.jenjang === "SMP")
+                        .reduce((acc, curr) => acc + curr.jumlah, 0);
+                      const countSMA = kelasList
+                        .filter((k) => k.jenjang === "SMA")
+                        .reduce((acc, curr) => acc + curr.jumlah, 0);
 
-                return (
-                  <div className="space-y-4 pt-1">
-                    <div className="h-48 sm:h-52 w-full flex items-end justify-between gap-0.5 sm:gap-1 px-1.5 pt-6 pb-8 border-b border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/30 rounded-2xl overflow-hidden">
-                      {kelasList.map((kItem) => {
-                        const heightPct =
-                          kItem.jumlah > 0
-                            ? Math.max(12, Math.round((kItem.jumlah / maxKelasCount) * 100))
-                            : 0;
-
-                        // Color coding by Kategori / Jenjang
-                        let barGradient = "from-blue-600 to-indigo-500";
-                        let textBadge = "text-blue-700 dark:text-blue-400";
-
-                        if (kItem.jenjang === "SD") {
-                          if (kItem.key === "sd6_ltm") {
-                            barGradient = "from-amber-500 to-yellow-400";
-                            textBadge = "text-amber-700 dark:text-amber-400";
-                          } else {
-                            barGradient = "from-emerald-500 to-teal-400";
-                            textBadge = "text-emerald-700 dark:text-emerald-400";
-                          }
-                        } else if (kItem.jenjang === "SMP") {
-                          if (kItem.key === "smp9_ltm") {
-                            barGradient = "from-orange-500 to-amber-400";
-                            textBadge = "text-orange-700 dark:text-orange-400";
-                          } else {
-                            barGradient = "from-sky-500 to-blue-400";
-                            textBadge = "text-sky-700 dark:text-sky-400";
-                          }
-                        } else if (kItem.jenjang === "SMA") {
-                          barGradient = "from-purple-500 to-pink-500";
-                          textBadge = "text-purple-700 dark:text-purple-400";
-                        }
-
-                        return (
-                          <div
-                            key={kItem.key}
-                            className="flex-1 flex flex-col items-center justify-end h-full group relative cursor-pointer"
-                            title={`${kItem.label}: ${kItem.jumlah} Anak (${kItem.persentase}%)`}
-                          >
-                            {/* Hover Tooltip Floating */}
-                            <div className="opacity-0 group-hover:opacity-100 transition-opacity absolute -top-8 bg-slate-900 text-white text-[10px] font-bold py-0.5 px-2 rounded-md shadow-lg pointer-events-none z-10 whitespace-nowrap">
-                              {kItem.label}: {kItem.jumlah} Anak ({kItem.persentase}%)
-                            </div>
-
-                            {/* Value Count Label on Top of Bar */}
-                            <span
-                              className={cn(
-                                "text-[8.5px] sm:text-[10px] font-black font-mono mb-1 transition-all",
-                                kItem.jumlah > 0 ? textBadge : "text-slate-300 dark:text-slate-600"
-                              )}
-                            >
-                              {kItem.jumlah}
+                      return (
+                        <>
+                          {/* Dynamic Active Hover Banner */}
+                          <div className="px-3 py-1.5 rounded-xl bg-slate-50/90 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 flex items-center justify-between text-2xs min-h-[34px]">
+                            {activeHoveredKelasItem ? (
+                              <div className="flex items-center gap-2 font-bold truncate">
+                                <span className={cn(
+                                  "px-1.5 py-0.5 rounded-md font-mono text-[10px] font-black uppercase shrink-0",
+                                  activeHoveredKelasItem.jenjang === "BPB" && "bg-blue-100 text-blue-800 dark:bg-blue-900/60 dark:text-blue-300",
+                                  activeHoveredKelasItem.jenjang === "SD" && "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-300",
+                                  activeHoveredKelasItem.jenjang === "SMP" && "bg-sky-100 text-sky-800 dark:bg-sky-900/60 dark:text-sky-300",
+                                  activeHoveredKelasItem.jenjang === "SMA" && "bg-purple-100 text-purple-800 dark:bg-purple-900/60 dark:text-purple-300"
+                                )}>
+                                  {activeHoveredKelasItem.jenjang}
+                                </span>
+                                <span className="text-slate-800 dark:text-slate-200 truncate">
+                                  {activeHoveredKelasItem.label}:
+                                </span>
+                                <span className="text-indigo-700 dark:text-indigo-400 font-mono font-black shrink-0">
+                                  {activeHoveredKelasItem.jumlah} Anak ({activeHoveredKelasItem.persentase}%)
+                                </span>
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 truncate">
+                                <Sparkles className="h-3.5 w-3.5 text-indigo-500 shrink-0" />
+                                <span className="truncate">Arahkan kursor pada batang untuk melihat rincian kelas</span>
+                              </div>
+                            )}
+                            <span className="text-slate-400 font-mono text-[10px] shrink-0 hidden sm:inline ml-2">
+                              Puncak: {maxKelasCount} Anak
                             </span>
+                          </div>
 
-                            {/* Bar Column (Slimmer & Responsive) */}
-                            <div className="w-full max-w-[12px] sm:max-w-[15px] h-20 sm:h-24 flex items-end justify-center">
-                              <div
-                                className={cn(
-                                  "w-full rounded-t-sm sm:rounded-t-md transition-all duration-700 shadow-2xs group-hover:brightness-110",
-                                  kItem.jumlah > 0
-                                    ? `bg-gradient-to-t ${barGradient}`
-                                    : "bg-slate-200 dark:bg-slate-700/50 h-1"
-                                )}
-                                style={{
-                                  height: kItem.jumlah > 0 ? `${heightPct}%` : "3px",
-                                }}
-                              />
+                          {kelasViewMode === "15_kelas" ? (
+                            /* 15 Kelas Bar Chart with Clean Proportional X-Axis */
+                            <div className="space-y-2">
+                              <div className="h-44 sm:h-48 w-full flex items-end justify-between gap-1 sm:gap-1.5 px-2 pt-4 pb-2 border-b border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/30 rounded-2xl relative">
+                                {kelasList.map((kItem) => {
+                                  const heightPct =
+                                    kItem.jumlah > 0
+                                      ? Math.max(12, Math.round((kItem.jumlah / maxKelasCount) * 100))
+                                      : 0;
+
+                                  let barGradient = "from-blue-600 to-indigo-500";
+                                  let textBadge = "text-blue-700 dark:text-blue-400";
+
+                                  if (kItem.jenjang === "SD") {
+                                    if (kItem.key === "sd6_ltm") {
+                                      barGradient = "from-amber-500 to-yellow-400";
+                                      textBadge = "text-amber-700 dark:text-amber-400";
+                                    } else {
+                                      barGradient = "from-emerald-500 to-teal-400";
+                                      textBadge = "text-emerald-700 dark:text-emerald-400";
+                                    }
+                                  } else if (kItem.jenjang === "SMP") {
+                                    if (kItem.key === "smp9_ltm") {
+                                      barGradient = "from-orange-500 to-amber-400";
+                                      textBadge = "text-orange-700 dark:text-orange-400";
+                                    } else {
+                                      barGradient = "from-sky-500 to-blue-400";
+                                      textBadge = "text-sky-700 dark:text-sky-400";
+                                    }
+                                  } else if (kItem.jenjang === "SMA") {
+                                    barGradient = "from-purple-500 to-pink-500";
+                                    textBadge = "text-purple-700 dark:text-purple-400";
+                                  }
+
+                                  const cleanLabel =
+                                    kItem.key === "bpb"
+                                      ? "BPB"
+                                      : kItem.key === "sd6_ltm"
+                                      ? "6L"
+                                      : kItem.key === "smp9_ltm"
+                                      ? "9L"
+                                      : kItem.shortLabel.replace(" DO", "");
+
+                                  const isHovered = hoveredKelas === kItem.key;
+
+                                  return (
+                                    <div
+                                      key={kItem.key}
+                                      onMouseEnter={() => setHoveredKelas(kItem.key)}
+                                      onMouseLeave={() => setHoveredKelas(null)}
+                                      className="flex-1 flex flex-col items-center justify-end h-full group relative cursor-pointer"
+                                      title={`${kItem.label}: ${kItem.jumlah} Anak (${kItem.persentase}%)`}
+                                    >
+                                      {/* Value Count Label on Top of Bar */}
+                                      <span
+                                        className={cn(
+                                          "text-[9px] sm:text-[10px] font-black font-mono mb-1 transition-all",
+                                          kItem.jumlah > 0 ? textBadge : "text-transparent"
+                                        )}
+                                      >
+                                        {kItem.jumlah > 0 ? kItem.jumlah : ""}
+                                      </span>
+
+                                      {/* Bar Column with Smooth Rounded Tops */}
+                                      <div className="w-full max-w-[16px] sm:max-w-[20px] h-24 sm:h-28 flex items-end justify-center">
+                                        <div
+                                          className={cn(
+                                            "w-full rounded-t-sm sm:rounded-t-md transition-all duration-500 shadow-2xs",
+                                            isHovered ? "brightness-125 scale-x-110" : "group-hover:brightness-110",
+                                            kItem.jumlah > 0
+                                              ? `bg-gradient-to-t ${barGradient}`
+                                              : "bg-slate-200 dark:bg-slate-700/50 h-1"
+                                          )}
+                                          style={{
+                                            height: kItem.jumlah > 0 ? `${heightPct}%` : "3px",
+                                          }}
+                                        />
+                                      </div>
+
+                                      {/* Clean Horizontal X-Axis Label */}
+                                      <div className="h-6 w-full flex items-center justify-center mt-1">
+                                        <span
+                                          className={cn(
+                                            "text-[8.5px] sm:text-[9.5px] font-mono font-bold transition-colors select-none",
+                                            isHovered
+                                              ? "text-indigo-600 dark:text-indigo-400 font-black scale-110"
+                                              : "text-slate-600 dark:text-slate-400"
+                                          )}
+                                        >
+                                          {cleanLabel}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+
+                              {/* Subtle Jenjang Boundary Marker Under Bar Labels */}
+                              <div className="flex items-center gap-1 px-2 text-[9px] font-mono font-extrabold text-slate-400 dark:text-slate-500">
+                                <div className="w-[6.6%] text-center border-t-2 border-blue-400 pt-0.5 truncate">
+                                  BPB
+                                </div>
+                                <div className="w-[46.6%] text-center border-t-2 border-emerald-400 pt-0.5 truncate text-emerald-700 dark:text-emerald-400">
+                                  SD (Kelas 1–6)
+                                </div>
+                                <div className="w-[26.6%] text-center border-t-2 border-sky-400 pt-0.5 truncate text-sky-700 dark:text-sky-400">
+                                  SMP (7–9)
+                                </div>
+                                <div className="w-[20.2%] text-center border-t-2 border-purple-400 pt-0.5 truncate text-purple-700 dark:text-purple-400">
+                                  SMA (10–12)
+                                </div>
+                              </div>
+                            </div>
+                          ) : (
+                            /* 4 Jenjang Aggregate Horizontal Bars View */
+                            <div className="space-y-2.5 p-3 rounded-2xl bg-slate-50/60 dark:bg-slate-800/30 border border-slate-200 dark:border-slate-700">
+                              {[
+                                { label: "Belum Pernah Bersekolah (BPB)", count: countBPB, pct: Math.round((countBPB / total) * 100), color: "bg-blue-600", badge: "BPB" },
+                                { label: "SD / MI / Paket A (Kelas 1–6)", count: countSD, pct: Math.round((countSD / total) * 100), color: "bg-emerald-500", badge: "SD" },
+                                { label: "SMP / MTs / Paket B (Kelas 7–9)", count: countSMP, pct: Math.round((countSMP / total) * 100), color: "bg-sky-500", badge: "SMP" },
+                                { label: "SMA / SMK / MA / Paket C (Kelas 10–12)", count: countSMA, pct: Math.round((countSMA / total) * 100), color: "bg-purple-600", badge: "SMA" },
+                              ].map((item, idx) => (
+                                <div key={idx} className="space-y-1">
+                                  <div className="flex items-center justify-between text-xs font-bold">
+                                    <span className="text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                                      <span className={cn("h-2 w-2 rounded-full shrink-0", item.color)} />
+                                      {item.label}
+                                    </span>
+                                    <span className="font-mono text-slate-900 dark:text-slate-100 font-black">
+                                      {item.count} Anak ({item.pct}%)
+                                    </span>
+                                  </div>
+                                  <div className="h-2 w-full bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                                    <div
+                                      className={cn("h-full rounded-full transition-all duration-700", item.color)}
+                                      style={{ width: `${Math.max(item.count > 0 ? 3 : 0, item.pct)}%` }}
+                                    />
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
+                          {/* 4 Bottom Summary Cards */}
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 sm:gap-2 pt-1">
+                            <div className="p-2 sm:p-2.5 rounded-2xl bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/80 text-center transition-all hover:border-blue-300">
+                              <span className="text-[10px] font-extrabold text-blue-800 dark:text-blue-300 uppercase block truncate">
+                                Belum Sekolah
+                              </span>
+                              <div className="text-xs sm:text-sm font-black font-mono text-blue-700 dark:text-blue-400 mt-0.5">
+                                {countBPB} <span className="text-[10px] font-sans font-semibold text-slate-500">Anak</span>
+                              </div>
+                              <span className="text-[10px] font-bold text-slate-500 block">
+                                ({Math.round((countBPB / total) * 100)}%)
+                              </span>
                             </div>
 
-                            {/* Class X-Axis Label (Miring Menanjak -45 Derajat) */}
-                            <div className="h-7 w-full flex items-start justify-center mt-1.5 overflow-visible">
-                              <span className="text-[7.5px] sm:text-[8.5px] font-bold font-mono text-slate-600 dark:text-slate-300 transform -rotate-45 origin-top-left whitespace-nowrap leading-none block select-none group-hover:text-indigo-600 group-hover:font-black transition-colors">
-                                {kItem.shortLabel}
+                            <div className="p-2 sm:p-2.5 rounded-2xl bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/80 text-center transition-all hover:border-emerald-300">
+                              <span className="text-[10px] font-extrabold text-emerald-800 dark:text-emerald-300 uppercase block truncate">
+                                SD / MI (1–6)
+                              </span>
+                              <div className="text-xs sm:text-sm font-black font-mono text-emerald-700 dark:text-emerald-400 mt-0.5">
+                                {countSD} <span className="text-[10px] font-sans font-semibold text-slate-500">Anak</span>
+                              </div>
+                              <span className="text-[10px] font-bold text-slate-500 block">
+                                ({Math.round((countSD / total) * 100)}%)
+                              </span>
+                            </div>
+
+                            <div className="p-2 sm:p-2.5 rounded-2xl bg-sky-50/80 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800/80 text-center transition-all hover:border-sky-300">
+                              <span className="text-[10px] font-extrabold text-sky-800 dark:text-sky-300 uppercase block truncate">
+                                SMP / MTs (7–9)
+                              </span>
+                              <div className="text-xs sm:text-sm font-black font-mono text-sky-700 dark:text-sky-400 mt-0.5">
+                                {countSMP} <span className="text-[10px] font-sans font-semibold text-slate-500">Anak</span>
+                              </div>
+                              <span className="text-[10px] font-bold text-slate-500 block">
+                                ({Math.round((countSMP / total) * 100)}%)
+                              </span>
+                            </div>
+
+                            <div className="p-2 sm:p-2.5 rounded-2xl bg-purple-50/80 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800/80 text-center transition-all hover:border-purple-300">
+                              <span className="text-[10px] font-extrabold text-purple-800 dark:text-purple-300 uppercase block truncate">
+                                SMA / SMK (10–12)
+                              </span>
+                              <div className="text-xs sm:text-sm font-black font-mono text-purple-700 dark:text-purple-400 mt-0.5">
+                                {countSMA} <span className="text-[10px] font-sans font-semibold text-slate-500">Anak</span>
+                              </div>
+                              <span className="text-[10px] font-bold text-slate-500 block">
+                                ({Math.round((countSMA / total) * 100)}%)
                               </span>
                             </div>
                           </div>
-                        );
-                      })}
-                    </div>
-
-                    {/* Ringkasan Jenjang Asal Badges */}
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 sm:gap-2 pt-1">
-                      <div className="p-2 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 text-center">
-                        <span className="text-[9px] sm:text-[10px] font-extrabold text-blue-800 dark:text-blue-300 uppercase block truncate">
-                          Belum Sekolah
-                        </span>
-                        <div className="text-xs sm:text-sm font-black font-mono text-blue-700 dark:text-blue-400">
-                          {countBPB} Anak
-                        </div>
-                      </div>
-
-                      <div className="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-center">
-                        <span className="text-[9px] sm:text-[10px] font-extrabold text-emerald-800 dark:text-emerald-300 uppercase block truncate">
-                          SD / MI (1–6)
-                        </span>
-                        <div className="text-xs sm:text-sm font-black font-mono text-emerald-700 dark:text-emerald-400">
-                          {countSD} Anak
-                        </div>
-                      </div>
-
-                      <div className="p-2 rounded-xl bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 text-center">
-                        <span className="text-[9px] sm:text-[10px] font-extrabold text-sky-800 dark:text-sky-300 uppercase block truncate">
-                          SMP / MTs (7–9)
-                        </span>
-                        <div className="text-xs sm:text-sm font-black font-mono text-sky-700 dark:text-sky-400">
-                          {countSMP} Anak
-                        </div>
-                      </div>
-
-                      <div className="p-2 rounded-xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 text-center">
-                        <span className="text-[9px] sm:text-[10px] font-extrabold text-purple-800 dark:text-purple-300 uppercase block truncate">
-                          SMA / SMK (10–12)
-                        </span>
-                        <div className="text-xs sm:text-sm font-black font-mono text-purple-700 dark:text-purple-400">
-                          {countSMA} Anak
-                        </div>
-                      </div>
-                    </div>
+                        </>
+                      );
+                    })()}
                   </div>
-                );
-              })()}
-                </>
-              )}
+                )}
+              </div>
             </div>
 
             {/* 6.2 Diagram Batang: Distribusi Usia ATS (6 - 18 Tahun) */}
-            <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-6 space-y-4 shadow-xs print-card-item break-inside-avoid print:p-5 print:rounded-2xl">
-              <div className="flex items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3.5">
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <div className="h-8 w-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
-                    <BarChart3 className="h-4.5 w-4.5" />
+            <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-6 space-y-4 shadow-xs print-card-item break-inside-avoid print:p-5 print:rounded-2xl flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3.5">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-sky-500 to-blue-600 text-white flex items-center justify-center shrink-0 shadow-2xs">
+                      <BarChart3 className="h-4.5 w-4.5" />
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-slate-100 truncate">
+                        Distribusi Usia ATS (6 – 18 Tahun)
+                      </h3>
+                      <p className="text-2xs sm:text-xs text-slate-500 font-medium truncate">
+                        Jumlah anak tidak sekolah pada kelompok umur wajib belajar
+                      </p>
+                    </div>
                   </div>
-                  <div className="min-w-0">
-                    <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-slate-100 truncate">
-                      Distribusi Usia ATS (6 – 18 Tahun)
-                    </h3>
-                    <p className="text-2xs sm:text-xs text-slate-500 font-medium truncate">
-                      Jumlah anak tidak sekolah pada kelompok umur wajib belajar
-                    </p>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-2xs sm:text-xs font-black px-2.5 py-1 rounded-xl bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800 font-mono">
+                      13 Kelompok Usia
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => toggleChart("usia")}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700 print:hidden"
+                      title={hiddenCharts.usia ? "Tampilkan Grafik" : "Sembunyikan Grafik"}
+                    >
+                      {hiddenCharts.usia ? (
+                        <>
+                          <Eye className="h-3 w-3 text-sky-600 dark:text-sky-400" />
+                          <span>Tampilkan</span>
+                        </>
+                      ) : (
+                        <>
+                          <EyeOff className="h-3 w-3 text-slate-400" />
+                          <span>Sembunyikan</span>
+                        </>
+                      )}
+                    </button>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <span className="text-2xs sm:text-xs font-black px-2.5 py-1 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 font-mono">
-                    6–18 Thn
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => toggleChart("usia")}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700 print:hidden"
-                    title={hiddenCharts.usia ? "Tampilkan Grafik" : "Sembunyikan Grafik"}
-                  >
-                    {hiddenCharts.usia ? (
-                      <>
-                        <Eye className="h-3 w-3 text-indigo-600 dark:text-indigo-400" />
-                        <span>Tampilkan</span>
-                      </>
-                    ) : (
-                      <>
-                        <EyeOff className="h-3 w-3 text-slate-400" />
-                        <span>Sembunyikan</span>
-                      </>
-                    )}
-                  </button>
-                </div>
-              </div>
 
-              {hiddenCharts.usia ? (
-                <div className="py-12 text-center text-xs text-slate-500 dark:text-slate-400 bg-slate-50/50 dark:bg-slate-800/40 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700 flex items-center justify-center gap-2">
-                  <EyeOff className="h-4 w-4 text-slate-400" />
-                  <span>Grafik usia ATS disembunyikan.</span>
-                  <button
-                    type="button"
-                    onClick={() => toggleChart("usia")}
-                    className="font-bold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
-                  >
-                    Tampilkan kembali
-                  </button>
-                </div>
-              ) : (
-                <>
-                  {/* Bar Chart Grafik Batang 6-18 Tahun */}
-                  {(() => {
-                const maxAgeCount = Math.max(
-                  ...(currentWilayahData.usiaPerTahun || []).map((u) => u.jumlah),
-                  1
-                );
-                return (
-                  <div className="space-y-4 pt-1">
-                    <div className="h-44 w-full flex items-end justify-between gap-1 sm:gap-2 px-1 pt-6 pb-2 border-b border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/30 rounded-2xl">
-                      {(currentWilayahData.usiaPerTahun || []).map((uItem) => {
-                        const heightPct =
-                          uItem.jumlah > 0
-                            ? Math.max(12, Math.round((uItem.jumlah / maxAgeCount) * 100))
-                            : 0;
+                {hiddenCharts.usia ? (
+                  <div className="py-12 text-center text-xs text-slate-500 dark:text-slate-400 bg-slate-50/50 dark:bg-slate-800/40 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700 flex items-center justify-center gap-2 mt-4">
+                    <EyeOff className="h-4 w-4 text-slate-400" />
+                    <span>Grafik usia ATS disembunyikan.</span>
+                    <button
+                      type="button"
+                      onClick={() => toggleChart("usia")}
+                      className="font-bold text-sky-600 dark:text-sky-400 hover:underline cursor-pointer"
+                    >
+                      Tampilkan kembali
+                    </button>
+                  </div>
+                ) : (
+                  <div className="pt-3.5 space-y-3.5">
+                    {(() => {
+                      const ageList = currentWilayahData.usiaPerTahun || [];
+                      const maxAgeCount = Math.max(...ageList.map((u) => u.jumlah), 1);
+                      const total = currentWilayahData.totalAts || 1;
 
-                        // Color coding by Jenjang Wajib Belajar
-                        let barGradient = "from-emerald-500 to-teal-400";
-                        let textBadge = "text-emerald-700 dark:text-emerald-400";
-                        if (uItem.usia >= 13 && uItem.usia <= 15) {
-                          barGradient = "from-sky-500 to-blue-400";
-                          textBadge = "text-sky-700 dark:text-sky-400";
-                        } else if (uItem.usia >= 16) {
-                          barGradient = "from-amber-500 to-orange-400";
-                          textBadge = "text-amber-700 dark:text-amber-400";
-                        }
-
-                        return (
-                          <div
-                            key={uItem.usia}
-                            className="flex-1 flex flex-col items-center justify-end h-full group relative cursor-pointer"
-                            title={`Usia ${uItem.usia} Tahun: ${uItem.jumlah} Anak (${uItem.persentase}%)`}
-                          >
-                            {/* Hover Tooltip Floating */}
-                            <div className="opacity-0 group-hover:opacity-100 transition-opacity absolute -top-8 bg-slate-900 text-white text-[10px] font-bold py-0.5 px-2 rounded-md shadow-lg pointer-events-none z-10 whitespace-nowrap">
-                              {uItem.usia} Thn: {uItem.jumlah} Anak ({uItem.persentase}%)
-                            </div>
-
-                            {/* Value Count Label on Top of Bar */}
-                            <span
-                              className={cn(
-                                "text-[10px] sm:text-xs font-black font-mono mb-1 transition-all",
-                                uItem.jumlah > 0 ? textBadge : "text-slate-300 dark:text-slate-600"
-                              )}
-                            >
-                              {uItem.jumlah}
+                      return (
+                        <>
+                          {/* Dynamic Active Hover Banner */}
+                          <div className="px-3 py-1.5 rounded-xl bg-slate-50/90 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 flex items-center justify-between text-2xs min-h-[34px]">
+                            {activeHoveredUsiaItem ? (
+                              <div className="flex items-center gap-2 font-bold truncate">
+                                <span className={cn(
+                                  "px-1.5 py-0.5 rounded-md font-mono text-[10px] font-black uppercase shrink-0",
+                                  activeHoveredUsiaItem.usia <= 12
+                                    ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-300"
+                                    : activeHoveredUsiaItem.usia <= 15
+                                    ? "bg-sky-100 text-sky-800 dark:bg-sky-900/60 dark:text-sky-300"
+                                    : "bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-300"
+                                )}>
+                                  {activeHoveredUsiaItem.usia <= 12 ? "SD" : activeHoveredUsiaItem.usia <= 15 ? "SMP" : "SMA"}
+                                </span>
+                                <span className="text-slate-800 dark:text-slate-200">
+                                  Usia {activeHoveredUsiaItem.usia} Tahun:
+                                </span>
+                                <span className="text-sky-700 dark:text-sky-400 font-mono font-black shrink-0">
+                                  {activeHoveredUsiaItem.jumlah} Anak ({activeHoveredUsiaItem.persentase}%)
+                                </span>
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 truncate">
+                                <Sparkles className="h-3.5 w-3.5 text-sky-500 shrink-0" />
+                                <span className="truncate">Arahkan kursor pada batang untuk melihat rincian usia</span>
+                              </div>
+                            )}
+                            <span className="text-slate-400 font-mono text-[10px] shrink-0 hidden sm:inline ml-2">
+                              Puncak: {maxAgeCount} Anak
                             </span>
+                          </div>
 
-                            {/* Bar Column */}
-                            <div className="w-full max-w-[28px] h-28 flex items-end justify-center">
-                              <div
-                                className={cn(
-                                  "w-full rounded-t-md transition-all duration-700 shadow-2xs group-hover:brightness-110",
+                          {/* 13 Kelompok Usia Bar Chart */}
+                          <div className="space-y-2">
+                            <div className="h-44 sm:h-48 w-full flex items-end justify-between gap-1 sm:gap-1.5 px-2 pt-4 pb-2 border-b border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/30 rounded-2xl relative">
+                              {ageList.map((uItem) => {
+                                const heightPct =
                                   uItem.jumlah > 0
-                                    ? `bg-gradient-to-t ${barGradient}`
-                                    : "bg-slate-200 dark:bg-slate-700/50 h-1"
-                                )}
-                                style={{
-                                  height: uItem.jumlah > 0 ? `${heightPct}%` : "4px",
-                                }}
-                              />
+                                    ? Math.max(12, Math.round((uItem.jumlah / maxAgeCount) * 100))
+                                    : 0;
+
+                                let barGradient = "from-emerald-500 to-teal-400";
+                                let textBadge = "text-emerald-700 dark:text-emerald-400";
+                                if (uItem.usia >= 13 && uItem.usia <= 15) {
+                                  barGradient = "from-sky-500 to-blue-400";
+                                  textBadge = "text-sky-700 dark:text-sky-400";
+                                } else if (uItem.usia >= 16) {
+                                  barGradient = "from-amber-500 to-orange-400";
+                                  textBadge = "text-amber-700 dark:text-amber-400";
+                                }
+
+                                const isHovered = hoveredUsia === uItem.usia;
+
+                                return (
+                                  <div
+                                    key={uItem.usia}
+                                    onMouseEnter={() => setHoveredUsia(uItem.usia)}
+                                    onMouseLeave={() => setHoveredUsia(null)}
+                                    className="flex-1 flex flex-col items-center justify-end h-full group relative cursor-pointer"
+                                    title={`Usia ${uItem.usia} Tahun: ${uItem.jumlah} Anak (${uItem.persentase}%)`}
+                                  >
+                                    {/* Value Count Label on Top of Bar */}
+                                    <span
+                                      className={cn(
+                                        "text-[9px] sm:text-[10px] font-black font-mono mb-1 transition-all",
+                                        uItem.jumlah > 0 ? textBadge : "text-transparent"
+                                      )}
+                                    >
+                                      {uItem.jumlah > 0 ? uItem.jumlah : ""}
+                                    </span>
+
+                                    {/* Bar Column */}
+                                    <div className="w-full max-w-[20px] sm:max-w-[24px] h-24 sm:h-28 flex items-end justify-center">
+                                      <div
+                                        className={cn(
+                                          "w-full rounded-t-sm sm:rounded-t-md transition-all duration-500 shadow-2xs",
+                                          isHovered ? "brightness-125 scale-x-110" : "group-hover:brightness-110",
+                                          uItem.jumlah > 0
+                                            ? `bg-gradient-to-t ${barGradient}`
+                                            : "bg-slate-200 dark:bg-slate-700/50 h-1"
+                                        )}
+                                        style={{
+                                          height: uItem.jumlah > 0 ? `${heightPct}%` : "3px",
+                                        }}
+                                      />
+                                    </div>
+
+                                    {/* Age X-Axis Label */}
+                                    <div className="h-6 w-full flex items-center justify-center mt-1">
+                                      <span
+                                        className={cn(
+                                          "text-[9px] sm:text-[10px] font-mono font-bold transition-colors select-none",
+                                          isHovered
+                                            ? "text-sky-600 dark:text-sky-400 font-black scale-110"
+                                            : "text-slate-600 dark:text-slate-400"
+                                        )}
+                                      >
+                                        {uItem.usia}
+                                      </span>
+                                    </div>
+                                  </div>
+                                );
+                              })}
                             </div>
 
-                            {/* Age X-Axis Label */}
-                            <div className="mt-2 text-center">
-                              <span className="text-[10px] sm:text-xs font-black text-slate-700 dark:text-slate-300 block font-mono">
-                                {uItem.usia}
+                            {/* Subtle Age Boundary Marker Under Bar Labels */}
+                            <div className="flex items-center gap-1 px-2 text-[9px] font-mono font-extrabold text-slate-400 dark:text-slate-500">
+                              <div className="w-[53.8%] text-center border-t-2 border-emerald-400 pt-0.5 truncate text-emerald-700 dark:text-emerald-400">
+                                SD (6–12 Thn)
+                              </div>
+                              <div className="w-[23.1%] text-center border-t-2 border-sky-400 pt-0.5 truncate text-sky-700 dark:text-sky-400">
+                                SMP (13–15)
+                              </div>
+                              <div className="w-[23.1%] text-center border-t-2 border-amber-400 pt-0.5 truncate text-amber-700 dark:text-amber-400">
+                                SMA (16–18)
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* 3 Bottom Summary Cards */}
+                          <div className="grid grid-cols-3 gap-2 pt-1">
+                            <div className="p-2 sm:p-2.5 rounded-2xl bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/80 text-center transition-all hover:border-emerald-300">
+                              <span className="text-[10px] font-extrabold text-emerald-800 dark:text-emerald-300 uppercase block truncate">
+                                SD (6–12 Thn)
+                              </span>
+                              <div className="text-xs sm:text-sm font-black font-mono text-emerald-700 dark:text-emerald-400 mt-0.5">
+                                {currentWilayahData.usia.age7_12} <span className="text-[10px] font-sans font-semibold text-slate-500">Anak</span>
+                              </div>
+                              <span className="text-[10px] font-bold text-slate-500 block">
+                                ({Math.round((currentWilayahData.usia.age7_12 / total) * 100)}%)
+                              </span>
+                            </div>
+
+                            <div className="p-2 sm:p-2.5 rounded-2xl bg-sky-50/80 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800/80 text-center transition-all hover:border-sky-300">
+                              <span className="text-[10px] font-extrabold text-sky-800 dark:text-sky-300 uppercase block truncate">
+                                SMP (13–15 Thn)
+                              </span>
+                              <div className="text-xs sm:text-sm font-black font-mono text-sky-700 dark:text-sky-400 mt-0.5">
+                                {currentWilayahData.usia.age12_15} <span className="text-[10px] font-sans font-semibold text-slate-500">Anak</span>
+                              </div>
+                              <span className="text-[10px] font-bold text-slate-500 block">
+                                ({Math.round((currentWilayahData.usia.age12_15 / total) * 100)}%)
+                              </span>
+                            </div>
+
+                            <div className="p-2 sm:p-2.5 rounded-2xl bg-amber-50/80 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/80 text-center transition-all hover:border-amber-300">
+                              <span className="text-[10px] font-extrabold text-amber-800 dark:text-amber-300 uppercase block truncate">
+                                SMA (16–18 Thn)
+                              </span>
+                              <div className="text-xs sm:text-sm font-black font-mono text-amber-700 dark:text-amber-400 mt-0.5">
+                                {currentWilayahData.usia.age15_18} <span className="text-[10px] font-sans font-semibold text-slate-500">Anak</span>
+                              </div>
+                              <span className="text-[10px] font-bold text-slate-500 block">
+                                ({Math.round((currentWilayahData.usia.age15_18 / total) * 100)}%)
                               </span>
                             </div>
                           </div>
-                        );
-                      })}
-                    </div>
-
-                    {/* Ringkasan Jenjang Usia Badges */}
-                    <div className="grid grid-cols-3 gap-2 pt-1">
-                      <div className="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-center">
-                        <span className="text-[10px] font-extrabold text-emerald-800 dark:text-emerald-300 uppercase block">
-                          SD (6–12 Thn)
-                        </span>
-                        <div className="text-base sm:text-lg font-black font-mono text-emerald-700 dark:text-emerald-400">
-                          {currentWilayahData.usia.age7_12} Anak
-                        </div>
-                      </div>
-
-                      <div className="p-2.5 rounded-xl bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 text-center">
-                        <span className="text-[10px] font-extrabold text-sky-800 dark:text-sky-300 uppercase block">
-                          SMP (13–15 Thn)
-                        </span>
-                        <div className="text-base sm:text-lg font-black font-mono text-sky-700 dark:text-sky-400">
-                          {currentWilayahData.usia.age12_15} Anak
-                        </div>
-                      </div>
-
-                      <div className="p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-center">
-                        <span className="text-[10px] font-extrabold text-amber-800 dark:text-amber-300 uppercase block">
-                          SMA (16–18 Thn)
-                        </span>
-                        <div className="text-base sm:text-lg font-black font-mono text-amber-700 dark:text-amber-400">
-                          {currentWilayahData.usia.age15_18} Anak
-                        </div>
-                      </div>
-                    </div>
+                        </>
+                      );
+                    })()}
                   </div>
-                );
-              })()}
-                </>
-              )}
+                )}
+              </div>
             </div>
           </div>
 
@@ -1608,7 +1862,7 @@ export function RekapDataAtsClientView({
           <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-6 space-y-4 shadow-xs print-card-item break-inside-avoid print:p-5 print:rounded-2xl">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3.5">
               <div className="flex items-center gap-2.5 min-w-0">
-                <div className="h-8 w-8 rounded-xl bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
+                <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-rose-500 to-pink-600 text-white flex items-center justify-center shrink-0 shadow-2xs">
                   <AlertCircle className="h-4.5 w-4.5" />
                 </div>
                 <div className="min-w-0">
@@ -1622,7 +1876,7 @@ export function RekapDataAtsClientView({
               </div>
               <div className="flex items-center gap-2 self-start sm:self-center shrink-0">
                 <span className="text-2xs sm:text-xs font-black px-2.5 py-1 rounded-xl bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 font-mono">
-                  Ranking Terbanyak
+                  Ranking Kasus
                 </span>
                 <button
                   type="button"
@@ -1632,7 +1886,7 @@ export function RekapDataAtsClientView({
                 >
                   {hiddenCharts.alasan ? (
                     <>
-                      <Eye className="h-3 w-3 text-indigo-600 dark:text-indigo-400" />
+                      <Eye className="h-3 w-3 text-rose-600 dark:text-rose-400" />
                       <span>Tampilkan</span>
                     </>
                   ) : (
@@ -1652,7 +1906,7 @@ export function RekapDataAtsClientView({
                 <button
                   type="button"
                   onClick={() => toggleChart("alasan")}
-                  className="font-bold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
+                  className="font-bold text-rose-600 dark:text-rose-400 hover:underline cursor-pointer"
                 >
                   Tampilkan kembali
                 </button>
@@ -1660,93 +1914,192 @@ export function RekapDataAtsClientView({
             ) : (
               <>
                 {(() => {
-              const sortedReasons = [...(currentWilayahData.alasanList || [])].sort(
-                (a, b) => b.jumlah - a.jumlah
-              );
-              const maxReasonCount = Math.max(...sortedReasons.map((r) => r.jumlah), 1);
+                  const sortedReasons = [...(currentWilayahData.alasanList || [])].sort(
+                    (a, b) => b.jumlah - a.jumlah
+                  );
+                  const maxReasonCount = Math.max(...sortedReasons.map((r) => r.jumlah), 1);
+                  const reasonsWithCount = sortedReasons.filter((r) => r.jumlah > 0);
+                  const zeroReasons = sortedReasons.filter((r) => r.jumlah === 0);
+                  const displayedReasons = showAllReasons ? sortedReasons : (reasonsWithCount.length > 0 ? reasonsWithCount : sortedReasons.slice(0, 5));
 
-              return (
-                <div className="space-y-3 pt-1">
-                  {sortedReasons.map((r, idx) => {
-                    const isTop1 = idx === 0 && r.jumlah > 0;
-                    const isTop2 = idx === 1 && r.jumlah > 0;
-                    const isTop3 = idx === 2 && r.jumlah > 0;
-                    const barWidthPct =
-                      r.jumlah > 0
-                        ? Math.max(4, Math.round((r.jumlah / maxReasonCount) * 100))
-                        : 0;
-
+                  if (currentWilayahData.totalAts === 0) {
                     return (
-                      <div
-                        key={idx}
-                        className={cn(
-                          "p-3.5 rounded-2xl border transition-all space-y-2",
-                          isTop1
-                            ? "bg-amber-50/80 dark:bg-amber-950/30 border-amber-300 dark:border-amber-700/60 shadow-xs"
-                            : isTop2 || isTop3
-                            ? "bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700"
-                            : "bg-slate-50/50 dark:bg-slate-800/30 border-slate-100 dark:border-slate-800/80"
-                        )}
-                      >
-                        <div className="flex items-center justify-between gap-3 text-xs font-bold">
-                          <div className="flex items-center gap-2 min-w-0">
-                            {/* Ranking Badge */}
-                            <span
-                              className={cn(
-                                "flex items-center justify-center h-5 w-5 rounded-full text-2xs font-black shrink-0 font-mono",
-                                isTop1
-                                  ? "bg-amber-500 text-white shadow-2xs"
-                                  : isTop2
-                                  ? "bg-slate-400 text-white"
-                                  : isTop3
-                                  ? "bg-amber-700 text-white"
-                                  : "bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400"
-                              )}
-                            >
-                              #{idx + 1}
-                            </span>
-                            <span className="text-slate-800 dark:text-slate-200 font-extrabold truncate">
-                              {r.alasan}
-                            </span>
-                          </div>
-
-                          <div className="flex items-center gap-2 shrink-0">
-                            <span className="font-mono text-slate-900 dark:text-slate-100 font-black text-xs sm:text-sm">
-                              {r.jumlah} Anak
-                            </span>
-                            <span
-                              className={cn(
-                                "text-2xs font-bold px-2 py-0.5 rounded-lg font-mono",
-                                isTop1
-                                  ? "bg-amber-200 dark:bg-amber-900/60 text-amber-900 dark:text-amber-200"
-                                  : "bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300"
-                              )}
-                            >
-                              {r.persentase}%
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* Diagram Batang Horizontal */}
-                        <div className="h-2.5 w-full bg-slate-200 dark:bg-slate-700/60 rounded-full overflow-hidden">
-                          <div
-                            className={cn(
-                              "h-full rounded-full transition-all duration-700",
-                              isTop1
-                                ? "bg-gradient-to-r from-amber-500 to-rose-500"
-                                : isTop2 || isTop3
-                                ? "bg-gradient-to-r from-rose-500 to-amber-500"
-                                : "bg-gradient-to-r from-slate-400 to-slate-500 dark:from-slate-500 dark:to-slate-600"
-                            )}
-                            style={{ width: `${barWidthPct}%` }}
-                          />
-                        </div>
+                      <div className="py-10 text-center text-xs text-slate-500 dark:text-slate-400 bg-slate-50/50 dark:bg-slate-800/30 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700 p-6">
+                        <CheckCircle2 className="h-8 w-8 text-emerald-500 mx-auto mb-2" />
+                        <p className="font-bold text-slate-800 dark:text-slate-200">
+                          Tidak ada data ATS pada cakupan wilayah ini.
+                        </p>
+                        <p className="text-2xs text-slate-500 mt-1">
+                          Semua anak usia sekolah tercatat aktif bersekolah.
+                        </p>
                       </div>
                     );
-                  })}
-                </div>
-              );
-            })()}
+                  }
+
+                  return (
+                    <div className="space-y-4 pt-1">
+                      {/* Top 3 Spotlight Podium Cards */}
+                      {reasonsWithCount.length > 0 && (
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                          {reasonsWithCount.slice(0, 3).map((topR, topIdx) => {
+                            const isFirst = topIdx === 0;
+                            const isSecond = topIdx === 1;
+                            return (
+                              <div
+                                key={topIdx}
+                                className={cn(
+                                  "p-3 sm:p-3.5 rounded-2xl border transition-all relative overflow-hidden",
+                                  isFirst
+                                    ? "bg-gradient-to-br from-amber-50 to-amber-100/60 dark:from-amber-950/40 dark:to-amber-900/20 border-amber-300 dark:border-amber-700 shadow-xs"
+                                    : isSecond
+                                    ? "bg-slate-50/90 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700"
+                                    : "bg-orange-50/50 dark:bg-orange-950/20 border-orange-200 dark:border-orange-800/60"
+                                )}
+                              >
+                                <div className="flex items-center justify-between gap-2 mb-1.5">
+                                  <span
+                                    className={cn(
+                                      "inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-mono text-[10px] font-black uppercase",
+                                      isFirst
+                                        ? "bg-amber-500 text-white shadow-2xs"
+                                        : isSecond
+                                        ? "bg-slate-400 text-white"
+                                        : "bg-orange-700 text-white"
+                                    )}
+                                  >
+                                    <Award className="h-3 w-3" />
+                                    <span>#{topIdx + 1} Utama</span>
+                                  </span>
+                                  <span className="font-mono text-2xs font-bold text-slate-600 dark:text-slate-400">
+                                    {topR.persentase}%
+                                  </span>
+                                </div>
+                                <h4 className="text-xs font-bold text-slate-900 dark:text-slate-100 line-clamp-2 leading-snug min-h-[32px]">
+                                  {topR.alasan}
+                                </h4>
+                                <div className="flex items-baseline gap-1 mt-2 font-mono">
+                                  <span
+                                    className={cn(
+                                      "text-lg font-black",
+                                      isFirst
+                                        ? "text-amber-800 dark:text-amber-300"
+                                        : "text-slate-900 dark:text-slate-100"
+                                    )}
+                                  >
+                                    {topR.jumlah}
+                                  </span>
+                                  <span className="text-2xs font-semibold text-slate-500 font-sans">
+                                    Anak
+                                  </span>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+
+                      {/* Full List of Reasons with Proportional Gradient Bars */}
+                      <div className="space-y-2 pt-1">
+                        {displayedReasons.map((r, idx) => {
+                          const isTop1 = idx === 0 && r.jumlah > 0;
+                          const isTop2 = idx === 1 && r.jumlah > 0;
+                          const isTop3 = idx === 2 && r.jumlah > 0;
+                          const barWidthPct =
+                            r.jumlah > 0
+                              ? Math.max(4, Math.round((r.jumlah / maxReasonCount) * 100))
+                              : 0;
+                          const isHovered = hoveredReason === r.alasan;
+
+                          return (
+                            <div
+                              key={idx}
+                              onMouseEnter={() => setHoveredReason(r.alasan)}
+                              onMouseLeave={() => setHoveredReason(null)}
+                              className={cn(
+                                "p-2.5 sm:p-3 rounded-2xl border transition-all cursor-pointer space-y-1.5",
+                                isHovered
+                                  ? "bg-slate-100/90 dark:bg-slate-800/90 border-slate-300 dark:border-slate-600 shadow-xs"
+                                  : isTop1
+                                  ? "bg-amber-50/70 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800/50"
+                                  : "bg-slate-50/50 dark:bg-slate-800/30 border-slate-100 dark:border-slate-800/70 hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                              )}
+                            >
+                              <div className="flex items-center justify-between gap-3 text-xs font-bold">
+                                <div className="flex items-center gap-2 min-w-0">
+                                  <span
+                                    className={cn(
+                                      "flex items-center justify-center h-5 w-5 rounded-md text-2xs font-black shrink-0 font-mono",
+                                      isTop1
+                                        ? "bg-amber-500 text-white shadow-2xs"
+                                        : isTop2
+                                        ? "bg-slate-400 text-white"
+                                        : isTop3
+                                        ? "bg-orange-600 text-white"
+                                        : "bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400"
+                                    )}
+                                  >
+                                    #{idx + 1}
+                                  </span>
+                                  <span className="text-slate-800 dark:text-slate-200 font-extrabold truncate">
+                                    {r.alasan}
+                                  </span>
+                                </div>
+
+                                <div className="flex items-center gap-2 shrink-0">
+                                  <span className="font-mono text-slate-900 dark:text-slate-100 font-black text-xs sm:text-sm">
+                                    {r.jumlah} <span className="text-2xs font-sans font-semibold text-slate-500">Anak</span>
+                                  </span>
+                                  <span
+                                    className={cn(
+                                      "text-2xs font-bold px-2 py-0.5 rounded-lg font-mono",
+                                      isTop1
+                                        ? "bg-amber-100 dark:bg-amber-900/60 text-amber-900 dark:text-amber-200"
+                                        : "bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300"
+                                    )}
+                                  >
+                                    {r.persentase}%
+                                  </span>
+                                </div>
+                              </div>
+
+                              {/* Diagram Batang Horizontal */}
+                              <div className="h-2 w-full bg-slate-200 dark:bg-slate-700/60 rounded-full overflow-hidden">
+                                <div
+                                  className={cn(
+                                    "h-full rounded-full transition-all duration-700",
+                                    isTop1
+                                      ? "bg-gradient-to-r from-amber-500 to-rose-500"
+                                      : isTop2 || isTop3
+                                      ? "bg-gradient-to-r from-rose-500 to-amber-500"
+                                      : "bg-gradient-to-r from-indigo-500 to-slate-400"
+                                  )}
+                                  style={{ width: `${barWidthPct}%` }}
+                                />
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {/* Collapsible toggle for 0-case reasons */}
+                      {zeroReasons.length > 0 && reasonsWithCount.length > 0 && (
+                        <div className="pt-1 text-center">
+                          <button
+                            type="button"
+                            onClick={() => setShowAllReasons((prev) => !prev)}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-2xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all cursor-pointer shadow-2xs"
+                          >
+                            <span>
+                              {showAllReasons
+                                ? "Sembunyikan faktor tanpa kasus (0 kasus)"
+                                : `Tampilkan ${zeroReasons.length} faktor lainnya (0 kasus)`}
+                            </span>
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
               </>
             )}
           </div>
@@ -1760,15 +2113,15 @@ export function RekapDataAtsClientView({
       {(activeTabSection === "semua" || activeTabSection === "tabel") && (
         <div className="space-y-4 pt-4 print-hide-on-daftar-nama">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 print-section-header break-after-avoid">
-            <div className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-xl bg-slate-900 dark:bg-slate-700 text-white flex items-center justify-center font-bold">
-                <Building2 className="h-4 w-4" />
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-slate-800 to-indigo-950 text-white flex items-center justify-center font-bold shadow-xs shrink-0">
+                <Building2 className="h-4.5 w-4.5" />
               </div>
-              <div>
-                <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-slate-100">
+              <div className="min-w-0">
+                <h2 className="text-base sm:text-lg font-black text-slate-900 dark:text-slate-100 truncate">
                   Tabel Rekapitulasi Berjenjang ATS per Kelurahan
                 </h2>
-                <p className="text-xs text-slate-500 font-medium">
+                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium truncate">
                   Rincian komparatif jumlah ATS, kategori DO/LTM/BPB, dan kesiapan sekolah kembali se-Kota Tegal
                 </p>
               </div>
@@ -1807,22 +2160,88 @@ export function RekapDataAtsClientView({
                   value={tableSearch}
                   onChange={(e) => setTableSearch(e.target.value)}
                   placeholder="Cari Kelurahan / Kecamatan..."
-                  className="w-full bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 rounded-2xl pl-9 pr-3 py-1.5 text-xs font-bold text-slate-900 dark:text-slate-100 focus:outline-hidden focus:border-blue-500"
+                  className="w-full bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 rounded-2xl pl-9 pr-8 py-1.5 text-xs font-bold text-slate-900 dark:text-slate-100 focus:outline-hidden focus:border-blue-500 shadow-2xs"
                 />
+                {tableSearch && (
+                  <button
+                    type="button"
+                    onClick={() => setTableSearch("")}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-0.5 rounded-full"
+                    title="Hapus pencarian"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                )}
               </div>
             </div>
           </div>
 
+          {/* Quick Priority Filter Pills */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 text-2xs font-extrabold print:hidden">
+            <span className="text-slate-400 dark:text-slate-500 uppercase flex items-center gap-1 shrink-0 font-bold">
+              <Filter className="h-3 w-3" />
+              <span>Prioritas:</span>
+            </span>
+            <button
+              type="button"
+              onClick={() => setTablePriorityFilter("semua")}
+              className={cn(
+                "px-2.5 py-1 rounded-xl transition-all cursor-pointer shrink-0 border",
+                tablePriorityFilter === "semua"
+                  ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 border-slate-900 dark:border-slate-100 shadow-2xs"
+                  : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50"
+              )}
+            >
+              Semua ({priorityCounts.total})
+            </button>
+            <button
+              type="button"
+              onClick={() => setTablePriorityFilter("tinggi")}
+              className={cn(
+                "px-2.5 py-1 rounded-xl transition-all cursor-pointer shrink-0 border",
+                tablePriorityFilter === "tinggi"
+                  ? "bg-rose-600 text-white border-rose-600 shadow-2xs"
+                  : "bg-rose-50/70 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300 border-rose-200 dark:border-rose-800 hover:bg-rose-100/70"
+              )}
+            >
+              Tinggi (≥25): {priorityCounts.tinggi}
+            </button>
+            <button
+              type="button"
+              onClick={() => setTablePriorityFilter("sedang")}
+              className={cn(
+                "px-2.5 py-1 rounded-xl transition-all cursor-pointer shrink-0 border",
+                tablePriorityFilter === "sedang"
+                  ? "bg-amber-600 text-white border-amber-600 shadow-2xs"
+                  : "bg-amber-50/70 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 border-amber-200 dark:border-amber-800 hover:bg-amber-100/70"
+              )}
+            >
+              Sedang (15–24): {priorityCounts.sedang}
+            </button>
+            <button
+              type="button"
+              onClick={() => setTablePriorityFilter("terkendali")}
+              className={cn(
+                "px-2.5 py-1 rounded-xl transition-all cursor-pointer shrink-0 border",
+                tablePriorityFilter === "terkendali"
+                  ? "bg-emerald-600 text-white border-emerald-600 shadow-2xs"
+                  : "bg-emerald-50/70 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100/70"
+              )}
+            >
+              Terkendali (&lt;15): {priorityCounts.terkendali}
+            </button>
+          </div>
+
           <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-xs print-card-item print:rounded-2xl">
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto max-h-[640px] overflow-y-auto">
               <table className="w-full text-left text-xs border-collapse">
-                <thead>
-                  <tr className="bg-slate-100 dark:bg-slate-800/80 border-b-2 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-black">
+                <thead className="sticky top-0 z-10 bg-slate-100/95 dark:bg-slate-800/95 backdrop-blur-xs shadow-2xs">
+                  <tr className="border-b-2 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-black">
                     <th
                       scope="col"
                       onClick={handleResetSort}
                       className={cn(
-                        "py-2 sm:py-2.5 px-2 select-none cursor-pointer transition-colors group",
+                        "py-2.5 px-2 select-none cursor-pointer transition-colors group",
                         sortColumn === "default"
                           ? "hover:bg-slate-200/60 dark:hover:bg-slate-700/60"
                           : "hover:bg-rose-50 dark:hover:bg-rose-950/30 text-rose-600 dark:text-rose-400"
@@ -1838,115 +2257,142 @@ export function RekapDataAtsClientView({
                         )}
                       </div>
                     </th>
-                    {renderSortTh("nama", "Kelurahan", "left", "px-2")}
+                    {renderSortTh("nama", "Kelurahan", "left", "px-2.5")}
                     {renderSortTh("kecamatan", "Kecamatan", "left", "px-2")}
-                    {renderSortTh("totalAts", "Total", "center", "px-1.5")}
+                    {renderSortTh("totalAts", "Total", "center", "px-2")}
                     {renderSortTh("putusSekolah", "DO", "center", "px-1 sm:px-1.5")}
                     {renderSortTh("lulusTidakLanjut", "LTM", "center", "px-1 sm:px-1.5")}
                     {renderSortTh("belumPernahSekolah", "BPB", "center", "px-1 sm:px-1.5")}
-                    {renderSortTh("keinginan", "Ingin Kembali", "center", "px-1.5")}
+                    {renderSortTh("keinginan", "Ingin Kembali", "center", "px-2")}
                     {renderSortTh("lakiLaki", "L", "center", "px-1")}
                     {renderSortTh("perempuan", "P", "center", "px-1")}
-                    {renderSortTh("prioritas", "Prioritas", "center", "px-1.5")}
+                    {renderSortTh("prioritas", "Prioritas", "center", "px-2")}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
-                  {filteredTableRows.map((kel, idx) => {
-                    const isSelected = selectedKelurahan === kel.nama && selectedTingkat === "kelurahan";
-                    return (
-                      <tr
-                        key={kel.nama}
-                        onClick={() => {
-                          setSelectedTingkat("kelurahan");
-                          if (kel.kecamatan) setSelectedKecamatan(kel.kecamatan);
-                          setSelectedKelurahan(kel.nama);
-                        }}
-                        className={cn(
-                          "transition-colors cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50",
-                          isSelected ? "bg-blue-50/70 dark:bg-blue-950/30 font-bold" : ""
-                        )}
-                      >
-                        <td className="py-2 px-2 text-center font-mono text-2xs sm:text-xs text-slate-500">{idx + 1}</td>
-                        <td className={cn("py-2 px-2 text-2xs sm:text-xs", sortColumn === "nama" && "bg-blue-50/40 dark:bg-blue-950/20")}>
-                          <strong className="text-slate-900 dark:text-slate-100">{kel.nama}</strong>
-                        </td>
-                        <td className={cn("py-2 px-2 text-2xs sm:text-xs text-slate-600 dark:text-slate-400", sortColumn === "kecamatan" && "bg-blue-50/40 dark:bg-blue-950/20 font-bold")}>
-                          {kel.kecamatan}
-                        </td>
-                        <td className={cn("py-2 px-1.5 text-center font-mono font-bold text-slate-900 dark:text-slate-100 text-2xs sm:text-xs", sortColumn === "totalAts" && "bg-blue-50/60 dark:bg-blue-950/30 text-blue-950 dark:text-blue-100 font-black")}>
-                          {kel.totalAts}
-                        </td>
-                        <td className={cn("py-2 px-1 sm:px-1.5 text-center font-mono text-rose-600 font-bold text-2xs sm:text-xs", sortColumn === "putusSekolah" && "bg-rose-50/60 dark:bg-rose-950/30 font-black ring-1 ring-inset ring-rose-300")}>
-                          {kel.kategori.putusSekolah}
-                        </td>
-                        <td className={cn("py-2 px-1 sm:px-1.5 text-center font-mono text-amber-600 font-bold text-2xs sm:text-xs", sortColumn === "lulusTidakLanjut" && "bg-amber-50/60 dark:bg-amber-950/30 font-black ring-1 ring-inset ring-amber-300")}>
-                          {kel.kategori.lulusTidakLanjut}
-                        </td>
-                        <td className={cn("py-2 px-1 sm:px-1.5 text-center font-mono text-blue-600 font-bold text-2xs sm:text-xs", sortColumn === "belumPernahSekolah" && "bg-blue-50/60 dark:bg-blue-950/30 font-black ring-1 ring-inset ring-blue-300")}>
-                          {kel.kategori.belumPernahSekolah}
-                        </td>
-                        <td className={cn("py-2 px-1.5 text-center", sortColumn === "keinginan" && "bg-emerald-50/60 dark:bg-emerald-950/30 ring-1 ring-inset ring-emerald-300")}>
-                          <span className="font-mono font-bold text-emerald-700 dark:text-emerald-400 text-2xs sm:text-xs">
-                            {kel.keinginan.masihAda} ({kel.persenInginSekolah}%)
-                          </span>
-                        </td>
-                        <td className={cn("py-2 px-1 text-center font-mono text-slate-700 dark:text-slate-300 text-2xs sm:text-xs", sortColumn === "lakiLaki" && "bg-blue-50/60 dark:bg-blue-950/30 font-bold")}>
-                          {kel.gender.lakiLaki}
-                        </td>
-                        <td className={cn("py-2 px-1 text-center font-mono text-slate-700 dark:text-slate-300 text-2xs sm:text-xs", sortColumn === "perempuan" && "bg-blue-50/60 dark:bg-blue-950/30 font-bold")}>
-                          {kel.gender.perempuan}
-                        </td>
-                        <td className={cn("py-2 px-1.5 text-center", sortColumn === "prioritas" && "bg-blue-50/60 dark:bg-blue-950/30")}>
-                          <span
-                            className={cn(
-                              "inline-block px-1.5 py-0.5 rounded-full font-black text-[10px] font-mono uppercase",
-                              kel.totalAts === 0
-                                ? "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
-                                : kel.totalAts >= 25
-                                ? "bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300"
-                                : kel.totalAts >= 15
-                                ? "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300"
-                                : "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
-                            )}
-                          >
-                            {kel.totalAts === 0 ? "0 ATS" : kel.totalAts >= 25 ? "Tinggi" : kel.totalAts >= 15 ? "Sedang" : "Terkendali"}
-                          </span>
-                        </td>
-                      </tr>
-                    );
-                  })}
+                  {filteredTableRows.length === 0 ? (
+                    <tr>
+                      <td colSpan={11} className="py-8 text-center text-xs text-slate-500 dark:text-slate-400">
+                        Tidak ada kelurahan yang cocok dengan filter pencarian &amp; prioritas.
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredTableRows.map((kel, idx) => {
+                      const isSelected = selectedKelurahan === kel.nama && selectedTingkat === "kelurahan";
+                      return (
+                        <tr
+                          key={kel.nama}
+                          onClick={() => {
+                            setSelectedTingkat("kelurahan");
+                            if (kel.kecamatan) setSelectedKecamatan(kel.kecamatan);
+                            setSelectedKelurahan(kel.nama);
+                          }}
+                          className={cn(
+                            "transition-colors cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50",
+                            isSelected
+                              ? "bg-blue-50/90 dark:bg-blue-950/40 border-l-4 border-l-blue-600 font-bold"
+                              : ""
+                          )}
+                          title={`Klik untuk memfokuskan grafik ke Kelurahan ${kel.nama}`}
+                        >
+                          <td className="py-2.5 px-2 text-center font-mono text-2xs sm:text-xs text-slate-500">{idx + 1}</td>
+                          <td className={cn("py-2.5 px-2.5 text-2xs sm:text-xs", sortColumn === "nama" && "bg-blue-50/40 dark:bg-blue-950/20")}>
+                            <strong className="text-slate-900 dark:text-slate-100">{kel.nama}</strong>
+                          </td>
+                          <td className={cn("py-2.5 px-2 text-2xs sm:text-xs text-slate-600 dark:text-slate-400", sortColumn === "kecamatan" && "bg-blue-50/40 dark:bg-blue-950/20 font-bold")}>
+                            {kel.kecamatan}
+                          </td>
+                          <td className={cn("py-2.5 px-2 text-center font-mono font-bold text-slate-900 dark:text-slate-100 text-2xs sm:text-xs", sortColumn === "totalAts" && "bg-blue-50/60 dark:bg-blue-950/30 text-blue-950 dark:text-blue-100 font-black")}>
+                            <span className="px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-800">
+                              {kel.totalAts}
+                            </span>
+                          </td>
+                          <td className={cn("py-2.5 px-1 sm:px-1.5 text-center font-mono text-rose-600 font-bold text-2xs sm:text-xs", sortColumn === "putusSekolah" && "bg-rose-50/60 dark:bg-rose-950/30 font-black ring-1 ring-inset ring-rose-300")}>
+                            {kel.kategori.putusSekolah}
+                          </td>
+                          <td className={cn("py-2.5 px-1 sm:px-1.5 text-center font-mono text-amber-600 font-bold text-2xs sm:text-xs", sortColumn === "lulusTidakLanjut" && "bg-amber-50/60 dark:bg-amber-950/30 font-black ring-1 ring-inset ring-amber-300")}>
+                            {kel.kategori.lulusTidakLanjut}
+                          </td>
+                          <td className={cn("py-2.5 px-1 sm:px-1.5 text-center font-mono text-blue-600 font-bold text-2xs sm:text-xs", sortColumn === "belumPernahSekolah" && "bg-blue-50/60 dark:bg-blue-950/30 font-black ring-1 ring-inset ring-blue-300")}>
+                            {kel.kategori.belumPernahSekolah}
+                          </td>
+                          <td className={cn("py-2.5 px-2 text-center", sortColumn === "keinginan" && "bg-emerald-50/60 dark:bg-emerald-950/30 ring-1 ring-inset ring-emerald-300")}>
+                            <span className="inline-flex items-center gap-1 font-mono font-bold text-emerald-700 dark:text-emerald-400 text-2xs sm:text-xs">
+                              <span>{kel.keinginan.masihAda}</span>
+                              <span className="text-[10px] text-emerald-600 dark:text-emerald-500 font-sans">
+                                ({kel.persenInginSekolah}%)
+                              </span>
+                            </span>
+                          </td>
+                          <td className={cn("py-2.5 px-1 text-center font-mono text-sky-700 dark:text-sky-300 text-2xs sm:text-xs", sortColumn === "lakiLaki" && "bg-sky-50/60 dark:bg-sky-950/30 font-bold")}>
+                            {kel.gender.lakiLaki}
+                          </td>
+                          <td className={cn("py-2.5 px-1 text-center font-mono text-rose-700 dark:text-rose-300 text-2xs sm:text-xs", sortColumn === "perempuan" && "bg-rose-50/60 dark:bg-rose-950/30 font-bold")}>
+                            {kel.gender.perempuan}
+                          </td>
+                          <td className={cn("py-2.5 px-2 text-center", sortColumn === "prioritas" && "bg-blue-50/60 dark:bg-blue-950/30")}>
+                            <span
+                              className={cn(
+                                "inline-block px-2 py-0.5 rounded-full font-black text-[10px] font-mono uppercase border",
+                                kel.totalAts === 0
+                                  ? "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-slate-200 dark:border-slate-700"
+                                  : kel.totalAts >= 25
+                                  ? "bg-rose-50 text-rose-700 dark:bg-rose-950 dark:text-rose-300 border-rose-200 dark:border-rose-800"
+                                  : kel.totalAts >= 15
+                                  ? "bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300 border-amber-200 dark:border-amber-800"
+                                  : "bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800"
+                              )}
+                            >
+                              {kel.totalAts === 0 ? "0 ATS" : kel.totalAts >= 25 ? "Tinggi" : kel.totalAts >= 15 ? "Sedang" : "Terkendali"}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
                 </tbody>
               </table>
             </div>
 
-            <div className="p-4 bg-slate-50 dark:bg-slate-800/40 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-slate-500 font-medium">
+            <div className="p-3.5 sm:p-4 bg-slate-50 dark:bg-slate-800/40 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-slate-500 font-medium">
               <div className="flex flex-wrap items-center gap-2">
-                <span>Menampilkan {filteredTableRows.length} kelurahan se-Kota Tegal</span>
+                <span>
+                  Menampilkan <strong>{filteredTableRows.length}</strong> dari {initialData.kelurahanList.length} kelurahan
+                </span>
+                {tablePriorityFilter !== "semua" && (
+                  <span className="font-bold text-indigo-600 dark:text-indigo-400">
+                    • Filter Prioritas: {tablePriorityFilter.toUpperCase()}
+                  </span>
+                )}
                 {sortColumn !== "default" && (
                   <span className="font-bold text-blue-600 dark:text-blue-400">
-                    • Diurutkan berdasarkan {TABLE_ATS_SORT_LABELS[sortColumn]} (
+                    • Diurutkan: {TABLE_ATS_SORT_LABELS[sortColumn]} (
                     {sortDirection === "desc"
                       ? sortColumn === "nama" || sortColumn === "kecamatan"
-                        ? "Z ke A"
-                        : "Tertinggi ke Terendah"
+                        ? "Z-A"
+                        : "Tertinggi ↓"
                       : sortColumn === "nama" || sortColumn === "kecamatan"
-                      ? "A ke Z"
-                      : "Terendah ke Tertinggi"}
+                      ? "A-Z"
+                      : "Terendah ↑"}
                     )
                   </span>
                 )}
               </div>
               <div className="flex items-center gap-3">
-                {sortColumn !== "default" && (
+                {(sortColumn !== "default" || tablePriorityFilter !== "semua" || tableSearch) && (
                   <button
                     type="button"
-                    onClick={handleResetSort}
-                    className="font-bold text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 underline cursor-pointer"
+                    onClick={() => {
+                      handleResetSort();
+                      setTablePriorityFilter("semua");
+                      setTableSearch("");
+                    }}
+                    className="font-bold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
                   >
-                    Kembalikan Urutan Asli
+                    Reset Semua Filter &amp; Urutan
                   </button>
                 )}
-                <span>Klik judul kolom untuk mengubah urutan • Klik baris kelurahan untuk fokus grafik.</span>
+                <span className="hidden sm:inline">Klik baris kelurahan untuk memfokuskan grafik.</span>
               </div>
             </div>
           </div>
@@ -1975,25 +2421,34 @@ export function RekapDataAtsClientView({
       {/* ========================================================= */}
       {/* 9. FOOTER CALL-TO-ACTION & LINK TO ATS / PKBM             */}
       {/* ========================================================= */}
-      <div className="p-6 rounded-3xl bg-slate-100 dark:bg-slate-800/60 border-2 border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row items-center justify-between gap-4 print:hidden print-hide-on-daftar-nama">
-        <div className="space-y-1 text-center sm:text-left">
-          <h4 className="text-sm sm:text-base font-black text-slate-900 dark:text-slate-100">
+      <div className="p-6 sm:p-7 rounded-3xl bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 border border-indigo-900/40 text-white shadow-xl flex flex-col sm:flex-row items-center justify-between gap-5 print:hidden print-hide-on-daftar-nama relative overflow-hidden">
+        {/* Glow Effects */}
+        <div className="absolute right-0 top-0 w-48 h-48 bg-blue-500/10 rounded-full blur-2xl pointer-events-none" />
+        <div className="absolute left-0 bottom-0 w-48 h-48 bg-indigo-500/10 rounded-full blur-2xl pointer-events-none" />
+
+        <div className="space-y-1.5 text-center sm:text-left relative z-10 max-w-xl">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-500/20 border border-blue-400/30 text-[10px] font-mono font-bold text-blue-300 uppercase">
+            <Sparkles className="h-3 w-3" />
+            <span>Kolaborasi Pengentasan ATS</span>
+          </div>
+          <h4 className="text-base sm:text-lg font-black text-white">
             Kader RT/RW Menemukan Anak Putus Sekolah di Lingkungan Anda?
           </h4>
-          <p className="text-xs text-slate-600 dark:text-slate-400">
-            Daftarkan dan validasi data ATS langsung di Komunitas Warga Kita tingkat RT/RW untuk segera diintervensi oleh Dinas Pendidikan dan PKBM.
+          <p className="text-xs text-slate-300 leading-relaxed">
+            Daftarkan dan validasi data ATS langsung di Komunitas Warga Kita tingkat RT/RW untuk segera difasilitasi intervensi oleh Dinas Pendidikan dan PKBM/SKB se-Kota Tegal.
           </p>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
+
+        <div className="flex items-center gap-2.5 shrink-0 relative z-10">
           <Link
             href="/komunitas?tab=warga_kita"
-            className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-md active:scale-98"
+            className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition-all shadow-md active:scale-98"
           >
             Input ATS di Warga Kita
           </Link>
           <Link
             href="/komunitas?tab=satuan_paud"
-            className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition-all shadow-md active:scale-98"
+            className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-bold transition-all backdrop-blur-md active:scale-98"
           >
             Lembaga PKBM / SKB
           </Link>
