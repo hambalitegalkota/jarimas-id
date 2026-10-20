@@ -142,7 +142,7 @@ export default async function KomunitasDataAtsPage({
   );
 
   return (
-    <div className="flex flex-col flex-1 px-4 py-6 sm:px-6 md:px-8 gap-6 max-w-4xl mx-auto w-full">
+    <div className="flex flex-col flex-1 px-4 sm:px-6 md:px-8 py-4 sm:py-6 gap-5 sm:gap-6 max-w-5xl xl:max-w-6xl mx-auto w-full pb-24">
       {/* Back Button */}
       <div className="flex items-center justify-between print:hidden">
         <Link

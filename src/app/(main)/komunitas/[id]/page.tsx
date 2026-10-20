@@ -96,7 +96,7 @@ export default async function KomunitasDetailPage({
   });
 
   return (
-    <div className="flex flex-col flex-1 px-3 sm:px-5 md:px-6 py-3 sm:py-4 gap-3 sm:gap-3.5 max-w-4xl mx-auto w-full pb-20">
+    <div className="flex flex-col flex-1 px-4 sm:px-6 md:px-8 py-4 sm:py-6 gap-5 sm:gap-6 max-w-5xl xl:max-w-6xl mx-auto w-full pb-24">
       {/* Back Navigation Bar */}
       <div className="flex items-center justify-between">
         <Link

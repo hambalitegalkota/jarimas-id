@@ -144,7 +144,7 @@ export default async function HomePage() {
 
 
   return (
-    <div className="flex flex-col flex-1 px-4 py-4 sm:px-6 md:px-8 gap-6 sm:gap-10 max-w-5xl mx-auto w-full pb-24">
+    <div className="flex flex-col flex-1 px-4 sm:px-6 md:px-8 py-4 sm:py-6 gap-6 sm:gap-8 max-w-5xl xl:max-w-6xl mx-auto w-full pb-24">
       {/* ========================================================= */}
       {/* 1. TOP BRAND HEADER / QUICK BAR                          */}
       {/* ========================================================= */}

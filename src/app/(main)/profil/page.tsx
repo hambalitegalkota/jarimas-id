@@ -367,7 +367,7 @@ export default async function ProfilePage() {
   const totalCardCount = (wargaKitaSummary ? 1 : 0) + nonWargaMemberships.length;
 
   return (
-    <div className="flex flex-col flex-1 px-4 py-6 sm:px-6 md:px-8 max-w-4xl mx-auto w-full gap-6">
+    <div className="flex flex-col flex-1 px-4 sm:px-6 md:px-8 py-4 sm:py-6 gap-5 sm:gap-6 max-w-5xl xl:max-w-6xl mx-auto w-full pb-24">
       {/* Header Profil Card - Coursera Mobile Clean Card */}
       <section className="relative rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-6 shadow-xs">
         {/* Tombol Keluar dari Akun di Pojok Kanan Atas */}
