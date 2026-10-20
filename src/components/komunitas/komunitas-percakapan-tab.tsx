@@ -152,7 +152,7 @@ export function KomunitasPercakapanTab({
       console.warn("Realtime group chat not available:", realtimeErr);
     }
 
-    // 2. Fallback polling berkala saat tab aktif
+    // 2. Fallback polling berkala saat tab aktif (30 detik)
     const interval = setInterval(async () => {
       if (typeof document !== "undefined" && document.hidden) return;
       try {
@@ -169,7 +169,7 @@ export function KomunitasPercakapanTab({
       } catch {
         // Abaikan
       }
-    }, 8000);
+    }, 30000);
 
     return () => {
       isMounted = false;

@@ -396,7 +396,7 @@ export function RekapDataAnakClientView({
   }, [currentWilayahData]);
 
   return (
-    <div className="flex flex-col flex-1 px-4 sm:px-6 md:px-8 gap-5 sm:gap-6 max-w-4xl mx-auto w-full pb-24 print:max-w-none print:w-full print:p-0 print:m-0 print:gap-0 print:pb-0">
+    <div className="flex flex-col flex-1 px-4 sm:px-6 md:px-8 gap-5 sm:gap-6 max-w-5xl xl:max-w-6xl mx-auto w-full pb-24 print:max-w-none print:w-full print:p-0 print:m-0 print:gap-0 print:pb-0">
       {/* Tombol Kembali jika diakses dari Detail Komunitas */}
       {backHref && (
         <div className="flex items-center justify-between print:hidden print-hide-on-daftar-nama">
@@ -804,15 +804,25 @@ export function RekapDataAnakClientView({
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 print-hide-on-daftar-nama print-cards-grid">
             {/* 5.1 Grafik Distribusi Jenjang Institusi PAUD */}
-            <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-5 shadow-xs print-card-item break-inside-avoid print:p-5 print:rounded-2xl">
-              <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
-                <div className="flex items-center gap-2">
-                  <PieChartIcon className="h-5 w-5 text-emerald-600" />
-                  <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-slate-100">
-                    Distribusi Satuan Pendidikan Usia Dini
-                  </h3>
+            <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-6 space-y-4 shadow-xs print-card-item break-inside-avoid print:p-5 print:rounded-2xl">
+              <div className="flex items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3.5">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="h-8 w-8 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                    <PieChartIcon className="h-4.5 w-4.5" />
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-slate-100 truncate">
+                      Distribusi Satuan Pendidikan Usia Dini
+                    </h3>
+                    <p className="text-2xs sm:text-xs text-slate-500 font-medium truncate">
+                      TK, RA, KB, SPS, TPA, SKB, &amp; PKBM se-wilayah
+                    </p>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="text-2xs sm:text-xs font-black px-2.5 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 font-mono">
+                    7 Satuan
+                  </span>
                   <button
                     type="button"
                     onClick={() => toggleChart("satuan_paud")}
@@ -826,14 +836,11 @@ export function RekapDataAnakClientView({
                       </>
                     ) : (
                       <>
-                        <EyeOff className="h-3 w-3 text-slate-500" />
+                        <EyeOff className="h-3 w-3 text-slate-400" />
                         <span>Sembunyikan</span>
                       </>
                     )}
                   </button>
-                  <span className="text-2xs font-bold text-slate-500 uppercase">
-                    TK • RA • KB • SPS • TPA • SKB • PKBM
-                  </span>
                 </div>
               </div>
 
@@ -907,15 +914,25 @@ export function RekapDataAnakClientView({
             </div>
 
             {/* 5.2 Grafik Kelompok Umur & Gender Anak Bersekolah */}
-            <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-5 shadow-xs print-card-item break-inside-avoid print:p-5 print:rounded-2xl">
-              <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
-                <div className="flex items-center gap-2">
-                  <BarChart3 className="h-5 w-5 text-emerald-600" />
-                  <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-slate-100">
-                    Kelompok Umur &amp; Jenis Kelamin (Bersekolah)
-                  </h3>
+            <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-6 space-y-4 shadow-xs print-card-item break-inside-avoid print:p-5 print:rounded-2xl">
+              <div className="flex items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3.5">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="h-8 w-8 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                    <BarChart3 className="h-4.5 w-4.5" />
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-slate-100 truncate">
+                      Kelompok Umur &amp; Gender (Bersekolah)
+                    </h3>
+                    <p className="text-2xs sm:text-xs text-slate-500 font-medium truncate">
+                      Rentang usia 0–6 tahun dan rasio jenis kelamin
+                    </p>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="text-2xs sm:text-xs font-black px-2.5 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 font-mono">
+                    0–6 Thn
+                  </span>
                   <button
                     type="button"
                     onClick={() => toggleChart("umur_gender_bersekolah")}
@@ -929,14 +946,11 @@ export function RekapDataAnakClientView({
                       </>
                     ) : (
                       <>
-                        <EyeOff className="h-3 w-3 text-slate-500" />
+                        <EyeOff className="h-3 w-3 text-slate-400" />
                         <span>Sembunyikan</span>
                       </>
                     )}
                   </button>
-                  <span className="text-2xs font-bold text-slate-500 uppercase">
-                    Rentang 0–6 Tahun
-                  </span>
                 </div>
               </div>
 
@@ -1502,15 +1516,25 @@ export function RekapDataAnakClientView({
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 print-hide-on-daftar-nama print-cards-grid">
             {/* 6.1 Kelompok Umur Anak Belum Bersekolah */}
-            <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-5 shadow-xs print-card-item break-inside-avoid print:p-5 print:rounded-2xl">
-              <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
-                <div className="flex items-center gap-2">
-                  <Baby className="h-5 w-5 text-blue-600" />
-                  <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-slate-100">
-                    Sebaran Usia Anak Belum Bersekolah
-                  </h3>
+            <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-6 space-y-4 shadow-xs print-card-item break-inside-avoid print:p-5 print:rounded-2xl">
+              <div className="flex items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3.5">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="h-8 w-8 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+                    <Baby className="h-4.5 w-4.5" />
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-slate-100 truncate">
+                      Sebaran Usia Belum Bersekolah
+                    </h3>
+                    <p className="text-2xs sm:text-xs text-slate-500 font-medium truncate">
+                      Anak usia 0–6 tahun yang belum terdaftar di lembaga PAUD/TK
+                    </p>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="text-2xs sm:text-xs font-black px-2.5 py-1 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 font-mono">
+                    0–6 Thn
+                  </span>
                   <button
                     type="button"
                     onClick={() => toggleChart("umur_gender_tidak_sekolah")}
@@ -1524,14 +1548,11 @@ export function RekapDataAnakClientView({
                       </>
                     ) : (
                       <>
-                        <EyeOff className="h-3 w-3 text-slate-500" />
+                        <EyeOff className="h-3 w-3 text-slate-400" />
                         <span>Sembunyikan</span>
                       </>
                     )}
                   </button>
-                  <span className="text-2xs font-bold text-slate-500 uppercase">
-                    Kelompok 0–6 Tahun
-                  </span>
                 </div>
               </div>
 
@@ -1613,37 +1634,41 @@ export function RekapDataAnakClientView({
             </div>
 
             {/* 6.2 Alasan Tidak / Belum Bersekolah */}
-            <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-4 shadow-xs print-card-item break-inside-avoid print:p-5 print:rounded-2xl">
-              <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
-                <div className="flex items-center gap-2">
-                  <AlertCircle className="h-5 w-5 text-blue-600" />
-                  <div>
-                    <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-slate-100">
+            <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-6 space-y-4 shadow-xs print-card-item break-inside-avoid print:p-5 print:rounded-2xl">
+              <div className="flex items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3.5">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="h-8 w-8 rounded-xl bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
+                    <AlertCircle className="h-4.5 w-4.5" />
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-slate-100 truncate">
                       Alasan Belum / Tidak Bersekolah
                     </h3>
-                    <p className="text-xs text-slate-500 font-medium">
+                    <p className="text-2xs sm:text-xs text-slate-500 font-medium truncate">
                       Penyebab anak belum terdaftar di lembaga PAUD/TK
                     </p>
                   </div>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => toggleChart("alasan_tidak_sekolah")}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700 print:hidden"
-                  title={hiddenCharts.alasan_tidak_sekolah ? "Tampilkan Grafik" : "Sembunyikan Grafik"}
-                >
-                  {hiddenCharts.alasan_tidak_sekolah ? (
-                    <>
-                      <Eye className="h-3 w-3 text-indigo-600 dark:text-indigo-400" />
-                      <span>Tampilkan</span>
-                    </>
-                  ) : (
-                    <>
-                      <EyeOff className="h-3 w-3 text-slate-500" />
-                      <span>Sembunyikan</span>
-                    </>
-                  )}
-                </button>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => toggleChart("alasan_tidak_sekolah")}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700 print:hidden"
+                    title={hiddenCharts.alasan_tidak_sekolah ? "Tampilkan Grafik" : "Sembunyikan Grafik"}
+                  >
+                    {hiddenCharts.alasan_tidak_sekolah ? (
+                      <>
+                        <Eye className="h-3 w-3 text-indigo-600 dark:text-indigo-400" />
+                        <span>Tampilkan</span>
+                      </>
+                    ) : (
+                      <>
+                        <EyeOff className="h-3 w-3 text-slate-400" />
+                        <span>Sembunyikan</span>
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
 
               {hiddenCharts.alasan_tidak_sekolah ? (

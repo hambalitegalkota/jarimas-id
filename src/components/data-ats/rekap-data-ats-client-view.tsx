@@ -69,6 +69,48 @@ const TABLE_ATS_SORT_LABELS: Record<TableAtsSortColumn, string> = {
   prioritas: "Prioritas Intervensi",
 };
 
+// Helper untuk menghasilkan path SVG Donut Chart
+function getDonutSlicePath(
+  cx: number,
+  cy: number,
+  rOuter: number,
+  rInner: number,
+  startAngleDeg: number,
+  endAngleDeg: number
+): string {
+  const angleDiff = endAngleDeg - startAngleDeg;
+  if (angleDiff <= 0.01) return "";
+
+  // Hindari glitch SVG arc pada lingkaran penuh (360 derajat)
+  if (angleDiff >= 359.9) {
+    const midAngle = startAngleDeg + 180;
+    return `${getDonutSlicePath(cx, cy, rOuter, rInner, startAngleDeg, midAngle)} ${getDonutSlicePath(cx, cy, rOuter, rInner, midAngle, endAngleDeg)}`;
+  }
+
+  const startRad = ((startAngleDeg - 90) * Math.PI) / 180;
+  const endRad = ((endAngleDeg - 90) * Math.PI) / 180;
+
+  const x1Outer = cx + rOuter * Math.cos(startRad);
+  const y1Outer = cy + rOuter * Math.sin(startRad);
+  const x2Outer = cx + rOuter * Math.cos(endRad);
+  const y2Outer = cy + rOuter * Math.sin(endRad);
+
+  const x1Inner = cx + rInner * Math.cos(endRad);
+  const y1Inner = cy + rInner * Math.sin(endRad);
+  const x2Inner = cx + rInner * Math.cos(startRad);
+  const y2Inner = cy + rInner * Math.sin(startRad);
+
+  const largeArcFlag = angleDiff > 180 ? 1 : 0;
+
+  return [
+    `M ${x1Outer.toFixed(2)} ${y1Outer.toFixed(2)}`,
+    `A ${rOuter} ${rOuter} 0 ${largeArcFlag} 1 ${x2Outer.toFixed(2)} ${y2Outer.toFixed(2)}`,
+    `L ${x1Inner.toFixed(2)} ${y1Inner.toFixed(2)}`,
+    `A ${rInner} ${rInner} 0 ${largeArcFlag} 0 ${x2Inner.toFixed(2)} ${y2Inner.toFixed(2)}`,
+    `Z`,
+  ].join(" ");
+}
+
 export interface RekapDataAtsClientViewProps {
   initialData: RekapDataAtsResult;
   canAccessDaftarNamaAts?: boolean;
@@ -104,6 +146,9 @@ export function RekapDataAtsClientView({
   const [tableSearch, setTableSearch] = useState<string>("");
   const [sortColumn, setSortColumn] = useState<TableAtsSortColumn>("default");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
+
+  const [hoveredKategori, setHoveredKategori] = useState<string | null>(null);
+  const [hoveredKeinginan, setHoveredKeinginan] = useState<string | null>(null);
 
   const [isAllHidden, setIsAllHidden] = useState(false);
   const [hiddenCharts, setHiddenCharts] = useState<Record<string, boolean>>({});
@@ -309,39 +354,117 @@ export function RekapDataAtsClientView({
     });
   }, [initialData.kelurahanList, tableSearch, sortColumn, sortDirection]);
 
-  const kategoriEntries = useMemo(() => {
+  // Data Donut Chart Kategori ATS (DO, LTM, BPB)
+  const kategoriDonutData = useMemo(() => {
     const k = currentWilayahData.kategori;
-    const total = currentWilayahData.totalAts || 1;
-    return [
+    const total = currentWilayahData.totalAts || 0;
+    const items = [
       {
+        id: "do",
         key: "putusSekolah",
-        label: "Putus Sekolah (DO / Drop Out)",
+        code: "DO",
+        label: "Putus Sekolah (DO)",
+        fullName: "Drop Out / Putus Sekolah",
+        desc: "Berhenti sebelum menyelesaikan jenjang pendidikan",
         count: k.putusSekolah,
-        pct: Math.round((k.putusSekolah / total) * 100),
-        color: "bg-rose-500",
-        textColor: "text-rose-700 dark:text-rose-400",
-        desc: "Anak yang berhenti sebelum menyelesaikan jenjang pendidikannya",
+        color: "#f43f5e", // rose-500
+        bgClass: "bg-rose-500",
+        badgeBg: "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800",
       },
       {
+        id: "ltm",
         key: "lulusTidakLanjut",
-        label: "Lulus Tidak Melanjutkan (LTM)",
+        code: "LTM",
+        label: "Lulus Tdk Lanjut (LTM)",
+        fullName: "Lulus Tidak Melanjutkan",
+        desc: "Lulus jenjang sebelumnya namun tidak melanjutkan",
         count: k.lulusTidakLanjut,
-        pct: Math.round((k.lulusTidakLanjut / total) * 100),
-        color: "bg-amber-500",
-        textColor: "text-amber-700 dark:text-amber-400",
-        desc: "Telah lulus jenjang sebelumnya (SD/SMP) namun tidak melanjutkan",
+        color: "#f59e0b", // amber-500
+        bgClass: "bg-amber-500",
+        badgeBg: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800",
       },
       {
+        id: "bpb",
         key: "belumPernahSekolah",
-        label: "Belum Pernah Bersekolah (BPB)",
+        code: "BPB",
+        label: "Belum Pernah Sekolah (BPB)",
+        fullName: "Belum Pernah Bersekolah",
+        desc: "Usia wajib belajar (6–18 thn) belum pernah sekolah",
         count: k.belumPernahSekolah,
-        pct: Math.round((k.belumPernahSekolah / total) * 100),
-        color: "bg-blue-500",
-        textColor: "text-blue-700 dark:text-blue-400",
-        desc: "Usia wajib sekolah (6–18 tahun) yang belum pernah mengenyam bangku sekolah",
+        color: "#3b82f6", // blue-500
+        bgClass: "bg-blue-500",
+        badgeBg: "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800",
       },
     ];
+
+    let currentAngle = 0;
+    return items.map((item) => {
+      const pct = total > 0 ? Math.round((item.count / total) * 100) : 0;
+      const angle = total > 0 ? (item.count / total) * 360 : 0;
+      const startAngle = currentAngle;
+      const endAngle = currentAngle + angle;
+      currentAngle += angle;
+
+      return {
+        ...item,
+        pct,
+        startAngle,
+        endAngle,
+      };
+    });
   }, [currentWilayahData]);
+
+  // Data Donut Chart Keinginan Bersekolah Kembali
+  const keinginanDonutData = useMemo(() => {
+    const total = currentWilayahData.totalAts || 0;
+    const masihAdaCount = currentWilayahData.keinginan?.masihAda || 0;
+    const tidakAdaCount = currentWilayahData.keinginan?.tidakAda || 0;
+
+    const items = [
+      {
+        id: "masih-ada",
+        label: "Masih Ada Keinginan",
+        sub: "Siap difasilitasi ke PKBM / SKB",
+        count: masihAdaCount,
+        pct: currentWilayahData.persenInginSekolah || 0,
+        color: "#10b981", // emerald-500
+        badgeClass: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800",
+      },
+      {
+        id: "tidak-ada",
+        label: "Tidak Ingin / Ragu",
+        sub: "Perlu pendampingan & konseling",
+        count: tidakAdaCount,
+        pct: 100 - (currentWilayahData.persenInginSekolah || 0),
+        color: "#94a3b8", // slate-400
+        badgeClass: "bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700",
+      },
+    ];
+
+    let currentAngle = 0;
+    return items.map((item) => {
+      const angle = total > 0 ? (item.count / total) * 360 : 0;
+      const startAngle = currentAngle;
+      const endAngle = currentAngle + angle;
+      currentAngle += angle;
+
+      return {
+        ...item,
+        startAngle,
+        endAngle,
+      };
+    });
+  }, [currentWilayahData]);
+
+  const activeKategoriItem = useMemo(() => {
+    if (!hoveredKategori) return null;
+    return kategoriDonutData.find((item) => item.id === hoveredKategori) || null;
+  }, [hoveredKategori, kategoriDonutData]);
+
+  const activeKeinginanItem = useMemo(() => {
+    if (!hoveredKeinginan) return null;
+    return keinginanDonutData.find((item) => item.id === hoveredKeinginan) || null;
+  }, [hoveredKeinginan, keinginanDonutData]);
 
   const jenjangEntries = useMemo(() => {
     const j = currentWilayahData.jenjangAsal;
@@ -357,7 +480,7 @@ export function RekapDataAtsClientView({
   }, [currentWilayahData]);
 
   return (
-    <div className="flex flex-col flex-1 px-4 sm:px-6 md:px-8 gap-5 sm:gap-6 max-w-4xl mx-auto w-full pb-24 print:max-w-none print:w-full print:p-0 print:m-0 print:gap-0 print:pb-0">
+    <div className="flex flex-col flex-1 px-4 sm:px-6 md:px-8 gap-5 sm:gap-6 max-w-5xl xl:max-w-6xl mx-auto w-full pb-24 print:max-w-none print:w-full print:p-0 print:m-0 print:gap-0 print:pb-0">
       {/* Tombol Kembali jika diakses dari Detail Komunitas */}
       {backHref && (
         <div className="flex items-center justify-between print:hidden print-hide-on-daftar-nama">
@@ -619,26 +742,26 @@ export function RekapDataAtsClientView({
       {/* ========================================================= */}
       {(activeTabSection === "semua" || activeTabSection === "kategori") && (
         <div className="space-y-4 print-hide-on-daftar-nama">
-          <div className="flex items-center justify-between print-section-header break-after-avoid">
-            <div className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold">
-                <PieChartIcon className="h-4 w-4" />
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 print-section-header break-after-avoid">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white flex items-center justify-center font-bold shadow-xs shrink-0">
+                <PieChartIcon className="h-4.5 w-4.5" />
               </div>
-              <div>
-                <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-slate-100">
+              <div className="min-w-0">
+                <h2 className="text-base sm:text-lg font-black text-slate-900 dark:text-slate-100">
                   Kategori ATS &amp; Kesiapan Kembali Bersekolah
                 </h2>
-                <p className="text-xs text-slate-500 font-medium">
+                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
                   Status putus sekolah, lulus tidak melanjutkan, serta kemauan anak untuk kembali belajar.
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 self-start sm:self-center shrink-0">
               <button
                 type="button"
                 onClick={toggleAll}
                 className={cn(
-                  "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all border cursor-pointer print:hidden",
+                  "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all border cursor-pointer print:hidden shrink-0",
                   isAllHidden
                     ? "bg-blue-600 hover:bg-blue-700 text-white border-blue-600 shadow-xs"
                     : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 shadow-2xs"
@@ -657,246 +780,420 @@ export function RekapDataAtsClientView({
                   </>
                 )}
               </button>
-              <span className="hidden sm:inline-block text-xs font-extrabold px-3 py-1 rounded-full bg-blue-50 text-blue-800 border border-blue-200 print:inline-block">
+              <span className="hidden sm:inline-block text-xs font-extrabold px-3 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-800 dark:text-blue-300 border border-blue-200 dark:border-blue-800 font-mono print:inline-block shrink-0">
                 Total: {currentWilayahData.totalAts} Anak
               </span>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 print-cards-grid">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 print-cards-grid">
             {/* 5.1 Kategori ATS Breakdown */}
-            <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-5 shadow-xs print-card-item break-inside-avoid print:p-5 print:rounded-2xl">
-              <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
-                <div className="flex items-center gap-2">
-                  <BarChart3 className="h-5 w-5 text-blue-600" />
-                  <div>
-                    <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-slate-100">
-                      Distribusi Kategori ATS
-                    </h3>
-                    <p className="text-2xs text-slate-500 font-medium">
-                      Total Data ATS: <strong className="text-slate-900 dark:text-slate-100 font-bold">{currentWilayahData.totalAts} Anak</strong>
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <button
-                    type="button"
-                    onClick={() => toggleChart("kategori")}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700 print:hidden"
-                    title={hiddenCharts.kategori ? "Tampilkan Grafik" : "Sembunyikan Grafik"}
-                  >
-                    {hiddenCharts.kategori ? (
-                      <>
-                        <Eye className="h-3 w-3 text-blue-600 dark:text-blue-400" />
-                        <span>Tampilkan</span>
-                      </>
-                    ) : (
-                      <>
-                        <EyeOff className="h-3 w-3 text-slate-500" />
-                        <span>Sembunyikan</span>
-                      </>
-                    )}
-                  </button>
-                  <span className="text-xs font-black px-2.5 py-1 rounded-xl bg-blue-100 dark:bg-blue-950/60 text-blue-800 dark:text-blue-300 border border-blue-300 dark:border-blue-700 font-mono shadow-2xs">
-                    Total: {currentWilayahData.totalAts} Anak
-                  </span>
-                  <span className="text-2xs font-bold text-slate-500 uppercase hidden sm:inline">
-                    DO • LTM • BPB
-                  </span>
-                </div>
-              </div>
-
-              {hiddenCharts.kategori ? (
-                <div className="py-12 text-center text-xs text-slate-500 dark:text-slate-400 bg-slate-50/50 dark:bg-slate-800/40 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700 flex items-center justify-center gap-2">
-                  <EyeOff className="h-4 w-4 text-slate-400" />
-                  <span>Grafik Distribusi Kategori ATS disembunyikan.</span>
-                  <button
-                    type="button"
-                    onClick={() => toggleChart("kategori")}
-                    className="font-bold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
-                  >
-                    Tampilkan kembali
-                  </button>
-                </div>
-              ) : (
-                <>
-                  {/* Rasio Gender ATS (Laki-laki & Perempuan) */}
-                  <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-2">
-                    <div className="flex items-center justify-between text-xs font-extrabold">
-                      <span className="text-sky-700 dark:text-sky-400 flex items-center gap-1.5">
-                        <span className="h-2.5 w-2.5 rounded-full bg-sky-500" />
-                        Laki-laki: {currentWilayahData.gender.lakiLaki} Anak (
-                        {Math.round((currentWilayahData.gender.lakiLaki / (currentWilayahData.totalAts || 1)) * 100)}%)
-                      </span>
-                      <span className="text-rose-600 dark:text-rose-400 flex items-center gap-1.5">
-                        <span className="h-2.5 w-2.5 rounded-full bg-rose-500" />
-                        Perempuan: {currentWilayahData.gender.perempuan} Anak (
-                        {Math.round((currentWilayahData.gender.perempuan / (currentWilayahData.totalAts || 1)) * 100)}%)
-                      </span>
+            <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-6 space-y-4 shadow-xs print-card-item break-inside-avoid print:p-5 print:rounded-2xl flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3.5">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center shrink-0 shadow-2xs">
+                      <BarChart3 className="h-4.5 w-4.5" />
                     </div>
-                    <div className="h-2.5 w-full flex rounded-full overflow-hidden bg-slate-200 dark:bg-slate-700">
-                      <div
-                        className="bg-sky-500 h-full transition-all"
-                        style={{
-                          width: `${Math.round((currentWilayahData.gender.lakiLaki / (currentWilayahData.totalAts || 1)) * 100)}%`,
-                        }}
-                      />
-                      <div
-                        className="bg-rose-500 h-full transition-all"
-                        style={{
-                          width: `${Math.round((currentWilayahData.gender.perempuan / (currentWilayahData.totalAts || 1)) * 100)}%`,
-                        }}
-                      />
+                    <div className="min-w-0">
+                      <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-slate-100 truncate">
+                        Distribusi Kategori ATS
+                      </h3>
+                      <p className="text-2xs sm:text-xs text-slate-500 font-medium truncate">
+                        Status DO, LTM, dan Belum Pernah Sekolah
+                      </p>
                     </div>
                   </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => toggleChart("kategori")}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700 print:hidden"
+                      title={hiddenCharts.kategori ? "Tampilkan Grafik" : "Sembunyikan Grafik"}
+                    >
+                      {hiddenCharts.kategori ? (
+                        <>
+                          <Eye className="h-3 w-3 text-blue-600 dark:text-blue-400" />
+                          <span>Tampilkan</span>
+                        </>
+                      ) : (
+                        <>
+                          <EyeOff className="h-3 w-3 text-slate-400" />
+                          <span>Sembunyikan</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
 
-                  <div className="space-y-4">
-                    {kategoriEntries.map((item) => (
-                      <div key={item.key} className="space-y-1.5 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
-                        <div className="flex items-center justify-between text-xs font-bold">
-                          <span className="flex items-center gap-2 text-slate-800 dark:text-slate-200">
-                            <span className={cn("inline-block h-2.5 w-2.5 rounded-full", item.color)} />
-                            <span>{item.label}</span>
-                          </span>
-                          <span className="font-mono font-black text-slate-900 dark:text-slate-100">
-                            {item.count} Anak ({item.pct}%)
-                          </span>
-                        </div>
-                        <p className="text-2xs text-slate-500 font-medium pl-4">
-                          {item.desc}
-                        </p>
-                        <div className="h-2.5 w-full bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                          <div
-                            className={cn("h-full rounded-full transition-all duration-700", item.color)}
-                            style={{ width: `${Math.max(2, item.pct)}%` }}
-                          />
+                {hiddenCharts.kategori ? (
+                  <div className="py-12 text-center text-xs text-slate-500 dark:text-slate-400 bg-slate-50/50 dark:bg-slate-800/40 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700 flex items-center justify-center gap-2 mt-4">
+                    <EyeOff className="h-4 w-4 text-slate-400" />
+                    <span>Grafik Distribusi Kategori ATS disembunyikan.</span>
+                    <button
+                      type="button"
+                      onClick={() => toggleChart("kategori")}
+                      className="font-bold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
+                    >
+                      Tampilkan kembali
+                    </button>
+                  </div>
+                ) : (
+                  <div className="pt-3.5 space-y-4">
+                    {/* Visual Donut Chart + 3 Metric Rows */}
+                    <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-5">
+                      {/* Donut Chart */}
+                      <div className="relative flex items-center justify-center shrink-0 w-[140px] h-[140px]">
+                        {currentWilayahData.totalAts > 0 ? (
+                          <svg width="140" height="140" viewBox="0 0 140 140" className="overflow-visible drop-shadow-2xs">
+                            {kategoriDonutData.map((item) => {
+                              if (item.count === 0) return null;
+                              const path = getDonutSlicePath(70, 70, 66, 44, item.startAngle, item.endAngle);
+                              const isHovered = hoveredKategori === item.id;
+                              return (
+                                <path
+                                  key={item.id}
+                                  d={path}
+                                  fill={item.color}
+                                  className="transition-all duration-300 cursor-pointer"
+                                  opacity={hoveredKategori === null || isHovered ? 1 : 0.4}
+                                  style={{
+                                    transform: isHovered ? "scale(1.04)" : "scale(1)",
+                                    transformOrigin: "70px 70px",
+                                  }}
+                                  onMouseEnter={() => setHoveredKategori(item.id)}
+                                  onMouseLeave={() => setHoveredKategori(null)}
+                                />
+                              );
+                            })}
+                          </svg>
+                        ) : (
+                          <div className="w-[130px] h-[130px] rounded-full border-8 border-slate-200 dark:border-slate-800 flex items-center justify-center" />
+                        )}
+                        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
+                          {activeKategoriItem ? (
+                            <>
+                              <span className="text-[10px] font-mono font-black" style={{ color: activeKategoriItem.color }}>
+                                {activeKategoriItem.code}
+                              </span>
+                              <span className="text-xl font-black font-mono text-slate-900 dark:text-slate-100 leading-tight">
+                                {activeKategoriItem.count}
+                              </span>
+                              <span className="text-[10px] font-bold text-slate-500">
+                                {activeKategoriItem.pct}%
+                              </span>
+                            </>
+                          ) : (
+                            <>
+                              <span className="text-[9px] font-mono uppercase font-bold text-slate-400 dark:text-slate-500 tracking-wider">
+                                TOTAL ATS
+                              </span>
+                              <span className="text-2xl font-black font-mono text-slate-900 dark:text-slate-100 leading-none my-0.5">
+                                {currentWilayahData.totalAts}
+                              </span>
+                              <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">
+                                Anak
+                              </span>
+                            </>
+                          )}
                         </div>
                       </div>
-                    ))}
+
+                      {/* 3 Category Cards */}
+                      <div className="flex-1 w-full space-y-2">
+                        {kategoriDonutData.map((item) => {
+                          const isHovered = hoveredKategori === item.id;
+                          return (
+                            <div
+                              key={item.id}
+                              onMouseEnter={() => setHoveredKategori(item.id)}
+                              onMouseLeave={() => setHoveredKategori(null)}
+                              className={cn(
+                                "p-2.5 sm:p-3 rounded-2xl border transition-all cursor-pointer",
+                                isHovered
+                                  ? "bg-slate-100 dark:bg-slate-800/80 border-slate-300 dark:border-slate-600 shadow-xs"
+                                  : "bg-slate-50/70 dark:bg-slate-800/40 border-slate-200 dark:border-slate-700/80 hover:bg-slate-50 dark:hover:bg-slate-800/60"
+                              )}
+                            >
+                              <div className="flex items-center justify-between gap-2">
+                                <div className="flex items-center gap-2 min-w-0">
+                                  <span className={cn("px-1.5 py-0.5 rounded-md font-mono text-2xs font-black uppercase border shrink-0", item.badgeBg)}>
+                                    {item.code}
+                                  </span>
+                                  <span className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
+                                    {item.fullName}
+                                  </span>
+                                </div>
+                                <div className="flex items-baseline gap-1 shrink-0 font-mono">
+                                  <span className="text-sm font-black text-slate-900 dark:text-slate-100">
+                                    {item.count}
+                                  </span>
+                                  <span className="text-2xs font-semibold text-slate-500 font-sans">
+                                    Anak
+                                  </span>
+                                  <span className="text-2xs font-bold text-slate-500 ml-0.5">
+                                    ({item.pct}%)
+                                  </span>
+                                </div>
+                              </div>
+                              <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium pl-8 mt-0.5 truncate">
+                                {item.desc}
+                              </p>
+                              <div className="h-1.5 w-full bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden mt-1.5 ml-8 w-[calc(100%-2rem)]">
+                                <div
+                                  className={cn("h-full rounded-full transition-all duration-700", item.bgClass)}
+                                  style={{ width: `${Math.max(item.count > 0 ? 3 : 0, item.pct)}%` }}
+                                />
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Integrated Proportion Segment Bar */}
+                    <div className="p-2.5 rounded-xl bg-slate-50/80 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700 space-y-1.5">
+                      <div className="flex items-center justify-between text-2xs font-bold">
+                        <span className="text-slate-500 dark:text-slate-400 font-medium">Proporsi Kategori:</span>
+                        <div className="flex items-center gap-2.5 font-mono text-slate-700 dark:text-slate-300">
+                          {kategoriDonutData.map((item) => (
+                            <span key={item.id} className="flex items-center gap-1">
+                              <span className={cn("h-2 w-2 rounded-full shrink-0", item.bgClass)} />
+                              <span className="font-sans font-semibold">{item.code}:</span>
+                              <span>{item.pct}%</span>
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="h-2 w-full flex rounded-full overflow-hidden bg-slate-200 dark:bg-slate-700 p-0.5 gap-0.5">
+                        {kategoriDonutData.map((item) => (
+                          <div
+                            key={item.id}
+                            className={cn("h-full first:rounded-l-full last:rounded-r-full transition-all duration-700", item.bgClass)}
+                            style={{ width: `${Math.max(item.count > 0 ? 3 : 0, item.pct)}%` }}
+                            title={`${item.label}: ${item.count} Anak (${item.pct}%)`}
+                          />
+                        ))}
+                      </div>
+                    </div>
                   </div>
-                </>
-              )}
+                )}
+              </div>
             </div>
 
             {/* 5.2 Keinginan Bersekolah Kembali & Rasio Gender */}
-            <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-5 shadow-xs print-card-item break-inside-avoid print:p-5 print:rounded-2xl">
-              <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="h-5 w-5 text-emerald-600" />
-                  <div>
-                    <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-slate-100">
-                      Keinginan Bersekolah &amp; Rasio Gender
-                    </h3>
-                    <p className="text-2xs text-slate-500 font-medium">
-                      Total Data ATS: <strong className="text-slate-900 dark:text-slate-100 font-bold">{currentWilayahData.totalAts} Anak</strong>
-                    </p>
+            <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-6 space-y-4 shadow-xs print-card-item break-inside-avoid print:p-5 print:rounded-2xl flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3.5">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white flex items-center justify-center shrink-0 shadow-2xs">
+                      <CheckCircle2 className="h-4.5 w-4.5" />
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-slate-100 truncate">
+                        Kesiapan Kembali Bersekolah
+                      </h3>
+                      <p className="text-2xs sm:text-xs text-slate-500 font-medium truncate">
+                        Minat belajar kembali &amp; profil gender anak ATS
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => toggleChart("keinginan")}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700 print:hidden"
+                      title={hiddenCharts.keinginan ? "Tampilkan Grafik" : "Sembunyikan Grafik"}
+                    >
+                      {hiddenCharts.keinginan ? (
+                        <>
+                          <Eye className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
+                          <span>Tampilkan</span>
+                        </>
+                      ) : (
+                        <>
+                          <EyeOff className="h-3 w-3 text-slate-400" />
+                          <span>Sembunyikan</span>
+                        </>
+                      )}
+                    </button>
                   </div>
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <button
-                    type="button"
-                    onClick={() => toggleChart("keinginan")}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700 print:hidden"
-                    title={hiddenCharts.keinginan ? "Tampilkan Grafik" : "Sembunyikan Grafik"}
-                  >
-                    {hiddenCharts.keinginan ? (
-                      <>
-                        <Eye className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
-                        <span>Tampilkan</span>
-                      </>
-                    ) : (
-                      <>
-                        <EyeOff className="h-3 w-3 text-slate-500" />
-                        <span>Sembunyikan</span>
-                      </>
-                    )}
-                  </button>
-                  <span className="text-xs font-black px-2.5 py-1 rounded-xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700 font-mono shadow-2xs">
-                    Total: {currentWilayahData.totalAts} Anak
-                  </span>
-                  <span className="text-2xs font-bold text-slate-500 uppercase hidden sm:inline">
-                    Kesiapan Intervensi
-                  </span>
-                </div>
+
+                {hiddenCharts.keinginan ? (
+                  <div className="py-12 text-center text-xs text-slate-500 dark:text-slate-400 bg-slate-50/50 dark:bg-slate-800/40 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700 flex items-center justify-center gap-2 mt-4">
+                    <EyeOff className="h-4 w-4 text-slate-400" />
+                    <span>Grafik Keinginan Bersekolah disembunyikan.</span>
+                    <button
+                      type="button"
+                      onClick={() => toggleChart("keinginan")}
+                      className="font-bold text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer"
+                    >
+                      Tampilkan kembali
+                    </button>
+                  </div>
+                ) : (
+                  <div className="pt-3.5 space-y-3.5">
+                    {/* Visual Donut Chart + 2 Readiness Cards */}
+                    <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-5">
+                      {/* Donut Chart */}
+                      <div className="relative flex items-center justify-center shrink-0 w-[140px] h-[140px]">
+                        {currentWilayahData.totalAts > 0 ? (
+                          <svg width="140" height="140" viewBox="0 0 140 140" className="overflow-visible drop-shadow-2xs">
+                            {keinginanDonutData.map((item) => {
+                              if (item.count === 0) return null;
+                              const path = getDonutSlicePath(70, 70, 66, 44, item.startAngle, item.endAngle);
+                              const isHovered = hoveredKeinginan === item.id;
+                              return (
+                                <path
+                                  key={item.id}
+                                  d={path}
+                                  fill={item.color}
+                                  className="transition-all duration-300 cursor-pointer"
+                                  opacity={hoveredKeinginan === null || isHovered ? 1 : 0.4}
+                                  style={{
+                                    transform: isHovered ? "scale(1.04)" : "scale(1)",
+                                    transformOrigin: "70px 70px",
+                                  }}
+                                  onMouseEnter={() => setHoveredKeinginan(item.id)}
+                                  onMouseLeave={() => setHoveredKeinginan(null)}
+                                />
+                              );
+                            })}
+                          </svg>
+                        ) : (
+                          <div className="w-[130px] h-[130px] rounded-full border-8 border-slate-200 dark:border-slate-800 flex items-center justify-center" />
+                        )}
+                        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
+                          {activeKeinginanItem ? (
+                            <>
+                              <span className="text-[10px] font-mono font-black" style={{ color: activeKeinginanItem.color }}>
+                                {activeKeinginanItem.id === "masih-ada" ? "BERMINAT" : "RAGU"}
+                              </span>
+                              <span className="text-xl font-black font-mono text-slate-900 dark:text-slate-100 leading-tight">
+                                {activeKeinginanItem.count}
+                              </span>
+                              <span className="text-[10px] font-bold text-slate-500">
+                                {activeKeinginanItem.pct}%
+                              </span>
+                            </>
+                          ) : (
+                            <>
+                              <span className="text-2xl font-black font-mono text-emerald-600 dark:text-emerald-400 leading-none">
+                                {currentWilayahData.persenInginSekolah}%
+                              </span>
+                              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mt-1">
+                                BERMINAT
+                              </span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* 2 Readiness Cards Stacked */}
+                      <div className="flex-1 w-full space-y-2">
+                        {/* Masih Ada Keinginan */}
+                        <div
+                          onMouseEnter={() => setHoveredKeinginan("masih-ada")}
+                          onMouseLeave={() => setHoveredKeinginan(null)}
+                          className={cn(
+                            "p-3 rounded-2xl border transition-all cursor-pointer",
+                            hoveredKeinginan === "masih-ada"
+                              ? "bg-emerald-100/90 dark:bg-emerald-950/60 border-emerald-400 dark:border-emerald-700 shadow-xs"
+                              : "bg-emerald-50/70 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800/60 hover:bg-emerald-50 dark:hover:bg-emerald-950/40"
+                          )}
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-xs font-black uppercase tracking-wide text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
+                              <span className="h-2 w-2 rounded-full bg-emerald-500 shrink-0" />
+                              Masih Ada Keinginan
+                            </span>
+                            <span className="text-xs font-mono font-black text-emerald-800 dark:text-emerald-200 px-2 py-0.5 rounded-full bg-emerald-100/80 dark:bg-emerald-900/60">
+                              {currentWilayahData.persenInginSekolah}%
+                            </span>
+                          </div>
+                          <div className="flex items-baseline justify-between mt-1">
+                            <div className="text-lg sm:text-xl font-black font-mono text-emerald-700 dark:text-emerald-400">
+                              {currentWilayahData.keinginan.masihAda} <span className="text-xs font-bold text-emerald-600 font-sans">Anak</span>
+                            </div>
+                            <span className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-400">
+                              ✓ Siap ke PKBM/SKB
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Tidak Ingin / Ragu */}
+                        <div
+                          onMouseEnter={() => setHoveredKeinginan("tidak-ada")}
+                          onMouseLeave={() => setHoveredKeinginan(null)}
+                          className={cn(
+                            "p-3 rounded-2xl border transition-all cursor-pointer",
+                            hoveredKeinginan === "tidak-ada"
+                              ? "bg-slate-200/80 dark:bg-slate-700/80 border-slate-300 dark:border-slate-600 shadow-xs"
+                              : "bg-slate-50/80 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700/80 hover:bg-slate-100/70 dark:hover:bg-slate-800/70"
+                          )}
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-xs font-black uppercase tracking-wide text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                              <span className="h-2 w-2 rounded-full bg-slate-400 shrink-0" />
+                              Tidak Ingin / Ragu
+                            </span>
+                            <span className="text-xs font-mono font-black text-slate-700 dark:text-slate-300 px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700">
+                              {100 - currentWilayahData.persenInginSekolah}%
+                            </span>
+                          </div>
+                          <div className="flex items-baseline justify-between mt-1">
+                            <div className="text-lg sm:text-xl font-black font-mono text-slate-700 dark:text-slate-200">
+                              {currentWilayahData.keinginan.tidakAda} <span className="text-xs font-bold text-slate-500 font-sans">Anak</span>
+                            </div>
+                            <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+                              ℹ Perlu Konseling
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Rasio Gender ATS */}
+                    <div className="p-2.5 sm:p-3 rounded-2xl bg-slate-50/80 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700 space-y-1.5">
+                      <div className="flex items-center justify-between text-2xs sm:text-xs font-extrabold">
+                        <span className="text-sky-700 dark:text-sky-400 flex items-center gap-1.5">
+                          <span className="h-2.5 w-2.5 rounded-full bg-sky-500 shrink-0" />
+                          Laki-laki: {currentWilayahData.gender.lakiLaki} Anak (
+                          {Math.round((currentWilayahData.gender.lakiLaki / (currentWilayahData.totalAts || 1)) * 100)}%)
+                        </span>
+                        <span className="text-rose-600 dark:text-rose-400 flex items-center gap-1.5">
+                          <span className="h-2.5 w-2.5 rounded-full bg-rose-500 shrink-0" />
+                          Perempuan: {currentWilayahData.gender.perempuan} Anak (
+                          {Math.round((currentWilayahData.gender.perempuan / (currentWilayahData.totalAts || 1)) * 100)}%)
+                        </span>
+                      </div>
+                      <div className="h-2 w-full flex rounded-full overflow-hidden bg-slate-200 dark:bg-slate-700 p-0.5 gap-0.5">
+                        <div
+                          className="bg-sky-500 h-full rounded-l-full transition-all duration-700"
+                          style={{
+                            width: `${Math.round((currentWilayahData.gender.lakiLaki / (currentWilayahData.totalAts || 1)) * 100)}%`,
+                          }}
+                          title={`Laki-laki: ${currentWilayahData.gender.lakiLaki} Anak`}
+                        />
+                        <div
+                          className="bg-rose-500 h-full rounded-r-full transition-all duration-700"
+                          style={{
+                            width: `${Math.round((currentWilayahData.gender.perempuan / (currentWilayahData.totalAts || 1)) * 100)}%`,
+                          }}
+                          title={`Perempuan: ${currentWilayahData.gender.perempuan} Anak`}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Micro Callout Alert */}
+                    <div className="p-2.5 rounded-xl bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200/80 dark:border-blue-900/60 text-xs font-medium text-blue-900 dark:text-blue-300 flex items-center gap-2">
+                      <Sparkles className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0" />
+                      <span className="truncate">Anak dengan motivasi belajar tinggi segera difasilitasi ke PKBM/SKB terdekat.</span>
+                    </div>
+                  </div>
+                )}
               </div>
-
-              {hiddenCharts.keinginan ? (
-                <div className="py-12 text-center text-xs text-slate-500 dark:text-slate-400 bg-slate-50/50 dark:bg-slate-800/40 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700 flex items-center justify-center gap-2">
-                  <EyeOff className="h-4 w-4 text-slate-400" />
-                  <span>Grafik Keinginan Bersekolah disembunyikan.</span>
-                  <button
-                    type="button"
-                    onClick={() => toggleChart("keinginan")}
-                    className="font-bold text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer"
-                  >
-                    Tampilkan kembali
-                  </button>
-                </div>
-              ) : (
-                <>
-                  {/* Keinginan Kembali Bersekolah Cards */}
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-center space-y-1">
-                      <span className="text-2xs font-extrabold text-emerald-800 dark:text-emerald-300 uppercase block">
-                        MASIH ADA KEINGINAN
-                      </span>
-                      <div className="text-2xl sm:text-3xl font-black font-mono text-emerald-700 dark:text-emerald-400">
-                        {currentWilayahData.keinginan.masihAda}
-                      </div>
-                      <span className="text-xs font-bold text-emerald-800 dark:text-emerald-300">
-                        ({currentWilayahData.persenInginSekolah}%) Siap Lanjut
-                      </span>
-                    </div>
-
-                    <div className="p-4 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-center space-y-1">
-                      <span className="text-2xs font-extrabold text-slate-600 dark:text-slate-400 uppercase block">
-                        TIDAK INGIN / RAGU
-                      </span>
-                      <div className="text-2xl sm:text-3xl font-black font-mono text-slate-700 dark:text-slate-300">
-                        {currentWilayahData.keinginan.tidakAda}
-                      </div>
-                      <span className="text-xs font-bold text-slate-500">
-                        ({100 - currentWilayahData.persenInginSekolah}%) Perlu Konseling
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Rasio Gender ATS */}
-                  <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-2">
-                    <div className="flex items-center justify-between text-xs font-extrabold">
-                      <span className="text-sky-700 dark:text-sky-400 flex items-center gap-1.5">
-                        <span className="h-2.5 w-2.5 rounded-full bg-sky-500" />
-                        Laki-laki: {currentWilayahData.gender.lakiLaki} Anak (
-                        {Math.round((currentWilayahData.gender.lakiLaki / (currentWilayahData.totalAts || 1)) * 100)}%)
-                      </span>
-                      <span className="text-rose-600 dark:text-rose-400 flex items-center gap-1.5">
-                        <span className="h-2.5 w-2.5 rounded-full bg-rose-500" />
-                        Perempuan: {currentWilayahData.gender.perempuan} Anak (
-                        {Math.round((currentWilayahData.gender.perempuan / (currentWilayahData.totalAts || 1)) * 100)}%)
-                      </span>
-                    </div>
-                    <div className="h-3 w-full flex rounded-full overflow-hidden bg-slate-200 dark:bg-slate-700">
-                      <div
-                        className="bg-sky-500 h-full transition-all"
-                        style={{
-                          width: `${Math.round((currentWilayahData.gender.lakiLaki / (currentWilayahData.totalAts || 1)) * 100)}%`,
-                        }}
-                      />
-                      <div
-                        className="bg-rose-500 h-full transition-all"
-                        style={{
-                          width: `${Math.round((currentWilayahData.gender.perempuan / (currentWilayahData.totalAts || 1)) * 100)}%`,
-                        }}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="p-3 rounded-xl bg-blue-50/60 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900/40 text-xs font-medium text-blue-900 dark:text-blue-300 flex items-center gap-2">
-                    <Sparkles className="h-4 w-4 text-blue-600 shrink-0" />
-                    <span>Anak dengan motivasi belajar tinggi segera difasilitasi ke PKBM terdekat.</span>
-                  </div>
-                </>
-              )}
             </div>
           </div>
         </div>
@@ -942,20 +1239,25 @@ export function RekapDataAtsClientView({
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 print-cards-grid">
             {/* 6.1 Diagram Batang: Jenjang Sekolah Asal / Kelas Terakhir ATS */}
-            <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-4 shadow-xs print-card-item break-inside-avoid print:p-5 print:rounded-2xl">
-              <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
-                <div className="flex items-center gap-2">
-                  <School className="h-5 w-5 text-indigo-600" />
-                  <div>
-                    <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-slate-100">
-                      Diagram Batang: Jenjang &amp; Kelas Terakhir ATS
+            <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-6 space-y-4 shadow-xs print-card-item break-inside-avoid print:p-5 print:rounded-2xl">
+              <div className="flex items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3.5">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="h-8 w-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
+                    <School className="h-4.5 w-4.5" />
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-slate-100 truncate">
+                      Jenjang &amp; Kelas Terakhir ATS
                     </h3>
-                    <p className="text-2xs text-slate-500 font-medium">
-                      Rincian tingkat kelas putus sekolah (DO), lulus tidak lanjut (LTM), dan belum sekolah
+                    <p className="text-2xs sm:text-xs text-slate-500 font-medium truncate">
+                      Tingkat kelas putus sekolah (DO), lulus tidak lanjut (LTM), &amp; belum sekolah
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="text-2xs sm:text-xs font-black px-2.5 py-1 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 font-mono">
+                    15 Kategori
+                  </span>
                   <button
                     type="button"
                     onClick={() => toggleChart("kelas")}
@@ -969,14 +1271,11 @@ export function RekapDataAtsClientView({
                       </>
                     ) : (
                       <>
-                        <EyeOff className="h-3 w-3 text-slate-500" />
+                        <EyeOff className="h-3 w-3 text-slate-400" />
                         <span>Sembunyikan</span>
                       </>
                     )}
                   </button>
-                  <span className="text-xs font-black px-2.5 py-1 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 font-mono">
-                    15 Kategori
-                  </span>
                 </div>
               </div>
 
@@ -1141,20 +1440,25 @@ export function RekapDataAtsClientView({
             </div>
 
             {/* 6.2 Diagram Batang: Distribusi Usia ATS (6 - 18 Tahun) */}
-            <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-4 shadow-xs print-card-item break-inside-avoid print:p-5 print:rounded-2xl">
-              <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
-                <div className="flex items-center gap-2">
-                  <BarChart3 className="h-5 w-5 text-indigo-600" />
-                  <div>
-                    <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-slate-100">
-                      Diagram Batang: Usia ATS (6 – 18 Tahun)
+            <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-6 space-y-4 shadow-xs print-card-item break-inside-avoid print:p-5 print:rounded-2xl">
+              <div className="flex items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3.5">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="h-8 w-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
+                    <BarChart3 className="h-4.5 w-4.5" />
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-slate-100 truncate">
+                      Distribusi Usia ATS (6 – 18 Tahun)
                     </h3>
-                    <p className="text-2xs text-slate-500 font-medium">
-                      Jumlah anak tidak sekolah pada setiap kelompok umur usia wajib belajar
+                    <p className="text-2xs sm:text-xs text-slate-500 font-medium truncate">
+                      Jumlah anak tidak sekolah pada kelompok umur wajib belajar
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="text-2xs sm:text-xs font-black px-2.5 py-1 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 font-mono">
+                    6–18 Thn
+                  </span>
                   <button
                     type="button"
                     onClick={() => toggleChart("usia")}
@@ -1168,14 +1472,11 @@ export function RekapDataAtsClientView({
                       </>
                     ) : (
                       <>
-                        <EyeOff className="h-3 w-3 text-slate-500" />
+                        <EyeOff className="h-3 w-3 text-slate-400" />
                         <span>Sembunyikan</span>
                       </>
                     )}
                   </button>
-                  <span className="text-xs font-black px-2.5 py-1 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 font-mono">
-                    6–18 Thn
-                  </span>
                 </div>
               </div>
 
@@ -1304,20 +1605,25 @@ export function RekapDataAtsClientView({
           </div>
 
           {/* 6.3 Diagram Batang Faktor Penyebab & Alasan Tidak Sekolah (Urutan Terbanyak s/d Tersedikit) */}
-          <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-4 shadow-xs print-card-item break-inside-avoid print:p-5 print:rounded-2xl">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-3">
-              <div className="flex items-center gap-2">
-                <AlertCircle className="h-5 w-5 text-rose-600" />
-                <div>
-                  <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-slate-100">
-                    Diagram Batang: Alasan Menjadi ATS (Urutan Terbanyak ke Tersedikit)
+          <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-6 space-y-4 shadow-xs print-card-item break-inside-avoid print:p-5 print:rounded-2xl">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3.5">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="h-8 w-8 rounded-xl bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
+                  <AlertCircle className="h-4.5 w-4.5" />
+                </div>
+                <div className="min-w-0">
+                  <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-slate-100 truncate">
+                    Alasan &amp; Faktor Menjadi ATS
                   </h3>
-                  <p className="text-xs text-slate-500 font-medium">
-                    Grafik peringkat faktor pemicu anak tidak bersekolah dari data pendataan lapangan
+                  <p className="text-2xs sm:text-xs text-slate-500 font-medium truncate">
+                    Peringkat faktor penyebab anak tidak bersekolah (terbanyak ke tersedikit)
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-2 self-start sm:self-center">
+              <div className="flex items-center gap-2 self-start sm:self-center shrink-0">
+                <span className="text-2xs sm:text-xs font-black px-2.5 py-1 rounded-xl bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 font-mono">
+                  Ranking Terbanyak
+                </span>
                 <button
                   type="button"
                   onClick={() => toggleChart("alasan")}
@@ -1331,14 +1637,11 @@ export function RekapDataAtsClientView({
                     </>
                   ) : (
                     <>
-                      <EyeOff className="h-3 w-3 text-slate-500" />
+                      <EyeOff className="h-3 w-3 text-slate-400" />
                       <span>Sembunyikan</span>
                     </>
                   )}
                 </button>
-                <span className="text-xs font-black px-2.5 py-1 rounded-xl bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 font-mono">
-                  Ranking Terbanyak
-                </span>
               </div>
             </div>
 

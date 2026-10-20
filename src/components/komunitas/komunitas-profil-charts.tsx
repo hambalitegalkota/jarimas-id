@@ -427,16 +427,16 @@ export function KomunitasProfilCharts({
         {/* Chart 1: Distribusi Kelompok Usia (0–6 Tahun) */}
         {canShowDataAnak && (activeChartFilter === "semua" || activeChartFilter === "usia") && (
           <div className="rounded-2xl border-2 border-slate-200 bg-white p-5 space-y-4 shadow-xs">
-            <div className="flex items-center justify-between border-b-2 border-slate-100 pb-3">
-              <div className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 text-blue-700">
+            <div className="flex items-center justify-between gap-3 border-b-2 border-slate-100 pb-3">
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 text-blue-700 shrink-0">
                   <Baby className="h-4 w-4" />
                 </div>
-                <div>
-                  <h4 className="text-sm sm:text-base font-bold text-slate-900">
+                <div className="min-w-0">
+                  <h4 className="text-sm sm:text-base font-bold text-slate-900 truncate">
                     Distribusi Kelompok Usia (0–6 Thn)
                   </h4>
-                  <p className="text-xs text-slate-500 font-medium">
+                  <p className="text-xs text-slate-500 font-medium truncate">
                     Sebaran kelompok umur balita sesuai rentang PAUD
                   </p>
                 </div>
@@ -445,7 +445,7 @@ export function KomunitasProfilCharts({
               <button
                 type="button"
                 onClick={() => toggleChart("usia")}
-                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-bold transition-all cursor-pointer shadow-2xs"
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-bold transition-all cursor-pointer shadow-2xs shrink-0"
                 title={hiddenCharts["usia"] ? "Tampilkan Grafik" : "Sembunyikan Grafik"}
               >
                 {hiddenCharts["usia"] ? (
@@ -551,16 +551,16 @@ export function KomunitasProfilCharts({
         {/* Chart 2: Status Partisipasi PAUD & ATS */}
         {canShowDataAnak && (activeChartFilter === "semua" || activeChartFilter === "paud") && (
           <div className="rounded-2xl border-2 border-slate-200 bg-white p-5 space-y-4 shadow-xs">
-            <div className="flex items-center justify-between border-b-2 border-slate-100 pb-3">
-              <div className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100 text-emerald-800">
+            <div className="flex items-center justify-between gap-3 border-b-2 border-slate-100 pb-3">
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100 text-emerald-800 shrink-0">
                   <GraduationCap className="h-4 w-4" />
                 </div>
-                <div>
-                  <h4 className="text-sm sm:text-base font-bold text-slate-900">
+                <div className="min-w-0">
+                  <h4 className="text-sm sm:text-base font-bold text-slate-900 truncate">
                     Partisipasi Pendidikan PAUD / TK
                   </h4>
-                  <p className="text-xs text-slate-500 font-medium">
+                  <p className="text-xs text-slate-500 font-medium truncate">
                     Status keikutsertaan anak pada satuan pendidikan usia dini
                   </p>
                 </div>
@@ -569,7 +569,7 @@ export function KomunitasProfilCharts({
               <button
                 type="button"
                 onClick={() => toggleChart("paud")}
-                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-bold transition-all cursor-pointer shadow-2xs"
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-bold transition-all cursor-pointer shadow-2xs shrink-0"
                 title={hiddenCharts["paud"] ? "Tampilkan Grafik" : "Sembunyikan Grafik"}
               >
                 {hiddenCharts["paud"] ? (
@@ -665,16 +665,16 @@ export function KomunitasProfilCharts({
         {/* Chart 3: Indikator Tumbuh Kembang (DDTK) */}
         {canShowDataAnak && (activeChartFilter === "semua" || activeChartFilter === "ddtk") && (
           <div className="rounded-2xl border-2 border-slate-200 bg-white p-5 space-y-4 shadow-xs">
-            <div className="flex items-center justify-between border-b-2 border-slate-100 pb-3">
-              <div className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 text-blue-700">
+            <div className="flex items-center justify-between gap-3 border-b-2 border-slate-100 pb-3">
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 text-blue-700 shrink-0">
                   <HeartPulse className="h-4 w-4" />
                 </div>
-                <div>
-                  <h4 className="text-sm sm:text-base font-bold text-slate-900">
+                <div className="min-w-0">
+                  <h4 className="text-sm sm:text-base font-bold text-slate-900 truncate">
                     Pemantauan Tumbuh Kembang (DDTK)
                   </h4>
-                  <p className="text-xs text-slate-500 font-medium">
+                  <p className="text-xs text-slate-500 font-medium truncate">
                     Hasil skrining berkala berat/tinggi badan &amp; stimulasi
                   </p>
                 </div>
@@ -683,7 +683,7 @@ export function KomunitasProfilCharts({
               <button
                 type="button"
                 onClick={() => toggleChart("ddtk")}
-                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-bold transition-all cursor-pointer shadow-2xs"
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-bold transition-all cursor-pointer shadow-2xs shrink-0"
                 title={hiddenCharts["ddtk"] ? "Tampilkan Grafik" : "Sembunyikan Grafik"}
               >
                 {hiddenCharts["ddtk"] ? (
@@ -761,22 +761,22 @@ export function KomunitasProfilCharts({
         {/* Chart 4: Statistik Anak Tidak Sekolah (ATS) */}
         {canShowDataAts && (activeChartFilter === "semua" || activeChartFilter === "ats") && (
           <div className="rounded-2xl border-2 border-amber-200 bg-white p-5 space-y-4 shadow-xs">
-            <div className="flex items-center justify-between border-b-2 border-amber-100 pb-3">
-              <div className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-100 text-amber-800">
+            <div className="flex items-center justify-between gap-3 border-b-2 border-amber-100 pb-3">
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-100 text-amber-800 shrink-0">
                   <GraduationCap className="h-4 w-4" />
                 </div>
-                <div>
-                  <h4 className="text-sm sm:text-base font-bold text-slate-900">
+                <div className="min-w-0">
+                  <h4 className="text-sm sm:text-base font-bold text-slate-900 truncate">
                     Statistik Anak Tidak Sekolah (ATS)
                   </h4>
-                  <p className="text-xs text-slate-500 font-medium">
+                  <p className="text-xs text-slate-500 font-medium truncate">
                     Hasil pendataan &amp; verifikasi anak tidak sekolah di wilayah
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 shrink-0">
                 {/* Status Badge */}
                 <span className="text-xs font-bold px-2.5 py-0.5 rounded-md bg-amber-100 text-amber-900 border border-amber-300">
                   {totalAts} Terdata
@@ -785,7 +785,7 @@ export function KomunitasProfilCharts({
                 <button
                   type="button"
                   onClick={() => toggleChart("ats")}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50 hover:bg-amber-100 text-amber-900 text-xs font-bold transition-all cursor-pointer shadow-2xs"
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50 hover:bg-amber-100 text-amber-900 text-xs font-bold transition-all cursor-pointer shadow-2xs shrink-0"
                   title={hiddenCharts["ats"] ? "Tampilkan Grafik" : "Sembunyikan Grafik"}
                 >
                   {hiddenCharts["ats"] ? (

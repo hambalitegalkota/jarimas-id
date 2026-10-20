@@ -133,7 +133,7 @@ export function ChatDrawerModal({
       console.warn("Realtime not available, falling back to polling:", realtimeErr);
     }
 
-    // 2. Polling ringan cadangan (hanya berjalan saat tab browser aktif / tidak hidden)
+    // 2. Polling cadangan (30 detik, andalkan Supabase Realtime)
     const interval = setInterval(async () => {
       if (!targetUser || (typeof document !== "undefined" && document.hidden)) return;
       try {
@@ -150,7 +150,7 @@ export function ChatDrawerModal({
       } catch {
         // Abaikan polling error
       }
-    }, 6000);
+    }, 30000);
 
     return () => {
       isMounted = false;

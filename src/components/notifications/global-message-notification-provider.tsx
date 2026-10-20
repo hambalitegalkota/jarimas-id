@@ -365,12 +365,12 @@ export function GlobalMessageNotificationProvider({
 
     init();
 
-    // 5. Polling sinkronisasi ringan saat tab aktif
+    // 5. Polling sinkronisasi cadangan saat tab aktif (60 detik, andalkan Realtime Supabase utama)
     const interval = setInterval(() => {
       if (typeof document !== "undefined" && !document.hidden && currentUserId) {
         refreshUnreadCount();
       }
-    }, 10000);
+    }, 60000);
 
     // 6. Cross-tab Broadcast Channel synchronization
     let broadcastChannel: BroadcastChannel | null = null;

@@ -154,7 +154,7 @@ export function GroupChatModal({
       console.warn("Realtime group chat not available:", realtimeErr);
     }
 
-    // 2. Polling ringan cadangan (hanya saat tab browser aktif)
+    // 2. Polling cadangan (30 detik, andalkan Supabase Realtime)
     const interval = setInterval(async () => {
       if (!room || (typeof document !== "undefined" && document.hidden)) return;
       try {
@@ -171,7 +171,7 @@ export function GroupChatModal({
       } catch {
         // Ignored
       }
-    }, 6000);
+    }, 30000);
 
     return () => {
       isMounted = false;

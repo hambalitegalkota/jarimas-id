@@ -493,14 +493,14 @@ export function GrafikFilterAts({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         {/* 1. GRAFIK BATANG USIA ATS (6 - 18 TAHUN) */}
         <div className="rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 p-4 sm:p-5 space-y-3.5 lg:col-span-2">
-          <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-2.5">
-            <div className="flex items-center gap-2">
-              <BarChart3 className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-              <div>
-                <span className="text-xs font-mono font-black uppercase text-slate-900 dark:text-slate-100">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 border-b border-slate-200 dark:border-slate-700 pb-2.5">
+            <div className="flex items-center gap-2 min-w-0">
+              <BarChart3 className="h-4 w-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
+              <div className="min-w-0">
+                <span className="text-xs font-mono font-black uppercase text-slate-900 dark:text-slate-100 block truncate">
                   Diagram Batang: Usia ATS (6 – 18 Tahun)
                 </span>
-                <p className="text-[11px] text-slate-500 font-medium">
+                <p className="text-[11px] text-slate-500 font-medium truncate">
                   {currentKategori === "semua" &&
                     "Menampilkan Total ATS • Klik kolom umur untuk memfilter daftar nama"}
                   {currentKategori === "bpb" &&
@@ -512,7 +512,7 @@ export function GrafikFilterAts({
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 self-start sm:self-center shrink-0">
               <button
                 type="button"
                 onClick={() => toggleChart("usia")}
@@ -854,19 +854,19 @@ export function GrafikFilterAts({
 
         {/* 1.8 GRAFIK BATANG KELAS AKHIR ATS (15 KATEGORI: BPB, 1-12 DO, 6 & 9 LTM) */}
         <div className="rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 p-4 sm:p-5 space-y-3.5 lg:col-span-2">
-          <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-2.5">
-            <div className="flex items-center gap-2">
-              <GraduationCap className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-              <div>
-                <span className="text-xs font-mono font-black uppercase text-slate-900 dark:text-slate-100">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 border-b border-slate-200 dark:border-slate-700 pb-2.5">
+            <div className="flex items-center gap-2 min-w-0">
+              <GraduationCap className="h-4 w-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
+              <div className="min-w-0">
+                <span className="text-xs font-mono font-black uppercase text-slate-900 dark:text-slate-100 block truncate">
                   Diagram Batang: Kelas Akhir ATS
                 </span>
-                <p className="text-[11px] text-slate-500 font-medium">
+                <p className="text-[11px] text-slate-500 font-medium truncate">
                   Klik kolom kelas untuk memfilter daftar nama anak jenjang/kelas tersebut
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 self-start sm:self-center shrink-0">
               <button
                 type="button"
                 onClick={() => toggleChart("kelas")}
@@ -1096,19 +1096,19 @@ export function GrafikFilterAts({
 
         {/* 2. GRAFIK DISTRIBUSI ALASAN TIDAK SEKOLAH (URUTAN TERBANYAK KE TERSEDIAKIT) */}
         <div className="rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 p-4 sm:p-5 space-y-3.5 lg:col-span-2">
-          <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-2.5">
-            <div className="flex items-center gap-2">
-              <AlertCircle className="h-4 w-4 text-rose-600 dark:text-rose-400" />
-              <div>
-                <span className="text-xs font-mono font-black uppercase text-slate-900 dark:text-slate-100">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 border-b border-slate-200 dark:border-slate-700 pb-2.5">
+            <div className="flex items-center gap-2 min-w-0">
+              <AlertCircle className="h-4 w-4 text-rose-600 dark:text-rose-400 shrink-0" />
+              <div className="min-w-0">
+                <span className="text-xs font-mono font-black uppercase text-slate-900 dark:text-slate-100 block truncate">
                   Diagram Batang: Alasan Menjadi ATS (Urutan Terbanyak ke Tersedikit)
                 </span>
-                <p className="text-[11px] text-slate-500 font-medium">
+                <p className="text-[11px] text-slate-500 font-medium truncate">
                   Sentuh baris alasan untuk langsung menyaring daftar nama anak
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 self-start sm:self-center shrink-0">
               <button
                 type="button"
                 onClick={() => toggleChart("alasan")}
@@ -1259,14 +1259,14 @@ export function GrafikFilterAts({
 
         {/* 3. GRAFIK JENJANG PENDIDIKAN */}
         <div className="rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 p-4 sm:p-5 space-y-3.5">
-          <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-2.5">
-            <div className="flex items-center gap-2">
-              <GraduationCap className="h-4 w-4 text-emerald-600" />
-              <span className="text-xs font-mono font-black uppercase text-slate-900 dark:text-slate-100">
+          <div className="flex items-center justify-between gap-2.5 border-b border-slate-200 dark:border-slate-700 pb-2.5">
+            <div className="flex items-center gap-2 min-w-0">
+              <GraduationCap className="h-4 w-4 text-emerald-600 shrink-0" />
+              <span className="text-xs font-mono font-black uppercase text-slate-900 dark:text-slate-100 truncate">
                 Distribusi Jenjang Pendidikan
               </span>
             </div>
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 shrink-0">
               <button
                 type="button"
                 onClick={() => toggleChart("jenjang")}
@@ -1347,14 +1347,14 @@ export function GrafikFilterAts({
 
         {/* 4. GRAFIK KEINGINAN BERSEKOLAH */}
         <div className="rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 p-4 sm:p-5 space-y-3.5 flex flex-col justify-between">
-          <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-2.5">
-            <div className="flex items-center gap-2">
-              <HeartHandshake className="h-4 w-4 text-emerald-600" />
-              <span className="text-xs font-mono font-black uppercase text-slate-900 dark:text-slate-100">
+          <div className="flex items-center justify-between gap-2.5 border-b border-slate-200 dark:border-slate-700 pb-2.5">
+            <div className="flex items-center gap-2 min-w-0">
+              <HeartHandshake className="h-4 w-4 text-emerald-600 shrink-0" />
+              <span className="text-xs font-mono font-black uppercase text-slate-900 dark:text-slate-100 truncate">
                 Keinginan Melanjutkan Sekolah
               </span>
             </div>
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 shrink-0">
               <button
                 type="button"
                 onClick={() => toggleChart("keinginan")}
@@ -1489,14 +1489,14 @@ export function GrafikFilterAts({
 
         {/* 5. GRAFIK DEMOGRAFI GENDER & VALIDASI */}
         <div className="rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 p-4 sm:p-5 space-y-4 lg:col-span-2">
-          <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-2.5">
-            <div className="flex items-center gap-2">
-              <Users className="h-4 w-4 text-sky-600 dark:text-sky-400" />
-              <span className="text-xs font-mono font-black uppercase text-slate-900 dark:text-slate-100">
+          <div className="flex items-center justify-between gap-2.5 border-b border-slate-200 dark:border-slate-700 pb-2.5">
+            <div className="flex items-center gap-2 min-w-0">
+              <Users className="h-4 w-4 text-sky-600 dark:text-sky-400 shrink-0" />
+              <span className="text-xs font-mono font-black uppercase text-slate-900 dark:text-slate-100 truncate">
                 Profil Gender &amp; Verifikasi (Klik untuk Filter)
               </span>
             </div>
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 shrink-0">
               <button
                 type="button"
                 onClick={() => toggleChart("demografi")}
