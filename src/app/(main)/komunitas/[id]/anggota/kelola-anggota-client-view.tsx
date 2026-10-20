@@ -14,12 +14,15 @@ import {
   UserX,
   AlertTriangle,
   X,
+  UserPlus,
 } from "lucide-react";
 import {
   approveAnggotaByAdmin,
   rejectAnggotaByAdmin,
   kickMemberByAdmin,
+  getAnggotaKomunitas,
 } from "@/app/actions/komunitas";
+import { ManageGrupMembersModal } from "@/components/kabar/manage-grup-members-modal";
 import type { AnggotaKomunitasDetail } from "@/types/database";
 import { cn, formatPeranDisplay } from "@/lib/utils";
 
@@ -42,6 +45,7 @@ export function KelolaAnggotaClientView({
   const [isPending, startTransition] = useTransition();
   const [kickTargetMember, setKickTargetMember] = useState<AnggotaKomunitasDetail | null>(null);
   const [isKicking, setIsKicking] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   const pendingMembers = members.filter(
     (m) =>
@@ -168,32 +172,43 @@ export function KelolaAnggotaClientView({
         </div>
       )}
 
-      {/* Tabs Switcher */}
-      <div className="flex rounded-md bg-muted p-1 border border-border">
-        <button
-          onClick={() => setActiveTab("pending")}
-          className={cn(
-            "flex flex-1 h-9 items-center justify-center gap-1.5 rounded-md text-xs font-mono font-semibold transition-all",
-            activeTab === "pending"
-              ? "bg-card text-amber-500 dark:text-amber-400 border border-border shadow-xs"
-              : "text-muted-foreground hover:text-foreground"
-          )}
-        >
-          <Clock className="h-3.5 w-3.5" />
-          <span>PERMOHONAN BARU ({pendingMembers.length})</span>
-        </button>
+      {/* Tabs Switcher & Tombol Tambah Anggota */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
+        <div className="flex flex-1 rounded-md bg-muted p-1 border border-border">
+          <button
+            onClick={() => setActiveTab("pending")}
+            className={cn(
+              "flex flex-1 h-9 items-center justify-center gap-1.5 rounded-md text-xs font-mono font-semibold transition-all cursor-pointer",
+              activeTab === "pending"
+                ? "bg-card text-amber-500 dark:text-amber-400 border border-border shadow-xs"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <Clock className="h-3.5 w-3.5" />
+            <span>PERMOHONAN BARU ({pendingMembers.length})</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab("approved")}
+            className={cn(
+              "flex flex-1 h-9 items-center justify-center gap-1.5 rounded-md text-xs font-mono font-semibold transition-all cursor-pointer",
+              activeTab === "approved"
+                ? "bg-card text-foreground border border-border shadow-xs"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <Users className="h-3.5 w-3.5" />
+            <span>ANGGOTA AKTIF ({approvedMembers.length})</span>
+          </button>
+        </div>
 
         <button
-          onClick={() => setActiveTab("approved")}
-          className={cn(
-            "flex flex-1 h-9 items-center justify-center gap-1.5 rounded-md text-xs font-mono font-semibold transition-all",
-            activeTab === "approved"
-              ? "bg-card text-foreground border border-border shadow-xs"
-              : "text-muted-foreground hover:text-foreground"
-          )}
+          type="button"
+          onClick={() => setIsAddModalOpen(true)}
+          className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 px-4 text-xs font-mono font-bold text-white transition-all shadow-sm active:scale-98 cursor-pointer shrink-0"
         >
-          <Users className="h-3.5 w-3.5" />
-          <span>ANGGOTA AKTIF ({approvedMembers.length})</span>
+          <UserPlus className="h-4 w-4" />
+          <span>+ Tambah Anggota</span>
         </button>
       </div>
 
@@ -418,6 +433,30 @@ export function KelolaAnggotaClientView({
             </div>
           </div>
         </div>
+      )}
+
+      {/* Modal Tambah Anggota */}
+      {isAddModalOpen && (
+        <ManageGrupMembersModal
+          isOpen={isAddModalOpen}
+          onClose={() => setIsAddModalOpen(false)}
+          room={{
+            id: komunitasId,
+            nama: "Komunitas",
+            jenis: "kegiatan",
+            jumlah_anggota: approvedMembers.length,
+          }}
+          allUsers={[]}
+          canManage={true}
+          currentUserId={null}
+          initialTab="undang"
+          onMembersUpdated={async () => {
+            const res = await getAnggotaKomunitas(komunitasId);
+            if (res.success && res.data) {
+              setMembers(res.data);
+            }
+          }}
+        />
       )}
     </div>
   );

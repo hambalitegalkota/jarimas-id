@@ -672,10 +672,14 @@ export async function addMembersToGrupKegiatan(params: {
 
     revalidatePath("/kabar");
     revalidatePath("/komunitas");
+    revalidatePath("/profil");
+    if (komunitasId) {
+      revalidatePath(`/komunitas/${komunitasId}`);
+    }
 
     return {
       success: true,
-      message: `Berhasil menambahkan ${newMembersToInvite.length} anggota baru ke grup!`,
+      message: `Berhasil menambahkan ${newMembersToInvite.length} anggota baru ke dalam komunitas!`,
       addedCount: newMembersToInvite.length,
     };
   } catch (err: any) {
@@ -758,9 +762,14 @@ export async function removeMemberFromGrupKegiatan(params: {
     }
 
     revalidatePath("/kabar");
+    revalidatePath("/komunitas");
+    revalidatePath("/profil");
+    if (komunitasId) {
+      revalidatePath(`/komunitas/${komunitasId}`);
+    }
     return {
       success: true,
-      message: "Anggota berhasil dikeluarkan dari grup.",
+      message: "Anggota berhasil dikeluarkan dari komunitas.",
     };
   } catch (err: any) {
     console.error("Error removeMemberFromGrupKegiatan:", err);

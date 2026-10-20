@@ -28,6 +28,7 @@ import {
   ArrowUpAZ,
   ArrowDownAZ,
   SlidersHorizontal,
+  UserPlus,
 } from "lucide-react";
 import {
   getKomunitasAuditSummaryAction,
@@ -38,6 +39,7 @@ import {
   type KomunitasAuditSummary,
 } from "@/app/actions/komunitas";
 import { KomunitasBeranggotaHierarchy } from "./komunitas-beranggota-hierarchy";
+import { ManageGrupMembersModal } from "@/components/kabar/manage-grup-members-modal";
 import type { KomunitasWithMembership } from "@/types/database";
 import { KOTA_TEGAL_DATA } from "@/lib/constants/tegal-data";
 
@@ -74,6 +76,7 @@ export function KomunitasManagementTools() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [editItem, setEditItem] = useState<KomunitasWithMembership | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<KomunitasWithMembership | null>(null);
+  const [memberManageTarget, setMemberManageTarget] = useState<KomunitasWithMembership | null>(null);
 
   // Load audit summary
   const fetchAuditSummary = async () => {
@@ -757,6 +760,15 @@ export function KomunitasManagementTools() {
                       {/* Aksi */}
                       <td className="py-3.5 px-4 text-right whitespace-nowrap">
                         <div className="inline-flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => setMemberManageTarget(item)}
+                            className="p-1.5 rounded-lg text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 transition-colors cursor-pointer"
+                            title="Tambah & Kelola Anggota Komunitas"
+                          >
+                            <UserPlus className="h-4 w-4" />
+                          </button>
+
                           <Link
                             href={`/komunitas/${item.id}`}
                             className="p-1.5 rounded-lg text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 transition-colors"
@@ -897,6 +909,29 @@ export function KomunitasManagementTools() {
         </div>
       )}
 
+      {/* Modal Tambah & Kelola Anggota Komunitas */}
+      {memberManageTarget && (
+        <ManageGrupMembersModal
+          isOpen={!!memberManageTarget}
+          onClose={() => setMemberManageTarget(null)}
+          room={{
+            id: memberManageTarget.id,
+            nama: memberManageTarget.nama,
+            jenis: memberManageTarget.jenis,
+            deskripsi: memberManageTarget.deskripsi,
+            jumlah_anggota: memberManageTarget.jumlah_anggota || 0,
+            is_kegiatan: memberManageTarget.jenis === "kegiatan",
+          }}
+          allUsers={[]}
+          canManage={true}
+          currentUserId={null}
+          initialTab="undang"
+          onMembersUpdated={() => {
+            fetchList(page);
+            fetchAuditSummary();
+          }}
+        />
+      )}
 
     </div>
   );

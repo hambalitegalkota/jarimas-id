@@ -44,6 +44,7 @@ import { LaporanKaderSpmFormCard } from "@/components/komunitas/laporan-kader-sp
 import { RekapLaporanKaderWilayahCard } from "@/components/komunitas/rekap-laporan-kader-wilayah-card";
 import { KomunitasPercakapanTab } from "@/components/komunitas/komunitas-percakapan-tab";
 import { AjukanPerubahanPeranModal } from "@/components/komunitas/ajukan-perubahan-peran-modal";
+import { ManageGrupMembersModal } from "@/components/kabar/manage-grup-members-modal";
 import {
   applyForAdminKomunitas,
   leaveKomunitas,
@@ -187,6 +188,7 @@ export function KomunitasDetailClientView({
   const [anggotaState, setAnggotaState] = useState<AnggotaKomunitasDetail[]>(anggotaList);
   const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false);
   const [isResignModalOpen, setIsResignModalOpen] = useState(false);
+  const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
   const [kickTargetMember, setKickTargetMember] = useState<AnggotaKomunitasDetail | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [actionFeedback, setActionFeedback] = useState<{
@@ -735,6 +737,18 @@ export function KomunitasDetailClientView({
                   <MessageCircle className="h-3.5 w-3.5 text-teal-600" />
                   <span className="hidden sm:inline">Percakapan</span>
                 </button>
+
+                {isUserAdmin && (
+                  <button
+                    type="button"
+                    onClick={() => setIsAddMemberModalOpen(true)}
+                    className="inline-flex items-center gap-1 rounded-lg border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 px-2.5 py-1 text-xs font-bold shadow-2xs transition-all active:scale-98 cursor-pointer"
+                    title="Tambah anggota baru ke komunitas ini"
+                  >
+                    <UserPlus className="h-3.5 w-3.5 text-emerald-600" />
+                    <span>Tambah Anggota</span>
+                  </button>
+                )}
 
                 {isUserAdmin && (
                   <button
@@ -2169,6 +2183,29 @@ export function KomunitasDetailClientView({
             </div>
           </div>
         </div>
+      )}
+
+      {/* Modal Tambah & Kelola Anggota Komunitas */}
+      {isAddMemberModalOpen && (
+        <ManageGrupMembersModal
+          isOpen={isAddMemberModalOpen}
+          onClose={() => setIsAddMemberModalOpen(false)}
+          room={{
+            id: komunitas.id,
+            nama: komunitas.nama,
+            jenis: komunitas.jenis,
+            deskripsi: komunitas.deskripsi,
+            jumlah_anggota: anggotaState.length,
+            is_kegiatan: komunitas.jenis === "kegiatan",
+          }}
+          allUsers={[]}
+          canManage={true}
+          currentUserId={currentUserId || null}
+          initialTab="undang"
+          onMembersUpdated={() => {
+            window.location.reload();
+          }}
+        />
       )}
     </div>
   );

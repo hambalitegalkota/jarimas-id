@@ -25,11 +25,18 @@ import { DistribusiDataAnakTool } from "@/components/admin/distribusi-data-anak-
 import { KomunitasManagementTools } from "@/components/admin/komunitas-management-tools";
 import { KecamatanMonitoringAccordion } from "@/components/admin/kecamatan-monitoring-accordion";
 import { SuperAdminWargaMonitoringTool } from "@/components/admin/super-admin-warga-monitoring-tool";
-import { formatPeranDisplay, isRoleAdmin, toValidUUID, isSuperAdmin as checkIsSuperAdmin } from "@/lib/utils";
+import {
+  formatPeranDisplay,
+  isRoleAdmin,
+  toValidUUID,
+  isSuperAdmin as checkIsSuperAdmin,
+  isAdminPusat as checkIsAdminPusat,
+} from "@/lib/utils";
 import { extractKomunitasMetadata } from "@/lib/admin-helpers";
 import { getWargaHierarchyChain, findKecamatanByKelurahan, slugify } from "@/lib/constants/tegal-data";
 import { UserCheck, Users } from "lucide-react";
-import { UnifiedWargaCard, type WargaTierItem } from "@/components/komunitas/unified-warga-card";
+import { type WargaTierItem } from "@/components/komunitas/unified-warga-card";
+import { ProfilKomunitasSection } from "@/components/profil/profil-komunitas-section";
 import type { PendingApprovalItem, AnggotaKomunitas } from "@/types/database";
 
 export default async function ProfilePage() {
@@ -66,6 +73,15 @@ export default async function ProfilePage() {
     id: user.id,
   });
 
+  const isAdminPusatUser =
+    !isSuperAdmin &&
+    checkIsAdminPusat({
+      ...profile,
+      email: userEmail,
+      nama_lengkap: namaLengkap,
+      id: user.id,
+    });
+
   // Self-healing: jika akun adalah Super Admin tetapi is_super_admin di DB belum true, sinkronkan ke DB
   if (isSuperAdmin && profile?.is_super_admin !== true) {
     try {
@@ -84,15 +100,20 @@ export default async function ProfilePage() {
     }
   }
 
-  // 3. Ambil data permohonan pending, komunitas user, dan daftar pengguna terdaftar
-  const [pendingApprovalsResult, userJoinedResult, registeredUsersResult] = await Promise.all([
+  // 3. Ambil data permohonan pending, komunitas user, daftar pengguna terdaftar, dan komunitas buatan admin
+  const [
+    pendingApprovalsResult,
+    userJoinedResult,
+    registeredUsersResult,
+    createdKomunitasResult,
+  ] = await Promise.all([
     getPendingApprovals(),
     supabase
       .from("anggota_komunitas")
       .select("id, komunitas_id, peran, peran_diajukan, status, created_at")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false }),
-    isSuperAdmin
+    isSuperAdmin || isAdminPusatUser
       ? getRegisteredUsers()
       : Promise.resolve({
           isAuthenticated: true,
@@ -101,25 +122,59 @@ export default async function ProfilePage() {
           totalFriendsCount: 0,
           totalPendingRequestsCount: 0,
         }),
+    supabase
+      .from("komunitas")
+      .select("id, nama, jenis, kecamatan, kelurahan, rw, rt, lokasi, deskripsi, created_by")
+      .or(`created_by.eq.${user.id},id.eq.6b73e2b8-e708-4d31-a467-333b068b4fd8`),
   ]);
 
   const pendingApprovals: PendingApprovalItem[] = pendingApprovalsResult.data || [];
   const allHierarchyPendingApprovals: PendingApprovalItem[] =
     pendingApprovalsResult.allHierarchyItems || [];
-  const rawUserCommunities = userJoinedResult.data || [];
+  const rawUserCommunities = [...(userJoinedResult.data || [])];
+
+  // Pastikan komunitas yang dibuat oleh admin atau The Orbit Sixty tercakup
+  const existingKomIdSet = new Set(rawUserCommunities.map((r: any) => r.komunitas_id));
+  for (const createdKom of createdKomunitasResult.data || []) {
+    if (!existingKomIdSet.has(createdKom.id)) {
+      rawUserCommunities.push({
+        id: `created-${createdKom.id}`,
+        komunitas_id: createdKom.id,
+        peran: isSuperAdmin ? "Super Admin" : isAdminPusatUser ? "Admin Pusat" : "Pengelola",
+        peran_diajukan: null,
+        status: "approved",
+        created_at: new Date().toISOString(),
+      });
+      existingKomIdSet.add(createdKom.id);
+    }
+  }
+
   let userCommunities: any[] = [];
 
   if (rawUserCommunities.length > 0) {
     const komIds = [
       ...new Set(rawUserCommunities.map((r: any) => r.komunitas_id).filter(Boolean)),
     ];
-    const { data: komData } =
+
+    const [{ data: komData }, { data: memberCountRows }] = await Promise.all([
       komIds.length > 0
-        ? await supabase
-          .from("komunitas")
-          .select("id, nama, jenis, kecamatan, kelurahan, rw, rt, lokasi, deskripsi")
-          .in("id", komIds)
-        : { data: [] };
+        ? supabase
+            .from("komunitas")
+            .select("id, nama, jenis, kecamatan, kelurahan, rw, rt, lokasi, deskripsi, created_by")
+            .in("id", komIds)
+        : Promise.resolve({ data: [] }),
+      komIds.length > 0
+        ? supabase
+            .from("anggota_komunitas")
+            .select("komunitas_id")
+            .in("komunitas_id", komIds)
+        : Promise.resolve({ data: [] }),
+    ]);
+
+    const countMap = new Map<string, number>();
+    (memberCountRows || []).forEach((row: any) => {
+      countMap.set(row.komunitas_id, (countMap.get(row.komunitas_id) || 0) + 1);
+    });
 
     const komMap = new Map((komData || []).map((k: any) => [k.id, k]));
 
@@ -151,8 +206,23 @@ export default async function ProfilePage() {
           rt: kom?.rt || null,
           lokasi: lokasiKomunitas,
           deskripsi: kom?.deskripsi || null,
+          created_by: kom?.created_by || null,
+          jumlah_anggota: countMap.get(row.komunitas_id) || 1,
         },
       };
+    });
+
+    // Urutkan The Orbit Sixty ke posisi teratas
+    userCommunities.sort((a, b) => {
+      const aIsOrbit =
+        a.komunitas_id === "6b73e2b8-e708-4d31-a467-333b068b4fd8" ||
+        (a.komunitas.nama || "").toLowerCase().includes("orbit sixty");
+      const bIsOrbit =
+        b.komunitas_id === "6b73e2b8-e708-4d31-a467-333b068b4fd8" ||
+        (b.komunitas.nama || "").toLowerCase().includes("orbit sixty");
+      if (aIsOrbit && !bIsOrbit) return -1;
+      if (!aIsOrbit && bIsOrbit) return 1;
+      return 0;
     });
   }
 
@@ -429,7 +499,17 @@ export default async function ProfilePage() {
         </div>
       </section>
 
-      {/* Main Content Area: Super Admin / Community Admin / Regular User */}
+      {/* SECTION: Komunitas Binaan & Dikelola Admin / Komunitas Saya */}
+      <ProfilKomunitasSection
+        communities={userCommunities}
+        wargaKitaSummary={wargaKitaSummary}
+        currentUserId={user.id}
+        isSuperAdmin={isSuperAdmin}
+        isAdminPusat={isAdminPusatUser}
+        registeredUsers={registeredUsersResult.users || []}
+      />
+
+      {/* Main Content Area: Super Admin Panel */}
       {isSuperAdmin && (
         /* SUPER ADMIN VIEW: Approval Dashboard & Seeding Tools */
         <section className="space-y-6">
@@ -470,150 +550,6 @@ export default async function ProfilePage() {
             </h2>
           </div>
           <ApprovalList initialApprovals={pendingApprovals} isSuperAdmin={false} />
-        </section>
-      )}
-
-      {/* VIEW: Komunitas Saya (Hanya Ditampilkan untuk Pengguna / Pengurus Komunitas, Bukan Super Admin) */}
-      {!isSuperAdmin && (
-        <section className="space-y-4">
-          <div className="flex items-center justify-between px-1">
-            <div className="flex items-center gap-2">
-              <Building2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-              <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">
-                Komunitas Saya
-              </h2>
-            </div>
-            <span className="text-xs font-mono font-bold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2.5 py-0.5 rounded-full">
-              {totalCardCount} TERDAFTAR
-            </span>
-          </div>
-
-          {/* List Komunitas yang Diikuti */}
-          {totalCardCount === 0 ? (
-            <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-900 p-8 text-center space-y-4 shadow-xs">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl border-2 border-emerald-100 dark:border-emerald-900/40 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400">
-                <Compass className="h-7 w-7" />
-              </div>
-              <div className="space-y-1.5">
-                <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
-                  Belum Bergabung dengan Komunitas
-                </h3>
-                <p className="text-sm text-slate-600 dark:text-slate-400 max-w-sm leading-relaxed">
-                  Bergabunglah dengan Posyandu atau Komunitas setempat untuk memantau tumbuh kembang anak dan ATS.
-                </p>
-              </div>
-              <Link
-                href="/komunitas"
-                className="inline-flex min-h-[48px] w-full sm:w-auto items-center justify-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 px-6 text-base font-bold text-white transition-all shadow-sm active:scale-98"
-              >
-                <span>Jelajahi Komunitas</span>
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {/* 1. Kartu Rangkuman Warga Kita (1 Kartu untuk Semua Jenjang, Interaktif) */}
-              {wargaKitaSummary && (
-                <UnifiedWargaCard
-                  title={wargaKitaSummary.title}
-                  lokasi={wargaKitaSummary.lokasi}
-                  highestRole={wargaKitaSummary.highestRole}
-                  highestStatus={wargaKitaSummary.highestStatus}
-                  primaryKomunitasId={wargaKitaSummary.primaryKomunitasId}
-                  tiers={wargaKitaSummary.tiers}
-                />
-              )}
-
-              {/* 2. Kartu Komunitas Lainnya (Posyandu, PAUD & Kesetaraan) */}
-              {nonWargaMemberships.map((item) => {
-                const kom = item.komunitas || {};
-                const status = item.status as "pending" | "approved" | "rejected";
-                let formattedKomNama = kom.nama || "Komunitas";
-                if (kom.jenis === "posyandu") {
-                  const cleanName = (kom.nama || "").replace(/^(Posyandu\s*)+/gi, "").trim();
-                  formattedKomNama = cleanName ? `Posyandu ${cleanName}` : "Posyandu";
-                }
-
-                return (
-                  <div
-                    key={item.id}
-                    className="rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 space-y-4 transition-all hover:border-emerald-400 dark:hover:border-emerald-600 shadow-xs"
-                  >
-                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-                      <div className="space-y-1.5">
-                        <h4 className="font-bold text-lg text-slate-900 dark:text-slate-100">
-                          {formattedKomNama}
-                        </h4>
-                        <div className="flex flex-wrap items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-                          <span className="font-bold text-emerald-700 dark:text-emerald-400">
-                            {kom.jenis === "posyandu"
-                              ? "Posyandu"
-                              : kom.jenis === "satuan_paud"
-                              ? "Satuan PAUD"
-                              : kom.jenis || "Komunitas"}
-                          </span>
-                          <span>•</span>
-                          <span className="flex items-center gap-1">
-                            <MapPin className="h-4 w-4 text-slate-500" />
-                            {kom.lokasi || "Kota Tegal"}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Status Badge */}
-                      <div className="shrink-0">
-                        {status === "approved" && (
-                          <span className="inline-flex items-center gap-1.5 rounded-full border-2 border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 px-3 py-1 text-xs font-bold text-emerald-700 dark:text-emerald-300">
-                            <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-                            AKTIF ({item.peran})
-                          </span>
-                        )}
-                        {status === "pending" && (
-                          <span className="inline-flex items-center gap-1.5 rounded-full border-2 border-amber-500 bg-amber-50 dark:bg-amber-950/40 px-3 py-1 text-xs font-bold text-amber-700 dark:text-amber-300">
-                            <Clock className="h-4 w-4 text-amber-600" />
-                            MENUNGGU PERSETUJUAN ({item.peran})
-                          </span>
-                        )}
-                        {status === "rejected" && (
-                          <span className="inline-flex items-center gap-1.5 rounded-full border-2 border-rose-500 bg-rose-50 dark:bg-rose-950/40 px-3 py-1 text-xs font-bold text-rose-700 dark:text-rose-300">
-                            <XCircle className="h-4 w-4 text-rose-600" />
-                            DITOLAK
-                          </span>
-                        )}
-                      </div>
-                    </div>
-
-                    {kom.deskripsi && (
-                      <p className="text-sm text-slate-600 dark:text-slate-400 line-clamp-2 leading-relaxed">
-                        {kom.deskripsi}
-                      </p>
-                    )}
-
-                    <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
-                      <Link
-                        href={`/komunitas/${item.komunitas_id}`}
-                        className="inline-flex min-h-[48px] w-full items-center justify-center gap-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border-2 border-emerald-200 dark:border-emerald-800/60 px-4 text-base font-bold text-emerald-700 dark:text-emerald-300 transition-colors hover:bg-emerald-100 dark:hover:bg-emerald-900/50 active:scale-98"
-                      >
-                        <span>Buka Halaman Komunitas</span>
-                        <ArrowRight className="h-4 w-4" />
-                      </Link>
-                    </div>
-                  </div>
-                );
-              })}
-
-              {/* Action Button: Explore More Communities */}
-              <div className="pt-2">
-                <Link
-                  href="/komunitas"
-                  className="flex min-h-[48px] w-full items-center justify-center gap-2 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 text-base font-bold text-slate-800 dark:text-slate-200 transition-all hover:border-emerald-400 dark:hover:border-emerald-600 hover:bg-emerald-50/40 dark:hover:bg-emerald-950/20 active:scale-98 shadow-xs"
-                >
-                  <Compass className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-                  <span>Jelajahi Komunitas Lainnya</span>
-                </Link>
-              </div>
-            </div>
-          )}
         </section>
       )}
     </div>

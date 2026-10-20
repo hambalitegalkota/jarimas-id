@@ -21,6 +21,7 @@ import {
   removeMemberFromGrupKegiatan,
   deleteGrupKegiatan,
 } from "@/app/actions/grup-kegiatan";
+import { getRegisteredUsers } from "@/app/actions/pertemanan";
 import type {
   GrupChatRoom,
   GrupKegiatanMemberItem,
@@ -32,9 +33,10 @@ interface ManageGrupMembersModalProps {
   isOpen: boolean;
   onClose: () => void;
   room: GrupChatRoom | null;
-  allUsers: RegisteredUserItem[];
+  allUsers?: RegisteredUserItem[];
   canManage: boolean;
   currentUserId: string | null;
+  initialTab?: "anggota" | "undang";
   onMembersUpdated?: () => void;
 }
 
@@ -42,17 +44,52 @@ export function ManageGrupMembersModal({
   isOpen,
   onClose,
   room,
-  allUsers,
+  allUsers = [],
   canManage,
   currentUserId,
+  initialTab = "anggota",
   onMembersUpdated,
 }: ManageGrupMembersModalProps) {
   const { onlineUserIds } = useGlobalMessageNotification();
 
-  const [activeTab, setActiveTab] = useState<"anggota" | "undang">("anggota");
+  const [activeTab, setActiveTab] = useState<"anggota" | "undang">(initialTab);
+  const [internalUsers, setInternalUsers] = useState<RegisteredUserItem[]>(allUsers);
   const [members, setMembers] = useState<GrupKegiatanMemberItem[]>([]);
   const [isLoadingMembers, setIsLoadingMembers] = useState(false);
+  const [isLoadingUsers, setIsLoadingUsers] = useState(false);
   const [searchMemberQuery, setSearchMemberQuery] = useState("");
+
+  // Sync initialTab when modal opens or initialTab changes
+  useEffect(() => {
+    if (isOpen) {
+      setActiveTab(initialTab);
+    }
+  }, [isOpen, initialTab]);
+
+  // Load all users jika belum disediakan dari parent
+  useEffect(() => {
+    if (allUsers && allUsers.length > 0) {
+      setInternalUsers(allUsers);
+    } else if (isOpen) {
+      let isMounted = true;
+      setIsLoadingUsers(true);
+      getRegisteredUsers()
+        .then((res) => {
+          if (isMounted && res.users) {
+            setInternalUsers(res.users);
+          }
+        })
+        .catch((err) => {
+          console.warn("Gagal auto-fetch registered users:", err);
+        })
+        .finally(() => {
+          if (isMounted) setIsLoadingUsers(false);
+        });
+      return () => {
+        isMounted = false;
+      };
+    }
+  }, [isOpen, allUsers]);
 
   // State untuk Tab Tambah / Undang Anggota Baru
   const [searchInviteQuery, setSearchInviteQuery] = useState("");
@@ -96,7 +133,7 @@ export function ManageGrupMembersModal({
 
   // Kandidat yang belum tergabung untuk tab "+ Undang"
   const candidateUsersToInvite = useMemo(() => {
-    return allUsers
+    return internalUsers
       .filter((u) => !existingMemberUserIds.has(u.id))
       .filter((u) => {
         if (!searchInviteQuery.trim()) return true;
@@ -113,7 +150,7 @@ export function ManageGrupMembersModal({
         if (aOn !== bOn) return bOn - aOn;
         return a.nama_lengkap.localeCompare(b.nama_lengkap, "id-ID");
       });
-  }, [allUsers, existingMemberUserIds, searchInviteQuery, onlineUserIds]);
+  }, [internalUsers, existingMemberUserIds, searchInviteQuery, onlineUserIds]);
 
   // Filter anggota yang sedang ditampilkan di tab Anggota
   const filteredCurrentMembers = useMemo(() => {
@@ -254,10 +291,10 @@ export function ManageGrupMembersModal({
             </div>
             <div className="min-w-0">
               <h3 className="text-sm sm:text-base font-black text-slate-900 dark:text-slate-100 truncate">
-                Kelola Anggota Percakapan
+                Tambah &amp; Kelola Anggota Komunitas
               </h3>
               <p className="text-[11px] text-slate-500 truncate">
-                {room.nama} • {members.length} Pengguna Tergabung
+                {room.nama} • {members.length} Anggota Tergabung
               </p>
             </div>
           </div>
@@ -497,9 +534,8 @@ export function ManageGrupMembersModal({
         {/* ========================================================= */}
         {activeTab === "undang" && canManage && (
           <div className="flex-1 overflow-y-auto p-5 space-y-4">
-            <div className="p-3.5 rounded-2xl bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-xs text-emerald-900 dark:text-emerald-200">
-              Pilih pengguna terdaftar untuk langsung dimasukkan ke dalam grup kegiatan ini.
-              Mereka dapat langsung membaca riwayat pesan dan mengirim obrolan.
+            <div className="p-3.5 rounded-2xl bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-xs text-emerald-900 dark:text-emerald-200 leading-relaxed">
+              Cari dan pilih pengguna terdaftar untuk langsung dimasukkan ke dalam komunitas <strong>{room.nama}</strong>. Anggota baru otomatis berstatus aktif (terverifikasi) dan dapat langsung berinteraksi.
             </div>
 
             {/* Search Input */}
@@ -509,16 +545,49 @@ export function ManageGrupMembersModal({
                 type="text"
                 value={searchInviteQuery}
                 onChange={(e) => setSearchInviteQuery(e.target.value)}
-                placeholder="Cari nama atau email pengguna yang ingin diundang..."
+                placeholder="Cari nama, email, atau komunitas pengguna..."
                 className="w-full h-10 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 pl-9 pr-3 text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:border-emerald-500 transition-all"
               />
             </div>
 
+            {/* Sub-header dengan Toggle Pilih Semua */}
+            <div className="flex items-center justify-between text-xs px-1">
+              <span className="font-semibold text-slate-600 dark:text-slate-400">
+                {isLoadingUsers
+                  ? "Memuat daftar pengguna..."
+                  : `Tersedia ${candidateUsersToInvite.length} pengguna:`}
+              </span>
+              {candidateUsersToInvite.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (selectedInviteIds.size === candidateUsersToInvite.length) {
+                      setSelectedInviteIds(new Set());
+                    } else {
+                      setSelectedInviteIds(new Set(candidateUsersToInvite.map((u) => u.id)));
+                    }
+                  }}
+                  className="font-bold text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer"
+                >
+                  {selectedInviteIds.size === candidateUsersToInvite.length
+                    ? "Batal Pilih Semua"
+                    : `Pilih Semua (${candidateUsersToInvite.length})`}
+                </button>
+              )}
+            </div>
+
             {/* Candidate List */}
             <div className="max-h-64 overflow-y-auto space-y-2 pr-1 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 p-2">
-              {candidateUsersToInvite.length === 0 ? (
+              {isLoadingUsers ? (
+                <div className="py-10 flex flex-col items-center justify-center gap-2 text-xs text-slate-400">
+                  <Loader2 className="h-6 w-6 animate-spin text-emerald-600" />
+                  <span>Memuat daftar pengguna terdaftar...</span>
+                </div>
+              ) : candidateUsersToInvite.length === 0 ? (
                 <div className="p-8 text-center text-xs text-slate-400">
-                  Tidak ada pengguna baru yang dapat diundang. Semua pengguna yang sesuai telah menjadi anggota.
+                  {searchInviteQuery.trim()
+                    ? `Tidak ada pengguna yang cocok dengan "${searchInviteQuery}".`
+                    : "Tidak ada pengguna baru yang dapat diundang. Semua pengguna telah menjadi anggota komunitas ini."}
                 </div>
               ) : (
                 candidateUsersToInvite.map((user) => {
@@ -611,7 +680,7 @@ export function ManageGrupMembersModal({
                 ) : (
                   <>
                     <UserPlus className="h-4 w-4" />
-                    <span>Tambahkan ke Grup ({selectedInviteIds.size})</span>
+                    <span>Tambahkan ke Komunitas ({selectedInviteIds.size})</span>
                   </>
                 )}
               </button>
