@@ -7,9 +7,9 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-sans: var(--font-sans), Inter, Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-mono: var(--font-geist-mono), "Fira Code", monospace;
-  --font-heading: var(--font-sans), -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-heading: var(--font-sans), Inter, Roboto, sans-serif;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -42,105 +42,139 @@
   --color-card: var(--card);
   --radius-sm: calc(var(--radius) * 0.75);
   --radius-md: var(--radius);
-  --radius-lg: calc(var(--radius) * 1.5);
-  --radius-xl: calc(var(--radius) * 2);
+  --radius-lg: var(--card-radius);
+  --radius-xl: calc(var(--radius) * 1.5);
+  --radius-card: var(--card-radius);
+  --shadow-card: var(--card-shadow);
+  --shadow-card-hover: var(--card-shadow-hover);
 }
 
 :root {
   /* ======================================================= */
-  /* ROYAL CIVIC NAVY & VIBRANT EMERALD MINT PALETTE         */
-  /* Unified, authoritative, harmonious, clean & legible     */
+  /* THEME: KOMUNITAS HANGAT & MOBILE-FIRST SUPER APP       */
+  /* Primary: Teal / Hijau Tosca (#0D9488)                   */
+  /* Secondary/Action: Kuning Mustard (#CA8A04)              */
+  /* Background: Putih Tulang / Abu Sangat Muda (#F8F9FA)   */
+  /* Surface: Crisp Clean White (#FFFFFF)                   */
   /* ======================================================= */
-  --background: #F8FAFC; /* Crisp Clean Slate backdrop */
-  --foreground: #0F172A; /* High-contrast rich ink */
 
-  --card: #FFFFFF; /* Pure crisp white card surface */
-  --card-foreground: #0F172A;
+  /* Latar Belakang (Putih Tulang / Abu-abu sangat muda) */
+  --background: #F8F9FA;
+  --foreground: #1E293B; /* Slate 800: Teks tegas berkontras tinggi & ramah mata */
+
+  /* Variabel Desain Card (Kartu) */
+  --card: #FFFFFF; /* Permukaan kartu putih bersih */
+  --card-foreground: #1E293B;
+  --card-radius: 0.75rem; /* 12px: rounded-lg sesuai standar super app mobile */
+  --card-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05); /* shadow-sm lembut timbul */
+  --card-shadow-hover: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  --card-border: 1px solid var(--border);
+
   --popover: #FFFFFF;
-  --popover-foreground: #0F172A;
+  --popover-foreground: #1E293B;
 
-  --primary: #059669; /* Emerald 600 */
+  /* Warna Utama: Teal / Hijau Tosca */
+  --primary: #0D9488; /* Teal 600: Hijau tosca hangat & terpercaya */
+  --primary-hover: #0F766E; /* Teal 700 */
+  --primary-light: #F0FDFA; /* Teal 50 */
   --primary-foreground: #FFFFFF;
 
-  --secondary: #F0FDF4; /* Emerald 50: Soothing touch background */
-  --secondary-foreground: #065F46; /* Emerald 800 */
+  /* Warna Sekunder / Aksi: Kuning Mustard */
+  --secondary: #CA8A04; /* Kuning Mustard Hangat (Yellow 600) untuk tombol aksi & highlight */
+  --secondary-hover: #A16207; /* Mustard 700 */
+  --secondary-light: #FEFCE8; /* Mustard 50 */
+  --secondary-foreground: #FFFFFF;
 
-  --muted: #F1F5F9;
-  --muted-foreground: #475569; /* Slate 600 */
+  /* Netral Lembut */
+  --muted: #F1F5F9; /* Slate 100 */
+  --muted-foreground: #64748B; /* Slate 500 */
 
-  /* Vibrant Civic Blue Accent */
-  --accent: #2563EB; /* Blue 600 */
-  --accent-foreground: #FFFFFF;
+  /* Aksen Tambahan / Golden Mustard Tint */
+  --accent: #FEF08A; /* Soft Mustard Accent Tint */
+  --accent-foreground: #854D0E; /* Deep Warm Amber */
 
-  --border: #E2E8F0; /* Slate 200 visible border */
-  --input: #E2E8F0;
-  --ring: #059669; /* Emerald focus ring */
+  /* Garis Batas & Input */
+  --border: #E5E7EB; /* Gray 200: Garis pemisah halus */
+  --input: #E5E7EB;
+  --ring: #0D9488; /* Teal focus ring */
 
-  --destructive: #E11D48; /* Solid Rose-Red */
+  --destructive: #EF4444; /* Red 500 */
   --destructive-foreground: #FFFFFF;
 
-  --radius: 0.875rem; /* 14px rounded corners */
+  --radius: 0.75rem; /* 12px: Base rounded-lg */
 
-  --chart-1: #059669; /* Emerald */
-  --chart-2: #2563EB; /* Blue */
-  --chart-3: #0EA5E9; /* Sky */
-  --chart-4: #F59E0B; /* Amber */
+  /* Chart Colors (Harmonisasi Teal & Mustard) */
+  --chart-1: #0D9488; /* Teal / Hijau Tosca */
+  --chart-2: #CA8A04; /* Kuning Mustard */
+  --chart-3: #0284C7; /* Sky Blue */
+  --chart-4: #EA580C; /* Terracotta Orange */
   --chart-5: #8B5CF6; /* Violet */
 
+  /* Sidebar */
   --sidebar: #FFFFFF;
-  --sidebar-foreground: #0F172A;
-  --sidebar-primary: #059669;
+  --sidebar-foreground: #1E293B;
+  --sidebar-primary: #0D9488;
   --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #F0FDF4;
-  --sidebar-accent-foreground: #065F46;
-  --sidebar-border: #E2E8F0;
-  --sidebar-ring: #059669;
+  --sidebar-accent: #F0FDFA;
+  --sidebar-accent-foreground: #0F766E;
+  --sidebar-border: #E5E7EB;
+  --sidebar-ring: #0D9488;
 }
 
 .dark {
-  --background: #0B1120; /* Deep Midnight Slate */
-  --foreground: #F8FAFC; /* Crisp Slate 50 */
+  --background: #0B1315; /* Deep Midnight Teal-Slate */
+  --foreground: #F8FAFC;
 
-  --card: #111827; /* Dark slate surface */
+  /* Card Dark Mode */
+  --card: #131E21;
   --card-foreground: #F8FAFC;
-  --popover: #111827;
+  --card-radius: 0.75rem;
+  --card-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.4), 0 1px 2px -1px rgba(0, 0, 0, 0.3);
+  --card-shadow-hover: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -2px rgba(0, 0, 0, 0.4);
+  --card-border: 1px solid var(--border);
+
+  --popover: #131E21;
   --popover-foreground: #F8FAFC;
 
-  --primary: #10B981; /* Emerald 500 */
-  --primary-foreground: #0B1120;
+  --primary: #14B8A6; /* Teal 500 */
+  --primary-hover: #2DD4BF; /* Teal 400 */
+  --primary-light: #042F2E;
+  --primary-foreground: #042F2E;
 
-  --secondary: #064E3B; /* Deep Emerald 900 */
-  --secondary-foreground: #F0FDF4;
+  --secondary: #EAB308; /* Kuning Mustard Cerah */
+  --secondary-hover: #FACC15;
+  --secondary-light: #422006;
+  --secondary-foreground: #422006;
 
-  --muted: #1E293B;
+  --muted: #1A282D;
   --muted-foreground: #94A3B8;
 
-  --accent: #3B82F6; /* Blue 500 */
-  --accent-foreground: #0B1120;
+  --accent: #2E2813;
+  --accent-foreground: #FACC15;
 
-  --border: #1E293B;
-  --input: #1E293B;
-  --ring: #10B981;
+  --border: #23343A;
+  --input: #23343A;
+  --ring: #14B8A6;
 
-  --destructive: #FB7185;
-  --destructive-foreground: #0B1120;
+  --destructive: #F87171;
+  --destructive-foreground: #0B1315;
 
-  --radius: 0.875rem;
+  --radius: 0.75rem;
 
-  --chart-1: #10B981;
-  --chart-2: #3B82F6;
+  --chart-1: #14B8A6;
+  --chart-2: #EAB308;
   --chart-3: #38BDF8;
-  --chart-4: #FCD34D;
+  --chart-4: #FB923C;
   --chart-5: #A78BFA;
 
-  --sidebar: #0B1120;
+  --sidebar: #0B1315;
   --sidebar-foreground: #F8FAFC;
-  --sidebar-primary: #10B981;
-  --sidebar-primary-foreground: #0B1120;
-  --sidebar-accent: #111827;
+  --sidebar-primary: #14B8A6;
+  --sidebar-primary-foreground: #042F2E;
+  --sidebar-accent: #131E21;
   --sidebar-accent-foreground: #F8FAFC;
-  --sidebar-border: #1E293B;
-  --sidebar-ring: #10B981;
+  --sidebar-border: #23343A;
+  --sidebar-ring: #14B8A6;
 }
 
 @layer base {
@@ -149,16 +183,38 @@
   }
   html {
     @apply font-sans bg-background text-foreground;
-    font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-family: var(--font-sans), Inter, Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 15px; /* Skala dasar tipografi modern: 15px (14px-16px) untuk keterbacaan tinggi di mobile */
     -webkit-text-size-adjust: 100%;
     touch-action: manipulation;
   }
   body {
-    @apply bg-background text-foreground antialiased selection:bg-emerald-600/20 selection:text-emerald-900 dark:selection:bg-emerald-400/30 dark:selection:text-emerald-100;
+    @apply bg-background text-foreground antialiased selection:bg-teal-600/20 selection:text-teal-900 dark:selection:bg-teal-400/30 dark:selection:text-teal-100;
     min-height: 100dvh;
-    font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-family: var(--font-sans), Inter, Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 1rem; /* 15px-16px */
+    line-height: 1.5;
     letter-spacing: -0.01em;
   }
+}
+
+/* ======================================================= */
+/* SUPER APP & CARD UTILITY CLASSES                        */
+/* ======================================================= */
+
+.card-elevated,
+.superapp-card {
+  background-color: var(--card);
+  color: var(--card-foreground);
+  border-radius: var(--card-radius, 0.75rem);
+  box-shadow: var(--card-shadow, 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05));
+  border: 1px solid var(--border);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.card-elevated:active,
+.superapp-card:active {
+  transform: scale(0.995);
 }
 
 /* Code & Data Monospace Utilities */

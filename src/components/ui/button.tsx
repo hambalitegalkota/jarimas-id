@@ -3,22 +3,22 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "cn"
 
 const buttonVariants = cva(
-  "group/button inline-flex shrink-0 items-center justify-center rounded-xl border border-transparent bg-clip-padding text-base font-bold whitespace-nowrap transition-all duration-150 outline-none select-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-2 aria-invalid:ring-destructive/20 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-5",
+  "group/button inline-flex shrink-0 items-center justify-center rounded-lg border border-transparent bg-clip-padding text-sm sm:text-base font-semibold whitespace-nowrap transition-all duration-150 outline-none select-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-2 aria-invalid:ring-destructive/20 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-5",
   {
     variants: {
       variant: {
         default:
-          "bg-primary text-primary-foreground hover:bg-blue-700 active:scale-[0.98] shadow-sm",
+          "bg-primary text-primary-foreground hover:brightness-90 active:scale-[0.98] shadow-sm",
         outline:
-          "border-2 border-slate-300 bg-white text-slate-900 hover:bg-slate-100 hover:border-slate-400 active:scale-[0.98]",
+          "border border-border bg-card text-foreground hover:bg-muted active:scale-[0.98]",
         secondary:
-          "border border-slate-200 bg-slate-100 text-slate-900 hover:bg-slate-200 active:scale-[0.98]",
+          "bg-secondary text-secondary-foreground hover:brightness-95 active:scale-[0.98] shadow-sm font-bold",
+        action:
+          "bg-secondary text-secondary-foreground hover:brightness-95 active:scale-[0.98] shadow-sm font-bold",
         accent:
-          "border-2 border-emerald-600 bg-emerald-600 text-white hover:bg-emerald-700 active:scale-[0.98] shadow-sm",
-        cyan:
-          "border-2 border-sky-600 bg-sky-600 text-white hover:bg-sky-700 active:scale-[0.98] shadow-sm",
+          "border border-primary/30 bg-primary/10 text-primary hover:bg-primary/20 active:scale-[0.98]",
         ghost:
-          "text-slate-700 hover:bg-slate-100 hover:text-slate-900 active:scale-[0.98]",
+          "text-muted-foreground hover:bg-muted hover:text-foreground active:scale-[0.98]",
         destructive:
           "bg-destructive text-destructive-foreground hover:bg-red-700 active:scale-[0.98] shadow-sm",
         link: "text-primary underline-offset-4 hover:underline font-semibold",

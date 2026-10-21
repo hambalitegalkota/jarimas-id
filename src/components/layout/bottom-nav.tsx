@@ -135,12 +135,12 @@ export function BottomNav() {
           onMouseEnter={handleMouseEnter}
           onFocus={handleMouseEnter}
           aria-label="Tampilkan Menu Navigasi"
-          className="group/handle mb-1 flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-slate-200/80 dark:border-slate-800/80 shadow-md hover:shadow-lg hover:border-emerald-500/50 dark:hover:border-emerald-500/50 hover:bg-white dark:hover:bg-slate-900 transition-all cursor-pointer select-none"
+          className="group/handle mb-1 flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-border shadow-sm hover:shadow-md hover:border-primary/50 hover:bg-white dark:hover:bg-slate-900 transition-all cursor-pointer select-none"
         >
           {/* Indicator Bar */}
-          <span className="w-8 h-1 rounded-full bg-slate-300 dark:bg-slate-600 group-hover/handle:bg-emerald-500 transition-colors" />
+          <span className="w-8 h-1 rounded-full bg-slate-300 dark:bg-slate-600 group-hover/handle:bg-primary transition-colors" />
           
-          <ChevronUp className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 group-hover/handle:text-emerald-600 dark:group-hover/handle:text-emerald-400 group-hover/handle:-translate-y-0.5 transition-all" />
+          <ChevronUp className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 group-hover/handle:text-primary group-hover/handle:-translate-y-0.5 transition-all" />
 
           {/* Unread dot indicator on handle when collapsed */}
           {totalUnreadCount > 0 && (
@@ -156,7 +156,7 @@ export function BottomNav() {
       <nav
         aria-label="Navigasi Utama Mobile"
         className={cn(
-          "pointer-events-auto border-t-2 border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md shadow-2xl pb-[env(safe-area-inset-bottom,0px)] transition-all duration-300 ease-out transform",
+          "pointer-events-auto border-t border-border bg-card/95 backdrop-blur-md shadow-lg pb-[env(safe-area-inset-bottom,0px)] transition-all duration-300 ease-out transform",
           isVisible ? "translate-y-0 opacity-100" : "translate-y-full opacity-0 pointer-events-none"
         )}
       >
@@ -181,15 +181,15 @@ export function BottomNav() {
                 className={cn(
                   "group relative flex h-full flex-1 flex-col items-center justify-center gap-1 px-1 py-1.5 transition-all outline-none",
                   active
-                    ? "text-emerald-700 dark:text-emerald-400 font-extrabold"
+                    ? "text-primary font-extrabold"
                     : hasBadge
-                    ? "text-slate-700 dark:text-slate-200 font-bold"
-                    : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 font-medium"
+                    ? "text-foreground font-bold"
+                    : "text-muted-foreground hover:text-foreground font-medium"
                 )}
               >
                 {/* Active Top Bar Indicator */}
                 {active && (
-                  <span className="absolute top-0 h-1 w-10 bg-emerald-600 dark:bg-emerald-400 rounded-full shadow-xs shadow-emerald-500/50" />
+                  <span className="absolute top-0 h-1 w-10 bg-primary rounded-full shadow-xs shadow-primary/50" />
                 )}
 
                 {/* Icon Container with Radiant Badge */}
@@ -198,10 +198,10 @@ export function BottomNav() {
                     className={cn(
                       "h-5 w-5 sm:h-6 sm:w-6 transition-all",
                       active
-                        ? "text-emerald-700 dark:text-emerald-400 stroke-[2.5px] scale-105"
+                        ? "text-primary stroke-[2.5px] scale-105"
                         : hasBadge
-                        ? "text-slate-800 dark:text-slate-100 stroke-[2.2px]"
-                        : "text-slate-500 dark:text-slate-400 stroke-[2px]"
+                        ? "text-foreground stroke-[2.2px]"
+                        : "text-muted-foreground stroke-[2px]"
                     )}
                   />
 
@@ -224,10 +224,10 @@ export function BottomNav() {
                   className={cn(
                     "text-[11px] sm:text-xs tracking-tight transition-colors flex items-center gap-1",
                     active
-                      ? "text-emerald-700 dark:text-emerald-400 font-black"
+                      ? "text-primary font-black"
                       : hasBadge
                       ? "text-rose-600 dark:text-rose-400 font-black"
-                      : "text-slate-500 dark:text-slate-400 font-semibold"
+                      : "text-muted-foreground font-semibold"
                   )}
                 >
                   {item.label}
