@@ -315,25 +315,23 @@ export function ManageGrupMembersModal({
   if (!isOpen || !room) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/75 backdrop-blur-sm animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-950/75 backdrop-blur-xs animate-in fade-in duration-200">
       <div
-        className="relative flex flex-col w-full max-w-xl max-h-[88vh] rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200"
+        className="relative flex flex-col w-full max-w-xl max-h-[92vh] sm:max-h-[88vh] rounded-t-2xl sm:rounded-lg border border-border bg-card shadow-xl overflow-hidden animate-in zoom-in-95 duration-200"
         role="dialog"
         aria-modal="true"
       >
-        {/* ========================================================= */}
-        {/* HEADER                                                    */}
-        {/* ========================================================= */}
-        <div className="flex items-center justify-between px-5 py-4 border-b-2 border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/90 shrink-0">
+        {/* HEADER */}
+        <div className="flex items-center justify-between px-4 sm:px-5 py-3.5 border-b border-border bg-muted/30 shrink-0">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-tr from-indigo-600 via-teal-600 to-emerald-700 text-white font-bold shadow-xs shrink-0">
+            <div className="flex h-10 w-10 items-center justify-center rounded-md bg-primary/10 text-primary border border-primary/20 font-bold shadow-2xs shrink-0">
               <Users className="h-5 w-5" />
             </div>
             <div className="min-w-0">
-              <h3 className="text-sm sm:text-base font-black text-slate-900 dark:text-slate-100 truncate">
+              <h3 className="text-sm sm:text-base font-bold text-foreground truncate">
                 Tambah &amp; Kelola Anggota Komunitas
               </h3>
-              <p className="text-[11px] text-slate-500 truncate">
+              <p className="text-2xs text-muted-foreground truncate">
                 {room.nama} • {Math.max(members.length, existingMemberUserIds.size, room.jumlah_anggota || 0)} Anggota Tergabung
               </p>
             </div>
@@ -344,7 +342,7 @@ export function ManageGrupMembersModal({
               <button
                 type="button"
                 onClick={handleDeleteGroup}
-                className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950 transition-colors cursor-pointer"
+                className="flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-background text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
                 title="Hapus Grup Kegiatan Ini"
               >
                 <Trash2 className="h-4 w-4" />
@@ -354,7 +352,7 @@ export function ManageGrupMembersModal({
             <button
               type="button"
               onClick={onClose}
-              className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-900 dark:hover:text-slate-100 transition-all cursor-pointer shrink-0"
+              className="flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-background text-muted-foreground hover:text-foreground hover:bg-muted transition-all cursor-pointer shrink-0"
               aria-label="Tutup"
             >
               <X className="h-4 w-4" />
@@ -362,17 +360,15 @@ export function ManageGrupMembersModal({
           </div>
         </div>
 
-        {/* ========================================================= */}
-        {/* TABS (DAFTAR ANGGOTA VS + UNDANG ANGGOTA)                  */}
-        {/* ========================================================= */}
-        <div className="flex border-b border-slate-200 dark:border-slate-800 bg-slate-100/50 dark:bg-slate-800/50 p-1.5 gap-1 shrink-0">
+        {/* TABS */}
+        <div className="flex border-b border-border bg-muted/40 p-1.5 gap-1 shrink-0">
           <button
             type="button"
             onClick={() => setActiveTab("anggota")}
-            className={`flex-1 inline-flex min-h-[38px] items-center justify-center gap-2 rounded-xl px-4 text-xs font-black transition-all cursor-pointer ${
+            className={`flex-1 inline-flex min-h-[40px] items-center justify-center gap-2 rounded-md px-4 text-xs font-semibold transition-all cursor-pointer ${
               activeTab === "anggota"
-                ? "bg-white dark:bg-slate-900 text-indigo-700 dark:text-indigo-300 shadow-2xs"
-                : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
+                ? "bg-card text-foreground shadow-2xs border border-border/80"
+                : "text-muted-foreground hover:text-foreground"
             }`}
           >
             <Users className="h-3.5 w-3.5" />
@@ -383,10 +379,10 @@ export function ManageGrupMembersModal({
             <button
               type="button"
               onClick={() => setActiveTab("undang")}
-              className={`flex-1 inline-flex min-h-[38px] items-center justify-center gap-2 rounded-xl px-4 text-xs font-black transition-all cursor-pointer ${
+              className={`flex-1 inline-flex min-h-[40px] items-center justify-center gap-2 rounded-md px-4 text-xs font-semibold transition-all cursor-pointer ${
                 activeTab === "undang"
-                  ? "bg-white dark:bg-slate-900 text-emerald-700 dark:text-emerald-300 shadow-2xs"
-                  : "text-slate-600 dark:text-slate-400 hover:text-emerald-600"
+                  ? "bg-card text-primary shadow-2xs border border-border/80"
+                  : "text-muted-foreground hover:text-primary"
               }`}
             >
               <UserPlus className="h-3.5 w-3.5" />
@@ -398,10 +394,10 @@ export function ManageGrupMembersModal({
         {/* Feedback Message */}
         {actionMessage && (
           <div
-            className={`mx-5 mt-4 p-3 rounded-2xl text-xs font-semibold flex items-center gap-2 ${
+            className={`mx-4 sm:mx-5 mt-3.5 p-3 rounded-lg text-xs font-medium flex items-center gap-2 ${
               actionMessage.type === "success"
-                ? "bg-emerald-50 dark:bg-emerald-950/70 border border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200"
-                : "bg-rose-50 dark:bg-rose-950/70 border border-rose-300 dark:border-rose-800 text-rose-800 dark:text-rose-200"
+                ? "bg-primary/10 border border-primary/20 text-primary"
+                : "bg-destructive/10 border border-destructive/20 text-destructive"
             }`}
           >
             <AlertCircle className="h-4 w-4 shrink-0" />
@@ -409,50 +405,48 @@ export function ManageGrupMembersModal({
           </div>
         )}
 
-        {/* ========================================================= */}
-        {/* TAB 1: DAFTAR ANGGOTA YANG SUDAH TERGABUNG                */}
-        {/* ========================================================= */}
+        {/* TAB 1: DAFTAR ANGGOTA YANG SUDAH TERGABUNG */}
         {activeTab === "anggota" && (
-          <div className="flex-1 overflow-y-auto p-5 space-y-3.5">
+          <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-3">
             {/* Search Input */}
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
               <input
                 type="text"
                 value={searchMemberQuery}
                 onChange={(e) => setSearchMemberQuery(e.target.value)}
                 placeholder="Cari nama anggota grup..."
-                className="w-full h-9 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 pl-9 pr-3 text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:border-indigo-500 transition-all"
+                className="w-full min-h-[44px] h-11 rounded-lg border border-border bg-background pl-9 pr-3 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary transition-all"
               />
             </div>
 
             {isLoadingMembers ? (
-              <div className="py-12 flex flex-col items-center justify-center gap-2 text-xs text-slate-400">
-                <Loader2 className="h-6 w-6 animate-spin text-indigo-600" />
+              <div className="py-12 flex flex-col items-center justify-center gap-2 text-xs text-muted-foreground">
+                <Loader2 className="h-6 w-6 animate-spin text-primary" />
                 <span>Memuat data anggota...</span>
               </div>
             ) : filteredCurrentMembers.length === 0 ? (
               <div className="py-10 px-4 text-center flex flex-col items-center justify-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400">
+                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-muted text-muted-foreground">
                   <Users className="h-6 w-6" />
                 </div>
                 {searchMemberQuery.trim() ? (
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-muted-foreground">
                     Tidak ada anggota yang cocok dengan kata kunci &quot;{searchMemberQuery}&quot;.
                   </p>
                 ) : (
                   <div className="space-y-2">
-                    <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                    <p className="text-xs font-semibold text-foreground">
                       Belum ada anggota terdaftar di grup ini
                     </p>
-                    <p className="text-[11px] text-slate-500 max-w-xs mx-auto">
+                    <p className="text-2xs text-muted-foreground max-w-xs mx-auto">
                       Pengguna yang diundang langsung otomatis tergabung tanpa perlu persetujuan (approve) manual.
                     </p>
                     {canManage && (
                       <button
                         type="button"
                         onClick={() => setActiveTab("undang")}
-                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 mt-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 text-xs font-bold hover:bg-indigo-100 transition-all cursor-pointer"
+                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 mt-2 rounded-lg bg-primary/10 border border-primary/20 text-primary text-xs font-semibold hover:bg-primary/20 transition-all cursor-pointer"
                       >
                         <UserPlus className="h-3.5 w-3.5" />
                         <span>Undang Pengguna Sekarang</span>
@@ -467,36 +461,32 @@ export function ManageGrupMembersModal({
                   const prof = m.profile;
                   const isOnline = onlineUserIds.has(m.user_id);
                   const initial = (prof?.nama_lengkap || "W")[0].toUpperCase();
-                  const isCreatorOrAdmin =
-                    m.peran.toLowerCase().includes("admin") ||
-                    prof?.is_super_admin ||
-                    prof?.is_admin_pusat;
                   const isMe = m.user_id === currentUserId;
 
                   return (
                     <div
                       key={m.id}
-                      className="flex items-center justify-between p-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition-all"
+                      className="flex items-center justify-between p-2.5 rounded-lg border border-border bg-card hover:bg-muted/30 transition-all"
                     >
                       <div className="flex items-center gap-3 min-w-0 flex-1">
                         {/* Avatar */}
                         <div className="relative shrink-0">
-                          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-indigo-600 to-teal-700 text-white font-black text-xs shadow-xs">
+                          <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/15 text-primary font-bold text-xs shadow-2xs border border-primary/20">
                             {prof?.avatar_url ? (
                               // eslint-disable-next-line @next/next/no-img-element
                               <img
                                 src={prof.avatar_url}
                                 alt={prof.nama_lengkap}
-                                className="h-full w-full rounded-xl object-cover"
+                                className="h-full w-full rounded-md object-cover"
                               />
                             ) : (
                               <span>{initial}</span>
                             )}
                           </div>
                           {isOnline && (
-                            <span className="absolute -bottom-0.5 -right-0.5 flex h-3 w-3">
+                            <span className="absolute -bottom-0.5 -right-0.5 flex h-2.5 w-2.5">
                               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                              <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500 border border-white dark:border-slate-900" />
+                              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500 border border-background" />
                             </span>
                           )}
                         </div>
@@ -504,25 +494,25 @@ export function ManageGrupMembersModal({
                         {/* Profile Info */}
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="text-xs sm:text-sm font-black text-slate-900 dark:text-slate-100 truncate">
+                            <span className="text-xs sm:text-sm font-bold text-foreground truncate">
                               {prof?.nama_lengkap || "Warga Jarimas"}
                               {isMe && " (Anda)"}
                             </span>
                             {prof?.is_super_admin && (
-                              <span className="rounded-full bg-emerald-100 dark:bg-emerald-950 border border-emerald-300 dark:border-emerald-800 px-1.5 py-0.2 text-[9px] font-black text-emerald-800 dark:text-emerald-300">
+                              <span className="rounded-md bg-secondary/15 border border-secondary/30 text-secondary px-1.5 py-0.2 text-[9px] font-semibold">
                                 Super Admin
                               </span>
                             )}
                             {prof?.is_admin_pusat && (
-                              <span className="rounded-full bg-teal-100 dark:bg-teal-950 border border-teal-300 dark:border-teal-800 px-1.5 py-0.2 text-[9px] font-black text-teal-800 dark:text-teal-300">
+                              <span className="rounded-md bg-primary/15 border border-primary/30 text-primary px-1.5 py-0.2 text-[9px] font-semibold">
                                 Admin Pusat
                               </span>
                             )}
-                            <span className="rounded-full bg-slate-100 dark:bg-slate-800 px-1.5 py-0.2 text-[9px] font-semibold text-slate-500 capitalize">
+                            <span className="rounded-md bg-muted px-1.5 py-0.2 text-[9px] font-medium text-muted-foreground capitalize">
                               {m.peran}
                             </span>
                           </div>
-                          <p className="text-[11px] text-slate-400 truncate">
+                          <p className="text-2xs text-muted-foreground truncate">
                             {prof?.email || "Tergabung via undangan Admin"}
                           </p>
                         </div>
@@ -538,10 +528,10 @@ export function ManageGrupMembersModal({
                               prof?.nama_lengkap || "Pengguna"
                             )
                           }
-                          className="flex h-8 w-8 items-center justify-center rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition-all cursor-pointer shrink-0 ml-2"
+                          className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer shrink-0 ml-2 border border-border"
                           title="Keluarkan dari grup"
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className="h-3.5 w-3.5" />
                         </button>
                       )}
                     </div>
@@ -552,14 +542,14 @@ export function ManageGrupMembersModal({
 
             {/* Footer Opsi Hapus Grup */}
             {canManage && (room.is_kegiatan || room.jenis === "kegiatan") && (
-              <div className="pt-3 border-t border-slate-100 dark:border-slate-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                <span className="text-[11px] text-slate-400">
+              <div className="pt-3 border-t border-border flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <span className="text-2xs text-muted-foreground">
                   Grup sudah selesai atau tidak digunakan lagi?
                 </span>
                 <button
                   type="button"
                   onClick={handleDeleteGroup}
-                  className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-rose-600 hover:text-rose-700 bg-rose-50 dark:bg-rose-950/50 hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-all cursor-pointer"
+                  className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-destructive hover:bg-destructive/10 border border-destructive/20 transition-colors cursor-pointer"
                 >
                   <Trash2 className="h-3.5 w-3.5" />
                   <span>Hapus Grup Kegiatan</span>
@@ -569,30 +559,28 @@ export function ManageGrupMembersModal({
           </div>
         )}
 
-        {/* ========================================================= */}
-        {/* TAB 2: + UNDANG ANGGOTA BARU (KHUSUS ADMIN)               */}
-        {/* ========================================================= */}
+        {/* TAB 2: + UNDANG ANGGOTA BARU (KHUSUS ADMIN) */}
         {activeTab === "undang" && canManage && (
-          <div className="flex-1 overflow-y-auto p-5 space-y-4">
-            <div className="p-3.5 rounded-2xl bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-xs text-emerald-900 dark:text-emerald-200 leading-relaxed">
+          <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-3.5">
+            <div className="p-3 rounded-lg bg-primary/10 border border-primary/20 text-xs text-foreground leading-relaxed">
               Cari dan pilih pengguna terdaftar untuk langsung dimasukkan ke dalam komunitas <strong>{room.nama}</strong>. Anggota baru otomatis berstatus aktif (terverifikasi) dan dapat langsung berinteraksi.
             </div>
 
             {/* Search Input */}
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
               <input
                 type="text"
                 value={searchInviteQuery}
                 onChange={(e) => setSearchInviteQuery(e.target.value)}
                 placeholder="Cari nama, email, atau komunitas pengguna..."
-                className="w-full h-10 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 pl-9 pr-3 text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:border-emerald-500 transition-all"
+                className="w-full min-h-[44px] h-11 rounded-lg border border-border bg-background pl-9 pr-3 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary transition-all"
               />
             </div>
 
             {/* Sub-header dengan Toggle Pilih Semua */}
-            <div className="flex items-center justify-between text-xs px-1">
-              <span className="font-semibold text-slate-600 dark:text-slate-400">
+            <div className="flex items-center justify-between text-2xs px-1">
+              <span className="font-semibold text-muted-foreground">
                 {isLoadingUsers
                   ? "Memuat daftar pengguna..."
                   : `Tersedia ${candidateUsersToInvite.length} pengguna:`}
@@ -607,7 +595,7 @@ export function ManageGrupMembersModal({
                       setSelectedInviteIds(new Set(candidateUsersToInvite.map((u) => u.id)));
                     }
                   }}
-                  className="font-bold text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer"
+                  className="font-semibold text-primary hover:underline cursor-pointer"
                 >
                   {selectedInviteIds.size === candidateUsersToInvite.length
                     ? "Batal Pilih Semua"
@@ -617,14 +605,14 @@ export function ManageGrupMembersModal({
             </div>
 
             {/* Candidate List */}
-            <div className="max-h-64 overflow-y-auto space-y-2 pr-1 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 p-2">
+            <div className="max-h-64 overflow-y-auto space-y-1.5 pr-1 rounded-lg border border-border bg-muted/20 p-2">
               {isLoadingUsers ? (
-                <div className="py-10 flex flex-col items-center justify-center gap-2 text-xs text-slate-400">
-                  <Loader2 className="h-6 w-6 animate-spin text-emerald-600" />
+                <div className="py-10 flex flex-col items-center justify-center gap-2 text-xs text-muted-foreground">
+                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
                   <span>Memuat daftar pengguna terdaftar...</span>
                 </div>
               ) : candidateUsersToInvite.length === 0 ? (
-                <div className="p-8 text-center text-xs text-slate-400">
+                <div className="p-8 text-center text-xs text-muted-foreground">
                   {searchInviteQuery.trim()
                     ? `Tidak ada pengguna yang cocok dengan "${searchInviteQuery}".`
                     : "Tidak ada pengguna baru yang dapat diundang. Semua pengguna telah menjadi anggota komunitas ini."}
@@ -640,31 +628,31 @@ export function ManageGrupMembersModal({
                       key={user.id}
                       type="button"
                       onClick={() => toggleSelectInvite(user.id)}
-                      className={`w-full flex items-center justify-between p-3 rounded-2xl border-2 transition-all cursor-pointer text-left ${
+                      className={`w-full flex items-center justify-between p-2.5 rounded-lg border transition-all cursor-pointer text-left ${
                         isSelected
-                          ? "bg-emerald-50/80 dark:bg-emerald-950/40 border-emerald-500 shadow-2xs"
-                          : "bg-white dark:bg-slate-900 border-slate-200/90 dark:border-slate-800 hover:border-slate-300"
+                          ? "bg-primary/10 border-primary/40 shadow-2xs"
+                          : "bg-card border-border hover:border-border/80"
                       }`}
                     >
                       <div className="flex items-center gap-3 min-w-0 flex-1">
                         <div
-                          className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-lg border transition-all ${
+                          className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-md border transition-all ${
                             isSelected
-                              ? "bg-emerald-600 border-emerald-600 text-white"
-                              : "border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800"
+                              ? "bg-primary border-primary text-primary-foreground"
+                              : "border-muted-foreground/40 bg-background"
                           }`}
                         >
-                          {isSelected && <Check className="h-3.5 w-3.5 stroke-[3px]" />}
+                          {isSelected && <Check className="h-3 w-3 stroke-[3px]" />}
                         </div>
 
                         <div className="relative shrink-0">
-                          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-700 text-white font-black text-xs">
+                          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/15 text-primary font-bold text-2xs border border-primary/20">
                             {user.avatar_url ? (
                               // eslint-disable-next-line @next/next/no-img-element
                               <img
                                 src={user.avatar_url}
                                 alt={user.nama_lengkap}
-                                className="h-full w-full rounded-xl object-cover"
+                                className="h-full w-full rounded-md object-cover"
                               />
                             ) : (
                               <span>{initial}</span>
@@ -672,16 +660,16 @@ export function ManageGrupMembersModal({
                           </div>
                           {isOnline && (
                             <span className="absolute -bottom-0.5 -right-0.5 flex h-2.5 w-2.5">
-                              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500 border border-white dark:border-slate-900" />
+                              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500 border border-background" />
                             </span>
                           )}
                         </div>
 
                         <div className="min-w-0 flex-1">
-                          <span className="text-xs sm:text-sm font-black text-slate-900 dark:text-slate-100 truncate block">
+                          <span className="text-xs sm:text-sm font-bold text-foreground truncate block">
                             {user.nama_lengkap}
                           </span>
-                          <span className="text-[11px] text-slate-400 truncate block">
+                          <span className="text-2xs text-muted-foreground truncate block">
                             {user.komunitas_list && user.komunitas_list.length > 0
                               ? user.komunitas_list.map((c) => c.nama).join(", ")
                               : user.email || "Warga Jarimas"}
@@ -690,7 +678,7 @@ export function ManageGrupMembersModal({
                       </div>
 
                       {isSelected && (
-                        <span className="text-[10px] font-black text-emerald-600 uppercase font-mono ml-2 shrink-0">
+                        <span className="text-2xs font-semibold text-primary uppercase font-mono ml-2 shrink-0">
                           Dipilih
                         </span>
                       )}
@@ -702,7 +690,7 @@ export function ManageGrupMembersModal({
 
             {/* Action Button */}
             <div className="pt-2 flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-500">
+              <span className="text-xs font-semibold text-muted-foreground">
                 {selectedInviteIds.size} pengguna dipilih
               </span>
 
@@ -710,7 +698,7 @@ export function ManageGrupMembersModal({
                 type="button"
                 onClick={handleInviteSubmit}
                 disabled={isSubmittingInvite || selectedInviteIds.size === 0}
-                className="inline-flex min-h-[42px] items-center gap-2 rounded-2xl bg-emerald-600 hover:bg-emerald-700 px-5 text-xs font-extrabold text-white shadow-md shadow-emerald-600/20 active:scale-95 transition-all cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
+                className="inline-flex min-h-[44px] h-11 items-center gap-2 rounded-lg bg-primary hover:bg-primary-hover px-5 text-xs font-semibold text-primary-foreground shadow-xs active:scale-95 transition-all cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
               >
                 {isSubmittingInvite ? (
                   <>

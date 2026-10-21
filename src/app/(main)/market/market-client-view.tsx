@@ -61,50 +61,46 @@ export function MarketClientView({
   });
 
   return (
-    <div className="flex flex-col flex-1 px-4 sm:px-6 md:px-8 py-4 sm:py-6 gap-5 sm:gap-6 max-w-5xl xl:max-w-6xl mx-auto w-full pb-24">
+    <div className="flex flex-col flex-1 px-4 sm:px-6 md:px-8 py-4 sm:py-6 gap-5 max-w-5xl xl:max-w-6xl mx-auto w-full pb-24">
       {/* ========================================================= */}
       {/* 1. HERO BANNER JARIMAS MARKET                             */}
       {/* ========================================================= */}
-      <section className="relative overflow-hidden rounded-3xl border-2 border-slate-800 bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-white p-6 sm:p-8 shadow-xl shadow-slate-950/30 space-y-6">
-        {/* Decorative Orbs */}
-        <div className="absolute -top-20 -right-20 h-64 w-64 rounded-full bg-emerald-500/15 blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-blue-500/15 blur-3xl pointer-events-none" />
-
-        <div className="relative z-10 flex flex-col sm:flex-row sm:items-start justify-between gap-5">
-          <div className="space-y-3 max-w-2xl">
+      <section className="relative overflow-hidden rounded-lg border border-border bg-card text-card-foreground p-5 sm:p-6 shadow-xs space-y-4">
+        <div className="relative z-10 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+          <div className="space-y-2.5 max-w-2xl">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 border border-white/20 px-3 py-0.5 text-xs font-black text-emerald-300 backdrop-blur-xs">
-                <ShoppingBag className="h-3.5 w-3.5 text-emerald-400" />
+              <span className="inline-flex items-center gap-1.5 rounded-md bg-primary/10 border border-primary/20 px-2.5 py-0.5 text-2xs font-semibold text-primary">
+                <ShoppingBag className="h-3.5 w-3.5 text-primary" />
                 <span>JARIMAS MARKET</span>
               </span>
-              <span className="text-xs font-mono font-bold text-slate-300">KOTA TEGAL</span>
+              <span className="text-2xs font-mono font-semibold text-muted-foreground">KOTA TEGAL</span>
             </div>
 
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight leading-tight">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-foreground">
               Sarana Posyandu, PAUD &amp; Nutrisi Balita
             </h1>
 
-            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-xl">
+            <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed max-w-xl">
               Pusat pengadaan alat ukur antropometri standar Kemenkes RI, modul stimulasi motorik PAUD, dan paket PMT bergizi untuk posyandu se-Kota Tegal.
             </p>
 
             {/* Action Links */}
-            <div className="flex flex-wrap items-center gap-3 pt-2">
+            <div className="flex flex-wrap items-center gap-2.5 pt-1">
               <Link
                 href="/market/pesanan"
-                className="inline-flex min-h-[46px] items-center justify-center gap-2 rounded-xl bg-white hover:bg-slate-100 px-5 text-xs sm:text-sm font-extrabold text-slate-950 shadow-md transition-all active:scale-98 cursor-pointer"
+                className="inline-flex min-h-[44px] h-11 items-center justify-center gap-2 rounded-lg bg-primary hover:bg-primary-hover px-4 text-xs font-semibold text-primary-foreground shadow-xs transition-colors cursor-pointer"
               >
-                <ClipboardList className="h-4 w-4 text-emerald-700" />
-                <span>RIWAYAT PESANAN SAYA</span>
+                <ClipboardList className="h-4 w-4" />
+                <span>Riwayat Pesanan Saya</span>
               </Link>
 
               {isSuperAdmin && (
                 <Link
                   href="/admin/market"
-                  className="inline-flex min-h-[46px] items-center justify-center gap-2 rounded-xl bg-slate-950/70 hover:bg-slate-950 border border-white/30 px-5 text-xs sm:text-sm font-extrabold text-emerald-300 transition-all active:scale-98 cursor-pointer"
+                  className="inline-flex min-h-[44px] h-11 items-center justify-center gap-2 rounded-lg bg-background hover:bg-muted border border-border px-4 text-xs font-semibold text-foreground transition-colors cursor-pointer"
                 >
-                  <Package className="h-4 w-4 text-emerald-300" />
-                  <span>KELOLA PRODUK (ADMIN)</span>
+                  <Package className="h-4 w-4 text-primary" />
+                  <span>Kelola Produk (Admin)</span>
                 </Link>
               )}
             </div>
@@ -112,34 +108,34 @@ export function MarketClientView({
         </div>
 
         {/* Feature Highlights Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 border-t border-white/15 pt-4 text-slate-900 dark:text-slate-100">
-          <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-xs border border-white/20 shadow-2xs">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700 font-bold border border-emerald-200">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 border-t border-border pt-3.5">
+          <div className="flex items-center gap-3 p-2.5 rounded-lg bg-muted/40 border border-border">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary font-bold border border-primary/20">
               <Award className="h-4 w-4" />
             </div>
             <div>
-              <span className="text-xs font-black block">Utamakan produk lokal &amp; sekitar</span>
-              <span className="text-[11px] text-slate-500">Kembangkan ekonomi masyarakat</span>
+              <span className="text-xs font-semibold block text-foreground">Utamakan Produk Lokal</span>
+              <span className="text-2xs text-muted-foreground">Kembangkan ekonomi masyarakat</span>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-xs border border-white/20 shadow-2xs">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-700 font-bold border border-blue-200">
+          <div className="flex items-center gap-3 p-2.5 rounded-lg bg-muted/40 border border-border">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-secondary/15 text-secondary font-bold border border-secondary/30">
               <Truck className="h-4 w-4" />
             </div>
             <div>
-              <span className="text-xs font-black block">Kirim Langsung</span>
-              <span className="text-[11px] text-slate-500">Seluruh wilayah Kota Tegal</span>
+              <span className="text-xs font-semibold block text-foreground">Kirim Langsung</span>
+              <span className="text-2xs text-muted-foreground">Seluruh wilayah Kota Tegal</span>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-xs border border-white/20 shadow-2xs">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-700 font-bold border border-slate-200">
+          <div className="flex items-center gap-3 p-2.5 rounded-lg bg-muted/40 border border-border">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary font-bold border border-primary/20">
               <ShieldCheck className="h-4 w-4" />
             </div>
             <div>
-              <span className="text-xs font-black block">Transparan &amp; Resmi</span>
-              <span className="text-[11px] text-slate-500">QRIS &amp; verifikasi pesanan</span>
+              <span className="text-xs font-semibold block text-foreground">Transparan &amp; Resmi</span>
+              <span className="text-2xs text-muted-foreground">QRIS &amp; verifikasi pesanan</span>
             </div>
           </div>
         </div>
@@ -148,31 +144,31 @@ export function MarketClientView({
       {/* ========================================================= */}
       {/* 2. SEARCH BAR & KATEGORI FILTER                           */}
       {/* ========================================================= */}
-      <div className="space-y-3.5">
+      <div className="space-y-3">
         <div className="relative">
-          <Search className="absolute top-1/2 left-4 h-5 w-5 -translate-y-1/2 text-slate-400 pointer-events-none" />
+          <Search className="absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
           <input
             type="text"
             placeholder="Cari perlengkapan posyandu, timbangan digital, modul PAUD, biskuit PMT..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="min-h-[50px] w-full rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 pl-11 pr-10 text-sm sm:text-base text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:border-emerald-500 focus:outline-hidden transition-all shadow-2xs"
+            className="min-h-[44px] h-11 w-full rounded-lg border border-border bg-background pl-10 pr-9 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary transition-all shadow-2xs"
           />
           {searchQuery && (
             <button
               type="button"
               onClick={() => setSearchQuery("")}
-              className="absolute top-1/2 right-3 -translate-y-1/2 flex h-7 w-7 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-800 cursor-pointer"
+              className="absolute top-1/2 right-3 -translate-y-1/2 flex h-6 w-6 items-center justify-center rounded-md bg-muted text-muted-foreground hover:text-foreground cursor-pointer"
             >
-              <X className="h-4 w-4" />
+              <X className="h-3.5 w-3.5" />
             </button>
           )}
         </div>
 
         {/* Kategori Tabs Horizontal Scrollable */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0">
-          <div className="flex shrink-0 items-center gap-1 px-1 text-xs font-bold text-slate-500">
-            <SlidersHorizontal className="h-4 w-4" />
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0">
+          <div className="flex shrink-0 items-center gap-1 px-1 text-2xs font-semibold text-muted-foreground">
+            <SlidersHorizontal className="h-3.5 w-3.5" />
           </div>
           {KATEGORI_LIST.map((kat) => {
             const isActive = selectedKategori === kat;
@@ -182,10 +178,10 @@ export function MarketClientView({
                 type="button"
                 onClick={() => setSelectedKategori(kat)}
                 className={cn(
-                  "inline-flex shrink-0 items-center min-h-[42px] rounded-xl px-4 py-2 text-xs sm:text-sm font-extrabold transition-all cursor-pointer active:scale-95",
+                  "inline-flex shrink-0 items-center min-h-[38px] h-9 rounded-md px-3 text-xs font-semibold transition-colors cursor-pointer active:scale-95 border",
                   isActive
-                    ? "bg-emerald-600 text-white shadow-sm border-2 border-emerald-600"
-                    : "bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 hover:border-slate-300"
+                    ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                    : "bg-card border-border text-foreground hover:bg-muted"
                 )}
               >
                 {kat}
@@ -199,15 +195,15 @@ export function MarketClientView({
       {/* 3. GRID PRODUK                                            */}
       {/* ========================================================= */}
       {filteredProducts.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-900 p-12 text-center space-y-4 shadow-xs">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl border-2 border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400">
-            <Package className="h-7 w-7 stroke-[1.5px]" />
+        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border bg-card p-8 sm:p-10 text-center space-y-3 shadow-xs">
+          <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-border bg-muted text-muted-foreground">
+            <Package className="h-6 w-6 stroke-[1.5px]" />
           </div>
-          <div className="space-y-1.5 max-w-sm">
-            <h3 className="text-base font-bold tracking-tight text-slate-900 dark:text-slate-100">
+          <div className="space-y-1 max-w-sm">
+            <h3 className="text-sm sm:text-base font-bold tracking-tight text-foreground">
               Produk Tidak Ditemukan
             </h3>
-            <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+            <p className="text-xs text-muted-foreground leading-relaxed">
               Tidak ada produk yang cocok dengan kata kunci &quot;{searchQuery}&quot; atau kategori yang dipilih.
             </p>
           </div>
@@ -217,19 +213,19 @@ export function MarketClientView({
               setSearchQuery("");
               setSelectedKategori("Semua");
             }}
-            className="inline-flex min-h-[46px] items-center rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white px-5 text-xs sm:text-sm font-extrabold cursor-pointer shadow-sm active:scale-98"
+            className="inline-flex min-h-[44px] h-11 items-center rounded-lg bg-primary hover:bg-primary-hover text-primary-foreground px-4 text-xs font-semibold cursor-pointer shadow-xs active:scale-95"
           >
             Reset Filter Produk
           </button>
         </div>
       ) : (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between px-1 text-xs font-bold text-slate-500">
+        <div className="space-y-3">
+          <div className="flex items-center justify-between px-1 text-2xs font-semibold text-muted-foreground">
             <span>Menampilkan {filteredProducts.length} produk katalog</span>
             <span className="font-mono">KOTA TEGAL</span>
           </div>
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-3">
             {filteredProducts.map((prod) => (
               <ProdukCard key={prod.id} produk={prod} />
             ))}
@@ -240,9 +236,9 @@ export function MarketClientView({
       {/* ========================================================= */}
       {/* 4. KETERANGAN STATUS PENGEMBANGAN FITUR                   */}
       {/* ========================================================= */}
-      <div className="flex items-center justify-center gap-2.5 rounded-2xl border-2 border-amber-300 dark:border-amber-800/80 bg-amber-50/90 dark:bg-amber-950/40 px-5 py-4 text-center text-amber-900 dark:text-amber-200 shadow-2xs">
-        <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0" />
-        <span className="text-xs sm:text-sm font-extrabold tracking-wide">
+      <div className="flex items-center justify-center gap-2 rounded-lg border border-secondary/30 bg-secondary/15 px-4 py-3 text-center text-secondary shadow-2xs">
+        <AlertCircle className="h-4 w-4 shrink-0" />
+        <span className="text-xs sm:text-sm font-semibold tracking-wide">
           Fitur masih belum aktif, proses pengembangan.
         </span>
       </div>

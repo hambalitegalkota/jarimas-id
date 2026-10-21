@@ -323,23 +323,23 @@ export function DaftarWargaKabarSection({
     return (
       <div
         key={userItem.id}
-        className={`flex flex-col justify-between p-4 rounded-2xl border-2 transition-all shadow-2xs ${
+        className={`flex flex-col justify-between p-3.5 rounded-lg border transition-all shadow-xs ${
           isOnline
-            ? "border-emerald-400 dark:border-emerald-600 bg-emerald-50/40 dark:bg-emerald-950/20 hover:border-emerald-500 ring-1 ring-emerald-400/20"
-            : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-emerald-500/60"
+            ? "border-primary/50 bg-primary/5 hover:border-primary ring-1 ring-primary/20"
+            : "border-border bg-card hover:border-border/80"
         }`}
       >
         <div className="space-y-3">
           {/* Header Card */}
           <div className="flex items-center gap-3">
             <div className="relative shrink-0">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-tr from-emerald-600 via-teal-600 to-emerald-800 text-white font-black text-base shadow-sm border border-white dark:border-slate-800">
+              <div className="flex h-10 w-10 items-center justify-center rounded-md bg-primary/10 text-primary font-bold text-sm border border-primary/20">
                 {userItem.avatar_url ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={userItem.avatar_url}
                     alt={userItem.nama_lengkap}
-                    className="h-full w-full rounded-2xl object-cover"
+                    className="h-full w-full rounded-md object-cover"
                   />
                 ) : (
                   <span>{initial}</span>
@@ -348,39 +348,39 @@ export function DaftarWargaKabarSection({
 
               {/* Glowing Online Indicator */}
               {isOnline ? (
-                <span className="absolute -bottom-1 -right-1 flex h-4 w-4">
+                <span className="absolute -bottom-0.5 -right-0.5 flex h-3.5 w-3.5">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-4 w-4 bg-emerald-500 border-2 border-white dark:border-slate-900" />
+                  <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500 border-2 border-background" />
                 </span>
               ) : (
-                <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-slate-300 dark:bg-slate-600 border-2 border-white dark:border-slate-900" />
+                <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-muted-foreground/30 border-2 border-background" />
               )}
             </div>
 
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5 flex-wrap">
-                <h4 className="text-sm font-black text-slate-900 dark:text-slate-100 truncate">
+                <h4 className="text-sm font-bold text-foreground truncate">
                   {userItem.nama_lengkap}
                 </h4>
                 {isOnline && (
-                  <span className="rounded-full bg-emerald-100 dark:bg-emerald-950/80 border border-emerald-300 dark:border-emerald-700 px-1.5 py-0.2 text-[8px] font-black text-emerald-800 dark:text-emerald-300 uppercase shrink-0 animate-pulse">
+                  <span className="rounded-md bg-emerald-500/10 border border-emerald-500/30 px-1.5 py-0.2 text-[9px] font-semibold text-emerald-600 dark:text-emerald-400 uppercase shrink-0">
                     Online
                   </span>
                 )}
                 {(userItem.is_super_admin || isSuperAdmin(userItem)) ? (
-                  <span className="rounded-full bg-amber-100 dark:bg-amber-950/80 px-1.5 py-0.2 text-[9px] font-black text-amber-900 dark:text-amber-300 border border-amber-300">
+                  <span className="rounded-md bg-secondary/15 text-secondary border border-secondary/30 px-1.5 py-0.2 text-[9px] font-semibold">
                     Super Admin
                   </span>
                 ) : (userItem.is_admin_pusat || isAdminPusat(userItem)) ? (
-                  <span className="rounded-full bg-teal-100 dark:bg-teal-950/80 px-1.5 py-0.2 text-[9px] font-black text-teal-900 dark:text-teal-300 border border-teal-300">
+                  <span className="rounded-md bg-primary/15 text-primary border border-primary/30 px-1.5 py-0.2 text-[9px] font-semibold">
                     Admin Pusat
                   </span>
                 ) : null}
               </div>
-              <span className="text-[10px] text-slate-400 block">
+              <span className="text-2xs text-muted-foreground block">
                 {isOnline ? (
-                  <span className="text-emerald-700 dark:text-emerald-400 font-bold">
-                    🟢 Sedang Aktif di Web
+                  <span className="text-emerald-600 dark:text-emerald-400 font-semibold">
+                    🟢 Aktif di Web
                   </span>
                 ) : (
                   `Bergabung ${new Date(userItem.created_at).toLocaleDateString("id-ID", {
@@ -399,14 +399,14 @@ export function DaftarWargaKabarSection({
                 {userItem.komunitas_list.slice(0, 2).map((comm) => (
                   <span
                     key={comm.id}
-                    className="inline-flex items-center gap-1 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2 py-0.5 text-[10px] font-bold text-slate-700 dark:text-slate-300 truncate max-w-full"
+                    className="inline-flex items-center gap-1 rounded-md bg-muted/60 border border-border px-2 py-0.5 text-2xs font-medium text-foreground truncate max-w-full"
                   >
                     {comm.jenis === "posyandu" ? (
-                      <HeartPulse className="h-3 w-3 text-emerald-600 shrink-0" />
+                      <HeartPulse className="h-3 w-3 text-rose-500 shrink-0" />
                     ) : comm.jenis === "satuan_paud" ? (
-                      <GraduationCap className="h-3 w-3 text-indigo-600 shrink-0" />
+                      <GraduationCap className="h-3 w-3 text-blue-500 shrink-0" />
                     ) : (
-                      <Building2 className="h-3 w-3 text-sky-600 shrink-0" />
+                      <Building2 className="h-3 w-3 text-primary shrink-0" />
                     )}
                     <span className="truncate">
                       {comm.peran} • {comm.nama}
@@ -415,29 +415,29 @@ export function DaftarWargaKabarSection({
                 ))}
               </div>
             ) : (
-              <span className="text-[10px] text-slate-400 flex items-center gap-1">
+              <span className="text-2xs text-muted-foreground flex items-center gap-1">
                 <MapPin className="h-3 w-3" /> Warga Kota Tegal
               </span>
             )}
 
-            {/* Badges Tingkatan Komunitas (RT, RW, Kelurahan, Kecamatan, Kota, Komunitas Lain) */}
+            {/* Badges Tingkatan Komunitas */}
             {userItem.categories && userItem.categories.length > 0 && (
               <div className="flex items-center gap-1 flex-wrap">
                 {userItem.categories.map((cat) => {
                   const labelMap: Record<KomunitasTierCategory, { text: string; cls: string }> = {
-                    rt: { text: "RT", cls: "bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-700" },
-                    rw: { text: "RW", cls: "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-700" },
-                    kelurahan: { text: "Kel.", cls: "bg-teal-50 dark:bg-teal-950/40 text-teal-800 dark:text-teal-300 border-teal-300 dark:border-teal-700" },
-                    kecamatan: { text: "Kec.", cls: "bg-sky-50 dark:bg-sky-950/40 text-sky-800 dark:text-sky-300 border-sky-300 dark:border-sky-700" },
-                    kota: { text: "Kota Tegal", cls: "bg-indigo-50 dark:bg-indigo-950/40 text-indigo-800 dark:text-indigo-300 border-indigo-300 dark:border-indigo-700" },
-                    komunitas_lain: { text: "Komunitas Lain", cls: "bg-purple-50 dark:bg-purple-950/40 text-purple-800 dark:text-purple-300 border-purple-300 dark:border-purple-700" },
+                    rt: { text: "RT", cls: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30" },
+                    rw: { text: "RW", cls: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30" },
+                    kelurahan: { text: "Kel.", cls: "bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-500/30" },
+                    kecamatan: { text: "Kec.", cls: "bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/30" },
+                    kota: { text: "Kota Tegal", cls: "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/30" },
+                    komunitas_lain: { text: "Komunitas Lain", cls: "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/30" },
                   };
                   const item = labelMap[cat];
                   if (!item) return null;
                   return (
                     <span
                       key={cat}
-                      className={`text-[8px] font-black uppercase px-1.5 py-0.2 rounded-md border ${item.cls}`}
+                      className={`text-[8px] font-bold uppercase px-1.5 py-0.2 rounded-md border ${item.cls}`}
                     >
                       {item.text}
                     </span>
@@ -449,17 +449,17 @@ export function DaftarWargaKabarSection({
         </div>
 
         {/* Action Buttons Bar */}
-        <div className="pt-3 mt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
+        <div className="pt-3 mt-3 border-t border-border flex items-center justify-between gap-2">
           {/* Friendship Status Action */}
           <div>
             {userItem.friendship_status === "accepted" ? (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-800 text-[11px] font-bold text-emerald-800 dark:text-emerald-300">
-                <CheckCircle2 className="h-3 w-3 text-emerald-600" />
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-primary/10 border border-primary/20 text-xs font-semibold text-primary">
+                <CheckCircle2 className="h-3 w-3" />
                 <span>Berteman</span>
               </span>
             ) : userItem.friendship_status === "pending_sent" ? (
               <div className="flex items-center gap-1">
-                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-300 text-[10px] font-bold text-amber-800 dark:text-amber-300">
+                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-secondary/15 border border-secondary/30 text-2xs font-semibold text-secondary">
                   <Clock className="h-3 w-3" />
                   <span>Terkirim</span>
                 </span>
@@ -467,7 +467,7 @@ export function DaftarWargaKabarSection({
                   type="button"
                   disabled={isLoading}
                   onClick={() => handleRespondFriendRequest(userItem, "cancel")}
-                  className="text-[10px] text-slate-400 hover:text-rose-600 underline"
+                  className="text-2xs text-muted-foreground hover:text-destructive underline cursor-pointer"
                 >
                   Batal
                 </button>
@@ -478,7 +478,7 @@ export function DaftarWargaKabarSection({
                   type="button"
                   disabled={isLoading}
                   onClick={() => handleRespondFriendRequest(userItem, "accept")}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold cursor-pointer shadow-xs"
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-primary hover:bg-primary-hover text-primary-foreground text-xs font-semibold cursor-pointer shadow-xs transition-colors"
                 >
                   {isLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <CheckCircle2 className="h-3 w-3" />}
                   <span>Terima</span>
@@ -487,7 +487,7 @@ export function DaftarWargaKabarSection({
                   type="button"
                   disabled={isLoading}
                   onClick={() => handleRespondFriendRequest(userItem, "reject")}
-                  className="p-1 rounded-xl border border-slate-200 text-slate-400 hover:text-rose-600 cursor-pointer"
+                  className="p-1 rounded-md border border-border text-muted-foreground hover:text-destructive cursor-pointer"
                   title="Tolak"
                 >
                   <XCircle className="h-3.5 w-3.5" />
@@ -498,12 +498,12 @@ export function DaftarWargaKabarSection({
                 type="button"
                 disabled={isLoading}
                 onClick={() => handleSendFriendRequest(userItem)}
-                className="inline-flex min-h-[32px] items-center gap-1 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-emerald-600 hover:text-white border border-slate-200 dark:border-slate-700 px-2.5 py-1 text-[11px] font-bold text-slate-700 dark:text-slate-200 transition-all cursor-pointer shadow-2xs group"
+                className="inline-flex min-h-[36px] items-center gap-1 rounded-md bg-muted/60 hover:bg-primary hover:text-primary-foreground border border-border px-2.5 py-1 text-xs font-semibold text-foreground transition-all cursor-pointer shadow-2xs group"
               >
                 {isLoading ? (
                   <Loader2 className="h-3 w-3 animate-spin" />
                 ) : (
-                  <UserPlus className="h-3 w-3 text-emerald-600 group-hover:text-white" />
+                  <UserPlus className="h-3 w-3 text-primary group-hover:text-primary-foreground" />
                 )}
                 <span>+ Teman</span>
               </button>
@@ -514,9 +514,9 @@ export function DaftarWargaKabarSection({
           <button
             type="button"
             onClick={() => setSelectedChatUser(userItem)}
-            className="inline-flex min-h-[32px] items-center gap-1 rounded-xl bg-emerald-700 hover:bg-emerald-800 px-3 py-1 text-[11px] font-extrabold text-white transition-all active:scale-95 cursor-pointer shadow-xs"
+            className="inline-flex min-h-[36px] items-center gap-1 rounded-md bg-primary hover:bg-primary-hover px-3 py-1 text-xs font-semibold text-primary-foreground transition-colors active:scale-95 cursor-pointer shadow-xs"
           >
-            <MessageSquare className="h-3 w-3" />
+            <MessageSquare className="h-3.5 w-3.5" />
             <span>Chat</span>
           </button>
         </div>
@@ -529,33 +529,33 @@ export function DaftarWargaKabarSection({
       {/* ========================================================= */}
       {/* 0. STATISTIK SEBARAN WARGA SATU KOMUNITAS                */}
       {/* ========================================================= */}
-      <section className="rounded-3xl border-2 border-indigo-100 dark:border-indigo-950/70 bg-gradient-to-br from-indigo-50/50 via-white to-emerald-50/30 dark:from-slate-900 dark:via-slate-900 dark:to-indigo-950/30 p-5 sm:p-6 space-y-4 shadow-sm">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-indigo-100/70 dark:border-indigo-950/80 pb-4">
+      <section className="rounded-lg border border-border bg-card p-4 sm:p-5 space-y-4 shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border pb-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-100 dark:bg-indigo-950 px-2.5 py-0.5 text-[10px] font-black text-indigo-800 dark:text-indigo-300 border border-indigo-300 dark:border-indigo-800">
-                <Users className="h-3 w-3 text-indigo-600 dark:text-indigo-400" />
+              <span className="inline-flex items-center gap-1.5 rounded-md bg-primary/10 px-2.5 py-0.5 text-2xs font-semibold text-primary border border-primary/20">
+                <Users className="h-3 w-3 text-primary" />
                 SEBARAN WARGA SATU KOMUNITAS
               </span>
-              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 dark:bg-emerald-950 px-2 py-0.5 text-[10px] font-bold text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 font-mono">
-                <CheckCircle2 className="h-3 w-3 text-emerald-600" />
+              <span className="inline-flex items-center gap-1 rounded-md bg-secondary/15 px-2 py-0.5 text-2xs font-semibold text-secondary border border-secondary/30 font-mono">
+                <CheckCircle2 className="h-3 w-3" />
                 1 Warga = 1 Hitungan
               </span>
             </div>
-            <h3 className="text-base sm:text-lg font-black tracking-tight text-slate-900 dark:text-slate-100">
+            <h3 className="text-base sm:text-lg font-bold tracking-tight text-foreground">
               Jumlah Warga Terdaftar Satu Komunitas
             </h3>
-            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed max-w-2xl">
+            <p className="text-xs text-muted-foreground leading-relaxed max-w-2xl">
               Distribusi jumlah warga satu komunitas di tingkat Kota Tegal, Kecamatan, Kelurahan, RW, RT, dan Komunitas yang lain. Warga yang sama hanya dihitung satu kali (tidak dihitung ganda jika terdaftar di beberapa komunitas).
             </p>
           </div>
 
           <div className="shrink-0 flex items-center gap-2">
-            <div className="px-3.5 py-2 rounded-2xl bg-white dark:bg-slate-800 border-2 border-indigo-200 dark:border-indigo-800 shadow-2xs text-center min-w-[110px]">
-              <span className="text-xl sm:text-2xl font-black block font-mono text-indigo-600 dark:text-indigo-400">
+            <div className="px-3.5 py-2 rounded-lg bg-background border border-border shadow-xs text-center min-w-[110px]">
+              <span className="text-xl sm:text-2xl font-bold block font-mono text-primary">
                 {rekap.totalUnique}
               </span>
-              <span className="text-[10px] text-slate-500 uppercase font-bold">
+              <span className="text-2xs text-muted-foreground uppercase font-semibold">
                 Total Warga Unik
               </span>
             </div>
@@ -571,28 +571,28 @@ export function DaftarWargaKabarSection({
                 key={card.id}
                 type="button"
                 onClick={() => setSelectedTier(isSelected ? "semua" : card.id)}
-                className={`relative flex flex-col justify-between p-3 sm:p-3.5 rounded-2xl border-2 transition-all cursor-pointer text-left group ${
+                className={`relative flex flex-col justify-between p-3 rounded-lg border transition-all cursor-pointer text-left group ${
                   isSelected
-                    ? "border-indigo-600 dark:border-indigo-500 bg-indigo-600 text-white shadow-md scale-[1.02] ring-2 ring-indigo-400/30"
-                    : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/90 hover:border-indigo-400 dark:hover:border-indigo-600 shadow-2xs hover:shadow-xs"
+                    ? "border-primary bg-primary text-primary-foreground shadow-xs ring-1 ring-primary"
+                    : "border-border bg-card hover:border-primary/50 shadow-2xs hover:shadow-xs"
                 }`}
                 title={`Klik untuk memfilter daftar warga: ${card.title}`}
               >
                 <div className="flex items-center justify-between gap-1 w-full mb-2">
                   <div
-                    className={`flex h-8 w-8 items-center justify-center rounded-xl transition-transform group-hover:scale-105 ${
+                    className={`flex h-8 w-8 items-center justify-center rounded-md transition-transform group-hover:scale-105 ${
                       isSelected
-                        ? "bg-white/20 text-white"
+                        ? "bg-primary-foreground/20 text-primary-foreground"
                         : card.iconBg + " " + card.iconColor
                     }`}
                   >
                     <card.icon className="h-4 w-4" />
                   </div>
                   <span
-                    className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded-md ${
+                    className={`text-2xs font-semibold px-1.5 py-0.5 rounded-md ${
                       isSelected
-                        ? "bg-white/20 text-white"
-                        : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                        ? "bg-primary-foreground/20 text-primary-foreground"
+                        : "bg-muted text-muted-foreground"
                     }`}
                   >
                     {card.badge}
@@ -601,22 +601,22 @@ export function DaftarWargaKabarSection({
 
                 <div className="space-y-0.5">
                   <span
-                    className={`text-lg sm:text-xl font-black font-mono block ${
-                      isSelected ? "text-white" : "text-slate-900 dark:text-slate-100"
+                    className={`text-lg sm:text-xl font-bold font-mono block ${
+                      isSelected ? "text-primary-foreground" : "text-foreground"
                     }`}
                   >
                     {card.count}
                   </span>
                   <span
-                    className={`text-xs font-bold block truncate ${
-                      isSelected ? "text-white" : "text-slate-800 dark:text-slate-200"
+                    className={`text-xs font-semibold block truncate ${
+                      isSelected ? "text-primary-foreground" : "text-foreground"
                     }`}
                   >
                     {card.title}
                   </span>
                   <span
-                    className={`text-[10px] block truncate ${
-                      isSelected ? "text-white/80" : "text-slate-400"
+                    className={`text-2xs block truncate ${
+                      isSelected ? "text-primary-foreground/80" : "text-muted-foreground"
                     }`}
                   >
                     {card.subtitle}
@@ -624,7 +624,7 @@ export function DaftarWargaKabarSection({
                 </div>
 
                 {isSelected && (
-                  <div className="mt-2 pt-1.5 border-t border-white/20 flex items-center justify-between text-[9px] font-bold text-white/90">
+                  <div className="mt-2 pt-1.5 border-t border-primary-foreground/20 flex items-center justify-between text-2xs font-semibold text-primary-foreground/90">
                     <span>Sedang Difilter</span>
                     <span>✕ Reset</span>
                   </div>
@@ -636,9 +636,9 @@ export function DaftarWargaKabarSection({
 
         {/* Filter Reset Indicator if active */}
         {selectedTier !== "semua" && (
-          <div className="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 text-xs text-indigo-900 dark:text-indigo-200 font-bold">
+          <div className="flex items-center justify-between gap-2 p-2.5 rounded-lg bg-primary/10 border border-primary/20 text-xs text-primary font-semibold">
             <div className="flex items-center gap-1.5">
-              <Filter className="h-3.5 w-3.5 text-indigo-600" />
+              <Filter className="h-3.5 w-3.5 text-primary" />
               <span>
                 Menampilkan warga pada tingkatan: <span className="underline">{tierCards.find((t) => t.id === selectedTier)?.title}</span> ({filterList(users.filter((u) => u.id !== currentUserId)).length} Warga)
               </span>
@@ -646,7 +646,7 @@ export function DaftarWargaKabarSection({
             <button
               type="button"
               onClick={() => setSelectedTier("semua")}
-              className="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-800 hover:bg-indigo-100 border border-indigo-300 dark:border-indigo-700 text-xs font-bold text-indigo-700 dark:text-indigo-300 cursor-pointer shadow-2xs"
+              className="px-2.5 py-1 rounded-md bg-background hover:bg-muted border border-border text-xs font-semibold text-foreground cursor-pointer shadow-2xs"
             >
               Tampilkan Semua Warga
             </button>
@@ -655,32 +655,32 @@ export function DaftarWargaKabarSection({
       </section>
 
       {/* Search Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 shadow-2xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-lg bg-card border border-border shadow-xs">
         <div className="space-y-0.5">
-          <h3 className="text-sm sm:text-base font-black text-slate-900 dark:text-slate-100">
+          <h3 className="text-sm sm:text-base font-bold text-foreground">
             Jejaring Warga &amp; Teman Terverifikasi
           </h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
+          <p className="text-xs text-muted-foreground">
             Temukan tetangga, kader posyandu, dan pengurus RT/RW se-Kota Tegal.
           </p>
         </div>
 
         <div className="relative min-w-[240px] sm:w-72">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Cari nama warga, posyandu, RT/RW..."
-            className="w-full min-h-[38px] rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 pl-9 pr-3 text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            className="w-full min-h-[44px] h-11 rounded-lg border border-border bg-background pl-9 pr-3 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
           />
         </div>
       </div>
 
       {/* Action Notification Feedback */}
       {actionFeedback && (
-        <div className="flex items-center gap-2 p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-300 text-xs font-bold text-emerald-900 dark:text-emerald-200">
-          <Sparkles className="h-4 w-4 text-emerald-600 shrink-0" />
+        <div className="flex items-center gap-2 p-3 rounded-lg bg-primary/10 border border-primary/20 text-xs font-semibold text-primary">
+          <Sparkles className="h-4 w-4 text-primary shrink-0" />
           <span>{actionFeedback}</span>
         </div>
       )}
@@ -690,10 +690,10 @@ export function DaftarWargaKabarSection({
         <button
           type="button"
           onClick={() => setActiveTab("semua")}
-          className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+          className={`px-3.5 py-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer ${
             activeTab === "semua"
-              ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-xs"
-              : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200"
+              ? "bg-primary text-primary-foreground shadow-xs"
+              : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"
           }`}
         >
           Semua Warga ({users.filter((u) => u.id !== currentUserId).length})
@@ -702,23 +702,23 @@ export function DaftarWargaKabarSection({
         <button
           type="button"
           onClick={() => setActiveTab("online")}
-          className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+          className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer ${
             activeTab === "online"
               ? "bg-emerald-600 text-white shadow-xs"
-              : "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 hover:bg-emerald-100"
+              : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/20"
           }`}
         >
-          <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
           <span>🟢 Sedang Online ({onlineCitizens.length})</span>
         </button>
 
         <button
           type="button"
           onClick={() => setActiveTab("teman")}
-          className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+          className={`px-3.5 py-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer ${
             activeTab === "teman"
-              ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-xs"
-              : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200"
+              ? "bg-primary text-primary-foreground shadow-xs"
+              : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"
           }`}
         >
           Teman Saya ({myFriends.length})
@@ -728,10 +728,10 @@ export function DaftarWargaKabarSection({
           <button
             type="button"
             onClick={() => setActiveTab("permintaan")}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            className={`px-3.5 py-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer ${
               activeTab === "permintaan"
-                ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-xs"
-                : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200"
+                ? "bg-primary text-primary-foreground shadow-xs"
+                : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"
             }`}
           >
             Permintaan ({incomingRequests.length + outgoingRequests.length})
@@ -746,24 +746,24 @@ export function DaftarWargaKabarSection({
         <section className="space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-bold">
-                <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-ping" />
+              <div className="flex h-7 w-7 items-center justify-center rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold">
+                <span className="h-2 w-2 rounded-full bg-emerald-500 animate-ping" />
               </div>
-              <h4 className="text-sm sm:text-base font-black text-slate-900 dark:text-slate-100">
+              <h4 className="text-sm sm:text-base font-bold text-foreground">
                 Warga Sedang Online di Website Sekarang
               </h4>
             </div>
-            <span className="rounded-full bg-emerald-100 dark:bg-emerald-950/80 border border-emerald-300 dark:border-emerald-700 px-2.5 py-0.5 text-xs font-bold text-emerald-800 dark:text-emerald-300 font-mono">
+            <span className="rounded-md bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 text-2xs font-semibold text-emerald-600 dark:text-emerald-400 font-mono">
               {onlineCitizens.length} Online
             </span>
           </div>
 
           {onlineCitizens.length === 0 ? (
-            <div className="p-8 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900 text-center space-y-1">
-              <p className="text-xs font-bold text-slate-700 dark:text-slate-300">
+            <div className="p-6 rounded-lg border border-dashed border-border bg-muted/20 text-center space-y-1">
+              <p className="text-xs font-semibold text-foreground">
                 Belum Ada Warga Lain yang Sedang Aktif
               </p>
-              <p className="text-[11px] text-slate-500">
+              <p className="text-2xs text-muted-foreground">
                 Status online akan langsung muncul secara otomatis saat warga membuka website Jarimas.
               </p>
             </div>
@@ -780,35 +780,35 @@ export function DaftarWargaKabarSection({
       {/* ========================================================= */}
       {(activeTab === "semua" || activeTab === "teman") && (
         <section className="space-y-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-teal-100 dark:bg-teal-950 text-teal-700 dark:text-teal-300 font-bold">
-              <HeartHandshake className="h-4 w-4" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/10 text-primary font-bold">
+                <HeartHandshake className="h-4 w-4" />
+              </div>
+              <h4 className="text-sm sm:text-base font-bold text-foreground">
+                Teman Saya (Sudah Berteman)
+              </h4>
             </div>
-            <h4 className="text-sm sm:text-base font-black text-slate-900 dark:text-slate-100">
-              Teman Saya (Sudah Berteman)
-            </h4>
+            <span className="rounded-md bg-primary/10 border border-primary/20 px-2 py-0.5 text-2xs font-semibold text-primary font-mono">
+              {myFriends.length} Teman
+            </span>
           </div>
-          <span className="rounded-full bg-teal-50 dark:bg-teal-950/80 border border-teal-200 dark:border-teal-800 px-2.5 py-0.5 text-xs font-bold text-teal-800 dark:text-teal-300 font-mono">
-            {myFriends.length} Teman
-          </span>
-        </div>
 
-        {myFriends.length === 0 ? (
-          <div className="p-6 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900 text-center space-y-1">
-            <p className="text-xs font-bold text-slate-700 dark:text-slate-300">
-              Belum Ada Teman yang Terhubung
-            </p>
-            <p className="text-[11px] text-slate-500">
-              Kirim permintaan pertemanan ke warga di daftar bawah untuk mulai menjalin silaturahmi.
-            </p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {myFriends.map((u) => renderUserCard(u))}
-          </div>
-        )}
-      </section>
+          {myFriends.length === 0 ? (
+            <div className="p-6 rounded-lg border border-dashed border-border bg-muted/20 text-center space-y-1">
+              <p className="text-xs font-semibold text-foreground">
+                Belum Ada Teman yang Terhubung
+              </p>
+              <p className="text-2xs text-muted-foreground">
+                Kirim permintaan pertemanan ke warga di daftar bawah untuk mulai menjalin silaturahmi.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {myFriends.map((u) => renderUserCard(u))}
+            </div>
+          )}
+        </section>
       )}
 
       {/* ========================================================= */}
@@ -819,14 +819,14 @@ export function DaftarWargaKabarSection({
           <section className="space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 font-bold">
+                <div className="flex h-7 w-7 items-center justify-center rounded-md bg-secondary/15 text-secondary font-bold">
                   <Clock className="h-4 w-4" />
                 </div>
-                <h4 className="text-sm sm:text-base font-black text-slate-900 dark:text-slate-100">
+                <h4 className="text-sm sm:text-base font-bold text-foreground">
                   Permintaan Pertemanan
                 </h4>
               </div>
-              <span className="rounded-full bg-amber-500 text-white px-2.5 py-0.5 text-xs font-bold font-mono">
+              <span className="rounded-md bg-secondary/15 border border-secondary/30 text-secondary px-2 py-0.5 text-2xs font-semibold font-mono">
                 {incomingRequests.length + outgoingRequests.length}
               </span>
             </div>
@@ -845,24 +845,24 @@ export function DaftarWargaKabarSection({
         <section className="space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-bold">
+              <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/10 text-primary font-bold">
                 <Users className="h-4 w-4" />
               </div>
-              <h4 className="text-sm sm:text-base font-black text-slate-900 dark:text-slate-100">
+              <h4 className="text-sm sm:text-base font-bold text-foreground">
                 Warga Lainnya di Kota Tegal
               </h4>
             </div>
-            <span className="rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2.5 py-0.5 text-xs font-bold text-slate-600 dark:text-slate-400 font-mono">
+            <span className="rounded-md bg-muted border border-border px-2 py-0.5 text-2xs font-semibold text-muted-foreground font-mono">
               {otherCitizens.length} Warga
             </span>
           </div>
 
           {otherCitizens.length === 0 ? (
-            <div className="p-6 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900 text-center space-y-1">
-              <p className="text-xs font-bold text-slate-700 dark:text-slate-300">
+            <div className="p-6 rounded-lg border border-dashed border-border bg-muted/20 text-center space-y-1">
+              <p className="text-xs font-semibold text-foreground">
                 Tidak Ada Warga yang Cocok
               </p>
-              <p className="text-[11px] text-slate-500">
+              <p className="text-2xs text-muted-foreground">
                 Coba gunakan kata kunci pencarian yang berbeda.
               </p>
             </div>

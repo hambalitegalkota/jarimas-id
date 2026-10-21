@@ -296,23 +296,23 @@ export function PercakapanHubSection({
       {/* 1. SUB-TABS (PERCAKAPAN PRIBADI VS PERCAKAPAN GRUP)       */}
       {/* ========================================================= */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-        <div className="flex rounded-2xl bg-slate-100 dark:bg-slate-800 p-1.5 border border-slate-200 dark:border-slate-700/80 gap-1.5">
+        <div className="flex rounded-lg bg-card p-1 border border-border gap-1 shadow-2xs">
           <button
             type="button"
             onClick={() => {
               setSubTab("pribadi");
               setShowNewChatSelector(false);
             }}
-            className={`flex-1 inline-flex min-h-[42px] items-center justify-center gap-2 rounded-xl px-4 text-xs sm:text-sm font-extrabold transition-all cursor-pointer ${
+            className={`flex-1 inline-flex min-h-[38px] items-center justify-center gap-1.5 rounded-md px-3 text-xs font-semibold transition-all cursor-pointer ${
               subTab === "pribadi"
-                ? "bg-white dark:bg-slate-900 text-emerald-800 dark:text-emerald-300 shadow-xs"
-                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100"
+                ? "bg-primary text-primary-foreground shadow-xs font-bold"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted"
             }`}
           >
-            <MessageSquare className="h-4 w-4 text-emerald-600" />
+            <MessageSquare className="h-3.5 w-3.5" />
             <span>Percakapan Pribadi</span>
             {totalUnreadDirect > 0 && (
-              <span className="rounded-full bg-amber-500 text-white px-1.5 py-0.2 text-[10px] font-mono font-black animate-pulse">
+              <span className="rounded-full bg-secondary text-secondary-foreground px-1.5 py-0.2 text-[10px] font-mono font-bold animate-pulse">
                 {totalUnreadDirect}
               </span>
             )}
@@ -324,16 +324,16 @@ export function PercakapanHubSection({
               setSubTab("grup");
               setShowNewChatSelector(false);
             }}
-            className={`flex-1 inline-flex min-h-[42px] items-center justify-center gap-2 rounded-xl px-4 text-xs sm:text-sm font-extrabold transition-all cursor-pointer ${
+            className={`flex-1 inline-flex min-h-[38px] items-center justify-center gap-1.5 rounded-md px-3 text-xs font-semibold transition-all cursor-pointer ${
               subTab === "grup"
-                ? "bg-white dark:bg-slate-900 text-indigo-800 dark:text-indigo-300 shadow-xs"
-                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100"
+                ? "bg-primary text-primary-foreground shadow-xs font-bold"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted"
             }`}
           >
-            <Users className="h-4 w-4 text-indigo-600" />
+            <Users className="h-3.5 w-3.5" />
             <span>Percakapan Grup</span>
             {kegiatanRoomsCount > 0 && (
-              <span className="rounded-full bg-emerald-600 text-white px-1.5 py-0.2 text-[10px] font-mono font-black">
+              <span className="rounded-full bg-primary-foreground/20 text-primary-foreground px-1.5 py-0.2 text-[10px] font-mono font-bold">
                 {rooms.length}
               </span>
             )}
@@ -342,17 +342,17 @@ export function PercakapanHubSection({
 
         {/* Search Bar */}
         <div className="relative flex-1 sm:max-w-xs">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={
               subTab === "pribadi"
-                ? "Cari nama kontak atau pesan..."
-                : "Cari grup posyandu/kegiatan/RT/RW..."
+                ? "Cari kontak atau pesan..."
+                : "Cari grup posyandu/kegiatan..."
             }
-            className="w-full min-h-[42px] rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 pl-10 pr-3 text-xs sm:text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:border-emerald-500 transition-all"
+            className="w-full min-h-[38px] rounded-lg border border-border bg-background pl-8.5 pr-3 text-xs text-foreground placeholder:text-muted-foreground focus:outline-hidden focus:border-primary transition-all"
           />
         </div>
       </div>
@@ -361,18 +361,18 @@ export function PercakapanHubSection({
       {/* 2. SUB-TAB KONTEN: PERCAKAPAN PRIBADI (1-ON-1 CHAT)       */}
       {/* ========================================================= */}
       {subTab === "pribadi" && (
-        <div className="space-y-3.5">
+        <div className="space-y-3">
           {/* Quick Action: Mulai Chat Baru */}
-          <div className="flex items-center justify-between p-4 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-transparent border-2 border-emerald-200/80 dark:border-emerald-900/60">
+          <div className="flex items-center justify-between p-3 sm:p-4 rounded-lg bg-card border border-border shadow-xs">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-600 text-white font-bold shadow-xs">
-                <MessageCircle className="h-5 w-5" />
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary font-bold shadow-2xs">
+                <MessageCircle className="h-4 w-4" />
               </div>
               <div>
-                <h4 className="text-xs sm:text-sm font-black text-slate-900 dark:text-slate-100">
+                <h4 className="text-xs sm:text-sm font-bold text-foreground">
                   Ingin Memulai Obrolan Baru?
                 </h4>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                <p className="text-2xs sm:text-xs text-muted-foreground">
                   Kirim pesan pribadi langsung ke tetangga, kader posyandu, atau pengurus RT/RW.
                 </p>
               </div>
@@ -381,38 +381,38 @@ export function PercakapanHubSection({
             <button
               type="button"
               onClick={() => setShowNewChatSelector(!showNewChatSelector)}
-              className="inline-flex min-h-[38px] items-center gap-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 px-3.5 py-1.5 text-xs font-extrabold text-white transition-all active:scale-95 cursor-pointer shadow-xs shrink-0"
+              className="inline-flex min-h-[36px] items-center gap-1.5 rounded-lg bg-primary hover:bg-primary-hover px-3 py-1.5 text-xs font-semibold text-primary-foreground transition-all active:scale-95 cursor-pointer shadow-xs shrink-0"
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="h-3.5 w-3.5" />
               <span>{showNewChatSelector ? "Tutup" : "Pilih Kontak"}</span>
             </button>
           </div>
 
           {/* New Chat Contact Selector Grid (if opened) */}
           {showNewChatSelector && (
-            <div className="p-4 sm:p-5 rounded-3xl border-2 border-emerald-400/80 dark:border-emerald-700 bg-white dark:bg-slate-900 space-y-3.5 shadow-md shadow-emerald-500/5 animate-in fade-in slide-in-from-top-2">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-2.5">
+            <div className="p-3 sm:p-4 rounded-lg border border-primary/30 bg-card space-y-3 shadow-sm animate-in fade-in slide-in-from-top-1">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border pb-2">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-xs font-black text-slate-900 dark:text-slate-100 uppercase tracking-wide">
+                  <span className="text-xs font-bold text-foreground uppercase tracking-wide">
                     PILIH WARGA / KADER UNTUK MEMULAI CHAT
                   </span>
                   {onlineCandidatesCount > 0 && (
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 dark:bg-emerald-950/90 border border-emerald-300 dark:border-emerald-700 px-2.5 py-0.5 text-[10px] font-black text-emerald-800 dark:text-emerald-300 shadow-2xs">
-                      <span className="relative flex h-2 w-2">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                    <span className="inline-flex items-center gap-1 rounded-md bg-primary/10 border border-primary/20 px-2 py-0.5 text-2xs font-semibold text-primary shadow-2xs">
+                      <span className="relative flex h-1.5 w-1.5">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
+                        <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary" />
                       </span>
-                      <span>{onlineCandidatesCount} Sedang Aktif di Web</span>
+                      <span>{onlineCandidatesCount} Aktif di Web</span>
                     </span>
                   )}
                 </div>
-                <span className="text-[11px] font-bold text-slate-400">
+                <span className="text-2xs font-medium text-muted-foreground">
                   {candidateCitizens.length} Kontak Tersedia
                 </span>
               </div>
 
               {/* Citizen Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 max-h-80 overflow-y-auto pr-1">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 max-h-80 overflow-y-auto pr-1">
                 {candidateCitizens.map((citizen) => {
                   const isOnline = onlineUserIds.has(citizen.id);
                   const initial = (citizen.nama_lengkap || "W")[0].toUpperCase();
@@ -425,33 +425,33 @@ export function PercakapanHubSection({
                         setSelectedDirectUser(citizen);
                         setShowNewChatSelector(false);
                       }}
-                      className="flex items-center gap-3 p-3 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-emerald-500 bg-slate-50/60 dark:bg-slate-800/40 hover:bg-emerald-50/40 dark:hover:bg-slate-800 transition-all cursor-pointer text-left group"
+                      className="flex items-center gap-2.5 p-2.5 rounded-lg border border-border hover:border-primary/50 bg-background hover:bg-muted/50 transition-all cursor-pointer text-left group"
                     >
                       <div className="relative shrink-0">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-700 text-white font-bold text-xs shadow-xs">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary font-bold text-xs shadow-2xs">
                           {citizen.avatar_url ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img
                               src={citizen.avatar_url}
                               alt={citizen.nama_lengkap}
-                              className="h-full w-full rounded-xl object-cover"
+                              className="h-full w-full rounded-lg object-cover"
                             />
                           ) : (
                             <span>{initial}</span>
                           )}
                         </div>
                         {isOnline && (
-                          <span className="absolute -bottom-0.5 -right-0.5 flex h-3 w-3">
-                            <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500 border border-white dark:border-slate-900" />
+                          <span className="absolute -bottom-0.5 -right-0.5 flex h-2.5 w-2.5">
+                            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary border border-background" />
                           </span>
                         )}
                       </div>
 
                       <div className="min-w-0 flex-1">
-                        <span className="text-xs font-black text-slate-900 dark:text-slate-100 group-hover:text-emerald-700 dark:group-hover:text-emerald-400 truncate block">
+                        <span className="text-xs font-bold text-foreground group-hover:text-primary truncate block">
                           {citizen.nama_lengkap}
                         </span>
-                        <span className="text-[10px] text-slate-400 truncate block">
+                        <span className="text-2xs text-muted-foreground truncate block">
                           {citizen.komunitas_list && citizen.komunitas_list.length > 0
                             ? citizen.komunitas_list[0].nama
                             : citizen.email || "Warga Jarimas"}
@@ -466,21 +466,21 @@ export function PercakapanHubSection({
 
           {/* Direct Chat Conversations Feed */}
           {filteredConversations.length === 0 ? (
-            <div className="rounded-3xl border-2 border-dashed border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-8 text-center space-y-3">
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600">
-                <MessageSquare className="h-6 w-6" />
+            <div className="rounded-lg border border-dashed border-border bg-card p-6 sm:p-8 text-center space-y-2.5">
+              <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <MessageSquare className="h-5 w-5" />
               </div>
-              <div className="space-y-1 max-w-sm mx-auto">
-                <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">
+              <div className="space-y-0.5 max-w-sm mx-auto">
+                <h4 className="text-xs sm:text-sm font-bold text-foreground">
                   Belum Ada Riwayat Percakapan
                 </h4>
-                <p className="text-xs text-slate-500">
+                <p className="text-2xs sm:text-xs text-muted-foreground">
                   Gunakan tombol &quot;Pilih Kontak&quot; di atas untuk memulai obrolan dengan tetangga atau kader.
                 </p>
               </div>
             </div>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               {filteredConversations.map((c) => {
                 const isPartnerOnline = isUserOnline(c.partnerId);
                 const initial = (c.partnerName || "W")[0].toUpperCase();
@@ -496,18 +496,18 @@ export function PercakapanHubSection({
                     key={c.partnerId}
                     type="button"
                     onClick={() => handleOpenDirectChatFromPartnerId(c.partnerId)}
-                    className="w-full flex items-center justify-between p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-800 hover:border-emerald-500 bg-white dark:bg-slate-900 hover:bg-emerald-50/20 dark:hover:bg-slate-800/70 transition-all cursor-pointer text-left shadow-2xs group"
+                    className="w-full flex items-center justify-between p-3 rounded-lg border border-border hover:border-primary/40 bg-card hover:bg-muted/40 transition-all cursor-pointer text-left shadow-2xs group"
                   >
-                    <div className="flex items-center gap-3.5 min-w-0 flex-1">
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
                       {/* Avatar with Live Indicator */}
                       <div className="relative shrink-0">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-tr from-emerald-600 via-teal-600 to-emerald-800 text-white font-black text-base shadow-sm border border-white dark:border-slate-800">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary font-bold text-sm shadow-2xs border border-primary/20">
                           {c.partnerAvatar ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img
                               src={c.partnerAvatar}
                               alt={c.partnerName}
-                              className="h-full w-full rounded-2xl object-cover"
+                              className="h-full w-full rounded-lg object-cover"
                             />
                           ) : (
                             <span>{initial}</span>
@@ -515,12 +515,12 @@ export function PercakapanHubSection({
                         </div>
 
                         {isPartnerOnline ? (
-                          <span className="absolute -bottom-0.5 -right-0.5 flex h-4 w-4">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                            <span className="relative inline-flex rounded-full h-4 w-4 bg-emerald-500 border-2 border-white dark:border-slate-900" />
+                          <span className="absolute -bottom-0.5 -right-0.5 flex h-3 w-3">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
+                            <span className="relative inline-flex rounded-full h-3 w-3 bg-primary border-2 border-background" />
                           </span>
                         ) : (
-                          <span className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-slate-300 dark:bg-slate-600 border-2 border-white dark:border-slate-900" />
+                          <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-muted-foreground/30 border border-background" />
                         )}
                       </div>
 
@@ -528,23 +528,23 @@ export function PercakapanHubSection({
                       <div className="min-w-0 flex-1 space-y-0.5">
                         <div className="flex items-center justify-between gap-2">
                           <div className="flex items-center gap-1.5 min-w-0">
-                            <h4 className="text-sm font-black text-slate-900 dark:text-slate-100 truncate group-hover:text-emerald-700 transition-colors">
+                            <h4 className="text-xs sm:text-sm font-bold text-foreground truncate group-hover:text-primary transition-colors">
                               {c.partnerName}
                             </h4>
                             {isPartnerOnline && (
-                              <span className="rounded-full bg-emerald-100 dark:bg-emerald-950/80 border border-emerald-300 dark:border-emerald-700 px-1.5 py-0.2 text-[9px] font-black text-emerald-800 dark:text-emerald-300 shrink-0">
+                              <span className="rounded-md bg-primary/10 border border-primary/20 px-1.5 py-0.2 text-[8px] font-bold text-primary shrink-0">
                                 Online
                               </span>
                             )}
                           </div>
-                          <span className="text-[10px] text-slate-400 font-mono shrink-0">
+                          <span className="text-2xs text-muted-foreground font-mono shrink-0">
                             {timeStr}
                           </span>
                         </div>
 
-                        <p className="text-xs text-slate-500 dark:text-slate-400 truncate flex items-center gap-1">
+                        <p className="text-xs text-muted-foreground truncate flex items-center gap-1">
                           {c.isLastMessageMine && (
-                            <span className="text-emerald-600 font-semibold text-[11px]">
+                            <span className="text-primary font-semibold text-2xs">
                               Anda:
                             </span>
                           )}
@@ -555,7 +555,7 @@ export function PercakapanHubSection({
 
                     {/* Unread Badge */}
                     {c.unreadCount > 0 && (
-                      <span className="ml-3 flex h-5 min-w-5 items-center justify-center rounded-full bg-emerald-600 px-1.5 text-[10px] font-black text-white font-mono shadow-xs shrink-0 animate-pulse">
+                      <span className="ml-2.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[9px] font-bold text-primary-foreground font-mono shadow-xs shrink-0 animate-pulse">
                         {c.unreadCount}
                       </span>
                     )}
@@ -571,27 +571,27 @@ export function PercakapanHubSection({
       {/* 3. SUB-TAB KONTEN: PERCAKAPAN GRUP                        */}
       {/* ========================================================= */}
       {subTab === "grup" && (
-        <div className="space-y-4">
+        <div className="space-y-3.5">
           {/* ======================================================= */}
           {/* BANNER UTAMA BUAT GRUP KEGIATAN (ADMIN PUSAT / SUPER)   */}
           {/* ======================================================= */}
           {canManage && (
-            <div className="relative overflow-hidden rounded-3xl border-2 border-emerald-500/40 dark:border-emerald-600/30 bg-gradient-to-r from-emerald-600/15 via-teal-600/10 to-indigo-600/15 p-5 shadow-sm space-y-3">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="flex items-start gap-3.5">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tr from-emerald-600 via-teal-600 to-emerald-700 text-white font-bold shadow-md shadow-emerald-600/20">
-                    <Sparkles className="h-6 w-6" />
+            <div className="relative overflow-hidden rounded-lg border border-primary/20 bg-primary/5 p-4 sm:p-5 shadow-xs space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-start gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold shadow-2xs">
+                    <Sparkles className="h-5 w-5" />
                   </div>
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="text-sm sm:text-base font-black text-slate-900 dark:text-slate-100">
+                  <div className="space-y-0.5">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <h3 className="text-xs sm:text-sm font-bold text-foreground">
                         Percakapan Grup Kegiatan
                       </h3>
-                      <span className="rounded-full bg-emerald-600 text-white px-2 py-0.5 text-[9px] font-black tracking-wider uppercase font-mono shadow-2xs">
+                      <span className="rounded-md bg-primary/10 text-primary border border-primary/20 px-1.5 py-0.2 text-2xs font-bold tracking-wider uppercase font-mono">
                         FORUM KEGIATAN & WARGA
                       </span>
                     </div>
-                    <p className="text-xs text-slate-600 dark:text-slate-400 max-w-xl leading-relaxed">
+                    <p className="text-xs text-muted-foreground max-w-xl leading-relaxed">
                       Buat ruang percakapan kegiatan baru (penanganan stunting, posyandu, kelompok ronda, kegiatan warga, dll) dan undang anggota untuk koordinasi obrolan bersama.
                     </p>
                   </div>
@@ -600,24 +600,24 @@ export function PercakapanHubSection({
                 <button
                   type="button"
                   onClick={() => setIsCreateGrupModalOpen(true)}
-                  className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-700 hover:to-teal-800 px-5 py-2.5 text-xs sm:text-sm font-extrabold text-white shadow-md shadow-emerald-600/20 active:scale-95 transition-all cursor-pointer shrink-0"
+                  className="inline-flex min-h-[40px] items-center justify-center gap-1.5 rounded-lg bg-primary hover:bg-primary-hover px-4 py-2 text-xs sm:text-sm font-semibold text-primary-foreground shadow-xs active:scale-95 transition-all cursor-pointer shrink-0"
                 >
                   <Plus className="h-4 w-4" />
-                  <span>Buat Grup Kegiatan Baru</span>
+                  <span>Buat Grup Baru</span>
                 </button>
               </div>
             </div>
           )}
 
           {/* Filter Pills Kategori Grup (Semua / Kegiatan / Komunitas) */}
-          <div className="flex items-center gap-2 overflow-x-auto scrollbar-none pb-1">
+          <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none pb-0.5">
             <button
               type="button"
               onClick={() => setGrupFilterTab("semua")}
-              className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all cursor-pointer whitespace-nowrap border ${
+              className={`rounded-md px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer whitespace-nowrap border ${
                 grupFilterTab === "semua"
-                  ? "bg-slate-900 dark:bg-white text-white dark:text-slate-900 border-slate-900 dark:border-white shadow-xs"
-                  : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:border-slate-300"
+                  ? "bg-primary text-primary-foreground border-primary shadow-2xs font-bold"
+                  : "bg-card text-muted-foreground border-border hover:bg-muted"
               }`}
             >
               Semua Grup ({rooms.length})
@@ -626,49 +626,49 @@ export function PercakapanHubSection({
             <button
               type="button"
               onClick={() => setGrupFilterTab("kegiatan")}
-              className={`inline-flex items-center gap-1.5 rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all cursor-pointer whitespace-nowrap border ${
+              className={`inline-flex items-center gap-1 rounded-md px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer whitespace-nowrap border ${
                 grupFilterTab === "kegiatan"
-                  ? "bg-emerald-600 text-white border-emerald-600 shadow-xs"
-                  : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:border-emerald-400"
+                  ? "bg-primary text-primary-foreground border-primary shadow-2xs font-bold"
+                  : "bg-card text-muted-foreground border-border hover:bg-muted"
               }`}
             >
-              <Sparkles className="h-3.5 w-3.5" />
+              <Sparkles className="h-3 w-3" />
               <span>Grup Kegiatan ({kegiatanRoomsCount})</span>
             </button>
 
             <button
               type="button"
               onClick={() => setGrupFilterTab("komunitas")}
-              className={`inline-flex items-center gap-1.5 rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all cursor-pointer whitespace-nowrap border ${
+              className={`inline-flex items-center gap-1 rounded-md px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer whitespace-nowrap border ${
                 grupFilterTab === "komunitas"
-                  ? "bg-indigo-600 text-white border-indigo-600 shadow-xs"
-                  : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:border-indigo-400"
+                  ? "bg-primary text-primary-foreground border-primary shadow-2xs font-bold"
+                  : "bg-card text-muted-foreground border-border hover:bg-muted"
               }`}
             >
-              <Building2 className="h-3.5 w-3.5" />
-              <span>Grup Komunitas & Posyandu ({komunitasRoomsCount})</span>
+              <Building2 className="h-3 w-3" />
+              <span>Grup Posyandu & RT/RW ({komunitasRoomsCount})</span>
             </button>
           </div>
 
           {/* Group Card Grid */}
           {filteredRooms.length === 0 ? (
-            <div className="rounded-3xl border-2 border-dashed border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-8 text-center space-y-3">
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600">
-                <Users className="h-6 w-6" />
+            <div className="rounded-lg border border-dashed border-border bg-card p-6 sm:p-8 text-center space-y-2">
+              <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <Users className="h-5 w-5" />
               </div>
-              <div className="space-y-1 max-w-sm mx-auto">
-                <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">
+              <div className="space-y-0.5 max-w-sm mx-auto">
+                <h4 className="text-xs sm:text-sm font-bold text-foreground">
                   Tidak Ada Grup yang Sesuai
                 </h4>
-                <p className="text-xs text-slate-500">
+                <p className="text-2xs sm:text-xs text-muted-foreground">
                   {canManage
-                    ? "Klik tombol 'Buat Grup Kegiatan Baru' di atas untuk memulai koordinasi kegiatan."
+                    ? "Klik tombol 'Buat Grup Baru' di atas untuk memulai koordinasi kegiatan."
                     : "Coba kata kunci pencarian lain atau jelajahi komunitas Posyandu dan RT/RW."}
                 </p>
               </div>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {filteredRooms.map((room) => {
                 const isKegiatan = room.is_kegiatan || room.jenis === "kegiatan";
 
@@ -676,29 +676,25 @@ export function PercakapanHubSection({
                   <div
                     key={room.id}
                     onClick={() => setSelectedGroupRoom(room)}
-                    className={`flex flex-col justify-between p-4 rounded-3xl border-2 transition-all cursor-pointer text-left shadow-2xs group relative ${
-                      isKegiatan
-                        ? "border-emerald-300/80 dark:border-emerald-900/60 bg-gradient-to-b from-emerald-50/30 via-white to-white dark:from-emerald-950/20 dark:via-slate-900 dark:to-slate-900 hover:border-emerald-500 hover:shadow-md hover:shadow-emerald-500/5"
-                        : "border-slate-200 dark:border-slate-800 hover:border-indigo-500 bg-white dark:bg-slate-900 hover:bg-indigo-50/20 dark:hover:bg-slate-800/70"
-                    }`}
+                    className="flex flex-col justify-between p-3.5 rounded-lg border border-border bg-card hover:border-primary/40 hover:bg-muted/30 transition-all cursor-pointer text-left shadow-2xs group relative"
                   >
-                    <div className="space-y-3 w-full">
+                    <div className="space-y-2.5 w-full">
                       {/* Top Badges & Meta */}
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex items-center gap-1.5 flex-wrap">
                           {isKegiatan ? (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 dark:bg-emerald-950/90 border border-emerald-300 dark:border-emerald-700 px-2.5 py-0.5 text-[9px] font-black text-emerald-800 dark:text-emerald-300 uppercase tracking-wide">
-                              <Sparkles className="h-3 w-3" />
+                            <span className="inline-flex items-center gap-1 rounded-md bg-secondary/15 border border-secondary/30 px-2 py-0.5 text-2xs font-bold text-secondary uppercase tracking-wide">
+                              <Sparkles className="h-2.5 w-2.5" />
                               GRUP KEGIATAN
                             </span>
                           ) : (
-                            <span className="rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2 py-0.5 text-[9px] font-bold text-slate-600 dark:text-slate-400 uppercase">
+                            <span className="rounded-md bg-muted border border-border px-1.5 py-0.5 text-2xs font-semibold text-muted-foreground uppercase">
                               {room.jenis.replace("_", " ")}
                             </span>
                           )}
 
                           {room.is_member && (
-                            <span className="rounded-full bg-indigo-50 dark:bg-indigo-950/80 border border-indigo-200 dark:border-indigo-800 px-2 py-0.5 text-[9px] font-black text-indigo-800 dark:text-indigo-300">
+                            <span className="rounded-md bg-primary/10 border border-primary/20 px-1.5 py-0.5 text-2xs font-bold text-primary">
                               Tergabung
                             </span>
                           )}
@@ -711,53 +707,43 @@ export function PercakapanHubSection({
                               type="button"
                               onClick={(e) => handleOpenManageMembers(e, room)}
                               title="Kelola & Tambah Anggota"
-                              className="p-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 transition-colors cursor-pointer"
+                              className="p-1 rounded-md bg-muted text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors cursor-pointer"
                             >
-                              <UserPlus className="h-3.5 w-3.5" />
+                              <UserPlus className="h-3 w-3" />
                             </button>
 
                             <button
                               type="button"
                               onClick={(e) => handleDeleteKegiatanRoom(e, room)}
                               title="Hapus Grup Kegiatan"
-                              className="p-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950 transition-colors cursor-pointer"
+                              className="p-1 rounded-md bg-muted text-muted-foreground hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
                             >
-                              <Trash2 className="h-3.5 w-3.5" />
+                              <Trash2 className="h-3 w-3" />
                             </button>
                           </div>
                         )}
                       </div>
 
                       {/* Header Title & Icon */}
-                      <div className="flex items-start gap-3">
-                        <div
-                          className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-white font-bold shadow-xs ${
-                            isKegiatan
-                              ? "bg-gradient-to-tr from-amber-600 via-emerald-600 to-teal-700"
-                              : room.jenis === "posyandu"
-                              ? "bg-gradient-to-tr from-rose-600 to-pink-700"
-                              : room.jenis === "satuan_paud"
-                              ? "bg-gradient-to-tr from-blue-600 to-indigo-800"
-                              : "bg-gradient-to-tr from-indigo-600 to-indigo-800"
-                          }`}
-                        >
+                      <div className="flex items-start gap-2.5">
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary font-bold shadow-2xs border border-primary/20">
                           {isKegiatan ? (
-                            <Sparkles className="h-5 w-5" />
+                            <Sparkles className="h-4 w-4" />
                           ) : room.jenis === "posyandu" ? (
-                            <HeartPulse className="h-5 w-5" />
+                            <HeartPulse className="h-4 w-4" />
                           ) : room.jenis === "satuan_paud" ? (
-                            <GraduationCap className="h-5 w-5" />
+                            <GraduationCap className="h-4 w-4" />
                           ) : (
-                            <Building2 className="h-5 w-5" />
+                            <Building2 className="h-4 w-4" />
                           )}
                         </div>
 
                         <div className="min-w-0 flex-1">
-                          <h4 className="text-sm font-black text-slate-900 dark:text-slate-100 group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors line-clamp-1">
+                          <h4 className="text-xs sm:text-sm font-bold text-foreground group-hover:text-primary transition-colors line-clamp-1">
                             {room.nama}
                           </h4>
-                          <p className="text-[11px] text-slate-400 line-clamp-1">
-                            {room.jumlah_anggota} Pengguna Tergabung •{" "}
+                          <p className="text-2xs text-muted-foreground line-clamp-1">
+                            {room.jumlah_anggota} Pengguna •{" "}
                             {room.creator_name ? `Oleh ${room.creator_name}` : room.kelurahan || "Kota Tegal"}
                           </p>
                         </div>
@@ -765,22 +751,22 @@ export function PercakapanHubSection({
 
                       {/* Room Description Preview */}
                       {room.deskripsi && (
-                        <p className="text-[11px] text-slate-500 line-clamp-2 italic leading-relaxed">
+                        <p className="text-2xs text-muted-foreground line-clamp-1 italic">
                           &quot;{room.deskripsi}&quot;
                         </p>
                       )}
 
                       {/* Last Message Preview */}
-                      <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 text-xs text-slate-500">
+                      <div className="p-2 rounded-md bg-muted/60 border border-border text-xs text-muted-foreground">
                         {room.last_message ? (
                           <p className="line-clamp-1">
-                            <strong className="text-slate-700 dark:text-slate-300 font-semibold">
+                            <strong className="text-foreground font-semibold">
                               {room.last_message.sender_name}:
                             </strong>{" "}
                             {room.last_message.pesan}
                           </p>
                         ) : (
-                          <span className="italic text-slate-400">
+                          <span className="italic text-muted-foreground">
                             Belum ada pesan terbaru. Klik untuk memulai obrolan!
                           </span>
                         )}
@@ -788,17 +774,11 @@ export function PercakapanHubSection({
                     </div>
 
                     {/* Bottom Action Footer */}
-                    <div className="pt-3 mt-3 flex items-center justify-between border-t border-slate-100 dark:border-slate-800/80 text-xs">
-                      <span className="text-[10px] font-bold text-slate-400 uppercase">
+                    <div className="pt-2 mt-2 flex items-center justify-between border-t border-border text-2xs">
+                      <span className="font-semibold text-muted-foreground uppercase">
                         {isKegiatan ? "Forum Kegiatan" : "Forum Komunitas"}
                       </span>
-                      <span
-                        className={`font-bold group-hover:translate-x-0.5 transition-transform inline-flex items-center gap-0.5 ${
-                          isKegiatan
-                            ? "text-emerald-600 dark:text-emerald-400"
-                            : "text-indigo-600 dark:text-indigo-400"
-                        }`}
-                      >
+                      <span className="font-bold text-primary group-hover:translate-x-0.5 transition-transform inline-flex items-center gap-0.5">
                         Buka Obrolan <ArrowRight className="h-3 w-3" />
                       </span>
                     </div>

@@ -44,28 +44,28 @@ export function KabarMainTabs({
   };
 
   return (
-    <div className="flex rounded-2xl sm:rounded-3xl bg-white dark:bg-slate-900 p-1.5 border-2 border-slate-200 dark:border-slate-800 shadow-sm gap-1.5">
+    <div className="flex rounded-lg bg-card p-1 border border-border shadow-xs gap-1">
       {/* Tab 1: Kabar Warga */}
       <button
         type="button"
         onClick={() => handleTabChange("kabar")}
         disabled={isPending}
         className={cn(
-          "flex-1 inline-flex min-h-[46px] items-center justify-center gap-2 rounded-xl sm:rounded-2xl px-3 py-2 text-xs sm:text-sm font-black transition-all cursor-pointer active:scale-98 text-center",
+          "flex-1 inline-flex min-h-[40px] items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer active:scale-98 text-center",
           currentTab === "kabar"
-            ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/20"
-            : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800"
+            ? "bg-primary text-primary-foreground shadow-xs font-bold"
+            : "text-muted-foreground hover:text-foreground hover:bg-muted"
         )}
       >
-        <MessageSquare className="h-4 w-4 shrink-0" />
+        <MessageSquare className="h-3.5 w-3.5 shrink-0" />
         <span>Kabar Warga</span>
         {totalFeedCount > 0 && (
           <span
             className={cn(
               "hidden sm:inline-flex rounded-full px-1.5 py-0.2 text-[10px] font-mono",
               currentTab === "kabar"
-                ? "bg-emerald-800/80 text-emerald-100"
-                : "bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300"
+                ? "bg-primary-foreground/20 text-primary-foreground"
+                : "bg-muted text-muted-foreground"
             )}
           >
             {totalFeedCount}
@@ -79,17 +79,17 @@ export function KabarMainTabs({
         onClick={() => handleTabChange("percakapan")}
         disabled={isPending}
         className={cn(
-          "flex-1 inline-flex min-h-[46px] items-center justify-center gap-2 rounded-xl sm:rounded-2xl px-3 py-2 text-xs sm:text-sm font-black transition-all cursor-pointer active:scale-98 text-center relative",
+          "flex-1 inline-flex min-h-[40px] items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer active:scale-98 text-center relative",
           currentTab === "percakapan"
-            ? "bg-emerald-700 text-white shadow-md shadow-emerald-700/20"
-            : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800"
+            ? "bg-primary text-primary-foreground shadow-xs font-bold"
+            : "text-muted-foreground hover:text-foreground hover:bg-muted"
         )}
       >
-        <MessageCircle className="h-4 w-4 shrink-0" />
+        <MessageCircle className="h-3.5 w-3.5 shrink-0" />
         <span>Percakapan</span>
         {effectiveUnread > 0 ? (
           <span className="relative flex items-center justify-center">
-            <span className="rounded-full bg-rose-500 text-white px-2 py-0.5 text-[10px] font-mono font-black shadow-xs ring-1 ring-white/50 animate-pulse">
+            <span className="rounded-full bg-secondary text-secondary-foreground px-1.5 py-0.2 text-[10px] font-mono font-bold shadow-xs animate-pulse">
               {effectiveUnread > 99 ? "99+" : effectiveUnread}
             </span>
           </span>
@@ -98,8 +98,8 @@ export function KabarMainTabs({
             className={cn(
               "hidden sm:inline-flex rounded-full px-1.5 py-0.2 text-[9px] font-bold uppercase",
               currentTab === "percakapan"
-                ? "bg-emerald-900/60 text-emerald-100"
-                : "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800"
+                ? "bg-primary-foreground/20 text-primary-foreground"
+                : "bg-primary/10 text-primary border border-primary/20"
             )}
           >
             Chat
@@ -113,21 +113,21 @@ export function KabarMainTabs({
         onClick={() => handleTabChange("warga")}
         disabled={isPending}
         className={cn(
-          "flex-1 inline-flex min-h-[46px] items-center justify-center gap-2 rounded-xl sm:rounded-2xl px-3 py-2 text-xs sm:text-sm font-black transition-all cursor-pointer active:scale-98 text-center",
+          "flex-1 inline-flex min-h-[40px] items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer active:scale-98 text-center",
           currentTab === "warga"
-            ? "bg-teal-700 text-white shadow-md shadow-teal-700/20"
-            : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800"
+            ? "bg-primary text-primary-foreground shadow-xs font-bold"
+            : "text-muted-foreground hover:text-foreground hover:bg-muted"
         )}
       >
-        <Users className="h-4 w-4 shrink-0" />
+        <Users className="h-3.5 w-3.5 shrink-0" />
         <span>Daftar Warga</span>
         {totalCitizensCount > 0 && (
           <span
             className={cn(
               "hidden sm:inline-flex rounded-full px-1.5 py-0.2 text-[10px] font-mono",
               currentTab === "warga"
-                ? "bg-teal-900/60 text-teal-100"
-                : "bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300"
+                ? "bg-primary-foreground/20 text-primary-foreground"
+                : "bg-muted text-muted-foreground"
             )}
           >
             {totalCitizensCount}

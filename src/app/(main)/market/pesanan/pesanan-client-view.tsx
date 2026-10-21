@@ -51,31 +51,31 @@ export function PesananClientView({
     switch (status) {
       case "pending":
         return (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 dark:bg-amber-950/40 border-2 border-amber-500 px-3 py-1 text-xs font-bold text-amber-700 dark:text-amber-300">
-            <Clock className="h-3.5 w-3.5 text-amber-600" /> MENUNGGU BAYAR
+          <span className="inline-flex items-center gap-1 rounded-md bg-secondary/10 border border-secondary/30 px-2 py-0.5 text-2xs font-semibold text-secondary">
+            <Clock className="h-3 w-3" /> Menunggu Bayar
           </span>
         );
       case "diproses":
         return (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 dark:bg-blue-950/40 border-2 border-blue-500 px-3 py-1 text-xs font-bold text-blue-700 dark:text-blue-300">
-            <Package className="h-3.5 w-3.5 text-blue-600" /> DIPROSES
+          <span className="inline-flex items-center gap-1 rounded-md bg-primary/10 border border-primary/30 px-2 py-0.5 text-2xs font-semibold text-primary">
+            <Package className="h-3 w-3" /> Diproses
           </span>
         );
       case "dikirim":
         return (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-50 dark:bg-purple-950/40 border-2 border-purple-500 px-3 py-1 text-xs font-bold text-purple-700 dark:text-purple-300">
-            <Truck className="h-3.5 w-3.5 text-purple-600" /> DIKIRIM
+          <span className="inline-flex items-center gap-1 rounded-md bg-sky-500/10 border border-sky-500/30 px-2 py-0.5 text-2xs font-semibold text-sky-600 dark:text-sky-400">
+            <Truck className="h-3 w-3" /> Dikirim
           </span>
         );
       case "selesai":
         return (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 border-2 border-emerald-500 px-3 py-1 text-xs font-bold text-emerald-700 dark:text-emerald-300">
-            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" /> SELESAI
+          <span className="inline-flex items-center gap-1 rounded-md bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 text-2xs font-semibold text-emerald-600 dark:text-emerald-400">
+            <CheckCircle2 className="h-3 w-3" /> Selesai
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 px-3 py-1 text-xs font-bold text-slate-700 dark:text-slate-300">
+          <span className="inline-flex items-center gap-1 rounded-md bg-muted border border-border px-2 py-0.5 text-2xs font-semibold text-muted-foreground">
             {status.toUpperCase()}
           </span>
         );
@@ -85,18 +85,18 @@ export function PesananClientView({
   return (
     <div className="flex flex-col flex-1 px-4 py-6 sm:px-6 md:px-8 max-w-5xl mx-auto w-full gap-6">
       {/* Header Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-5">
-        <div className="space-y-2">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-border pb-5">
+        <div className="space-y-1.5">
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1 rounded-full border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/50 px-3 py-1 text-xs font-bold text-blue-700 dark:text-blue-300">
+            <span className="inline-flex items-center gap-1 rounded-md border border-primary/30 bg-primary/10 px-2.5 py-0.5 text-2xs font-bold text-primary">
               TRANSAKSI RESMI
             </span>
-            <span className="text-xs font-mono text-slate-500">KOTA TEGAL</span>
+            <span className="text-2xs font-mono text-muted-foreground uppercase tracking-wider">KOTA TEGAL</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
             Pesanan Saya
           </h1>
-          <p className="text-sm text-slate-600 dark:text-slate-400 max-w-md">
+          <p className="text-xs sm:text-sm text-muted-foreground max-w-md">
             Pantau status pengadaan sarana posyandu dan instruksi pembayaran.
           </p>
         </div>
@@ -104,69 +104,72 @@ export function PesananClientView({
         <div className="flex items-center gap-2">
           <Link
             href="/market"
-            className="inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 px-4 text-sm font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 transition-colors shadow-xs"
+            className="inline-flex min-h-[44px] h-11 items-center gap-2 rounded-lg bg-card border border-border px-4 text-xs font-semibold text-foreground hover:bg-muted/70 hover:border-primary/40 transition-colors shadow-xs"
           >
-            <ArrowLeft className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+            <ArrowLeft className="h-4 w-4 text-primary" />
             <span>Katalog Sarana</span>
           </Link>
         </div>
       </div>
 
       {/* Filter Status Tabs */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
-        {STATUS_FILTERS.map((f) => (
-          <button
-            key={f.value}
-            onClick={() => setActiveFilter(f.value)}
-            className={cn(
-              "inline-flex shrink-0 items-center min-h-[44px] rounded-xl px-4 py-2 text-sm font-bold transition-all cursor-pointer",
-              activeFilter === f.value
-                ? "bg-blue-700 text-white font-bold shadow-xs border-2 border-blue-700"
-                : "bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50"
-            )}
-          >
-            {f.label}
-          </button>
-        ))}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+        {STATUS_FILTERS.map((f) => {
+          const isActive = activeFilter === f.value;
+          return (
+            <button
+              key={f.value}
+              onClick={() => setActiveFilter(f.value)}
+              className={cn(
+                "inline-flex shrink-0 items-center min-h-[44px] h-11 rounded-lg px-4 text-xs font-semibold transition-all cursor-pointer shadow-xs",
+                isActive
+                  ? "bg-primary text-primary-foreground shadow-xs"
+                  : "bg-card border border-border text-muted-foreground hover:text-foreground hover:bg-muted"
+              )}
+            >
+              {f.label}
+            </button>
+          );
+        })}
       </div>
 
       {/* List Pesanan */}
       {filteredPesanan.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-900 p-10 text-center space-y-4 shadow-xs">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-400">
-            <ClipboardList className="h-7 w-7 stroke-[1.5px]" />
+        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border bg-card p-10 text-center space-y-4 shadow-xs">
+          <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-border bg-muted/60 text-muted-foreground">
+            <ClipboardList className="h-6 w-6 stroke-[1.5px]" />
           </div>
-          <div className="space-y-1.5 max-w-sm">
-            <h3 className="text-base font-bold tracking-tight text-slate-900 dark:text-slate-100">
-              BELUM ADA PESANAN
+          <div className="space-y-1 max-w-sm">
+            <h3 className="text-sm font-bold tracking-tight text-foreground uppercase">
+              Belum Ada Pesanan
             </h3>
-            <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+            <p className="text-xs text-muted-foreground leading-relaxed">
               Anda belum memiliki transaksi pesanan pada kategori status ini.
             </p>
           </div>
           <Link
             href="/market"
-            className="inline-flex min-h-[48px] items-center rounded-xl bg-blue-700 hover:bg-blue-800 text-white px-5 text-sm font-bold shadow-sm transition-all cursor-pointer active:scale-98"
+            className="inline-flex min-h-[44px] h-11 items-center rounded-lg bg-primary hover:bg-primary-hover text-primary-foreground px-5 text-xs font-semibold shadow-xs transition-all active:scale-98"
           >
-            MULAI BELANJA
+            Mulai Belanja
           </Link>
         </div>
       ) : (
-        <div className="space-y-4 pb-16">
+        <div className="space-y-3 pb-16">
           {filteredPesanan.map((pesanan) => {
             const prod = pesanan.produk;
             return (
               <div
                 key={pesanan.id}
-                className="overflow-hidden rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 space-y-4 transition-colors hover:border-blue-500 shadow-xs"
+                className="overflow-hidden rounded-lg border border-border bg-card p-4 sm:p-5 space-y-3.5 transition-colors hover:border-primary/50 shadow-xs"
               >
                 {/* Header Card: ID & Status */}
-                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-3">
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/60 pb-3">
                   <div className="flex items-center gap-2 font-mono">
-                    <span className="text-xs font-bold text-slate-900 dark:text-slate-100">
+                    <span className="text-xs font-bold text-foreground">
                       #{pesanan.id.slice(0, 8)}
                     </span>
-                    <span className="text-xs text-slate-500" suppressHydrationWarning>
+                    <span className="text-2xs text-muted-foreground" suppressHydrationWarning>
                       •{" "}
                       {new Date(pesanan.created_at).toLocaleDateString(
                         "id-ID",
@@ -184,10 +187,10 @@ export function PesananClientView({
                 </div>
 
                 {/* Konten Produk & Info Penerima */}
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 items-center">
                   {/* Item Produk */}
                   <div className="flex items-center gap-3.5 sm:col-span-2">
-                    <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800">
+                    <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg border border-border bg-muted/40">
                       {prod?.gambar_url && (
                         <Image
                           src={prod.gambar_url}
@@ -198,15 +201,15 @@ export function PesananClientView({
                       )}
                     </div>
                     <div className="space-y-1 min-w-0">
-                      <h4 className="line-clamp-2 text-base font-bold text-slate-900 dark:text-slate-100">
+                      <h4 className="line-clamp-2 text-sm font-semibold text-foreground">
                         {prod?.nama || "Produk Jarimas Market"}
                       </h4>
-                      <p className="text-xs font-mono text-slate-500">
+                      <p className="text-xs font-mono text-muted-foreground">
                         {pesanan.jumlah} Unit x {formatRupiah(prod?.harga || 0)}
                       </p>
                       {pesanan.nomor_resi && (
-                        <div className="inline-flex items-center gap-1 text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400">
-                          <Truck className="h-3.5 w-3.5" />
+                        <div className="inline-flex items-center gap-1 text-2xs font-mono font-semibold text-emerald-600 dark:text-emerald-400">
+                          <Truck className="h-3 w-3" />
                           <span>RESI: {pesanan.nomor_resi}</span>
                         </div>
                       )}
@@ -214,31 +217,31 @@ export function PesananClientView({
                   </div>
 
                   {/* Total & Tombol Aksi */}
-                  <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between border-t sm:border-t-0 sm:border-l border-slate-100 dark:border-slate-800 pt-3 sm:pt-0 sm:pl-4">
+                  <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between border-t sm:border-t-0 sm:border-l border-border/60 pt-3 sm:pt-0 sm:pl-4 gap-2">
                     <div className="text-left sm:text-right">
-                      <span className="text-xs font-bold text-slate-500 block">
-                        TOTAL TAGIHAN
+                      <span className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider block">
+                        Total Tagihan
                       </span>
-                      <span className="text-base sm:text-lg font-bold font-mono text-blue-700 dark:text-blue-400">
+                      <span className="text-base font-bold font-mono text-primary">
                         {formatRupiah(pesanan.total_harga)}
                       </span>
                     </div>
 
                     <button
                       onClick={() => setSelectedPesananModal(pesanan)}
-                      className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-4 text-xs font-bold text-slate-800 dark:text-slate-200 hover:bg-slate-100 active:scale-95 transition-colors cursor-pointer"
+                      className="inline-flex min-h-[44px] h-11 items-center gap-1.5 rounded-lg border border-border bg-muted/50 px-3.5 text-xs font-semibold text-foreground hover:bg-muted hover:border-primary/40 active:scale-98 transition-colors cursor-pointer"
                     >
-                      <Info className="h-4 w-4 text-blue-600" />
-                      <span>RINCIAN</span>
+                      <Info className="h-3.5 w-3.5 text-primary" />
+                      <span>Rincian</span>
                     </button>
                   </div>
                 </div>
 
                 {/* Alamat Pengiriman Singkat */}
-                <div className="flex items-center gap-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 px-3.5 py-2.5 text-xs text-slate-600 dark:text-slate-400">
-                  <MapPin className="h-4 w-4 shrink-0 text-slate-500" />
+                <div className="flex items-center gap-2 rounded-lg bg-muted/40 border border-border/60 px-3 py-2 text-2xs text-muted-foreground">
+                  <MapPin className="h-3.5 w-3.5 shrink-0 text-primary" />
                   <span className="line-clamp-1">
-                    Penerima: <strong className="text-slate-900 dark:text-slate-100">{pesanan.nama_penerima}</strong> ({pesanan.nomor_hp}) — {pesanan.alamat_lengkap}, {pesanan.kelurahan}, {pesanan.kecamatan}
+                    Penerima: <strong className="text-foreground font-semibold">{pesanan.nama_penerima}</strong> ({pesanan.nomor_hp}) — {pesanan.alamat_lengkap}, {pesanan.kelurahan}, {pesanan.kecamatan}
                   </span>
                 </div>
               </div>
@@ -251,81 +254,82 @@ export function PesananClientView({
       {selectedPesananModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-in fade-in duration-200">
           <div
-            className="fixed inset-0 bg-black/60 backdrop-blur-xs"
+            className="fixed inset-0 bg-background/80 backdrop-blur-xs"
             onClick={() => setSelectedPesananModal(null)}
           />
 
-          <div className="relative w-full max-w-lg max-h-[min(90dvh,calc(100dvh-2.5rem))] flex flex-col rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl z-10 animate-in zoom-in-95 duration-200 overflow-hidden my-auto">
+          <div className="relative w-full max-w-lg max-h-[min(90dvh,calc(100dvh-2.5rem))] flex flex-col rounded-lg border border-border bg-card shadow-xl z-10 animate-in zoom-in-95 duration-200 overflow-hidden my-auto">
             {/* Header Modal */}
-            <div className="flex items-center justify-between p-5 pb-4 border-b border-slate-100 dark:border-slate-800 shrink-0 bg-white dark:bg-slate-900">
+            <div className="flex items-center justify-between p-4 border-b border-border shrink-0 bg-card">
               <div>
-                <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
+                <h3 className="text-sm sm:text-base font-bold text-foreground">
                   Rincian Pesanan #{selectedPesananModal.id.slice(0, 8)}
                 </h3>
-                <p className="text-xs font-mono text-slate-500">
+                <p className="text-2xs font-mono text-muted-foreground">
                   STATUS: {selectedPesananModal.status_pembayaran.toUpperCase()}
                 </p>
               </div>
               <button
                 onClick={() => setSelectedPesananModal(null)}
-                className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 dark:border-slate-700 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer font-bold"
+                className="flex h-9 w-9 items-center justify-center rounded-lg border border-border text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer font-bold text-sm transition-colors"
+                aria-label="Tutup"
               >
                 ✕
               </button>
             </div>
 
             {/* Scrollable Body */}
-            <div className="p-5 pb-8 overflow-y-auto flex-1 space-y-5 overscroll-contain">
+            <div className="p-4 sm:p-5 overflow-y-auto flex-1 space-y-4 overscroll-contain">
               {/* Instruksi Pembayaran jika Pending */}
               {selectedPesananModal.status_pembayaran === "pending" && (
-                <div className="rounded-2xl border-2 border-amber-500/40 bg-amber-50/50 dark:bg-amber-950/20 p-5 space-y-3.5">
-                  <div className="flex items-center gap-2 text-sm font-bold text-amber-800 dark:text-amber-300">
-                    <Clock className="h-4 w-4 text-amber-600" />
+                <div className="rounded-lg border border-secondary/30 bg-secondary/10 p-4 space-y-3">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-secondary">
+                    <Clock className="h-4 w-4" />
                     <span>Selesaikan Pembayaran</span>
                   </div>
 
                   {selectedPesananModal.metode_pembayaran === "qris" ? (
-                    <div className="flex flex-col items-center justify-center space-y-2 rounded-xl bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 p-4 text-center">
-                      <QrCode className="h-36 w-36 text-slate-900 dark:text-slate-100" />
-                      <p className="text-xs font-bold text-slate-900 dark:text-slate-100">
+                    <div className="flex flex-col items-center justify-center space-y-2 rounded-lg bg-card border border-border p-4 text-center">
+                      <QrCode className="h-32 w-32 text-foreground" />
+                      <p className="text-xs font-bold text-foreground">
                         QRIS RESMI JARIMAS KOTA TEGAL
                       </p>
-                      <p className="text-xs text-slate-500">
+                      <p className="text-2xs text-muted-foreground">
                         BCA Mobile, Mandiri Livin, GoPay, OVO, Dana, ShopeePay.
                       </p>
                     </div>
                   ) : (
-                    <div className="rounded-xl bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 p-4 space-y-2 text-sm">
-                      <div className="flex items-center gap-2 text-slate-900 dark:text-slate-100 font-bold">
-                        <Building2 className="h-4 w-4 text-blue-600" />
+                    <div className="rounded-lg bg-card border border-border p-3.5 space-y-2 text-xs">
+                      <div className="flex items-center gap-1.5 text-foreground font-semibold">
+                        <Building2 className="h-3.5 w-3.5 text-primary" />
                         <span>Rekening Transfer:</span>
                       </div>
                       {selectedPesananModal.metode_pembayaran === "transfer_bca" && (
-                        <div>
-                          <div className="text-lg font-bold font-mono text-blue-700 dark:text-blue-400">
+                        <div className="space-y-0.5">
+                          <div className="text-base font-bold font-mono text-primary">
                             138-092-8172
                           </div>
-                          <div className="text-xs text-slate-600 dark:text-slate-400">
+                          <div className="text-2xs text-muted-foreground">
                             Bank BCA a.n. Jarimas Peduli Anak
                           </div>
                         </div>
                       )}
                       {selectedPesananModal.metode_pembayaran === "transfer_mandiri" && (
-                        <div>
-                          <div className="text-lg font-bold font-mono text-blue-700 dark:text-blue-400">
+                        <div className="space-y-0.5">
+                          <div className="text-base font-bold font-mono text-primary">
                             139-00-2918273-1
                           </div>
-                          <div className="text-xs text-slate-600 dark:text-slate-400">
+                          <div className="text-2xs text-muted-foreground">
                             Bank Mandiri a.n. Jarimas Official
                           </div>
                         </div>
                       )}
                       {selectedPesananModal.metode_pembayaran === "transfer_bri" && (
-                        <div>
-                          <div className="text-lg font-bold font-mono text-blue-700 dark:text-blue-400">
+                        <div className="space-y-0.5">
+                          <div className="text-base font-bold font-mono text-primary">
                             0102-01-092837-50-1
                           </div>
-                          <div className="text-xs text-slate-600 dark:text-slate-400">
+                          <div className="text-2xs text-muted-foreground">
                             Bank BRI a.n. Posyandu Jarimas
                           </div>
                         </div>
@@ -333,9 +337,9 @@ export function PesananClientView({
                     </div>
                   )}
 
-                  <div className="flex items-center justify-between border-t border-amber-200 dark:border-amber-900/50 pt-3 text-sm font-bold">
-                    <span className="text-slate-600 dark:text-slate-400">Nominal Tagihan:</span>
-                    <span className="text-lg text-blue-700 dark:text-blue-400 font-mono">
+                  <div className="flex items-center justify-between border-t border-secondary/20 pt-2.5 text-xs font-semibold">
+                    <span className="text-muted-foreground">Nominal Tagihan:</span>
+                    <span className="text-base text-secondary font-bold font-mono">
                       {formatRupiah(selectedPesananModal.total_harga)}
                     </span>
                   </div>
@@ -343,22 +347,22 @@ export function PesananClientView({
               )}
 
               {/* Info Lengkap Pengiriman */}
-              <div className="space-y-2 text-sm">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+              <div className="space-y-1.5 text-xs">
+                <h4 className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">
                   Detail Penerima &amp; Alamat
                 </h4>
-                <div className="rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 p-4 space-y-1.5">
-                  <div className="font-bold text-slate-900 dark:text-slate-100">
+                <div className="rounded-lg border border-border bg-card p-3.5 space-y-1.5">
+                  <div className="font-semibold text-foreground">
                     {selectedPesananModal.nama_penerima} ({selectedPesananModal.nomor_hp})
                   </div>
-                  <div className="text-slate-600 dark:text-slate-400 text-xs">
+                  <div className="text-muted-foreground text-xs">
                     {selectedPesananModal.alamat_lengkap}
                   </div>
-                  <div className="text-slate-600 dark:text-slate-400 text-xs">
+                  <div className="text-muted-foreground text-2xs">
                     Kel. {selectedPesananModal.kelurahan}, Kec. {selectedPesananModal.kecamatan}, Kota Tegal
                   </div>
                   {selectedPesananModal.catatan && (
-                    <div className="text-blue-700 dark:text-blue-400 pt-1 text-xs font-medium">
+                    <div className="text-primary pt-1 text-2xs font-medium">
                       Catatan: &quot;{selectedPesananModal.catatan}&quot;
                     </div>
                   )}
@@ -368,7 +372,7 @@ export function PesananClientView({
               <div className="pt-2">
                 <button
                   onClick={() => setSelectedPesananModal(null)}
-                  className="flex min-h-[48px] w-full items-center justify-center rounded-xl bg-blue-700 hover:bg-blue-800 text-white text-base font-bold transition-colors cursor-pointer shadow-sm active:scale-98"
+                  className="flex min-h-[44px] h-11 w-full items-center justify-center rounded-lg bg-primary hover:bg-primary-hover text-primary-foreground text-xs font-semibold transition-colors cursor-pointer shadow-xs active:scale-98"
                 >
                   Tutup Rincian
                 </button>

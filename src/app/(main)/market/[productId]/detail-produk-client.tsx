@@ -60,20 +60,20 @@ export function DetailProdukClient({ produk }: DetailProdukClientProps) {
   };
 
   return (
-    <div className="flex flex-col flex-1 px-4 py-6 sm:px-6 md:px-8 max-w-4xl mx-auto w-full gap-6">
+    <div className="flex flex-col flex-1 px-4 py-5 sm:px-6 md:px-8 max-w-4xl mx-auto w-full gap-5">
       {/* Back Navigation Bar */}
       <div className="flex items-center justify-between">
         <Link
           href="/market"
-          className="inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 px-4 text-sm font-bold text-slate-700 dark:text-slate-300 transition-all hover:bg-slate-50 hover:border-slate-300 shadow-xs"
+          className="inline-flex min-h-[44px] h-11 items-center gap-2 rounded-lg bg-card border border-border px-3.5 text-xs sm:text-sm font-semibold text-foreground transition-colors hover:bg-muted shadow-2xs"
         >
-          <ArrowLeft className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+          <ArrowLeft className="h-4 w-4 text-primary" />
           <span>Kembali ke Katalog</span>
         </Link>
 
         <button
           onClick={handleShare}
-          className="inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 px-4 text-sm font-bold text-slate-700 dark:text-slate-300 transition-all hover:bg-slate-50 shadow-xs cursor-pointer"
+          className="inline-flex min-h-[44px] h-11 items-center gap-2 rounded-lg bg-card border border-border px-3.5 text-xs sm:text-sm font-semibold text-foreground transition-colors hover:bg-muted shadow-2xs cursor-pointer"
         >
           <Share2 className="h-4 w-4" />
           <span>{isCopied ? "Tersalin!" : "Bagikan"}</span>
@@ -81,9 +81,9 @@ export function DetailProdukClient({ produk }: DetailProdukClientProps) {
       </div>
 
       {/* Main Grid: Gambar & Info Produk */}
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 pb-16">
+      <div className="grid grid-cols-1 gap-5 md:grid-cols-2 pb-16">
         {/* Gambar Produk */}
-        <div className="relative aspect-square w-full overflow-hidden rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900">
+        <div className="relative aspect-square w-full overflow-hidden rounded-lg border border-border bg-muted">
           <Image
             src={
               produk.gambar_url ||
@@ -96,92 +96,92 @@ export function DetailProdukClient({ produk }: DetailProdukClientProps) {
             className="object-cover"
           />
 
-          <div className="absolute top-3 left-3 flex items-center gap-1.5 rounded-full bg-white/95 dark:bg-slate-900/95 border border-slate-200 dark:border-slate-700 px-3 py-1 text-xs font-bold text-slate-800 dark:text-slate-200 shadow-sm backdrop-blur-xs">
-            <Tag className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+          <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 rounded-md bg-background/90 border border-border px-2.5 py-1 text-2xs font-semibold text-foreground shadow-2xs backdrop-blur-xs">
+            <Tag className="h-3 w-3 text-primary" />
             <span>{produk.kategori}</span>
           </div>
 
-          <div className="absolute top-3 right-3">
+          <div className="absolute top-2.5 right-2.5">
             {isOutOfStock ? (
-              <span className="inline-flex items-center gap-1 rounded-full bg-rose-600 px-3 py-1 text-xs font-bold text-white shadow-sm">
+              <span className="inline-flex items-center gap-1 rounded-md bg-destructive text-destructive-foreground px-2 py-0.5 text-2xs font-semibold shadow-xs">
                 HABIS
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-600 px-3 py-1 text-xs font-bold text-white shadow-sm">
-                <CheckCircle2 className="h-3.5 w-3.5" /> STOK: {produk.stok}
+              <span className="inline-flex items-center gap-1 rounded-md bg-primary text-primary-foreground px-2 py-0.5 text-2xs font-semibold shadow-xs">
+                <CheckCircle2 className="h-3 w-3" /> STOK: {produk.stok}
               </span>
             )}
           </div>
         </div>
 
         {/* Informasi Detail & Pemesanan */}
-        <div className="flex flex-col justify-between space-y-6 rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 md:p-8 shadow-xs">
-          <div className="space-y-4">
-            <div className="space-y-2">
+        <div className="flex flex-col justify-between space-y-4 rounded-lg border border-border bg-card p-5 sm:p-6 shadow-xs">
+          <div className="space-y-3">
+            <div className="space-y-1.5">
               <div className="flex items-center gap-2">
-                <span className="inline-flex items-center gap-1 rounded-full border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/50 px-3 py-1 text-xs font-bold text-blue-700 dark:text-blue-300">
+                <span className="inline-flex items-center gap-1 rounded-md border border-primary/20 bg-primary/10 px-2.5 py-0.5 text-2xs font-semibold text-primary">
                   JARIMAS MARKET
                 </span>
-                <span className="text-xs font-mono text-slate-500">KOTA TEGAL</span>
+                <span className="text-2xs font-mono text-muted-foreground">KOTA TEGAL</span>
               </div>
-              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
                 {produk.nama}
               </h1>
             </div>
 
             {/* Harga */}
-            <div className="rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 p-4">
-              <span className="text-xs font-bold text-slate-500 block uppercase">
-                HARGA KATALOG SATUAN
+            <div className="rounded-lg bg-muted/40 border border-border p-3.5">
+              <span className="text-2xs font-semibold text-muted-foreground block uppercase">
+                Harga Katalog Satuan
               </span>
-              <div className="text-2xl sm:text-3xl font-bold font-mono text-blue-700 dark:text-blue-400">
+              <div className="text-xl sm:text-2xl font-bold font-mono text-primary">
                 {formatRupiah(produk.harga)}
               </div>
             </div>
 
             {/* Deskripsi */}
-            <div className="space-y-1.5">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+            <div className="space-y-1">
+              <h3 className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Deskripsi Produk
               </h3>
-              <p className="text-sm sm:text-base leading-relaxed text-slate-600 dark:text-slate-400 whitespace-pre-line">
+              <p className="text-xs sm:text-sm leading-relaxed text-muted-foreground whitespace-pre-line">
                 {produk.deskripsi}
               </p>
             </div>
 
             {/* Spesifikasi Tambahan */}
             {produk.berat_gram && (
-              <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 pt-1">
-                <Scale className="h-4 w-4 text-slate-500" />
+              <div className="flex items-center gap-2 text-xs text-muted-foreground pt-0.5">
+                <Scale className="h-3.5 w-3.5 text-muted-foreground" />
                 <span>
-                  Estimasi Berat: <strong className="text-slate-900 dark:text-slate-100 font-mono font-bold">{produk.berat_gram} gram</strong>
+                  Estimasi Berat: <strong className="text-foreground font-mono font-bold">{produk.berat_gram} gram</strong>
                 </span>
               </div>
             )}
           </div>
 
           {/* Bagian Counter Kuantitas & Tombol Checkout */}
-          <div className="space-y-4 border-t border-slate-100 dark:border-slate-800 pt-4">
+          <div className="space-y-3.5 border-t border-border pt-3.5">
             {/* Kuantitas Selector */}
             <div className="flex items-center justify-between">
-              <span className="text-sm font-bold text-slate-900 dark:text-slate-100">
+              <span className="text-xs sm:text-sm font-semibold text-foreground">
                 Jumlah Pesanan:
               </span>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
                 <button
                   onClick={handleDecrease}
                   disabled={jumlah <= 1 || isOutOfStock}
-                  className="flex h-11 w-11 items-center justify-center rounded-xl border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 font-mono font-bold text-slate-900 dark:text-slate-100 transition-all hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer active:scale-95"
+                  className="flex h-11 w-11 items-center justify-center rounded-lg border border-border bg-background font-mono font-bold text-foreground transition-colors hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer active:scale-95"
                 >
                   <Minus className="h-4 w-4" />
                 </button>
-                <span className="w-8 text-center text-lg font-mono font-bold text-slate-900 dark:text-slate-100">
+                <span className="w-8 text-center text-base font-mono font-bold text-foreground">
                   {jumlah}
                 </span>
                 <button
                   onClick={handleIncrease}
                   disabled={jumlah >= produk.stok || isOutOfStock}
-                  className="flex h-11 w-11 items-center justify-center rounded-xl border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 font-mono font-bold text-slate-900 dark:text-slate-100 transition-all hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer active:scale-95"
+                  className="flex h-11 w-11 items-center justify-center rounded-lg border border-border bg-background font-mono font-bold text-foreground transition-colors hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer active:scale-95"
                 >
                   <Plus className="h-4 w-4" />
                 </button>
@@ -189,11 +189,11 @@ export function DetailProdukClient({ produk }: DetailProdukClientProps) {
             </div>
 
             {/* Total Perhitungan */}
-            <div className="flex items-center justify-between rounded-xl bg-slate-50 dark:bg-slate-800/60 p-4 border border-slate-200 dark:border-slate-700">
-              <span className="text-sm font-bold text-slate-600 dark:text-slate-400">
+            <div className="flex items-center justify-between rounded-lg bg-muted/40 p-3 border border-border">
+              <span className="text-xs font-semibold text-muted-foreground">
                 Total Pembayaran:
               </span>
-              <span className="text-xl font-bold font-mono text-blue-700 dark:text-blue-400">
+              <span className="text-lg font-bold font-mono text-primary">
                 {formatRupiah(totalHarga)}
               </span>
             </div>
@@ -202,25 +202,25 @@ export function DetailProdukClient({ produk }: DetailProdukClientProps) {
             <button
               onClick={handleCheckout}
               disabled={isOutOfStock}
-              className="flex min-h-[52px] w-full items-center justify-center gap-2 rounded-xl bg-blue-700 hover:bg-blue-800 px-6 text-base font-bold uppercase tracking-wider text-white shadow-md transition-all active:scale-98 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              className="flex min-h-[44px] h-11 w-full items-center justify-center gap-2 rounded-lg bg-primary hover:bg-primary-hover px-4 text-xs sm:text-sm font-semibold text-primary-foreground shadow-xs transition-colors active:scale-98 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
-              <ShoppingBag className="h-5 w-5" />
+              <ShoppingBag className="h-4 w-4" />
               <span>
                 {isOutOfStock
                   ? "STOK SEDANG HABIS"
-                  : "PESAN SEKARANG & ISI ALAMAT"}
+                  : "Pesan Sekarang & Isi Alamat"}
               </span>
             </button>
 
             {/* Info Keamanan & Garansi */}
-            <div className="grid grid-cols-2 gap-2 text-center pt-1 text-xs text-slate-600 dark:text-slate-400">
-              <div className="flex items-center justify-center gap-2 p-2 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700">
-                <ShieldCheck className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                <span className="font-bold">100% TERSTANDAR</span>
+            <div className="grid grid-cols-2 gap-2 text-center pt-0.5 text-2xs text-muted-foreground">
+              <div className="flex items-center justify-center gap-1.5 p-2 rounded-lg bg-muted/30 border border-border">
+                <ShieldCheck className="h-3.5 w-3.5 text-primary" />
+                <span className="font-semibold">100% Terstandar</span>
               </div>
-              <div className="flex items-center justify-center gap-2 p-2 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700">
-                <Truck className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                <span className="font-bold">KIRIM KOTA TEGAL</span>
+              <div className="flex items-center justify-center gap-1.5 p-2 rounded-lg bg-muted/30 border border-border">
+                <Truck className="h-3.5 w-3.5 text-secondary" />
+                <span className="font-semibold">Kirim Kota Tegal</span>
               </div>
             </div>
           </div>

@@ -238,27 +238,25 @@ export function GroupChatModal({
 
   return (
     <>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/70 backdrop-blur-xs animate-in fade-in duration-200">
         <div
-          className="relative flex flex-col w-full max-w-lg h-[88vh] max-h-[680px] rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200"
+          className="relative flex flex-col w-full max-w-lg h-[88vh] max-h-[680px] rounded-lg border border-border bg-card shadow-xl overflow-hidden animate-in zoom-in-95 duration-200"
           role="dialog"
           aria-modal="true"
         >
-          {/* ========================================================= */}
-          {/* HEADER GRUP CHAT                                          */}
-          {/* ========================================================= */}
-          <div className="flex items-center justify-between px-4 py-3 border-b-2 border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/90 shrink-0">
+          {/* HEADER GRUP CHAT */}
+          <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/30 shrink-0">
             <div className="flex items-center gap-3 min-w-0">
               {/* Group Icon */}
               <div
-                className={`flex h-11 w-11 items-center justify-center rounded-2xl text-white font-black text-base shadow-sm border border-white dark:border-slate-800 shrink-0 ${
+                className={`flex h-10 w-10 items-center justify-center rounded-md font-bold text-sm shrink-0 border ${
                   isKegiatan
-                    ? "bg-gradient-to-tr from-amber-600 via-emerald-600 to-teal-700"
+                    ? "bg-secondary/15 text-secondary border-secondary/30"
                     : room.jenis === "posyandu"
-                    ? "bg-gradient-to-tr from-rose-600 via-pink-600 to-rose-700"
+                    ? "bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/30"
                     : room.jenis === "satuan_paud"
-                    ? "bg-gradient-to-tr from-blue-600 via-indigo-600 to-blue-800"
-                    : "bg-gradient-to-tr from-indigo-600 via-blue-600 to-indigo-800"
+                    ? "bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/30"
+                    : "bg-primary/15 text-primary border-primary/30"
                 }`}
               >
                 {isKegiatan ? (
@@ -275,16 +273,16 @@ export function GroupChatModal({
               {/* Group Title & Info */}
               <div className="min-w-0">
                 <div className="flex items-center gap-1.5 min-w-0">
-                  <h3 className="text-sm sm:text-base font-black text-slate-900 dark:text-slate-100 truncate">
+                  <h3 className="text-sm sm:text-base font-bold text-foreground truncate">
                     {room.nama}
                   </h3>
                   {isKegiatan && (
-                    <span className="rounded-full bg-emerald-100 dark:bg-emerald-950/80 border border-emerald-300 dark:border-emerald-700 px-1.5 py-0.2 text-[9px] font-black text-emerald-800 dark:text-emerald-300 shrink-0">
+                    <span className="rounded-md bg-secondary/15 border border-secondary/30 px-1.5 py-0.5 text-2xs font-semibold text-secondary shrink-0">
                       Grup Kegiatan
                     </span>
                   )}
                 </div>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1.5 truncate">
+                <p className="text-2xs text-muted-foreground flex items-center gap-1.5 truncate">
                   <span>{room.jumlah_anggota} Anggota</span>
                   <span>•</span>
                   {isKegiatan ? (
@@ -295,22 +293,22 @@ export function GroupChatModal({
                   {room.creator_name && (
                     <>
                       <span>•</span>
-                      <span className="text-slate-400">oleh {room.creator_name}</span>
+                      <span className="text-muted-foreground/80">oleh {room.creator_name}</span>
                     </>
                   )}
                 </p>
               </div>
             </div>
 
-            {/* Header Actions: Kelola Anggota, Hapus Grup & Tutup */}
+            {/* Header Actions */}
             <div className="flex items-center gap-1.5 shrink-0">
               <button
                 type="button"
                 onClick={() => setShowMembersModal(true)}
-                className="inline-flex h-8 items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2.5 text-[11px] font-extrabold text-slate-700 dark:text-slate-200 hover:border-emerald-500 transition-all cursor-pointer shadow-2xs"
+                className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-border bg-background px-2.5 text-xs font-semibold text-foreground hover:bg-muted transition-colors cursor-pointer shadow-2xs"
                 title="Kelola & Lihat Anggota"
               >
-                <Users className="h-3.5 w-3.5 text-emerald-600" />
+                <Users className="h-3.5 w-3.5 text-primary" />
                 <span className="hidden sm:inline">Anggota ({room.jumlah_anggota})</span>
               </button>
 
@@ -319,7 +317,7 @@ export function GroupChatModal({
                   type="button"
                   onClick={handleDeleteGroup}
                   title="Hapus Grup Kegiatan Ini"
-                  className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950 transition-colors cursor-pointer"
+                  className="flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-background text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
                 >
                   <Trash2 className="h-3.5 w-3.5" />
                 </button>
@@ -329,32 +327,30 @@ export function GroupChatModal({
                 type="button"
                 onClick={onClose}
                 aria-label="Tutup Obrolan Grup"
-                className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+                className="flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-background text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
           </div>
 
-          {/* ========================================================= */}
-          {/* MESSAGES BODY                                             */}
-          {/* ========================================================= */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-3.5 bg-gradient-to-b from-slate-50/50 to-white dark:from-slate-950 dark:to-slate-900">
+          {/* MESSAGES BODY */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-background/50">
             {isLoading ? (
-              <div className="flex flex-col items-center justify-center h-full gap-2 text-slate-400">
-                <Loader2 className="h-7 w-7 animate-spin text-emerald-600" />
-                <span className="text-xs font-semibold">Memuat pesan grup...</span>
+              <div className="flex flex-col items-center justify-center h-full gap-2 text-muted-foreground">
+                <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                <span className="text-xs font-medium">Memuat pesan grup...</span>
               </div>
             ) : messages.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-center px-4 space-y-3">
-                <div className="flex h-14 w-14 items-center justify-center rounded-3xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 border border-emerald-200 dark:border-emerald-800">
-                  <Sparkles className="h-7 w-7 animate-pulse" />
+                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary border border-primary/20">
+                  <Sparkles className="h-6 w-6 animate-pulse" />
                 </div>
                 <div className="space-y-1 max-w-xs">
-                  <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">
+                  <h4 className="text-sm font-bold text-foreground">
                     {isKegiatan ? "Percakapan Grup Kegiatan" : "Obrolan Grup Komunitas"}
                   </h4>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                  <p className="text-xs text-muted-foreground leading-relaxed">
                     {isKegiatan
                       ? "Ruang koordinasi kegiatan telah siap. Kirim pesan pembuka atau diskusikan agenda bersama tim terundang!"
                       : "Belum ada pesan di grup ini. Kirim pesan pertama untuk berdiskusi dengan sesama anggota komunitas!"}
@@ -368,7 +364,7 @@ export function GroupChatModal({
                       key={idx}
                       type="button"
                       onClick={() => handleQuickGreeting(greeting)}
-                      className="rounded-full bg-white dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-emerald-950 border border-slate-200 dark:border-slate-700 hover:border-emerald-300 px-3 py-1 text-[11px] font-semibold text-slate-700 dark:text-slate-300 transition-all cursor-pointer shadow-2xs active:scale-95"
+                      className="rounded-md bg-card hover:bg-muted border border-border px-2.5 py-1 text-2xs font-medium text-foreground transition-colors cursor-pointer shadow-2xs active:scale-95"
                     >
                       {greeting}
                     </button>
@@ -396,13 +392,13 @@ export function GroupChatModal({
                     >
                       {/* Avatar */}
                       {!isMe && (
-                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-700 text-white font-bold text-xs shadow-xs">
+                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-primary/15 text-primary font-bold text-2xs border border-primary/20 shadow-2xs">
                           {msg.profiles?.avatar_url ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img
                               src={msg.profiles.avatar_url}
                               alt={authorName}
-                              className="h-full w-full rounded-xl object-cover"
+                              className="h-full w-full rounded-md object-cover"
                             />
                           ) : (
                             <span>{authorInitial}</span>
@@ -412,19 +408,19 @@ export function GroupChatModal({
 
                       {/* Bubble */}
                       <div
-                        className={`max-w-[82%] sm:max-w-[75%] rounded-2xl px-4 py-2.5 shadow-2xs text-xs sm:text-sm leading-relaxed ${
+                        className={`max-w-[82%] sm:max-w-[75%] rounded-lg px-3.5 py-2 shadow-xs text-xs sm:text-sm leading-relaxed ${
                           isMe
-                            ? "bg-gradient-to-tr from-emerald-600 via-teal-600 to-emerald-700 text-white rounded-tr-none font-medium"
-                            : "bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-tl-none border border-slate-200/80 dark:border-slate-700"
+                            ? "bg-primary text-primary-foreground rounded-tr-xs font-medium"
+                            : "bg-card text-card-foreground rounded-tl-xs border border-border"
                         }`}
                       >
                         {!isMe && (
                           <div className="flex items-center gap-1.5 mb-1 flex-wrap">
-                            <span className="text-[11px] font-black text-slate-900 dark:text-slate-100">
+                            <span className="text-2xs font-bold text-foreground">
                               {authorName}
                             </span>
                             {roleBadge && (
-                              <span className="rounded-full bg-slate-200 dark:bg-slate-700 px-1.5 py-0.2 text-[9px] font-bold text-slate-600 dark:text-slate-300">
+                              <span className="rounded-md bg-muted px-1.5 py-0.5 text-2xs font-medium text-muted-foreground">
                                 {roleBadge}
                               </span>
                             )}
@@ -432,8 +428,8 @@ export function GroupChatModal({
                         )}
                         <p className="whitespace-pre-wrap break-words">{msg.pesan}</p>
                         <div
-                          className={`flex items-center justify-end gap-1 text-[10px] mt-1 ${
-                            isMe ? "text-emerald-100" : "text-slate-400"
+                          className={`flex items-center justify-end gap-1 text-2xs mt-1 ${
+                            isMe ? "text-primary-foreground/75" : "text-muted-foreground"
                           }`}
                         >
                           <span>{timeStr}</span>
@@ -447,17 +443,15 @@ export function GroupChatModal({
             )}
           </div>
 
-          {/* ========================================================= */}
-          {/* QUICK SUGGESTIONS BAR                                     */}
-          {/* ========================================================= */}
+          {/* QUICK SUGGESTIONS BAR */}
           {messages.length > 0 && (
-            <div className="flex items-center gap-1.5 px-3 py-1.5 overflow-x-auto scrollbar-none border-t border-slate-100 dark:border-slate-800/80 bg-slate-50/80 dark:bg-slate-900/60">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 overflow-x-auto scrollbar-none border-t border-border bg-muted/30">
               {quickGreetings.slice(0, 3).map((greeting, idx) => (
                 <button
                   key={idx}
                   type="button"
                   onClick={() => handleQuickGreeting(greeting)}
-                  className="whitespace-nowrap rounded-full bg-white dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-emerald-950 border border-slate-200 dark:border-slate-700 px-2.5 py-0.5 text-[10px] font-semibold text-slate-600 dark:text-slate-300 transition-colors cursor-pointer shrink-0"
+                  className="whitespace-nowrap rounded-md bg-card hover:bg-muted border border-border px-2 py-0.5 text-2xs font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer shrink-0"
                 >
                   {greeting}
                 </button>
@@ -465,12 +459,10 @@ export function GroupChatModal({
             </div>
           )}
 
-          {/* ========================================================= */}
-          {/* INPUT FORM                                                */}
-          {/* ========================================================= */}
+          {/* INPUT FORM */}
           <form
             onSubmit={handleSendMessage}
-            className="flex items-center gap-2 p-3 border-t-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shrink-0"
+            className="flex items-center gap-2 p-3 border-t border-border bg-card shrink-0"
           >
             <input
               ref={inputRef}
@@ -478,7 +470,7 @@ export function GroupChatModal({
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
               placeholder={`Tulis pesan untuk grup ${room.nama}...`}
-              className="flex-1 min-h-[42px] rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3.5 text-xs sm:text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="flex-1 min-h-[44px] h-11 rounded-lg border border-border bg-background px-3.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
               disabled={isSending}
             />
 
@@ -486,7 +478,7 @@ export function GroupChatModal({
               type="submit"
               disabled={!inputMessage.trim() || isSending}
               aria-label="Kirim Pesan Grup"
-              className="inline-flex min-h-[42px] min-w-[42px] items-center justify-center rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white transition-all active:scale-95 cursor-pointer disabled:cursor-not-allowed shadow-xs"
+              className="inline-flex min-h-[44px] h-11 min-w-[44px] w-11 items-center justify-center rounded-lg bg-primary hover:bg-primary-hover disabled:opacity-50 text-primary-foreground transition-all active:scale-95 cursor-pointer disabled:cursor-not-allowed shadow-xs"
             >
               {isSending ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -497,8 +489,6 @@ export function GroupChatModal({
           </form>
         </div>
       </div>
-
-      {/* Modal Kelola Anggota Grup */}
       <ManageGrupMembersModal
         isOpen={showMembersModal}
         onClose={() => setShowMembersModal(false)}

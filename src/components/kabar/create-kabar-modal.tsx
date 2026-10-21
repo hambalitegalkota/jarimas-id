@@ -84,9 +84,9 @@ export function CreateKabarModal({
           setIsOpen(true);
         }}
         aria-label="Buat Kabar Baru"
-        className="fixed bottom-20 left-1/2 -translate-x-1/2 z-40 flex min-h-[48px] h-12 items-center justify-center gap-2 rounded-full bg-blue-700 hover:bg-blue-800 px-6 text-base font-bold text-white shadow-xl transition-all active:scale-95 sm:bottom-22 cursor-pointer whitespace-nowrap"
+        className="fixed bottom-20 left-1/2 -translate-x-1/2 z-40 flex min-h-[44px] h-11 items-center justify-center gap-2 rounded-full bg-primary hover:bg-primary-hover px-5 text-sm font-bold text-white shadow-lg transition-all active:scale-95 sm:bottom-22 cursor-pointer whitespace-nowrap"
       >
-        <Plus className="h-5 w-5 stroke-[2.5px]" />
+        <Plus className="h-4 w-4 stroke-[2.5px]" />
         <span>Bagikan Kabar</span>
       </button>
 
@@ -108,18 +108,18 @@ export function CreateKabarModal({
           />
 
           {/* Modal Container */}
-          <div className="relative w-full max-w-lg max-h-[92dvh] sm:max-h-[85dvh] flex flex-col rounded-t-3xl sm:rounded-3xl border-2 border-slate-200 bg-white shadow-2xl z-10 animate-in slide-in-from-bottom-5 sm:zoom-in-95 duration-200 overflow-hidden my-0 sm:my-auto">
+          <div className="relative w-full max-w-lg max-h-[92dvh] sm:max-h-[85dvh] flex flex-col rounded-t-2xl sm:rounded-lg border border-border bg-card shadow-2xl z-10 animate-in slide-in-from-bottom-5 sm:zoom-in-95 duration-200 overflow-hidden my-0 sm:my-auto">
             {/* Modal Header */}
-            <div className="flex items-center justify-between p-5 pb-4 border-b-2 border-slate-100 shrink-0 bg-white">
+            <div className="flex items-center justify-between p-4 border-b border-border shrink-0 bg-card">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 text-blue-700">
-                  <Sparkles className="h-5 w-5" />
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                  <Sparkles className="h-4 w-4" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-slate-900 leading-tight">
+                  <h3 className="text-base font-bold text-foreground leading-tight">
                     Bagikan Kabar Warga
                   </h3>
-                  <p className="text-sm font-medium text-slate-500">
+                  <p className="text-xs text-muted-foreground">
                     Sampaikan pengumuman atau catatan publik
                   </p>
                 </div>
@@ -127,34 +127,34 @@ export function CreateKabarModal({
               <button
                 type="button"
                 onClick={() => !isPending && setIsOpen(false)}
-                className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-colors cursor-pointer"
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-border text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
               >
-                <X className="h-5 w-5" />
+                <X className="h-4 w-4" />
               </button>
             </div>
 
             {/* Modal Scrollable Body */}
-            <div className="p-5 sm:p-6 pb-12 overflow-y-auto flex-1 space-y-5 overscroll-contain bg-slate-50/50">
+            <div className="p-4 sm:p-5 pb-8 overflow-y-auto flex-1 space-y-4 overscroll-contain bg-background">
               {/* Error Message */}
               {errorMessage && (
-                <div className="flex items-start gap-3 rounded-2xl border-2 border-rose-300 bg-rose-50 p-4 text-sm font-bold text-rose-900">
-                  <AlertCircle className="h-5 w-5 shrink-0 text-rose-600 mt-0.5" />
+                <div className="flex items-start gap-2.5 rounded-lg border border-rose-300 bg-rose-50 p-3 text-xs font-semibold text-rose-900">
+                  <AlertCircle className="h-4 w-4 shrink-0 text-rose-600 mt-0.5" />
                   <span>{errorMessage}</span>
                 </div>
               )}
 
               {/* Form */}
-              <form onSubmit={handleSubmit} className="space-y-5">
+              <form onSubmit={handleSubmit} className="space-y-4">
                 {komunitasNama && (
-                  <div className="flex items-center gap-2 p-3 rounded-xl bg-blue-50 border border-blue-200 text-xs font-bold text-blue-900">
-                    <Building2 className="h-4 w-4 text-blue-700 shrink-0" />
+                  <div className="flex items-center gap-2 p-2.5 rounded-lg bg-primary/10 border border-primary/20 text-xs font-semibold text-primary">
+                    <Building2 className="h-3.5 w-3.5 text-primary shrink-0" />
                     <span>Postingan ini akan diterbitkan di komunitas: <strong>{komunitasNama}</strong></span>
                   </div>
                 )}
 
                 {/* Textarea Konten */}
-                <div className="space-y-2">
-                  <label className="text-base font-bold text-slate-900 block leading-snug">
+                <div className="space-y-1.5">
+                  <label className="text-xs sm:text-sm font-bold text-foreground block">
                     Tuliskan Berita / Informasi <span className="text-rose-600">*</span>
                   </label>
                   <textarea
@@ -164,30 +164,30 @@ export function CreateKabarModal({
                     rows={4}
                     required
                     maxLength={2000}
-                    className="w-full rounded-2xl border-2 border-slate-300 bg-white p-4 text-base text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:outline-hidden resize-none leading-relaxed"
+                    className="w-full rounded-lg border border-border bg-background p-3 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-hidden resize-none leading-relaxed"
                   />
-                  <div className="flex justify-end text-xs font-semibold text-slate-500">
+                  <div className="flex justify-end text-2xs font-medium text-muted-foreground">
                     <span>{konten.length}/2000 Karakter</span>
                   </div>
                 </div>
 
                 {/* Visibilitas Selector */}
-                <div className="space-y-2">
-                  <label className="text-base font-bold text-slate-900 block leading-snug">
+                <div className="space-y-1.5">
+                  <label className="text-xs sm:text-sm font-bold text-foreground block">
                     Visibilitas Postingan
                   </label>
-                  <div className="grid grid-cols-3 gap-2.5">
+                  <div className="grid grid-cols-3 gap-2">
                     <button
                       type="button"
                       onClick={() => setVisibilitas("publik")}
                       className={cn(
-                        "flex min-h-[50px] flex-col items-center justify-center gap-1 rounded-xl border-2 p-2.5 text-sm font-bold transition-all cursor-pointer",
+                        "flex min-h-[44px] flex-col items-center justify-center gap-0.5 rounded-lg border p-2 text-xs font-semibold transition-all cursor-pointer",
                         visibilitas === "publik"
-                          ? "border-blue-600 bg-blue-50 text-blue-950 ring-2 ring-blue-600/20 shadow-xs"
-                          : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                          ? "border-primary bg-primary/10 text-primary font-bold shadow-2xs"
+                          : "border-border bg-card text-muted-foreground hover:bg-muted"
                       )}
                     >
-                      <Globe className="h-4 w-4 text-blue-700" />
+                      <Globe className="h-3.5 w-3.5 text-primary" />
                       <span>Publik</span>
                     </button>
 
@@ -195,13 +195,13 @@ export function CreateKabarModal({
                       type="button"
                       onClick={() => setVisibilitas("teman")}
                       className={cn(
-                        "flex min-h-[50px] flex-col items-center justify-center gap-1 rounded-xl border-2 p-2.5 text-sm font-bold transition-all cursor-pointer",
+                        "flex min-h-[44px] flex-col items-center justify-center gap-0.5 rounded-lg border p-2 text-xs font-semibold transition-all cursor-pointer",
                         visibilitas === "teman"
-                          ? "border-blue-600 bg-blue-50 text-blue-950 ring-2 ring-blue-600/20 shadow-xs"
-                          : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                          ? "border-primary bg-primary/10 text-primary font-bold shadow-2xs"
+                          : "border-border bg-card text-muted-foreground hover:bg-muted"
                       )}
                     >
-                      <Users className="h-4 w-4 text-blue-600" />
+                      <Users className="h-3.5 w-3.5 text-primary" />
                       <span>Teman</span>
                     </button>
 
@@ -209,30 +209,30 @@ export function CreateKabarModal({
                       type="button"
                       onClick={() => setVisibilitas("komunitas")}
                       className={cn(
-                        "flex min-h-[50px] flex-col items-center justify-center gap-1 rounded-xl border-2 p-2.5 text-sm font-bold transition-all cursor-pointer",
+                        "flex min-h-[44px] flex-col items-center justify-center gap-0.5 rounded-lg border p-2 text-xs font-semibold transition-all cursor-pointer",
                         visibilitas === "komunitas"
-                          ? "border-blue-600 bg-blue-50 text-blue-950 ring-2 ring-blue-600/20 shadow-xs"
-                          : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                          ? "border-primary bg-primary/10 text-primary font-bold shadow-2xs"
+                          : "border-border bg-card text-muted-foreground hover:bg-muted"
                       )}
                     >
-                      <Building2 className="h-4 w-4 text-amber-600" />
+                      <Building2 className="h-3.5 w-3.5 text-primary" />
                       <span>Komunitas</span>
                     </button>
                   </div>
                 </div>
 
                 {/* Opsi Nonaktifkan Komentar */}
-                <div className="flex items-center justify-between rounded-2xl border-2 border-slate-200 bg-white p-4 shadow-xs">
-                  <div className="flex items-start gap-3 pr-2">
-                    <MessageSquareOff className="h-5 w-5 text-slate-500 shrink-0 mt-0.5" />
+                <div className="flex items-center justify-between rounded-lg border border-border bg-card p-3 shadow-2xs">
+                  <div className="flex items-start gap-2.5 pr-2">
+                    <MessageSquareOff className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
                     <div className="space-y-0.5">
                       <label
                         htmlFor="disable-comments-toggle"
-                        className="text-sm font-bold text-slate-900 cursor-pointer block"
+                        className="text-xs sm:text-sm font-semibold text-foreground cursor-pointer block"
                       >
                         Nonaktifkan Komentar
                       </label>
-                      <p className="text-xs text-slate-500 leading-relaxed">
+                      <p className="text-2xs text-muted-foreground leading-relaxed">
                         Pengguna lain tidak dapat mengirim komentar pada kabar ini
                       </p>
                     </div>
@@ -242,7 +242,7 @@ export function CreateKabarModal({
                     type="checkbox"
                     checked={komentarDinonaktifkan}
                     onChange={(e) => setKomentarDinonaktifkan(e.target.checked)}
-                    className="h-5 w-5 rounded border-slate-300 accent-blue-600 cursor-pointer"
+                    className="h-4 w-4 rounded border-border accent-primary cursor-pointer"
                   />
                 </div>
 
@@ -251,11 +251,11 @@ export function CreateKabarModal({
                   <button
                     type="submit"
                     disabled={!konten.trim() || isPending}
-                    className="flex w-full min-h-[52px] h-13 items-center justify-center gap-2 rounded-2xl bg-blue-700 hover:bg-blue-800 px-6 text-base font-bold text-white shadow-md transition-all active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                    className="flex w-full min-h-[44px] h-11 items-center justify-center gap-2 rounded-lg bg-primary hover:bg-primary-hover px-5 text-sm font-semibold text-primary-foreground shadow-xs transition-all active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
                   >
                     {isPending ? (
                       <>
-                        <Loader2 className="h-5 w-5 animate-spin" />
+                        <Loader2 className="h-4 w-4 animate-spin" />
                         <span>Menerbitkan Kabar...</span>
                       </>
                     ) : (
