@@ -261,28 +261,28 @@ export function AjukanPerubahanPeranModal({
     <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto animate-in fade-in duration-200">
       {/* Overlay Backdrop */}
       <div
-        className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity"
+        className="fixed inset-0 bg-background/80 backdrop-blur-xs transition-opacity"
         onClick={() => !isSubmitting && !isCanceling && onClose()}
       />
 
       {/* Modal Dialog */}
-      <div className="relative w-full max-w-lg max-h-[92dvh] sm:max-h-[88dvh] flex flex-col rounded-t-3xl sm:rounded-3xl border-2 border-slate-200 bg-white shadow-2xl z-10 animate-in slide-in-from-bottom-5 sm:zoom-in-95 duration-200 overflow-hidden my-0 sm:my-auto">
+      <div className="relative w-full max-w-lg max-h-[92dvh] sm:max-h-[88dvh] flex flex-col rounded-t-lg sm:rounded-lg border border-border bg-card shadow-xl z-10 animate-in slide-in-from-bottom-5 sm:zoom-in-95 duration-200 overflow-hidden my-0 sm:my-auto">
         {/* Header */}
-        <div className="flex items-start justify-between p-5 pb-4 border-b-2 border-slate-100 shrink-0 bg-white">
+        <div className="flex items-start justify-between p-4 sm:p-5 pb-3.5 border-b border-border shrink-0 bg-card">
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-50 text-blue-700 border-2 border-blue-200">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary border border-primary/20 shrink-0">
               <UserCheck className="h-5 w-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-lg font-bold text-slate-900 leading-tight">
+                <h3 className="text-base font-bold text-foreground leading-tight">
                   Ajukan Perubahan Peran
                 </h3>
-                <span className="text-2xs font-extrabold px-2 py-0.5 rounded-md bg-blue-100 text-blue-800 border border-blue-200">
+                <span className="text-2xs font-extrabold px-2 py-0.5 rounded-md bg-primary/10 text-primary border border-primary/20">
                   VERIFIKASI ADMIN
                 </span>
               </div>
-              <p className="text-xs text-slate-500 font-semibold line-clamp-1">
+              <p className="text-xs text-muted-foreground font-medium line-clamp-1 mt-0.5">
                 {komunitas.nama}
               </p>
             </div>
@@ -290,23 +290,23 @@ export function AjukanPerubahanPeranModal({
           <button
             type="button"
             onClick={() => !isSubmitting && !isCanceling && onClose()}
-            className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-colors cursor-pointer"
+            className="flex h-8 w-8 items-center justify-center rounded-lg border border-border text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
           >
-            <X className="h-5 w-5" />
+            <X className="h-4 w-4" />
           </button>
         </div>
 
         {/* Modal Body */}
         <form onSubmit={handleSubmit} className="flex-1 flex flex-col overflow-hidden">
-          <div className="p-5 sm:p-6 overflow-y-auto flex-1 space-y-4 overscroll-contain bg-slate-50/50 text-sm">
+          <div className="p-4 sm:p-5 overflow-y-auto flex-1 space-y-4 overscroll-contain bg-muted/20 text-sm">
             {/* Feedback Alerts */}
             {feedback && (
               <div
                 className={cn(
-                  "flex items-start gap-3 rounded-2xl border-2 p-3.5 text-xs font-bold animate-in fade-in",
+                  "flex items-start gap-3 rounded-lg border p-3 text-xs font-semibold animate-in fade-in",
                   feedback.type === "success"
-                    ? "border-emerald-300 bg-emerald-50 text-emerald-900"
-                    : "border-rose-300 bg-rose-50 text-rose-900"
+                    ? "border-emerald-500/20 bg-emerald-50 text-emerald-900"
+                    : "border-rose-500/20 bg-rose-50 text-rose-900"
                 )}
               >
                 {feedback.type === "success" ? (
@@ -319,39 +319,39 @@ export function AjukanPerubahanPeranModal({
             )}
 
             {/* Status Peran Saat Ini */}
-            <div className="rounded-2xl border-2 border-slate-200 bg-white p-4 space-y-1.5 shadow-2xs">
-              <span className="text-2xs font-bold uppercase tracking-wider text-slate-400 block">
+            <div className="rounded-lg border border-border bg-card p-3.5 space-y-2 shadow-2xs">
+              <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground block">
                 STATUS KEANGGOTAAN ANDA
               </span>
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-bold text-slate-900">
+                  <span className="text-xs font-bold text-foreground">
                     Peran Saat Ini:
                   </span>
-                  <span className="inline-flex items-center gap-1 rounded-xl bg-slate-100 px-3 py-1 text-xs font-bold text-slate-800 border border-slate-200">
-                    <Check className="h-3.5 w-3.5 text-emerald-600" />
+                  <span className="inline-flex items-center gap-1 rounded-md bg-muted px-2.5 py-1 text-xs font-bold text-foreground border border-border">
+                    <Check className="h-3.5 w-3.5 text-primary" />
                     <span>{formatPeranDisplay(currentPeran)}</span>
                   </span>
                 </div>
 
                 {currentPeranDiajukan && currentPeranDiajukan.toLowerCase() !== currentPeran.toLowerCase() && (
-                  <span className="inline-flex items-center gap-1.5 rounded-xl bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-900 border border-amber-300">
-                    <Clock className="h-3.5 w-3.5 text-amber-600 animate-pulse" />
+                  <span className="inline-flex items-center gap-1.5 rounded-md bg-secondary/15 px-2.5 py-1 text-xs font-bold text-secondary border border-secondary/30">
+                    <Clock className="h-3.5 w-3.5 text-secondary animate-pulse" />
                     <span>Diajukan: {formatPeranDisplay(currentPeranDiajukan)}</span>
                   </span>
                 )}
               </div>
 
               {currentPeranDiajukan && currentPeranDiajukan.toLowerCase() !== currentPeran.toLowerCase() && (
-                <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-2">
-                  <p className="text-xs text-amber-800 font-medium">
+                <div className="pt-2 border-t border-border flex items-center justify-between gap-2">
+                  <p className="text-xs text-amber-700 font-medium">
                     Pengajuan peran sebelumnya sedang menunggu verifikasi Admin.
                   </p>
                   <button
                     type="button"
                     onClick={handleCancelRequest}
                     disabled={isCanceling || isSubmitting}
-                    className="inline-flex items-center gap-1 text-xs font-bold text-rose-600 hover:text-rose-700 hover:underline shrink-0 cursor-pointer disabled:opacity-50"
+                    className="inline-flex items-center gap-1 text-xs font-bold text-destructive hover:underline shrink-0 cursor-pointer disabled:opacity-50"
                   >
                     {isCanceling ? (
                       <Loader2 className="h-3 w-3 animate-spin" />
@@ -366,9 +366,9 @@ export function AjukanPerubahanPeranModal({
 
             {/* Pilihan Peran Baru */}
             <div className="space-y-2">
-              <label className="flex items-center justify-between text-xs font-bold text-slate-800">
+              <label className="flex items-center justify-between text-xs font-bold text-foreground">
                 <span>Pilih Peran Baru yang Diajukan</span>
-                <span className="text-slate-400 font-normal">Pilih salah satu</span>
+                <span className="text-muted-foreground font-normal">Pilih salah satu</span>
               </label>
 
               <div className="space-y-2">
@@ -384,43 +384,43 @@ export function AjukanPerubahanPeranModal({
                       key={item.role}
                       onClick={() => !isDisabled && setSelectedRole(item.role)}
                       className={cn(
-                        "rounded-2xl border-2 p-3.5 transition-all flex items-start justify-between gap-3 shadow-2xs",
+                        "rounded-lg border p-3 transition-all flex items-start justify-between gap-3 shadow-2xs",
                         isDisabled
-                          ? "border-slate-200 bg-slate-100/60 opacity-60 cursor-not-allowed"
+                          ? "border-border bg-muted/40 opacity-60 cursor-not-allowed"
                           : "cursor-pointer",
                         isSelected && !isDisabled &&
-                          "border-blue-600 bg-blue-50/50 shadow-xs",
+                          "border-primary bg-primary/5 shadow-2xs",
                         !isSelected && !isDisabled &&
-                          "border-slate-200 bg-white hover:border-blue-300 hover:bg-slate-50/80"
+                          "border-border bg-card hover:border-primary/40 hover:bg-muted/30"
                       )}
                     >
                       <div className="space-y-0.5 flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
                           <h4
                             className={cn(
-                              "text-sm font-bold",
-                              isSelected && !isDisabled ? "text-blue-950" : "text-slate-900"
+                              "text-xs sm:text-sm font-bold",
+                              isSelected && !isDisabled ? "text-primary" : "text-foreground"
                             )}
                           >
                             {item.role}
                           </h4>
                           {item.badge && (
-                            <span className="text-2xs font-extrabold px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 border border-slate-200">
+                            <span className="text-2xs font-extrabold px-1.5 py-0.5 rounded-md bg-muted text-muted-foreground border border-border">
                               {item.badge}
                             </span>
                           )}
                           {isCurrentRole && (
-                            <span className="text-2xs font-extrabold px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 border border-emerald-300">
+                            <span className="text-2xs font-extrabold px-1.5 py-0.5 rounded-md bg-primary/10 text-primary border border-primary/20">
                               Peran Saat Ini
                             </span>
                           )}
                           {isOccupiedAdmin && (
-                            <span className="text-2xs font-extrabold px-2 py-0.5 rounded-md bg-amber-100 text-amber-900 border border-amber-300">
+                            <span className="text-2xs font-extrabold px-1.5 py-0.5 rounded-md bg-secondary/15 text-secondary border border-secondary/30">
                               Admin Sudah Terdaftar
                             </span>
                           )}
                         </div>
-                        <p className="text-xs text-slate-600 leading-relaxed">
+                        <p className="text-xs text-muted-foreground leading-relaxed mt-0.5">
                           {isOccupiedAdmin
                             ? "Posisi Admin / Pengurus untuk komunitas ini sudah terisi dan aktif."
                             : item.description}
@@ -430,10 +430,10 @@ export function AjukanPerubahanPeranModal({
                       <div className="shrink-0 pt-0.5">
                         <div
                           className={cn(
-                            "h-5 w-5 rounded-full border-2 flex items-center justify-center transition-all",
+                            "h-5 w-5 rounded-full border flex items-center justify-center transition-all",
                             isSelected && !isDisabled
-                              ? "border-blue-600 bg-blue-600 text-white"
-                              : "border-slate-300 bg-white"
+                              ? "border-primary bg-primary text-primary-foreground"
+                              : "border-border bg-background"
                           )}
                         >
                           {isSelected && !isDisabled && (
@@ -449,7 +449,7 @@ export function AjukanPerubahanPeranModal({
 
             {/* Catatan / Keterangan Opsional */}
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-800 block">
+              <label className="text-xs font-bold text-foreground block">
                 Catatan / Alasan Pengajuan (Opsional)
               </label>
               <textarea
@@ -457,21 +457,21 @@ export function AjukanPerubahanPeranModal({
                 value={catatan}
                 onChange={(e) => setCatatan(e.target.value)}
                 placeholder="Contoh: Saya adalah guru aktif kelas B di PAUD ini sejak tahun 2024..."
-                className="w-full px-3.5 py-2.5 rounded-xl border-2 border-slate-200 bg-white text-slate-900 text-xs leading-relaxed focus:border-blue-600 focus:outline-none"
+                className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-xs leading-relaxed focus:border-primary focus:outline-none"
               />
-              <p className="text-2xs text-slate-500">
+              <p className="text-2xs text-muted-foreground">
                 Informasi ini akan dilihat oleh Admin / Pengurus komunitas saat memverifikasi pengajuan Anda.
               </p>
             </div>
           </div>
 
           {/* Footer Actions */}
-          <div className="p-4 sm:p-5 border-t-2 border-slate-100 bg-white flex items-center justify-between gap-3 shrink-0">
+          <div className="p-3.5 sm:p-4 border-t border-border bg-card flex items-center justify-between gap-3 shrink-0">
             <button
               type="button"
               onClick={onClose}
               disabled={isSubmitting || isCanceling}
-              className="px-4 py-2.5 rounded-xl border-2 border-slate-200 hover:bg-slate-50 text-slate-700 font-bold text-xs transition-colors cursor-pointer disabled:opacity-50"
+              className="h-10 px-4 rounded-lg border border-border hover:bg-muted text-foreground font-bold text-xs transition-colors cursor-pointer disabled:opacity-50"
             >
               Batal
             </button>
@@ -483,17 +483,17 @@ export function AjukanPerubahanPeranModal({
                 isCanceling ||
                 selectedRole.toLowerCase() === currentPeran.toLowerCase()
               }
-              className="inline-flex min-h-[44px] h-11 items-center justify-center gap-2 rounded-xl bg-blue-700 hover:bg-blue-800 text-white px-5 text-xs font-bold shadow-xs transition-all active:scale-98 cursor-pointer disabled:opacity-50"
+              className="inline-flex min-h-[40px] h-10 items-center justify-center gap-2 rounded-lg bg-primary hover:bg-primary-hover text-primary-foreground px-5 text-xs font-bold shadow-xs transition-all active:scale-98 cursor-pointer disabled:opacity-50"
             >
               {isSubmitting ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  <span>Mengirim Pengajuan...</span>
+                  <span>Mengirim...</span>
                 </>
               ) : (
                 <>
-                  <Sparkles className="h-4 w-4 text-blue-200" />
-                  <span>Kirim Pengajuan ke Admin</span>
+                  <Sparkles className="h-4 w-4 text-primary-foreground/80" />
+                  <span>Kirim Pengajuan</span>
                 </>
               )}
             </button>

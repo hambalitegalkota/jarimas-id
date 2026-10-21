@@ -271,85 +271,86 @@ export function FormDataAnak({
   const domisiliKelurahanOptions = getKelurahanByKecamatan(domisiliKecamatan);
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col w-full space-y-6">
+    <form onSubmit={handleSubmit} className="flex flex-col w-full space-y-4 sm:space-y-5">
       {/* Toast Feedback */}
       {feedback && (
         <div
-          className={`flex items-start gap-3 rounded-2xl p-4 text-sm font-bold shadow-xs animate-in fade-in ${
+          className={cn(
+            "flex items-start gap-3 rounded-lg p-3 text-xs sm:text-sm font-semibold shadow-2xs animate-in fade-in border",
             feedback.type === "success"
-              ? "border-2 border-emerald-300 bg-emerald-50 text-emerald-900"
-              : "border-2 border-rose-300 bg-rose-50 text-rose-900"
-          }`}
+              ? "border-emerald-500/20 bg-emerald-50 text-emerald-900"
+              : "border-rose-500/20 bg-rose-50 text-rose-900"
+          )}
         >
           {feedback.type === "success" ? (
-            <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />
+            <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
           ) : (
-            <AlertCircle className="h-5 w-5 text-rose-600 shrink-0 mt-0.5" />
+            <AlertCircle className="h-4 w-4 text-rose-600 shrink-0 mt-0.5" />
           )}
           <span>{feedback.message}</span>
         </div>
       )}
 
       {/* SECTION 1: IDENTITAS ANAK */}
-      <div className="rounded-2xl border-2 border-slate-200 bg-white p-5 sm:p-6 space-y-5 shadow-xs">
-        <div className="flex items-center gap-3 border-b-2 border-slate-100 pb-3.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-100 text-blue-700 font-black text-sm">
+      <div className="rounded-lg border border-border bg-card p-4 sm:p-5 space-y-4 shadow-sm">
+        <div className="flex items-center gap-3 border-b border-border pb-3">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary font-bold text-xs shrink-0">
             1
           </div>
           <div>
-            <h3 className="text-base sm:text-lg font-bold text-slate-900 leading-tight">
+            <h3 className="text-sm sm:text-base font-bold text-foreground leading-tight">
               Identitas Anak (0–6 Tahun)
             </h3>
-            <p className="text-xs sm:text-sm font-medium text-slate-500">
+            <p className="text-2xs sm:text-xs font-medium text-muted-foreground">
               Data dasar anak sesuai dokumen keluarga
             </p>
           </div>
         </div>
 
         {/* 1. Nama Lengkap Sesuai Akta Kelahiran */}
-        <div className="space-y-2">
-          <label className="text-base font-bold text-slate-900 leading-snug block">
-            Nama Lengkap Sesuai Akta Kelahiran <span className="text-rose-600">*</span>
+        <div className="space-y-1.5">
+          <label className="text-xs sm:text-sm font-bold text-foreground leading-snug block">
+            Nama Lengkap Sesuai Akta Kelahiran <span className="text-destructive">*</span>
           </label>
           <div className="relative">
-            <User className="pointer-events-none absolute left-4 top-3.5 h-5 w-5 text-slate-400" />
+            <User className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
             <input
               type="text"
               required
               value={namaLengkap}
               onChange={(e) => setNamaLengkap(e.target.value)}
               placeholder="Contoh: Muhammad Bilal Al-Ghifari"
-              className="w-full min-h-[48px] h-12 rounded-xl border-2 border-slate-300 bg-white pl-12 pr-4 text-base text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:outline-hidden"
+              className="w-full min-h-[44px] h-11 rounded-lg border border-border bg-background pl-10 pr-3 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
             />
           </div>
         </div>
 
         {/* 2. Jenis Kelamin */}
-        <div className="space-y-2">
-          <label className="text-base font-bold text-slate-900 leading-snug block">
-            Jenis Kelamin <span className="text-rose-600">*</span>
+        <div className="space-y-1.5">
+          <label className="text-xs sm:text-sm font-bold text-foreground leading-snug block">
+            Jenis Kelamin <span className="text-destructive">*</span>
           </label>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2.5">
             <button
               type="button"
               onClick={() => setJenisKelamin("L")}
               className={cn(
-                "flex min-h-[50px] items-center justify-between rounded-xl border-2 px-4 py-3 text-base font-bold transition-all cursor-pointer text-left",
+                "flex min-h-[44px] h-11 items-center justify-between rounded-lg border px-3 text-xs sm:text-sm font-bold transition-all cursor-pointer text-left",
                 jenisKelamin === "L"
-                  ? "border-blue-600 bg-blue-50 text-blue-950 shadow-xs ring-2 ring-blue-600/20"
-                  : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                  ? "border-primary bg-primary/5 text-primary shadow-2xs"
+                  : "border-border bg-background text-foreground hover:bg-muted/40"
               )}
             >
               <span>Laki-laki (L)</span>
               <div
                 className={cn(
-                  "flex h-6 w-6 items-center justify-center rounded-full border-2",
+                  "flex h-4 w-4 items-center justify-center rounded-full border",
                   jenisKelamin === "L"
-                    ? "border-blue-600 bg-blue-600 text-white"
-                    : "border-slate-300 bg-white"
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-border bg-background"
                 )}
               >
-                {jenisKelamin === "L" && <Check className="h-3.5 w-3.5 stroke-[3px]" />}
+                {jenisKelamin === "L" && <Check className="h-2.5 w-2.5 stroke-[3px]" />}
               </div>
             </button>
 
@@ -357,40 +358,40 @@ export function FormDataAnak({
               type="button"
               onClick={() => setJenisKelamin("P")}
               className={cn(
-                "flex min-h-[50px] items-center justify-between rounded-xl border-2 px-4 py-3 text-base font-bold transition-all cursor-pointer text-left",
+                "flex min-h-[44px] h-11 items-center justify-between rounded-lg border px-3 text-xs sm:text-sm font-bold transition-all cursor-pointer text-left",
                 jenisKelamin === "P"
-                  ? "border-blue-600 bg-blue-50 text-blue-950 shadow-xs ring-2 ring-blue-600/20"
-                  : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                  ? "border-primary bg-primary/5 text-primary shadow-2xs"
+                  : "border-border bg-background text-foreground hover:bg-muted/40"
               )}
             >
               <span>Perempuan (P)</span>
               <div
                 className={cn(
-                  "flex h-6 w-6 items-center justify-center rounded-full border-2",
+                  "flex h-4 w-4 items-center justify-center rounded-full border",
                   jenisKelamin === "P"
-                    ? "border-blue-600 bg-blue-600 text-white"
-                    : "border-slate-300 bg-white"
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-border bg-background"
                 )}
               >
-                {jenisKelamin === "P" && <Check className="h-3.5 w-3.5 stroke-[3px]" />}
+                {jenisKelamin === "P" && <Check className="h-2.5 w-2.5 stroke-[3px]" />}
               </div>
             </button>
           </div>
         </div>
 
         {/* 3. Usia Anak & Jarak Rumah ke PAUD */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <label className="text-base font-bold text-slate-900 leading-snug block">
-              Usia Anak <span className="text-rose-600">*</span>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="space-y-1.5">
+            <label className="text-xs sm:text-sm font-bold text-foreground leading-snug block">
+              Usia Anak <span className="text-destructive">*</span>
             </label>
             <div className="relative">
-              <Calendar className="pointer-events-none absolute left-4 top-3.5 h-5 w-5 text-slate-400" />
+              <Calendar className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <select
                 required
                 value={usia}
                 onChange={(e) => setUsia(e.target.value)}
-                className="w-full min-h-[48px] h-12 rounded-xl border-2 border-slate-300 bg-white pl-12 pr-10 text-base font-bold text-slate-900 focus:border-blue-600 focus:outline-hidden appearance-none cursor-pointer"
+                className="w-full min-h-[44px] h-11 rounded-lg border border-border bg-background pl-10 pr-8 text-xs sm:text-sm font-semibold text-foreground focus:border-primary focus:outline-none appearance-none cursor-pointer"
               >
                 <option value="" disabled>
                   -- Pilih Usia Anak (0-6 Tahun) --
@@ -404,12 +405,12 @@ export function FormDataAnak({
             </div>
           </div>
 
-          <div className="space-y-2">
-            <label className="text-base font-bold text-slate-900 leading-snug block">
-              Jarak Rumah ke PAUD (km) <span className="text-rose-600">*</span>
+          <div className="space-y-1.5">
+            <label className="text-xs sm:text-sm font-bold text-foreground leading-snug block">
+              Jarak Rumah ke PAUD (km) <span className="text-destructive">*</span>
             </label>
             <div className="relative">
-              <MapPin className="pointer-events-none absolute left-4 top-3.5 h-5 w-5 text-slate-400" />
+              <MapPin className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <input
                 type="number"
                 step="0.1"
@@ -418,58 +419,58 @@ export function FormDataAnak({
                 value={jarakRumahKm}
                 onChange={(e) => setJarakRumahKm(e.target.value)}
                 placeholder="0.5"
-                className="w-full min-h-[48px] h-12 rounded-xl border-2 border-slate-300 bg-white pl-12 pr-4 text-base font-mono text-slate-900 focus:border-blue-600 focus:outline-hidden"
+                className="w-full min-h-[44px] h-11 rounded-lg border border-border bg-background pl-10 pr-3 text-xs sm:text-sm font-mono text-foreground focus:border-primary focus:outline-none"
               />
             </div>
           </div>
         </div>
 
         {/* 4. Nama Orang Tua / Wali */}
-        <div className="space-y-2">
-          <label className="text-base font-bold text-slate-900 leading-snug block">
-            Nama Orang Tua / Wali <span className="text-rose-600">*</span>
+        <div className="space-y-1.5">
+          <label className="text-xs sm:text-sm font-bold text-foreground leading-snug block">
+            Nama Orang Tua / Wali <span className="text-destructive">*</span>
           </label>
           <div className="relative">
-            <User className="pointer-events-none absolute left-4 top-3.5 h-5 w-5 text-slate-400" />
+            <User className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
             <input
               type="text"
               required
               value={namaOrangtua}
               onChange={(e) => setNamaOrangtua(e.target.value)}
               placeholder="Contoh: Hendrawan & Maya"
-              className="w-full min-h-[48px] h-12 rounded-xl border-2 border-slate-300 bg-white pl-12 pr-4 text-base text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:outline-hidden"
+              className="w-full min-h-[44px] h-11 rounded-lg border border-border bg-background pl-10 pr-3 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
             />
           </div>
         </div>
 
         {/* 5. Nomor WhatsApp & Status Tinggal Bersama */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <label className="text-base font-bold text-slate-900 leading-snug block">
-              Nomor WhatsApp / HP <span className="text-xs font-normal text-slate-500">(Opsional)</span>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="space-y-1.5">
+            <label className="text-xs sm:text-sm font-bold text-foreground leading-snug block">
+              Nomor WhatsApp / HP <span className="text-2xs font-normal text-muted-foreground">(Opsional)</span>
             </label>
             <div className="relative">
-              <Phone className="pointer-events-none absolute left-4 top-3.5 h-5 w-5 text-slate-400" />
+              <Phone className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <input
                 type="tel"
                 value={nomorHp}
                 onChange={(e) => setNomorHp(e.target.value)}
                 placeholder="081234567890"
-                className="w-full min-h-[48px] h-12 rounded-xl border-2 border-slate-300 bg-white pl-12 pr-4 text-base font-mono text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:outline-hidden"
+                className="w-full min-h-[44px] h-11 rounded-lg border border-border bg-background pl-10 pr-3 text-xs sm:text-sm font-mono text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
               />
             </div>
           </div>
 
-          <div className="space-y-2">
-            <label className="text-base font-bold text-slate-900 leading-snug block">
-              Status Tinggal Bersama <span className="text-rose-600">*</span>
+          <div className="space-y-1.5">
+            <label className="text-xs sm:text-sm font-bold text-foreground leading-snug block">
+              Status Tinggal Bersama <span className="text-destructive">*</span>
             </label>
             <div className="relative">
-              <Home className="pointer-events-none absolute left-4 top-3.5 h-5 w-5 text-slate-400" />
+              <Home className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <select
                 value={tinggalBersama}
                 onChange={(e) => setTinggalBersama(e.target.value)}
-                className="w-full min-h-[48px] h-12 rounded-xl border-2 border-slate-300 bg-white pl-12 pr-10 text-base font-bold text-slate-900 focus:border-blue-600 focus:outline-hidden appearance-none cursor-pointer"
+                className="w-full min-h-[44px] h-11 rounded-lg border border-border bg-background pl-10 pr-8 text-xs sm:text-sm font-semibold text-foreground focus:border-primary focus:outline-none appearance-none cursor-pointer"
               >
                 <option value="Orang Tua">Orang Tua Kandung</option>
                 <option value="Orang Tua Tunggal">Orang Tua Tunggal</option>
@@ -484,41 +485,41 @@ export function FormDataAnak({
         {/* ------------------------------------------------------------- */}
         {/* SUBSECTION A: ALAMAT SESUAI KK */}
         {/* ------------------------------------------------------------- */}
-        <div className="rounded-2xl border-2 border-blue-200 bg-blue-50/40 p-4 sm:p-5 space-y-4 shadow-2xs mt-4">
-          <div className="flex items-center gap-2 border-b border-blue-200 pb-2.5">
-            <FileText className="h-5 w-5 text-blue-700" />
-            <h4 className="text-base font-bold text-blue-950">
-              Alamat Sesuai KK (Kartu Keluarga) <span className="text-rose-600">*</span>
+        <div className="rounded-lg border border-border bg-muted/20 p-3.5 sm:p-4 space-y-3.5 shadow-2xs mt-3">
+          <div className="flex items-center gap-2 border-b border-border pb-2">
+            <FileText className="h-4 w-4 text-primary" />
+            <h4 className="text-xs sm:text-sm font-bold text-foreground">
+              Alamat Sesuai KK (Kartu Keluarga) <span className="text-destructive">*</span>
             </h4>
           </div>
 
           {/* Kabupaten/Kota Sesuai KK */}
-          <div className="space-y-2">
-            <label className="text-sm font-bold text-slate-900 block">
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-muted-foreground block">
               Kabupaten / Kota Sesuai KK
             </label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
                 onClick={() => setKkKabupatenChoice("kota_tegal")}
                 className={cn(
-                  "flex min-h-[46px] items-center justify-between rounded-xl border-2 py-2.5 px-4 text-sm font-bold transition-all cursor-pointer",
+                  "flex min-h-[40px] h-10 items-center justify-between rounded-lg border px-3 text-xs font-bold transition-all cursor-pointer",
                   kkKabupatenChoice === "kota_tegal"
-                    ? "border-blue-600 bg-blue-50 text-blue-950 shadow-2xs ring-2 ring-blue-600/20"
-                    : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                    ? "border-primary bg-primary/5 text-primary shadow-2xs"
+                    : "border-border bg-background text-foreground hover:bg-muted/40"
                 )}
               >
                 <span>Kota Tegal</span>
                 <div
                   className={cn(
-                    "flex h-5 w-5 items-center justify-center rounded-full border-2",
+                    "flex h-4 w-4 items-center justify-center rounded-full border",
                     kkKabupatenChoice === "kota_tegal"
-                      ? "border-blue-600 bg-blue-600 text-white"
-                      : "border-slate-300 bg-white"
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-border bg-background"
                   )}
                 >
                   {kkKabupatenChoice === "kota_tegal" && (
-                    <Check className="h-3 w-3 stroke-[3px]" />
+                    <Check className="h-2.5 w-2.5 stroke-[3px]" />
                   )}
                 </div>
               </button>
@@ -527,23 +528,23 @@ export function FormDataAnak({
                 type="button"
                 onClick={() => setKkKabupatenChoice("luar_kota_tegal")}
                 className={cn(
-                  "flex min-h-[46px] items-center justify-between rounded-xl border-2 py-2.5 px-4 text-sm font-bold transition-all cursor-pointer",
+                  "flex min-h-[40px] h-10 items-center justify-between rounded-lg border px-3 text-xs font-bold transition-all cursor-pointer",
                   kkKabupatenChoice === "luar_kota_tegal"
-                    ? "border-blue-600 bg-blue-50 text-blue-950 shadow-2xs ring-2 ring-blue-600/20"
-                    : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                    ? "border-primary bg-primary/5 text-primary shadow-2xs"
+                    : "border-border bg-background text-foreground hover:bg-muted/40"
                 )}
               >
                 <span>Luar Kota Tegal</span>
                 <div
                   className={cn(
-                    "flex h-5 w-5 items-center justify-center rounded-full border-2",
+                    "flex h-4 w-4 items-center justify-center rounded-full border",
                     kkKabupatenChoice === "luar_kota_tegal"
-                      ? "border-blue-600 bg-blue-600 text-white"
-                      : "border-slate-300 bg-white"
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-border bg-background"
                   )}
                 >
                   {kkKabupatenChoice === "luar_kota_tegal" && (
-                    <Check className="h-3 w-3 stroke-[3px]" />
+                    <Check className="h-2.5 w-2.5 stroke-[3px]" />
                   )}
                 </div>
               </button>
@@ -552,8 +553,8 @@ export function FormDataAnak({
 
           {kkKabupatenChoice === "luar_kota_tegal" ? (
             <div className="space-y-1.5 animate-in fade-in">
-              <label className="text-xs font-bold uppercase tracking-wider text-slate-700">
-                Nama Kabupaten / Kota Luar <span className="text-rose-600">*</span>
+              <label className="text-2xs font-bold text-muted-foreground uppercase tracking-wider">
+                Nama Kabupaten / Kota Luar <span className="text-destructive">*</span>
               </label>
               <input
                 type="text"
@@ -561,21 +562,21 @@ export function FormDataAnak({
                 value={kkKabupatenCustom}
                 onChange={(e) => setKkKabupatenCustom(e.target.value)}
                 placeholder="Contoh: Kabupaten Tegal, Brebes, Pemalang, dll."
-                className="w-full min-h-[44px] h-11 rounded-xl border-2 border-slate-300 bg-white px-4 text-sm font-medium text-slate-900 focus:border-blue-600 focus:outline-hidden"
+                className="w-full min-h-[44px] h-11 rounded-lg border border-border bg-background px-3 text-xs sm:text-sm font-medium text-foreground focus:border-primary focus:outline-none"
               />
             </div>
           ) : (
-            <div className="space-y-4 animate-in fade-in">
+            <div className="space-y-3 animate-in fade-in">
               {/* Kecamatan & Kelurahan KK */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-700">
-                    Kecamatan KK <span className="text-rose-600">*</span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <div className="space-y-1">
+                  <label className="text-2xs font-bold text-muted-foreground uppercase tracking-wider">
+                    Kecamatan KK <span className="text-destructive">*</span>
                   </label>
                   <select
                     value={kkKecamatan}
                     onChange={(e) => handleKkKecamatanChange(e.target.value)}
-                    className="w-full min-h-[44px] h-11 rounded-xl border-2 border-slate-300 bg-white px-3 text-sm font-bold text-slate-900 focus:border-blue-600 focus:outline-hidden cursor-pointer"
+                    className="w-full min-h-[44px] h-11 rounded-lg border border-border bg-background px-3 text-xs sm:text-sm font-semibold text-foreground focus:border-primary focus:outline-none cursor-pointer"
                   >
                     {DAFTAR_KECAMATAN_TEGAL.map((kec) => (
                       <option key={kec} value={kec}>
@@ -585,14 +586,14 @@ export function FormDataAnak({
                   </select>
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-700">
-                    Kelurahan KK <span className="text-rose-600">*</span>
+                <div className="space-y-1">
+                  <label className="text-2xs font-bold text-muted-foreground uppercase tracking-wider">
+                    Kelurahan KK <span className="text-destructive">*</span>
                   </label>
                   <select
                     value={kkKelurahan}
                     onChange={(e) => setKkKelurahan(e.target.value)}
-                    className="w-full min-h-[44px] h-11 rounded-xl border-2 border-slate-300 bg-white px-3 text-sm font-bold text-slate-900 focus:border-blue-600 focus:outline-hidden cursor-pointer"
+                    className="w-full min-h-[44px] h-11 rounded-lg border border-border bg-background px-3 text-xs sm:text-sm font-semibold text-foreground focus:border-primary focus:outline-none cursor-pointer"
                   >
                     {kkKelurahanOptions.map((kel) => (
                       <option key={kel} value={kel}>
@@ -604,15 +605,15 @@ export function FormDataAnak({
               </div>
 
               {/* RW & RT KK */}
-              <div className="grid grid-cols-2 gap-3.5">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-700">
-                    RW Sesuai KK <span className="text-rose-600">*</span>
+              <div className="grid grid-cols-2 gap-2.5">
+                <div className="space-y-1">
+                  <label className="text-2xs font-bold text-muted-foreground uppercase tracking-wider">
+                    RW Sesuai KK <span className="text-destructive">*</span>
                   </label>
                   <select
                     value={kkRw}
                     onChange={(e) => setKkRw(e.target.value)}
-                    className="w-full min-h-[44px] h-11 rounded-xl border-2 border-slate-300 bg-white px-3 text-sm font-mono font-bold text-slate-900 focus:border-blue-600 focus:outline-hidden cursor-pointer"
+                    className="w-full min-h-[44px] h-11 rounded-lg border border-border bg-background px-3 text-xs sm:text-sm font-mono font-semibold text-foreground focus:border-primary focus:outline-none cursor-pointer"
                   >
                     {getRwListByKelurahan(kkKelurahan).map((rw) => (
                       <option key={rw} value={rw}>
@@ -622,14 +623,14 @@ export function FormDataAnak({
                   </select>
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-700">
-                    RT Sesuai KK <span className="text-rose-600">*</span>
+                <div className="space-y-1">
+                  <label className="text-2xs font-bold text-muted-foreground uppercase tracking-wider">
+                    RT Sesuai KK <span className="text-destructive">*</span>
                   </label>
                   <select
                     value={kkRt}
                     onChange={(e) => setKkRt(e.target.value)}
-                    className="w-full min-h-[44px] h-11 rounded-xl border-2 border-slate-300 bg-white px-3 text-sm font-mono font-bold text-slate-900 focus:border-blue-600 focus:outline-hidden cursor-pointer"
+                    className="w-full min-h-[44px] h-11 rounded-lg border border-border bg-background px-3 text-xs sm:text-sm font-mono font-semibold text-foreground focus:border-primary focus:outline-none cursor-pointer"
                   >
                     {getRtListByKelurahan(kkKelurahan, kkRw).map((rt) => (
                       <option key={rt} value={rt}>
@@ -641,9 +642,9 @@ export function FormDataAnak({
               </div>
 
               {/* Jalan KK */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-700 block">
-                  Jalan / Alamat Sesuai KK <span className="text-rose-600">*</span>
+              <div className="space-y-1">
+                <label className="text-2xs font-bold text-muted-foreground uppercase tracking-wider block">
+                  Jalan / Alamat Sesuai KK <span className="text-destructive">*</span>
                 </label>
                 <input
                   type="text"
@@ -651,7 +652,7 @@ export function FormDataAnak({
                   value={kkJalan}
                   onChange={(e) => setKkJalan(e.target.value)}
                   placeholder="Contoh: Jl. Werkudoro No. 12, Gang Melati"
-                  className="w-full min-h-[44px] h-11 rounded-xl border-2 border-slate-300 bg-white px-4 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:outline-hidden"
+                  className="w-full min-h-[44px] h-11 rounded-lg border border-border bg-background px-3 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
                 />
               </div>
             </div>
@@ -661,12 +662,12 @@ export function FormDataAnak({
         {/* ------------------------------------------------------------- */}
         {/* SUBSECTION B: ALAMAT DOMISILI */}
         {/* ------------------------------------------------------------- */}
-        <div className="rounded-2xl border-2 border-emerald-200 bg-emerald-50/40 p-4 sm:p-5 space-y-4 shadow-2xs mt-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-emerald-200 pb-2.5">
+        <div className="rounded-lg border border-border bg-muted/20 p-3.5 sm:p-4 space-y-3.5 shadow-2xs mt-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border pb-2">
             <div className="flex items-center gap-2">
-              <Home className="h-5 w-5 text-emerald-700" />
-              <h4 className="text-base font-bold text-emerald-950">
-                Alamat Domisili (Tempat Tinggal Saat Ini) <span className="text-rose-600">*</span>
+              <Home className="h-4 w-4 text-primary" />
+              <h4 className="text-xs sm:text-sm font-bold text-foreground">
+                Alamat Domisili (Tempat Tinggal Saat Ini) <span className="text-destructive">*</span>
               </h4>
             </div>
 
@@ -675,55 +676,55 @@ export function FormDataAnak({
               type="button"
               onClick={() => setIsDomisiliSameAsKk(!isDomisiliSameAsKk)}
               className={cn(
-                "inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border-2 text-xs font-bold transition-all cursor-pointer w-fit",
+                "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border text-xs font-bold transition-all cursor-pointer w-fit",
                 isDomisiliSameAsKk
-                  ? "border-emerald-600 bg-emerald-100 text-emerald-900 shadow-2xs"
-                  : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
+                  ? "border-primary bg-primary/10 text-primary shadow-2xs"
+                  : "border-border bg-background text-muted-foreground hover:text-foreground"
               )}
             >
               <div
                 className={cn(
-                  "flex h-4 w-4 items-center justify-center rounded border",
+                  "flex h-3.5 w-3.5 items-center justify-center rounded border",
                   isDomisiliSameAsKk
-                    ? "border-emerald-600 bg-emerald-600 text-white"
-                    : "border-slate-400 bg-white"
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-border bg-background"
                 )}
               >
-                {isDomisiliSameAsKk && <Check className="h-3 w-3 stroke-[3px]" />}
+                {isDomisiliSameAsKk && <Check className="h-2.5 w-2.5 stroke-[3px]" />}
               </div>
-              <span>Sama dengan Alamat KK</span>
+              <span>Sama dengan KK</span>
             </button>
           </div>
 
           {!isDomisiliSameAsKk ? (
-            <div className="space-y-4 animate-in fade-in">
+            <div className="space-y-3 animate-in fade-in">
               {/* Kabupaten/Kota Domisili */}
-              <div className="space-y-2">
-                <label className="text-sm font-bold text-slate-900 block">
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-muted-foreground block">
                   Kabupaten / Kota Domisili
                 </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
                     onClick={() => setDomisiliKabupatenChoice("kota_tegal")}
                     className={cn(
-                      "flex min-h-[46px] items-center justify-between rounded-xl border-2 py-2.5 px-4 text-sm font-bold transition-all cursor-pointer",
+                      "flex min-h-[40px] h-10 items-center justify-between rounded-lg border px-3 text-xs font-bold transition-all cursor-pointer",
                       domisiliKabupatenChoice === "kota_tegal"
-                        ? "border-emerald-600 bg-emerald-50 text-emerald-950 shadow-2xs ring-2 ring-emerald-600/20"
-                        : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                        ? "border-primary bg-primary/5 text-primary shadow-2xs"
+                        : "border-border bg-background text-foreground hover:bg-muted/40"
                     )}
                   >
                     <span>Kota Tegal</span>
                     <div
                       className={cn(
-                        "flex h-5 w-5 items-center justify-center rounded-full border-2",
+                        "flex h-4 w-4 items-center justify-center rounded-full border",
                         domisiliKabupatenChoice === "kota_tegal"
-                          ? "border-emerald-600 bg-emerald-600 text-white"
-                          : "border-slate-300 bg-white"
+                          ? "border-primary bg-primary text-primary-foreground"
+                          : "border-border bg-background"
                       )}
                     >
                       {domisiliKabupatenChoice === "kota_tegal" && (
-                        <Check className="h-3 w-3 stroke-[3px]" />
+                        <Check className="h-2.5 w-2.5 stroke-[3px]" />
                       )}
                     </div>
                   </button>
@@ -732,23 +733,23 @@ export function FormDataAnak({
                     type="button"
                     onClick={() => setDomisiliKabupatenChoice("luar_kota_tegal")}
                     className={cn(
-                      "flex min-h-[46px] items-center justify-between rounded-xl border-2 py-2.5 px-4 text-sm font-bold transition-all cursor-pointer",
+                      "flex min-h-[40px] h-10 items-center justify-between rounded-lg border px-3 text-xs font-bold transition-all cursor-pointer",
                       domisiliKabupatenChoice === "luar_kota_tegal"
-                        ? "border-emerald-600 bg-emerald-50 text-emerald-950 shadow-2xs ring-2 ring-emerald-600/20"
-                        : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                        ? "border-primary bg-primary/5 text-primary shadow-2xs"
+                        : "border-border bg-background text-foreground hover:bg-muted/40"
                     )}
                   >
                     <span>Luar Kota Tegal</span>
                     <div
                       className={cn(
-                        "flex h-5 w-5 items-center justify-center rounded-full border-2",
+                        "flex h-4 w-4 items-center justify-center rounded-full border",
                         domisiliKabupatenChoice === "luar_kota_tegal"
-                          ? "border-emerald-600 bg-emerald-600 text-white"
-                          : "border-slate-300 bg-white"
+                          ? "border-primary bg-primary text-primary-foreground"
+                          : "border-border bg-background"
                       )}
                     >
                       {domisiliKabupatenChoice === "luar_kota_tegal" && (
-                        <Check className="h-3 w-3 stroke-[3px]" />
+                        <Check className="h-2.5 w-2.5 stroke-[3px]" />
                       )}
                     </div>
                   </button>
@@ -757,8 +758,8 @@ export function FormDataAnak({
 
               {domisiliKabupatenChoice === "luar_kota_tegal" ? (
                 <div className="space-y-1.5 animate-in fade-in">
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-700">
-                    Nama Kabupaten / Kota Luar <span className="text-rose-600">*</span>
+                  <label className="text-2xs font-bold text-muted-foreground uppercase tracking-wider">
+                    Nama Kabupaten / Kota Luar <span className="text-destructive">*</span>
                   </label>
                   <input
                     type="text"
@@ -766,21 +767,21 @@ export function FormDataAnak({
                     value={domisiliKabupatenCustom}
                     onChange={(e) => setDomisiliKabupatenCustom(e.target.value)}
                     placeholder="Contoh: Kabupaten Tegal, Brebes, Pemalang, dll."
-                    className="w-full min-h-[44px] h-11 rounded-xl border-2 border-slate-300 bg-white px-4 text-sm font-medium text-slate-900 focus:border-emerald-600 focus:outline-hidden"
+                    className="w-full min-h-[44px] h-11 rounded-lg border border-border bg-background px-3 text-xs sm:text-sm font-medium text-foreground focus:border-primary focus:outline-none"
                   />
                 </div>
               ) : (
-                <div className="space-y-4 animate-in fade-in">
+                <div className="space-y-3 animate-in fade-in">
                   {/* Kecamatan & Kelurahan Domisili */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-bold uppercase tracking-wider text-slate-700">
-                        Kecamatan Domisili <span className="text-rose-600">*</span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <div className="space-y-1">
+                      <label className="text-2xs font-bold text-muted-foreground uppercase tracking-wider">
+                        Kecamatan Domisili <span className="text-destructive">*</span>
                       </label>
                       <select
                         value={domisiliKecamatan}
                         onChange={(e) => handleDomisiliKecamatanChange(e.target.value)}
-                        className="w-full min-h-[44px] h-11 rounded-xl border-2 border-slate-300 bg-white px-3 text-sm font-bold text-slate-900 focus:border-emerald-600 focus:outline-hidden cursor-pointer"
+                        className="w-full min-h-[44px] h-11 rounded-lg border border-border bg-background px-3 text-xs sm:text-sm font-semibold text-foreground focus:border-primary focus:outline-none cursor-pointer"
                       >
                         {DAFTAR_KECAMATAN_TEGAL.map((kec) => (
                           <option key={kec} value={kec}>
@@ -790,14 +791,14 @@ export function FormDataAnak({
                       </select>
                     </div>
 
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-bold uppercase tracking-wider text-slate-700">
-                        Kelurahan Domisili <span className="text-rose-600">*</span>
+                    <div className="space-y-1">
+                      <label className="text-2xs font-bold text-muted-foreground uppercase tracking-wider">
+                        Kelurahan Domisili <span className="text-destructive">*</span>
                       </label>
                       <select
                         value={domisiliKelurahan}
                         onChange={(e) => setDomisiliKelurahan(e.target.value)}
-                        className="w-full min-h-[44px] h-11 rounded-xl border-2 border-slate-300 bg-white px-3 text-sm font-bold text-slate-900 focus:border-emerald-600 focus:outline-hidden cursor-pointer"
+                        className="w-full min-h-[44px] h-11 rounded-lg border border-border bg-background px-3 text-xs sm:text-sm font-semibold text-foreground focus:border-primary focus:outline-none cursor-pointer"
                       >
                         {domisiliKelurahanOptions.map((kel) => (
                           <option key={kel} value={kel}>
@@ -808,16 +809,16 @@ export function FormDataAnak({
                     </div>
                   </div>
 
-                  {/* RW (15) & RT (15) Domisili */}
-                  <div className="grid grid-cols-2 gap-3.5">
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-bold uppercase tracking-wider text-slate-700">
-                        RW Domisili <span className="text-rose-600">*</span>
+                  {/* RW & RT Domisili */}
+                  <div className="grid grid-cols-2 gap-2.5">
+                    <div className="space-y-1">
+                      <label className="text-2xs font-bold text-muted-foreground uppercase tracking-wider">
+                        RW Domisili <span className="text-destructive">*</span>
                       </label>
                       <select
                         value={domisiliRw}
                         onChange={(e) => setDomisiliRw(e.target.value)}
-                        className="w-full min-h-[44px] h-11 rounded-xl border-2 border-slate-300 bg-white px-3 text-sm font-mono font-bold text-slate-900 focus:border-emerald-600 focus:outline-hidden cursor-pointer"
+                        className="w-full min-h-[44px] h-11 rounded-lg border border-border bg-background px-3 text-xs sm:text-sm font-mono font-semibold text-foreground focus:border-primary focus:outline-none cursor-pointer"
                       >
                         {getRwListByKelurahan(domisiliKelurahan).map((rw) => (
                           <option key={rw} value={rw}>
@@ -827,14 +828,14 @@ export function FormDataAnak({
                       </select>
                     </div>
 
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-bold uppercase tracking-wider text-slate-700">
-                        RT Domisili <span className="text-rose-600">*</span>
+                    <div className="space-y-1">
+                      <label className="text-2xs font-bold text-muted-foreground uppercase tracking-wider">
+                        RT Domisili <span className="text-destructive">*</span>
                       </label>
                       <select
                         value={domisiliRt}
                         onChange={(e) => setDomisiliRt(e.target.value)}
-                        className="w-full min-h-[44px] h-11 rounded-xl border-2 border-slate-300 bg-white px-3 text-sm font-mono font-bold text-slate-900 focus:border-emerald-600 focus:outline-hidden cursor-pointer"
+                        className="w-full min-h-[44px] h-11 rounded-lg border border-border bg-background px-3 text-xs sm:text-sm font-mono font-semibold text-foreground focus:border-primary focus:outline-none cursor-pointer"
                       >
                         {getRtListByKelurahan(domisiliKelurahan, domisiliRw).map((rt) => (
                           <option key={rt} value={rt}>
@@ -846,9 +847,9 @@ export function FormDataAnak({
                   </div>
 
                   {/* Jalan Domisili */}
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-bold uppercase tracking-wider text-slate-700 block">
-                      Jalan / Alamat Domisili <span className="text-rose-600">*</span>
+                  <div className="space-y-1">
+                    <label className="text-2xs font-bold text-muted-foreground uppercase tracking-wider block">
+                      Jalan / Alamat Domisili <span className="text-destructive">*</span>
                     </label>
                     <input
                       type="text"
@@ -856,21 +857,21 @@ export function FormDataAnak({
                       value={domisiliJalan}
                       onChange={(e) => setDomisiliJalan(e.target.value)}
                       placeholder="Contoh: Jl. Melati No. 5, Lingkungan Warga"
-                      className="w-full min-h-[44px] h-11 rounded-xl border-2 border-slate-300 bg-white px-4 text-sm text-slate-900 placeholder:text-slate-400 focus:border-emerald-600 focus:outline-hidden"
+                      className="w-full min-h-[44px] h-11 rounded-lg border border-border bg-background px-3 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
                     />
                   </div>
                 </div>
               )}
             </div>
           ) : (
-            <div className="rounded-xl border border-emerald-300 bg-emerald-100/60 p-3.5 text-xs sm:text-sm font-semibold text-emerald-950 flex items-center gap-2.5">
-              <CheckCircle2 className="h-4 w-4 text-emerald-700 shrink-0" />
+            <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 text-xs font-semibold text-foreground flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
               <span>
                 Alamat domisili anak sama dengan Alamat Kartu Keluarga (KK):{" "}
-                <strong className="font-bold">
+                <strong className="font-bold text-primary">
                   {kkKabupatenChoice === "kota_tegal"
-                    ? `${kkJalan || "Jl. ..."}, RT ${kkRt} / RW ${kkRw}, Kel. ${kkKelurahan}, Kec. ${kkKecamatan} (Kota Tegal)`
-                    : `Luar Kota Tegal (${kkKabupatenCustom || "Nama Kab/Kota Belum Diisi"})`}
+                    ? `${kkJalan || "Jl. ..."}, RT ${kkRt} / RW ${kkRw}, Kel. ${kkKelurahan}, Kec. ${kkKecamatan}`
+                    : `Luar Kota Tegal (${kkKabupatenCustom || "Belum Diisi"})`}
                 </strong>
               </span>
             </div>
@@ -879,16 +880,16 @@ export function FormDataAnak({
       </div>
 
       {/* SECTION 2: STATUS & ALASAN SEKOLAH */}
-      <div className="rounded-2xl border-2 border-slate-200 bg-white p-5 sm:p-6 space-y-5 shadow-xs">
-        <div className="flex items-center gap-3 border-b-2 border-slate-100 pb-3.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-100 text-blue-700 font-black text-sm">
+      <div className="rounded-lg border border-border bg-card p-4 sm:p-5 space-y-4 shadow-sm">
+        <div className="flex items-center gap-3 border-b border-border pb-3">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary font-bold text-xs shrink-0">
             2
           </div>
           <div>
-            <h3 className="text-base sm:text-lg font-bold text-slate-900 leading-tight">
+            <h3 className="text-sm sm:text-base font-bold text-foreground leading-tight">
               Status Pendidikan PAUD / TK
             </h3>
-            <p className="text-xs sm:text-sm font-medium text-slate-500">
+            <p className="text-2xs sm:text-xs font-medium text-muted-foreground">
               Kondisi partisipasi sekolah anak saat ini
             </p>
           </div>
@@ -898,34 +899,34 @@ export function FormDataAnak({
         {isPaud ? (
           <>
             {/* Status Bersekolah Terkunci di Sudah Bersekolah untuk Komunitas PAUD */}
-            <div className="space-y-2">
-              <label className="text-base font-bold text-slate-900 leading-snug block">
-                Apakah Anak Sudah Bersekolah? <span className="text-rose-600">*</span>
+            <div className="space-y-1.5">
+              <label className="text-xs sm:text-sm font-bold text-foreground leading-snug block">
+                Apakah Anak Sudah Bersekolah? <span className="text-destructive">*</span>
               </label>
-              <div className="flex min-h-[52px] items-center justify-between rounded-xl border-2 border-emerald-600 bg-emerald-50 text-emerald-950 px-4 py-3 shadow-xs ring-2 ring-emerald-600/20">
-                <div className="flex items-center gap-2.5">
-                  <GraduationCap className="h-5 w-5 text-emerald-700 shrink-0" />
-                  <span className="text-base font-bold">Sudah Bersekolah</span>
+              <div className="flex min-h-[44px] h-11 items-center justify-between rounded-lg border border-primary/30 bg-primary/5 text-primary px-3 shadow-2xs">
+                <div className="flex items-center gap-2">
+                  <GraduationCap className="h-4 w-4 text-primary shrink-0" />
+                  <span className="text-xs sm:text-sm font-bold">Sudah Bersekolah</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="rounded-md bg-emerald-100 px-2 py-0.5 text-xs font-bold text-emerald-900 border border-emerald-300">
+                  <span className="rounded-md bg-primary/10 px-1.5 py-0.5 text-2xs font-extrabold text-primary border border-primary/20">
                     Terkunci
                   </span>
-                  <div className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-emerald-600 bg-emerald-600 text-white">
-                    <Check className="h-3.5 w-3.5 stroke-[3px]" />
+                  <div className="flex h-4 w-4 items-center justify-center rounded-full border border-primary bg-primary text-primary-foreground">
+                    <Check className="h-2.5 w-2.5 stroke-[3px]" />
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Nama Satuan PAUD / TK (Terkunci Otomatis Sesuai Komunitas yang Mengisi) */}
-            <div className="space-y-2 animate-in fade-in">
+            <div className="space-y-1.5 animate-in fade-in">
               <div className="flex items-center justify-between">
-                <label className="text-base font-bold text-slate-900 leading-snug block">
-                  Nama Satuan PAUD / TK <span className="text-rose-600">*</span>
+                <label className="text-xs sm:text-sm font-bold text-foreground leading-snug block">
+                  Nama Satuan PAUD / TK <span className="text-destructive">*</span>
                 </label>
-                <span className="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-bold text-slate-600 border border-slate-200">
-                  Otomatis Terkunci
+                <span className="rounded-md bg-muted px-1.5 py-0.5 text-2xs font-extrabold text-muted-foreground border border-border">
+                  Otomatis
                 </span>
               </div>
               <input
@@ -933,19 +934,19 @@ export function FormDataAnak({
                 required
                 readOnly
                 value={komunitasNama || "Satuan PAUD"}
-                className="w-full min-h-[48px] h-12 rounded-xl border-2 border-slate-300 bg-slate-100/80 px-4 text-base font-bold text-slate-800 cursor-not-allowed select-none focus:outline-hidden"
+                className="w-full min-h-[44px] h-11 rounded-lg border border-border bg-muted/50 px-3 text-xs sm:text-sm font-bold text-foreground cursor-not-allowed select-none focus:outline-none"
               />
             </div>
 
             {/* Alasan Sekolah (Dropdown Dinamis) */}
-            <div className="space-y-2">
-              <label className="text-base font-bold text-slate-900 leading-snug block">
-                Alasan Mengikuti PAUD <span className="text-rose-600">*</span>
+            <div className="space-y-1.5">
+              <label className="text-xs sm:text-sm font-bold text-foreground leading-snug block">
+                Alasan Mengikuti PAUD <span className="text-destructive">*</span>
               </label>
               <select
                 value={alasanSekolah}
                 onChange={(e) => setAlasanSekolah(e.target.value)}
-                className="w-full min-h-[48px] h-12 rounded-xl border-2 border-slate-300 bg-white px-4 text-base font-bold text-slate-900 focus:border-blue-600 focus:outline-hidden cursor-pointer"
+                className="w-full min-h-[44px] h-11 rounded-lg border border-border bg-background px-3 text-xs sm:text-sm font-semibold text-foreground focus:border-primary focus:outline-none cursor-pointer"
               >
                 {ALASAN_SEKOLAH_PAUD.map((alasan) => (
                   <option key={alasan} value={alasan}>
@@ -958,38 +959,38 @@ export function FormDataAnak({
         ) : (
           <>
             {/* Status Bersekolah Terkunci di Belum Bersekolah untuk Selain Komunitas PAUD */}
-            <div className="space-y-2">
-              <label className="text-base font-bold text-slate-900 leading-snug block">
-                Apakah Anak Sudah Bersekolah? <span className="text-rose-600">*</span>
+            <div className="space-y-1.5">
+              <label className="text-xs sm:text-sm font-bold text-foreground leading-snug block">
+                Apakah Anak Sudah Bersekolah? <span className="text-destructive">*</span>
               </label>
-              <div className="flex min-h-[52px] items-center justify-between rounded-xl border-2 border-amber-500 bg-amber-50 text-amber-950 px-4 py-3 shadow-xs ring-2 ring-amber-500/20">
-                <div className="flex items-center gap-2.5">
-                  <Baby className="h-5 w-5 text-amber-700 shrink-0" />
-                  <span className="text-base font-bold">Belum Bersekolah</span>
+              <div className="flex min-h-[44px] h-11 items-center justify-between rounded-lg border border-secondary/30 bg-secondary/10 text-secondary px-3 shadow-2xs">
+                <div className="flex items-center gap-2">
+                  <Baby className="h-4 w-4 text-secondary shrink-0" />
+                  <span className="text-xs sm:text-sm font-bold">Belum Bersekolah</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="rounded-md bg-amber-100 px-2 py-0.5 text-xs font-bold text-amber-900 border border-amber-300">
+                  <span className="rounded-md bg-secondary/15 px-1.5 py-0.5 text-2xs font-extrabold text-secondary border border-secondary/30">
                     Terkunci
                   </span>
-                  <div className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-amber-600 bg-amber-600 text-white">
-                    <Check className="h-3.5 w-3.5 stroke-[3px]" />
+                  <div className="flex h-4 w-4 items-center justify-center rounded-full border border-secondary bg-secondary text-secondary-foreground">
+                    <Check className="h-2.5 w-2.5 stroke-[3px]" />
                   </div>
                 </div>
               </div>
-              <p className="text-xs text-slate-500 font-medium">
+              <p className="text-2xs text-muted-foreground font-medium">
                 Pendaftaran data balita di komunitas non-PAUD (Posyandu / Warga Kita) terkunci pada status Belum Bersekolah.
               </p>
             </div>
 
             {/* Alasan Belum Bersekolah (Dropdown Dinamis) */}
-            <div className="space-y-2">
-              <label className="text-base font-bold text-slate-900 leading-snug block">
-                Alasan Belum Bersekolah PAUD <span className="text-rose-600">*</span>
+            <div className="space-y-1.5">
+              <label className="text-xs sm:text-sm font-bold text-foreground leading-snug block">
+                Alasan Belum Bersekolah PAUD <span className="text-destructive">*</span>
               </label>
               <select
                 value={alasanSekolah}
                 onChange={(e) => setAlasanSekolah(e.target.value)}
-                className="w-full min-h-[48px] h-12 rounded-xl border-2 border-slate-300 bg-white px-4 text-base font-bold text-slate-900 focus:border-blue-600 focus:outline-hidden cursor-pointer"
+                className="w-full min-h-[44px] h-11 rounded-lg border border-border bg-background px-3 text-xs sm:text-sm font-semibold text-foreground focus:border-primary focus:outline-none cursor-pointer"
               >
                 {ALASAN_BELUM_SEKOLAH.map((alasan) => (
                   <option key={alasan} value={alasan}>
@@ -1003,24 +1004,24 @@ export function FormDataAnak({
       </div>
 
       {/* SECTION 3: PENGUKURAN DDTK AWAL (OPSIONAL) */}
-      <div className="rounded-2xl border-2 border-slate-200 bg-white p-5 sm:p-6 space-y-5 shadow-xs">
-        <div className="flex items-center justify-between border-b-2 border-slate-100 pb-3.5">
+      <div className="rounded-lg border border-border bg-card p-4 sm:p-5 space-y-4 shadow-sm">
+        <div className="flex items-center justify-between border-b border-border pb-3">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-100 text-blue-700 font-black text-sm">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary font-bold text-xs shrink-0">
               3
             </div>
             <div>
-              <h3 className="text-base sm:text-lg font-bold text-slate-900 leading-tight">
+              <h3 className="text-sm sm:text-base font-bold text-foreground leading-tight">
                 Pengukuran DDTK Posyandu (Opsional)
               </h3>
-              <p className="text-xs sm:text-sm font-medium text-slate-500">
+              <p className="text-2xs sm:text-xs font-medium text-muted-foreground">
                 Antropometri &amp; tumbuh kembang balita
               </p>
             </div>
           </div>
           {!isPosyandu && (
-            <span className="inline-flex items-center gap-1.5 rounded-lg bg-amber-100 px-2.5 py-1 text-xs font-bold text-amber-900 border border-amber-300">
-              <Lock className="h-3.5 w-3.5" />
+            <span className="inline-flex items-center gap-1 rounded-md bg-secondary/15 px-2 py-0.5 text-2xs font-extrabold text-secondary border border-secondary/30">
+              <Lock className="h-3 w-3" />
               <span>Terkunci</span>
             </span>
           )}
@@ -1028,15 +1029,15 @@ export function FormDataAnak({
 
         {isPosyandu ? (
           <>
-            <p className="text-sm text-slate-600 leading-relaxed">
+            <p className="text-xs text-muted-foreground leading-relaxed">
               Masukkan hasil pengukuran terakhir jika anak baru saja ditimbang di Posyandu atau diperiksa Bidan.
             </p>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
               {/* Berat Badan */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-600 flex items-center gap-1">
-                  <Scale className="h-3.5 w-3.5 text-slate-400" />
+              <div className="space-y-1">
+                <label className="text-2xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                  <Scale className="h-3 w-3 text-primary" />
                   BB (KG)
                 </label>
                 <input
@@ -1046,14 +1047,14 @@ export function FormDataAnak({
                   value={beratBadan}
                   onChange={(e) => setBeratBadan(e.target.value)}
                   placeholder="12.5"
-                  className="w-full min-h-[48px] h-12 rounded-xl border-2 border-slate-300 bg-white px-3 text-base font-mono font-bold text-slate-900 focus:border-blue-600 focus:outline-hidden"
+                  className="w-full min-h-[44px] h-11 rounded-lg border border-border bg-background px-3 text-xs sm:text-sm font-mono font-bold text-foreground focus:border-primary focus:outline-none"
                 />
               </div>
 
               {/* Tinggi Badan */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-600 flex items-center gap-1">
-                  <Ruler className="h-3.5 w-3.5 text-slate-400" />
+              <div className="space-y-1">
+                <label className="text-2xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                  <Ruler className="h-3 w-3 text-primary" />
                   TB (CM)
                 </label>
                 <input
@@ -1063,14 +1064,14 @@ export function FormDataAnak({
                   value={tinggiBadan}
                   onChange={(e) => setTinggiBadan(e.target.value)}
                   placeholder="88.0"
-                  className="w-full min-h-[48px] h-12 rounded-xl border-2 border-slate-300 bg-white px-3 text-base font-mono font-bold text-slate-900 focus:border-blue-600 focus:outline-hidden"
+                  className="w-full min-h-[44px] h-11 rounded-lg border border-border bg-background px-3 text-xs sm:text-sm font-mono font-bold text-foreground focus:border-primary focus:outline-none"
                 />
               </div>
 
               {/* Panjang Badan */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-600 flex items-center gap-1">
-                  <Ruler className="h-3.5 w-3.5 text-slate-400" />
+              <div className="space-y-1">
+                <label className="text-2xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                  <Ruler className="h-3 w-3 text-primary" />
                   PB (CM)
                 </label>
                 <input
@@ -1080,14 +1081,14 @@ export function FormDataAnak({
                   value={panjangBadan}
                   onChange={(e) => setPanjangBadan(e.target.value)}
                   placeholder="88.0"
-                  className="w-full min-h-[48px] h-12 rounded-xl border-2 border-slate-300 bg-white px-3 text-base font-mono font-bold text-slate-900 focus:border-blue-600 focus:outline-hidden"
+                  className="w-full min-h-[44px] h-11 rounded-lg border border-border bg-background px-3 text-xs sm:text-sm font-mono font-bold text-foreground focus:border-primary focus:outline-none"
                 />
               </div>
 
               {/* Lingkar Kepala */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-600 flex items-center gap-1">
-                  <Activity className="h-3.5 w-3.5 text-slate-400" />
+              <div className="space-y-1">
+                <label className="text-2xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                  <Activity className="h-3 w-3 text-primary" />
                   LK (CM)
                 </label>
                 <input
@@ -1097,14 +1098,14 @@ export function FormDataAnak({
                   value={lingkarKepala}
                   onChange={(e) => setLingkarKepala(e.target.value)}
                   placeholder="47.0"
-                  className="w-full min-h-[48px] h-12 rounded-xl border-2 border-slate-300 bg-white px-3 text-base font-mono font-bold text-slate-900 focus:border-blue-600 focus:outline-hidden"
+                  className="w-full min-h-[44px] h-11 rounded-lg border border-border bg-background px-3 text-xs sm:text-sm font-mono font-bold text-foreground focus:border-primary focus:outline-none"
                 />
               </div>
             </div>
 
             {/* Catatan DDKS */}
-            <div className="space-y-2">
-              <label className="text-base font-bold text-slate-900 leading-snug block">
+            <div className="space-y-1.5">
+              <label className="text-xs sm:text-sm font-bold text-foreground leading-snug block">
                 Catatan Kesehatan / Perkembangan
               </label>
               <input
@@ -1112,78 +1113,78 @@ export function FormDataAnak({
                 value={catatanDdks}
                 onChange={(e) => setCatatanDdks(e.target.value)}
                 placeholder="Contoh: Sudah bisa berjalan lancar, imunisasi campak lengkap."
-                className="w-full min-h-[48px] h-12 rounded-xl border-2 border-slate-300 bg-white px-4 text-base text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:outline-hidden"
+                className="w-full min-h-[44px] h-11 rounded-lg border border-border bg-background px-3 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
               />
             </div>
           </>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-3">
             {/* Locked Notice Banner */}
-            <div className="rounded-xl border-2 border-amber-300 bg-amber-50/90 p-4 sm:p-5 flex items-start gap-3.5 text-amber-950 shadow-xs">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-200 border border-amber-400 text-amber-900">
-                <Lock className="h-5 w-5" />
+            <div className="rounded-lg border border-secondary/30 bg-secondary/10 p-3.5 flex items-start gap-3 text-foreground shadow-2xs">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-secondary/20 text-secondary">
+                <Lock className="h-4 w-4" />
               </div>
-              <div className="space-y-1 min-w-0">
-                <h4 className="text-sm sm:text-base font-bold text-amber-950 flex items-center gap-2">
-                  <span>Data Belum Di Isi Oleh Posyandu</span>
+              <div className="space-y-0.5 min-w-0">
+                <h4 className="text-xs sm:text-sm font-bold text-foreground flex items-center gap-2">
+                  <span>Data Belum Diisi Oleh Posyandu</span>
                 </h4>
-                <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">
+                <p className="text-xs text-muted-foreground leading-relaxed">
                   Pengukuran antropometri DDTK (Berat Badan, Tinggi Badan, Panjang Badan, &amp; Lingkar Kepala) terkunci dan hanya dapat diisi oleh Kader di Komunitas Posyandu.
                 </p>
               </div>
             </div>
 
             {/* Disabled Preview Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5 opacity-60 pointer-events-none select-none">
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
-                  <Scale className="h-3.5 w-3.5" />
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 opacity-60 pointer-events-none select-none">
+              <div className="space-y-1">
+                <label className="text-2xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                  <Scale className="h-3 w-3" />
                   BB (KG)
                 </label>
                 <input
                   type="text"
                   disabled
                   value="-"
-                  className="w-full min-h-[48px] h-12 rounded-xl border-2 border-slate-200 bg-slate-100 px-3 text-center text-base font-mono font-bold text-slate-400 cursor-not-allowed"
+                  className="w-full min-h-[44px] h-11 rounded-lg border border-border bg-muted px-3 text-center text-xs sm:text-sm font-mono font-bold text-muted-foreground cursor-not-allowed"
                 />
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
-                  <Ruler className="h-3.5 w-3.5" />
+              <div className="space-y-1">
+                <label className="text-2xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                  <Ruler className="h-3 w-3" />
                   TB (CM)
                 </label>
                 <input
                   type="text"
                   disabled
                   value="-"
-                  className="w-full min-h-[48px] h-12 rounded-xl border-2 border-slate-200 bg-slate-100 px-3 text-center text-base font-mono font-bold text-slate-400 cursor-not-allowed"
+                  className="w-full min-h-[44px] h-11 rounded-lg border border-border bg-muted px-3 text-center text-xs sm:text-sm font-mono font-bold text-muted-foreground cursor-not-allowed"
                 />
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
-                  <Ruler className="h-3.5 w-3.5" />
+              <div className="space-y-1">
+                <label className="text-2xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                  <Ruler className="h-3 w-3" />
                   PB (CM)
                 </label>
                 <input
                   type="text"
                   disabled
                   value="-"
-                  className="w-full min-h-[48px] h-12 rounded-xl border-2 border-slate-200 bg-slate-100 px-3 text-center text-base font-mono font-bold text-slate-400 cursor-not-allowed"
+                  className="w-full min-h-[44px] h-11 rounded-lg border border-border bg-muted px-3 text-center text-xs sm:text-sm font-mono font-bold text-muted-foreground cursor-not-allowed"
                 />
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
-                  <Activity className="h-3.5 w-3.5" />
+              <div className="space-y-1">
+                <label className="text-2xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                  <Activity className="h-3 w-3" />
                   LK (CM)
                 </label>
                 <input
                   type="text"
                   disabled
                   value="-"
-                  className="w-full min-h-[48px] h-12 rounded-xl border-2 border-slate-200 bg-slate-100 px-3 text-center text-base font-mono font-bold text-slate-400 cursor-not-allowed"
+                  className="w-full min-h-[44px] h-11 rounded-lg border border-border bg-muted px-3 text-center text-xs sm:text-sm font-mono font-bold text-muted-foreground cursor-not-allowed"
                 />
               </div>
             </div>
@@ -1196,16 +1197,16 @@ export function FormDataAnak({
         <button
           type="submit"
           disabled={isPending}
-          className="flex w-full min-h-[52px] h-13 items-center justify-center gap-2.5 rounded-2xl bg-blue-700 hover:bg-blue-800 active:scale-[0.98] text-white px-6 text-base font-bold shadow-md transition-all disabled:opacity-50 cursor-pointer"
+          className="flex w-full min-h-[44px] h-11 items-center justify-center gap-2 rounded-lg bg-primary hover:bg-primary-hover active:scale-[0.98] text-primary-foreground px-5 text-xs sm:text-sm font-bold shadow-xs transition-all disabled:opacity-50 cursor-pointer"
         >
           {isPending ? (
             <>
-              <Loader2 className="h-5 w-5 animate-spin" />
+              <Loader2 className="h-4 w-4 animate-spin" />
               <span>Menyimpan Data Anak...</span>
             </>
           ) : (
             <>
-              <Send className="h-5 w-5" />
+              <Send className="h-4 w-4" />
               <span>Simpan &amp; Daftarkan Data Anak</span>
             </>
           )}

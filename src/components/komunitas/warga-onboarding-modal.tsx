@@ -125,28 +125,28 @@ export function WargaOnboardingModal({
   // - KK Kota Tegal & Domisili Luar Kota Tegal -> Penduduk Berdomisili Luar Kota
   // - KK Luar Kota Tegal & Domisili Kota Tegal -> Pendatang
   let identifiedRole = "Pengunjung";
-  let roleBadgeColor = "bg-slate-100 text-slate-800 border-slate-300";
-  let roleCardColor = "bg-slate-50 border-slate-200";
+  let roleBadgeColor = "bg-muted text-muted-foreground border-border";
+  let roleCardColor = "bg-muted/40 border-border";
   let roleExplanation =
     "Pengguna tetap sebagai Pengunjung. Anda hanya dapat melihat visualisasi Grafik dan Chart Data Komunitas ini.";
 
   if (kkType === "kota_tegal" && effectiveDomisiliType === "kota_tegal") {
     identifiedRole = "Penduduk";
-    roleBadgeColor = "bg-emerald-100 text-emerald-900 border-emerald-300";
-    roleCardColor = "bg-emerald-50/70 border-emerald-200";
+    roleBadgeColor = "bg-primary/10 text-primary border-primary/20";
+    roleCardColor = "bg-primary/5 border-primary/20";
     roleExplanation = komunitas.hasAdmin
       ? "Pengguna teridentifikasi sebagai Penduduk. Anda dapat mengakses seluruh Profil Data Komunitas ini."
       : "Pengguna teridentifikasi sebagai Penduduk. Anda dapat mengakses seluruh Profil Data dan berhak mengajukan diri sebagai Admin jika posisi Admin masih kosong.";
   } else if (kkType === "kota_tegal" && effectiveDomisiliType === "luar_kota_tegal") {
     identifiedRole = "Penduduk Berdomisili Luar Kota";
-    roleBadgeColor = "bg-blue-100 text-blue-900 border-blue-300";
-    roleCardColor = "bg-blue-50/70 border-blue-200";
+    roleBadgeColor = "bg-sky-100 text-sky-800 border-sky-300";
+    roleCardColor = "bg-sky-50/70 border-sky-200";
     roleExplanation =
       "Pengguna teridentifikasi sebagai Penduduk Berdomisili Luar Kota. Anda dapat mengakses seluruh Profil Data.";
   } else if (kkType === "luar_kota_tegal" && effectiveDomisiliType === "kota_tegal") {
     identifiedRole = "Pendatang";
-    roleBadgeColor = "bg-amber-100 text-amber-900 border-amber-300";
-    roleCardColor = "bg-amber-50/70 border-amber-200";
+    roleBadgeColor = "bg-secondary/15 text-secondary border-secondary/30";
+    roleCardColor = "bg-secondary/5 border-secondary/20";
     roleExplanation =
       "Pengguna teridentifikasi sebagai Pendatang. Anda hanya dapat melihat visualisasi Grafik dan Chart.";
   }
@@ -216,39 +216,39 @@ export function WargaOnboardingModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-slate-900/60 backdrop-blur-xs p-0 sm:p-4 overflow-y-auto animate-in fade-in duration-200">
-      <div className="relative w-full max-w-xl max-h-[92dvh] sm:max-h-[88dvh] flex flex-col rounded-t-3xl sm:rounded-3xl border-2 border-slate-200 bg-white shadow-2xl z-10 animate-in zoom-in-95 duration-200 overflow-hidden my-0 sm:my-auto">
+    <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-background/80 backdrop-blur-xs p-0 sm:p-4 overflow-y-auto animate-in fade-in duration-200">
+      <div className="relative w-full max-w-xl max-h-[92dvh] sm:max-h-[88dvh] flex flex-col rounded-t-lg sm:rounded-lg border border-border bg-card shadow-xl z-10 animate-in zoom-in-95 duration-200 overflow-hidden my-0 sm:my-auto">
         {/* Header Modal */}
-        <div className="p-5 sm:p-6 pb-4 border-b-2 border-slate-100 text-center space-y-2 shrink-0 bg-white">
+        <div className="p-4 sm:p-5 pb-3.5 border-b border-border text-center space-y-2 shrink-0 bg-card">
           <div className="flex items-center justify-between">
-            <div className="inline-flex items-center gap-1.5 rounded-full border-2 border-blue-200 bg-blue-50 px-3 py-1 text-xs font-bold text-blue-800">
-              <Sparkles className="h-4 w-4 text-blue-700" />
+            <div className="inline-flex items-center gap-1.5 rounded-md border border-primary/20 bg-primary/10 px-2.5 py-0.5 text-2xs font-extrabold text-primary">
+              <Sparkles className="h-3.5 w-3.5" />
               <span>FORMULIR BERGABUNG</span>
             </div>
 
             <button
               type="button"
               onClick={onClose}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+              className="flex h-8 w-8 items-center justify-center rounded-lg border border-border text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
             >
-              <X className="h-5 w-5" />
+              <X className="h-4 w-4" />
             </button>
           </div>
 
-          <h2 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900">
+          <h2 className="text-lg sm:text-xl font-bold tracking-tight text-foreground">
             Bergabung ke Komunitas Warga
           </h2>
 
           {/* Info Komunitas yang Dipilih */}
-          <div className="rounded-xl border border-blue-200 bg-blue-50/60 p-3 text-left flex items-start gap-3">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-700 text-white">
+          <div className="rounded-lg border border-border bg-muted/40 p-3 text-left flex items-start gap-3">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
               <Users className="h-4 w-4" />
             </div>
-            <div className="space-y-0.5">
-              <h3 className="text-sm font-bold text-slate-900">{komunitas.nama}</h3>
-              <p className="text-xs text-slate-600 flex items-center gap-1">
-                <MapPin className="h-3.5 w-3.5 text-slate-500" />
-                <span>
+            <div className="space-y-0.5 min-w-0">
+              <h3 className="text-sm font-bold text-foreground truncate">{komunitas.nama}</h3>
+              <p className="text-xs text-muted-foreground flex items-center gap-1">
+                <MapPin className="h-3.5 w-3.5 text-primary shrink-0" />
+                <span className="truncate">
                   {[komunitas.kelurahan, komunitas.kecamatan, "Kota Tegal"].filter(Boolean).join(", ")}
                 </span>
               </p>
@@ -257,26 +257,26 @@ export function WargaOnboardingModal({
         </div>
 
         {/* Form Isian Alamat KK & Domisili */}
-        <form onSubmit={handleSubmit} className="p-5 sm:p-6 pb-8 overflow-y-auto flex-1 space-y-5 bg-slate-50/50">
+        <form onSubmit={handleSubmit} className="p-4 sm:p-5 pb-6 overflow-y-auto flex-1 space-y-4 bg-muted/20 text-sm">
           {errorMessage && (
-            <div className="rounded-xl border-2 border-rose-300 bg-rose-50 p-3 text-xs font-bold text-rose-700 flex items-center gap-2">
+            <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-3 text-xs font-semibold text-destructive flex items-center gap-2">
               <AlertCircle className="h-4 w-4 shrink-0" />
               <span>{errorMessage}</span>
             </div>
           )}
 
           {/* 1. SEKSI ALAMAT SESUAI KK */}
-          <div className="rounded-2xl border-2 border-slate-200 bg-white p-4 sm:p-5 space-y-3.5 shadow-2xs">
-            <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-              <FileText className="h-4 w-4 text-blue-700" />
-              <label className="text-sm font-bold text-slate-900">
-                Alamat Sesuai KK (Kartu Keluarga) <span className="text-rose-500">*</span>
+          <div className="rounded-lg border border-border bg-card p-4 space-y-3.5 shadow-2xs">
+            <div className="flex items-center gap-2 border-b border-border pb-2">
+              <FileText className="h-4 w-4 text-primary" />
+              <label className="text-xs sm:text-sm font-bold text-foreground">
+                Alamat Sesuai KK (Kartu Keluarga) <span className="text-destructive">*</span>
               </label>
             </div>
 
             {/* Pilihan Kab/Kota KK */}
             <div className="space-y-1.5">
-              <span className="text-xs font-semibold text-slate-600">
+              <span className="text-xs font-semibold text-muted-foreground">
                 Kabupaten / Kota Sesuai KK:
               </span>
               <div className="grid grid-cols-2 gap-2">
@@ -284,19 +284,19 @@ export function WargaOnboardingModal({
                   type="button"
                   onClick={() => setKkType("kota_tegal")}
                   className={cn(
-                    "flex min-h-[44px] items-center justify-between rounded-xl border-2 px-3.5 py-2 text-xs font-bold transition-all cursor-pointer",
+                    "flex min-h-[40px] h-10 items-center justify-between rounded-lg border px-3 text-xs font-bold transition-all cursor-pointer",
                     kkType === "kota_tegal"
-                      ? "border-blue-600 bg-blue-50 text-blue-950 shadow-2xs"
-                      : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                      ? "border-primary bg-primary/5 text-primary shadow-2xs"
+                      : "border-border bg-background text-foreground hover:bg-muted/40"
                   )}
                 >
                   <span>Kota Tegal</span>
                   <div
                     className={cn(
-                      "flex h-4 w-4 items-center justify-center rounded-full border-2",
+                      "flex h-4 w-4 items-center justify-center rounded-full border",
                       kkType === "kota_tegal"
-                        ? "border-blue-600 bg-blue-600 text-white"
-                        : "border-slate-300 bg-white"
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : "border-border bg-background"
                     )}
                   >
                     {kkType === "kota_tegal" && <Check className="h-2.5 w-2.5 stroke-[3px]" />}
@@ -307,19 +307,19 @@ export function WargaOnboardingModal({
                   type="button"
                   onClick={() => setKkType("luar_kota_tegal")}
                   className={cn(
-                    "flex min-h-[44px] items-center justify-between rounded-xl border-2 px-3.5 py-2 text-xs font-bold transition-all cursor-pointer",
+                    "flex min-h-[40px] h-10 items-center justify-between rounded-lg border px-3 text-xs font-bold transition-all cursor-pointer",
                     kkType === "luar_kota_tegal"
-                      ? "border-blue-600 bg-blue-50 text-blue-950 shadow-2xs"
-                      : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                      ? "border-primary bg-primary/5 text-primary shadow-2xs"
+                      : "border-border bg-background text-foreground hover:bg-muted/40"
                   )}
                 >
                   <span>Luar Kota Tegal</span>
                   <div
                     className={cn(
-                      "flex h-4 w-4 items-center justify-center rounded-full border-2",
+                      "flex h-4 w-4 items-center justify-center rounded-full border",
                       kkType === "luar_kota_tegal"
-                        ? "border-blue-600 bg-blue-600 text-white"
-                        : "border-slate-300 bg-white"
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : "border-border bg-background"
                     )}
                   >
                     {kkType === "luar_kota_tegal" && <Check className="h-2.5 w-2.5 stroke-[3px]" />}
@@ -333,7 +333,7 @@ export function WargaOnboardingModal({
               <div className="space-y-3 pt-1">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   <div>
-                    <label className="text-[11px] font-bold text-slate-600 block mb-1">
+                    <label className="text-2xs font-bold text-muted-foreground block mb-1">
                       Kecamatan
                     </label>
                     <select
@@ -344,7 +344,7 @@ export function WargaOnboardingModal({
                         const kels = getKelurahanByKecamatan(newKec);
                         if (kels.length > 0) setKkKelurahan(kels[0]);
                       }}
-                      className="w-full px-3 py-2 rounded-xl border-2 border-slate-200 bg-white text-xs font-semibold text-slate-900 focus:border-blue-600 focus:outline-none cursor-pointer"
+                      className="w-full px-3 py-2 rounded-lg border border-border bg-background text-xs font-semibold text-foreground focus:border-primary focus:outline-none cursor-pointer"
                     >
                       {DAFTAR_KECAMATAN_TEGAL.map((kec) => (
                         <option key={kec} value={kec}>
@@ -355,13 +355,13 @@ export function WargaOnboardingModal({
                   </div>
 
                   <div>
-                    <label className="text-[11px] font-bold text-slate-600 block mb-1">
+                    <label className="text-2xs font-bold text-muted-foreground block mb-1">
                       Kelurahan
                     </label>
                     <select
                       value={kkKelurahan}
                       onChange={(e) => setKkKelurahan(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl border-2 border-slate-200 bg-white text-xs font-semibold text-slate-900 focus:border-blue-600 focus:outline-none cursor-pointer"
+                      className="w-full px-3 py-2 rounded-lg border border-border bg-background text-xs font-semibold text-foreground focus:border-primary focus:outline-none cursor-pointer"
                     >
                       {kkKelurahanOptions.map((kel) => (
                         <option key={kel} value={kel}>
@@ -374,13 +374,13 @@ export function WargaOnboardingModal({
 
                 <div className="grid grid-cols-2 gap-2.5">
                   <div>
-                    <label className="text-[11px] font-bold text-slate-600 block mb-1">
+                    <label className="text-2xs font-bold text-muted-foreground block mb-1">
                       RW
                     </label>
                     <select
                       value={kkRw}
                       onChange={(e) => setKkRw(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl border-2 border-slate-200 bg-white text-xs font-semibold text-slate-900 focus:border-blue-600 focus:outline-none cursor-pointer"
+                      className="w-full px-3 py-2 rounded-lg border border-border bg-background text-xs font-semibold text-foreground focus:border-primary focus:outline-none cursor-pointer"
                     >
                       {kkRwOptions.map((rwNum) => (
                         <option key={rwNum} value={rwNum}>
@@ -391,13 +391,13 @@ export function WargaOnboardingModal({
                   </div>
 
                   <div>
-                    <label className="text-[11px] font-bold text-slate-600 block mb-1">
+                    <label className="text-2xs font-bold text-muted-foreground block mb-1">
                       RT
                     </label>
                     <select
                       value={kkRt}
                       onChange={(e) => setKkRt(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl border-2 border-slate-200 bg-white text-xs font-semibold text-slate-900 focus:border-blue-600 focus:outline-none cursor-pointer"
+                      className="w-full px-3 py-2 rounded-lg border border-border bg-background text-xs font-semibold text-foreground focus:border-primary focus:outline-none cursor-pointer"
                     >
                       {kkRtOptions.map((rtNum) => (
                         <option key={rtNum} value={rtNum}>
@@ -409,7 +409,7 @@ export function WargaOnboardingModal({
                 </div>
 
                 <div>
-                  <label className="text-[11px] font-bold text-slate-600 block mb-1">
+                  <label className="text-2xs font-bold text-muted-foreground block mb-1">
                     Jalan / Alamat KK
                   </label>
                   <input
@@ -417,13 +417,13 @@ export function WargaOnboardingModal({
                     value={kkJalan}
                     onChange={(e) => setKkJalan(e.target.value)}
                     placeholder="Contoh: Jl. Werkudoro No. 12"
-                    className="w-full px-3 py-2 rounded-xl border-2 border-slate-200 bg-white text-xs text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:outline-none"
+                    className="w-full px-3 py-2 rounded-lg border border-border bg-background text-xs text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
                   />
                 </div>
               </div>
             ) : (
               <div className="space-y-1.5 pt-1">
-                <label className="text-[11px] font-bold text-slate-600 block">
+                <label className="text-2xs font-bold text-muted-foreground block">
                   Nama Kabupaten / Kota Asal Sesuai KK:
                 </label>
                 <input
@@ -431,24 +431,24 @@ export function WargaOnboardingModal({
                   value={kkLuarKotaNama}
                   onChange={(e) => setKkLuarKotaNama(e.target.value)}
                   placeholder="Contoh: Kabupaten Brebes, Kabupaten Tegal, Jakarta..."
-                  className="w-full px-3 py-2 rounded-xl border-2 border-slate-200 bg-white text-xs text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:outline-none"
+                  className="w-full px-3 py-2 rounded-lg border border-border bg-background text-xs text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
                 />
               </div>
             )}
           </div>
 
           {/* 2. SEKSI ALAMAT SESUAI DOMISILI */}
-          <div className="rounded-2xl border-2 border-slate-200 bg-white p-4 sm:p-5 space-y-3.5 shadow-2xs">
-            <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-              <Home className="h-4 w-4 text-blue-700" />
-              <label className="text-sm font-bold text-slate-900">
-                Alamat Sesuai Domisili (Tempat Tinggal Saat Ini) <span className="text-rose-500">*</span>
+          <div className="rounded-lg border border-border bg-card p-4 space-y-3.5 shadow-2xs">
+            <div className="flex items-center gap-2 border-b border-border pb-2">
+              <Home className="h-4 w-4 text-primary" />
+              <label className="text-xs sm:text-sm font-bold text-foreground">
+                Alamat Sesuai Domisili (Tempat Tinggal Saat Ini) <span className="text-destructive">*</span>
               </label>
             </div>
 
             {/* Pilihan: Apakah Alamat Domisili Sama dengan Alamat KK? */}
             <div className="space-y-1.5">
-              <span className="text-xs font-semibold text-slate-700 block">
+              <span className="text-xs font-semibold text-muted-foreground block">
                 Apakah alamat domisili saat ini sama dengan alamat KK?
               </span>
               <div className="grid grid-cols-2 gap-2">
@@ -456,27 +456,27 @@ export function WargaOnboardingModal({
                   type="button"
                   onClick={() => setIsDomisiliSameAsKk(true)}
                   className={cn(
-                    "flex min-h-[46px] items-center justify-between rounded-xl border-2 px-3.5 py-2 text-xs font-bold transition-all cursor-pointer",
+                    "flex min-h-[42px] h-10 items-center justify-between rounded-lg border px-3 text-xs font-bold transition-all cursor-pointer",
                     isDomisiliSameAsKk
-                      ? "border-emerald-600 bg-emerald-50 text-emerald-950 shadow-2xs"
-                      : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                      ? "border-primary bg-primary/5 text-primary shadow-2xs"
+                      : "border-border bg-background text-foreground hover:bg-muted/40"
                   )}
                 >
-                  <div className="flex items-center gap-2 text-left">
+                  <div className="flex items-center gap-2 text-left truncate">
                     <CheckCircle2
                       className={cn(
                         "h-4 w-4 shrink-0",
-                        isDomisiliSameAsKk ? "text-emerald-600" : "text-slate-400"
+                        isDomisiliSameAsKk ? "text-primary" : "text-muted-foreground"
                       )}
                     />
-                    <span>Ya, Sama dengan KK</span>
+                    <span className="truncate">Ya, Sama dengan KK</span>
                   </div>
                   <div
                     className={cn(
-                      "flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2",
+                      "flex h-4 w-4 shrink-0 items-center justify-center rounded-full border",
                       isDomisiliSameAsKk
-                        ? "border-emerald-600 bg-emerald-600 text-white"
-                        : "border-slate-300 bg-white"
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : "border-border bg-background"
                     )}
                   >
                     {isDomisiliSameAsKk && <Check className="h-2.5 w-2.5 stroke-[3px]" />}
@@ -487,27 +487,27 @@ export function WargaOnboardingModal({
                   type="button"
                   onClick={handleSetDomisiliDifferent}
                   className={cn(
-                    "flex min-h-[46px] items-center justify-between rounded-xl border-2 px-3.5 py-2 text-xs font-bold transition-all cursor-pointer",
+                    "flex min-h-[42px] h-10 items-center justify-between rounded-lg border px-3 text-xs font-bold transition-all cursor-pointer",
                     !isDomisiliSameAsKk
-                      ? "border-blue-600 bg-blue-50 text-blue-950 shadow-2xs"
-                      : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                      ? "border-primary bg-primary/5 text-primary shadow-2xs"
+                      : "border-border bg-background text-foreground hover:bg-muted/40"
                   )}
                 >
-                  <div className="flex items-center gap-2 text-left">
+                  <div className="flex items-center gap-2 text-left truncate">
                     <MapPin
                       className={cn(
                         "h-4 w-4 shrink-0",
-                        !isDomisiliSameAsKk ? "text-blue-600" : "text-slate-400"
+                        !isDomisiliSameAsKk ? "text-primary" : "text-muted-foreground"
                       )}
                     />
-                    <span>Tidak (Berbeda Alamat)</span>
+                    <span className="truncate">Tidak (Berbeda)</span>
                   </div>
                   <div
                     className={cn(
-                      "flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2",
+                      "flex h-4 w-4 shrink-0 items-center justify-center rounded-full border",
                       !isDomisiliSameAsKk
-                        ? "border-blue-600 bg-blue-600 text-white"
-                        : "border-slate-300 bg-white"
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : "border-border bg-background"
                     )}
                   >
                     {!isDomisiliSameAsKk && <Check className="h-2.5 w-2.5 stroke-[3px]" />}
@@ -518,12 +518,12 @@ export function WargaOnboardingModal({
 
             {/* Jika Sama: Tampilkan Info Ringkas Sinkronisasi */}
             {isDomisiliSameAsKk ? (
-              <div className="rounded-xl border border-emerald-200 bg-emerald-50/70 p-3 text-xs text-emerald-900 space-y-1">
-                <div className="flex items-center gap-1.5 font-bold text-emerald-800">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+              <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 text-xs text-foreground space-y-1">
+                <div className="flex items-center gap-1.5 font-bold text-primary">
+                  <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
                   <span>Alamat Domisili Otomatis Sama dengan KK:</span>
                 </div>
-                <p className="text-[11px] text-emerald-700 pl-5 font-medium leading-relaxed">
+                <p className="text-2xs text-muted-foreground pl-5 font-medium leading-relaxed">
                   {kkType === "kota_tegal"
                     ? `${kkJalan ? kkJalan + ", " : ""}RT ${kkRt} / RW ${kkRw}, Kelurahan ${kkKelurahan}, Kecamatan ${kkKecamatan}, Kota Tegal`
                     : `Luar Kota Tegal (${kkLuarKotaNama || "Luar Kota"})`}
@@ -531,8 +531,8 @@ export function WargaOnboardingModal({
               </div>
             ) : (
               /* Jika Berbeda: Tampilkan Formulir Pengisian Lengkap */
-              <div className="space-y-3.5 pt-2 border-t border-slate-100 animate-in fade-in duration-200">
-                <div className="flex items-start gap-2 text-xs font-semibold text-amber-800 bg-amber-50 border border-amber-200 rounded-xl p-2.5">
+              <div className="space-y-3.5 pt-2 border-t border-border animate-in fade-in duration-200">
+                <div className="flex items-start gap-2 text-xs font-semibold text-amber-800 bg-amber-50 border border-amber-200 rounded-lg p-2.5">
                   <Info className="h-4 w-4 shrink-0 text-amber-600 mt-0.5" />
                   <span>
                     Silakan isi alamat domisili tempat tinggal Anda saat ini jika berbeda (meskipun hanya berbeda jenjang RT/RW).
@@ -541,7 +541,7 @@ export function WargaOnboardingModal({
 
                 {/* Pilihan Kab/Kota Domisili */}
                 <div className="space-y-1.5">
-                  <span className="text-xs font-semibold text-slate-600">
+                  <span className="text-xs font-semibold text-muted-foreground">
                     Kabupaten / Kota Tempat Tinggal:
                   </span>
                   <div className="grid grid-cols-2 gap-2">
@@ -549,19 +549,19 @@ export function WargaOnboardingModal({
                       type="button"
                       onClick={() => setDomisiliType("kota_tegal")}
                       className={cn(
-                        "flex min-h-[44px] items-center justify-between rounded-xl border-2 px-3.5 py-2 text-xs font-bold transition-all cursor-pointer",
+                        "flex min-h-[40px] h-10 items-center justify-between rounded-lg border px-3 text-xs font-bold transition-all cursor-pointer",
                         domisiliType === "kota_tegal"
-                          ? "border-blue-600 bg-blue-50 text-blue-950 shadow-2xs"
-                          : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                          ? "border-primary bg-primary/5 text-primary shadow-2xs"
+                          : "border-border bg-background text-foreground hover:bg-muted/40"
                       )}
                     >
                       <span>Kota Tegal</span>
                       <div
                         className={cn(
-                          "flex h-4 w-4 items-center justify-center rounded-full border-2",
+                          "flex h-4 w-4 items-center justify-center rounded-full border",
                           domisiliType === "kota_tegal"
-                            ? "border-blue-600 bg-blue-600 text-white"
-                            : "border-slate-300 bg-white"
+                            ? "border-primary bg-primary text-primary-foreground"
+                            : "border-border bg-background"
                         )}
                       >
                         {domisiliType === "kota_tegal" && <Check className="h-2.5 w-2.5 stroke-[3px]" />}
@@ -572,19 +572,19 @@ export function WargaOnboardingModal({
                       type="button"
                       onClick={() => setDomisiliType("luar_kota_tegal")}
                       className={cn(
-                        "flex min-h-[44px] items-center justify-between rounded-xl border-2 px-3.5 py-2 text-xs font-bold transition-all cursor-pointer",
+                        "flex min-h-[40px] h-10 items-center justify-between rounded-lg border px-3 text-xs font-bold transition-all cursor-pointer",
                         domisiliType === "luar_kota_tegal"
-                          ? "border-blue-600 bg-blue-50 text-blue-950 shadow-2xs"
-                          : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                          ? "border-primary bg-primary/5 text-primary shadow-2xs"
+                          : "border-border bg-background text-foreground hover:bg-muted/40"
                       )}
                     >
                       <span>Luar Kota Tegal</span>
                       <div
                         className={cn(
-                          "flex h-4 w-4 items-center justify-center rounded-full border-2",
+                          "flex h-4 w-4 items-center justify-center rounded-full border",
                           domisiliType === "luar_kota_tegal"
-                            ? "border-blue-600 bg-blue-600 text-white"
-                            : "border-slate-300 bg-white"
+                            ? "border-primary bg-primary text-primary-foreground"
+                            : "border-border bg-background"
                         )}
                       >
                         {domisiliType === "luar_kota_tegal" && <Check className="h-2.5 w-2.5 stroke-[3px]" />}
@@ -598,7 +598,7 @@ export function WargaOnboardingModal({
                   <div className="space-y-3 pt-1">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                       <div>
-                        <label className="text-[11px] font-bold text-slate-600 block mb-1">
+                        <label className="text-2xs font-bold text-muted-foreground block mb-1">
                           Kecamatan Domisili
                         </label>
                         <select
@@ -609,7 +609,7 @@ export function WargaOnboardingModal({
                             const kels = getKelurahanByKecamatan(newKec);
                             if (kels.length > 0) setDomisiliKelurahan(kels[0]);
                           }}
-                          className="w-full px-3 py-2 rounded-xl border-2 border-slate-200 bg-white text-xs font-semibold text-slate-900 focus:border-blue-600 focus:outline-none cursor-pointer"
+                          className="w-full px-3 py-2 rounded-lg border border-border bg-background text-xs font-semibold text-foreground focus:border-primary focus:outline-none cursor-pointer"
                         >
                           {DAFTAR_KECAMATAN_TEGAL.map((kec) => (
                             <option key={kec} value={kec}>
@@ -620,13 +620,13 @@ export function WargaOnboardingModal({
                       </div>
 
                       <div>
-                        <label className="text-[11px] font-bold text-slate-600 block mb-1">
+                        <label className="text-2xs font-bold text-muted-foreground block mb-1">
                           Kelurahan Domisili
                         </label>
                         <select
                           value={domisiliKelurahan}
                           onChange={(e) => setDomisiliKelurahan(e.target.value)}
-                          className="w-full px-3 py-2 rounded-xl border-2 border-slate-200 bg-white text-xs font-semibold text-slate-900 focus:border-blue-600 focus:outline-none cursor-pointer"
+                          className="w-full px-3 py-2 rounded-lg border border-border bg-background text-xs font-semibold text-foreground focus:border-primary focus:outline-none cursor-pointer"
                         >
                           {domisiliKelurahanOptions.map((kel) => (
                             <option key={kel} value={kel}>
@@ -639,13 +639,13 @@ export function WargaOnboardingModal({
 
                     <div className="grid grid-cols-2 gap-2.5">
                       <div>
-                        <label className="text-[11px] font-bold text-slate-600 block mb-1">
+                        <label className="text-2xs font-bold text-muted-foreground block mb-1">
                           RW Domisili
                         </label>
                         <select
                           value={domisiliRw}
                           onChange={(e) => setDomisiliRw(e.target.value)}
-                          className="w-full px-3 py-2 rounded-xl border-2 border-slate-200 bg-white text-xs font-semibold text-slate-900 focus:border-blue-600 focus:outline-none cursor-pointer"
+                          className="w-full px-3 py-2 rounded-lg border border-border bg-background text-xs font-semibold text-foreground focus:border-primary focus:outline-none cursor-pointer"
                         >
                           {domisiliRwOptions.map((rwNum) => (
                             <option key={rwNum} value={rwNum}>
@@ -656,13 +656,13 @@ export function WargaOnboardingModal({
                       </div>
 
                       <div>
-                        <label className="text-[11px] font-bold text-slate-600 block mb-1">
+                        <label className="text-2xs font-bold text-muted-foreground block mb-1">
                           RT Domisili
                         </label>
                         <select
                           value={domisiliRt}
                           onChange={(e) => setDomisiliRt(e.target.value)}
-                          className="w-full px-3 py-2 rounded-xl border-2 border-slate-200 bg-white text-xs font-semibold text-slate-900 focus:border-blue-600 focus:outline-none cursor-pointer"
+                          className="w-full px-3 py-2 rounded-lg border border-border bg-background text-xs font-semibold text-foreground focus:border-primary focus:outline-none cursor-pointer"
                         >
                           {domisiliRtOptions.map((rtNum) => (
                             <option key={rtNum} value={rtNum}>
@@ -674,7 +674,7 @@ export function WargaOnboardingModal({
                     </div>
 
                     <div>
-                      <label className="text-[11px] font-bold text-slate-600 block mb-1">
+                      <label className="text-2xs font-bold text-muted-foreground block mb-1">
                         Jalan / Alamat Domisili
                       </label>
                       <input
@@ -682,13 +682,13 @@ export function WargaOnboardingModal({
                         value={domisiliJalan}
                         onChange={(e) => setDomisiliJalan(e.target.value)}
                         placeholder="Contoh: Jl. Werkudoro No. 12"
-                        className="w-full px-3 py-2 rounded-xl border-2 border-slate-200 bg-white text-xs text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:outline-none"
+                        className="w-full px-3 py-2 rounded-lg border border-border bg-background text-xs text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
                       />
                     </div>
                   </div>
                 ) : (
                   <div className="space-y-1.5 pt-1">
-                    <label className="text-[11px] font-bold text-slate-600 block">
+                    <label className="text-2xs font-bold text-muted-foreground block">
                       Nama Kabupaten / Kota Domisili:
                     </label>
                     <input
@@ -696,7 +696,7 @@ export function WargaOnboardingModal({
                       value={domisiliLuarKotaNama}
                       onChange={(e) => setDomisiliLuarKotaNama(e.target.value)}
                       placeholder="Contoh: Kabupaten Brebes, Semarang, Bandung..."
-                      className="w-full px-3 py-2 rounded-xl border-2 border-slate-200 bg-white text-xs text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:outline-none"
+                      className="w-full px-3 py-2 rounded-lg border border-border bg-background text-xs text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
                     />
                   </div>
                 )}
@@ -705,21 +705,21 @@ export function WargaOnboardingModal({
           </div>
 
           {/* 3. HASIL IDENTIFIKASI PERAN & HAK AKSES */}
-          <div className={cn("rounded-2xl border-2 p-4 sm:p-5 space-y-2.5 transition-all shadow-xs", roleCardColor)}>
+          <div className={cn("rounded-lg border p-3.5 sm:p-4 space-y-2 transition-all shadow-2xs", roleCardColor)}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <ShieldCheck className="h-5 w-5 text-blue-700" />
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-600">
+                <ShieldCheck className="h-4 w-4 text-primary" />
+                <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">
                   Status Teridentifikasi:
                 </span>
               </div>
-              <span className={cn("inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-extrabold border-2", roleBadgeColor)}>
+              <span className={cn("inline-flex items-center gap-1 rounded-md px-2.5 py-0.5 text-xs font-bold border", roleBadgeColor)}>
                 <Check className="h-3 w-3 stroke-[3px]" />
                 {identifiedRole.toUpperCase()}
               </span>
             </div>
 
-            <p className="text-xs text-slate-700 leading-relaxed font-medium">
+            <p className="text-xs text-foreground/80 leading-relaxed font-medium">
               {roleExplanation}
             </p>
           </div>
@@ -730,14 +730,14 @@ export function WargaOnboardingModal({
               type="button"
               onClick={onClose}
               disabled={isPending}
-              className="min-h-[48px] px-5 rounded-xl border-2 border-slate-300 bg-white text-sm font-bold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
+              className="h-10 px-4 rounded-lg border border-border bg-card text-xs font-bold text-foreground hover:bg-muted transition-colors cursor-pointer"
             >
               Batal
             </button>
             <button
               type="submit"
               disabled={isPending}
-              className="inline-flex min-h-[48px] items-center justify-center gap-2 px-6 rounded-xl bg-blue-700 hover:bg-blue-800 text-sm font-bold text-white shadow-xs transition-all active:scale-98 disabled:opacity-50 cursor-pointer"
+              className="inline-flex min-h-[40px] h-10 items-center justify-center gap-2 px-5 rounded-lg bg-primary hover:bg-primary-hover text-xs font-bold text-primary-foreground shadow-xs transition-all active:scale-98 disabled:opacity-50 cursor-pointer"
             >
               {isPending ? (
                 <>

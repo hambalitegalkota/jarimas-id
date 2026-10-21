@@ -102,23 +102,23 @@ export function JoinKomunitasModal({
     <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto animate-in fade-in duration-200">
       {/* Overlay Backdrop */}
       <div
-        className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity"
+        className="fixed inset-0 bg-background/80 backdrop-blur-xs transition-opacity"
         onClick={() => !isPending && onClose()}
       />
 
       {/* Modal Dialog */}
-      <div className="relative w-full max-w-lg max-h-[92dvh] sm:max-h-[85dvh] flex flex-col rounded-t-3xl sm:rounded-3xl border-2 border-slate-200 bg-white shadow-2xl z-10 animate-in slide-in-from-bottom-5 sm:zoom-in-95 duration-200 overflow-hidden my-0 sm:my-auto">
+      <div className="relative w-full max-w-lg max-h-[92dvh] sm:max-h-[85dvh] flex flex-col rounded-t-lg sm:rounded-lg border border-border bg-card shadow-xl z-10 animate-in slide-in-from-bottom-4 sm:zoom-in-95 duration-200 overflow-hidden my-0 sm:my-auto">
         {/* Header */}
-        <div className="flex items-start justify-between p-5 pb-4 border-b-2 border-slate-100 shrink-0 bg-white">
+        <div className="flex items-start justify-between p-4 sm:p-5 pb-3 border-b border-border shrink-0 bg-card">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 text-blue-700">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary border border-primary/20">
               <UserPlus className="h-5 w-5" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-slate-900 leading-tight">
+              <h3 className="text-base sm:text-lg font-bold text-foreground leading-tight">
                 Minta Bergabung
               </h3>
-              <p className="text-sm font-medium text-slate-600 line-clamp-1">
+              <p className="text-xs sm:text-sm font-medium text-muted-foreground line-clamp-1">
                 {komunitas.nama}
               </p>
             </div>
@@ -126,38 +126,38 @@ export function JoinKomunitasModal({
           <button
             type="button"
             onClick={() => !isPending && onClose()}
-            className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-colors cursor-pointer"
+            className="flex h-8 w-8 items-center justify-center rounded-lg border border-border text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
           >
-            <X className="h-5 w-5" />
+            <X className="h-4 w-4" />
           </button>
         </div>
 
         {/* Modal Scrollable Body */}
-        <div className="p-5 sm:p-6 pb-12 overflow-y-auto flex-1 space-y-5 overscroll-contain bg-slate-50/50">
+        <div className="p-4 sm:p-5 pb-8 overflow-y-auto flex-1 space-y-4 overscroll-contain bg-card">
           {/* Success Alert */}
           {successMessage && (
-            <div className="flex items-start gap-3 rounded-2xl border-2 border-emerald-300 bg-emerald-50 p-4 text-sm font-bold text-emerald-900 animate-in fade-in">
-              <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />
+            <div className="flex items-start gap-3 rounded-lg border border-primary/30 bg-primary/10 p-3.5 text-xs font-bold text-primary animate-in fade-in">
+              <CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />
               <span>{successMessage}</span>
             </div>
           )}
 
           {/* Error Alert */}
           {errorMessage && (
-            <div className="flex items-start gap-3 rounded-2xl border-2 border-rose-300 bg-rose-50 p-4 text-sm font-bold text-rose-900 animate-in fade-in">
-              <AlertCircle className="h-5 w-5 text-rose-600 shrink-0 mt-0.5" />
+            <div className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/10 p-3.5 text-xs font-bold text-destructive animate-in fade-in">
+              <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
               <span>{errorMessage}</span>
             </div>
           )}
 
           {/* Role Form */}
           {!successMessage && (
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <div className="space-y-3">
-                <label className="text-base font-bold text-slate-900 block leading-snug">
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2.5">
+                <label className="text-sm font-bold text-foreground block leading-snug">
                   Pilih Peran yang Diajukan
                 </label>
-                <div className="grid grid-cols-1 gap-2.5">
+                <div className="grid grid-cols-1 gap-2">
                   {availableRoles.map((role) => {
                     const isSelected = selectedRole === role;
                     return (
@@ -166,17 +166,17 @@ export function JoinKomunitasModal({
                         type="button"
                         onClick={() => setSelectedRole(role)}
                         className={cn(
-                          "flex min-h-[52px] items-center justify-between rounded-xl border-2 p-3.5 text-base font-bold transition-all active:scale-98 text-left cursor-pointer",
+                          "flex min-h-[46px] items-center justify-between rounded-lg border p-3 text-sm font-semibold transition-all active:scale-[0.99] text-left cursor-pointer",
                           isSelected
-                            ? "border-blue-600 bg-blue-50 text-blue-950 ring-2 ring-blue-600/20 shadow-xs"
-                            : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                            ? "border-primary bg-primary/5 text-primary ring-1 ring-primary/20 shadow-2xs font-bold"
+                            : "border-border bg-card text-foreground hover:bg-muted/40"
                         )}
                       >
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2.5">
                           <ShieldCheck
                             className={cn(
-                              "h-5 w-5 shrink-0",
-                              isSelected ? "text-blue-700" : "text-slate-400"
+                              "h-4 w-4 shrink-0",
+                              isSelected ? "text-primary" : "text-muted-foreground"
                             )}
                           />
                           <span>{role}</span>
@@ -184,13 +184,13 @@ export function JoinKomunitasModal({
 
                         <div
                           className={cn(
-                            "flex h-6 w-6 items-center justify-center rounded-full border-2",
+                            "flex h-5 w-5 items-center justify-center rounded-full border-2 transition-colors",
                             isSelected
-                              ? "border-blue-600 bg-blue-600 text-white"
-                              : "border-slate-300 bg-white"
+                              ? "border-primary bg-primary text-primary-foreground"
+                              : "border-border bg-background"
                           )}
                         >
-                          {isSelected && <Check className="h-3.5 w-3.5 stroke-[3px]" />}
+                          {isSelected && <Check className="h-3 w-3 stroke-[3px]" />}
                         </div>
                       </button>
                     );
@@ -198,7 +198,7 @@ export function JoinKomunitasModal({
                 </div>
               </div>
 
-              <div className="text-xs sm:text-sm text-slate-600 leading-relaxed bg-amber-50 dark:bg-amber-950/40 p-3.5 rounded-xl border border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-200 space-y-1.5">
+              <div className="text-xs text-muted-foreground leading-relaxed bg-secondary/15 p-3.5 rounded-lg border border-secondary/30 text-amber-950 dark:text-amber-200 space-y-1.5">
                 {selectedRole === "Pengunjung" ? (
                   <p>
                     * Anda akan langsung bergabung dan aktif di <strong>{komunitas.nama}</strong> dengan peran sebagai <strong>Pengunjung</strong>.
@@ -208,8 +208,8 @@ export function JoinKomunitasModal({
                     * Pengajuan peran sebagai <strong>{selectedRole}</strong> di <strong>{komunitas.nama}</strong> memerlukan persetujuan Admin. Sebelum permohonan disetujui, Anda dapat langsung masuk dan mengakses komunitas dengan peran sebagai <strong>Pengunjung</strong>. Setelah disetujui oleh Admin, peran Anda akan otomatis berubah sesuai ajuan.
                   </p>
                 )}
-                <p className="text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 pt-1 border-t border-amber-200/60 dark:border-amber-800/60 flex items-center gap-1.5">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                <p className="text-[11px] font-semibold text-primary pt-1 border-t border-secondary/20 flex items-center gap-1.5">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0" />
                   <span>
                     Akun Anda juga akan otomatis tergabung di Komunitas Kelurahan, Kecamatan, dan Kota Tegal sesuai wilayah ini.
                   </span>
@@ -217,21 +217,21 @@ export function JoinKomunitasModal({
               </div>
 
               {/* Submit Button */}
-              <div className="pt-2">
+              <div className="pt-1">
                 <button
                   type="submit"
                   disabled={isPending}
-                  className="flex w-full min-h-[50px] h-13 items-center justify-center gap-2 rounded-xl bg-blue-700 hover:bg-blue-800 px-6 text-base font-bold text-white shadow-md transition-all active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                  className="flex w-full min-h-[44px] h-11 items-center justify-center gap-2 rounded-lg bg-primary hover:bg-primary-hover px-6 text-sm font-bold text-primary-foreground shadow-xs transition-all active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 >
                   {isPending ? (
                     <>
-                      <Loader2 className="h-5 w-5 animate-spin" />
+                      <Loader2 className="h-4 w-4 animate-spin" />
                       <span>Mengirim Pengajuan...</span>
                     </>
                   ) : (
                     <>
                       <UserPlus className="h-4 w-4" />
-                      <span>KIRIM PERMOHONAN ({selectedRole.toUpperCase()})</span>
+                      <span>Kirim Permohonan ({selectedRole})</span>
                     </>
                   )}
                 </button>

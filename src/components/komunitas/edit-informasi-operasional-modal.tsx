@@ -137,28 +137,28 @@ export function EditInformasiOperasionalModal({
     <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto animate-in fade-in duration-200">
       {/* Overlay Backdrop */}
       <div
-        className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity"
+        className="fixed inset-0 bg-background/80 backdrop-blur-xs transition-opacity"
         onClick={() => !isPending && onClose()}
       />
 
       {/* Modal Card */}
-      <div className="relative w-full max-w-2xl max-h-[92dvh] sm:max-h-[88dvh] flex flex-col rounded-t-3xl sm:rounded-3xl border-2 border-slate-200 bg-white shadow-2xl z-10 animate-in slide-in-from-bottom-5 sm:zoom-in-95 duration-200 overflow-hidden my-0 sm:my-auto">
+      <div className="relative w-full max-w-2xl max-h-[92dvh] sm:max-h-[88dvh] flex flex-col rounded-t-lg sm:rounded-lg border border-border bg-card shadow-xl z-10 animate-in slide-in-from-bottom-5 sm:zoom-in-95 duration-200 overflow-hidden my-0 sm:my-auto">
         {/* Header */}
-        <div className="flex items-start justify-between p-5 pb-4 border-b-2 border-slate-100 shrink-0 bg-white">
+        <div className="flex items-start justify-between p-4 sm:p-5 pb-3.5 border-b border-border shrink-0 bg-card">
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700 border-2 border-emerald-200">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary border border-primary/20 shrink-0">
               <Edit3 className="h-5 w-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-lg font-bold text-slate-900 leading-tight">
+                <h3 className="text-base font-bold text-foreground leading-tight">
                   Edit Informasi &amp; Operasional
                 </h3>
-                <span className="text-xs font-bold px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 border border-emerald-200">
+                <span className="text-2xs font-extrabold px-2 py-0.5 rounded-md bg-primary/10 text-primary border border-primary/20">
                   {komunitas.jenis === "posyandu" ? "ADMIN, PENGURUS & KADER" : "ADMIN & PENGURUS"}
                 </span>
               </div>
-              <p className="text-xs text-slate-500 font-semibold line-clamp-1">
+              <p className="text-xs text-muted-foreground font-medium line-clamp-1 mt-0.5">
                 Kelola Informasi: {komunitas.nama}
               </p>
             </div>
@@ -166,24 +166,24 @@ export function EditInformasiOperasionalModal({
           <button
             type="button"
             onClick={() => !isPending && onClose()}
-            className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-colors cursor-pointer"
+            className="flex h-8 w-8 items-center justify-center rounded-lg border border-border text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
           >
-            <X className="h-5 w-5" />
+            <X className="h-4 w-4" />
           </button>
         </div>
 
         {/* Tab Navigation (Hanya tampil untuk Komunitas Posyandu karena memiliki 6 Bidang Kader SPM) */}
         {komunitas.jenis === "posyandu" && (
-          <div className="px-5 pt-3 bg-white shrink-0">
-            <div className="flex rounded-xl bg-slate-100 p-1 gap-1 border border-slate-200">
+          <div className="px-4 sm:px-5 pt-3 bg-card shrink-0">
+            <div className="flex rounded-lg bg-muted p-1 gap-1 border border-border">
               <button
                 type="button"
                 onClick={() => setActiveTab("umum")}
                 className={cn(
-                  "flex-1 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5",
+                  "flex-1 py-1.5 rounded-md text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5",
                   activeTab === "umum"
-                    ? "bg-white text-slate-900 shadow-xs"
-                    : "text-slate-600 hover:text-slate-900"
+                    ? "bg-card text-foreground shadow-2xs"
+                    : "text-muted-foreground hover:text-foreground"
                 )}
               >
                 <Info className="h-3.5 w-3.5" />
@@ -193,13 +193,13 @@ export function EditInformasiOperasionalModal({
                 type="button"
                 onClick={() => setActiveTab("kader_spm")}
                 className={cn(
-                  "flex-1 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5",
+                  "flex-1 py-1.5 rounded-md text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5",
                   activeTab === "kader_spm"
-                    ? "bg-white text-emerald-800 shadow-xs font-extrabold"
-                    : "text-slate-600 hover:text-slate-900"
+                    ? "bg-card text-primary shadow-2xs font-extrabold"
+                    : "text-muted-foreground hover:text-foreground"
                 )}
               >
-                <Phone className="h-3.5 w-3.5 text-emerald-600" />
+                <Phone className="h-3.5 w-3.5 text-primary" />
                 <span>Kontak &amp; 6 Kader Bidang</span>
               </button>
             </div>
@@ -208,15 +208,15 @@ export function EditInformasiOperasionalModal({
 
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="flex-1 flex flex-col overflow-hidden">
-          <div className="p-5 sm:p-6 overflow-y-auto flex-1 space-y-4 overscroll-contain bg-slate-50/50 text-sm">
+          <div className="p-4 sm:p-5 overflow-y-auto flex-1 space-y-4 overscroll-contain bg-muted/20 text-sm">
             {/* Feedback Alerts */}
             {feedback && (
               <div
                 className={cn(
-                  "flex items-start gap-3 rounded-2xl border-2 p-3.5 text-xs font-bold animate-in fade-in",
+                  "flex items-start gap-3 rounded-lg border p-3 text-xs font-semibold animate-in fade-in",
                   feedback.type === "success"
-                    ? "border-emerald-300 bg-emerald-50 text-emerald-900"
-                    : "border-rose-300 bg-rose-50 text-rose-900"
+                    ? "border-emerald-500/20 bg-emerald-50 text-emerald-900"
+                    : "border-rose-500/20 bg-rose-50 text-rose-900"
                 )}
               >
                 {feedback.type === "success" ? (
@@ -233,10 +233,10 @@ export function EditInformasiOperasionalModal({
               <div className="space-y-4">
                 {/* Alamat Lokasi */}
                 <div className="space-y-1.5">
-                  <label className="flex items-center gap-1.5 font-bold text-slate-800 text-xs">
-                    <MapPin className="h-4 w-4 text-slate-500" />
+                  <label className="flex items-center gap-1.5 font-bold text-foreground text-xs">
+                    <MapPin className="h-4 w-4 text-primary" />
                     <span>Alamat Lokasi Lengkap</span>
-                    <span className="text-rose-500">*</span>
+                    <span className="text-destructive">*</span>
                   </label>
                   <input
                     type="text"
@@ -244,14 +244,14 @@ export function EditInformasiOperasionalModal({
                     value={lokasi}
                     onChange={(e) => setLokasi(e.target.value)}
                     placeholder="Contoh: Balai Posyandu / RW 05, Randugunting, Tegal Selatan, Kota Tegal"
-                    className="w-full px-3.5 py-2.5 rounded-xl border-2 border-slate-200 bg-white text-slate-900 text-sm font-semibold focus:border-blue-600 focus:outline-none"
+                    className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm font-semibold focus:border-primary focus:outline-none"
                   />
                 </div>
 
                 {/* Jadwal Layanan */}
                 <div className="space-y-1.5">
-                  <label className="flex items-center gap-1.5 font-bold text-slate-800 text-xs">
-                    <Calendar className="h-4 w-4 text-blue-700" />
+                  <label className="flex items-center gap-1.5 font-bold text-foreground text-xs">
+                    <Calendar className="h-4 w-4 text-primary" />
                     <span>Jadwal Layanan / Kegiatan Rutin</span>
                   </label>
                   <input
@@ -259,15 +259,15 @@ export function EditInformasiOperasionalModal({
                     value={jadwal}
                     onChange={(e) => setJadwal(e.target.value)}
                     placeholder="Contoh: Setiap Hari Rabu Minggu ke-2 Pukul 08.30 – 11.30 WIB"
-                    className="w-full px-3.5 py-2.5 rounded-xl border-2 border-slate-200 bg-white text-slate-900 text-sm font-semibold focus:border-blue-600 focus:outline-none"
+                    className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm font-semibold focus:border-primary focus:outline-none"
                   />
                 </div>
 
                 {/* Kontak Utama / Sekretariat (untuk Komunitas Non-Posyandu) */}
                 {komunitas.jenis !== "posyandu" && (
                   <div className="space-y-1.5">
-                    <label className="flex items-center gap-1.5 font-bold text-slate-800 text-xs">
-                      <Phone className="h-4 w-4 text-emerald-600" />
+                    <label className="flex items-center gap-1.5 font-bold text-foreground text-xs">
+                      <Phone className="h-4 w-4 text-primary" />
                       <span>Kontak Pengurus Utama / Sekretariat</span>
                     </label>
                     <input
@@ -275,9 +275,9 @@ export function EditInformasiOperasionalModal({
                       value={kontakUtama}
                       onChange={(e) => setKontakUtama(e.target.value)}
                       placeholder="Contoh: 0813-2233-4455 / 0283-356xxx"
-                      className="w-full px-3.5 py-2.5 rounded-xl border-2 border-slate-200 bg-white text-slate-900 font-mono text-sm font-bold focus:border-blue-600 focus:outline-none"
+                      className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground font-mono text-sm font-bold focus:border-primary focus:outline-none"
                     />
-                    <p className="text-[11px] text-slate-500 font-medium">
+                    <p className="text-2xs text-muted-foreground font-medium">
                       Nomor telepon atau WhatsApp pengurus komunitas.
                     </p>
                   </div>
@@ -285,8 +285,8 @@ export function EditInformasiOperasionalModal({
 
                 {/* Profil & Visi */}
                 <div className="space-y-1.5">
-                  <label className="flex items-center gap-1.5 font-bold text-slate-800 text-xs">
-                    <Info className="h-4 w-4 text-slate-500" />
+                  <label className="flex items-center gap-1.5 font-bold text-foreground text-xs">
+                    <Info className="h-4 w-4 text-primary" />
                     <span>Profil &amp; Visi Layanan Komunitas</span>
                   </label>
                   <textarea
@@ -294,7 +294,7 @@ export function EditInformasiOperasionalModal({
                     value={deskripsi}
                     onChange={(e) => setDeskripsi(e.target.value)}
                     placeholder="Tuliskan deskripsi layanan terpadu, visi komunitas, dan kegiatan unggulan..."
-                    className="w-full px-3.5 py-2.5 rounded-xl border-2 border-slate-200 bg-white text-slate-900 text-sm leading-relaxed focus:border-blue-600 focus:outline-none"
+                    className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm leading-relaxed focus:border-primary focus:outline-none"
                   />
                 </div>
               </div>
@@ -304,9 +304,9 @@ export function EditInformasiOperasionalModal({
             {activeTab === "kader_spm" && (
               <div className="space-y-4">
                 {/* Kontak Utama / Sekretariat */}
-                <div className="p-4 rounded-2xl border-2 border-emerald-200 bg-emerald-50/50 space-y-2">
-                  <label className="flex items-center gap-2 font-bold text-emerald-950 text-xs uppercase tracking-wider">
-                    <Phone className="h-4 w-4 text-emerald-700" />
+                <div className="p-3.5 rounded-lg border border-border bg-card space-y-2">
+                  <label className="flex items-center gap-2 font-bold text-foreground text-xs uppercase tracking-wider">
+                    <Phone className="h-4 w-4 text-primary" />
                     <span>Kontak Utama / Sekretariat</span>
                   </label>
                   <input
@@ -314,26 +314,26 @@ export function EditInformasiOperasionalModal({
                     value={kontakUtama}
                     onChange={(e) => setKontakUtama(e.target.value)}
                     placeholder="Contoh: 0813-2233-4455 / 0283-356xxx"
-                    className="w-full px-3.5 py-2.5 rounded-xl border-2 border-emerald-300 bg-white text-slate-900 font-mono text-sm font-bold focus:border-emerald-600 focus:outline-none"
+                    className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground font-mono text-sm font-bold focus:border-primary focus:outline-none"
                   />
-                  <p className="text-[11px] text-slate-500 font-medium">
+                  <p className="text-2xs text-muted-foreground font-medium">
                     Nomor telepon atau WhatsApp umum untuk sekretariat komunitas.
                   </p>
                 </div>
 
                 <div className="pt-2">
                   <div className="flex items-center gap-2 mb-3">
-                    <Sparkles className="h-4 w-4 text-emerald-600" />
-                    <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                    <Sparkles className="h-4 w-4 text-primary" />
+                    <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">
                       Daftar Kontak Kader 6 Bidang SPM (Permendagri No. 13/2024)
                     </h4>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {/* 1. Bidang Pendidikan */}
-                    <div className="p-3.5 rounded-2xl border-2 border-blue-200 bg-white space-y-2 shadow-2xs">
-                      <div className="flex items-center gap-2 text-blue-800 font-bold text-xs">
-                        <GraduationCap className="h-4 w-4 text-blue-600" />
+                    <div className="p-3.5 rounded-lg border border-border bg-card space-y-2 shadow-2xs">
+                      <div className="flex items-center gap-2 text-primary font-bold text-xs">
+                        <GraduationCap className="h-4 w-4" />
                         <span>Kader Bidang Pendidikan</span>
                       </div>
                       <input
@@ -343,7 +343,7 @@ export function EditInformasiOperasionalModal({
                           setKaderPendidikan((prev) => ({ ...prev, nama: e.target.value }))
                         }
                         placeholder="Nama Kader..."
-                        className="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold focus:border-blue-600 focus:outline-none"
+                        className="w-full px-3 py-1.5 rounded-lg border border-border bg-background text-foreground text-xs font-semibold focus:border-primary focus:outline-none"
                       />
                       <input
                         type="tel"
@@ -352,13 +352,13 @@ export function EditInformasiOperasionalModal({
                           setKaderPendidikan((prev) => ({ ...prev, wa: e.target.value }))
                         }
                         placeholder="No. WhatsApp (08...)"
-                        className="w-full px-3 py-1.5 rounded-lg border border-slate-200 font-mono text-xs focus:border-blue-600 focus:outline-none"
+                        className="w-full px-3 py-1.5 rounded-lg border border-border bg-background text-foreground font-mono text-xs focus:border-primary focus:outline-none"
                       />
                     </div>
 
                     {/* 2. Bidang Kesehatan */}
-                    <div className="p-3.5 rounded-2xl border-2 border-emerald-200 bg-white space-y-2 shadow-2xs">
-                      <div className="flex items-center gap-2 text-emerald-800 font-bold text-xs">
+                    <div className="p-3.5 rounded-lg border border-border bg-card space-y-2 shadow-2xs">
+                      <div className="flex items-center gap-2 text-emerald-700 font-bold text-xs">
                         <HeartPulse className="h-4 w-4 text-emerald-600" />
                         <span>Kader Bidang Kesehatan</span>
                       </div>
@@ -369,7 +369,7 @@ export function EditInformasiOperasionalModal({
                           setKaderKesehatan((prev) => ({ ...prev, nama: e.target.value }))
                         }
                         placeholder="Nama Kader..."
-                        className="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold focus:border-emerald-600 focus:outline-none"
+                        className="w-full px-3 py-1.5 rounded-lg border border-border bg-background text-foreground text-xs font-semibold focus:border-emerald-600 focus:outline-none"
                       />
                       <input
                         type="tel"
@@ -378,14 +378,14 @@ export function EditInformasiOperasionalModal({
                           setKaderKesehatan((prev) => ({ ...prev, wa: e.target.value }))
                         }
                         placeholder="No. WhatsApp (08...)"
-                        className="w-full px-3 py-1.5 rounded-lg border border-slate-200 font-mono text-xs focus:border-emerald-600 focus:outline-none"
+                        className="w-full px-3 py-1.5 rounded-lg border border-border bg-background text-foreground font-mono text-xs focus:border-emerald-600 focus:outline-none"
                       />
                     </div>
 
                     {/* 3. Bidang Pekerjaan Umum */}
-                    <div className="p-3.5 rounded-2xl border-2 border-amber-200 bg-white space-y-2 shadow-2xs">
-                      <div className="flex items-center gap-2 text-amber-800 font-bold text-xs">
-                        <Wrench className="h-4 w-4 text-amber-600" />
+                    <div className="p-3.5 rounded-lg border border-border bg-card space-y-2 shadow-2xs">
+                      <div className="flex items-center gap-2 text-secondary font-bold text-xs">
+                        <Wrench className="h-4 w-4 text-secondary" />
                         <span>Kader Bidang Pekerjaan Umum</span>
                       </div>
                       <input
@@ -395,7 +395,7 @@ export function EditInformasiOperasionalModal({
                           setKaderPekerjaanUmum((prev) => ({ ...prev, nama: e.target.value }))
                         }
                         placeholder="Nama Kader..."
-                        className="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold focus:border-amber-600 focus:outline-none"
+                        className="w-full px-3 py-1.5 rounded-lg border border-border bg-background text-foreground text-xs font-semibold focus:border-secondary focus:outline-none"
                       />
                       <input
                         type="tel"
@@ -404,13 +404,13 @@ export function EditInformasiOperasionalModal({
                           setKaderPekerjaanUmum((prev) => ({ ...prev, wa: e.target.value }))
                         }
                         placeholder="No. WhatsApp (08...)"
-                        className="w-full px-3 py-1.5 rounded-lg border border-slate-200 font-mono text-xs focus:border-amber-600 focus:outline-none"
+                        className="w-full px-3 py-1.5 rounded-lg border border-border bg-background text-foreground font-mono text-xs focus:border-secondary focus:outline-none"
                       />
                     </div>
 
                     {/* 4. Bidang Perumahan Rakyat */}
-                    <div className="p-3.5 rounded-2xl border-2 border-cyan-200 bg-white space-y-2 shadow-2xs">
-                      <div className="flex items-center gap-2 text-cyan-800 font-bold text-xs">
+                    <div className="p-3.5 rounded-lg border border-border bg-card space-y-2 shadow-2xs">
+                      <div className="flex items-center gap-2 text-cyan-700 font-bold text-xs">
                         <Home className="h-4 w-4 text-cyan-600" />
                         <span>Kader Bidang Perumahan Rakyat</span>
                       </div>
@@ -421,7 +421,7 @@ export function EditInformasiOperasionalModal({
                           setKaderPerumahanRakyat((prev) => ({ ...prev, nama: e.target.value }))
                         }
                         placeholder="Nama Kader..."
-                        className="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold focus:border-cyan-600 focus:outline-none"
+                        className="w-full px-3 py-1.5 rounded-lg border border-border bg-background text-foreground text-xs font-semibold focus:border-cyan-600 focus:outline-none"
                       />
                       <input
                         type="tel"
@@ -430,13 +430,13 @@ export function EditInformasiOperasionalModal({
                           setKaderPerumahanRakyat((prev) => ({ ...prev, wa: e.target.value }))
                         }
                         placeholder="No. WhatsApp (08...)"
-                        className="w-full px-3 py-1.5 rounded-lg border border-slate-200 font-mono text-xs focus:border-cyan-600 focus:outline-none"
+                        className="w-full px-3 py-1.5 rounded-lg border border-border bg-background text-foreground font-mono text-xs focus:border-cyan-600 focus:outline-none"
                       />
                     </div>
 
                     {/* 5. Bidang Trantipbumlinmas */}
-                    <div className="p-3.5 rounded-2xl border-2 border-purple-200 bg-white space-y-2 shadow-2xs">
-                      <div className="flex items-center gap-2 text-purple-800 font-bold text-xs">
+                    <div className="p-3.5 rounded-lg border border-border bg-card space-y-2 shadow-2xs">
+                      <div className="flex items-center gap-2 text-purple-700 font-bold text-xs">
                         <ShieldCheck className="h-4 w-4 text-purple-600" />
                         <span>Kader Bidang Trantipbumlinmas</span>
                       </div>
@@ -450,7 +450,7 @@ export function EditInformasiOperasionalModal({
                           }))
                         }
                         placeholder="Nama Kader..."
-                        className="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold focus:border-purple-600 focus:outline-none"
+                        className="w-full px-3 py-1.5 rounded-lg border border-border bg-background text-foreground text-xs font-semibold focus:border-purple-600 focus:outline-none"
                       />
                       <input
                         type="tel"
@@ -462,13 +462,13 @@ export function EditInformasiOperasionalModal({
                           }))
                         }
                         placeholder="No. WhatsApp (08...)"
-                        className="w-full px-3 py-1.5 rounded-lg border border-slate-200 font-mono text-xs focus:border-purple-600 focus:outline-none"
+                        className="w-full px-3 py-1.5 rounded-lg border border-border bg-background text-foreground font-mono text-xs focus:border-purple-600 focus:outline-none"
                       />
                     </div>
 
                     {/* 6. Bidang Sosial */}
-                    <div className="p-3.5 rounded-2xl border-2 border-rose-200 bg-white space-y-2 shadow-2xs">
-                      <div className="flex items-center gap-2 text-rose-800 font-bold text-xs">
+                    <div className="p-3.5 rounded-lg border border-border bg-card space-y-2 shadow-2xs">
+                      <div className="flex items-center gap-2 text-rose-700 font-bold text-xs">
                         <Users className="h-4 w-4 text-rose-600" />
                         <span>Kader Bidang Sosial</span>
                       </div>
@@ -479,7 +479,7 @@ export function EditInformasiOperasionalModal({
                           setKaderSosial((prev) => ({ ...prev, nama: e.target.value }))
                         }
                         placeholder="Nama Kader..."
-                        className="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold focus:border-rose-600 focus:outline-none"
+                        className="w-full px-3 py-1.5 rounded-lg border border-border bg-background text-foreground text-xs font-semibold focus:border-rose-600 focus:outline-none"
                       />
                       <input
                         type="tel"
@@ -488,7 +488,7 @@ export function EditInformasiOperasionalModal({
                           setKaderSosial((prev) => ({ ...prev, wa: e.target.value }))
                         }
                         placeholder="No. WhatsApp (08...)"
-                        className="w-full px-3 py-1.5 rounded-lg border border-slate-200 font-mono text-xs focus:border-rose-600 focus:outline-none"
+                        className="w-full px-3 py-1.5 rounded-lg border border-border bg-background text-foreground font-mono text-xs focus:border-rose-600 focus:outline-none"
                       />
                     </div>
                   </div>
@@ -498,19 +498,19 @@ export function EditInformasiOperasionalModal({
           </div>
 
           {/* Footer Actions */}
-          <div className="p-4 sm:p-5 border-t-2 border-slate-100 bg-white flex items-center justify-end gap-3 shrink-0">
+          <div className="p-3.5 sm:p-4 border-t border-border bg-card flex items-center justify-end gap-3 shrink-0">
             <button
               type="button"
               onClick={() => onClose()}
               disabled={isPending}
-              className="px-4 py-2.5 rounded-xl border border-slate-300 bg-white font-bold text-xs text-slate-700 hover:bg-slate-50 cursor-pointer"
+              className="h-10 px-4 rounded-lg border border-border bg-card font-bold text-xs text-foreground hover:bg-muted cursor-pointer transition-colors"
             >
               Batal
             </button>
             <button
               type="submit"
               disabled={isPending}
-              className="inline-flex min-h-[44px] items-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 font-bold text-xs text-white cursor-pointer shadow-xs active:scale-98 disabled:opacity-50"
+              className="inline-flex min-h-[40px] h-10 items-center gap-2 px-5 rounded-lg bg-primary hover:bg-primary-hover font-bold text-xs text-primary-foreground cursor-pointer shadow-xs active:scale-98 disabled:opacity-50 transition-all"
             >
               {isPending ? (
                 <>
