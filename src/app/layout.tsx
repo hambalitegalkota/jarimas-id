@@ -41,30 +41,10 @@ export const metadata: Metadata = {
   openGraph: {
     title: "JARIMAS-ID | Platform Kolaboratif Warga & Posyandu",
     description:
-      "Platform digital kolaboratif berbasis warga (dari warga, oleh warga, untuk warga) untuk interkoneksi data anak 0-6 tahun, DDTK tumbuh kembang, pendataan ATS (Anak Tidak Sekolah), gotong royong lintas komunitas PAUD & Posyandu, serta sarana Jarimas Market Kota Tegal.",
+      "Platform digital kolaborasi berbasis warga (dari warga, oleh warga, untuk warga) untuk pemantauan tumbuh kembang dan gotong royong komunitas warga Kota Tegal.",
     siteName: "JARIMAS-ID",
     locale: "id_ID",
     type: "website",
-    images: [
-      {
-        url: "/images/jarimas-logo.png",
-        width: 1024,
-        height: 1024,
-        alt: "JARIMAS.ID - Jaringan Informasi Masyarakat Indonesia",
-      },
-    ],
-  },
-  icons: {
-    icon: [
-      { url: "/favicon.ico", sizes: "any" },
-      { url: "/images/jarimas-icon-32.png", sizes: "32x32", type: "image/png" },
-      { url: "/images/jarimas-icon-192.png", sizes: "192x192", type: "image/png" },
-      { url: "/images/jarimas-icon.png", sizes: "512x512", type: "image/png" },
-    ],
-    apple: [
-      { url: "/apple-icon.png", sizes: "180x180", type: "image/png" },
-    ],
-    shortcut: "/favicon.ico",
   },
 };
 

@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 import {
   User,
   Mail,
@@ -553,45 +552,6 @@ export default async function ProfilePage() {
           <ApprovalList initialApprovals={pendingApprovals} isSuperAdmin={false} />
         </section>
       )}
-
-      {/* Brand & App Info Card */}
-      <section className="rounded-lg border border-border bg-card p-4 sm:p-5 shadow-2xs space-y-3">
-        <div className="flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
-          <div className="relative h-14 w-14 sm:h-16 sm:w-16 rounded-2xl overflow-hidden border border-amber-500/30 bg-slate-950 shadow-md shrink-0">
-            <Image
-              src="/images/jarimas-icon.png"
-              alt="JARIMAS.ID"
-              fill
-              sizes="64px"
-              className="object-cover"
-            />
-          </div>
-          <div className="flex-1 space-y-1">
-            <h3 className="text-sm font-bold text-foreground">
-              JARIMAS.ID &bull; Jaringan Informasi Masyarakat
-            </h3>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              Platform Kolaboratif Gotong Royong Warga Kota Tegal &bull; Versi 1.0.0 (Rilis Oktober 2026)
-            </p>
-            <div className="pt-1.5 flex flex-wrap items-center justify-center sm:justify-start gap-2.5">
-              <a
-                href="/docs/Panduan_Penggunaan_Aplikasi_JARIMAS-ID.pdf"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 rounded-md bg-secondary/15 hover:bg-secondary/25 border border-secondary/30 px-3 py-1.5 text-xs font-bold text-secondary transition-all shadow-2xs"
-              >
-                <span>📄 Unduh Buku Panduan PDF</span>
-              </a>
-              <Link
-                href="/kabar"
-                className="inline-flex items-center gap-1.5 rounded-md bg-muted hover:bg-muted/80 border border-border px-3 py-1.5 text-xs font-medium text-foreground transition-all"
-              >
-                <span>Kabar Lingkungan</span>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
     </div>
   );
 }

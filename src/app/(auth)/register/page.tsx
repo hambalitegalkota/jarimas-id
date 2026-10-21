@@ -2,7 +2,6 @@
 
 import { useActionState, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import {
   User,
   Mail,
@@ -34,21 +33,7 @@ export default function RegisterPage() {
     <div className="flex min-h-[calc(100vh-6rem)] flex-col justify-center px-4 py-8 sm:px-6 max-w-md mx-auto w-full">
       <div className="space-y-6">
         {/* Header Branding */}
-        <div className="relative text-center space-y-2.5">
-          <div className="flex justify-center">
-            <Link href="/" className="inline-block transition-transform hover:scale-105 active:scale-95">
-              <div className="relative h-18 w-18 sm:h-20 sm:w-20 rounded-2xl overflow-hidden border border-amber-500/30 bg-slate-950 shadow-md">
-                <Image
-                  src="/images/jarimas-icon.png"
-                  alt="JARIMAS.ID"
-                  fill
-                  sizes="80px"
-                  className="object-cover"
-                  priority
-                />
-              </div>
-            </Link>
-          </div>
+        <div className="relative text-center space-y-2">
           <div className="flex justify-center">
             <span className="rounded-md bg-primary/10 px-2.5 py-0.5 text-2xs font-bold text-primary border border-primary/20 uppercase tracking-wider">
               JARIMAS REGISTRATION
