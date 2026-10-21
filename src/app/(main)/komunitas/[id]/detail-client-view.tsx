@@ -2198,6 +2198,7 @@ export function KomunitasDetailClientView({
             jumlah_anggota: anggotaState.length,
             is_kegiatan: komunitas.jenis === "kegiatan",
           }}
+          existingMemberIds={anggotaState.map((a) => a.user_id)}
           allUsers={[]}
           canManage={true}
           currentUserId={currentUserId || null}

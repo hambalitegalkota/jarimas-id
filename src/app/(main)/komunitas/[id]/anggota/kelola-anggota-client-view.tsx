@@ -28,11 +28,13 @@ import { cn, formatPeranDisplay } from "@/lib/utils";
 
 interface KelolaAnggotaClientViewProps {
   komunitasId: string;
+  komunitasNama?: string;
   initialMembers: AnggotaKomunitasDetail[];
 }
 
 export function KelolaAnggotaClientView({
   komunitasId,
+  komunitasNama,
   initialMembers,
 }: KelolaAnggotaClientViewProps) {
   const [members, setMembers] = useState<AnggotaKomunitasDetail[]>(initialMembers);
@@ -442,10 +444,11 @@ export function KelolaAnggotaClientView({
           onClose={() => setIsAddModalOpen(false)}
           room={{
             id: komunitasId,
-            nama: "Komunitas",
+            nama: komunitasNama || "Komunitas",
             jenis: "kegiatan",
-            jumlah_anggota: approvedMembers.length,
+            jumlah_anggota: approvedMembers.length || members.length,
           }}
+          existingMemberIds={members.map((m) => m.user_id)}
           allUsers={[]}
           canManage={true}
           currentUserId={null}

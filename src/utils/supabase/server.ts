@@ -1,4 +1,5 @@
 import { createServerClient } from "@supabase/ssr";
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 
 const DEFAULT_SUPABASE_URL = "https://nzfwkpwabfiettoixtdk.supabase.co";
@@ -57,7 +58,6 @@ export function createAdminClient() {
     return null;
   }
 
-  const { createClient: createSupabaseClient } = require("@supabase/supabase-js");
   return createSupabaseClient(supabaseUrl, serviceRoleKey, {
     auth: {
       persistSession: false,

@@ -22,18 +22,20 @@ import {
   deleteGrupKegiatan,
 } from "@/app/actions/grup-kegiatan";
 import { getRegisteredUsers } from "@/app/actions/pertemanan";
-import type {
+import {
   GrupChatRoom,
   GrupKegiatanMemberItem,
   RegisteredUserItem,
 } from "@/types/database";
 import { useGlobalMessageNotification } from "@/components/notifications/global-message-notification-provider";
+import { toValidUUID } from "@/lib/utils";
 
 interface ManageGrupMembersModalProps {
   isOpen: boolean;
   onClose: () => void;
   room: GrupChatRoom | null;
   allUsers?: RegisteredUserItem[];
+  existingMemberIds?: string[];
   canManage: boolean;
   currentUserId: string | null;
   initialTab?: "anggota" | "undang";
@@ -45,6 +47,7 @@ export function ManageGrupMembersModal({
   onClose,
   room,
   allUsers = [],
+  existingMemberIds = [],
   canManage,
   currentUserId,
   initialTab = "anggota",
@@ -102,7 +105,7 @@ export function ManageGrupMembersModal({
 
   // Ambil daftar anggota saat modal dibuka
   useEffect(() => {
-    if (!isOpen || !room) return;
+    if (!isOpen || !room?.id) return;
 
     let isMounted = true;
     async function loadMembers() {
@@ -110,8 +113,8 @@ export function ManageGrupMembersModal({
       setActionMessage(null);
       try {
         const res = await getGrupKegiatanMembers(room!.id);
-        if (isMounted && res.success) {
-          setMembers(res.members || []);
+        if (isMounted && res.success && res.members) {
+          setMembers(res.members);
         }
       } catch (err) {
         console.error("Gagal load anggota grup:", err);
@@ -124,17 +127,54 @@ export function ManageGrupMembersModal({
     return () => {
       isMounted = false;
     };
-  }, [isOpen, room]);
+  }, [isOpen, room?.id]);
 
-  // Set ID user yang sudah tergabung
+  // Set ID user yang sudah tergabung (gabungan dari prop existingMemberIds dan fetch members)
   const existingMemberUserIds = useMemo(() => {
-    return new Set(members.map((m) => m.user_id));
-  }, [members]);
+    const ids = new Set<string>();
+    if (existingMemberIds && Array.isArray(existingMemberIds)) {
+      existingMemberIds.forEach((id) => {
+        if (id) ids.add(String(id).trim().toLowerCase());
+      });
+    }
+    members.forEach((m) => {
+      if (m.user_id) ids.add(String(m.user_id).trim().toLowerCase());
+    });
+    return ids;
+  }, [members, existingMemberIds]);
 
   // Kandidat yang belum tergabung untuk tab "+ Undang"
+  // Menyaring pengguna yang sudah terdaftar di existingMemberUserIds MAUPUN di u.komunitas_list
   const candidateUsersToInvite = useMemo(() => {
+    const rawTargetId = (room?.id || "").toLowerCase().trim();
+    const validTargetUuid = rawTargetId ? toValidUUID(rawTargetId).toLowerCase() : "";
+
     return internalUsers
-      .filter((u) => !existingMemberUserIds.has(u.id))
+      .filter((u) => {
+        const uidNormalized = String(u.id || "").trim().toLowerCase();
+        // 1. Saring jika ID pengguna sudah ada di existingMemberUserIds
+        if (existingMemberUserIds.has(uidNormalized)) {
+          return false;
+        }
+
+        // 2. Saring jika pengguna sudah terdaftar di komunitas ini berdasarkan komunitas_list miliknya
+        if (rawTargetId && u.komunitas_list && u.komunitas_list.length > 0) {
+          const isAlreadyAffiliated = u.komunitas_list.some((c) => {
+            const cid = String(c.id || "").trim().toLowerCase();
+            const cValid = toValidUUID(cid).toLowerCase();
+            return (
+              cid === rawTargetId ||
+              cValid === rawTargetId ||
+              (validTargetUuid && (cid === validTargetUuid || cValid === validTargetUuid))
+            );
+          });
+          if (isAlreadyAffiliated) {
+            return false;
+          }
+        }
+
+        return true;
+      })
       .filter((u) => {
         if (!searchInviteQuery.trim()) return true;
         const q = searchInviteQuery.toLowerCase().trim();
@@ -150,7 +190,7 @@ export function ManageGrupMembersModal({
         if (aOn !== bOn) return bOn - aOn;
         return a.nama_lengkap.localeCompare(b.nama_lengkap, "id-ID");
       });
-  }, [internalUsers, existingMemberUserIds, searchInviteQuery, onlineUserIds]);
+  }, [internalUsers, existingMemberUserIds, room?.id, searchInviteQuery, onlineUserIds]);
 
   // Filter anggota yang sedang ditampilkan di tab Anggota
   const filteredCurrentMembers = useMemo(() => {
@@ -294,7 +334,7 @@ export function ManageGrupMembersModal({
                 Tambah &amp; Kelola Anggota Komunitas
               </h3>
               <p className="text-[11px] text-slate-500 truncate">
-                {room.nama} • {members.length} Anggota Tergabung
+                {room.nama} • {Math.max(members.length, existingMemberUserIds.size, room.jumlah_anggota || 0)} Anggota Tergabung
               </p>
             </div>
           </div>
@@ -336,7 +376,7 @@ export function ManageGrupMembersModal({
             }`}
           >
             <Users className="h-3.5 w-3.5" />
-            <span>Daftar Anggota ({members.length})</span>
+            <span>Daftar Anggota ({Math.max(members.length, existingMemberUserIds.size, room.jumlah_anggota || 0)})</span>
           </button>
 
           {canManage && (

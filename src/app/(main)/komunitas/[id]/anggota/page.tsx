@@ -112,6 +112,7 @@ export default async function KelolaAnggotaPage({
       {/* Interactive Member Management View */}
       <KelolaAnggotaClientView
         komunitasId={id}
+        komunitasNama={komunitas.nama}
         initialMembers={allMembers}
       />
     </div>
