@@ -121,13 +121,18 @@ export function isDummyDataAnak(row: any): boolean {
 /**
  * Mencari lokasi (Kecamatan dan Kelurahan) dari sebuah Satuan PAUD/PKBM berdasarkan nama atau ID
  */
-export function findPaudLocation(paudNameOrId?: string | null): {
+export function findPaudLocation(
+  paudNameOrId?: string | null,
+  wilayahContext?: { kelurahan?: string | null; kecamatan?: string | null }
+): {
   kecamatan: string;
   kelurahan: string;
   nama: string;
 } | null {
   if (!paudNameOrId) return null;
   const query = paudNameOrId.trim().toLowerCase();
+  const ctxKel = (wilayahContext?.kelurahan || "").toLowerCase().trim();
+  const ctxKec = (wilayahContext?.kecamatan || "").toLowerCase().trim();
 
   // Disambiguasi khusus KB BIAS (Kemandungan vs Panggung)
   if (query.includes("bias") || (query.includes("bina") && query.includes("sholeh"))) {
@@ -136,13 +141,17 @@ export function findPaudLocation(paudNameOrId?: string | null): {
       query.includes(" tb ") ||
       query.includes("(bias) tb") ||
       query.includes("barat") ||
-      query.includes("kemandungan");
+      query.includes("kemandungan") ||
+      ctxKel.includes("kemandungan") ||
+      ctxKec.includes("barat");
     const isTt =
       query.endsWith(" tt") ||
       query.includes(" tt ") ||
       query.includes("(bias) tt") ||
       query.includes("timur") ||
-      query.includes("panggung");
+      query.includes("panggung") ||
+      ctxKel.includes("panggung") ||
+      ctxKec.includes("timur");
 
     if (isTb && !isTt) {
       const tbMatch = RAW_PAUD_PKBM_TEGAL.find(
@@ -171,17 +180,118 @@ export function findPaudLocation(paudNameOrId?: string | null): {
 
   // Disambiguasi Pos PAUD Kartini (Kraton vs Slerok)
   if (query.includes("kartini")) {
-    if (query.includes("kraton") || query.includes("barat")) {
+    if (query.includes("kraton") || query.includes("barat") || ctxKel.includes("kraton")) {
       const match = RAW_PAUD_PKBM_TEGAL.find(
         (p) => p.id === "21283b97-a8a0-4031-8641-2349ad207e87"
       );
       if (match) return { kecamatan: match.kecamatan, kelurahan: match.kelurahan, nama: match.nama };
-    } else if (query.includes("slerok") || query.includes("rw. vi") || query.includes("rw 06") || query.includes("timur")) {
+    } else if (query.includes("slerok") || query.includes("rw. vi") || query.includes("rw 06") || query.includes("timur") || ctxKel.includes("slerok")) {
       const match = RAW_PAUD_PKBM_TEGAL.find(
         (p) => p.id === "3ff83fb1-b19c-45c8-871a-a6bd264d56c0"
       );
       if (match) return { kecamatan: match.kecamatan, kelurahan: match.kelurahan, nama: match.nama };
     }
+  }
+
+  // Disambiguasi Pos PAUD Melati (Pesurungan Kidul vs Kalinyamat Kulon vs Melati Sari)
+  if (query.includes("melati") && (query.includes("pos paud") || query.includes("sps") || query.startsWith("melati") || query === "pos paud melati" || query === "paud melati")) {
+    const isPesurungan =
+      query.includes("pesurungan") ||
+      query.includes("kidul") ||
+      ctxKel.includes("pesurungan") ||
+      ctxKec.includes("barat");
+    const isKalinyamat =
+      query.includes("kalinyamat") ||
+      query.includes("kulon") ||
+      ctxKel.includes("kalinyamat") ||
+      ctxKec.includes("margadana");
+    const isSari =
+      query.includes("sari") ||
+      ctxKel.includes("tegalsari") ||
+      ctxKel.includes("slerok");
+
+    if (isPesurungan && !isKalinyamat) {
+      return {
+        kecamatan: "Tegal Barat",
+        kelurahan: "Pesurungan Kidul",
+        nama: "Pos PAUD Melati Pesurungan Kidul",
+      };
+    } else if (isKalinyamat && !isPesurungan) {
+      return {
+        kecamatan: "Margadana",
+        kelurahan: "Kalinyamat Kulon",
+        nama: "Pos PAUD Melati Kalinyamat Kulon",
+      };
+    } else if (isSari) {
+      return {
+        kecamatan: "Tegal Barat",
+        kelurahan: "Tegalsari",
+        nama: "Pos PAUD Melati Sari",
+      };
+    }
+  }
+
+  // Disambiguasi TK Pertiwi berdasarkan nomor cabang
+  if (query.includes("pertiwi")) {
+    if (query.includes("25.8") || query.includes("25 8") || ctxKel.includes("pesurungan")) {
+      return { kecamatan: "Tegal Barat", kelurahan: "Pesurungan Kidul", nama: "TK Pertiwi 25.8 Pesurungan Kidul" };
+    }
+    if (query.includes("25.12") || query.includes("25 12") || ctxKel.includes("kalinyamat")) {
+      return { kecamatan: "Margadana", kelurahan: "Kalinyamat Kulon", nama: "TK Pertiwi 25.12 Kalinyamat Kulon" };
+    }
+    if (query.includes("25.13") || query.includes("25 13") || ctxKel.includes("kejambon")) {
+      return { kecamatan: "Tegal Timur", kelurahan: "Kejambon", nama: "TK Pertiwi 25.13 Kejambon" };
+    }
+    if (query.includes("25.6") || query.includes("25 6") || ctxKel.includes("panggung")) {
+      return { kecamatan: "Tegal Timur", kelurahan: "Panggung", nama: "TK Pertiwi 25.6 Panggung" };
+    }
+    if (query.includes("25.3") || query.includes("25 3") || ctxKel.includes("slerok")) {
+      return { kecamatan: "Tegal Timur", kelurahan: "Slerok", nama: "TK Pertiwi 25.3 Slerok" };
+    }
+    if (query.includes("25.2") || query.includes("25 2") || ctxKel.includes("kemandungan")) {
+      return { kecamatan: "Tegal Barat", kelurahan: "Kemandungan", nama: "TK Pertiwi 25.2 Kemandungan" };
+    }
+    if (query.includes("25.5") || query.includes("25 5") || ctxKel.includes("kraton")) {
+      return { kecamatan: "Tegal Barat", kelurahan: "Kraton", nama: "TK Pertiwi 25.5 Kraton" };
+    }
+    if (query.includes("25.7") || query.includes("25 7") || ctxKel.includes("pekauman")) {
+      return { kecamatan: "Tegal Barat", kelurahan: "Pekauman", nama: "TK Pertiwi 25.7 Pekauman" };
+    }
+    if (query.includes("25.4") || query.includes("25 4") || ctxKel.includes("tegalsari")) {
+      return { kecamatan: "Tegal Barat", kelurahan: "Tegalsari", nama: "TK Pertiwi 25.4 Tegalsari" };
+    }
+    if (query.includes("25.9") || query.includes("25 9") || ctxKel.includes("bandung")) {
+      return { kecamatan: "Tegal Selatan", kelurahan: "Bandung", nama: "TK Pertiwi 25.9 Bandung" };
+    }
+    if (query.includes("25.10") || query.includes("25 10") || ctxKel.includes("debong tengah")) {
+      return { kecamatan: "Tegal Selatan", kelurahan: "Debong Tengah", nama: "TK Pertiwi 25.10 Debong Tengah" };
+    }
+    if (query.includes("25.1") || query.includes("25 1") || ctxKel.includes("randugunting")) {
+      return { kecamatan: "Tegal Selatan", kelurahan: "Randugunting", nama: "TK Pertiwi 25.1 Randugunting" };
+    }
+  }
+
+  // Disambiguasi Al Azhar 66 (KB vs TK)
+  if (query.includes("al azhar") || query.includes("al-azhar")) {
+    if (query.includes("tk") || query.includes("kanak")) {
+      return { kecamatan: "Tegal Barat", kelurahan: "Pesurungan Kidul", nama: "TK Islam Al Azhar 66 Kota Tegal" };
+    }
+    return { kecamatan: "Tegal Barat", kelurahan: "Pesurungan Kidul", nama: "KB Islam Al Azhar 66 Kota Tegal" };
+  }
+
+  // Disambiguasi Mekar di Pesurungan Kidul
+  if (query.includes("mekar")) {
+    if (query.includes("pkbm")) {
+      return { kecamatan: "Tegal Barat", kelurahan: "Pesurungan Kidul", nama: "PKBM Mekar" };
+    }
+    if (query.includes("kb") || query.includes("pesurungan") || ctxKel.includes("pesurungan")) {
+      return { kecamatan: "Tegal Barat", kelurahan: "Pesurungan Kidul", nama: "KB Mekar" };
+    }
+  }
+
+  // Disambiguasi Sofa Marwah
+  if (query.includes("sofa marwah")) {
+    return { kecamatan: "Tegal Barat", kelurahan: "Pesurungan Kidul", nama: "KB Sofa Marwah" };
   }
 
   // 1. Cek di RAW_PAUD_PKBM_TEGAL berdasarkan nama
@@ -593,6 +703,28 @@ export function isDataAnakMatchingKomunitas(
       targetKomunitas?.nama &&
       isSchoolNameMatching(item.nama_sekolah, targetKomunitas.nama)
     ) {
+      // Disambiguation check: jika nama sekolah anak ambigu tanpa kelurahan (misal "Pos PAUD Melati")
+      // dan targetKomunitas memiliki nama kelurahan (misal "Pos PAUD Melati Pesurungan Kidul"),
+      // pastikan wilayah domisili/KK anak tidak bertentangan dengan kelurahan komunitas PAUD.
+      const kKelTarget = (targetKomunitas.kelurahan || "").toLowerCase().trim();
+      const childSchool = item.nama_sekolah.toLowerCase().trim();
+      if (kKelTarget && !childSchool.includes(kKelTarget)) {
+        const hasOtherKelWithSameBase = RAW_PAUD_PKBM_TEGAL.some(
+          (p) =>
+            p.id !== targetKomunitas.id &&
+            (p.kelurahan || "").toLowerCase().trim() !== kKelTarget &&
+            isSchoolNameMatching(childSchool, p.nama)
+        );
+        if (hasOtherKelWithSameBase) {
+          const domKel = normalizeWilayah(item.domisili_kelurahan);
+          const kkKel = normalizeWilayah(item.kk_kelurahan);
+          const isDomMatch = domKel && (domKel === kKelTarget || domKel.includes(kKelTarget) || kKelTarget.includes(domKel));
+          const isKkMatch = kkKel && (kkKel === kKelTarget || kkKel.includes(kKelTarget) || kKelTarget.includes(kkKel));
+          if (!isDomMatch && !isKkMatch) {
+            return false;
+          }
+        }
+      }
       return true;
     }
     return false;
@@ -851,78 +983,174 @@ export function parseAtsDetails(
  * Memformat nama satuan PAUD agar seragam dan menyertakan nama kelurahan
  * jika merupakan salah satu lembaga yang memiliki kesamaan nama di Kota Tegal.
  */
-export function formatNamaSekolahDisplay(namaSekolah?: string | null): string {
+export function formatNamaSekolahDisplay(
+  namaSekolah?: string | null,
+  wilayahContext?: { kelurahan?: string | null; kecamatan?: string | null }
+): string {
   if (!namaSekolah) return "-";
   const s = namaSekolah.trim();
   const lower = s.toLowerCase();
+  const ctxKel = (wilayahContext?.kelurahan || "").toLowerCase().trim();
+  const ctxKec = (wilayahContext?.kecamatan || "").toLowerCase().trim();
 
   // 1. KB BIAS
-  if (lower.includes("bias") && (lower.includes("tb") || lower.includes("kemandungan") || lower.includes("barat"))) {
+  if (lower.includes("bias") && (lower.includes("tb") || lower.includes("kemandungan") || lower.includes("barat") || ctxKel.includes("kemandungan") || ctxKec.includes("barat"))) {
     return "KB Bina Iman Anak Sholeh (BIAS) Kemandungan";
   }
-  if (lower.includes("bias") && (lower.includes("tt") || lower.includes("panggung") || lower.includes("timur"))) {
+  if (lower.includes("bias") && (lower.includes("tt") || lower.includes("panggung") || lower.includes("timur") || ctxKel.includes("panggung") || ctxKec.includes("timur"))) {
     return "KB Bina Iman Anak Sholeh (BIAS) Panggung";
   }
 
   // 2. Pos PAUD Kartini
-  if (lower === "pos paud kartini kraton" || (lower.includes("kartini") && (lower.includes("kraton") || lower.includes("barat")))) {
+  if (lower === "pos paud kartini kraton" || (lower.includes("kartini") && (lower.includes("kraton") || lower.includes("barat") || ctxKel.includes("kraton")))) {
     return "Pos PAUD Kartini Kraton";
   }
   if (
     lower === "pos paud kartini slerok" ||
     lower === "pos paud kartini rw. vi" ||
     lower === "pos paud kartini rw 06" ||
-    (lower.includes("kartini") && (lower.includes("slerok") || lower.includes("timur")))
+    (lower.includes("kartini") && (lower.includes("slerok") || lower.includes("timur") || ctxKel.includes("slerok")))
   ) {
     return "Pos PAUD Kartini Slerok";
   }
 
   // 3. Permata Hati
-  if (lower === "ra permata hati" || lower === "ra permata hati kejambon") {
+  if (lower === "ra permata hati" || lower === "ra permata hati kejambon" || (lower.includes("permata hati") && (lower.includes("kejambon") || ctxKel.includes("kejambon")))) {
     return "RA Permata Hati Kejambon";
   }
-  if (lower === "kb permata hati" || lower === "kb permata hati slerok") {
+  if (lower === "kb permata hati" || lower === "kb permata hati slerok" || (lower.includes("permata hati") && (lower.includes("slerok") || ctxKel.includes("slerok")))) {
     return "KB Permata Hati Slerok";
   }
 
   // 4. Sekar Melati
-  if (lower === "kb sekar melati" || lower === "kb. sekar melati" || lower === "kb sekar melati panggung") {
+  if (lower === "kb sekar melati" || lower === "kb. sekar melati" || lower === "kb sekar melati panggung" || (lower.includes("sekar melati") && (lower.includes("panggung") || ctxKel.includes("panggung")))) {
     return "KB Sekar Melati Panggung";
   }
-  if (lower === "pos paud sekar melati" || lower === "pos paud sekar melati tegalsari") {
+  if (lower === "pos paud sekar melati" || lower === "pos paud sekar melati tegalsari" || (lower.includes("sekar melati") && (lower.includes("tegalsari") || ctxKel.includes("tegalsari")))) {
     return "Pos PAUD Sekar Melati Tegalsari";
   }
 
   // 5. Little Star
-  if (lower === "tk little star" || lower === "tk little star kraton") {
+  if (lower === "tk little star" || lower === "tk little star kraton" || (lower.includes("little star") && (lower.includes("kraton") || ctxKel.includes("kraton")))) {
     return "TK Little Star Kraton";
   }
-  if (lower === "kb little star" || lower === "kb little star tegalsari") {
+  if (lower === "kb little star" || lower === "kb little star tegalsari" || (lower.includes("little star") && (lower.includes("tegalsari") || ctxKel.includes("tegalsari")))) {
     return "KB Little Star Tegalsari";
   }
 
   // 6. Nurul Huda
-  if (lower === "paud tpq nurul huda" || lower === "paud tpq nurul huda panggung") {
+  if (lower === "paud tpq nurul huda" || lower === "paud tpq nurul huda panggung" || (lower.includes("nurul huda") && (lower.includes("panggung") || ctxKel.includes("panggung")))) {
     return "PAUD TPQ Nurul Huda Panggung";
   }
-  if (lower === "tk nurul huda" || lower === "tk nurul huda muarareja") {
+  if (lower === "tk nurul huda" || lower === "tk nurul huda muarareja" || (lower.includes("nurul huda") && (lower.includes("muarareja") || ctxKel.includes("muarareja")))) {
     return "TK Nurul Huda Muarareja";
   }
 
   // 7. Mutiara Shahabat
-  if (lower === "kb mutiara shahabat" || lower === "kb mutiara shahabat kemandungan") {
+  if (lower === "kb mutiara shahabat" || lower === "kb mutiara shahabat kemandungan" || (lower.includes("mutiara shahabat") && (lower.includes("kemandungan") || ctxKel.includes("kemandungan")))) {
     return "KB Mutiara Shahabat Kemandungan";
   }
-  if (lower === "pkbm mutiara shahabat" || lower === "pkbm mutiara shahabat pekauman") {
+  if (lower === "pkbm mutiara shahabat" || lower === "pkbm mutiara shahabat pekauman" || (lower.includes("mutiara shahabat") && (lower.includes("pekauman") || ctxKel.includes("pekauman")))) {
     return "PKBM Mutiara Shahabat Pekauman";
   }
 
   // 8. At Taqwa
-  if (lower === "ra at taqwa" || lower === "ra at taqwa pekauman") {
+  if (lower === "ra at taqwa" || lower === "ra at taqwa pekauman" || (lower.includes("at taqwa") && (lower.includes("pekauman") || ctxKel.includes("pekauman")))) {
     return "RA At Taqwa Pekauman";
   }
-  if (lower === "paud tpq at taqwa" || lower === "paud tpq at taqwa cabawan") {
+  if (lower === "paud tpq at taqwa" || lower === "paud tpq at taqwa cabawan" || (lower.includes("at taqwa") && (lower.includes("cabawan") || ctxKel.includes("cabawan")))) {
     return "PAUD TPQ At Taqwa Cabawan";
+  }
+
+  // 9. Pos PAUD Melati (Pesurungan Kidul vs Kalinyamat Kulon vs Melati Sari)
+  if (lower.includes("melati") && (lower.includes("pos paud") || lower.includes("sps") || lower.startsWith("melati") || lower === "pos paud melati" || lower === "paud melati")) {
+    if (lower.includes("pesurungan") || lower.includes("kidul") || ctxKel.includes("pesurungan") || ctxKec.includes("barat")) {
+      return "Pos PAUD Melati Pesurungan Kidul";
+    }
+    if (lower.includes("kalinyamat") || lower.includes("kulon") || ctxKel.includes("kalinyamat") || ctxKec.includes("margadana")) {
+      return "Pos PAUD Melati Kalinyamat Kulon";
+    }
+    if (lower.includes("sari") || ctxKel.includes("tegalsari")) {
+      return "Pos PAUD Melati Sari";
+    }
+  }
+
+  // 10. TK Pertiwi (Semua Cabang di Kota Tegal Menyertakan Kelurahan)
+  if (lower.includes("pertiwi")) {
+    if (lower.includes("25.8") || lower.includes("25 8") || ctxKel.includes("pesurungan")) {
+      return "TK Pertiwi 25.8 Pesurungan Kidul";
+    }
+    if (lower.includes("25.12") || lower.includes("25 12") || ctxKel.includes("kalinyamat")) {
+      return "TK Pertiwi 25.12 Kalinyamat Kulon";
+    }
+    if (lower.includes("25.13") || lower.includes("25 13") || ctxKel.includes("kejambon")) {
+      return "TK Pertiwi 25.13 Kejambon";
+    }
+    if (lower.includes("25.6") || lower.includes("25 6") || ctxKel.includes("panggung")) {
+      return "TK Pertiwi 25.6 Panggung";
+    }
+    if (lower.includes("25.3") || lower.includes("25 3") || ctxKel.includes("slerok")) {
+      return "TK Pertiwi 25.3 Slerok";
+    }
+    if (lower.includes("25.2") || lower.includes("25 2") || ctxKel.includes("kemandungan")) {
+      return "TK Pertiwi 25.2 Kemandungan";
+    }
+    if (lower.includes("25.5") || lower.includes("25 5") || ctxKel.includes("kraton")) {
+      return "TK Pertiwi 25.5 Kraton";
+    }
+    if (lower.includes("25.7") || lower.includes("25 7") || ctxKel.includes("pekauman")) {
+      return "TK Pertiwi 25.7 Pekauman";
+    }
+    if (lower.includes("25.4") || lower.includes("25 4") || ctxKel.includes("tegalsari")) {
+      return "TK Pertiwi 25.4 Tegalsari";
+    }
+    if (lower.includes("25.9") || lower.includes("25 9") || ctxKel.includes("bandung")) {
+      return "TK Pertiwi 25.9 Bandung";
+    }
+    if (lower.includes("25.10") || lower.includes("25 10") || ctxKel.includes("debong tengah")) {
+      return "TK Pertiwi 25.10 Debong Tengah";
+    }
+    if (lower.includes("25.1") || lower.includes("25 1") || ctxKel.includes("randugunting")) {
+      return "TK Pertiwi 25.1 Randugunting";
+    }
+  }
+
+  // 11. Pos PAUD Kenanga
+  if (lower.includes("kenanga") && (lower.includes("pos paud") || lower.includes("sps") || lower === "pos paud kenanga")) {
+    if (lower.includes("mintaragen") || ctxKel.includes("mintaragen")) return "Pos PAUD Kenanga Mintaragen";
+    if (lower.includes("kemandungan") || ctxKel.includes("kemandungan")) return "Pos PAUD Kenanga Kemandungan";
+    if (lower.includes("kraton") || ctxKel.includes("kraton")) return "Pos PAUD Kenanga Kraton";
+  }
+
+  // 12. Pos PAUD Seruni
+  if (lower.includes("seruni") && (lower.includes("pos paud") || lower.includes("sps") || lower === "pos paud seruni")) {
+    if (lower.includes("panggung") || ctxKel.includes("panggung")) return "Pos PAUD Seruni Panggung";
+    if (lower.includes("debong lor") || ctxKel.includes("debong lor")) return "Pos PAUD Seruni Debong Lor";
+    if (lower.includes("sumurpanggang") || ctxKel.includes("sumurpanggang")) return "Pos PAUD Seruni Sumurpanggang";
+  }
+
+  // 13. Pos PAUD Dewi Sartika
+  if (lower.includes("dewi sartika")) {
+    if (lower.includes("kraton") || ctxKel.includes("kraton")) return "Pos PAUD Dewi Sartika Kraton";
+    if (lower.includes("debong kulon") || ctxKel.includes("debong kulon")) return "Pos PAUD Dewi Sartika Debong Kulon";
+  }
+
+  // 14. Pos PAUD Bougenville
+  if (lower.includes("bougenville") && (lower.includes("pos paud") || lower.includes("sps") || lower === "pos paud bougenville")) {
+    if (lower.includes("tegalsari") || ctxKel.includes("tegalsari")) return "Pos PAUD Bougenville Tegalsari";
+    if (lower.includes("margadana") || ctxKel.includes("margadana")) return "Pos PAUD Bougenville Margadana";
+  }
+
+  // 15. Pos PAUD Tunas Harapan
+  if (lower.includes("tunas harapan")) {
+    if (lower.includes("randugunting") || ctxKel.includes("randugunting")) return "Pos PAUD Tunas Harapan Randugunting";
+    if (lower.includes("krandon") || ctxKel.includes("krandon")) return "Pos PAUD Tunas Harapan Krandon";
+  }
+
+  // 16. KB & PKBM Mekar
+  if (lower.includes("mekar")) {
+    if (lower.includes("pkbm")) return "PKBM Mekar";
+    if (lower.includes("kb") || lower.includes("pesurungan") || ctxKel.includes("pesurungan")) return "KB Mekar";
   }
 
   return s;

@@ -945,7 +945,7 @@ export const RAW_ALL_PAUD_PKBM_TEGAL: RawPaudItem[] = [
   },
 
   // ==========================================
-  // 2. KECAMATAN TEGAL BARAT (6 Kelurahan)
+  // 2. KECAMATAN TEGAL BARAT (7 Kelurahan)
   // ==========================================
   // Debong Lor (1 Lembaga)
   {
@@ -1529,8 +1529,80 @@ export const RAW_ALL_PAUD_PKBM_TEGAL: RawPaudItem[] = [
     deskripsi: "Lembaga PAUD & Pendidikan Kesetaraan (TK Tut Wuri) menyelenggarakan layanan stimulasi tumbuh kembang anak usia dini, kesiapan belajar, pendidikan kesetaraan Paket A/B/C, dan parenting keluarga.",
   },
 
+  // Pesurungan Kidul (7 Lembaga)
+  {
+    id: "bba016a0-bd1d-4738-8019-e19de6cfe544",
+    nama: "KB Islam Al Azhar 66 Kota Tegal",
+    npsn: "70054968",
+    jenis_institusi: "KB",
+    kecamatan: "Tegal Barat",
+    kelurahan: "Pesurungan Kidul",
+    lokasi: "Pesurungan Kidul, Tegal Barat, Kota Tegal",
+    deskripsi: "Lembaga PAUD & Pendidikan Kesetaraan (KB Islam Al Azhar 66 Kota Tegal) menyelenggarakan layanan stimulasi tumbuh kembang anak usia dini, kesiapan belajar, pendidikan kesetaraan Paket A/B/C, dan parenting keluarga.",
+  },
+  {
+    id: "bd2b4a40-3ee7-4e64-8a59-2c0963b17f97",
+    nama: "KB Mekar",
+    npsn: "69975546",
+    jenis_institusi: "KB",
+    kecamatan: "Tegal Barat",
+    kelurahan: "Pesurungan Kidul",
+    lokasi: "Pesurungan Kidul, Tegal Barat, Kota Tegal",
+    deskripsi: "Lembaga PAUD & Pendidikan Kesetaraan (KB Mekar) menyelenggarakan layanan stimulasi tumbuh kembang anak usia dini, kesiapan belajar, pendidikan kesetaraan Paket A/B/C, dan parenting keluarga.",
+  },
+  {
+    id: "cece6646-9bae-404d-8805-0171ff4f9cfa",
+    nama: "KB Sofa Marwah",
+    npsn: "69818087",
+    jenis_institusi: "KB",
+    kecamatan: "Tegal Barat",
+    kelurahan: "Pesurungan Kidul",
+    lokasi: "Pesurungan Kidul, Tegal Barat, Kota Tegal",
+    deskripsi: "Lembaga PAUD & Pendidikan Kesetaraan (KB Sofa Marwah) menyelenggarakan layanan stimulasi tumbuh kembang anak usia dini, kesiapan belajar, pendidikan kesetaraan Paket A/B/C, dan parenting keluarga.",
+  },
+  {
+    id: "d4d2cb1d-1a16-4f7f-807f-bda93f3dbafd",
+    nama: "PKBM Mekar",
+    npsn: "P9970191",
+    jenis_institusi: "PKBM",
+    kecamatan: "Tegal Barat",
+    kelurahan: "Pesurungan Kidul",
+    lokasi: "Pesurungan Kidul, Tegal Barat, Kota Tegal",
+    deskripsi: "Lembaga PAUD & Pendidikan Kesetaraan (PKBM Mekar) menyelenggarakan layanan stimulasi tumbuh kembang anak usia dini, kesiapan belajar, pendidikan kesetaraan Paket A/B/C, dan parenting keluarga.",
+  },
+  {
+    id: "13f83ced-6560-4513-8acc-d2510726c7e6",
+    nama: "Pos PAUD Melati Pesurungan Kidul",
+    npsn: "69915297",
+    jenis_institusi: "SPS",
+    kecamatan: "Tegal Barat",
+    kelurahan: "Pesurungan Kidul",
+    lokasi: "Pesurungan Kidul, Tegal Barat, Kota Tegal",
+    deskripsi: "Lembaga PAUD & Pendidikan Kesetaraan (Pos PAUD Melati Pesurungan Kidul) menyelenggarakan layanan stimulasi tumbuh kembang anak usia dini, kesiapan belajar, pendidikan kesetaraan Paket A/B/C, dan parenting keluarga.",
+  },
+  {
+    id: "d993e306-4d52-4d49-8952-c8bd0558f45e",
+    nama: "TK Islam Al Azhar 66 Kota Tegal",
+    npsn: "70052713",
+    jenis_institusi: "TK",
+    kecamatan: "Tegal Barat",
+    kelurahan: "Pesurungan Kidul",
+    lokasi: "Pesurungan Kidul, Tegal Barat, Kota Tegal",
+    deskripsi: "Lembaga PAUD & Pendidikan Kesetaraan (TK Islam Al Azhar 66 Kota Tegal) menyelenggarakan layanan stimulasi tumbuh kembang anak usia dini, kesiapan belajar, pendidikan kesetaraan Paket A/B/C, dan parenting keluarga.",
+  },
+  {
+    id: "47717e83-07f5-4f58-8499-5971e08e5e4c",
+    nama: "TK Pertiwi 25.8 Pesurungan Kidul",
+    npsn: "20351659",
+    jenis_institusi: "TK",
+    kecamatan: "Tegal Barat",
+    kelurahan: "Pesurungan Kidul",
+    lokasi: "Pesurungan Kidul, Tegal Barat, Kota Tegal",
+    deskripsi: "Lembaga PAUD & Pendidikan Kesetaraan (TK Pertiwi 25.8 Pesurungan Kidul) menyelenggarakan layanan stimulasi tumbuh kembang anak usia dini, kesiapan belajar, pendidikan kesetaraan Paket A/B/C, dan parenting keluarga.",
+  },
+
   // ==========================================
-  // 3. KECAMATAN TEGAL SELATAN (9 Kelurahan)
+  // 3. KECAMATAN TEGAL SELATAN (8 Kelurahan)
   // ==========================================
   // Bandung (3 Lembaga)
   {
@@ -1698,38 +1770,6 @@ export const RAW_ALL_PAUD_PKBM_TEGAL: RawPaudItem[] = [
     kelurahan: "Debong Tengah",
     lokasi: "Debong Tengah, Tegal Selatan, Kota Tegal",
     deskripsi: "Lembaga PAUD & Pendidikan Kesetaraan (TK Pertiwi 25.10 Debong Tengah) menyelenggarakan layanan stimulasi tumbuh kembang anak usia dini, kesiapan belajar, pendidikan kesetaraan Paket A/B/C, dan parenting keluarga.",
-  },
-
-  // Kalinyamat Kulon (3 Lembaga)
-  {
-    id: "dc1c8234-45ee-4d7d-8233-293958f6d467",
-    nama: "PAUD TPQ Al-Hikmah",
-    npsn: "69818111",
-    jenis_institusi: "SPS",
-    kecamatan: "Tegal Selatan",
-    kelurahan: "Kalinyamat Kulon",
-    lokasi: "Kalinyamat Kulon, Margadana, Kota Tegal",
-    deskripsi: "Lembaga PAUD & Pendidikan Kesetaraan (PAUD TPQ Al-Hikmah) menyelenggarakan layanan stimulasi tumbuh kembang anak usia dini, kesiapan belajar, pendidikan kesetaraan Paket A/B/C, dan parenting keluarga.",
-  },
-  {
-    id: "0ff55749-ba50-421e-8636-5cc96ea8ada1",
-    nama: "Pos PAUD Melati Kalinyamat Kulon",
-    npsn: "69914225",
-    jenis_institusi: "SPS",
-    kecamatan: "Tegal Selatan",
-    kelurahan: "Kalinyamat Kulon",
-    lokasi: "Kalinyamat Kulon, Margadana, Kota Tegal",
-    deskripsi: "Lembaga PAUD & Pendidikan Kesetaraan (Pos PAUD Melati Kalinyamat Kulon) menyelenggarakan layanan stimulasi tumbuh kembang anak usia dini, kesiapan belajar, pendidikan kesetaraan Paket A/B/C, dan parenting keluarga.",
-  },
-  {
-    id: "ddab5d7c-47c7-431f-8459-9a6dffc4d6a4",
-    nama: "TK Pertiwi 25.12 Kalinyamat Kulon",
-    npsn: "20351683",
-    jenis_institusi: "TK",
-    kecamatan: "Tegal Selatan",
-    kelurahan: "Kalinyamat Kulon",
-    lokasi: "Kalinyamat Kulon, Margadana, Kota Tegal",
-    deskripsi: "Lembaga PAUD & Pendidikan Kesetaraan (TK Pertiwi 25.12 Kalinyamat Kulon) menyelenggarakan layanan stimulasi tumbuh kembang anak usia dini, kesiapan belajar, pendidikan kesetaraan Paket A/B/C, dan parenting keluarga.",
   },
 
   // Kalinyamat Wetan (3 Lembaga)
@@ -2227,76 +2267,36 @@ export const RAW_ALL_PAUD_PKBM_TEGAL: RawPaudItem[] = [
     deskripsi: "Lembaga PAUD & Pendidikan Kesetaraan (TK Negeri Pembina Kecamatan Margadana) menyelenggarakan layanan stimulasi tumbuh kembang anak usia dini, kesiapan belajar, pendidikan kesetaraan Paket A/B/C, dan parenting keluarga.",
   },
 
-  // Pesurungan Kidul (7 Lembaga)
+  // Kalinyamat Kulon (3 Lembaga)
   {
-    id: "bba016a0-bd1d-4738-8019-e19de6cfe544",
-    nama: "KB Islam Al Azhar 66 Kota Tegal",
-    npsn: "70054968",
-    jenis_institusi: "KB",
-    kecamatan: "Margadana",
-    kelurahan: "Pesurungan Kidul",
-    lokasi: "Pesurungan Kidul, Tegal Barat, Kota Tegal",
-    deskripsi: "Lembaga PAUD & Pendidikan Kesetaraan (KB Islam Al Azhar 66 Kota Tegal) menyelenggarakan layanan stimulasi tumbuh kembang anak usia dini, kesiapan belajar, pendidikan kesetaraan Paket A/B/C, dan parenting keluarga.",
-  },
-  {
-    id: "bd2b4a40-3ee7-4e64-8a59-2c0963b17f97",
-    nama: "KB Mekar",
-    npsn: "69975546",
-    jenis_institusi: "KB",
-    kecamatan: "Margadana",
-    kelurahan: "Pesurungan Kidul",
-    lokasi: "Pesurungan Kidul, Tegal Barat, Kota Tegal",
-    deskripsi: "Lembaga PAUD & Pendidikan Kesetaraan (KB Mekar) menyelenggarakan layanan stimulasi tumbuh kembang anak usia dini, kesiapan belajar, pendidikan kesetaraan Paket A/B/C, dan parenting keluarga.",
-  },
-  {
-    id: "cece6646-9bae-404d-8805-0171ff4f9cfa",
-    nama: "KB Sofa Marwah",
-    npsn: "69818087",
-    jenis_institusi: "KB",
-    kecamatan: "Margadana",
-    kelurahan: "Pesurungan Kidul",
-    lokasi: "Pesurungan Kidul, Tegal Barat, Kota Tegal",
-    deskripsi: "Lembaga PAUD & Pendidikan Kesetaraan (KB Sofa Marwah) menyelenggarakan layanan stimulasi tumbuh kembang anak usia dini, kesiapan belajar, pendidikan kesetaraan Paket A/B/C, dan parenting keluarga.",
-  },
-  {
-    id: "d4d2cb1d-1a16-4f7f-807f-bda93f3dbafd",
-    nama: "PKBM Mekar",
-    npsn: "P9970191",
-    jenis_institusi: "PKBM",
-    kecamatan: "Margadana",
-    kelurahan: "Pesurungan Kidul",
-    lokasi: "Pesurungan Kidul, Tegal Barat, Kota Tegal",
-    deskripsi: "Lembaga PAUD & Pendidikan Kesetaraan (PKBM Mekar) menyelenggarakan layanan stimulasi tumbuh kembang anak usia dini, kesiapan belajar, pendidikan kesetaraan Paket A/B/C, dan parenting keluarga.",
-  },
-  {
-    id: "13f83ced-6560-4513-8acc-d2510726c7e6",
-    nama: "Pos PAUD Melati Pesurungan Kidul",
-    npsn: "69915297",
+    id: "dc1c8234-45ee-4d7d-8233-293958f6d467",
+    nama: "PAUD TPQ Al-Hikmah",
+    npsn: "69818111",
     jenis_institusi: "SPS",
     kecamatan: "Margadana",
-    kelurahan: "Pesurungan Kidul",
-    lokasi: "Pesurungan Kidul, Tegal Barat, Kota Tegal",
-    deskripsi: "Lembaga PAUD & Pendidikan Kesetaraan (Pos PAUD Melati Pesurungan Kidul) menyelenggarakan layanan stimulasi tumbuh kembang anak usia dini, kesiapan belajar, pendidikan kesetaraan Paket A/B/C, dan parenting keluarga.",
+    kelurahan: "Kalinyamat Kulon",
+    lokasi: "Kalinyamat Kulon, Margadana, Kota Tegal",
+    deskripsi: "Lembaga PAUD & Pendidikan Kesetaraan (PAUD TPQ Al-Hikmah) menyelenggarakan layanan stimulasi tumbuh kembang anak usia dini, kesiapan belajar, pendidikan kesetaraan Paket A/B/C, dan parenting keluarga.",
   },
   {
-    id: "d993e306-4d52-4d49-8952-c8bd0558f45e",
-    nama: "TK Islam Al Azhar 66 Kota Tegal",
-    npsn: "70052713",
-    jenis_institusi: "TK",
+    id: "0ff55749-ba50-421e-8636-5cc96ea8ada1",
+    nama: "Pos PAUD Melati Kalinyamat Kulon",
+    npsn: "69914225",
+    jenis_institusi: "SPS",
     kecamatan: "Margadana",
-    kelurahan: "Pesurungan Kidul",
-    lokasi: "Pesurungan Kidul, Tegal Barat, Kota Tegal",
-    deskripsi: "Lembaga PAUD & Pendidikan Kesetaraan (TK Islam Al Azhar 66 Kota Tegal) menyelenggarakan layanan stimulasi tumbuh kembang anak usia dini, kesiapan belajar, pendidikan kesetaraan Paket A/B/C, dan parenting keluarga.",
+    kelurahan: "Kalinyamat Kulon",
+    lokasi: "Kalinyamat Kulon, Margadana, Kota Tegal",
+    deskripsi: "Lembaga PAUD & Pendidikan Kesetaraan (Pos PAUD Melati Kalinyamat Kulon) menyelenggarakan layanan stimulasi tumbuh kembang anak usia dini, kesiapan belajar, pendidikan kesetaraan Paket A/B/C, dan parenting keluarga.",
   },
   {
-    id: "47717e83-07f5-4f58-8499-5971e08e5e4c",
-    nama: "TK Pertiwi 25.8 Pesurungan Kidul",
-    npsn: "20351659",
+    id: "ddab5d7c-47c7-431f-8459-9a6dffc4d6a4",
+    nama: "TK Pertiwi 25.12 Kalinyamat Kulon",
+    npsn: "20351683",
     jenis_institusi: "TK",
     kecamatan: "Margadana",
-    kelurahan: "Pesurungan Kidul",
-    lokasi: "Pesurungan Kidul, Tegal Barat, Kota Tegal",
-    deskripsi: "Lembaga PAUD & Pendidikan Kesetaraan (TK Pertiwi 25.8 Pesurungan Kidul) menyelenggarakan layanan stimulasi tumbuh kembang anak usia dini, kesiapan belajar, pendidikan kesetaraan Paket A/B/C, dan parenting keluarga.",
+    kelurahan: "Kalinyamat Kulon",
+    lokasi: "Kalinyamat Kulon, Margadana, Kota Tegal",
+    deskripsi: "Lembaga PAUD & Pendidikan Kesetaraan (TK Pertiwi 25.12 Kalinyamat Kulon) menyelenggarakan layanan stimulasi tumbuh kembang anak usia dini, kesiapan belajar, pendidikan kesetaraan Paket A/B/C, dan parenting keluarga.",
   },
 
   // Pesurungan Lor (3 Lembaga)

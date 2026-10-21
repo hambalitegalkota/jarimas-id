@@ -418,11 +418,10 @@ export async function getKomunitasList(
     if (params.jenis && params.jenis !== "semua") {
       dbKomunitasQuery = dbKomunitasQuery.eq("jenis", params.jenis);
     }
-    if (params.kecamatan && params.kecamatan !== "semua") {
-      dbKomunitasQuery = dbKomunitasQuery.ilike("kecamatan", params.kecamatan.trim());
-    }
     if (params.kelurahan && params.kelurahan !== "semua") {
       dbKomunitasQuery = dbKomunitasQuery.ilike("kelurahan", params.kelurahan.trim());
+    } else if (params.kecamatan && params.kecamatan !== "semua") {
+      dbKomunitasQuery = dbKomunitasQuery.ilike("kecamatan", params.kecamatan.trim());
     }
 
     const { data: dbKomunitasRaw } = await dbKomunitasQuery;
@@ -472,6 +471,13 @@ export async function getKomunitasList(
       if (matched) {
         matched.id = dbItem.id;
         if (dbItem.nama) matched.nama = dbItem.nama;
+        const officialKec = findKecamatanByKelurahan(matched.kelurahan || dbItem.kelurahan);
+        if (officialKec) {
+          matched.kecamatan = officialKec;
+        } else if (dbItem.kecamatan && !matched.kecamatan) {
+          matched.kecamatan = dbItem.kecamatan;
+        }
+        if (dbItem.kelurahan) matched.kelurahan = dbItem.kelurahan;
         if (dbItem.lokasi && (!matched.lokasi || !dbItem.lokasi.startsWith(dbItem.kelurahan + ", Kecamatan"))) {
           matched.lokasi = dbItem.lokasi;
         }
@@ -487,15 +493,16 @@ export async function getKomunitasList(
           const core = extractCorePosyanduName(dbNama);
           dbNama = core ? `Posyandu ${core}` : dbNama;
         }
+        const officialKec = findKecamatanByKelurahan(dbItem.kelurahan);
         mergedList.push({
           id: dbItem.id,
           nama: dbNama,
           jenis: itemJenis,
-          kecamatan: dbItem.kecamatan,
+          kecamatan: officialKec || dbItem.kecamatan,
           kelurahan: dbItem.kelurahan,
           rw: dbItem.rw || undefined,
           rt: dbItem.rt || undefined,
-          lokasi: dbItem.lokasi || `${dbItem.kelurahan}, Kecamatan ${dbItem.kecamatan}, Kota Tegal`,
+          lokasi: dbItem.lokasi || `${dbItem.kelurahan}, Kecamatan ${officialKec || dbItem.kecamatan}, Kota Tegal`,
           deskripsi: dbItem.deskripsi || null,
           logo_url: dbItem.logo_url || null,
           kontak: dbItem.kontak || null,
@@ -509,9 +516,10 @@ export async function getKomunitasList(
 
     if (params.kecamatan && params.kecamatan !== "semua") {
       const kecLow = params.kecamatan.toLowerCase().trim();
-      filteredList = filteredList.filter(
-        (item) => item.kecamatan && item.kecamatan.toLowerCase().trim() === kecLow
-      );
+      filteredList = filteredList.filter((item) => {
+        const itemKec = findKecamatanByKelurahan(item.kelurahan) || item.kecamatan;
+        return itemKec && itemKec.toLowerCase().trim() === kecLow;
+      });
     }
 
     if (params.kelurahan && params.kelurahan !== "semua") {
@@ -4638,13 +4646,12 @@ export async function getPaudKomunitasRekapTableAction(): Promise<{
 
         // Kumpulkan candidate IDs yang mungkin match
         const matchingDbKoms = (dbPaudKomunitas || []).filter((k: any) => {
+          if (k.id === item.id) return true;
           const kNama = (k.nama || "").toLowerCase().trim();
           const itNama = item.nama.toLowerCase().trim();
-          return (
-            kNama === itNama &&
-            (k.kecamatan || "").toLowerCase().trim() ===
-              item.kecamatan.toLowerCase().trim()
-          );
+          const kKel = (k.kelurahan || "").toLowerCase().trim();
+          const itKel = (item.kelurahan || "").toLowerCase().trim();
+          return kNama === itNama && (kKel === itKel || !kKel || !itKel);
         });
 
         const candidateIds = new Set<string>([

@@ -19,7 +19,7 @@ function cleanNum(str?: string | null): string {
   return m ? m[0].padStart(2, "0") : "";
 }
 
-const KELURAHAN_TO_KECAMATAN_MAP: Record<string, string> = {
+export const KELURAHAN_TO_KECAMATAN_MAP: Record<string, string> = {
   kejambon: "Tegal Timur",
   panggung: "Tegal Timur",
   slerok: "Tegal Timur",
@@ -60,6 +60,16 @@ const KELURAHAN_TO_KECAMATAN_MAP: Record<string, string> = {
   "pesurungan lor": "Margadana",
   sumurpanggang: "Margadana",
 };
+
+export function getOfficialKecamatan(kelurahan?: string | null): string | null {
+  if (!kelurahan) return null;
+  const clean = kelurahan
+    .toLowerCase()
+    .replace(/^(kelurahan|desa)\s+/i, "")
+    .replace(/kota\s+tegal/gi, "")
+    .trim();
+  return KELURAHAN_TO_KECAMATAN_MAP[clean] || null;
+}
 
 /**
  * Ekstraksi metadata wilayah komunitas secara mendalam dari objek, seed, maupun string nama
