@@ -40,5 +40,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# local temporary scripts
+# local temporary scripts & docs
 /scripts/
+docs/temp_*.html

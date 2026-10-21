@@ -155,8 +155,15 @@ export default async function HomePage() {
       {/* ========================================================= */}
       <header className="flex items-center justify-between gap-3 pt-0.5">
         <div className="flex items-center gap-2.5 sm:gap-3">
-          <div className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-lg bg-primary text-primary-foreground font-black shadow-sm shrink-0">
-            <Sparkles className="h-5 w-5 text-amber-200" />
+          <div className="relative h-10 w-10 sm:h-11 sm:w-11 rounded-xl overflow-hidden border border-amber-500/30 bg-slate-950 shadow-xs shrink-0">
+            <Image
+              src="/images/jarimas-icon.png"
+              alt="JARIMAS.ID"
+              fill
+              sizes="44px"
+              className="object-cover"
+              priority
+            />
           </div>
           <div>
             <div className="flex items-center gap-1.5 flex-wrap">
@@ -942,6 +949,55 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* ========================================================= */}
+      {/* 10. OFFICIAL BRAND FOOTER                                 */}
+      {/* ========================================================= */}
+      <footer className="pt-6 pb-2 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
+        <div className="flex items-center gap-3">
+          <div className="relative h-11 w-11 rounded-xl overflow-hidden border border-amber-500/20 bg-slate-950 shadow-xs shrink-0">
+            <Image
+              src="/images/jarimas-icon.png"
+              alt="JARIMAS.ID"
+              fill
+              sizes="44px"
+              className="object-cover"
+            />
+          </div>
+          <div>
+            <div className="font-bold text-foreground">
+              JARIMAS<span className="text-primary">.ID</span> &bull; KOTA TEGAL
+            </div>
+            <div className="text-[11px] text-muted-foreground">
+              Jaringan Informasi Masyarakat Indonesia &bull; Gerakan Gotong Royong Warga
+            </div>
+          </div>
+        </div>
+
+        <div className="text-center sm:text-right space-y-1">
+          <div className="text-[11px]">
+            &copy; {new Date().getFullYear()} JARIMAS.ID Kota Tegal. Hak Cipta Dilindungi.
+          </div>
+          <div className="flex items-center justify-center sm:justify-end gap-3 text-[11px] font-medium text-primary">
+            <a
+              href="/docs/Panduan_Penggunaan_Aplikasi_JARIMAS-ID.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:underline flex items-center gap-1 font-semibold text-secondary"
+            >
+              <span>📄 Unduh Buku Panduan PDF</span>
+            </a>
+            <span>&bull;</span>
+            <Link href="/kabar" className="hover:underline">
+              Kabar Lingkungan
+            </Link>
+            <span>&bull;</span>
+            <Link href="/komunitas" className="hover:underline">
+              Komunitas Warga
+            </Link>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
