@@ -530,14 +530,14 @@ export function KomunitasDetailClientView({
               : `Pantau data agregat balita dan catatan DDTK ${tierLevelLabel}`,
             badgeText: isRekapOnlyTier ? "Data Rekapitulasi" : `${dataAnakState.length} Balita / Anak`,
             icon: Baby,
-            hoverBorder: "hover:border-blue-400 dark:hover:border-blue-600",
-            hoverBg: "hover:bg-blue-50/50 dark:hover:bg-blue-950/20",
-            iconColor: "text-blue-600 dark:text-blue-400",
-            iconBg: "bg-blue-100 dark:bg-blue-950",
-            arrowBg: "bg-slate-100 dark:bg-slate-800",
-            arrowHoverBg: "group-hover:bg-blue-600 group-hover:text-white dark:group-hover:bg-blue-600",
-            arrowColor: "text-slate-500 dark:text-slate-400",
-            textHoverColor: "group-hover:text-blue-600 dark:group-hover:text-blue-400",
+            hoverBorder: "hover:border-primary/40",
+            hoverBg: "hover:bg-primary/5",
+            iconColor: "text-primary",
+            iconBg: "bg-primary/10",
+            arrowBg: "bg-muted",
+            arrowHoverBg: "group-hover:bg-primary group-hover:text-primary-foreground",
+            arrowColor: "text-muted-foreground",
+            textHoverColor: "group-hover:text-primary",
           },
         ]
       : []),
@@ -556,14 +556,14 @@ export function KomunitasDetailClientView({
               : `Pantau hasil pendataan kasus anak tidak sekolah ${tierLevelLabel}`,
             badgeText: isRekapOnlyTier ? "Data Rekapitulasi" : `${dataAtsState.length} Kasus ATS`,
             icon: GraduationCap,
-            hoverBorder: "hover:border-amber-400 dark:hover:border-amber-600",
-            hoverBg: "hover:bg-amber-50/50 dark:hover:bg-amber-950/20",
-            iconColor: "text-amber-600 dark:text-amber-400",
-            iconBg: "bg-amber-100 dark:bg-amber-950",
-            arrowBg: "bg-slate-100 dark:bg-slate-800",
-            arrowHoverBg: "group-hover:bg-amber-600 group-hover:text-white dark:group-hover:bg-amber-600",
-            arrowColor: "text-slate-500 dark:text-slate-400",
-            textHoverColor: "group-hover:text-amber-600 dark:group-hover:text-amber-400",
+            hoverBorder: "hover:border-secondary/40",
+            hoverBg: "hover:bg-secondary/10",
+            iconColor: "text-secondary",
+            iconBg: "bg-secondary/15",
+            arrowBg: "bg-muted",
+            arrowHoverBg: "group-hover:bg-secondary group-hover:text-secondary-foreground",
+            arrowColor: "text-muted-foreground",
+            textHoverColor: "group-hover:text-secondary",
           },
         ]
       : []),
@@ -576,12 +576,12 @@ export function KomunitasDetailClientView({
       subtitle: "Ruang diskusi dan koordinasi interaktif seluruh anggota komunitas",
       badgeText: "Chat Grup",
       icon: MessageCircle,
-      activeColorBg: "bg-teal-600 dark:bg-teal-700",
-      badgeColor: "bg-teal-500/20 text-teal-100 border-teal-400/30",
-      hoverBorder: "hover:border-teal-400 dark:hover:border-teal-600",
-      hoverBg: "hover:bg-teal-50/50 dark:hover:bg-teal-950/20",
-      iconColor: "text-teal-600 dark:text-teal-400",
-      iconBg: "bg-teal-100 dark:bg-teal-950",
+      activeColorBg: "bg-primary text-primary-foreground",
+      badgeColor: "bg-primary-foreground/20 text-primary-foreground border-primary-foreground/30",
+      hoverBorder: "hover:border-primary/40",
+      hoverBg: "hover:bg-primary/5",
+      iconColor: "text-primary",
+      iconBg: "bg-primary/10",
     },
     {
       id: "kabar",
@@ -589,12 +589,12 @@ export function KomunitasDetailClientView({
       subtitle: "Pengumuman dan diskusi interaktif anggota komunitas",
       badgeText: `${kabarKomunitas.length} Kabar`,
       icon: MessageSquare,
-      activeColorBg: "bg-blue-600 dark:bg-blue-700",
-      badgeColor: "bg-blue-500/20 text-blue-100 border-blue-400/30",
-      hoverBorder: "hover:border-blue-400 dark:hover:border-blue-600",
-      hoverBg: "hover:bg-blue-50/50 dark:hover:bg-blue-950/20",
-      iconColor: "text-blue-600 dark:text-blue-400",
-      iconBg: "bg-blue-100 dark:bg-blue-950",
+      activeColorBg: "bg-primary text-primary-foreground",
+      badgeColor: "bg-primary-foreground/20 text-primary-foreground border-primary-foreground/30",
+      hoverBorder: "hover:border-primary/40",
+      hoverBg: "hover:bg-primary/5",
+      iconColor: "text-primary",
+      iconBg: "bg-primary/10",
     },
     ...(currentUserId
       ? [
@@ -607,12 +607,12 @@ export function KomunitasDetailClientView({
                 : "Informasi operasional dan struktur pengurus komunitas",
             badgeText: `${anggotaState.filter((m) => m.status === "approved").length} Anggota`,
             icon: Users,
-            activeColorBg: "bg-emerald-600 dark:bg-emerald-700",
-            badgeColor: "bg-emerald-500/20 text-emerald-100 border-emerald-400/30",
-            hoverBorder: "hover:border-emerald-400 dark:hover:border-emerald-600",
-            hoverBg: "hover:bg-emerald-50/50 dark:hover:bg-emerald-950/20",
-            iconColor: "text-emerald-600 dark:text-emerald-400",
-            iconBg: "bg-emerald-100 dark:bg-emerald-950",
+            activeColorBg: "bg-primary text-primary-foreground",
+            badgeColor: "bg-primary-foreground/20 text-primary-foreground border-primary-foreground/30",
+            hoverBorder: "hover:border-primary/40",
+            hoverBg: "hover:bg-primary/5",
+            iconColor: "text-primary",
+            iconBg: "bg-primary/10",
           },
         ]
       : []),
@@ -627,18 +627,18 @@ export function KomunitasDetailClientView({
   return (
     <div className="space-y-3 sm:space-y-3.5">
       {/* 1. HERO HEADER CARD (PADAT, RAPI, EFISIEN RUANG) */}
-      <section className="relative overflow-hidden rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 sm:p-4 shadow-xs">
+      <section className="relative overflow-hidden rounded-lg border border-border bg-card p-3 sm:p-4 shadow-sm">
         {/* Baris Atas: Kategori, Lokasi, Jumlah Anggota & Tombol Aksi */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2.5 mb-2.5 border-b border-slate-100 dark:border-slate-800/80">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2.5 mb-2.5 border-b border-border/60">
           <div className="flex items-center gap-2 flex-wrap min-w-0">
             <span
               className={cn(
                 "rounded-md px-2 py-0.5 text-2xs font-bold border shrink-0",
-                komunitasData.jenis === "warga_kita" && "bg-blue-50 text-blue-800 border-blue-200",
-                komunitasData.jenis === "posyandu" && "bg-emerald-50 text-emerald-800 border-emerald-200",
-                isPkbmOrSkb && "bg-amber-50 text-amber-800 border-amber-200",
-                isPureSatuanPaud && "bg-indigo-50 text-indigo-800 border-indigo-200",
-                komunitasData.jenis === "kegiatan" && "bg-purple-50 text-purple-800 border-purple-200"
+                komunitasData.jenis === "warga_kita" && "bg-primary/10 text-primary border-primary/20",
+                komunitasData.jenis === "posyandu" && "bg-teal-500/10 text-teal-800 dark:text-teal-300 border-teal-500/20",
+                isPkbmOrSkb && "bg-secondary/15 text-amber-900 dark:text-amber-200 border-secondary/30",
+                isPureSatuanPaud && "bg-primary/10 text-primary border-primary/20",
+                komunitasData.jenis === "kegiatan" && "bg-muted text-foreground border-border"
               )}
             >
               {komunitasData.jenis === "warga_kita"
@@ -653,15 +653,15 @@ export function KomunitasDetailClientView({
                 ? "GRUP KEGIATAN"
                 : "KOMUNITAS"}
             </span>
-            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 truncate">
+            <span className="text-xs font-semibold text-muted-foreground truncate">
               {komunitas.kelurahan && komunitas.kelurahan !== "Semua Kelurahan"
                 ? `${komunitas.kelurahan}, ${komunitas.kecamatan || "Kota Tegal"}`
                 : komunitas.kecamatan && komunitas.kecamatan !== "Kota Tegal"
                 ? `Kecamatan ${komunitas.kecamatan}, Kota Tegal`
                 : "Kota Tegal, Jawa Tengah"}
             </span>
-            <span className="text-slate-300 dark:text-slate-600 hidden sm:inline">•</span>
-            <span className="text-xs font-bold text-slate-700 dark:text-slate-300 font-mono hidden sm:inline">
+            <span className="text-muted-foreground/40 hidden sm:inline">•</span>
+            <span className="text-xs font-bold text-foreground font-mono hidden sm:inline">
               {komunitas.jumlah_anggota} Anggota
             </span>
           </div>
@@ -670,45 +670,45 @@ export function KomunitasDetailClientView({
           <div className="flex flex-wrap items-center gap-1.5 shrink-0">
             {isSuperOrPusat ? (
               <div className="flex flex-wrap items-center gap-1.5">
-                <span className="inline-flex items-center gap-1.5 rounded-lg bg-amber-500 text-white px-2.5 py-1 text-2xs font-black shadow-2xs">
-                  <ShieldCheck className="h-3.5 w-3.5 text-white" />
+                <span className="inline-flex items-center gap-1.5 rounded-md bg-secondary text-secondary-foreground px-2.5 py-1 text-2xs font-bold shadow-2xs">
+                  <ShieldCheck className="h-3.5 w-3.5" />
                   <span>{isActualSuperAdmin ? "SUPER ADMIN" : "ADMIN PUSAT"}</span>
                 </span>
 
                 <button
                   type="button"
                   onClick={() => setIsManageCardsOpen(true)}
-                  className="inline-flex items-center gap-1 rounded-lg border border-purple-300 bg-purple-50 hover:bg-purple-100 text-purple-800 px-2.5 py-1 text-xs font-bold shadow-2xs transition-all active:scale-98 cursor-pointer"
+                  className="inline-flex items-center gap-1 rounded-md border border-border bg-muted hover:bg-muted/80 text-foreground px-2.5 py-1 text-xs font-bold shadow-2xs transition-all active:scale-98 cursor-pointer"
                   title="Kelola Kartu Layanan (Data Anak & ATS)"
                 >
-                  <Settings2 className="h-3.5 w-3.5 text-purple-600" />
+                  <Settings2 className="h-3.5 w-3.5 text-muted-foreground" />
                   <span>Kelola Kartu</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setActiveTab("percakapan")}
-                  className="inline-flex items-center gap-1 rounded-lg border border-teal-300 bg-teal-50 hover:bg-teal-100 text-teal-800 px-2.5 py-1 text-xs font-bold shadow-2xs transition-all active:scale-98 cursor-pointer"
+                  className="inline-flex items-center gap-1 rounded-md border border-primary/20 bg-primary/10 hover:bg-primary/20 text-primary px-2.5 py-1 text-xs font-bold shadow-2xs transition-all active:scale-98 cursor-pointer"
                   title="Buka Ruang Percakapan Komunitas"
                 >
-                  <MessageCircle className="h-3.5 w-3.5 text-teal-600" />
+                  <MessageCircle className="h-3.5 w-3.5 text-primary" />
                   <span className="hidden sm:inline">Percakapan</span>
                 </button>
               </div>
             ) : isApprovedMember ? (
               <div className="flex flex-wrap items-center gap-1.5">
-                <span className="inline-flex items-center gap-1 rounded-lg bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-800 border border-emerald-300 shadow-2xs">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
+                <span className="inline-flex items-center gap-1 rounded-md bg-teal-500/10 px-2.5 py-1 text-xs font-bold text-teal-800 dark:text-teal-300 border border-teal-500/20 shadow-2xs">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
                   <span>{formatPeranDisplay(userPeran).toUpperCase()}</span>
                 </span>
 
                 {membershipState?.peran_diajukan &&
                   membershipState.peran_diajukan.toLowerCase() !== userPeran.toLowerCase() && (
                     <span
-                      className="inline-flex items-center gap-1 rounded-lg bg-amber-50 px-2 py-1 text-xs font-bold text-amber-900 border border-amber-300"
+                      className="inline-flex items-center gap-1 rounded-md bg-secondary/15 px-2 py-1 text-xs font-bold text-amber-900 dark:text-amber-200 border border-secondary/30"
                       title="Permohonan perubahan peran sedang menunggu verifikasi Admin/Pengurus"
                     >
-                      <Clock className="h-3.5 w-3.5 text-amber-600 animate-pulse" />
+                      <Clock className="h-3.5 w-3.5 text-secondary animate-pulse" />
                       <span>MENUNGGU: {formatPeranDisplay(membershipState.peran_diajukan).toUpperCase()}</span>
                     </span>
                   )}
@@ -716,10 +716,10 @@ export function KomunitasDetailClientView({
                 <button
                   type="button"
                   onClick={() => setIsUbahPeranOpen(true)}
-                  className="inline-flex items-center gap-1 rounded-lg border border-blue-300 bg-blue-50 hover:bg-blue-100 text-blue-800 px-2.5 py-1 text-xs font-bold shadow-2xs transition-all active:scale-98 cursor-pointer"
+                  className="inline-flex items-center gap-1 rounded-md border border-border bg-muted hover:bg-muted/80 text-foreground px-2.5 py-1 text-xs font-bold shadow-2xs transition-all active:scale-98 cursor-pointer"
                   title="Ajukan perubahan peran kepada Admin"
                 >
-                  <Sparkles className="h-3.5 w-3.5 text-blue-600" />
+                  <Sparkles className="h-3.5 w-3.5 text-primary" />
                   <span>
                     {membershipState?.peran_diajukan &&
                     membershipState.peran_diajukan.toLowerCase() !== userPeran.toLowerCase()
@@ -731,10 +731,10 @@ export function KomunitasDetailClientView({
                 <button
                   type="button"
                   onClick={() => setActiveTab("percakapan")}
-                  className="inline-flex items-center gap-1 rounded-lg border border-teal-300 bg-teal-50 hover:bg-teal-100 text-teal-800 px-2.5 py-1 text-xs font-bold shadow-2xs transition-all active:scale-98 cursor-pointer"
+                  className="inline-flex items-center gap-1 rounded-md border border-primary/20 bg-primary/10 hover:bg-primary/20 text-primary px-2.5 py-1 text-xs font-bold shadow-2xs transition-all active:scale-98 cursor-pointer"
                   title="Buka Ruang Percakapan Komunitas"
                 >
-                  <MessageCircle className="h-3.5 w-3.5 text-teal-600" />
+                  <MessageCircle className="h-3.5 w-3.5 text-primary" />
                   <span className="hidden sm:inline">Percakapan</span>
                 </button>
 
@@ -742,10 +742,10 @@ export function KomunitasDetailClientView({
                   <button
                     type="button"
                     onClick={() => setIsAddMemberModalOpen(true)}
-                    className="inline-flex items-center gap-1 rounded-lg border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 px-2.5 py-1 text-xs font-bold shadow-2xs transition-all active:scale-98 cursor-pointer"
+                    className="inline-flex items-center gap-1 rounded-md border border-primary/20 bg-primary/10 hover:bg-primary/20 text-primary px-2.5 py-1 text-xs font-bold shadow-2xs transition-all active:scale-98 cursor-pointer"
                     title="Tambah anggota baru ke komunitas ini"
                   >
-                    <UserPlus className="h-3.5 w-3.5 text-emerald-600" />
+                    <UserPlus className="h-3.5 w-3.5 text-primary" />
                     <span>Tambah Anggota</span>
                   </button>
                 )}
@@ -754,10 +754,10 @@ export function KomunitasDetailClientView({
                   <button
                     type="button"
                     onClick={() => setIsResignModalOpen(true)}
-                    className="inline-flex items-center gap-1 rounded-lg border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 px-2.5 py-1 text-xs font-bold shadow-2xs transition-all active:scale-98 cursor-pointer"
+                    className="inline-flex items-center gap-1 rounded-md border border-secondary/30 bg-secondary/10 hover:bg-secondary/20 text-amber-900 dark:text-amber-200 px-2.5 py-1 text-xs font-bold shadow-2xs transition-all active:scale-98 cursor-pointer"
                     title="Berhenti dari jabatan Admin komunitas"
                   >
-                    <UserMinus className="h-3.5 w-3.5 text-amber-700" />
+                    <UserMinus className="h-3.5 w-3.5 text-secondary" />
                     <span className="hidden sm:inline">Lepas Admin</span>
                   </button>
                 )}
@@ -765,7 +765,7 @@ export function KomunitasDetailClientView({
                 <button
                   type="button"
                   onClick={() => setIsLeaveModalOpen(true)}
-                  className="inline-flex items-center gap-1 rounded-lg border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 px-2.5 py-1 text-xs font-bold shadow-2xs transition-all active:scale-98 cursor-pointer"
+                  className="inline-flex items-center gap-1 rounded-md border border-rose-200 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 text-rose-700 dark:text-rose-300 px-2.5 py-1 text-xs font-bold shadow-2xs transition-all active:scale-98 cursor-pointer"
                   title="Keluar dari komunitas ini"
                 >
                   <LogOut className="h-3.5 w-3.5 text-rose-600" />
@@ -774,17 +774,17 @@ export function KomunitasDetailClientView({
               </div>
             ) : membership?.status === "pending" || membership?.peran_diajukan ? (
               <div className="flex items-center gap-1.5">
-                <span className="inline-flex items-center gap-1 rounded-lg bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-900 border border-amber-300">
-                  <Clock className="h-3.5 w-3.5 text-amber-600" />
+                <span className="inline-flex items-center gap-1 rounded-md bg-secondary/15 px-2.5 py-1 text-xs font-bold text-amber-900 dark:text-amber-200 border border-secondary/30">
+                  <Clock className="h-3.5 w-3.5 text-secondary" />
                   <span>MENUNGGU</span>
                 </span>
                 <button
                   type="button"
                   onClick={() => setIsResignModalOpen(true)}
-                  className="inline-flex items-center gap-1 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 px-2 py-1 text-xs font-bold shadow-2xs transition-all cursor-pointer"
+                  className="inline-flex items-center gap-1 rounded-md border border-border bg-card hover:bg-muted text-foreground px-2 py-1 text-xs font-bold shadow-2xs transition-all cursor-pointer"
                   title="Batalkan permohonan keanggotaan/admin"
                 >
-                  <X className="h-3.5 w-3.5 text-slate-500" />
+                  <X className="h-3.5 w-3.5 text-muted-foreground" />
                   <span>Batal</span>
                 </button>
               </div>
@@ -798,14 +798,14 @@ export function KomunitasDetailClientView({
                     setIsJoinModalOpen(true);
                   }
                 }}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-blue-700 hover:bg-blue-800 px-3 py-1.5 text-xs font-bold text-white shadow-2xs transition-all active:scale-98 cursor-pointer"
+                className="inline-flex items-center gap-1.5 rounded-md bg-primary hover:bg-primary-hover px-3 py-1.5 text-xs font-bold text-primary-foreground shadow-2xs transition-all active:scale-98 cursor-pointer"
               >
                 <UserPlus className="h-3.5 w-3.5" />
                 <span>Bergabung</span>
               </button>
             ) : (
-              <div className="inline-flex items-center gap-1 rounded-lg bg-slate-100 dark:bg-slate-800/80 px-2.5 py-1 text-2xs font-semibold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
-                <Info className="h-3 w-3 text-blue-600 dark:text-blue-400 shrink-0" />
+              <div className="inline-flex items-center gap-1 rounded-md bg-muted/60 px-2.5 py-1 text-2xs font-semibold text-muted-foreground border border-border">
+                <Info className="h-3 w-3 text-primary shrink-0" />
                 <span>Keanggotaan Otomatis dari RT / Posyandu / PAUD</span>
               </div>
             )}
@@ -816,11 +816,11 @@ export function KomunitasDetailClientView({
         <div className="flex items-center gap-3">
           <div
             className={cn(
-              "flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl font-bold border-2",
-              komunitas.jenis === "warga_kita" && "bg-blue-50 text-blue-700 border-blue-200",
-              komunitas.jenis === "posyandu" && "bg-emerald-50 text-emerald-700 border-emerald-200",
-              isPkbmOrSkb && "bg-amber-50 text-amber-800 border-amber-200",
-              isPureSatuanPaud && "bg-indigo-50 text-indigo-800 border-indigo-200"
+              "flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-lg font-bold border",
+              komunitas.jenis === "warga_kita" && "bg-primary/10 text-primary border-primary/20",
+              komunitas.jenis === "posyandu" && "bg-teal-500/10 text-teal-700 dark:text-teal-300 border-teal-500/20",
+              isPkbmOrSkb && "bg-secondary/15 text-amber-900 dark:text-amber-200 border-secondary/30",
+              isPureSatuanPaud && "bg-primary/10 text-primary border-primary/20"
             )}
           >
             {komunitas.jenis === "warga_kita" && <Users className="h-5 w-5" />}
@@ -830,17 +830,17 @@ export function KomunitasDetailClientView({
           </div>
 
           <div className="min-w-0 flex-1 space-y-0.5">
-            <h1 className="text-base sm:text-lg font-black text-slate-900 dark:text-white tracking-tight leading-snug">
+            <h1 className="text-base sm:text-lg font-bold text-foreground tracking-tight leading-snug">
               {formattedTitle}
             </h1>
 
-            <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 dark:text-slate-400 font-medium">
+            <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground font-medium">
               <span className="flex items-center gap-1 truncate max-w-xl">
-                <MapPin className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                <MapPin className="h-3.5 w-3.5 text-muted-foreground/60 shrink-0" />
                 <span className="truncate">{komunitas.lokasi}</span>
               </span>
-              <span className="sm:hidden text-slate-300">•</span>
-              <span className="sm:hidden font-mono text-slate-700 dark:text-slate-300 font-bold">
+              <span className="sm:hidden text-muted-foreground/40">•</span>
+              <span className="sm:hidden font-mono text-foreground font-bold">
                 {komunitas.jumlah_anggota} Anggota
               </span>
             </div>
@@ -850,28 +850,28 @@ export function KomunitasDetailClientView({
 
       {/* INFORMASI ADMIN / PENGURUS KOMUNITAS (KOMPAK, PADAT & BEBAS RUANG KOSONG) */}
       {hasCommunityAdmin && (
-        <section className="rounded-xl border border-emerald-300/80 dark:border-emerald-800/80 bg-emerald-50/70 dark:bg-emerald-950/25 px-3 py-2 sm:px-3.5 sm:py-2.5 shadow-2xs transition-all">
+        <section className="rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 sm:px-3.5 sm:py-2.5 shadow-2xs transition-all">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
             {/* Info Admin */}
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-600 text-white shadow-2xs">
+              <div className="flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-2xs">
                 <ShieldCheck className="h-4 w-4 sm:h-4.5 sm:w-4.5" />
               </div>
               <div className="min-w-0">
                 <div className="flex items-center gap-1.5 flex-wrap">
-                  <span className="text-[10px] font-black text-emerald-950 dark:text-emerald-300 uppercase tracking-wider">
+                  <span className="text-[10px] font-bold text-primary uppercase tracking-wider">
                     Admin / Pengurus:
                   </span>
-                  <h3 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white truncate">
+                  <h3 className="text-xs sm:text-sm font-bold text-foreground truncate">
                     {effectiveAdminName}
                   </h3>
                   {effectiveAdminRole && (
-                    <span className="text-[9px] font-bold px-1.5 py-0.2 rounded-md bg-white dark:bg-slate-800 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-700">
+                    <span className="text-[9px] font-bold px-1.5 py-0.2 rounded-md bg-card text-foreground border border-border">
                       {effectiveAdminRole}
                     </span>
                   )}
-                  <span className="inline-flex items-center gap-1 text-[9px] font-extrabold px-1.5 py-0.2 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200 border border-emerald-300/60">
-                    <CheckCircle2 className="h-2.5 w-2.5 text-emerald-600 dark:text-emerald-400" />
+                  <span className="inline-flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-teal-500/10 text-teal-800 dark:text-teal-200 border border-teal-500/20">
+                    <CheckCircle2 className="h-2.5 w-2.5 text-primary" />
                     Terverifikasi
                   </span>
                 </div>
@@ -882,7 +882,7 @@ export function KomunitasDetailClientView({
             <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
               {effectiveAdminHp ? (
                 <div className="flex items-center gap-1.5">
-                  <span className="text-xs font-mono font-bold text-slate-700 dark:text-slate-300 hidden md:inline-block px-2 py-1 rounded-md bg-white/90 dark:bg-slate-800/90 border border-emerald-200 dark:border-emerald-800 text-[11px]">
+                  <span className="text-xs font-mono font-bold text-foreground hidden md:inline-block px-2 py-1 rounded-md bg-card border border-border text-[11px]">
                     {effectiveAdminHp}
                   </span>
                   <a
@@ -897,15 +897,15 @@ export function KomunitasDetailClientView({
                   </a>
                   <a
                     href={`tel:${effectiveAdminHp.replace(/[^0-9+]/g, "")}`}
-                    className="inline-flex items-center justify-center gap-1 px-2.5 py-1 rounded-lg bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold border border-slate-200 dark:border-slate-700 shadow-2xs transition-all active:scale-95 cursor-pointer"
+                    className="inline-flex items-center justify-center gap-1 px-2.5 py-1 rounded-lg bg-card hover:bg-muted text-foreground text-xs font-bold border border-border shadow-2xs transition-all active:scale-95 cursor-pointer"
                     title={`Telepon langsung ${effectiveAdminName}`}
                   >
-                    <Phone className="h-3 w-3 text-slate-500" />
+                    <Phone className="h-3 w-3 text-muted-foreground" />
                     <span className="hidden sm:inline">Telepon</span>
                   </a>
                 </div>
               ) : (
-                <span className="text-[11px] text-slate-500 italic">Kontak belum dicantumkan</span>
+                <span className="text-[11px] text-muted-foreground italic">Kontak belum dicantumkan</span>
               )}
             </div>
           </div>
@@ -914,19 +914,19 @@ export function KomunitasDetailClientView({
 
       {/* ALERT JIKA BELUM MEMILIKI ADMIN (HANYA MUNCUL JIKA KOMUNITAS BELUM MEMILIKI ADMIN) */}
       {!hasCommunityAdmin && Boolean(currentUserId) && !isSuperOrPusat && isApprovedMember && isWargaKita && (
-        <section className="rounded-xl border border-amber-300/80 bg-amber-50/70 p-3 sm:p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+        <section className="rounded-lg border border-secondary/30 bg-secondary/10 p-3 sm:p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
           <div className="flex items-start gap-2.5">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-900">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-secondary/20 text-secondary">
               <ShieldAlert className="h-4 w-4" />
             </div>
             <div className="space-y-0.5">
-              <h4 className="text-xs sm:text-sm font-bold text-amber-950">
+              <h4 className="text-xs sm:text-sm font-bold text-foreground">
                 Komunitas Belum Memiliki Admin / Pengurus
               </h4>
-              <p className="text-xs text-slate-700 leading-relaxed">
+              <p className="text-xs text-muted-foreground leading-relaxed">
                 {isPenduduk ? (
                   membership?.peran_diajukan ? (
-                    <span className="font-semibold text-emerald-800">
+                    <span className="font-semibold text-primary">
                       Permohonan Anda sebagai Admin sedang menunggu verifikasi Super Admin / Admin hierarki tingkat atas.
                     </span>
                   ) : (
@@ -944,14 +944,14 @@ export function KomunitasDetailClientView({
             <button
               type="button"
               onClick={() => setIsApplyAdminOpen(true)}
-              className="inline-flex min-h-[36px] h-9 items-center justify-center gap-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white px-3.5 text-xs font-bold shadow-2xs transition-all active:scale-98 shrink-0 cursor-pointer"
+              className="inline-flex min-h-[36px] h-9 items-center justify-center gap-1.5 rounded-lg bg-secondary hover:bg-secondary-hover text-secondary-foreground px-3.5 text-xs font-bold shadow-2xs transition-all active:scale-98 shrink-0 cursor-pointer"
             >
               <ShieldCheck className="h-3.5 w-3.5" />
               <span>Ajukan Diri Sebagai Admin</span>
             </button>
           ) : membership?.peran_diajukan ? (
-            <span className="inline-flex items-center gap-1 rounded-lg bg-amber-100 px-2.5 py-1 text-xs font-bold text-amber-900 border border-amber-300 shrink-0">
-              <Clock className="h-3.5 w-3.5 text-amber-700" />
+            <span className="inline-flex items-center gap-1 rounded-md bg-secondary/15 px-2.5 py-1 text-xs font-bold text-amber-900 dark:text-amber-200 border border-secondary/30 shrink-0">
+              <Clock className="h-3.5 w-3.5 text-secondary" />
               <span>Menunggu Persetujuan</span>
             </span>
           ) : null}
@@ -968,10 +968,10 @@ export function KomunitasDetailClientView({
           return (
             <div
               key={cat.id}
-              className={`rounded-xl border-2 transition-all duration-300 overflow-hidden ${
+              className={`rounded-lg border transition-all duration-200 overflow-hidden ${
                 isOpen
-                  ? `border-slate-300 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/40 p-1 sm:p-1.5 shadow-xs`
-                  : `border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xs hover:shadow-xs ${cat.hoverBorder}`
+                  ? `border-primary/40 bg-card p-1 sm:p-1.5 shadow-xs`
+                  : `border-border bg-card shadow-2xs hover:shadow-xs hover:border-primary/40 ${cat.hoverBorder}`
               }`}
             >
               {/* Accordion Header / Trigger */}
@@ -980,7 +980,7 @@ export function KomunitasDetailClientView({
                   type="button"
                   onClick={() => setActiveTab(null)}
                   title="Klik untuk menutup bagian ini"
-                  className={`w-full flex items-center justify-between gap-2.5 p-2.5 sm:p-3 rounded-lg text-white ${cat.activeColorBg} shadow-2xs cursor-pointer transition-all hover:opacity-95 group text-left`}
+                  className={`w-full flex items-center justify-between gap-2.5 p-2.5 sm:p-3 rounded-lg text-primary-foreground ${cat.activeColorBg} shadow-2xs cursor-pointer transition-all hover:opacity-95 group text-left`}
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
                     <div className="flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-lg bg-white/20 text-white backdrop-blur-xs shadow-2xs group-hover:scale-105 transition-transform">
@@ -1020,7 +1020,7 @@ export function KomunitasDetailClientView({
                 <button
                   type="button"
                   onClick={() => setActiveTab(cat.id)}
-                  className={`w-full flex items-center justify-between gap-2.5 p-2.5 sm:p-3 text-slate-800 dark:text-slate-100 transition-all cursor-pointer group ${cat.hoverBg} text-left`}
+                  className={`w-full flex items-center justify-between gap-2.5 p-2.5 sm:p-3 text-foreground transition-all cursor-pointer group ${cat.hoverBg} text-left`}
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
                     <div
@@ -1030,24 +1030,24 @@ export function KomunitasDetailClientView({
                     </div>
                     <div className="space-y-0.5 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h2 className="text-xs sm:text-sm font-black tracking-tight text-slate-900 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                        <h2 className="text-xs sm:text-sm font-black tracking-tight text-foreground group-hover:text-primary transition-colors">
                           {cat.title}
                         </h2>
-                        <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+                        <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-muted text-muted-foreground border border-border">
                           {cat.badgeText}
                         </span>
                       </div>
-                      <p className="text-2xs text-slate-500 dark:text-slate-400 font-medium line-clamp-1">
+                      <p className="text-2xs text-muted-foreground font-medium line-clamp-1">
                         {cat.subtitle}
                       </p>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-1.5 shrink-0">
-                    <span className="hidden sm:inline-block text-xs font-bold text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200 transition-colors">
+                    <span className="hidden sm:inline-block text-xs font-bold text-muted-foreground group-hover:text-foreground transition-colors">
                       Buka Bagian
                     </span>
-                    <div className="h-6 w-6 sm:h-7 sm:w-7 rounded-lg bg-slate-100 dark:bg-slate-800 group-hover:bg-slate-200 dark:group-hover:bg-slate-700 flex items-center justify-center text-slate-500 dark:text-slate-400 transition-colors">
+                    <div className="h-6 w-6 sm:h-7 sm:w-7 rounded-lg bg-muted group-hover:bg-muted/80 flex items-center justify-center text-muted-foreground transition-colors">
                       <ChevronDown className="h-3.5 w-3.5 transform rotate-0 transition-transform duration-300" />
                     </div>
                   </div>
@@ -1561,35 +1561,35 @@ export function KomunitasDetailClientView({
             return (
               <div
                 key={cat.id}
-                className={`rounded-xl border-2 transition-all duration-300 overflow-hidden border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xs hover:shadow-xs ${cat.hoverBorder}`}
+                className={`rounded-lg border transition-all duration-200 overflow-hidden border-border bg-card shadow-2xs hover:shadow-xs hover:border-primary/40 ${cat.hoverBorder}`}
               >
                 <Link
                   href={cat.href}
-                  className={`w-full flex items-center justify-between gap-3 p-2.5 sm:p-3 text-slate-800 dark:text-slate-100 transition-all cursor-pointer group ${cat.hoverBg} text-left`}
+                  className={`w-full flex items-center justify-between gap-3 p-2.5 sm:p-3 text-foreground transition-all cursor-pointer group ${cat.hoverBg} text-left`}
                 >
                   <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
                     <div
-                      className={`flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-xl ${cat.iconBg} ${cat.iconColor} group-hover:scale-105 transition-transform shadow-2xs`}
+                      className={`flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-lg ${cat.iconBg} ${cat.iconColor} group-hover:scale-105 transition-transform shadow-2xs`}
                     >
                       <Icon className="h-4.5 w-4.5 sm:h-5 sm:w-5" />
                     </div>
                     <div className="space-y-0.5 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h2 className={`text-xs sm:text-sm font-black tracking-tight text-slate-900 dark:text-slate-100 ${cat.textHoverColor} transition-colors`}>
+                        <h2 className={`text-xs sm:text-sm font-black tracking-tight text-foreground ${cat.textHoverColor} transition-colors`}>
                           {cat.title}
                         </h2>
-                        <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+                        <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-muted text-muted-foreground border border-border">
                           {cat.badgeText}
                         </span>
                       </div>
-                      <p className="text-2xs sm:text-xs text-slate-500 dark:text-slate-400 font-medium line-clamp-1">
+                      <p className="text-2xs sm:text-xs text-muted-foreground font-medium line-clamp-1">
                         {cat.subtitle}
                       </p>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-1.5 shrink-0">
-                    <span className={`hidden sm:inline-block text-xs font-bold text-slate-400 ${cat.textHoverColor} transition-colors`}>
+                    <span className={`hidden sm:inline-block text-xs font-bold text-muted-foreground ${cat.textHoverColor} transition-colors`}>
                       Buka Data
                     </span>
                     <div className={`h-7 w-7 rounded-lg ${cat.arrowBg} ${cat.arrowHoverBg} flex items-center justify-center ${cat.arrowColor} transition-all duration-300 shadow-2xs`}>
@@ -1603,40 +1603,40 @@ export function KomunitasDetailClientView({
             return (
               <div
                 key={cat.id}
-                className="rounded-xl border-2 transition-all duration-300 overflow-hidden border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xs hover:shadow-xs hover:border-slate-300 dark:hover:border-slate-700"
+                className="rounded-lg border transition-all duration-200 overflow-hidden border-border bg-card shadow-2xs hover:shadow-xs hover:border-secondary/40"
               >
                 <button
                   type="button"
                   onClick={() => setIsWargaOnboardingOpen(true)}
-                  className="w-full flex items-center justify-between gap-3 p-2.5 sm:p-3 text-slate-800 dark:text-slate-100 transition-all cursor-pointer group hover:bg-slate-50/60 dark:hover:bg-slate-800/30 text-left"
+                  className="w-full flex items-center justify-between gap-3 p-2.5 sm:p-3 text-foreground transition-all cursor-pointer group hover:bg-muted/40 text-left"
                 >
                   <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
                     <div
-                      className={`flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-xl ${cat.iconBg} ${cat.iconColor} opacity-70 group-hover:opacity-100 group-hover:scale-105 transition-all shadow-2xs`}
+                      className={`flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-lg ${cat.iconBg} ${cat.iconColor} opacity-70 group-hover:opacity-100 group-hover:scale-105 transition-all shadow-2xs`}
                     >
                       <Icon className="h-4.5 w-4.5 sm:h-5 sm:w-5" />
                     </div>
                     <div className="space-y-0.5 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h2 className="text-xs sm:text-sm font-black tracking-tight text-slate-900 dark:text-slate-100 group-hover:text-blue-600 transition-colors">
+                        <h2 className="text-xs sm:text-sm font-black tracking-tight text-foreground group-hover:text-primary transition-colors">
                           {cat.title}
                         </h2>
-                        <span className="inline-flex items-center gap-1 text-[10px] font-extrabold px-1.5 py-0.2 rounded-full bg-amber-50 text-amber-800 border border-amber-200">
-                          <Lock className="h-3 w-3 text-amber-600" />
+                        <span className="inline-flex items-center gap-1 text-[10px] font-extrabold px-1.5 py-0.2 rounded-full bg-secondary/15 text-amber-950 dark:text-amber-200 border border-secondary/30">
+                          <Lock className="h-3 w-3 text-secondary" />
                           Khusus Penduduk
                         </span>
                       </div>
-                      <p className="text-2xs sm:text-xs text-slate-500 dark:text-slate-400 font-medium line-clamp-1">
+                      <p className="text-2xs sm:text-xs text-muted-foreground font-medium line-clamp-1">
                         {cat.subtitle}
                       </p>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-1.5 shrink-0">
-                    <span className="hidden sm:inline-block text-xs font-bold text-amber-700 group-hover:text-amber-800 transition-colors">
+                    <span className="hidden sm:inline-block text-xs font-bold text-amber-800 dark:text-amber-300 group-hover:text-secondary transition-colors">
                       Buka Akses
                     </span>
-                    <div className="h-7 w-7 rounded-lg bg-amber-50 dark:bg-amber-950/50 group-hover:bg-amber-600 group-hover:text-white flex items-center justify-center text-amber-600 dark:text-amber-400 transition-all duration-300 shadow-2xs">
+                    <div className="h-7 w-7 rounded-lg bg-secondary/15 group-hover:bg-secondary group-hover:text-white flex items-center justify-center text-secondary transition-all duration-300 shadow-2xs">
                       <Lock className="h-3.5 w-3.5 transform group-hover:scale-110 transition-transform duration-300" />
                     </div>
                   </div>
@@ -1668,18 +1668,18 @@ export function KomunitasDetailClientView({
 
       {/* Modal Ajukan Diri Sebagai Admin (Hanya untuk Penduduk) */}
       {isApplyAdminOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-3xl border-2 border-slate-200 p-6 max-w-md w-full space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-xs">
+          <div className="bg-card rounded-lg border border-border p-5 sm:p-6 max-w-md w-full space-y-4 shadow-xl">
+            <div className="flex items-center justify-between border-b border-border pb-3">
               <div className="flex items-center gap-2">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-50 text-amber-700 font-bold border border-amber-200">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-secondary/15 text-secondary font-bold border border-secondary/30">
                   <ShieldCheck className="h-5 w-5" />
                 </div>
                 <div>
-                  <h4 className="font-bold text-base text-slate-900">
+                  <h4 className="font-bold text-base text-foreground">
                     Pengajuan Admin Komunitas
                   </h4>
-                  <p className="text-[11px] text-slate-500">
+                  <p className="text-[11px] text-muted-foreground">
                     {formattedTitle}
                   </p>
                 </div>
@@ -1687,34 +1687,34 @@ export function KomunitasDetailClientView({
               <button
                 type="button"
                 onClick={() => setIsApplyAdminOpen(false)}
-                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 cursor-pointer"
+                className="p-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
             {adminFeedback && (
-              <div className="p-3 rounded-xl border border-blue-200 bg-blue-50 text-xs font-bold text-blue-800">
+              <div className="p-3 rounded-lg border border-primary/30 bg-primary/10 text-xs font-bold text-primary">
                 {adminFeedback}
               </div>
             )}
 
             <form onSubmit={handleApplyAdmin} className="space-y-3.5 text-xs">
               <div>
-                <label className="block font-bold text-slate-700 mb-1">
-                  Nomor WhatsApp / HP Aktif <span className="text-slate-400 font-normal">(Opsional)</span>
+                <label className="block font-bold text-foreground mb-1">
+                  Nomor WhatsApp / HP Aktif <span className="text-muted-foreground font-normal">(Opsional)</span>
                 </label>
                 <input
                   type="tel"
                   value={adminHp}
                   onChange={(e) => setAdminHp(e.target.value)}
                   placeholder="Contoh: 08123456789"
-                  className="w-full px-3.5 py-2.5 rounded-xl border-2 border-slate-200 bg-white text-slate-900 font-mono text-sm focus:border-blue-600 focus:outline-none"
+                  className="w-full px-3.5 py-2.5 rounded-lg border border-border bg-background text-foreground font-mono text-sm focus:border-primary focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1">
+                <label className="block font-bold text-foreground mb-1">
                   Catatan Pengajuan / Kredensial Pengurus (Opsional)
                 </label>
                 <textarea
@@ -1722,23 +1722,23 @@ export function KomunitasDetailClientView({
                   value={adminCatatan}
                   onChange={(e) => setAdminCatatan(e.target.value)}
                   placeholder="Keterangan pengurus (misal: Ketua RT / Pengurus RW aktif)..."
-                  className="w-full px-3.5 py-2 rounded-xl border-2 border-slate-200 bg-white text-slate-900 focus:border-blue-600 focus:outline-none"
+                  className="w-full px-3.5 py-2 rounded-lg border border-border bg-background text-foreground focus:border-primary focus:outline-none"
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-border">
                 <button
                   type="button"
                   onClick={() => setIsApplyAdminOpen(false)}
                   disabled={isSubmittingAdmin}
-                  className="px-4 py-2.5 rounded-xl border border-slate-300 bg-white font-bold text-xs text-slate-700 hover:bg-slate-50 cursor-pointer"
+                  className="px-4 py-2.5 rounded-lg border border-border bg-card font-bold text-xs text-foreground hover:bg-muted cursor-pointer"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmittingAdmin}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 font-bold text-xs text-white cursor-pointer shadow-xs disabled:opacity-50"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-secondary hover:bg-secondary-hover font-bold text-xs text-white cursor-pointer shadow-xs disabled:opacity-50"
                 >
                   {isSubmittingAdmin ? (
                     <>
@@ -1795,18 +1795,18 @@ export function KomunitasDetailClientView({
 
       {/* Modal Konfirmasi Keluar Komunitas */}
       {isLeaveModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 animate-in fade-in">
-          <div className="w-full max-w-md rounded-2xl border-2 border-slate-200 bg-white p-6 shadow-2xl space-y-5 animate-in zoom-in-95">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-xs p-4 animate-in fade-in">
+          <div className="w-full max-w-md rounded-lg border border-border bg-card p-5 sm:p-6 shadow-xl space-y-4 animate-in zoom-in-95">
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-rose-50 border-2 border-rose-200 text-rose-600">
-                  <LogOut className="h-6 w-6" />
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400">
+                  <LogOut className="h-5 w-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-black text-slate-900">
+                  <h3 className="text-base font-bold text-foreground">
                     Keluar dari Komunitas?
                   </h3>
-                  <p className="text-xs font-semibold text-slate-500">
+                  <p className="text-xs text-muted-foreground">
                     {formattedTitle}
                   </p>
                 </div>
@@ -1815,7 +1815,7 @@ export function KomunitasDetailClientView({
                 type="button"
                 onClick={() => !actionLoading && setIsLeaveModalOpen(false)}
                 disabled={actionLoading}
-                className="rounded-xl p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+                className="rounded-lg p-1 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -1823,22 +1823,22 @@ export function KomunitasDetailClientView({
 
             {actionFeedback && (
               <div
-                className={`p-3 rounded-xl border text-xs font-bold ${
+                className={`p-3 rounded-lg border text-xs font-bold ${
                   actionFeedback.type === "success"
-                    ? "border-emerald-300 bg-emerald-50 text-emerald-800"
-                    : "border-rose-300 bg-rose-50 text-rose-800"
+                    ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                    : "border-destructive/30 bg-destructive/10 text-destructive"
                 }`}
               >
                 {actionFeedback.message}
               </div>
             )}
 
-            <div className="space-y-3 text-sm text-slate-600">
+            <div className="space-y-3 text-sm text-muted-foreground">
               <p>
-                Apakah Anda yakin ingin keluar dan tidak bergabung lagi di <strong>{formattedTitle}</strong>?
+                Apakah Anda yakin ingin keluar dan tidak bergabung lagi di <strong className="text-foreground">{formattedTitle}</strong>?
               </p>
               {isWargaKita && (
-                <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 font-medium leading-relaxed">
+                <div className="p-3 rounded-lg bg-secondary/15 border border-secondary/30 text-xs text-amber-950 dark:text-amber-200 font-medium leading-relaxed">
                   Perhatian: Keluar dari komunitas RT Warga Kita akan otomatis melepaskan keterhubungan domisili Anda pada tingkatan RW, Kelurahan, dan Kecamatan terkait.
                 </div>
               )}
@@ -1849,7 +1849,7 @@ export function KomunitasDetailClientView({
                 type="button"
                 onClick={() => setIsLeaveModalOpen(false)}
                 disabled={actionLoading}
-                className="flex-1 h-11 rounded-xl border-2 border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-bold text-sm transition-all disabled:opacity-50 cursor-pointer"
+                className="flex-1 h-10 rounded-lg border border-border bg-card hover:bg-muted text-foreground font-bold text-xs transition-all disabled:opacity-50 cursor-pointer"
               >
                 Batal
               </button>
@@ -1857,7 +1857,7 @@ export function KomunitasDetailClientView({
                 type="button"
                 onClick={handleLeave}
                 disabled={actionLoading}
-                className="flex-1 h-11 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-sm shadow-xs transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+                className="flex-1 h-10 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-xs transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
               >
                 {actionLoading ? (
                   <>
@@ -1878,18 +1878,18 @@ export function KomunitasDetailClientView({
 
       {/* Modal Konfirmasi Berhenti Jadi Admin / Batalkan Pengajuan Admin */}
       {isResignModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 animate-in fade-in">
-          <div className="w-full max-w-md rounded-2xl border-2 border-slate-200 bg-white p-6 shadow-2xl space-y-5 animate-in zoom-in-95">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-xs p-4 animate-in fade-in">
+          <div className="w-full max-w-md rounded-lg border border-border bg-card p-5 sm:p-6 shadow-xl space-y-4 animate-in zoom-in-95">
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-50 border-2 border-amber-200 text-amber-700">
-                  <UserMinus className="h-6 w-6" />
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-secondary/15 border border-secondary/30 text-secondary">
+                  <UserMinus className="h-5 w-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-black text-slate-900">
+                  <h3 className="text-base font-bold text-foreground">
                     {isUserAdmin ? "Berhenti Menjadi Admin?" : "Batalkan Permohonan?"}
                   </h3>
-                  <p className="text-xs font-semibold text-slate-500">
+                  <p className="text-xs text-muted-foreground">
                     {formattedTitle}
                   </p>
                 </div>
@@ -1898,7 +1898,7 @@ export function KomunitasDetailClientView({
                 type="button"
                 onClick={() => !actionLoading && setIsResignModalOpen(false)}
                 disabled={actionLoading}
-                className="rounded-xl p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+                className="rounded-lg p-1 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -1906,17 +1906,17 @@ export function KomunitasDetailClientView({
 
             {actionFeedback && (
               <div
-                className={`p-3 rounded-xl border text-xs font-bold ${
+                className={`p-3 rounded-lg border text-xs font-bold ${
                   actionFeedback.type === "success"
-                    ? "border-emerald-300 bg-emerald-50 text-emerald-800"
-                    : "border-rose-300 bg-rose-50 text-rose-800"
+                    ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                    : "border-destructive/30 bg-destructive/10 text-destructive"
                 }`}
               >
                 {actionFeedback.message}
               </div>
             )}
 
-            <div className="space-y-3 text-sm text-slate-600">
+            <div className="space-y-3 text-sm text-muted-foreground">
               <p>
                 {isUserAdmin
                   ? "Apakah Anda yakin ingin berhenti dari status Admin/Pengurus di komunitas ini? Peran Anda akan dikembalikan menjadi warga/anggota biasa."
@@ -1929,7 +1929,7 @@ export function KomunitasDetailClientView({
                 type="button"
                 onClick={() => setIsResignModalOpen(false)}
                 disabled={actionLoading}
-                className="flex-1 h-11 rounded-xl border-2 border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-bold text-sm transition-all disabled:opacity-50 cursor-pointer"
+                className="flex-1 h-10 rounded-lg border border-border bg-card hover:bg-muted text-foreground font-bold text-xs transition-all disabled:opacity-50 cursor-pointer"
               >
                 Tutup
               </button>
@@ -1937,7 +1937,7 @@ export function KomunitasDetailClientView({
                 type="button"
                 onClick={handleResign}
                 disabled={actionLoading}
-                className="flex-1 h-11 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-sm shadow-xs transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+                className="flex-1 h-10 rounded-lg bg-secondary hover:bg-secondary-hover text-white font-bold text-xs shadow-xs transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
               >
                 {actionLoading ? (
                   <>
@@ -1958,18 +1958,18 @@ export function KomunitasDetailClientView({
 
       {/* Modal Konfirmasi Keluarkan Anggota (Khusus Admin) */}
       {kickTargetMember && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 animate-in fade-in">
-          <div className="w-full max-w-md rounded-2xl border-2 border-slate-200 bg-white p-6 shadow-2xl space-y-5 animate-in zoom-in-95">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-xs p-4 animate-in fade-in">
+          <div className="w-full max-w-md rounded-lg border border-border bg-card p-5 sm:p-6 shadow-xl space-y-4 animate-in zoom-in-95">
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-rose-50 border-2 border-rose-200 text-rose-600">
-                  <AlertTriangle className="h-6 w-6" />
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400">
+                  <AlertTriangle className="h-5 w-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-black text-slate-900">
+                  <h3 className="text-base font-bold text-foreground">
                     Keluarkan Anggota?
                   </h3>
-                  <p className="text-xs font-semibold text-slate-500">
+                  <p className="text-xs text-muted-foreground">
                     Konfirmasi Tindakan Pengurus
                   </p>
                 </div>
@@ -1978,7 +1978,7 @@ export function KomunitasDetailClientView({
                 type="button"
                 onClick={() => !actionLoading && setKickTargetMember(null)}
                 disabled={actionLoading}
-                className="rounded-xl p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+                className="rounded-lg p-1 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -1986,32 +1986,32 @@ export function KomunitasDetailClientView({
 
             {actionFeedback && (
               <div
-                className={`p-3 rounded-xl border text-xs font-bold ${
+                className={`p-3 rounded-lg border text-xs font-bold ${
                   actionFeedback.type === "success"
-                    ? "border-emerald-300 bg-emerald-50 text-emerald-800"
-                    : "border-rose-300 bg-rose-50 text-rose-800"
+                    ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                    : "border-destructive/30 bg-destructive/10 text-destructive"
                 }`}
               >
                 {actionFeedback.message}
               </div>
             )}
 
-            <div className="space-y-3 text-sm text-slate-600">
+            <div className="space-y-3 text-sm text-muted-foreground">
               <p>
-                Apakah Anda yakin ingin mengeluarkan anggota berikut dari <strong>{formattedTitle}</strong>?
+                Apakah Anda yakin ingin mengeluarkan anggota berikut dari <strong className="text-foreground">{formattedTitle}</strong>?
               </p>
-              <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
-                <p className="font-bold text-slate-900 text-base">
+              <div className="p-3.5 rounded-lg bg-muted/40 border border-border space-y-1">
+                <p className="font-bold text-foreground text-base">
                   {kickTargetMember.profiles?.nama_lengkap || "Pengguna"}
                 </p>
-                <div className="flex items-center justify-between text-xs font-semibold text-slate-500">
+                <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
                   <span>{kickTargetMember.profiles?.email || "-"}</span>
-                  <span className="font-bold text-slate-700 bg-slate-200/80 px-2 py-0.5 rounded-md">
+                  <span className="font-bold text-foreground bg-muted px-2 py-0.5 rounded-md border border-border">
                     {formatPeranDisplay(kickTargetMember.peran)}
                   </span>
                 </div>
               </div>
-              <p className="text-xs text-rose-600 font-semibold leading-relaxed">
+              <p className="text-xs text-destructive font-semibold leading-relaxed">
                 * Pengguna yang dikeluarkan akan kehilangan akses ke data dan aktivitas internal komunitas ini sampai bergabung kembali.
               </p>
             </div>
@@ -2021,7 +2021,7 @@ export function KomunitasDetailClientView({
                 type="button"
                 onClick={() => setKickTargetMember(null)}
                 disabled={actionLoading}
-                className="flex-1 h-11 rounded-xl border-2 border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-bold text-sm transition-all disabled:opacity-50 cursor-pointer"
+                className="flex-1 h-10 rounded-lg border border-border bg-card hover:bg-muted text-foreground font-bold text-xs transition-all disabled:opacity-50 cursor-pointer"
               >
                 Batal
               </button>
@@ -2029,7 +2029,7 @@ export function KomunitasDetailClientView({
                 type="button"
                 onClick={handleKickMember}
                 disabled={actionLoading}
-                className="flex-1 h-11 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-sm shadow-xs transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+                className="flex-1 h-10 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-xs transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
               >
                 {actionLoading ? (
                   <>
@@ -2080,18 +2080,18 @@ export function KomunitasDetailClientView({
       )}
       {/* MODAL KELOLA KARTU LAYANAN (SUPER ADMIN & ADMIN PUSAT) */}
       {isManageCardsOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-          <div className="bg-white dark:bg-slate-900 rounded-3xl border-2 border-slate-200 dark:border-slate-800 p-6 max-w-md w-full space-y-4 shadow-xl">
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-xs">
+          <div className="bg-card rounded-lg border border-border p-5 sm:p-6 max-w-md w-full space-y-4 shadow-xl">
+            <div className="flex items-center justify-between border-b border-border pb-3">
               <div className="flex items-center gap-2.5">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-400 border border-purple-200 dark:border-purple-800">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary border border-primary/20">
                   <Settings2 className="h-5 w-5" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-slate-900 dark:text-slate-100 text-sm">
+                  <h3 className="font-bold text-foreground text-sm">
                     Kelola Kartu Layanan
                   </h3>
-                  <p className="text-[11px] text-slate-500">
+                  <p className="text-[11px] text-muted-foreground">
                     Khusus Super Admin & Admin Pusat
                   </p>
                 </div>
@@ -2099,29 +2099,29 @@ export function KomunitasDetailClientView({
               <button
                 type="button"
                 onClick={() => setIsManageCardsOpen(false)}
-                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                className="p-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
-            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+            <p className="text-xs text-muted-foreground leading-relaxed">
               Atur kartu layanan khusus yang diaktifkan untuk komunitas{" "}
-              <strong className="text-slate-900 dark:text-slate-100">{komunitasData.nama}</strong>.
+              <strong className="text-foreground">{komunitasData.nama}</strong>.
             </p>
 
             <div className="space-y-3 pt-1">
               {/* Toggle Data Anak */}
-              <div className="flex items-center justify-between p-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40">
+              <div className="flex items-center justify-between p-3 rounded-lg border border-border bg-muted/30">
                 <div className="flex items-center gap-2.5">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-400">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary border border-primary/20">
                     <Baby className="h-4 w-4" />
                   </div>
                   <div>
-                    <h4 className="text-xs font-bold text-slate-900 dark:text-slate-100">
+                    <h4 className="text-xs font-bold text-foreground">
                       Data Anak (0–6 Tahun) & DDTK
                     </h4>
-                    <p className="text-2xs text-slate-500">
+                    <p className="text-2xs text-muted-foreground">
                       Pendataan balita dan tumbuh kembang
                     </p>
                   </div>
@@ -2131,10 +2131,10 @@ export function KomunitasDetailClientView({
                   disabled={cardActionLoading}
                   onClick={() => handleToggleCard("data_anak", !canShowDataAnakCard)}
                   className={cn(
-                    "px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer disabled:opacity-50",
+                    "px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer disabled:opacity-50",
                     canShowDataAnakCard
-                      ? "bg-rose-100 text-rose-700 hover:bg-rose-200 border border-rose-300 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800"
-                      : "bg-emerald-600 text-white hover:bg-emerald-700 shadow-2xs"
+                      ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-500/20 border border-rose-500/30"
+                      : "bg-primary text-primary-foreground hover:bg-primary-hover shadow-2xs"
                   )}
                 >
                   {cardActionLoading ? "..." : canShowDataAnakCard ? "Hapus Kartu" : "Tambah Kartu"}
@@ -2142,16 +2142,16 @@ export function KomunitasDetailClientView({
               </div>
 
               {/* Toggle Data ATS */}
-              <div className="flex items-center justify-between p-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40">
+              <div className="flex items-center justify-between p-3 rounded-lg border border-border bg-muted/30">
                 <div className="flex items-center gap-2.5">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-400">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-secondary/15 text-secondary border border-secondary/30">
                     <GraduationCap className="h-4 w-4" />
                   </div>
                   <div>
-                    <h4 className="text-xs font-bold text-slate-900 dark:text-slate-100">
+                    <h4 className="text-xs font-bold text-foreground">
                       Data ATS (Anak Tidak Sekolah)
                     </h4>
-                    <p className="text-2xs text-slate-500">
+                    <p className="text-2xs text-muted-foreground">
                       Kasus anak putus sekolah / tidak sekolah
                     </p>
                   </div>
@@ -2161,10 +2161,10 @@ export function KomunitasDetailClientView({
                   disabled={cardActionLoading}
                   onClick={() => handleToggleCard("data_ats", !canShowDataAtsCard)}
                   className={cn(
-                    "px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer disabled:opacity-50",
+                    "px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer disabled:opacity-50",
                     canShowDataAtsCard
-                      ? "bg-rose-100 text-rose-700 hover:bg-rose-200 border border-rose-300 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800"
-                      : "bg-emerald-600 text-white hover:bg-emerald-700 shadow-2xs"
+                      ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-500/20 border border-rose-500/30"
+                      : "bg-primary text-primary-foreground hover:bg-primary-hover shadow-2xs"
                   )}
                 >
                   {cardActionLoading ? "..." : canShowDataAtsCard ? "Hapus Kartu" : "Tambah Kartu"}
@@ -2176,7 +2176,7 @@ export function KomunitasDetailClientView({
               <button
                 type="button"
                 onClick={() => setIsManageCardsOpen(false)}
-                className="px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold cursor-pointer"
+                className="px-4 py-2 rounded-lg border border-border bg-card hover:bg-muted text-foreground text-xs font-bold cursor-pointer"
               >
                 Tutup
               </button>

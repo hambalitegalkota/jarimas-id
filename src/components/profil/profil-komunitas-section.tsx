@@ -86,34 +86,34 @@ export function ProfilKomunitasSection({
       {/* Section Header */}
       <div className="flex items-center justify-between px-1">
         <div className="flex items-center gap-2">
-          <Building2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-          <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100">
+          <Building2 className="h-5 w-5 text-primary" />
+          <h2 className="text-base sm:text-lg font-bold text-foreground">
             {isSuperAdmin || isAdminPusat
               ? "Komunitas Binaan & Dikelola Admin"
               : "Komunitas Saya"}
           </h2>
         </div>
-        <span className="text-xs font-mono font-bold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2.5 py-0.5 rounded-full">
+        <span className="text-xs font-mono font-bold text-muted-foreground bg-muted px-2.5 py-0.5 rounded-full border border-border">
           {totalCardCount} TERDAFTAR
         </span>
       </div>
 
       {totalCardCount === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-900 p-8 text-center space-y-4 shadow-xs">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl border-2 border-emerald-100 dark:border-emerald-900/40 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400">
-            <Compass className="h-7 w-7" />
+        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border bg-card p-8 text-center space-y-4 shadow-xs">
+          <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-primary/20 bg-primary/10 text-primary">
+            <Compass className="h-6 w-6" />
           </div>
           <div className="space-y-1.5">
-            <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
+            <h3 className="text-base font-bold text-foreground">
               Belum Ada Komunitas Terdaftar
             </h3>
-            <p className="text-sm text-slate-600 dark:text-slate-400 max-w-sm leading-relaxed">
+            <p className="text-sm text-muted-foreground max-w-sm leading-relaxed">
               Jelajahi komunitas di Kota Tegal untuk memantau tumbuh kembang anak, ATS, atau kolaborasi kegiatan.
             </p>
           </div>
           <Link
             href="/komunitas"
-            className="inline-flex min-h-[48px] w-full sm:w-auto items-center justify-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 px-6 text-base font-bold text-white transition-all shadow-sm active:scale-98"
+            className="inline-flex min-h-[44px] h-11 w-full sm:w-auto items-center justify-center gap-2 rounded-lg bg-primary hover:bg-primary-hover px-5 text-sm font-bold text-primary-foreground transition-all shadow-xs active:scale-98"
           >
             <span>Jelajahi Komunitas</span>
             <ArrowRight className="h-4 w-4" />
@@ -159,29 +159,29 @@ export function ProfilKomunitasSection({
             return (
               <div
                 key={item.id}
-                className={`rounded-2xl border-2 p-5 space-y-4 transition-all shadow-xs ${
+                className={`rounded-lg border p-4 sm:p-5 space-y-3.5 transition-all shadow-sm ${
                   isOrbitSixty
-                    ? "border-emerald-400 dark:border-emerald-600 bg-gradient-to-br from-emerald-50/50 via-white to-teal-50/30 dark:from-emerald-950/30 dark:via-slate-900 dark:to-slate-900 ring-2 ring-emerald-500/10"
-                    : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-emerald-300 dark:hover:border-emerald-700"
+                    ? "border-primary/50 bg-primary/5 ring-1 ring-primary/20"
+                    : "border-border bg-card hover:border-primary/40"
                 }`}
               >
                 {/* Header Kartu Komunitas */}
                 <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-                  <div className="space-y-1.5 flex-1 min-w-0">
+                  <div className="space-y-1 flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h4 className="font-extrabold text-lg sm:text-xl text-slate-900 dark:text-slate-100 tracking-tight">
+                      <h4 className="font-bold text-base sm:text-lg text-foreground tracking-tight">
                         {formattedKomNama}
                       </h4>
                       {isOrbitSixty && (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-600 text-white px-2.5 py-0.5 text-[11px] font-bold shadow-2xs">
-                          <Sparkles className="h-3 w-3" />
+                        <span className="inline-flex items-center gap-1 rounded-md bg-secondary/15 text-amber-950 dark:text-amber-200 border border-secondary/30 px-2.5 py-0.5 text-[11px] font-bold">
+                          <Sparkles className="h-3 w-3 text-secondary" />
                           Unggulan Admin
                         </span>
                       )}
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-slate-600 dark:text-slate-400">
-                      <span className="font-bold text-emerald-700 dark:text-emerald-400 inline-flex items-center gap-1">
+                    <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-muted-foreground">
+                      <span className="font-bold text-primary inline-flex items-center gap-1">
                         {isKegiatan ? (
                           <>
                             <Users className="h-3.5 w-3.5" />
@@ -203,7 +203,7 @@ export function ProfilKomunitasSection({
                       </span>
                       <span>•</span>
                       <span className="flex items-center gap-1">
-                        <MapPin className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                        <MapPin className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                         <span>
                           {kom.lokasi ||
                             [kom.kelurahan, kom.kecamatan, "Kota Tegal"]
@@ -215,7 +215,7 @@ export function ProfilKomunitasSection({
                       {kom.jumlah_anggota !== undefined && (
                         <>
                           <span>•</span>
-                          <span className="font-mono font-bold text-slate-700 dark:text-slate-300">
+                          <span className="font-mono font-bold text-foreground">
                             {kom.jumlah_anggota} Anggota
                           </span>
                         </>
@@ -226,20 +226,20 @@ export function ProfilKomunitasSection({
                   {/* Status Badge */}
                   <div className="shrink-0 flex items-center gap-2">
                     {item.status === "approved" && (
-                      <span className="inline-flex items-center gap-1.5 rounded-full border-2 border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 px-3 py-1 text-xs font-bold text-emerald-700 dark:text-emerald-300 shadow-2xs">
-                        <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                      <span className="inline-flex items-center gap-1.5 rounded-md border border-primary/30 bg-primary/10 px-2.5 py-1 text-xs font-bold text-primary">
+                        <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
                         <span>AKTIF ({item.peran})</span>
                       </span>
                     )}
                     {item.status === "pending" && (
-                      <span className="inline-flex items-center gap-1.5 rounded-full border-2 border-amber-500 bg-amber-50 dark:bg-amber-950/40 px-3 py-1 text-xs font-bold text-amber-700 dark:text-amber-300">
-                        <Clock className="h-4 w-4 text-amber-600" />
+                      <span className="inline-flex items-center gap-1.5 rounded-md border border-secondary/30 bg-secondary/15 px-2.5 py-1 text-xs font-bold text-amber-950 dark:text-amber-200">
+                        <Clock className="h-3.5 w-3.5 text-secondary" />
                         <span>MENUNGGU ({item.peran})</span>
                       </span>
                     )}
                     {item.status === "rejected" && (
-                      <span className="inline-flex items-center gap-1.5 rounded-full border-2 border-rose-500 bg-rose-50 dark:bg-rose-950/40 px-3 py-1 text-xs font-bold text-rose-700 dark:text-rose-300">
-                        <XCircle className="h-4 w-4 text-rose-600" />
+                      <span className="inline-flex items-center gap-1.5 rounded-md border border-destructive/30 bg-destructive/10 px-2.5 py-1 text-xs font-bold text-destructive">
+                        <XCircle className="h-3.5 w-3.5 text-destructive" />
                         <span>DITOLAK</span>
                       </span>
                     )}
@@ -248,19 +248,19 @@ export function ProfilKomunitasSection({
 
                 {/* Deskripsi Komunitas */}
                 {kom.deskripsi && (
-                  <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed italic bg-slate-50/60 dark:bg-slate-800/40 p-3 rounded-xl border border-slate-200/60 dark:border-slate-800">
+                  <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed italic bg-muted/30 p-3 rounded-lg border border-border">
                     &ldquo;{kom.deskripsi}&rdquo;
                   </p>
                 )}
 
                 {/* Action Buttons: Tambah Anggota, Percakapan, dan Buka Halaman */}
-                <div className="pt-3 border-t border-slate-100 dark:border-slate-800/80 flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2.5">
+                <div className="pt-3 border-t border-border flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2.5">
                   {/* Tombol Tambah Anggota (Untuk Admin / Pembuat Grup / Super Admin) */}
                   {canManageThisCommunity && (
                     <button
                       type="button"
                       onClick={() => setSelectedManageCommunity(item)}
-                      className="inline-flex min-h-[42px] items-center justify-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 px-4 text-xs sm:text-sm font-extrabold text-white transition-all shadow-sm shadow-emerald-600/20 active:scale-98 cursor-pointer"
+                      className="inline-flex min-h-[40px] h-10 items-center justify-center gap-2 rounded-lg bg-primary hover:bg-primary-hover px-4 text-xs sm:text-sm font-bold text-primary-foreground transition-all shadow-xs active:scale-98 cursor-pointer"
                     >
                       <UserPlus className="h-4 w-4" />
                       <span>Tambah Anggota</span>
@@ -271,7 +271,7 @@ export function ProfilKomunitasSection({
                   {isKegiatan && (
                     <Link
                       href={`/kabar?tab=percakapan&groupId=${item.komunitas_id}`}
-                      className="inline-flex min-h-[42px] items-center justify-center gap-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800/60 px-4 text-xs sm:text-sm font-bold text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-all cursor-pointer active:scale-98"
+                      className="inline-flex min-h-[40px] h-10 items-center justify-center gap-2 rounded-lg bg-primary/10 border border-primary/20 px-4 text-xs sm:text-sm font-bold text-primary hover:bg-primary/20 transition-all cursor-pointer active:scale-98"
                     >
                       <MessageCircle className="h-4 w-4" />
                       <span>Obrolan Grup</span>
@@ -281,7 +281,7 @@ export function ProfilKomunitasSection({
                   {/* Tombol Buka Halaman Komunitas */}
                   <Link
                     href={`/komunitas/${item.komunitas_id}`}
-                    className="inline-flex min-h-[42px] items-center justify-center gap-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 transition-all cursor-pointer active:scale-98"
+                    className="inline-flex min-h-[40px] h-10 items-center justify-center gap-2 rounded-lg bg-card border border-border px-4 text-xs sm:text-sm font-bold text-foreground hover:bg-muted transition-all cursor-pointer active:scale-98"
                   >
                     <span>Buka Halaman</span>
                     <ArrowRight className="h-4 w-4" />
@@ -295,9 +295,9 @@ export function ProfilKomunitasSection({
           <div className="pt-2">
             <Link
               href="/komunitas"
-              className="flex min-h-[46px] w-full items-center justify-center gap-2 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 text-sm font-bold text-slate-800 dark:text-slate-200 transition-all hover:border-emerald-400 dark:hover:border-emerald-600 hover:bg-emerald-50/40 dark:hover:bg-emerald-950/20 active:scale-98 shadow-xs"
+              className="flex min-h-[44px] h-11 w-full items-center justify-center gap-2 rounded-lg border border-border bg-card px-4 text-sm font-bold text-foreground transition-all hover:border-primary/40 hover:bg-muted/40 active:scale-98 shadow-xs"
             >
-              <Compass className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+              <Compass className="h-4 w-4 text-primary" />
               <span>Jelajahi Komunitas Lainnya</span>
             </Link>
           </div>

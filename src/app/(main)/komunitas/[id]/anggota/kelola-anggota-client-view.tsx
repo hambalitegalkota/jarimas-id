@@ -176,38 +176,38 @@ export function KelolaAnggotaClientView({
 
       {/* Tabs Switcher & Tombol Tambah Anggota */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
-        <div className="flex flex-1 rounded-md bg-muted p-1 border border-border">
+        <div className="flex flex-1 rounded-lg bg-muted p-1 border border-border">
           <button
             onClick={() => setActiveTab("pending")}
             className={cn(
-              "flex flex-1 h-9 items-center justify-center gap-1.5 rounded-md text-xs font-mono font-semibold transition-all cursor-pointer",
+              "flex flex-1 h-9 items-center justify-center gap-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer",
               activeTab === "pending"
-                ? "bg-card text-amber-500 dark:text-amber-400 border border-border shadow-xs"
+                ? "bg-card text-secondary border border-border shadow-2xs font-bold"
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
             <Clock className="h-3.5 w-3.5" />
-            <span>PERMOHONAN BARU ({pendingMembers.length})</span>
+            <span>Permohonan Baru ({pendingMembers.length})</span>
           </button>
 
           <button
             onClick={() => setActiveTab("approved")}
             className={cn(
-              "flex flex-1 h-9 items-center justify-center gap-1.5 rounded-md text-xs font-mono font-semibold transition-all cursor-pointer",
+              "flex flex-1 h-9 items-center justify-center gap-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer",
               activeTab === "approved"
-                ? "bg-card text-foreground border border-border shadow-xs"
+                ? "bg-card text-foreground border border-border shadow-2xs font-bold"
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
             <Users className="h-3.5 w-3.5" />
-            <span>ANGGOTA AKTIF ({approvedMembers.length})</span>
+            <span>Anggota Aktif ({approvedMembers.length})</span>
           </button>
         </div>
 
         <button
           type="button"
           onClick={() => setIsAddModalOpen(true)}
-          className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 px-4 text-xs font-mono font-bold text-white transition-all shadow-sm active:scale-98 cursor-pointer shrink-0"
+          className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-primary hover:bg-primary-hover px-4 text-xs font-bold text-primary-foreground transition-all shadow-xs active:scale-98 cursor-pointer shrink-0"
         >
           <UserPlus className="h-4 w-4" />
           <span>+ Tambah Anggota</span>
@@ -219,12 +219,12 @@ export function KelolaAnggotaClientView({
         <div className="space-y-3 pb-16">
           {pendingMembers.length === 0 ? (
             <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border bg-card p-12 text-center space-y-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-md border border-border bg-muted text-muted-foreground">
+              <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-border bg-muted text-muted-foreground">
                 <CheckCircle className="h-6 w-6 stroke-[1.5px]" />
               </div>
               <div className="space-y-1.5 max-w-sm">
-                <h3 className="text-sm font-bold tracking-tight text-foreground font-mono">
-                  TIDAK ADA PERMOHONAN TERTUNDA
+                <h3 className="text-sm font-bold tracking-tight text-foreground">
+                  Tidak Ada Permohonan Tertunda
                 </h3>
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   Semua permohonan bergabung pada komunitas ini telah selesai diverifikasi.
@@ -241,11 +241,11 @@ export function KelolaAnggotaClientView({
               return (
                 <div
                   key={member.id}
-                  className="rounded-lg border border-border bg-card p-4 space-y-3"
+                  className="rounded-lg border border-border bg-card p-4 space-y-3 shadow-2xs"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-border bg-muted text-amber-500 dark:text-amber-400 font-mono font-bold text-xs">
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-secondary/30 bg-secondary/15 text-secondary font-bold text-xs">
                         {initial}
                       </div>
                       <div>
@@ -256,11 +256,11 @@ export function KelolaAnggotaClientView({
                       </div>
                     </div>
                     <div className="flex flex-col items-end gap-1">
-                      <span className="rounded-md bg-amber-500/10 px-2.5 py-1 text-xs font-mono text-amber-600 dark:text-amber-400 border border-amber-500/30">
-                        DIAJUKAN: {(member.peran_diajukan || member.peran).toUpperCase()}
+                      <span className="rounded-md bg-secondary/15 px-2.5 py-1 text-xs font-bold text-amber-950 dark:text-amber-200 border border-secondary/30">
+                        Diajukan: {formatPeranDisplay(member.peran_diajukan || member.peran)}
                       </span>
                       {member.peran_diajukan && (
-                        <span className="text-[10px] font-mono text-muted-foreground">
+                        <span className="text-[10px] text-muted-foreground">
                           Saat ini: {member.peran}
                         </span>
                       )}
@@ -272,14 +272,14 @@ export function KelolaAnggotaClientView({
                     <button
                       onClick={() => handleApprove(member.id, name)}
                       disabled={isProcessing}
-                      className="flex flex-1 h-8 items-center justify-center gap-1.5 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white px-3 text-xs font-mono font-bold transition-all disabled:opacity-40 cursor-pointer shadow-xs"
+                      className="flex flex-1 h-9 items-center justify-center gap-1.5 rounded-lg bg-primary hover:bg-primary-hover text-primary-foreground px-3 text-xs font-bold transition-all disabled:opacity-40 cursor-pointer shadow-xs"
                     >
                       {isProcessing ? (
                         <Loader2 className="h-3.5 w-3.5 animate-spin" />
                       ) : (
                         <>
                           <CheckCircle className="h-3.5 w-3.5" />
-                          <span>SETUJUI</span>
+                          <span>Setujui</span>
                         </>
                       )}
                     </button>
@@ -287,14 +287,14 @@ export function KelolaAnggotaClientView({
                     <button
                       onClick={() => handleReject(member.id, name)}
                       disabled={isProcessing}
-                      className="flex flex-1 h-8 items-center justify-center gap-1.5 rounded-md border border-destructive/40 bg-card px-3 text-xs font-mono font-bold text-destructive transition-all hover:bg-destructive/10 disabled:opacity-40"
+                      className="flex flex-1 h-9 items-center justify-center gap-1.5 rounded-lg border border-destructive/40 bg-card px-3 text-xs font-bold text-destructive transition-all hover:bg-destructive/10 disabled:opacity-40 cursor-pointer"
                     >
                       {isProcessing ? (
                         <Loader2 className="h-3.5 w-3.5 animate-spin" />
                       ) : (
                         <>
                           <XCircle className="h-3.5 w-3.5" />
-                          <span>TOLAK</span>
+                          <span>Tolak</span>
                         </>
                       )}
                     </button>
@@ -308,8 +308,8 @@ export function KelolaAnggotaClientView({
         /* Approved Members List */
         <div className="space-y-2 pb-16">
           {approvedMembers.length === 0 ? (
-            <div className="rounded-lg border border-dashed border-border bg-card p-12 text-center text-xs font-mono text-muted-foreground">
-              BELUM ADA ANGGOTA YANG DISETUJUI
+            <div className="rounded-lg border border-dashed border-border bg-card p-12 text-center text-xs text-muted-foreground">
+              Belum ada anggota yang disetujui
             </div>
           ) : (
             approvedMembers.map((member) => {
@@ -320,10 +320,10 @@ export function KelolaAnggotaClientView({
               return (
                 <div
                   key={member.id}
-                  className="flex items-center justify-between gap-3 rounded-lg border border-border bg-card p-3.5"
+                  className="flex items-center justify-between gap-3 rounded-lg border border-border bg-card p-3.5 shadow-2xs"
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-border bg-muted text-foreground font-mono font-bold text-xs">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border bg-muted text-foreground font-bold text-xs">
                       {initial}
                     </div>
                     <div className="min-w-0">
@@ -335,15 +335,15 @@ export function KelolaAnggotaClientView({
                   </div>
 
                   <div className="flex items-center gap-2 shrink-0">
-                    <span className="rounded-md bg-emerald-500/10 px-2.5 py-1 text-xs font-mono text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
-                      {formatPeranDisplay(member.peran).toUpperCase()}
+                    <span className="rounded-md bg-primary/10 px-2.5 py-1 text-xs font-bold text-primary border border-primary/20">
+                      {formatPeranDisplay(member.peran)}
                     </span>
 
                     {/* Tombol Keluarkan Anggota oleh Admin */}
                     <button
                       type="button"
                       onClick={() => setKickTargetMember(member)}
-                      className="inline-flex h-8 items-center gap-1 rounded-md border border-destructive/30 bg-destructive/5 hover:bg-destructive/15 text-destructive px-2.5 text-xs font-mono font-semibold transition-all cursor-pointer"
+                      className="inline-flex h-8 items-center gap-1 rounded-lg border border-destructive/30 bg-destructive/5 hover:bg-destructive/15 text-destructive px-2.5 text-xs font-semibold transition-all cursor-pointer"
                       title={`Keluarkan ${name} dari komunitas`}
                     >
                       <UserX className="h-3.5 w-3.5" />
@@ -359,18 +359,18 @@ export function KelolaAnggotaClientView({
 
       {/* Modal Konfirmasi Keluarkan Anggota */}
       {kickTargetMember && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 animate-in fade-in">
-          <div className="w-full max-w-md rounded-2xl border-2 border-slate-200 bg-white p-6 shadow-2xl space-y-5 animate-in zoom-in-95">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-xs p-4 animate-in fade-in">
+          <div className="w-full max-w-md rounded-lg border border-border bg-card p-5 sm:p-6 shadow-xl space-y-4 animate-in zoom-in-95">
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-rose-50 border-2 border-rose-200 text-rose-600">
-                  <AlertTriangle className="h-6 w-6" />
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400">
+                  <AlertTriangle className="h-5 w-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-black text-slate-900">
+                  <h3 className="text-base font-bold text-foreground">
                     Keluarkan Anggota?
                   </h3>
-                  <p className="text-xs font-semibold text-slate-500">
+                  <p className="text-xs text-muted-foreground">
                     Konfirmasi Tindakan Pengurus
                   </p>
                 </div>
@@ -379,28 +379,28 @@ export function KelolaAnggotaClientView({
                 type="button"
                 onClick={() => !isKicking && setKickTargetMember(null)}
                 disabled={isKicking}
-                className="rounded-xl p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+                className="rounded-lg p-1 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
-            <div className="space-y-3 text-sm text-slate-600">
+            <div className="space-y-3 text-sm text-muted-foreground">
               <p>
                 Apakah Anda yakin ingin mengeluarkan anggota berikut dari komunitas ini?
               </p>
-              <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
-                <p className="font-bold text-slate-900 text-base">
+              <div className="p-3.5 rounded-lg bg-muted/40 border border-border space-y-1">
+                <p className="font-bold text-foreground text-base">
                   {kickTargetMember.profiles?.nama_lengkap || "Pengguna"}
                 </p>
-                <div className="flex items-center justify-between text-xs font-semibold text-slate-500">
+                <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
                   <span>{kickTargetMember.profiles?.email || "-"}</span>
-                  <span className="font-bold text-slate-700 bg-slate-200/80 px-2 py-0.5 rounded-md">
+                  <span className="font-bold text-foreground bg-muted px-2 py-0.5 rounded-md border border-border">
                     {formatPeranDisplay(kickTargetMember.peran)}
                   </span>
                 </div>
               </div>
-              <p className="text-xs text-rose-600 font-semibold leading-relaxed">
+              <p className="text-xs text-destructive font-semibold leading-relaxed">
                 * Pengguna yang dikeluarkan akan kehilangan akses ke grup dan data internal komunitas ini sampai bergabung kembali.
               </p>
             </div>
@@ -410,7 +410,7 @@ export function KelolaAnggotaClientView({
                 type="button"
                 onClick={() => setKickTargetMember(null)}
                 disabled={isKicking}
-                className="flex-1 h-11 rounded-xl border-2 border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-bold text-sm transition-all disabled:opacity-50 cursor-pointer"
+                className="flex-1 h-10 rounded-lg border border-border bg-card hover:bg-muted text-foreground font-bold text-xs transition-all disabled:opacity-50 cursor-pointer"
               >
                 Batal
               </button>
@@ -418,7 +418,7 @@ export function KelolaAnggotaClientView({
                 type="button"
                 onClick={handleConfirmKick}
                 disabled={isKicking}
-                className="flex-1 h-11 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-sm shadow-xs transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+                className="flex-1 h-10 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-xs transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
               >
                 {isKicking ? (
                   <>

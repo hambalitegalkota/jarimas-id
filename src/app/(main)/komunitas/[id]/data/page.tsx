@@ -64,7 +64,7 @@ export default async function KomunitasDataAnakPage({
     );
 
     return (
-      <main className="w-full min-h-screen bg-slate-50 dark:bg-slate-950 py-4 sm:py-6 print:py-0 print:bg-white print:min-h-0">
+      <main className="w-full min-h-screen bg-background py-4 sm:py-6 print:py-0 print:bg-white print:min-h-0">
         <RekapDataAnakClientView
           initialData={rekapData}
           canAccessDaftarNamaAnak={canAccessNames}
@@ -114,26 +114,26 @@ export default async function KomunitasDataAnakPage({
       <div className="flex items-center justify-between">
         <Link
           href={`/komunitas/${id}`}
-          className="inline-flex min-h-[44px] h-11 items-center gap-2 rounded-xl bg-white border-2 border-slate-200 px-4 text-sm font-bold text-slate-800 transition-all hover:bg-slate-50 shadow-xs"
+          className="inline-flex h-9 items-center gap-2 rounded-md bg-card border border-border px-3.5 text-xs font-mono font-semibold text-foreground transition-all hover:bg-muted hover:border-primary/40 shadow-xs"
         >
-          <ArrowLeft className="h-4 w-4 text-blue-700" />
+          <ArrowLeft className="h-3.5 w-3.5 text-primary" />
           <span>Kembali ke Detail Komunitas</span>
         </Link>
       </div>
 
       {/* Header Info */}
-      <div className="flex items-start justify-between gap-3 border-b-2 border-slate-200 pb-5">
+      <div className="flex items-start justify-between gap-3 border-b border-border/60 pb-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <span className="rounded-md bg-blue-50 px-2.5 py-0.5 text-xs font-bold text-blue-800 border border-blue-200">
+            <span className="rounded-md bg-primary/10 px-2.5 py-0.5 text-xs font-bold text-primary border border-primary/20">
               DATA ANAK &amp; DDTK
             </span>
-            <span className="text-xs font-bold text-slate-500 uppercase">{komunitas.nama}</span>
+            <span className="text-xs font-semibold text-muted-foreground uppercase">{komunitas.nama}</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
             Data Anak (0–6 Tahun)
           </h1>
-          <p className="text-sm text-slate-600 leading-relaxed max-w-lg">
+          <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed max-w-lg">
             Pemantauan data anak usia dini, verifikasi data, dan catatan DDTK tumbuh kembang di {komunitas.nama}.
           </p>
         </div>

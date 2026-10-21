@@ -437,15 +437,15 @@ export default async function ProfilePage() {
   const totalCardCount = (wargaKitaSummary ? 1 : 0) + nonWargaMemberships.length;
 
   return (
-    <div className="flex flex-col flex-1 px-4 sm:px-6 md:px-8 py-4 sm:py-6 gap-5 sm:gap-6 max-w-5xl xl:max-w-6xl mx-auto w-full pb-24">
-      {/* Header Profil Card - Coursera Mobile Clean Card */}
-      <section className="relative rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-6 shadow-xs">
+    <div className="flex flex-col flex-1 px-4 sm:px-6 md:px-8 py-4 sm:py-6 gap-5 sm:gap-6 max-w-5xl xl:max-w-6xl mx-auto w-full pb-24 bg-background">
+      {/* Header Profil Card - Super App Clean Card */}
+      <section className="relative rounded-lg border border-border bg-card p-4 sm:p-6 shadow-sm">
         {/* Tombol Keluar dari Akun di Pojok Kanan Atas */}
         <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-10">
           <form action={logoutUser}>
             <button
               type="submit"
-              className="inline-flex min-h-[40px] h-10 items-center justify-center gap-2 rounded-xl border-2 border-rose-200 dark:border-rose-900/40 bg-rose-50 dark:bg-rose-950/30 px-3.5 sm:px-4 text-xs sm:text-sm font-bold text-rose-700 dark:text-rose-400 transition-colors hover:bg-rose-100 dark:hover:bg-rose-900/50 cursor-pointer active:scale-98 shadow-xs"
+              className="inline-flex min-h-[36px] h-9 items-center justify-center gap-1.5 rounded-lg border border-rose-200 dark:border-rose-900/40 bg-rose-50 dark:bg-rose-950/30 px-3 text-xs font-bold text-rose-700 dark:text-rose-400 transition-colors hover:bg-rose-100 dark:hover:bg-rose-900/50 cursor-pointer active:scale-98 shadow-2xs"
               title="Keluar dari Akun"
             >
               <LogOut className="h-4 w-4" />
@@ -455,43 +455,43 @@ export default async function ProfilePage() {
           </form>
         </div>
 
-        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 text-center sm:text-left pr-0 sm:pr-36">
+        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-5 text-center sm:text-left pr-0 sm:pr-36">
           {/* Avatar */}
           <div className="relative shrink-0">
-            <div className="flex h-16 w-16 sm:h-18 sm:w-18 items-center justify-center rounded-2xl border-2 border-emerald-200 dark:border-emerald-800/60 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 font-bold shadow-xs">
-              <User className="h-8 w-8 sm:h-9 sm:w-9" />
+            <div className="flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-lg border border-primary/20 bg-primary/10 text-primary font-bold shadow-xs">
+              <User className="h-7 w-7 sm:h-8 sm:w-8" />
             </div>
             {isSuperAdmin && (
-              <div className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-emerald-600 text-white shadow-md border-2 border-white dark:border-slate-900">
-                <Crown className="h-3.5 w-3.5" />
+              <div className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-secondary text-white shadow-sm border border-card">
+                <Crown className="h-3 w-3" />
               </div>
             )}
           </div>
 
           {/* User Details */}
-          <div className="flex-1 space-y-2.5 w-full">
-            <div className="space-y-1.5">
-              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5">
-                <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
+          <div className="flex-1 space-y-2 w-full">
+            <div className="space-y-1">
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                <h1 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">
                   {namaLengkap}
                 </h1>
 
                 {/* Role Badge */}
                 {isSuperAdmin ? (
-                  <span className="inline-flex items-center gap-1.5 rounded-full border-2 border-emerald-600 bg-emerald-50 dark:bg-emerald-950/60 px-3 py-1 text-xs font-bold text-emerald-700 dark:text-emerald-300 shadow-2xs">
-                    <Crown className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                  <span className="inline-flex items-center gap-1.5 rounded-md border border-secondary/30 bg-secondary/15 px-2.5 py-1 text-xs font-bold text-amber-950 dark:text-amber-200 shadow-2xs">
+                    <Crown className="h-3.5 w-3.5 text-secondary" />
                     SUPER ADMIN
                   </span>
                 ) : (
-                  <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-3 py-1 text-xs font-bold text-slate-700 dark:text-slate-300">
-                    <ShieldCheck className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                  <span className="inline-flex items-center gap-1.5 rounded-md border border-primary/20 bg-primary/10 px-2.5 py-1 text-xs font-bold text-primary">
+                    <ShieldCheck className="h-3.5 w-3.5 text-primary" />
                     PENGGUNA TERVERIFIKASI
                   </span>
                 )}
               </div>
 
-              <div className="flex items-center justify-center sm:justify-start gap-2 text-sm text-slate-600 dark:text-slate-400 font-mono">
-                <Mail className="h-4 w-4 shrink-0 text-slate-500" />
+              <div className="flex items-center justify-center sm:justify-start gap-2 text-xs sm:text-sm text-muted-foreground font-mono">
+                <Mail className="h-4 w-4 shrink-0 text-muted-foreground" />
                 <span>{userEmail}</span>
               </div>
             </div>
@@ -514,8 +514,8 @@ export default async function ProfilePage() {
         /* SUPER ADMIN VIEW: Approval Dashboard & Seeding Tools */
         <section className="space-y-6">
           <div className="flex items-center gap-2 px-1">
-            <Sparkles className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-            <h2 className="text-base font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100">
+            <Sparkles className="h-5 w-5 text-secondary" />
+            <h2 className="text-base font-bold uppercase tracking-wider text-foreground">
               Panel Kendali Super Admin
             </h2>
           </div>
@@ -544,8 +544,8 @@ export default async function ProfilePage() {
         /* COMMUNITY ADMIN VIEW: Tiered Approval List */
         <section className="space-y-4">
           <div className="flex items-center gap-2 px-1">
-            <UserCheck className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-            <h2 className="text-base font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100">
+            <UserCheck className="h-5 w-5 text-primary" />
+            <h2 className="text-base font-bold uppercase tracking-wider text-foreground">
               Persetujuan Peran &amp; Admin Komunitas
             </h2>
           </div>
