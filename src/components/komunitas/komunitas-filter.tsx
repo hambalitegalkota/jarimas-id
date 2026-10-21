@@ -242,30 +242,30 @@ export function KomunitasFilter({
     : "Cari nama PAUD, KB, TK, SPS, RA, TPA...";
 
   return (
-    <div className="rounded-2xl border-2 border-slate-200 bg-white p-5 sm:p-6 space-y-5 shadow-xs">
+    <div className="rounded-lg border border-border bg-card p-4 sm:p-5 space-y-4 shadow-sm text-card-foreground">
       {/* 1. Header Khusus Tab Warga Kita sesuai Permintaan Pengguna */}
       {isWargaKita && (
-        <div className="rounded-2xl border-2 border-blue-200 bg-blue-50/50 p-5 space-y-3">
-          <div className="flex items-center gap-2.5 text-blue-800">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-700 text-white shadow-xs">
-              <Users className="h-5 w-5" />
+        <div className="rounded-lg border border-sky-500/20 bg-sky-500/5 p-3.5 sm:p-4 space-y-2">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-sky-600 text-white shadow-xs">
+              <Users className="h-4.5 w-4.5" />
             </div>
             <div>
-              <h2 className="text-lg sm:text-xl font-black tracking-tight text-slate-900">
+              <h2 className="text-base sm:text-lg font-bold tracking-tight text-foreground">
                 Selamat Datang Di Komunitas Warga Kita
               </h2>
-              <span className="text-xs font-bold text-blue-700 uppercase tracking-wider">
+              <span className="text-[11px] font-bold text-sky-600 dark:text-sky-400 uppercase tracking-wider">
                 STRUKTUR WILAYAH KOTA TEGAL
               </span>
             </div>
           </div>
 
-          <p className="text-sm text-slate-700 leading-relaxed">
-            Saat ini terdapat <strong>1 Komunitas Kota Tegal</strong>, <strong>4 Komunitas Kecamatan</strong>, <strong>27 Komunitas Kelurahan</strong>, <strong>167 Komunitas RW</strong> dan <strong>1.712 Komunitas RT</strong>.
+          <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+            Saat ini terdapat <strong className="text-foreground">1 Komunitas Kota Tegal</strong>, <strong className="text-foreground">4 Komunitas Kecamatan</strong>, <strong className="text-foreground">27 Komunitas Kelurahan</strong>, <strong className="text-foreground">167 Komunitas RW</strong> dan <strong className="text-foreground">1.712 Komunitas RT</strong>.
           </p>
 
-          <p className="text-xs sm:text-sm text-slate-600 font-medium leading-relaxed">
-            Komunitas mana yang akan anda kunjungi, silahkan cari disini atau gunakan filter di bawah ini.
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            Komunitas mana yang akan anda kunjungi, silakan cari di sini atau gunakan filter di bawah ini.
           </p>
         </div>
       )}
@@ -273,24 +273,24 @@ export function KomunitasFilter({
       {/* 2. Search Bar */}
       <form onSubmit={handleSearchSubmit} className="relative">
         <div className="relative flex items-center">
-          <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
-            <Search className="h-5 w-5" />
+          <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-muted-foreground">
+            <Search className="h-4 w-4" />
           </div>
           <input
             type="text"
             value={searchValue}
             onChange={handleSearchChange}
             placeholder={searchPlaceholder}
-            className="block w-full min-h-[48px] h-12 rounded-xl border-2 border-slate-200 bg-white pl-11 pr-20 text-sm sm:text-base font-medium text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20"
+            className="block w-full min-h-[44px] h-11 rounded-lg border border-border bg-background pl-10 pr-10 text-sm font-medium text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/30"
           />
           {searchValue && (
             <button
               type="button"
               onClick={handleClearSearch}
-              className="absolute right-3 flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
+              className="absolute right-2.5 flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
               aria-label="Bersihkan pencarian"
             >
-              <X className="h-4 w-4" />
+              <X className="h-3.5 w-3.5" />
             </button>
           )}
         </div>
@@ -299,8 +299,8 @@ export function KomunitasFilter({
       {/* 3. Filter Dropdowns Grid */}
       <div className="space-y-2">
         <div className="flex items-center justify-between px-0.5">
-          <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-600">
-            <Filter className="h-3.5 w-3.5 text-slate-500" />
+          <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            <Filter className="h-3.5 w-3.5 text-primary" />
             <span>Filter Wilayah &amp; Kategori</span>
           </div>
 
@@ -308,7 +308,7 @@ export function KomunitasFilter({
             <button
               type="button"
               onClick={handleReset}
-              className="inline-flex items-center gap-1 text-xs font-bold text-rose-600 hover:underline cursor-pointer"
+              className="inline-flex items-center gap-1 text-xs font-bold text-destructive hover:underline cursor-pointer"
             >
               <RotateCcw className="h-3 w-3" />
               <span>Reset Filter</span>
@@ -318,7 +318,7 @@ export function KomunitasFilter({
 
         <div
           className={cn(
-            "grid gap-3",
+            "grid gap-2.5 sm:gap-3",
             isWargaKita
               ? "grid-cols-2 sm:grid-cols-4"
               : isPaudTab || isPkbmTab
@@ -329,7 +329,7 @@ export function KomunitasFilter({
           {/* Filter Bentuk Satuan Pendidikan (Khusus Satuan PAUD) */}
           {isPaudTab && (
             <div className="space-y-1">
-              <label className="text-[11px] font-bold uppercase text-slate-500 block">
+              <label className="text-[11px] font-bold uppercase text-muted-foreground block">
                 Bentuk Satuan
               </label>
               <div className="relative">
@@ -337,7 +337,7 @@ export function KomunitasFilter({
                   value={currentBentuk}
                   onChange={handleBentukChange}
                   disabled={isPending}
-                  className="w-full min-h-[44px] h-11 rounded-xl border-2 border-indigo-200 bg-white px-3 text-xs sm:text-sm font-bold text-indigo-900 focus:border-indigo-600 focus:outline-none disabled:opacity-60 cursor-pointer"
+                  className="w-full min-h-[42px] h-10 rounded-lg border border-border bg-background px-3 text-xs sm:text-sm font-medium text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/30 disabled:opacity-60 cursor-pointer"
                 >
                   <option value="semua">Semua Bentuk (208)</option>
                   <option value="TK">TK - Taman Kanak-Kanak (75)</option>
@@ -355,7 +355,7 @@ export function KomunitasFilter({
           {/* Filter Bentuk Lembaga Kesetaraan (Khusus PKBM & SKB) */}
           {isPkbmTab && (
             <div className="space-y-1">
-              <label className="text-[11px] font-bold uppercase text-slate-500 block">
+              <label className="text-[11px] font-bold uppercase text-muted-foreground block">
                 Bentuk Lembaga
               </label>
               <div className="relative">
@@ -363,7 +363,7 @@ export function KomunitasFilter({
                   value={currentBentuk}
                   onChange={handleBentukChange}
                   disabled={isPending}
-                  className="w-full min-h-[44px] h-11 rounded-xl border-2 border-amber-200 bg-white px-3 text-xs sm:text-sm font-bold text-amber-900 focus:border-amber-600 focus:outline-none disabled:opacity-60 cursor-pointer"
+                  className="w-full min-h-[42px] h-10 rounded-lg border border-border bg-background px-3 text-xs sm:text-sm font-medium text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/30 disabled:opacity-60 cursor-pointer"
                 >
                   <option value="semua">Semua Bentuk (13)</option>
                   <option value="PKBM">PKBM - Pusat Kegiatan Belajar (12)</option>
@@ -375,7 +375,7 @@ export function KomunitasFilter({
 
           {/* Filter Kecamatan */}
           <div className="space-y-1">
-            <label className="text-[11px] font-bold uppercase text-slate-500 block">
+            <label className="text-[11px] font-bold uppercase text-muted-foreground block">
               Kecamatan
             </label>
             <div className="relative">
@@ -383,7 +383,7 @@ export function KomunitasFilter({
                 value={currentKecamatan}
                 onChange={handleKecamatanChange}
                 disabled={isPending}
-                className="w-full min-h-[44px] h-11 rounded-xl border-2 border-slate-200 bg-white px-3 text-xs sm:text-sm font-semibold text-slate-900 focus:border-blue-600 focus:outline-none disabled:opacity-60 cursor-pointer"
+                className="w-full min-h-[42px] h-10 rounded-lg border border-border bg-background px-3 text-xs sm:text-sm font-medium text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/30 disabled:opacity-60 cursor-pointer"
               >
                 <option value="semua">Semua Kecamatan</option>
                 {isWargaKita && (
@@ -400,7 +400,7 @@ export function KomunitasFilter({
 
           {/* Filter Kelurahan */}
           <div className="space-y-1">
-            <label className="text-[11px] font-bold uppercase text-slate-500 block">
+            <label className="text-[11px] font-bold uppercase text-muted-foreground block">
               Kelurahan
             </label>
             <div className="relative">
@@ -408,7 +408,7 @@ export function KomunitasFilter({
                 value={currentKelurahan}
                 onChange={handleKelurahanChange}
                 disabled={isPending || currentKecamatan === "semua" || currentKecamatan === "Kota Tegal"}
-                className="w-full min-h-[44px] h-11 rounded-xl border-2 border-slate-200 bg-white px-3 text-xs sm:text-sm font-semibold text-slate-900 focus:border-blue-600 focus:outline-none disabled:opacity-50 cursor-pointer"
+                className="w-full min-h-[42px] h-10 rounded-lg border border-border bg-background px-3 text-xs sm:text-sm font-medium text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/30 disabled:opacity-50 cursor-pointer"
               >
                 <option value="semua">
                   {currentKecamatan === "semua"
@@ -429,7 +429,7 @@ export function KomunitasFilter({
           {/* Filter RW (Hanya untuk Warga Kita) */}
           {isWargaKita && (
             <div className="space-y-1">
-              <label className="text-[11px] font-bold uppercase text-slate-500 block">
+              <label className="text-[11px] font-bold uppercase text-muted-foreground block">
                 RW
               </label>
               <div className="relative">
@@ -437,7 +437,7 @@ export function KomunitasFilter({
                   value={currentRw}
                   onChange={handleRwChange}
                   disabled={isPending || currentKecamatan === "Kota Tegal"}
-                  className="w-full min-h-[44px] h-11 rounded-xl border-2 border-slate-200 bg-white px-3 text-xs sm:text-sm font-semibold text-slate-900 focus:border-blue-600 focus:outline-none disabled:opacity-60 cursor-pointer"
+                  className="w-full min-h-[42px] h-10 rounded-lg border border-border bg-background px-3 text-xs sm:text-sm font-medium text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/30 disabled:opacity-60 cursor-pointer"
                 >
                   <option value="semua">
                     {currentKecamatan === "Kota Tegal"
@@ -457,7 +457,7 @@ export function KomunitasFilter({
           {/* Filter RT (Hanya untuk Warga Kita) */}
           {isWargaKita && (
             <div className="space-y-1">
-              <label className="text-[11px] font-bold uppercase text-slate-500 block">
+              <label className="text-[11px] font-bold uppercase text-muted-foreground block">
                 RT
               </label>
               <div className="relative">
@@ -465,7 +465,7 @@ export function KomunitasFilter({
                   value={currentRt}
                   onChange={handleRtChange}
                   disabled={isPending || currentKecamatan === "Kota Tegal"}
-                  className="w-full min-h-[44px] h-11 rounded-xl border-2 border-slate-200 bg-white px-3 text-xs sm:text-sm font-semibold text-slate-900 focus:border-blue-600 focus:outline-none disabled:opacity-60 cursor-pointer"
+                  className="w-full min-h-[42px] h-10 rounded-lg border border-border bg-background px-3 text-xs sm:text-sm font-medium text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/30 disabled:opacity-60 cursor-pointer"
                 >
                   <option value="semua">
                     {currentKecamatan === "Kota Tegal"
@@ -485,7 +485,7 @@ export function KomunitasFilter({
       </div>
 
       {isPending && (
-        <div className="flex items-center justify-center gap-2 pt-1 text-xs font-bold text-blue-700">
+        <div className="flex items-center justify-center gap-2 pt-1 text-xs font-bold text-primary">
           <Loader2 className="h-4 w-4 animate-spin" />
           <span>Memperbarui data komunitas...</span>
         </div>

@@ -88,30 +88,26 @@ export function KomunitasCard({
     <>
       <div
         className={cn(
-          "rounded-2xl border-2 p-3.5 sm:p-4 shadow-xs transition-all hover:shadow-md bg-white dark:bg-slate-900 flex flex-col sm:flex-row sm:items-center justify-between gap-3",
-          komunitas.jenis === "warga_kita" &&
-            "border-slate-200 dark:border-slate-800 hover:border-blue-500 dark:hover:border-blue-500",
-          komunitas.jenis === "posyandu" &&
-            "border-slate-200 dark:border-slate-800 hover:border-emerald-500 dark:hover:border-emerald-500",
-          komunitas.jenis === "satuan_paud" &&
-            "border-slate-200 dark:border-slate-800 hover:border-indigo-500 dark:hover:border-indigo-500",
-          komunitas.jenis === "pkbm_skb" &&
-            "border-slate-200 dark:border-slate-800 hover:border-amber-500 dark:hover:border-amber-500"
+          "rounded-lg border border-border p-3.5 sm:p-4 shadow-sm transition-all hover:shadow-md bg-card text-card-foreground flex flex-col sm:flex-row sm:items-center justify-between gap-3",
+          komunitas.jenis === "warga_kita" && "hover:border-sky-500/40",
+          komunitas.jenis === "posyandu" && "hover:border-primary/40",
+          komunitas.jenis === "satuan_paud" && "hover:border-teal-500/40",
+          komunitas.jenis === "pkbm_skb" && "hover:border-secondary/40"
         )}
       >
         {/* Kiri: Icon, Nama Posyandu & Alamat */}
         <div className="flex items-center gap-3 min-w-0 flex-1">
           <div
             className={cn(
-              "flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-2xl font-bold border-2 shadow-2xs",
+              "flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-lg font-bold border shadow-2xs",
               komunitas.jenis === "warga_kita" &&
-                "bg-blue-50 dark:bg-blue-950/50 text-blue-800 dark:text-blue-300 border-blue-200 dark:border-blue-800",
+                "bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/20",
               komunitas.jenis === "posyandu" &&
-                "bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800",
+                "bg-primary/10 text-primary border-primary/20",
               komunitas.jenis === "satuan_paud" &&
-                "bg-indigo-50 dark:bg-indigo-950/50 text-indigo-800 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800",
+                "bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-500/20",
               komunitas.jenis === "pkbm_skb" &&
-                "bg-amber-50 dark:bg-amber-950/50 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800"
+                "bg-secondary/15 text-secondary-foreground border-secondary/30"
             )}
           >
             {komunitas.jenis === "warga_kita" && <Users className="h-5 w-5" />}
@@ -122,16 +118,16 @@ export function KomunitasCard({
 
           <div className="space-y-0.5 min-w-0 flex-1">
             <div className="flex items-center gap-2 flex-wrap">
-              <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-slate-100 leading-snug truncate">
+              <h3 className="text-sm sm:text-base font-bold text-foreground leading-snug truncate">
                 {formattedTitle}
               </h3>
               {komunitas.jenis === "satuan_paud" && komunitas.jenis_institusi && (
-                <span className="inline-flex items-center px-1.5 py-0.2 rounded-md bg-indigo-50 dark:bg-indigo-950/70 border border-indigo-200 dark:border-indigo-800 text-[10px] font-black text-indigo-700 dark:text-indigo-300">
+                <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-teal-500/10 border border-teal-500/20 text-[10px] font-bold text-teal-700 dark:text-teal-300">
                   {komunitas.jenis_institusi}
                 </span>
               )}
               {komunitas.jenis === "pkbm_skb" && komunitas.jenis_institusi && (
-                <span className="inline-flex items-center px-1.5 py-0.2 rounded-md bg-amber-50 dark:bg-amber-950/70 border border-amber-200 dark:border-amber-800 text-[10px] font-black text-amber-700 dark:text-amber-300">
+                <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-amber-500/10 border border-amber-500/20 text-[10px] font-bold text-amber-700 dark:text-amber-300">
                   {komunitas.jenis_institusi}
                 </span>
               )}
@@ -139,20 +135,20 @@ export function KomunitasCard({
               {membership && (
                 <div className="shrink-0 hidden md:block">
                   {membership.status === "approved" && (
-                    <span className="inline-flex items-center gap-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 text-[11px] font-bold text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
-                      <CheckCircle2 className="h-3 w-3 text-emerald-600" />
+                    <span className="inline-flex items-center gap-1 rounded-md bg-primary/10 px-2 py-0.5 text-[11px] font-bold text-primary border border-primary/20">
+                      <CheckCircle2 className="h-3 w-3 text-primary" />
                       <span>{membership.peran.toUpperCase()}</span>
                     </span>
                   )}
                   {membership.status === "pending" && (
-                    <span className="inline-flex items-center gap-1 rounded-lg bg-amber-50 dark:bg-amber-950/50 px-2 py-0.5 text-[11px] font-bold text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-800">
-                      <Clock className="h-3 w-3 text-amber-600" />
+                    <span className="inline-flex items-center gap-1 rounded-md bg-secondary/15 px-2 py-0.5 text-[11px] font-bold text-secondary-foreground border border-secondary/30">
+                      <Clock className="h-3 w-3 text-amber-600 dark:text-amber-400" />
                       <span>PENDING</span>
                     </span>
                   )}
                   {membership.status === "rejected" && (
-                    <span className="inline-flex items-center gap-1 rounded-lg bg-rose-50 dark:bg-rose-950/50 px-2 py-0.5 text-[11px] font-bold text-rose-900 dark:text-rose-300 border border-rose-300 dark:border-rose-800">
-                      <XCircle className="h-3 w-3 text-rose-600" />
+                    <span className="inline-flex items-center gap-1 rounded-md bg-destructive/10 px-2 py-0.5 text-[11px] font-bold text-destructive border border-destructive/20">
+                      <XCircle className="h-3 w-3" />
                       <span>DITOLAK</span>
                     </span>
                   )}
@@ -160,8 +156,8 @@ export function KomunitasCard({
               )}
             </div>
 
-            <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400">
-              <MapPin className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+            <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+              <MapPin className="h-3.5 w-3.5 text-muted-foreground/70 shrink-0" />
               <span className="truncate">
                 {komunitas.kelurahan && komunitas.kelurahan !== "Semua Kelurahan"
                   ? `${komunitas.kelurahan}, ${komunitas.kecamatan || "Kota Tegal"}`
@@ -179,14 +175,14 @@ export function KomunitasCard({
           {membership && (
             <div className="shrink-0 md:hidden mr-auto">
               {membership.status === "approved" && (
-                <span className="inline-flex items-center gap-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 px-2 py-1 text-[11px] font-bold text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
-                  <CheckCircle2 className="h-3 w-3 text-emerald-600" />
+                <span className="inline-flex items-center gap-1 rounded-md bg-primary/10 px-2 py-1 text-[11px] font-bold text-primary border border-primary/20">
+                  <CheckCircle2 className="h-3 w-3 text-primary" />
                   <span>{membership.peran.toUpperCase()}</span>
                 </span>
               )}
               {membership.status === "pending" && (
-                <span className="inline-flex items-center gap-1 rounded-lg bg-amber-50 dark:bg-amber-950/50 px-2 py-1 text-[11px] font-bold text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-800">
-                  <Clock className="h-3 w-3 text-amber-600" />
+                <span className="inline-flex items-center gap-1 rounded-md bg-secondary/15 px-2 py-1 text-[11px] font-bold text-secondary-foreground border border-secondary/30">
+                  <Clock className="h-3 w-3 text-amber-600 dark:text-amber-400" />
                   <span>PENDING</span>
                 </span>
               )}
@@ -197,27 +193,20 @@ export function KomunitasCard({
             href={`/komunitas/${komunitas.id}`}
             prefetch={false}
             className={cn(
-              "group inline-flex min-h-[38px] h-9.5 items-center justify-center gap-1.5 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 text-xs font-extrabold text-slate-800 dark:text-slate-200 transition-all hover:bg-slate-50 dark:hover:bg-slate-700 shadow-2xs active:scale-95",
+              "group inline-flex min-h-[38px] h-9.5 items-center justify-center gap-1.5 rounded-lg border border-border bg-card px-3.5 text-xs font-bold text-foreground transition-all hover:bg-accent shadow-2xs active:scale-95",
               isApprovedMember &&
-                (komunitas.jenis === "warga_kita"
-                  ? "bg-blue-600 hover:bg-blue-700 text-white border-transparent"
-                  : "bg-emerald-600 hover:bg-emerald-700 text-white border-transparent")
+                "bg-primary hover:bg-primary/90 text-primary-foreground border-transparent"
             )}
           >
             <span>Kunjungi</span>
-            <ArrowRight className="h-3.5 w-3.5 text-slate-500 dark:text-slate-400 group-hover:translate-x-0.5 transition-transform" />
+            <ArrowRight className="h-3.5 w-3.5 text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
           </Link>
 
           {!isApprovedMember && canJoin && (
             <button
               type="button"
               onClick={handleJoinClick}
-              className={cn(
-                "inline-flex min-h-[38px] h-9.5 items-center justify-center gap-1.5 rounded-xl px-3.5 text-xs font-extrabold text-white transition-all shadow-2xs cursor-pointer active:scale-95",
-                komunitas.jenis === "warga_kita"
-                  ? "bg-blue-600 hover:bg-blue-700"
-                  : "bg-emerald-600 hover:bg-emerald-700"
-              )}
+              className="inline-flex min-h-[38px] h-9.5 items-center justify-center gap-1.5 rounded-lg bg-secondary hover:bg-secondary/90 text-secondary-foreground px-3.5 text-xs font-bold transition-all shadow-2xs cursor-pointer active:scale-95"
             >
               <UserPlus className="h-3.5 w-3.5" />
               <span>Gabung</span>

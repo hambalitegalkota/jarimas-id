@@ -70,81 +70,76 @@ export function KomunitasRekapSection({
   // Tema warna dinamis sesuai tab aktif
   const themeMap: Record<string, any> = {
     posyandu: {
-      border: "border-emerald-200 dark:border-emerald-800/80",
-      bgGradient:
-        "bg-gradient-to-br from-emerald-50/60 via-white to-teal-50/40 dark:from-slate-900 dark:via-slate-900 dark:to-emerald-950/20",
-      accentText: "text-emerald-700 dark:text-emerald-400",
+      border: "border-border",
+      bgGradient: "bg-card",
+      accentText: "text-primary",
       icon: HeartPulse,
-      badgeTotal: "bg-emerald-600 text-white",
+      badgeTotal: "bg-primary text-primary-foreground",
       badgeKec:
-        "bg-emerald-50 dark:bg-emerald-950/60 border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300",
-      chipActive: "bg-emerald-600 text-white font-black shadow-xs",
+        "bg-primary/10 border-primary/20 text-primary",
+      chipActive: "bg-primary text-primary-foreground font-bold shadow-xs",
       chipHover:
-        "hover:bg-emerald-50 dark:hover:bg-emerald-950/40 hover:border-emerald-300 text-slate-700 dark:text-slate-300",
+        "hover:bg-primary/10 hover:border-primary/30 text-foreground",
       countBadge:
-        "bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200",
+        "bg-primary/15 text-primary",
     },
     warga_kita: {
-      border: "border-blue-200 dark:border-blue-800/80",
-      bgGradient:
-        "bg-gradient-to-br from-blue-50/60 via-white to-sky-50/40 dark:from-slate-900 dark:via-slate-900 dark:to-blue-950/20",
-      accentText: "text-blue-700 dark:text-blue-400",
+      border: "border-border",
+      bgGradient: "bg-card",
+      accentText: "text-sky-600 dark:text-sky-400",
       icon: Users,
-      badgeTotal: "bg-blue-600 text-white",
+      badgeTotal: "bg-sky-600 text-white",
       badgeKec:
-        "bg-blue-50 dark:bg-blue-950/60 border-blue-200 dark:border-blue-800 text-blue-800 dark:text-blue-300",
-      chipActive: "bg-blue-600 text-white font-black shadow-xs",
+        "bg-sky-500/10 border-sky-500/20 text-sky-700 dark:text-sky-300",
+      chipActive: "bg-sky-600 text-white font-bold shadow-xs",
       chipHover:
-        "hover:bg-blue-50 dark:hover:bg-blue-950/40 hover:border-blue-300 text-slate-700 dark:text-slate-300",
+        "hover:bg-sky-500/10 hover:border-sky-500/30 text-foreground",
       countBadge:
-        "bg-blue-100 dark:bg-blue-900/60 text-blue-800 dark:text-blue-200",
+        "bg-sky-500/15 text-sky-700 dark:text-sky-300",
     },
     satuan_paud: {
-      border: "border-indigo-200 dark:border-indigo-800/80",
-      bgGradient:
-        "bg-gradient-to-br from-indigo-50/60 via-white to-purple-50/40 dark:from-slate-900 dark:via-slate-900 dark:to-indigo-950/20",
-      accentText: "text-indigo-700 dark:text-indigo-400",
+      border: "border-border",
+      bgGradient: "bg-card",
+      accentText: "text-teal-600 dark:text-teal-400",
       icon: GraduationCap,
-      badgeTotal: "bg-indigo-600 text-white",
+      badgeTotal: "bg-teal-600 text-white",
       badgeKec:
-        "bg-indigo-50 dark:bg-indigo-950/60 border-indigo-200 dark:border-indigo-800 text-indigo-800 dark:text-indigo-300",
-      chipActive: "bg-indigo-600 text-white font-black shadow-xs",
+        "bg-teal-500/10 border-teal-500/20 text-teal-700 dark:text-teal-300",
+      chipActive: "bg-teal-600 text-white font-bold shadow-xs",
       chipHover:
-        "hover:bg-indigo-50 dark:hover:bg-indigo-950/40 hover:border-indigo-300 text-slate-700 dark:text-slate-300",
+        "hover:bg-teal-500/10 hover:border-teal-500/30 text-foreground",
       countBadge:
-        "bg-indigo-100 dark:bg-indigo-900/60 text-indigo-800 dark:text-indigo-200",
+        "bg-teal-500/15 text-teal-700 dark:text-teal-300",
     },
     pkbm_skb: {
-      border: "border-amber-200 dark:border-amber-800/80",
-      bgGradient:
-        "bg-gradient-to-br from-amber-50/60 via-white to-orange-50/40 dark:from-slate-900 dark:via-slate-900 dark:to-amber-950/20",
-      accentText: "text-amber-700 dark:text-amber-400",
+      border: "border-border",
+      bgGradient: "bg-card",
+      accentText: "text-amber-600 dark:text-amber-400",
       icon: BookOpen,
-      badgeTotal: "bg-amber-600 text-white",
+      badgeTotal: "bg-secondary text-secondary-foreground",
       badgeKec:
-        "bg-amber-50 dark:bg-amber-950/60 border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300",
-      chipActive: "bg-amber-600 text-white font-black shadow-xs",
+        "bg-secondary/15 border-secondary/30 text-secondary-foreground",
+      chipActive: "bg-secondary text-secondary-foreground font-bold shadow-xs",
       chipHover:
-        "hover:bg-amber-50 dark:hover:bg-amber-950/40 hover:border-amber-300 text-slate-700 dark:text-slate-300",
+        "hover:bg-secondary/15 hover:border-secondary/30 text-foreground",
       countBadge:
-        "bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-200",
+        "bg-secondary/20 text-secondary-foreground",
     },
   };
 
   const theme = themeMap[currentTab] || {
-    border: "border-emerald-200 dark:border-emerald-800/80",
-    bgGradient:
-      "bg-gradient-to-br from-emerald-50/60 via-white to-teal-50/40 dark:from-slate-900 dark:via-slate-900 dark:to-emerald-950/20",
-    accentText: "text-emerald-700 dark:text-emerald-400",
+    border: "border-border",
+    bgGradient: "bg-card",
+    accentText: "text-primary",
     icon: HeartPulse,
-    badgeTotal: "bg-emerald-600 text-white",
+    badgeTotal: "bg-primary text-primary-foreground",
     badgeKec:
-      "bg-emerald-50 dark:bg-emerald-950/60 border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300",
-    chipActive: "bg-emerald-600 text-white font-black shadow-xs",
+      "bg-primary/10 border-primary/20 text-primary",
+    chipActive: "bg-primary text-primary-foreground font-bold shadow-xs",
     chipHover:
-      "hover:bg-emerald-50 dark:hover:bg-emerald-950/40 hover:border-emerald-300 text-slate-700 dark:text-slate-300",
+      "hover:bg-primary/10 hover:border-primary/30 text-foreground",
     countBadge:
-      "bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200",
+      "bg-primary/15 text-primary",
   };
 
   const IconComponent = theme.icon;
@@ -200,28 +195,28 @@ export function KomunitasRekapSection({
 
   return (
     <section
-      className={`rounded-2xl border-2 ${theme.border} ${theme.bgGradient} p-4 sm:p-5 shadow-xs transition-all space-y-4`}
+      className="rounded-lg border border-border bg-card p-4 sm:p-5 shadow-sm transition-all space-y-4 text-card-foreground"
     >
       {/* Header Bar Rekap */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200/80 dark:border-slate-800 pb-3.5">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-3">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-2xs shrink-0">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 border border-primary/20 shadow-2xs shrink-0">
             <IconComponent className={`h-5 w-5 ${theme.accentText}`} />
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <h2 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">
+              <h2 className="text-sm sm:text-base font-bold text-foreground tracking-tight">
                 Rekap Jumlah {rekap.labelSingkat}
               </h2>
               <span
-                className={`text-[11px] font-black px-2.5 py-0.5 rounded-full ${theme.badgeTotal}`}
+                className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full ${theme.badgeTotal}`}
               >
                 {isWarga
                   ? `${rekap.totalSemua} RW • ${(rekap.totalRt || 1712).toLocaleString("id-ID")} RT`
                   : `${rekap.totalSemua} ${rekap.satuanLabel}`}
               </span>
             </div>
-            <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5">
               {isPaud
                 ? `Tersebar di 7 Bentuk Satuan Pendidikan, ${rekap.totalKecamatan} Kecamatan & ${rekap.totalKelurahan} Kelurahan se-Kota Tegal`
                 : isPkbm
@@ -237,7 +232,7 @@ export function KomunitasRekapSection({
         <button
           type="button"
           onClick={() => setIsOpen(!isOpen)}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300 transition-colors shadow-2xs cursor-pointer active:scale-98"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-card hover:bg-accent text-xs font-semibold text-foreground transition-colors shadow-2xs cursor-pointer active:scale-98"
         >
           <span>{isOpen ? "Sembunyikan Rincian" : "Lihat Rincian Lengkap"}</span>
           {isOpen ? (
@@ -256,30 +251,25 @@ export function KomunitasRekapSection({
           {/* ========================================================= */}
           {(isPaud || isPkbm) && bentukRekap && (
             <div
-              className={cn(
-                "rounded-2xl border-2 p-3.5 sm:p-4 shadow-xs space-y-2.5",
-                isPaud
-                  ? "border-indigo-200/80 dark:border-indigo-900/60 bg-white/90 dark:bg-slate-900/90"
-                  : "border-amber-200/80 dark:border-amber-900/60 bg-white/90 dark:bg-slate-900/90"
-              )}
+              className="rounded-lg border border-border bg-card p-3.5 sm:p-4 shadow-sm space-y-2.5"
             >
-              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-2">
                 <div className="flex items-center gap-2">
                   <Layers
                     className={cn(
                       "h-4 w-4",
                       isPaud
-                        ? "text-indigo-600 dark:text-indigo-400"
+                        ? "text-teal-600 dark:text-teal-400"
                         : "text-amber-600 dark:text-amber-400"
                     )}
                   />
-                  <h3 className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-slate-100">
+                  <h3 className="text-xs sm:text-sm font-bold text-foreground">
                     {isPaud
                       ? "Bentuk Satuan Pendidikan (TK, RA, KB, SPS, TPA, PKBM, SKB)"
                       : "Bentuk Satuan Pendidikan Kesetaraan (PKBM & SKB)"}
                   </h3>
                 </div>
-                <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">
+                <span className="text-[11px] font-medium text-muted-foreground">
                   {currentKecamatan !== "semua" || currentKelurahan !== "semua"
                     ? `${bentukRekap.totalFiltered} dari total ${bentukRekap.totalSemua} Lembaga di wilayah ini`
                     : `Total ${bentukRekap.totalSemua} Lembaga se-Kota Tegal`}
@@ -299,19 +289,17 @@ export function KomunitasRekapSection({
                 <Link
                   href={makeFilterUrl(currentKecamatan, currentKelurahan, "semua")}
                   className={cn(
-                    "flex flex-col justify-between p-2.5 rounded-xl border-2 transition-all cursor-pointer text-left group",
+                    "flex flex-col justify-between p-2.5 rounded-lg border transition-all cursor-pointer text-left group",
                     currentBentuk === "semua"
                       ? isPaud
-                        ? "border-indigo-600 bg-indigo-600 text-white shadow-xs"
-                        : "border-amber-600 bg-amber-600 text-white shadow-xs"
-                      : isPaud
-                      ? "border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800 hover:border-indigo-300 dark:hover:border-indigo-700 hover:bg-indigo-50/40 text-slate-700 dark:text-slate-200"
-                      : "border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800 hover:border-amber-300 dark:hover:border-amber-700 hover:bg-amber-50/40 text-slate-700 dark:text-slate-200"
+                        ? "border-primary bg-primary text-primary-foreground shadow-xs"
+                        : "border-secondary bg-secondary text-secondary-foreground shadow-xs"
+                      : "border-border bg-card hover:bg-muted text-foreground"
                   )}
                   title="Tampilkan semua bentuk satuan pendidikan"
                 >
                   <div className="flex items-center justify-between gap-1 mb-1">
-                    <span className="text-[10px] font-black uppercase tracking-wider line-clamp-1">
+                    <span className="text-[10px] font-bold uppercase tracking-wider line-clamp-1">
                       Semua
                     </span>
                     {currentBentuk === "semua" && (
@@ -327,9 +315,9 @@ export function KomunitasRekapSection({
                         "text-[9px] font-semibold block mt-1 line-clamp-1",
                         currentBentuk === "semua"
                           ? isPaud
-                            ? "text-indigo-100"
-                            : "text-amber-100"
-                          : "text-slate-500 dark:text-slate-400"
+                            ? "text-primary-foreground/90"
+                            : "text-secondary-foreground/90"
+                          : "text-muted-foreground"
                       )}
                     >
                       Semua Bentuk
@@ -352,14 +340,12 @@ export function KomunitasRekapSection({
                         isSelected ? "semua" : item.bentuk
                       )}
                       className={cn(
-                        "flex flex-col justify-between p-2.5 rounded-xl border-2 transition-all cursor-pointer text-left group",
+                        "flex flex-col justify-between p-2.5 rounded-lg border transition-all cursor-pointer text-left group",
                         isSelected
                           ? isPaud
-                            ? "border-indigo-600 bg-indigo-600 text-white shadow-xs ring-2 ring-indigo-400/40"
-                            : "border-amber-600 bg-amber-600 text-white shadow-xs ring-2 ring-amber-400/40"
-                          : isPaud
-                          ? "border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800 hover:border-indigo-300 dark:hover:border-indigo-700 hover:bg-indigo-50/40 text-slate-700 dark:text-slate-200"
-                          : "border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800 hover:border-amber-300 dark:hover:border-amber-700 hover:bg-amber-50/40 text-slate-700 dark:text-slate-200"
+                            ? "border-primary bg-primary text-primary-foreground shadow-xs ring-1 ring-primary/40"
+                            : "border-secondary bg-secondary text-secondary-foreground shadow-xs ring-1 ring-secondary/40"
+                          : "border-border bg-card hover:bg-muted text-foreground"
                       )}
                       title={`Filter: ${item.namaLengkap} (${item.kategori}) - ${item.keterangan}`}
                     >
@@ -371,11 +357,11 @@ export function KomunitasRekapSection({
                               isSelected
                                 ? "text-white"
                                 : isPaud
-                                ? "text-indigo-600 dark:text-indigo-400"
+                                ? "text-teal-600 dark:text-teal-400"
                                 : "text-amber-600 dark:text-amber-400"
                             )}
                           />
-                          <span className="text-[11px] font-black uppercase tracking-wider truncate">
+                          <span className="text-[11px] font-bold uppercase tracking-wider truncate">
                             {item.bentuk}
                           </span>
                         </div>
@@ -394,9 +380,9 @@ export function KomunitasRekapSection({
                                 "text-[9px] font-mono",
                                 isSelected
                                   ? isPaud
-                                    ? "text-indigo-200"
-                                    : "text-amber-200"
-                                  : "text-slate-400"
+                                    ? "text-primary-foreground/80"
+                                    : "text-secondary-foreground/80"
+                                  : "text-muted-foreground"
                               )}
                             >
                               /{item.totalCount}
@@ -408,9 +394,9 @@ export function KomunitasRekapSection({
                             "text-[9px] font-semibold block mt-1 line-clamp-1",
                             isSelected
                               ? isPaud
-                                ? "text-indigo-100"
-                                : "text-amber-100"
-                              : "text-slate-500 dark:text-slate-400"
+                                ? "text-primary-foreground/90"
+                                : "text-secondary-foreground/90"
+                              : "text-muted-foreground"
                           )}
                         >
                           {item.namaLengkap.replace(/^Taman\s+/i, "")}
@@ -429,53 +415,53 @@ export function KomunitasRekapSection({
           {isWarga && (
             <div
               className={cn(
-                "rounded-2xl border-2 p-3.5 sm:p-4.5 shadow-xs transition-all",
+                "rounded-lg border p-3.5 sm:p-4 shadow-sm transition-all",
                 currentKecamatan === "Kota Tegal"
-                  ? "border-blue-600 bg-white dark:bg-slate-900 shadow-md ring-2 ring-blue-500/25"
-                  : "border-blue-200/90 dark:border-blue-900/60 bg-white/95 dark:bg-slate-900/95 hover:border-blue-300 dark:hover:border-blue-700"
+                  ? "border-sky-500 bg-sky-500/10 ring-1 ring-sky-500/25"
+                  : "border-sky-500/20 bg-sky-500/5 hover:border-sky-500/40"
               )}
             >
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-3.5">
                 {/* Informasi Komunitas Kota Tegal */}
                 <div className="flex items-start sm:items-center gap-3 min-w-0">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-sky-600 text-white shadow-xs shrink-0 ring-4 ring-blue-500/10">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-sky-600 text-white shadow-xs shrink-0">
                     <Building2 className="h-5 w-5" />
                   </div>
-                  <div className="min-w-0 space-y-1">
+                  <div className="min-w-0 space-y-0.5">
                     <div className="flex items-center gap-2 flex-wrap">
                       <Link
                         href="/komunitas/kom-warga-kota-tegal"
-                        className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-slate-100 hover:text-blue-600 dark:hover:text-blue-400 transition-colors tracking-tight inline-flex items-center gap-1.5"
+                        className="text-sm sm:text-base font-bold text-foreground hover:text-sky-600 dark:hover:text-sky-400 transition-colors tracking-tight inline-flex items-center gap-1.5"
                         title="Buka Komunitas Warga Kota Tegal"
                       >
                         <span>Komunitas Warga Kota Tegal</span>
-                        <ArrowRight className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+                        <ArrowRight className="h-3.5 w-3.5 text-sky-600 dark:text-sky-400" />
                       </Link>
-                      <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-600 text-white shadow-2xs">
+                      <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-sky-600 text-white">
                         Tingkat Kota Tegal
                       </span>
-                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                      <span className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-sky-500/15 text-sky-700 dark:text-sky-300 border border-sky-500/25">
                         Induk Seluruh Warga
                       </span>
                     </div>
-                    <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-2 leading-relaxed">
+                    <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
                       Wadah kolaborasi, gotong royong, pemantauan tumbuh kembang anak &amp; kepedulian sosial seluruh warga masyarakat se-Kota Tegal.
                     </p>
                     {/* Ringkasan Hierarki Wilayah */}
-                    <div className="flex items-center gap-1.5 pt-0.5 flex-wrap text-[11px] font-semibold text-slate-500 dark:text-slate-400">
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold">
+                    <div className="flex items-center gap-1.5 pt-0.5 flex-wrap text-[11px] font-medium text-muted-foreground">
+                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-muted text-foreground font-semibold">
                         4 Kecamatan
                       </span>
                       <span>•</span>
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold">
+                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-muted text-foreground font-semibold">
                         27 Kelurahan
                       </span>
                       <span>•</span>
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold">
+                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-muted text-foreground font-semibold">
                         167 RW
                       </span>
                       <span>•</span>
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold">
+                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-muted text-foreground font-semibold">
                         1.712 RT
                       </span>
                     </div>
@@ -491,10 +477,10 @@ export function KomunitasRekapSection({
                         : makeFilterUrl("Kota Tegal", "semua")
                     }
                     className={cn(
-                      "inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-bold transition-all cursor-pointer shadow-2xs active:scale-95",
+                      "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all cursor-pointer shadow-2xs active:scale-95",
                       currentKecamatan === "Kota Tegal"
-                        ? "bg-blue-50 dark:bg-blue-950/70 border-blue-500 text-blue-700 dark:text-blue-300 ring-2 ring-blue-400/30 font-black"
-                        : "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300"
+                        ? "bg-sky-500/15 border-sky-500 text-sky-700 dark:text-sky-300 ring-1 ring-sky-400/30 font-bold"
+                        : "bg-card border-border hover:bg-accent text-foreground"
                     )}
                     title={
                       currentKecamatan === "Kota Tegal"
@@ -504,19 +490,19 @@ export function KomunitasRekapSection({
                   >
                     {currentKecamatan === "Kota Tegal" ? (
                       <>
-                        <CheckCircle2 className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+                        <CheckCircle2 className="h-3.5 w-3.5 text-sky-600 dark:text-sky-400" />
                         <span>Filter Aktif</span>
                       </>
                     ) : (
                       <>
-                        <Filter className="h-3.5 w-3.5 text-slate-500 dark:text-slate-400" />
+                        <Filter className="h-3.5 w-3.5 text-muted-foreground" />
                         <span>Filter Wilayah</span>
                       </>
                     )}
                   </Link>
                   <Link
                     href="/komunitas/kom-warga-kota-tegal"
-                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs transition-all active:scale-95 group cursor-pointer"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold shadow-xs transition-all active:scale-95 group cursor-pointer"
                     title="Buka Halaman Komunitas Warga Kota Tegal"
                   >
                     <span>Buka Komunitas</span>
@@ -530,7 +516,7 @@ export function KomunitasRekapSection({
           {/* ========================================================= */}
           {/* 2. GRID 4 KECAMATAN & 27 KELURAHAN                        */}
           {/* ========================================================= */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             {rekap.kecamatanList.map((kec) => {
               const isKecSelected =
                 currentKecamatan.toLowerCase() === kec.kecamatan.toLowerCase();
@@ -538,30 +524,37 @@ export function KomunitasRekapSection({
               return (
                 <div
                   key={kec.kecamatan}
-                  className={`rounded-xl border-2 transition-all p-3 flex flex-col justify-between ${
+                  className={cn(
+                    "rounded-lg border p-3 flex flex-col justify-between transition-all bg-card",
                     isKecSelected
                       ? isWarga
-                        ? "border-blue-500 dark:border-blue-500 bg-white dark:bg-slate-800 shadow-sm ring-2 ring-blue-500/20"
-                        : "border-emerald-500 dark:border-emerald-500 bg-white dark:bg-slate-800 shadow-sm ring-2 ring-emerald-500/20"
-                      : "border-slate-200/90 dark:border-slate-800 bg-white/80 dark:bg-slate-800/80 hover:border-slate-300 dark:hover:border-slate-700"
-                  }`}
+                        ? "border-sky-500 bg-sky-500/5 shadow-sm ring-1 ring-sky-500/20"
+                        : "border-primary bg-primary/5 shadow-sm ring-1 ring-primary/20"
+                      : "border-border hover:border-muted-foreground/30"
+                  )}
                 >
                   {/* Kecamatan Title & Total Count */}
                   <div>
-                    <div className="flex items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-700/60 pb-2 mb-2.5">
+                    <div className="flex items-center justify-between gap-2 border-b border-border pb-2 mb-2">
                       <Link
                         href={makeFilterUrl(kec.kecamatan, "semua")}
                         className="group inline-flex items-center gap-1.5 hover:underline"
                         title={`Filter hanya Kecamatan ${kec.kecamatan}`}
                       >
-                        <MapPin className={`h-3.5 w-3.5 text-slate-400 ${isWarga ? "group-hover:text-blue-600" : "group-hover:text-emerald-600"} transition-colors shrink-0`} />
-                        <span className={`text-xs font-black text-slate-900 dark:text-slate-100 ${isWarga ? "group-hover:text-blue-600 dark:group-hover:text-blue-400" : "group-hover:text-emerald-600 dark:group-hover:text-emerald-400"} transition-colors`}>
+                        <MapPin className={cn(
+                          "h-3.5 w-3.5 text-muted-foreground shrink-0 transition-colors",
+                          isWarga ? "group-hover:text-sky-600" : "group-hover:text-primary"
+                        )} />
+                        <span className={cn(
+                          "text-xs font-bold text-foreground transition-colors",
+                          isWarga ? "group-hover:text-sky-600 dark:group-hover:text-sky-400" : "group-hover:text-primary"
+                        )}>
                           Kec. {kec.kecamatan}
                         </span>
                       </Link>
                       <Link
                         href={makeFilterUrl(kec.kecamatan, "semua")}
-                        className={`text-[11px] font-black px-2 py-0.5 rounded-full border transition-all ${theme.badgeKec} hover:scale-105`}
+                        className={`text-[11px] font-bold px-2 py-0.5 rounded-full border transition-all ${theme.badgeKec} hover:scale-105`}
                         title={isWarga ? `Total ${kec.totalCount} RW (${kec.rtTotal || (kec.totalCount * 10)} RT) di ${kec.kecamatan}` : `Total di ${kec.kecamatan}`}
                       >
                         {isWarga ? `${kec.totalCount} RW (${kec.rtTotal || (kec.totalCount * 10)} RT)` : kec.totalCount}
@@ -580,11 +573,12 @@ export function KomunitasRekapSection({
                           <Link
                             key={kel.kelurahan}
                             href={makeFilterUrl(kec.kecamatan, kel.kelurahan)}
-                            className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-semibold border transition-all cursor-pointer ${
+                            className={cn(
+                              "inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium border transition-all cursor-pointer",
                               isKelSelected
                                 ? theme.chipActive
-                                : `bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 ${theme.chipHover}`
-                            }`}
+                                : `bg-muted/50 border-border ${theme.chipHover}`
+                            )}
                             title={
                               isWarga
                                 ? `Filter: Kelurahan ${kel.kelurahan} (${kel.rwCount ?? kel.count} RW • ${kel.rtCount ?? (kel.count * 10)} RT)`
@@ -593,11 +587,12 @@ export function KomunitasRekapSection({
                           >
                             <span>{kel.kelurahan}</span>
                             <span
-                              className={`text-[10px] font-black px-1.5 py-0.2 rounded-md ${
+                              className={cn(
+                                "text-[10px] font-bold px-1.5 py-0.2 rounded",
                                 isKelSelected
                                   ? "bg-white/20 text-white"
                                   : theme.countBadge
-                              }`}
+                              )}
                             >
                               {isWarga ? `${kel.rwCount ?? kel.count} RW` : kel.count}
                             </span>
@@ -609,14 +604,17 @@ export function KomunitasRekapSection({
 
                   {/* Quick Reset for this Kecamatan */}
                   {isKecSelected && (
-                    <div className="mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between text-[11px]">
-                      <span className={`font-bold ${isWarga ? "text-blue-600 dark:text-blue-400" : "text-emerald-600 dark:text-emerald-400"} inline-flex items-center gap-1`}>
+                    <div className="mt-2.5 pt-2 border-t border-border flex items-center justify-between text-[11px]">
+                      <span className={cn(
+                        "font-bold inline-flex items-center gap-1",
+                        isWarga ? "text-sky-600 dark:text-sky-400" : "text-primary"
+                      )}>
                         <CheckCircle2 className="h-3 w-3" />
                         Aktif difilter
                       </span>
                       <Link
                         href={makeFilterUrl("semua", "semua")}
-                        className="text-slate-500 hover:text-slate-900 dark:hover:text-slate-200 underline font-semibold"
+                        className="text-muted-foreground hover:text-foreground underline font-medium"
                       >
                         Reset
                       </Link>
