@@ -30,52 +30,48 @@ export default function LoginPage() {
         {/* Header Branding */}
         <div className="relative text-center space-y-2">
           <div className="flex justify-center">
-            <span className="rounded-md bg-blue-50 px-3 py-1 text-xs font-bold text-blue-800 border border-blue-200">
+            <span className="rounded-md bg-primary/10 px-2.5 py-0.5 text-2xs font-bold text-primary border border-primary/20 uppercase tracking-wider">
               JARIMAS AUTHENTICATION
             </span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
             Masuk ke Akun
           </h1>
-          <p className="text-sm text-slate-600 max-w-sm mx-auto leading-relaxed">
+          <p className="text-xs sm:text-sm text-muted-foreground max-w-sm mx-auto leading-relaxed">
             Akses interkoneksi data anak &amp; komunitas warga Kota Tegal
           </p>
         </div>
 
-        {/* Form Card (Coursera Mobile Card) */}
-        <div className="rounded-3xl border-2 border-slate-200 bg-white p-6 sm:p-8 shadow-xs space-y-5">
+        {/* Form Card */}
+        <div className="rounded-lg border border-border bg-card p-6 sm:p-7 shadow-xs space-y-5">
           {/* Prominent Error Banner */}
           {state.message && !state.success && (
             <div
               role="alert"
-              className="rounded-2xl border-2 border-rose-300 bg-rose-50 p-4 text-rose-900 animate-in fade-in slide-in-from-top-2"
+              className="rounded-lg border border-destructive/30 bg-destructive/10 p-3.5 text-destructive animate-in fade-in slide-in-from-top-2"
             >
-              <div className="flex items-start gap-3">
-                <AlertTriangle className="h-5 w-5 shrink-0 mt-0.5 text-rose-600" />
-                <div className="space-y-1 text-sm leading-relaxed">
-                  <p className="font-bold">
-                    Gagal Masuk
-                  </p>
-                  <p className="text-rose-800">
-                    {state.message}
-                  </p>
+              <div className="flex items-start gap-2.5">
+                <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
+                <div className="space-y-0.5 text-xs leading-relaxed">
+                  <p className="font-bold">Gagal Masuk</p>
+                  <p className="opacity-90">{state.message}</p>
                 </div>
               </div>
             </div>
           )}
 
-          <form action={formAction} className="space-y-5">
+          <form action={formAction} className="space-y-4">
             {/* Email */}
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <label
                 htmlFor="email"
-                className="block text-base font-bold text-slate-900 leading-snug"
+                className="block text-xs font-semibold text-foreground leading-snug"
               >
-                Alamat Email <span className="text-rose-600">*</span>
+                Alamat Email <span className="text-destructive">*</span>
               </label>
               <div className="relative">
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
-                  <Mail className="h-5 w-5" />
+                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-muted-foreground">
+                  <Mail className="h-4 w-4" />
                 </div>
                 <input
                   id="email"
@@ -84,27 +80,27 @@ export default function LoginPage() {
                   required
                   autoComplete="email"
                   placeholder="nama@email.com"
-                  className="w-full min-h-[48px] h-12 rounded-xl border-2 border-slate-300 bg-white pl-12 pr-4 text-base text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:outline-hidden transition-all"
+                  className="w-full min-h-[44px] h-11 rounded-lg border border-border bg-background pl-10 pr-4 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary focus:outline-hidden transition-all"
                 />
               </div>
               {state.errors?.email && (
-                <p className="text-xs font-bold text-rose-600 mt-1">
+                <p className="text-2xs font-semibold text-destructive mt-1">
                   {state.errors.email[0]}
                 </p>
               )}
             </div>
 
             {/* Password */}
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <label
                 htmlFor="password"
-                className="block text-base font-bold text-slate-900 leading-snug"
+                className="block text-xs font-semibold text-foreground leading-snug"
               >
-                Kata Sandi <span className="text-rose-600">*</span>
+                Kata Sandi <span className="text-destructive">*</span>
               </label>
               <div className="relative">
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
-                  <Lock className="h-5 w-5" />
+                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-muted-foreground">
+                  <Lock className="h-4 w-4" />
                 </div>
                 <input
                   id="password"
@@ -113,23 +109,23 @@ export default function LoginPage() {
                   required
                   autoComplete="current-password"
                   placeholder="••••••••"
-                  className="w-full min-h-[48px] h-12 rounded-xl border-2 border-slate-300 bg-white pl-12 pr-12 text-base text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:outline-hidden transition-all"
+                  className="w-full min-h-[44px] h-11 rounded-lg border border-border bg-background pl-10 pr-11 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary focus:outline-hidden transition-all"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   aria-label={showPassword ? "Sembunyikan kata sandi" : "Tampilkan kata sandi"}
-                  className="absolute inset-y-0 right-0 flex h-12 w-12 items-center justify-center text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
+                  className="absolute inset-y-0 right-0 flex h-11 w-11 items-center justify-center text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
                 >
                   {showPassword ? (
-                    <EyeOff className="h-5 w-5" />
+                    <EyeOff className="h-4 w-4" />
                   ) : (
-                    <Eye className="h-5 w-5" />
+                    <Eye className="h-4 w-4" />
                   )}
                 </button>
               </div>
               {state.errors?.password && (
-                <p className="text-xs font-bold text-rose-600 mt-1">
+                <p className="text-2xs font-semibold text-destructive mt-1">
                   {state.errors.password[0]}
                 </p>
               )}
@@ -140,18 +136,18 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={isPending}
-                className="flex w-full min-h-[52px] h-13 items-center justify-center gap-2.5 rounded-2xl bg-blue-700 hover:bg-blue-800 text-white px-6 text-base font-bold shadow-md transition-all active:scale-[0.99] disabled:opacity-50 cursor-pointer"
+                className="flex w-full min-h-[44px] h-11 items-center justify-center gap-2 rounded-lg bg-primary hover:bg-primary-hover text-primary-foreground px-5 text-xs sm:text-sm font-semibold shadow-xs transition-all active:scale-[0.99] disabled:opacity-50 cursor-pointer"
               >
                 {isPending ? (
                   <>
-                    <Loader2 className="h-5 w-5 animate-spin" />
+                    <Loader2 className="h-4 w-4 animate-spin" />
                     <span>Memverifikasi...</span>
                   </>
                 ) : (
                   <>
-                    <LogIn className="h-5 w-5" />
+                    <LogIn className="h-4 w-4" />
                     <span>Masuk ke Akun</span>
-                    <ArrowRight className="h-5 w-5" />
+                    <ArrowRight className="h-4 w-4" />
                   </>
                 )}
               </button>
@@ -160,12 +156,12 @@ export default function LoginPage() {
         </div>
 
         {/* Footer Register Link */}
-        <div className="text-center pt-2">
-          <p className="text-sm font-semibold text-slate-600">
+        <div className="text-center pt-1">
+          <p className="text-xs font-medium text-muted-foreground">
             Belum punya akun?{" "}
             <Link
               href="/register"
-              className="font-bold text-blue-700 hover:text-blue-900 transition-colors underline underline-offset-4"
+              className="font-semibold text-primary hover:text-primary-hover hover:underline transition-colors"
             >
               Daftar Sekarang
             </Link>

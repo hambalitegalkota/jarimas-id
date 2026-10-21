@@ -207,22 +207,22 @@ export function KomunitasManagementTools() {
       {/* Feedback Toast / Alert */}
       {feedback && (
         <div
-          className={`flex items-center gap-3 rounded-2xl p-4 text-sm font-bold border-2 transition-all shadow-sm ${
+          className={`flex items-center gap-3 rounded-lg p-4 text-xs font-semibold border transition-all shadow-xs ${
             feedback.type === "success"
-              ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-200"
-              : "border-rose-500 bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-200"
+              ? "border-emerald-500/30 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-200"
+              : "border-rose-500/30 bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-200"
           }`}
         >
           {feedback.type === "success" ? (
-            <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-600" />
+            <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
           ) : (
-            <AlertCircle className="h-5 w-5 shrink-0 text-rose-600" />
+            <AlertCircle className="h-4 w-4 shrink-0 text-rose-600" />
           )}
           <span className="flex-1 leading-relaxed">{feedback.message}</span>
           <button
             type="button"
             onClick={() => setFeedback(null)}
-            className="text-xs uppercase tracking-wider underline hover:opacity-80 cursor-pointer"
+            className="text-[10px] uppercase font-bold tracking-wider underline hover:opacity-80 cursor-pointer"
           >
             Tutup
           </button>
@@ -230,22 +230,22 @@ export function KomunitasManagementTools() {
       )}
 
       {/* 1. SECTION AUDIT: Kesesuaian Jumlah Komunitas dengan Kondisi Sesungguhnya */}
-      <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-6 space-y-5 shadow-xs">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-4">
+      <div className="rounded-lg border border-border bg-card p-4 sm:p-5 space-y-4 shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-4">
           <div className="flex items-center gap-3.5">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 font-bold border border-emerald-200 dark:border-emerald-800">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary font-bold border border-primary/20">
               <Database className="h-5 w-5" />
             </div>
             <div>
               <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
+                <h3 className="text-base sm:text-lg font-bold text-foreground">
                   Audit &amp; Kesesuaian Komunitas Kota Tegal
                 </h3>
-                <span className="inline-flex items-center rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 px-2.5 py-0.5 text-xs font-bold">
+                <span className="inline-flex items-center rounded-md bg-primary/10 text-primary border border-primary/20 px-2 py-0.5 text-xs font-bold">
                   DATA LAPANGAN
                 </span>
               </div>
-              <p className="text-xs text-slate-500 mt-0.5">
+              <p className="text-xs text-muted-foreground mt-0.5">
                 Pengecekan kesesuaian jumlah komunitas terdaftar di database dengan kondisi riil Kota Tegal.
               </p>
             </div>
@@ -259,17 +259,17 @@ export function KomunitasManagementTools() {
                 fetchList(page);
               }}
               disabled={loadingAudit || loadingList}
-              className="inline-flex min-h-[42px] items-center gap-2 px-3.5 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-100 text-xs font-bold transition-all disabled:opacity-50 cursor-pointer active:scale-98"
+              className="inline-flex min-h-[44px] h-11 items-center gap-2 px-4 rounded-lg border border-border bg-background text-foreground hover:bg-muted text-xs font-bold transition-all disabled:opacity-50 cursor-pointer active:scale-98"
               title="Perbarui Data Audit"
             >
-              <RefreshCw className={`h-4 w-4 ${loadingAudit ? "animate-spin text-emerald-600" : ""}`} />
+              <RefreshCw className={`h-4 w-4 ${loadingAudit ? "animate-spin text-primary" : ""}`} />
               <span>Segarkan</span>
             </button>
 
             <button
               type="button"
               onClick={() => setShowAddModal(true)}
-              className="inline-flex min-h-[42px] items-center gap-2 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-98"
+              className="inline-flex min-h-[44px] h-11 items-center gap-2 px-4 rounded-lg bg-primary hover:bg-primary-hover text-primary-foreground text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-98"
             >
               <Plus className="h-4 w-4" />
               <span>Tambah Komunitas</span>
@@ -279,43 +279,43 @@ export function KomunitasManagementTools() {
 
         {/* Audit Cards Grid */}
         {loadingAudit && !auditSummary ? (
-          <div className="flex items-center justify-center py-10 text-slate-500 gap-3">
-            <Loader2 className="h-6 w-6 animate-spin text-emerald-600" />
+          <div className="flex items-center justify-center py-10 text-muted-foreground gap-3">
+            <Loader2 className="h-6 w-6 animate-spin text-primary" />
             <span className="text-sm font-medium">Memeriksa kesesuaian data komunitas...</span>
           </div>
         ) : auditSummary ? (
           <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               {/* Card 1: Posyandu */}
               <div
                 onClick={() => setFilterJenis(filterJenis === "posyandu" ? "semua" : "posyandu")}
-                className={`p-4 rounded-2xl border-2 transition-all cursor-pointer hover:shadow-md ${
+                className={`p-4 rounded-lg border transition-all cursor-pointer hover:shadow-xs ${
                   filterJenis === "posyandu"
-                    ? "border-emerald-600 bg-emerald-50/60 dark:bg-emerald-950/40"
-                    : "border-emerald-100 dark:border-emerald-900/40 bg-emerald-50/20 dark:bg-emerald-950/10 hover:border-emerald-300"
+                    ? "border-primary bg-primary/10"
+                    : "border-border bg-card hover:border-primary/40"
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 font-bold text-sm">
+                  <div className="flex items-center gap-2 text-primary font-bold text-sm">
                     <Sparkles className="h-4 w-4" />
                     <span>1. Posyandu</span>
                   </div>
                   {auditSummary.posyandu.total >= auditSummary.posyandu.standardTarget ? (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-300 px-2 py-0.5 text-[10px] font-bold">
+                    <span className="inline-flex items-center gap-1 rounded-md bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 px-2 py-0.5 text-[10px] font-bold">
                       <Check className="h-3 w-3" /> Sesuai Target
                     </span>
                   ) : (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-300 px-2 py-0.5 text-[10px] font-bold">
+                    <span className="inline-flex items-center gap-1 rounded-md bg-secondary/15 text-secondary border border-secondary/30 px-2 py-0.5 text-[10px] font-bold">
                       {auditSummary.posyandu.total} / {auditSummary.posyandu.standardTarget}
                     </span>
                   )}
                 </div>
 
                 <div className="mt-3 flex items-baseline gap-2">
-                  <span className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-slate-100">
+                  <span className="text-2xl sm:text-3xl font-bold font-mono text-foreground">
                     {auditSummary.posyandu.total}
                   </span>
-                  <span className="text-xs text-slate-500 font-medium">
+                  <span className="text-xs text-muted-foreground font-medium">
                     Posyandu terdaftar (Target: {auditSummary.posyandu.standardTarget})
                   </span>
                 </div>
@@ -324,33 +324,33 @@ export function KomunitasManagementTools() {
               {/* Card 2: Satuan PAUD & Kesetaraan */}
               <div
                 onClick={() => setFilterJenis(filterJenis === "satuan_paud" ? "semua" : "satuan_paud")}
-                className={`p-4 rounded-2xl border-2 transition-all cursor-pointer hover:shadow-md ${
+                className={`p-4 rounded-lg border transition-all cursor-pointer hover:shadow-xs ${
                   filterJenis === "satuan_paud"
-                    ? "border-amber-600 bg-amber-50/60 dark:bg-amber-950/40"
-                    : "border-amber-100 dark:border-amber-900/40 bg-amber-50/20 dark:bg-amber-950/10 hover:border-amber-300"
+                    ? "border-secondary bg-secondary/10"
+                    : "border-border bg-card hover:border-secondary/40"
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400 font-bold text-sm">
+                  <div className="flex items-center gap-2 text-secondary font-bold text-sm">
                     <School className="h-4 w-4" />
                     <span>2. Satuan PAUD &amp; PKBM</span>
                   </div>
                   {auditSummary.paud.total >= auditSummary.paud.standardTarget ? (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-300 px-2 py-0.5 text-[10px] font-bold">
+                    <span className="inline-flex items-center gap-1 rounded-md bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 px-2 py-0.5 text-[10px] font-bold">
                       <Check className="h-3 w-3" /> Sesuai Target
                     </span>
                   ) : (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-300 px-2 py-0.5 text-[10px] font-bold">
+                    <span className="inline-flex items-center gap-1 rounded-md bg-secondary/15 text-secondary border border-secondary/30 px-2 py-0.5 text-[10px] font-bold">
                       {auditSummary.paud.total} / {auditSummary.paud.standardTarget}
                     </span>
                   )}
                 </div>
 
                 <div className="mt-3 flex items-baseline gap-2">
-                  <span className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-slate-100">
+                  <span className="text-2xl sm:text-3xl font-bold font-mono text-foreground">
                     {auditSummary.paud.total}
                   </span>
-                  <span className="text-xs text-slate-500 font-medium">
+                  <span className="text-xs text-muted-foreground font-medium">
                     Satuan Lembaga (Target: {auditSummary.paud.standardTarget})
                   </span>
                 </div>
@@ -359,27 +359,27 @@ export function KomunitasManagementTools() {
               {/* Card 3: Komunitas Warga Kita */}
               <div
                 onClick={() => setFilterJenis(filterJenis === "warga_kita" ? "semua" : "warga_kita")}
-                className={`p-4 rounded-2xl border-2 transition-all cursor-pointer hover:shadow-md ${
+                className={`p-4 rounded-lg border transition-all cursor-pointer hover:shadow-xs ${
                   filterJenis === "warga_kita"
-                    ? "border-teal-600 bg-teal-50/60 dark:bg-teal-950/40"
-                    : "border-teal-100 dark:border-teal-900/40 bg-teal-50/20 dark:bg-teal-950/10 hover:border-teal-300"
+                    ? "border-primary bg-primary/10"
+                    : "border-border bg-card hover:border-primary/40"
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-teal-700 dark:text-teal-400 font-bold text-sm">
+                  <div className="flex items-center gap-2 text-primary font-bold text-sm">
                     <Users className="h-4 w-4" />
                     <span>3. Warga Kita (Domisili)</span>
                   </div>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-300 px-2 py-0.5 text-[10px] font-bold">
+                  <span className="inline-flex items-center gap-1 rounded-md bg-primary/10 text-primary border border-primary/20 px-2 py-0.5 text-[10px] font-bold">
                     4 Kec / 27 Kel / 167 RW
                   </span>
                 </div>
 
                 <div className="mt-3 flex items-baseline gap-2">
-                  <span className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-slate-100">
+                  <span className="text-2xl sm:text-3xl font-bold font-mono text-foreground">
                     {auditSummary.warga.total}
                   </span>
-                  <span className="text-xs text-slate-500 font-medium">
+                  <span className="text-xs text-muted-foreground font-medium">
                     Entitas Tingkat Kec, Kel, RW &amp; RT (167 RW • 1.712 RT)
                   </span>
                 </div>
@@ -387,8 +387,8 @@ export function KomunitasManagementTools() {
             </div>
 
             {/* Kecamatan Mini Breakdown Chips */}
-            <div className="flex flex-wrap items-center gap-2 pt-2 text-xs">
-              <span className="font-bold text-slate-500 flex items-center gap-1 mr-1">
+            <div className="flex flex-wrap items-center gap-1.5 pt-1 text-xs">
+              <span className="font-semibold text-muted-foreground flex items-center gap-1 mr-1">
                 <MapPin className="h-3.5 w-3.5" /> Sebaran per Kecamatan:
               </span>
               {auditSummary.kecamatanBreakdown.map((kec) => (
@@ -399,15 +399,15 @@ export function KomunitasManagementTools() {
                     setFilterKecamatan(filterKecamatan === kec.nama ? "semua" : kec.nama);
                     setFilterKelurahan("semua");
                   }}
-                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer ${
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer min-h-[36px] ${
                     filterKecamatan === kec.nama
-                      ? "bg-emerald-600 text-white shadow-xs"
-                      : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200"
+                      ? "bg-primary text-primary-foreground shadow-xs"
+                      : "bg-card border border-border text-foreground hover:bg-muted"
                   }`}
                 >
                   <span>{kec.nama}</span>
-                  <span className={`px-1.5 py-0.2 rounded-md text-[10px] font-mono font-bold ${
-                    filterKecamatan === kec.nama ? "bg-emerald-700 text-white" : "bg-slate-200 dark:bg-slate-700"
+                  <span className={`px-1.5 py-0.5 rounded-md text-[10px] font-mono font-bold ${
+                    filterKecamatan === kec.nama ? "bg-primary-foreground/20 text-primary-foreground" : "bg-muted text-muted-foreground"
                   }`}>
                     {kec.total}
                   </span>
@@ -422,24 +422,24 @@ export function KomunitasManagementTools() {
       <KomunitasBeranggotaHierarchy />
 
       {/* 3. SECTION DAFTAR & MANAJEMEN KOMUNITAS */}
-      <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-6 space-y-5 shadow-xs">
+      <div className="rounded-lg border border-border bg-card p-4 sm:p-5 space-y-4 shadow-xs">
         {/* Controls: Search, Category, District, Sort */}
         <div className="space-y-3">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2 flex-wrap">
-              <Building2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-              <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
+              <Building2 className="h-5 w-5 text-primary" />
+              <h3 className="text-base font-bold text-foreground">
                 Daftar Komunitas Terdaftar
               </h3>
-              <span className="text-xs font-mono font-bold text-slate-500 bg-slate-100 dark:bg-slate-800 px-2.5 py-0.5 rounded-full">
+              <span className="text-xs font-mono font-bold text-muted-foreground bg-muted px-2.5 py-0.5 rounded-md">
                 {totalCount} TOTAL
               </span>
               {/* Active Sort Badge */}
-              <span className="text-[11px] font-medium text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 px-2.5 py-0.5 rounded-full inline-flex items-center gap-1.5 shadow-2xs">
+              <span className="text-[11px] font-medium text-primary bg-primary/10 border border-primary/20 px-2.5 py-0.5 rounded-md inline-flex items-center gap-1.5 shadow-2xs">
                 {sortOrder === "asc" ? (
-                  <ArrowUp className="h-3 w-3 text-emerald-600" />
+                  <ArrowUp className="h-3 w-3 text-primary" />
                 ) : (
-                  <ArrowDown className="h-3 w-3 text-emerald-600" />
+                  <ArrowDown className="h-3 w-3 text-primary" />
                 )}
                 <span>
                   {sortBy === "nama" && "Nama (A-Z)"}
@@ -459,7 +459,7 @@ export function KomunitasManagementTools() {
               <button
                 type="button"
                 onClick={handleResetFilters}
-                className="text-xs font-bold text-rose-600 hover:underline inline-flex items-center gap-1 cursor-pointer"
+                className="text-xs font-bold text-rose-600 dark:text-rose-400 hover:underline inline-flex items-center gap-1 cursor-pointer min-h-[36px]"
               >
                 <X className="h-3.5 w-3.5" />
                 <span>Reset Semua Filter &amp; Urutan</span>
@@ -470,18 +470,18 @@ export function KomunitasManagementTools() {
           {/* Search bar */}
           <form onSubmit={handleSearchSubmit} className="flex gap-2">
             <div className="relative flex-1">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Cari nama komunitas, kelurahan, jalan..."
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none"
+                className="w-full min-h-[44px] h-11 pl-10 pr-4 rounded-lg border border-border bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
             <button
               type="submit"
-              className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-900 dark:bg-slate-700 dark:hover:bg-slate-600 text-white font-bold text-xs transition-colors cursor-pointer"
+              className="min-h-[44px] h-11 px-5 rounded-lg bg-primary hover:bg-primary-hover text-primary-foreground font-bold text-xs transition-colors cursor-pointer active:scale-98"
             >
               Cari
             </button>
@@ -491,13 +491,13 @@ export function KomunitasManagementTools() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
             {/* 1. Filter Kategori */}
             <div>
-              <label className="block text-[11px] font-bold text-slate-500 mb-1">
+              <label className="block text-[11px] font-semibold text-muted-foreground mb-1">
                 Kategori
               </label>
               <select
                 value={filterJenis}
                 onChange={(e) => setFilterJenis(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium text-slate-800 dark:text-slate-200 focus:border-emerald-500 focus:outline-none cursor-pointer"
+                className="w-full min-h-[44px] h-11 px-3.5 rounded-lg border border-border bg-background text-xs font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer"
               >
                 <option value="semua">Semua Kategori</option>
                 <option value="posyandu">Posyandu</option>
@@ -508,7 +508,7 @@ export function KomunitasManagementTools() {
 
             {/* 2. Filter Kecamatan */}
             <div>
-              <label className="block text-[11px] font-bold text-slate-500 mb-1">
+              <label className="block text-[11px] font-semibold text-muted-foreground mb-1">
                 Kecamatan
               </label>
               <select
@@ -517,7 +517,7 @@ export function KomunitasManagementTools() {
                   setFilterKecamatan(e.target.value);
                   setFilterKelurahan("semua");
                 }}
-                className="w-full px-3 py-2 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium text-slate-800 dark:text-slate-200 focus:border-emerald-500 focus:outline-none cursor-pointer"
+                className="w-full min-h-[44px] h-11 px-3.5 rounded-lg border border-border bg-background text-xs font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer"
               >
                 <option value="semua">Semua Kecamatan</option>
                 <option value="Tegal Timur">Tegal Timur</option>
@@ -529,14 +529,14 @@ export function KomunitasManagementTools() {
 
             {/* 3. Filter Kelurahan */}
             <div>
-              <label className="block text-[11px] font-bold text-slate-500 mb-1">
+              <label className="block text-[11px] font-semibold text-muted-foreground mb-1">
                 Kelurahan
               </label>
               <select
                 value={filterKelurahan}
                 disabled={filterKecamatan === "semua"}
                 onChange={(e) => setFilterKelurahan(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium text-slate-800 dark:text-slate-200 focus:border-emerald-500 focus:outline-none disabled:opacity-50 cursor-pointer"
+                className="w-full min-h-[44px] h-11 px-3.5 rounded-lg border border-border bg-background text-xs font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 cursor-pointer"
               >
                 <option value="semua">Semua Kelurahan</option>
                 {kelurahanOptions.map((kel) => (
@@ -551,58 +551,58 @@ export function KomunitasManagementTools() {
 
         {/* Komunitas Table */}
         {loadingList ? (
-          <div className="flex flex-col items-center justify-center py-16 text-slate-500 gap-3 border-t border-slate-100 dark:border-slate-800">
-            <Loader2 className="h-6 w-6 animate-spin text-emerald-600" />
+          <div className="flex flex-col items-center justify-center py-16 text-muted-foreground gap-3 border-t border-border">
+            <Loader2 className="h-6 w-6 animate-spin text-primary" />
             <span className="text-sm font-medium">Memuat data komunitas...</span>
           </div>
         ) : items.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-14 px-4 text-center rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-800 space-y-3">
-            <Building2 className="h-10 w-10 text-slate-300 dark:text-slate-700" />
+          <div className="flex flex-col items-center justify-center py-14 px-4 text-center rounded-lg border border-dashed border-border bg-card space-y-3">
+            <Building2 className="h-10 w-10 text-muted-foreground" />
             <div className="space-y-1">
-              <h4 className="font-bold text-slate-800 dark:text-slate-200 text-sm">
+              <h4 className="font-bold text-foreground text-sm">
                 Tidak ada komunitas ditemukan
               </h4>
-              <p className="text-xs text-slate-500 max-w-sm">
+              <p className="text-xs text-muted-foreground max-w-sm">
                 Tidak ada komunitas yang cocok dengan filter atau kata kunci pencarian. Coba ubah kata kunci atau tambah komunitas baru.
               </p>
             </div>
             <button
               type="button"
               onClick={() => setShowAddModal(true)}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 text-white font-bold text-xs hover:bg-emerald-700 transition-colors cursor-pointer"
+              className="inline-flex min-h-[44px] h-11 items-center gap-2 px-4 rounded-lg bg-primary hover:bg-primary-hover text-primary-foreground font-bold text-xs transition-colors cursor-pointer active:scale-98"
             >
               <Plus className="h-4 w-4" />
               <span>Tambah Komunitas Baru</span>
             </button>
           </div>
         ) : (
-          <div className="overflow-hidden border border-slate-200 dark:border-slate-800 rounded-2xl">
+          <div className="overflow-hidden border border-border rounded-lg bg-card">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 font-bold border-b border-slate-200 dark:border-slate-800 select-none">
+                <thead className="bg-muted/40 text-muted-foreground font-bold border-b border-border select-none">
                   <tr>
                     {/* Nama Komunitas */}
                     <th
                       onClick={() => handleSortToggle("nama")}
-                      className="py-3.5 px-4 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors group"
+                      className="py-3.5 px-4 cursor-pointer hover:bg-muted/60 transition-colors group"
                       title="Klik untuk urutkan berdasarkan Nama Komunitas"
                     >
                       <div className="flex items-center gap-1.5">
-                        <span className={sortBy === "nama" ? "text-emerald-700 dark:text-emerald-400 font-extrabold" : ""}>
+                        <span className={sortBy === "nama" ? "text-primary font-bold" : ""}>
                           Nama Komunitas
                         </span>
                         {sortBy === "nama" ? (
                           sortOrder === "asc" ? (
-                            <span className="p-0.5 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 inline-flex items-center shadow-2xs" title="Ascending (A-Z)">
+                            <span className="p-0.5 rounded bg-primary/10 text-primary inline-flex items-center shadow-2xs" title="Ascending (A-Z)">
                               <ArrowUp className="h-3.5 w-3.5" />
                             </span>
                           ) : (
-                            <span className="p-0.5 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 inline-flex items-center shadow-2xs" title="Descending (Z-A)">
+                            <span className="p-0.5 rounded bg-primary/10 text-primary inline-flex items-center shadow-2xs" title="Descending (Z-A)">
                               <ArrowDown className="h-3.5 w-3.5" />
                             </span>
                           )
                         ) : (
-                          <ArrowUpDown className="h-3.5 w-3.5 text-slate-400 opacity-30 group-hover:opacity-100 transition-opacity" />
+                          <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground opacity-30 group-hover:opacity-100 transition-opacity" />
                         )}
                       </div>
                     </th>
@@ -610,25 +610,25 @@ export function KomunitasManagementTools() {
                     {/* Kategori */}
                     <th
                       onClick={() => handleSortToggle("jenis")}
-                      className="py-3.5 px-4 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors group"
+                      className="py-3.5 px-4 cursor-pointer hover:bg-muted/60 transition-colors group"
                       title="Klik untuk urutkan berdasarkan Kategori"
                     >
                       <div className="flex items-center gap-1.5">
-                        <span className={sortBy === "jenis" ? "text-emerald-700 dark:text-emerald-400 font-extrabold" : ""}>
+                        <span className={sortBy === "jenis" ? "text-primary font-bold" : ""}>
                           Kategori
                         </span>
                         {sortBy === "jenis" ? (
                           sortOrder === "asc" ? (
-                            <span className="p-0.5 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 inline-flex items-center shadow-2xs" title="Ascending (A-Z)">
+                            <span className="p-0.5 rounded bg-primary/10 text-primary inline-flex items-center shadow-2xs" title="Ascending (A-Z)">
                               <ArrowUp className="h-3.5 w-3.5" />
                             </span>
                           ) : (
-                            <span className="p-0.5 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 inline-flex items-center shadow-2xs" title="Descending (Z-A)">
+                            <span className="p-0.5 rounded bg-primary/10 text-primary inline-flex items-center shadow-2xs" title="Descending (Z-A)">
                               <ArrowDown className="h-3.5 w-3.5" />
                             </span>
                           )
                         ) : (
-                          <ArrowUpDown className="h-3.5 w-3.5 text-slate-400 opacity-30 group-hover:opacity-100 transition-opacity" />
+                          <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground opacity-30 group-hover:opacity-100 transition-opacity" />
                         )}
                       </div>
                     </th>
@@ -636,25 +636,25 @@ export function KomunitasManagementTools() {
                     {/* Wilayah & Lokasi */}
                     <th
                       onClick={() => handleSortToggle("kecamatan")}
-                      className="py-3.5 px-4 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors group"
+                      className="py-3.5 px-4 cursor-pointer hover:bg-muted/60 transition-colors group"
                       title="Klik untuk urutkan berdasarkan Wilayah (Kecamatan / Kelurahan)"
                     >
                       <div className="flex items-center gap-1.5">
-                        <span className={sortBy === "kecamatan" || sortBy === "kelurahan" ? "text-emerald-700 dark:text-emerald-400 font-extrabold" : ""}>
+                        <span className={sortBy === "kecamatan" || sortBy === "kelurahan" ? "text-primary font-bold" : ""}>
                           Wilayah &amp; Lokasi
                         </span>
                         {sortBy === "kecamatan" || sortBy === "kelurahan" ? (
                           sortOrder === "asc" ? (
-                            <span className="p-0.5 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 inline-flex items-center shadow-2xs" title="Ascending (A-Z)">
+                            <span className="p-0.5 rounded bg-primary/10 text-primary inline-flex items-center shadow-2xs" title="Ascending (A-Z)">
                               <ArrowUp className="h-3.5 w-3.5" />
                             </span>
                           ) : (
-                            <span className="p-0.5 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 inline-flex items-center shadow-2xs" title="Descending (Z-A)">
+                            <span className="p-0.5 rounded bg-primary/10 text-primary inline-flex items-center shadow-2xs" title="Descending (Z-A)">
                               <ArrowDown className="h-3.5 w-3.5" />
                             </span>
                           )
                         ) : (
-                          <ArrowUpDown className="h-3.5 w-3.5 text-slate-400 opacity-30 group-hover:opacity-100 transition-opacity" />
+                          <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground opacity-30 group-hover:opacity-100 transition-opacity" />
                         )}
                       </div>
                     </th>
@@ -662,25 +662,25 @@ export function KomunitasManagementTools() {
                     {/* Anggota Terdaftar */}
                     <th
                       onClick={() => handleSortToggle("jumlah_anggota")}
-                      className="py-3.5 px-4 text-center cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors group"
+                      className="py-3.5 px-4 text-center cursor-pointer hover:bg-muted/60 transition-colors group"
                       title="Klik untuk urutkan berdasarkan Jumlah Anggota"
                     >
                       <div className="flex items-center justify-center gap-1.5">
-                        <span className={sortBy === "jumlah_anggota" ? "text-emerald-700 dark:text-emerald-400 font-extrabold" : ""}>
+                        <span className={sortBy === "jumlah_anggota" ? "text-primary font-bold" : ""}>
                           Anggota Terdaftar
                         </span>
                         {sortBy === "jumlah_anggota" ? (
                           sortOrder === "asc" ? (
-                            <span className="p-0.5 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 inline-flex items-center shadow-2xs" title="Sedikit ke Banyak (Ascending)">
+                            <span className="p-0.5 rounded bg-primary/10 text-primary inline-flex items-center shadow-2xs" title="Sedikit ke Banyak (Ascending)">
                               <ArrowUp className="h-3.5 w-3.5" />
                             </span>
                           ) : (
-                            <span className="p-0.5 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 inline-flex items-center shadow-2xs" title="Banyak ke Sedikit (Descending)">
+                            <span className="p-0.5 rounded bg-primary/10 text-primary inline-flex items-center shadow-2xs" title="Banyak ke Sedikit (Descending)">
                               <ArrowDown className="h-3.5 w-3.5" />
                             </span>
                           )
                         ) : (
-                          <ArrowUpDown className="h-3.5 w-3.5 text-slate-400 opacity-30 group-hover:opacity-100 transition-opacity" />
+                          <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground opacity-30 group-hover:opacity-100 transition-opacity" />
                         )}
                       </div>
                     </th>
@@ -689,19 +689,19 @@ export function KomunitasManagementTools() {
                     <th className="py-3.5 px-4 text-right">Aksi</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                <tbody className="divide-y divide-border">
                   {items.map((item) => (
                     <tr
                       key={item.id}
-                      className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors"
+                      className="hover:bg-muted/30 transition-colors"
                     >
                       {/* Nama & Deskripsi */}
                       <td className="py-3.5 px-4 max-w-xs">
-                        <div className="font-bold text-slate-900 dark:text-slate-100 text-sm">
+                        <div className="font-bold text-foreground text-sm">
                           {item.nama}
                         </div>
                         {item.deskripsi && (
-                          <div className="text-[11px] text-slate-500 line-clamp-1 mt-0.5">
+                          <div className="text-[11px] text-muted-foreground line-clamp-1 mt-0.5">
                             {item.deskripsi}
                           </div>
                         )}
@@ -710,24 +710,24 @@ export function KomunitasManagementTools() {
                       {/* Kategori */}
                       <td className="py-3.5 px-4 whitespace-nowrap">
                         {item.jenis === "posyandu" && (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 px-2.5 py-1 text-[11px] font-bold">
+                          <span className="inline-flex items-center gap-1 rounded-md bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-500/20 px-2.5 py-0.5 text-[10px] font-bold">
                             <Sparkles className="h-3 w-3" /> Posyandu
                           </span>
                         )}
                         {item.jenis === "satuan_paud" && (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 px-2.5 py-1 text-[11px] font-bold">
+                          <span className="inline-flex items-center gap-1 rounded-md bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 px-2.5 py-0.5 text-[10px] font-bold">
                             <School className="h-3 w-3" /> Satuan PAUD
                           </span>
                         )}
                         {item.jenis === "warga_kita" && (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800 px-2.5 py-1 text-[11px] font-bold">
+                          <span className="inline-flex items-center gap-1 rounded-md bg-primary/10 text-primary border border-primary/20 px-2.5 py-0.5 text-[10px] font-bold">
                             <Users className="h-3 w-3" /> Warga Kita
                           </span>
                         )}
                         {item.jenis !== "posyandu" &&
                           item.jenis !== "satuan_paud" &&
                           item.jenis !== "warga_kita" && (
-                            <span className="inline-flex items-center rounded-full bg-slate-100 text-slate-700 px-2.5 py-1 text-[11px] font-bold">
+                            <span className="inline-flex items-center rounded-md bg-muted text-foreground px-2.5 py-0.5 text-[10px] font-bold">
                               {item.jenis || "Komunitas"}
                             </span>
                           )}
@@ -735,8 +735,8 @@ export function KomunitasManagementTools() {
 
                       {/* Wilayah & Lokasi */}
                       <td className="py-3.5 px-4">
-                        <div className="flex items-center gap-1 font-medium text-slate-800 dark:text-slate-200">
-                          <MapPin className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                        <div className="flex items-center gap-1 font-medium text-foreground">
+                          <MapPin className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                           <span>
                             {[item.kelurahan, item.kecamatan].filter(Boolean).join(", ") ||
                               item.lokasi ||
@@ -744,7 +744,7 @@ export function KomunitasManagementTools() {
                           </span>
                         </div>
                         {(item.rw || item.rt) && (
-                          <div className="text-[10px] text-slate-500 font-mono mt-0.5 pl-4">
+                          <div className="text-[10px] text-muted-foreground font-mono mt-0.5 pl-4">
                             {[item.rw ? `RW ${item.rw}` : "", item.rt ? `RT ${item.rt}` : ""]
                               .filter(Boolean)
                               .join(" / ")}
@@ -753,17 +753,17 @@ export function KomunitasManagementTools() {
                       </td>
 
                       {/* Anggota Aktif */}
-                      <td className="py-3.5 px-4 text-center whitespace-nowrap font-mono font-bold text-slate-700 dark:text-slate-300">
+                      <td className="py-3.5 px-4 text-center whitespace-nowrap font-mono font-bold text-foreground">
                         {item.jumlah_anggota || 0}
                       </td>
 
                       {/* Aksi */}
                       <td className="py-3.5 px-4 text-right whitespace-nowrap">
-                        <div className="inline-flex items-center gap-1.5">
+                        <div className="inline-flex items-center gap-1">
                           <button
                             type="button"
                             onClick={() => setMemberManageTarget(item)}
-                            className="p-1.5 rounded-lg text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 transition-colors cursor-pointer"
+                            className="p-2 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors cursor-pointer min-h-[36px] min-w-[36px] inline-flex items-center justify-center"
                             title="Tambah & Kelola Anggota Komunitas"
                           >
                             <UserPlus className="h-4 w-4" />
@@ -771,7 +771,7 @@ export function KomunitasManagementTools() {
 
                           <Link
                             href={`/komunitas/${item.id}`}
-                            className="p-1.5 rounded-lg text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 transition-colors"
+                            className="p-2 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors min-h-[36px] min-w-[36px] inline-flex items-center justify-center"
                             title="Buka Komunitas"
                           >
                             <ExternalLink className="h-4 w-4" />
@@ -780,7 +780,7 @@ export function KomunitasManagementTools() {
                           <button
                             type="button"
                             onClick={() => setEditItem(item)}
-                            className="p-1.5 rounded-lg text-slate-500 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/40 transition-colors cursor-pointer"
+                            className="p-2 rounded-lg text-muted-foreground hover:text-secondary hover:bg-secondary/10 transition-colors cursor-pointer min-h-[36px] min-w-[36px] inline-flex items-center justify-center"
                             title="Ubah Data Komunitas"
                           >
                             <Edit2 className="h-4 w-4" />
@@ -789,7 +789,7 @@ export function KomunitasManagementTools() {
                           <button
                             type="button"
                             onClick={() => setDeleteTarget(item)}
-                            className="p-1.5 rounded-lg text-slate-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
+                            className="p-2 rounded-lg text-muted-foreground hover:text-rose-600 hover:bg-rose-500/10 transition-colors cursor-pointer min-h-[36px] min-w-[36px] inline-flex items-center justify-center"
                             title="Hapus Komunitas"
                           >
                             <Trash2 className="h-4 w-4" />
@@ -803,8 +803,8 @@ export function KomunitasManagementTools() {
             </div>
 
             {/* Pagination footer */}
-            <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-              <span className="text-slate-500 font-medium">
+            <div className="p-4 border-t border-border bg-muted/20 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+              <span className="text-muted-foreground font-medium">
                 Menampilkan halaman <strong>{page}</strong> dari <strong>{totalPages}</strong> ({totalCount} total)
               </span>
 
@@ -813,7 +813,7 @@ export function KomunitasManagementTools() {
                   type="button"
                   onClick={() => fetchList(page - 1)}
                   disabled={page <= 1 || loadingList}
-                  className="px-3 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 font-bold text-slate-700 dark:text-slate-300 disabled:opacity-40 cursor-pointer"
+                  className="min-h-[38px] px-3.5 py-1.5 rounded-lg border border-border bg-background font-bold text-foreground disabled:opacity-40 cursor-pointer hover:bg-muted"
                 >
                   Sebelumnya
                 </button>
@@ -821,7 +821,7 @@ export function KomunitasManagementTools() {
                   type="button"
                   onClick={() => fetchList(page + 1)}
                   disabled={page >= totalPages || loadingList}
-                  className="px-3 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 font-bold text-slate-700 dark:text-slate-300 disabled:opacity-40 cursor-pointer"
+                  className="min-h-[38px] px-3.5 py-1.5 rounded-lg border border-border bg-background font-bold text-foreground disabled:opacity-40 cursor-pointer hover:bg-muted"
                 >
                   Selanjutnya
                 </button>
@@ -862,18 +862,18 @@ export function KomunitasManagementTools() {
 
       {/* 5. MODAL KONFIRMASI HAPUS */}
       {deleteTarget && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-          <div className="bg-white dark:bg-slate-900 rounded-3xl border-2 border-rose-200 dark:border-rose-900/50 p-6 max-w-md w-full space-y-4 shadow-xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-xs">
+          <div className="bg-card rounded-lg border border-border p-6 max-w-md w-full space-y-4 shadow-xl">
             <div className="flex items-center gap-3 text-rose-600">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-rose-500/10 border border-rose-500/20">
                 <Trash2 className="h-5 w-5" />
               </div>
-              <h4 className="font-bold text-base text-slate-900 dark:text-slate-100">
+              <h4 className="font-bold text-base text-foreground">
                 Hapus Komunitas?
               </h4>
             </div>
 
-            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+            <p className="text-xs text-muted-foreground leading-relaxed">
               Apakah Anda yakin ingin menghapus komunitas <strong>"{deleteTarget.nama}"</strong>? Seluruh data keanggotaan terkait komunitas ini akan ikut terhapus secara permanen.
             </p>
 
@@ -882,7 +882,7 @@ export function KomunitasManagementTools() {
                 type="button"
                 onClick={() => setDeleteTarget(null)}
                 disabled={isPendingAction}
-                className="px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 font-bold text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-50 cursor-pointer"
+                className="min-h-[44px] h-11 px-4 rounded-lg border border-border bg-background font-bold text-xs text-foreground hover:bg-muted cursor-pointer"
               >
                 Batal
               </button>
@@ -890,7 +890,7 @@ export function KomunitasManagementTools() {
                 type="button"
                 onClick={handleConfirmDelete}
                 disabled={isPendingAction}
-                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 font-bold text-xs text-white cursor-pointer"
+                className="min-h-[44px] h-11 inline-flex items-center gap-1.5 px-4 rounded-lg bg-rose-600 hover:bg-rose-700 font-bold text-xs text-white cursor-pointer active:scale-98"
               >
                 {isPendingAction ? (
                   <>
@@ -1023,18 +1023,18 @@ function KomunitasFormModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto">
-      <div className="bg-white dark:bg-slate-900 rounded-3xl border-2 border-slate-200 dark:border-slate-800 p-6 max-w-lg w-full space-y-5 shadow-2xl my-8">
-        <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-xs overflow-y-auto">
+      <div className="bg-card rounded-lg border border-border p-5 sm:p-6 max-w-lg w-full space-y-4 shadow-xl my-8">
+        <div className="flex items-center justify-between border-b border-border pb-3">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary border border-primary/20">
               {mode === "create" ? <Plus className="h-5 w-5" /> : <Edit2 className="h-5 w-5" />}
             </div>
             <div>
-              <h3 className="font-bold text-slate-900 dark:text-slate-100 text-base">
+              <h3 className="font-bold text-foreground text-base">
                 {mode === "create" ? "Tambah Komunitas Baru" : "Ubah Data Komunitas"}
               </h3>
-              <p className="text-[11px] text-slate-500">
+              <p className="text-xs text-muted-foreground">
                 Isi data rincian komunitas di wilayah Kota Tegal
               </p>
             </div>
@@ -1043,14 +1043,14 @@ function KomunitasFormModal({
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+            className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
         {error && (
-          <div className="p-3 rounded-xl border border-rose-300 bg-rose-50 dark:bg-rose-950/40 text-rose-700 text-xs font-bold flex items-center gap-2">
+          <div className="p-3 rounded-lg border border-rose-500/30 bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 text-xs font-bold flex items-center gap-2">
             <AlertCircle className="h-4 w-4 shrink-0" />
             <span>{error}</span>
           </div>
@@ -1059,7 +1059,7 @@ function KomunitasFormModal({
         <form onSubmit={handleSubmit} className="space-y-4 text-xs">
           {/* Nama Komunitas */}
           <div>
-            <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+            <label className="block font-bold text-foreground mb-1">
               Nama Komunitas <span className="text-rose-500">*</span>
             </label>
             <input
@@ -1068,19 +1068,19 @@ function KomunitasFormModal({
               value={nama}
               onChange={(e) => setNama(e.target.value)}
               placeholder="Contoh: Posyandu Melati 1, KB Sakila Kerti, Warga RW 05"
-              className="w-full px-3.5 py-2.5 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:border-emerald-500 focus:outline-none"
+              className="w-full min-h-[44px] h-11 px-3.5 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
 
           {/* Kategori Komunitas */}
           <div>
-            <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+            <label className="block font-bold text-foreground mb-1">
               Kategori <span className="text-rose-500">*</span>
             </label>
             <select
               value={jenis}
               onChange={(e) => setJenis(e.target.value)}
-              className="w-full px-3 py-2.5 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 font-medium text-slate-900 dark:text-slate-100 focus:border-emerald-500 focus:outline-none cursor-pointer"
+              className="w-full min-h-[44px] h-11 px-3.5 rounded-lg border border-border bg-background font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer"
             >
               <option value="posyandu">Posyandu</option>
               <option value="satuan_paud">Satuan PAUD / PKBM</option>
@@ -1091,13 +1091,13 @@ function KomunitasFormModal({
           {/* Kecamatan & Kelurahan */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block font-bold text-foreground mb-1">
                 Kecamatan <span className="text-rose-500">*</span>
               </label>
               <select
                 value={kecamatan}
                 onChange={(e) => setKecamatan(e.target.value)}
-                className="w-full px-3 py-2.5 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 font-medium text-slate-900 dark:text-slate-100 focus:border-emerald-500 focus:outline-none cursor-pointer"
+                className="w-full min-h-[44px] h-11 px-3.5 rounded-lg border border-border bg-background font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer"
               >
                 {Object.keys(KOTA_TEGAL_DATA).map((kec) => (
                   <option key={kec} value={kec}>
@@ -1108,13 +1108,13 @@ function KomunitasFormModal({
             </div>
 
             <div>
-              <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block font-bold text-foreground mb-1">
                 Kelurahan <span className="text-rose-500">*</span>
               </label>
               <select
                 value={kelurahan}
                 onChange={(e) => setKelurahan(e.target.value)}
-                className="w-full px-3 py-2.5 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 font-medium text-slate-900 dark:text-slate-100 focus:border-emerald-500 focus:outline-none cursor-pointer"
+                className="w-full min-h-[44px] h-11 px-3.5 rounded-lg border border-border bg-background font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer"
               >
                 {availableKelurahan.map((kel) => (
                   <option key={kel} value={kel}>
@@ -1128,7 +1128,7 @@ function KomunitasFormModal({
           {/* RW & RT (Opsional) */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block font-bold text-foreground mb-1">
                 RW (Opsional)
               </label>
               <input
@@ -1136,12 +1136,12 @@ function KomunitasFormModal({
                 value={rw}
                 onChange={(e) => setRw(e.target.value)}
                 placeholder="Contoh: 01"
-                className="w-full px-3.5 py-2 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:border-emerald-500 focus:outline-none font-mono"
+                className="w-full min-h-[44px] h-11 px-3.5 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary font-mono"
               />
             </div>
 
             <div>
-              <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block font-bold text-foreground mb-1">
                 RT (Opsional)
               </label>
               <input
@@ -1149,14 +1149,14 @@ function KomunitasFormModal({
                 value={rt}
                 onChange={(e) => setRt(e.target.value)}
                 placeholder="Contoh: 02"
-                className="w-full px-3.5 py-2 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:border-emerald-500 focus:outline-none font-mono"
+                className="w-full min-h-[44px] h-11 px-3.5 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary font-mono"
               />
             </div>
           </div>
 
           {/* Alamat / Lokasi Spesifik */}
           <div>
-            <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+            <label className="block font-bold text-foreground mb-1">
               Alamat / Lokasi Detail
             </label>
             <input
@@ -1164,13 +1164,13 @@ function KomunitasFormModal({
               value={lokasi}
               onChange={(e) => setLokasi(e.target.value)}
               placeholder="Contoh: Jl. Werkudoro No. 12, Balai RW 03"
-              className="w-full px-3.5 py-2 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:border-emerald-500 focus:outline-none"
+              className="w-full min-h-[44px] h-11 px-3.5 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
 
           {/* Deskripsi */}
           <div>
-            <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+            <label className="block font-bold text-foreground mb-1">
               Deskripsi Singkat (Opsional)
             </label>
             <textarea
@@ -1178,24 +1178,24 @@ function KomunitasFormModal({
               value={deskripsi}
               onChange={(e) => setDeskripsi(e.target.value)}
               placeholder="Keterangan mengenai komunitas atau layanan kegiatan..."
-              className="w-full px-3.5 py-2 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:border-emerald-500 focus:outline-none"
+              className="w-full p-3 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
 
           {/* Buttons */}
-          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-border">
             <button
               type="button"
               onClick={onClose}
               disabled={isPending}
-              className="px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 font-bold text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-50 cursor-pointer"
+              className="min-h-[44px] h-11 px-4 rounded-lg border border-border bg-background font-bold text-xs text-foreground hover:bg-muted cursor-pointer"
             >
               Batal
             </button>
             <button
               type="submit"
               disabled={isPending}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 font-bold text-xs text-white cursor-pointer shadow-xs disabled:opacity-50"
+              className="min-h-[44px] h-11 inline-flex items-center gap-2 px-5 rounded-lg bg-primary hover:bg-primary-hover font-bold text-xs text-primary-foreground cursor-pointer shadow-xs disabled:opacity-50 active:scale-98"
             >
               {isPending ? (
                 <>
