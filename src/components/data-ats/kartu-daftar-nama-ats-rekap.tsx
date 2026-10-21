@@ -164,7 +164,7 @@ export function KartuDaftarNamaAtsRekap({
     <div
       ref={cardRef}
       className={cn(
-        "rounded-3xl border-2 border-indigo-300 dark:border-indigo-800 bg-indigo-50/70 dark:bg-indigo-950/20 transition-all duration-200 overflow-hidden shadow-sm break-inside-avoid print:break-inside-avoid print:border-none print:shadow-none print:bg-white print:p-0 print:m-0 print:w-full print:rounded-none print-daftar-nama-container",
+        "rounded-lg border border-primary/30 bg-primary/5 transition-all duration-200 overflow-hidden shadow-sm break-inside-avoid print:break-inside-avoid print:border-none print:shadow-none print:bg-white print:p-0 print:m-0 print:w-full print:rounded-none print-daftar-nama-container",
         isOpen ? "is-open" : ""
       )}
     >
@@ -197,25 +197,25 @@ export function KartuDaftarNamaAtsRekap({
       </div>
 
       {/* Header Banner Kartu */}
-      <div className="p-5 sm:p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 print:hidden">
+      <div className="p-4 sm:p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 print:hidden">
         <div className="flex items-start gap-3.5">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow-md shadow-indigo-600/20">
-            <GraduationCap className="h-6 w-6" />
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-xs">
+            <GraduationCap className="h-5 w-5" />
           </div>
           <div>
             <div className="flex flex-wrap items-center gap-2 mb-1">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-700">
-                <ShieldCheck className="h-3.5 w-3.5 text-amber-600" />
-                <span>Khusus Admin Komunitas (Warga Kita, PAUD, Posyandu, PKBM dan SKB) &amp; Super Admin</span>
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-secondary/15 text-amber-900 dark:text-amber-200 border border-secondary/30">
+                <ShieldCheck className="h-3 w-3 text-secondary" />
+                <span>Khusus Admin Komunitas (Warga Kita, PAUD, Posyandu, PKBM/SKB) &amp; Super Admin</span>
               </span>
-              <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full border bg-indigo-100 text-indigo-900 border-indigo-300 dark:bg-indigo-900/60 dark:text-indigo-300 dark:border-indigo-700">
+              <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full border bg-primary/10 text-primary border-primary/20">
                 Wilayah: {currentWilayahNama}
               </span>
             </div>
-            <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-slate-100 tracking-tight">
+            <h3 className="text-base sm:text-lg font-bold text-foreground tracking-tight">
               Daftar Rincian Anak Tidak Sekolah (ATS)
             </h3>
-            <p className="text-xs text-slate-600 dark:text-slate-400 font-medium">
+            <p className="text-xs text-muted-foreground font-medium">
               Sesuai ketentuan perlindungan privasi data, rincian identitas lengkap anak tidak sekolah hanya dapat diakses di Tingkat KELURAHAN oleh Admin di Komunitas Warga Kita, Admin PAUD, Admin Posyandu dan Admin PKBM dan SKB.
             </p>
           </div>
@@ -226,7 +226,7 @@ export function KartuDaftarNamaAtsRekap({
           <button
             type="button"
             onClick={() => setIsOpen(!isOpen)}
-            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-3 rounded-2xl text-xs font-bold transition-all shadow-md bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-600/20 cursor-pointer"
+            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-xs font-bold transition-all shadow-xs bg-primary hover:bg-primary-hover text-primary-foreground cursor-pointer active:scale-98"
           >
             {isOpen ? (
               <>
@@ -245,24 +245,24 @@ export function KartuDaftarNamaAtsRekap({
 
       {/* Konten Terbuka (Expanded Panel) */}
       {isOpen && (
-        <div className="border-t-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3.5 sm:p-4.5 space-y-3.5 animate-in fade-in slide-in-from-top-2 duration-200 print:border-none print:p-0 print:space-y-2 print:bg-white">
+        <div className="border-t border-border bg-card p-3.5 sm:p-4.5 space-y-3.5 animate-in fade-in slide-in-from-top-2 duration-200 print:border-none print:p-0 print:space-y-2 print:bg-white">
           {/* Controls: Search, Filters & Print */}
           <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 print:hidden">
             {/* Search Bar */}
             <div className="relative flex-1">
-              <Search className="pointer-events-none absolute left-3.5 top-3 h-4 w-4 text-slate-400" />
+              <Search className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Cari nama anak, orang tua, sekolah asal, alasan ATS, atau alamat..."
-                className="w-full h-10 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 pl-10 pr-4 text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:border-indigo-600 focus:bg-white focus:outline-hidden"
+                className="w-full h-9.5 rounded-lg border border-border bg-background pl-9 pr-4 text-xs text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-hidden"
               />
               {searchQuery && (
                 <button
                   type="button"
                   onClick={() => setSearchQuery("")}
-                  className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600"
+                  className="absolute right-3 top-2.5 text-muted-foreground hover:text-foreground cursor-pointer"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -275,7 +275,7 @@ export function KartuDaftarNamaAtsRekap({
               <select
                 value={kategoriFilter}
                 onChange={(e) => setKategoriFilter(e.target.value as any)}
-                className="h-9 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 px-3 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-hidden"
+                className="h-9 rounded-lg border border-border bg-background px-3 text-xs font-semibold text-foreground focus:outline-hidden"
               >
                 <option value="semua">Semua Kategori ATS</option>
                 <option value="do">Putus Sekolah (DO)</option>
@@ -287,7 +287,7 @@ export function KartuDaftarNamaAtsRekap({
               <select
                 value={keinginanFilter}
                 onChange={(e) => setKeinginanFilter(e.target.value as any)}
-                className="h-9 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 px-3 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-hidden"
+                className="h-9 rounded-lg border border-border bg-background px-3 text-xs font-semibold text-foreground focus:outline-hidden"
               >
                 <option value="semua">Semua Status Keinginan</option>
                 <option value="ingin">Siap Sekolah (Masih Ada)</option>
@@ -295,15 +295,15 @@ export function KartuDaftarNamaAtsRekap({
               </select>
 
               {/* Gender Filter */}
-              <div className="flex items-center rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 p-1 text-xs">
+              <div className="flex items-center rounded-lg border border-border bg-background p-1 text-xs">
                 <button
                   type="button"
                   onClick={() => setGenderFilter("semua")}
                   className={cn(
-                    "px-2 py-1 rounded-lg font-bold transition-all cursor-pointer text-2xs",
+                    "px-2 py-1 rounded-md font-bold transition-all cursor-pointer text-2xs",
                     genderFilter === "semua"
-                      ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-xs"
-                      : "text-slate-500 hover:text-slate-900"
+                      ? "bg-muted text-foreground shadow-2xs"
+                      : "text-muted-foreground hover:text-foreground"
                   )}
                 >
                   Semua
@@ -312,10 +312,10 @@ export function KartuDaftarNamaAtsRekap({
                   type="button"
                   onClick={() => setGenderFilter("L")}
                   className={cn(
-                    "px-2 py-1 rounded-lg font-bold transition-all cursor-pointer text-2xs",
+                    "px-2 py-1 rounded-md font-bold transition-all cursor-pointer text-2xs",
                     genderFilter === "L"
-                      ? "bg-blue-600 text-white shadow-xs"
-                      : "text-slate-500 hover:text-blue-600"
+                      ? "bg-primary text-primary-foreground shadow-2xs"
+                      : "text-muted-foreground hover:text-primary"
                   )}
                 >
                   L
@@ -324,10 +324,10 @@ export function KartuDaftarNamaAtsRekap({
                   type="button"
                   onClick={() => setGenderFilter("P")}
                   className={cn(
-                    "px-2 py-1 rounded-lg font-bold transition-all cursor-pointer text-2xs",
+                    "px-2 py-1 rounded-md font-bold transition-all cursor-pointer text-2xs",
                     genderFilter === "P"
-                      ? "bg-rose-600 text-white shadow-xs"
-                      : "text-slate-500 hover:text-rose-600"
+                      ? "bg-rose-600 text-white shadow-2xs"
+                      : "text-muted-foreground hover:text-rose-600"
                   )}
                 >
                   P
@@ -338,7 +338,7 @@ export function KartuDaftarNamaAtsRekap({
               <button
                 type="button"
                 onClick={handlePrint}
-                className="flex h-9 items-center gap-1.5 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 transition-colors cursor-pointer"
+                className="flex h-9 items-center gap-1.5 px-3 rounded-lg border border-border bg-background text-xs font-bold text-foreground hover:bg-muted transition-colors cursor-pointer"
                 title="Cetak Rekapitulasi Daftar ATS"
               >
                 <Printer className="h-3.5 w-3.5" />
@@ -350,27 +350,27 @@ export function KartuDaftarNamaAtsRekap({
           {/* Status / Feedback / Loading */}
           {isPending && (
             <div className="py-12 text-center space-y-2">
-              <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent" />
-              <p className="text-xs font-medium text-slate-500">
+              <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+              <p className="text-xs font-medium text-muted-foreground">
                 Memuat data daftar anak tidak sekolah di wilayah {currentWilayahNama}...
               </p>
             </div>
           )}
 
           {errorMsg && (
-            <div className="p-4 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 flex items-center gap-3 text-red-700 dark:text-red-300 text-xs font-medium">
+            <div className="p-4 rounded-lg bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/40 flex items-center gap-3 text-rose-700 dark:text-rose-300 text-xs font-medium">
               <AlertCircle className="h-5 w-5 shrink-0" />
               <span>{errorMsg}</span>
             </div>
           )}
 
           {!isPending && !errorMsg && filteredData.length === 0 && (
-            <div className="py-12 text-center rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-800 space-y-2">
-              <Users className="h-10 w-10 text-slate-300 dark:text-slate-600 mx-auto" />
-              <p className="text-sm font-bold text-slate-700 dark:text-slate-300">
+            <div className="py-12 text-center rounded-lg border border-dashed border-border space-y-2">
+              <Users className="h-10 w-10 text-muted-foreground/40 mx-auto" />
+              <p className="text-sm font-bold text-foreground">
                 Tidak ada data ATS yang sesuai dengan filter
               </p>
-              <p className="text-xs text-slate-500 max-w-md mx-auto">
+              <p className="text-xs text-muted-foreground max-w-md mx-auto">
                 {searchQuery
                   ? `Tidak ditemukan hasil pencarian "${searchQuery}" di wilayah ${currentWilayahNama}.`
                   : `Belum ada data anak tidak sekolah yang tercatat di wilayah ${currentWilayahNama}.`}
@@ -382,33 +382,33 @@ export function KartuDaftarNamaAtsRekap({
           {!isPending && !errorMsg && filteredData.length > 0 && (
             <>
               {/* Counter Info Bar */}
-              <div className="flex items-center justify-between text-xs font-semibold text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-950 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 print:bg-slate-100 print:border-slate-400 print:text-black print:px-3 print:py-1.5 print:my-1.5">
+              <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground bg-muted/40 px-3.5 py-2 rounded-lg border border-border print:bg-slate-100 print:border-slate-400 print:text-black print:px-3 print:py-1.5 print:my-1.5">
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-indigo-600 print:hidden" />
+                  <CheckCircle2 className="h-4 w-4 text-primary print:hidden" />
                   <span>
                     Menampilkan <strong>{filteredData.length}</strong> dari total <strong>{dataList.length}</strong> anak ATS di wilayah {currentWilayahNama}
                   </span>
                 </div>
-                <span className="text-[11px] text-slate-500 font-mono print:text-slate-700">
+                <span className="text-[11px] text-muted-foreground font-mono print:text-slate-700">
                   {userPeran ? `Peran: ${userPeran}` : "Hak Akses Admin Aktif"}
                 </span>
               </div>
 
               {/* Desktop Table (Layar penuh di monitor dan selalu tampil saat print) */}
-              <div className="hidden lg:block print:block overflow-hidden print:overflow-visible rounded-2xl border border-slate-200 dark:border-slate-800 print:border-slate-300 print:rounded-none w-full">
+              <div className="hidden lg:block print:block overflow-hidden print:overflow-visible rounded-lg border border-border print:border-slate-300 print:rounded-none w-full">
                 <table className="w-full text-left text-xs border-collapse table-fixed print:text-[9px]">
                   <thead>
-                    <tr className="bg-slate-100 dark:bg-slate-800/90 text-slate-700 dark:text-slate-300 font-bold border-b border-slate-200 dark:border-slate-700 print:bg-slate-200 print:text-black print:border-slate-400">
-                      <th className="py-2 px-1.5 w-[4%] text-center font-bold print:py-1.5">No</th>
-                      <th className="py-2 px-2.5 w-[21%] font-bold print:py-1.5">Nama Lengkap &amp; Usia</th>
-                      <th className="py-2 px-2 w-[15%] font-bold print:py-1.5">Kategori &amp; Keinginan</th>
-                      <th className="py-2 px-2 w-[17%] font-bold print:py-1.5">Sekolah Asal &amp; Alasan</th>
-                      <th className="py-2 px-2 w-[16%] font-bold print:py-1.5">Orang Tua / Wali &amp; Kontak</th>
-                      <th className="py-2 px-2 w-[15%] font-bold print:py-1.5">Alamat Domisili</th>
-                      <th className="py-2 px-2 w-[12%] font-bold print:py-1.5">Komunitas</th>
+                    <tr className="bg-muted/70 text-foreground font-bold border-b border-border print:bg-slate-200 print:text-black print:border-slate-400">
+                      <th className="py-2.5 px-2 w-[4%] text-center font-bold print:py-1.5">No</th>
+                      <th className="py-2.5 px-2.5 w-[21%] font-bold print:py-1.5">Nama Lengkap &amp; Usia</th>
+                      <th className="py-2.5 px-2 w-[15%] font-bold print:py-1.5">Kategori &amp; Keinginan</th>
+                      <th className="py-2.5 px-2 w-[17%] font-bold print:py-1.5">Sekolah Asal &amp; Alasan</th>
+                      <th className="py-2.5 px-2 w-[16%] font-bold print:py-1.5">Orang Tua / Wali &amp; Kontak</th>
+                      <th className="py-2.5 px-2 w-[15%] font-bold print:py-1.5">Alamat Domisili</th>
+                      <th className="py-2.5 px-2 w-[12%] font-bold print:py-1.5">Komunitas</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 print:divide-slate-200">
+                  <tbody className="divide-y divide-border/60 print:divide-slate-200">
                     {filteredData.map((item, idx) => {
                       const isL = item.jenisKelamin === "L";
                       const isIngin = normalizeKeinginanSekolah(item.keinginanSekolah) === "Masih Ada";
@@ -416,34 +416,34 @@ export function KartuDaftarNamaAtsRekap({
                       return (
                         <tr
                           key={item.id}
-                          className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors print:break-inside-avoid print:bg-white"
+                          className="hover:bg-muted/30 transition-colors print:break-inside-avoid print:bg-white"
                         >
-                          <td className="py-2 px-1.5 text-center font-mono text-slate-500 print:text-black print:py-1 align-top text-xs">
+                          <td className="py-2.5 px-2 text-center font-mono text-muted-foreground print:text-black print:py-1 align-top text-xs">
                             {idx + 1}
                           </td>
-                          <td className="py-2 px-2.5 align-top break-words print:py-1">
+                          <td className="py-2.5 px-2.5 align-top break-words print:py-1">
                             <div className="space-y-1">
                               <div className="flex flex-wrap items-center gap-1.5">
-                                <span className="font-bold text-slate-900 dark:text-slate-100 text-xs sm:text-sm print:text-black leading-tight">
+                                <span className="font-bold text-foreground text-xs sm:text-sm print:text-black leading-tight">
                                   {item.namaLengkap}
                                 </span>
                                 <span
                                   className={cn(
-                                    "px-1.5 py-0.5 rounded text-[10px] font-extrabold uppercase shrink-0 print:border print:border-slate-400 print:text-[8.5px]",
+                                    "px-1.5 py-0.5 rounded text-[10px] font-bold uppercase shrink-0 print:border print:border-slate-400 print:text-[8.5px]",
                                     isL
-                                      ? "bg-blue-100 text-blue-800 dark:bg-blue-900/60 dark:text-blue-300 print:bg-white print:text-blue-800"
+                                      ? "bg-primary/10 text-primary border border-primary/20 print:bg-white print:text-teal-800"
                                       : "bg-rose-100 text-rose-800 dark:bg-rose-900/60 dark:text-rose-300 print:bg-white print:text-rose-800"
                                   )}
                                 >
                                   {isL ? "Laki-laki" : "Perempuan"}
                                 </span>
                               </div>
-                              <div className="text-[11px] text-slate-500 print:text-slate-600 flex flex-wrap items-center gap-1 leading-tight">
-                                <span className="font-semibold text-slate-700 dark:text-slate-300 print:text-black">
+                              <div className="text-[11px] text-muted-foreground print:text-slate-600 flex flex-wrap items-center gap-1 leading-tight">
+                                <span className="font-semibold text-foreground print:text-black">
                                   Usia {item.usia} Tahun
                                 </span>
                                 {item.tanggalLahir && (
-                                  <span className="text-slate-400 print:text-slate-500">
+                                  <span className="text-muted-foreground/60 print:text-slate-500">
                                     • Lahir: {item.tanggalLahir}
                                   </span>
                                 )}
@@ -452,28 +452,28 @@ export function KartuDaftarNamaAtsRekap({
                           </td>
 
                           {/* Kategori & Keinginan */}
-                          <td className="py-2 px-2 align-top break-words print:py-1">
+                          <td className="py-2.5 px-2 align-top break-words print:py-1">
                             <div className="space-y-1">
                               <span
                                 className={cn(
-                                  "inline-block px-1.5 py-0.5 rounded text-[10px] font-extrabold print:border print:border-slate-400 print:bg-white print:text-black",
+                                  "inline-block px-1.5 py-0.5 rounded text-[10px] font-bold print:border print:border-slate-400 print:bg-white print:text-black",
                                   item.kategoriAts.includes("DO") || item.kategoriAts.includes("Putus")
-                                    ? "bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300"
+                                    ? "bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300 border border-rose-200 dark:border-rose-900/40"
                                     : item.kategoriAts.includes("LTM") || item.kategoriAts.includes("Lulus")
-                                    ? "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300"
-                                    : "bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300"
+                                    ? "bg-secondary/15 text-amber-900 dark:text-amber-200 border border-secondary/30"
+                                    : "bg-primary/10 text-primary border border-primary/20"
                                 )}
                               >
                                 {item.kategoriAts}
                               </span>
-                              <div className="flex items-center gap-1 text-[11px] print:text-black">
+                              <div className="flex items-center gap-1.5 text-[11px] print:text-black">
                                 <span
                                   className={cn(
                                     "h-2 w-2 rounded-full shrink-0 print:hidden",
-                                    isIngin ? "bg-emerald-500" : "bg-slate-400"
+                                    isIngin ? "bg-primary" : "bg-muted-foreground/40"
                                   )}
                                 />
-                                <span className="font-semibold text-slate-700 dark:text-slate-300 print:text-black leading-tight">
+                                <span className="font-semibold text-foreground print:text-black leading-tight">
                                   {isIngin ? "Ingin Sekolah" : "Tidak Ingin"}
                                 </span>
                               </div>
@@ -481,22 +481,22 @@ export function KartuDaftarNamaAtsRekap({
                           </td>
 
                           {/* Sekolah Asal & Alasan */}
-                          <td className="py-2 px-2 align-top break-words print:py-1">
+                          <td className="py-2.5 px-2 align-top break-words print:py-1">
                             <div className="space-y-0.5">
-                              <div className="font-semibold text-slate-800 dark:text-slate-200 print:text-black flex items-start gap-1 leading-tight break-words">
-                                <School className="h-3.5 w-3.5 text-slate-500 shrink-0 mt-0.5 print:hidden" />
+                              <div className="font-semibold text-foreground print:text-black flex items-start gap-1 leading-tight break-words">
+                                <School className="h-3.5 w-3.5 text-muted-foreground shrink-0 mt-0.5 print:hidden" />
                                 <span>{item.sekolahSebelumnya}</span>
                                 {item.kelasTerakhir && item.kelasTerakhir !== "-" && (
-                                  <span className="text-[10px] text-slate-500 print:text-slate-600 font-mono">
+                                  <span className="text-[10px] text-muted-foreground print:text-slate-600 font-mono">
                                     ({item.kelasTerakhir})
                                   </span>
                                 )}
                               </div>
-                              <p className="text-[11px] text-slate-500 print:text-slate-700 leading-tight break-words">
+                              <p className="text-[11px] text-muted-foreground print:text-slate-700 leading-tight break-words">
                                 {item.alasanTidakSekolah}
                               </p>
                               {item.keterangan && (
-                                <p className="text-[10px] text-slate-400 print:text-slate-500 italic break-words">
+                                <p className="text-[10px] text-muted-foreground/70 print:text-slate-500 italic break-words">
                                   &quot;{item.keterangan}&quot;
                                 </p>
                               )}
@@ -504,9 +504,9 @@ export function KartuDaftarNamaAtsRekap({
                           </td>
 
                           {/* Orang Tua */}
-                          <td className="py-2 px-2 align-top break-words print:py-1">
+                          <td className="py-2.5 px-2 align-top break-words print:py-1">
                             <div className="space-y-0.5">
-                              <div className="font-semibold text-slate-800 dark:text-slate-200 print:text-black leading-tight break-words">
+                              <div className="font-semibold text-foreground print:text-black leading-tight break-words">
                                 {item.namaOrangtua}
                               </div>
                               {item.nomorHp && item.nomorHp !== "-" && (
@@ -522,19 +522,19 @@ export function KartuDaftarNamaAtsRekap({
                                   </a>
                                 </div>
                               )}
-                              <div className="text-[10px] text-slate-400 print:text-slate-500">
+                              <div className="text-[10px] text-muted-foreground print:text-slate-500">
                                 Tinggal: {item.tinggalBersama}
                               </div>
                             </div>
                           </td>
 
                           {/* Alamat Domisili */}
-                          <td className="py-2 px-2 align-top break-words print:py-1">
-                            <div className="space-y-0.5 text-[11px] text-slate-600 dark:text-slate-300 print:text-black leading-tight">
-                              <div className="font-medium text-slate-800 dark:text-slate-200 print:text-black break-words">
+                          <td className="py-2.5 px-2 align-top break-words print:py-1">
+                            <div className="space-y-0.5 text-[11px] text-muted-foreground print:text-black leading-tight">
+                              <div className="font-medium text-foreground print:text-black break-words">
                                 {item.alamat || "Alamat belum tercatat lengkap"}
                               </div>
-                              <div className="text-slate-500 dark:text-slate-400 print:text-slate-600 font-mono text-[10px]">
+                              <div className="text-muted-foreground print:text-slate-600 font-mono text-[10px]">
                                 {item.rt === "Belum Tahu" && item.rw === "Belum Tahu"
                                   ? "RT/RW Belum Tahu"
                                   : item.rw === "Belum Tahu"
@@ -543,20 +543,20 @@ export function KartuDaftarNamaAtsRekap({
                                   ? `RW ${item.rw} (RT Belum Tahu)`
                                   : `RT ${item.rt || "-"} / RW ${item.rw || "-"}`} • Kel. {item.kelurahan}
                               </div>
-                              <div className="text-slate-400 print:text-slate-500 text-[10px]">
+                              <div className="text-muted-foreground/60 print:text-slate-500 text-[10px]">
                                 Kec. {item.kecamatan}
                               </div>
                             </div>
                           </td>
 
                           {/* Komunitas */}
-                          <td className="py-2 px-2 align-top break-words print:py-1">
+                          <td className="py-2.5 px-2 align-top break-words print:py-1">
                             <div className="space-y-1">
-                              <span className="font-medium text-slate-700 dark:text-slate-300 print:text-black text-[11px] leading-tight break-words block">
+                              <span className="font-medium text-foreground print:text-black text-[11px] leading-tight break-words block">
                                 {item.komunitasNama}
                               </span>
-                              <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 print:bg-white print:border print:border-black print:text-black">
-                                <CheckCircle2 className="h-3 w-3 shrink-0 print:hidden" />
+                              <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-teal-500/10 text-teal-700 dark:text-teal-300 border border-teal-500/20 print:bg-white print:border print:border-black print:text-black">
+                                <CheckCircle2 className="h-3 w-3 shrink-0 print:hidden text-primary" />
                                 <span>Terdata ATS</span>
                               </span>
                             </div>
@@ -615,23 +615,23 @@ function DaftarNamaAtsMobileCardItem({
   const isIngin = normalizeKeinginanSekolah(item.keinginanSekolah) === "Masih Ada";
 
   return (
-    <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 space-y-3 shadow-xs transition-all">
+    <div className="p-3.5 rounded-lg border border-border bg-card space-y-3 shadow-2xs transition-all">
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2.5">
           <div
             className={cn(
-              "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl font-bold text-white text-xs",
-              isL ? "bg-blue-600" : "bg-rose-600"
+              "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg font-bold text-xs",
+              isL ? "bg-primary text-primary-foreground" : "bg-rose-600 text-white"
             )}
           >
             {item.namaLengkap.charAt(0).toUpperCase()}
           </div>
           <div>
-            <h4 className="font-bold text-slate-900 dark:text-slate-100 text-sm line-clamp-1">
+            <h4 className="font-bold text-foreground text-sm line-clamp-1">
               {item.namaLengkap}
             </h4>
-            <div className="flex items-center gap-1.5 text-[11px] text-slate-500">
-              <span className="font-semibold text-slate-700 dark:text-slate-300">
+            <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+              <span className="font-semibold text-foreground">
                 Usia {item.usia} Thn
               </span>
               <span>•</span>
@@ -640,13 +640,13 @@ function DaftarNamaAtsMobileCardItem({
           </div>
         </div>
         <div className="flex items-center gap-1.5 shrink-0">
-          <span className="text-xs font-mono font-bold text-slate-400">
+          <span className="text-xs font-mono font-bold text-muted-foreground/60">
             #{idx + 1}
           </span>
           <button
             type="button"
             onClick={() => setIsExpanded(!isExpanded)}
-            className="flex items-center gap-1 px-2 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[11px] font-bold hover:bg-slate-100 transition-colors cursor-pointer"
+            className="flex items-center gap-1 px-2 py-1 rounded-lg border border-border bg-muted text-foreground text-[11px] font-bold hover:bg-muted/80 transition-colors cursor-pointer"
             title={isExpanded ? "Sembunyikan Detail" : "Tampilkan Detail"}
           >
             <span>{isExpanded ? "Tutup" : "Detail"}</span>
@@ -661,18 +661,18 @@ function DaftarNamaAtsMobileCardItem({
 
       {/* Detail Konten (Disembunyikan secara default) */}
       {isExpanded && (
-        <div className="space-y-3 pt-2 border-t border-slate-200/60 dark:border-slate-800 animate-in fade-in duration-150">
+        <div className="space-y-3 pt-2 border-t border-border/60 animate-in fade-in duration-150">
           {/* Info Status / Kategori ATS */}
-          <div className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 space-y-1.5">
+          <div className="p-2.5 rounded-lg bg-muted/40 border border-border/70 space-y-1.5">
             <div className="flex items-center justify-between">
               <span
                 className={cn(
-                  "px-2 py-0.5 rounded text-[10px] font-extrabold",
+                  "px-2 py-0.5 rounded text-[10px] font-bold",
                   item.kategoriAts.includes("DO") || item.kategoriAts.includes("Putus")
-                    ? "bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300"
+                    ? "bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300 border border-rose-200 dark:border-rose-900/40"
                     : item.kategoriAts.includes("LTM") || item.kategoriAts.includes("Lulus")
-                    ? "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300"
-                    : "bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300"
+                    ? "bg-secondary/15 text-amber-900 dark:text-amber-200 border border-secondary/30"
+                    : "bg-primary/10 text-primary border border-primary/20"
                 )}
               >
                 {item.kategoriAts}
@@ -680,33 +680,33 @@ function DaftarNamaAtsMobileCardItem({
               <span
                 className={cn(
                   "text-[10px] font-bold",
-                  isIngin ? "text-emerald-600 dark:text-emerald-400" : "text-slate-500"
+                  isIngin ? "text-primary font-bold" : "text-muted-foreground"
                 )}
               >
                 {isIngin ? "✓ Ingin Sekolah" : "✗ Belum Ingin"}
               </span>
             </div>
-            <div className="text-xs font-medium text-slate-700 dark:text-slate-300">
+            <div className="text-xs font-medium text-foreground">
               <strong>Faktor:</strong> {item.alasanTidakSekolah}
             </div>
             {item.sekolahSebelumnya && item.sekolahSebelumnya !== "-" && (
-              <div className="text-[11px] text-slate-500">
+              <div className="text-[11px] text-muted-foreground">
                 Sekolah Asal: {item.sekolahSebelumnya} ({item.kelasTerakhir})
               </div>
             )}
           </div>
 
           {/* Info Orang Tua & Domisili */}
-          <div className="space-y-1 text-xs text-slate-600 dark:text-slate-400">
+          <div className="space-y-1 text-xs text-muted-foreground">
             <div className="flex items-center justify-between">
-              <span className="text-slate-500">Orang Tua / Wali:</span>
-              <span className="font-semibold text-slate-800 dark:text-slate-200">
+              <span className="text-muted-foreground">Orang Tua / Wali:</span>
+              <span className="font-semibold text-foreground">
                 {item.namaOrangtua}
               </span>
             </div>
             {item.nomorHp && item.nomorHp !== "-" && (
               <div className="flex items-center justify-between">
-                <span className="text-slate-500">WhatsApp:</span>
+                <span className="text-muted-foreground">WhatsApp:</span>
                 <a
                   href={`https://wa.me/${item.nomorHp.replace(/\D/g, "").replace(/^0/, "62")}`}
                   target="_blank"
@@ -717,9 +717,9 @@ function DaftarNamaAtsMobileCardItem({
                 </a>
               </div>
             )}
-            <div className="flex items-start justify-between gap-2 pt-1 border-t border-slate-200/60 dark:border-slate-800">
-              <span className="text-slate-500 shrink-0">Alamat:</span>
-              <span className="text-right text-[11px] text-slate-700 dark:text-slate-300 line-clamp-2">
+            <div className="flex items-start justify-between gap-2 pt-1 border-t border-border/60">
+              <span className="text-muted-foreground shrink-0">Alamat:</span>
+              <span className="text-right text-[11px] text-foreground line-clamp-2">
                 {item.alamat ? `${item.alamat}, ` : ""}
                 {item.rt === "Belum Tahu" && item.rw === "Belum Tahu"
                   ? "RT/RW Belum Tahu"

@@ -141,26 +141,26 @@ export function KartuDaftarNamaAnakRekap({
   };
 
   const accentBorder = isBersekolah
-    ? "border-emerald-300 dark:border-emerald-800"
-    : "border-blue-300 dark:border-blue-800";
+    ? "border-primary/30"
+    : "border-secondary/35";
   const accentBg = isBersekolah
-    ? "bg-emerald-50/70 dark:bg-emerald-950/20"
-    : "bg-blue-50/70 dark:bg-blue-950/20";
+    ? "bg-primary/5"
+    : "bg-secondary/5";
   const accentBtn = isBersekolah
-    ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/20"
-    : "bg-blue-600 hover:bg-blue-700 text-white shadow-blue-600/20";
+    ? "bg-primary hover:bg-primary-hover text-primary-foreground shadow-sm"
+    : "bg-secondary hover:bg-secondary-hover text-secondary-foreground shadow-sm";
   const accentText = isBersekolah
-    ? "text-emerald-800 dark:text-emerald-300"
-    : "text-blue-800 dark:text-blue-300";
+    ? "text-primary"
+    : "text-secondary";
   const accentBadge = isBersekolah
-    ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300 border-emerald-300 dark:border-emerald-700"
-    : "bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300 border-blue-300 dark:border-blue-700";
+    ? "bg-primary/10 text-primary border-primary/25"
+    : "bg-secondary/15 text-amber-900 dark:text-amber-200 border-secondary/30";
 
   return (
     <div
       ref={cardRef}
       className={cn(
-        "rounded-3xl border-2 transition-all duration-200 overflow-hidden shadow-sm break-inside-avoid print:break-inside-avoid",
+        "rounded-lg border transition-all duration-200 overflow-hidden shadow-sm break-inside-avoid print:break-inside-avoid",
         accentBorder,
         accentBg,
         "print:border-none print:shadow-none print:bg-white print:p-0 print:m-0 print:w-full print:rounded-none print-daftar-nama-container",
@@ -198,36 +198,36 @@ export function KartuDaftarNamaAnakRekap({
       </div>
 
       {/* Header Banner Kartu (Layar Monitor) */}
-      <div className="p-5 sm:p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 print:hidden">
+      <div className="p-4 sm:p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 print:hidden">
         <div className="flex items-start gap-3.5">
           <div
             className={cn(
-              "flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-white shadow-md",
-              isBersekolah ? "bg-emerald-600" : "bg-blue-600"
+              "flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-white shadow-xs",
+              isBersekolah ? "bg-primary" : "bg-secondary"
             )}
           >
             {isBersekolah ? (
-              <GraduationCap className="h-6 w-6" />
+              <GraduationCap className="h-5.5 w-5.5" />
             ) : (
-              <Baby className="h-6 w-6" />
+              <Baby className="h-5.5 w-5.5" />
             )}
           </div>
           <div>
             <div className="flex flex-wrap items-center gap-2 mb-1">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-700">
-                <ShieldCheck className="h-3.5 w-3.5 text-amber-600" />
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg text-[11px] font-bold bg-secondary/15 text-amber-900 dark:text-amber-200 border border-secondary/30">
+                <ShieldCheck className="h-3.5 w-3.5 text-secondary" />
                 <span>Khusus Admin Komunitas &amp; Super Admin</span>
               </span>
-              <span className={cn("text-[11px] font-bold px-2.5 py-0.5 rounded-full border", accentBadge)}>
+              <span className={cn("text-[11px] font-bold px-2.5 py-0.5 rounded-lg border", accentBadge)}>
                 Wilayah: {currentWilayahNama}
               </span>
             </div>
-            <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-slate-100 tracking-tight">
+            <h3 className="text-base sm:text-lg font-black text-foreground tracking-tight">
               {isBersekolah
                 ? "Daftar Nama Anak Bersekolah PAUD"
                 : "Daftar Nama Anak Belum Bersekolah PAUD"}
             </h3>
-            <p className="text-xs text-slate-600 dark:text-slate-400 font-medium">
+            <p className="text-xs text-muted-foreground font-medium">
               {isBersekolah
                 ? `Akses identitas lengkap, satuan PAUD, kontak orang tua, dan alamat ${totalCount} anak bersekolah di ${currentWilayahNama}.`
                 : `Akses identitas lengkap, faktor belum sekolah, kontak orang tua, dan alamat ${totalCount} anak belum bersekolah di ${currentWilayahNama}.`}
@@ -241,7 +241,7 @@ export function KartuDaftarNamaAnakRekap({
             type="button"
             onClick={() => setIsOpen(!isOpen)}
             className={cn(
-              "flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-3 rounded-2xl text-xs font-bold transition-all shadow-md cursor-pointer",
+              "flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-xs font-bold transition-all shadow-sm cursor-pointer",
               accentBtn
             )}
           >
@@ -262,24 +262,24 @@ export function KartuDaftarNamaAnakRekap({
 
       {/* Konten Terbuka (Expanded Panel) */}
       {isOpen && (
-        <div className="border-t-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3.5 sm:p-4.5 space-y-3.5 animate-in fade-in slide-in-from-top-2 duration-200 print:border-none print:p-0 print:space-y-2 print:bg-white">
+        <div className="border-t border-border bg-card p-3.5 sm:p-4.5 space-y-3.5 animate-in fade-in slide-in-from-top-2 duration-200 print:border-none print:p-0 print:space-y-2 print:bg-white">
           {/* Controls: Search, Filters & Print */}
           <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 print:hidden">
             {/* Search Bar */}
             <div className="relative flex-1">
-              <Search className="pointer-events-none absolute left-3.5 top-3 h-4 w-4 text-slate-400" />
+              <Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Cari nama anak, orang tua, sekolah, alasan, atau alamat..."
-                className="w-full h-10 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 pl-10 pr-4 text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:border-blue-600 focus:bg-white focus:outline-hidden"
+                className="w-full h-10 rounded-lg border border-border bg-background pl-9 pr-4 text-xs text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-hidden"
               />
               {searchQuery && (
                 <button
                   type="button"
                   onClick={() => setSearchQuery("")}
-                  className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600"
+                  className="absolute right-3 top-2.5 text-muted-foreground hover:text-foreground"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -289,15 +289,15 @@ export function KartuDaftarNamaAnakRekap({
             {/* Quick Filters */}
             <div className="flex flex-wrap items-center gap-2">
               {/* Gender Filter */}
-              <div className="flex items-center rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 p-1 text-xs">
+              <div className="flex items-center rounded-lg border border-border bg-muted/60 p-1 text-xs">
                 <button
                   type="button"
                   onClick={() => setGenderFilter("semua")}
                   className={cn(
-                    "px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer",
+                    "px-2.5 py-1 rounded-md font-bold transition-all cursor-pointer",
                     genderFilter === "semua"
-                      ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-xs"
-                      : "text-slate-500 hover:text-slate-900"
+                      ? "bg-card text-foreground shadow-2xs"
+                      : "text-muted-foreground hover:text-foreground"
                   )}
                 >
                   Semua
@@ -306,10 +306,10 @@ export function KartuDaftarNamaAnakRekap({
                   type="button"
                   onClick={() => setGenderFilter("L")}
                   className={cn(
-                    "px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer",
+                    "px-2.5 py-1 rounded-md font-bold transition-all cursor-pointer",
                     genderFilter === "L"
-                      ? "bg-blue-600 text-white shadow-xs"
-                      : "text-slate-500 hover:text-blue-600"
+                      ? "bg-primary text-primary-foreground shadow-2xs"
+                      : "text-muted-foreground hover:text-primary"
                   )}
                 >
                   Laki-laki
@@ -318,10 +318,10 @@ export function KartuDaftarNamaAnakRekap({
                   type="button"
                   onClick={() => setGenderFilter("P")}
                   className={cn(
-                    "px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer",
+                    "px-2.5 py-1 rounded-md font-bold transition-all cursor-pointer",
                     genderFilter === "P"
-                      ? "bg-rose-600 text-white shadow-xs"
-                      : "text-slate-500 hover:text-rose-600"
+                      ? "bg-rose-600 text-white shadow-2xs"
+                      : "text-muted-foreground hover:text-rose-600"
                   )}
                 >
                   Perempuan
@@ -332,7 +332,7 @@ export function KartuDaftarNamaAnakRekap({
               <select
                 value={ageFilter}
                 onChange={(e) => setAgeFilter(e.target.value)}
-                className="h-9 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 px-3 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-hidden"
+                className="h-9 rounded-lg border border-border bg-background px-3 text-xs font-semibold text-foreground focus:outline-hidden"
               >
                 <option value="semua">Semua Usia (0–6 Tahun)</option>
                 <option value="0">0–1 Tahun</option>
@@ -347,7 +347,7 @@ export function KartuDaftarNamaAnakRekap({
               <button
                 type="button"
                 onClick={handlePrint}
-                className="flex h-9 items-center gap-1.5 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 transition-colors cursor-pointer"
+                className="flex h-9 items-center gap-1.5 px-3 rounded-lg border border-border bg-muted/60 text-xs font-bold text-foreground hover:bg-muted transition-colors cursor-pointer"
                 title="Cetak Laporan Rekapitulasi Daftar Nama Anak (A4 Penuh)"
               >
                 <Printer className="h-3.5 w-3.5" />
@@ -359,27 +359,27 @@ export function KartuDaftarNamaAnakRekap({
           {/* Status / Feedback / Loading */}
           {isPending && (
             <div className="py-12 text-center space-y-2 print:hidden">
-              <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
-              <p className="text-xs font-medium text-slate-500">
+              <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+              <p className="text-xs font-medium text-muted-foreground">
                 Memuat data daftar nama anak di wilayah {currentWilayahNama}...
               </p>
             </div>
           )}
 
           {errorMsg && (
-            <div className="p-4 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 flex items-center gap-3 text-red-700 dark:text-red-300 text-xs font-medium print:hidden">
+            <div className="p-4 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center gap-3 text-red-600 dark:text-red-400 text-xs font-medium print:hidden">
               <AlertCircle className="h-5 w-5 shrink-0" />
               <span>{errorMsg}</span>
             </div>
           )}
 
           {!isPending && !errorMsg && filteredData.length === 0 && (
-            <div className="py-12 text-center rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-800 space-y-2 print:hidden">
-              <Users className="h-10 w-10 text-slate-300 dark:text-slate-600 mx-auto" />
-              <p className="text-sm font-bold text-slate-700 dark:text-slate-300">
+            <div className="py-12 text-center rounded-lg border-2 border-dashed border-border space-y-2 print:hidden">
+              <Users className="h-10 w-10 text-muted-foreground/40 mx-auto" />
+              <p className="text-sm font-bold text-foreground">
                 Tidak ada data anak yang sesuai dengan filter
               </p>
-              <p className="text-xs text-slate-500 max-w-md mx-auto">
+              <p className="text-xs text-muted-foreground max-w-md mx-auto">
                 {searchQuery
                   ? `Tidak ditemukan hasil pencarian "${searchQuery}" di wilayah ${currentWilayahNama}.`
                   : `Belum ada data anak ${isBersekolah ? "bersekolah" : "belum bersekolah"} yang tercatat di wilayah ${currentWilayahNama}.`}
@@ -391,9 +391,9 @@ export function KartuDaftarNamaAnakRekap({
           {!isPending && !errorMsg && filteredData.length > 0 && (
             <>
               {/* Counter Info Bar */}
-              <div className="flex items-center justify-between text-xs font-semibold text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-950 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 print:bg-slate-100 print:border-slate-400 print:text-black print:px-3 print:py-1.5 print:my-1.5">
+              <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground bg-muted/40 px-3.5 py-2 rounded-lg border border-border print:bg-slate-100 print:border-slate-400 print:text-black print:px-3 print:py-1.5 print:my-1.5">
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-600 print:hidden" />
+                  <CheckCircle2 className="h-4 w-4 text-primary print:hidden" />
                   <span>
                     Menampilkan <strong>{filteredData.length}</strong> dari total <strong>{dataList.length}</strong> anak di wilayah {currentWilayahNama}
                     {genderFilter !== "semua" && ` • Jenis Kelamin: ${genderFilter === "L" ? "Laki-laki" : "Perempuan"}`}
@@ -401,16 +401,16 @@ export function KartuDaftarNamaAnakRekap({
                     {searchQuery && ` • Filter: "${searchQuery}"`}
                   </span>
                 </div>
-                <span className="text-[11px] text-slate-500 font-mono print:text-slate-700">
+                <span className="text-[11px] text-muted-foreground font-mono print:text-slate-700">
                   {userPeran ? `Peran: ${userPeran}` : "Hak Akses Admin Aktif"}
                 </span>
               </div>
 
               {/* Desktop Table (Layar penuh di monitor dan selalu tampil saat print) */}
-              <div className="hidden lg:block print:block overflow-hidden print:overflow-visible rounded-2xl border border-slate-200 dark:border-slate-800 print:border-slate-300 print:rounded-none w-full">
+              <div className="hidden lg:block print:block overflow-hidden print:overflow-visible rounded-lg border border-border print:border-slate-300 print:rounded-none w-full">
                 <table className="w-full text-left text-xs border-collapse table-fixed print:text-[9.5px]">
                   <thead>
-                    <tr className="bg-slate-100 dark:bg-slate-800/90 text-slate-700 dark:text-slate-300 font-bold border-b border-slate-200 dark:border-slate-700 print:bg-slate-200 print:text-black print:border-slate-400">
+                    <tr className="bg-muted/70 text-foreground font-bold border-b border-border print:bg-slate-200 print:text-black print:border-slate-400">
                       <th className="py-2 px-1.5 w-[4%] text-center font-bold print:py-1.5">No</th>
                       <th className="py-2 px-2.5 w-[24%] font-bold print:py-1.5">Nama Lengkap &amp; Usia</th>
                       <th className="py-2 px-2 w-[20%] font-bold print:py-1.5">
@@ -603,23 +603,23 @@ function DaftarNamaAnakMobileCardItem({
   const isL = item.jenisKelamin === "L";
 
   return (
-    <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 space-y-3 shadow-xs transition-all">
+    <div className="p-3 sm:p-3.5 rounded-lg border border-border bg-card space-y-3 shadow-2xs transition-all">
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2.5">
           <div
             className={cn(
-              "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl font-bold text-white text-xs",
-              isL ? "bg-blue-600" : "bg-rose-600"
+              "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg font-bold text-white text-xs",
+              isL ? "bg-primary" : "bg-rose-600"
             )}
           >
             {item.namaLengkap.charAt(0).toUpperCase()}
           </div>
           <div>
-            <h4 className="font-bold text-slate-900 dark:text-slate-100 text-sm line-clamp-1">
+            <h4 className="font-bold text-foreground text-sm line-clamp-1">
               {item.namaLengkap}
             </h4>
-            <div className="flex items-center gap-1.5 text-[11px] text-slate-500">
-              <span className="font-semibold text-slate-700 dark:text-slate-300">
+            <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+              <span className="font-semibold text-foreground">
                 Usia {item.usia} Thn
               </span>
               <span>•</span>
@@ -628,13 +628,13 @@ function DaftarNamaAnakMobileCardItem({
           </div>
         </div>
         <div className="flex items-center gap-1.5 shrink-0">
-          <span className="text-xs font-mono font-bold text-slate-400">
+          <span className="text-xs font-mono font-bold text-muted-foreground/60">
             #{idx + 1}
           </span>
           <button
             type="button"
             onClick={() => setIsExpanded(!isExpanded)}
-            className="flex items-center gap-1 px-2 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[11px] font-bold hover:bg-slate-100 transition-colors cursor-pointer"
+            className="flex items-center gap-1 px-2 py-1 rounded-lg border border-border bg-muted/60 text-foreground text-[11px] font-bold hover:bg-muted transition-colors cursor-pointer"
             title={isExpanded ? "Sembunyikan Detail" : "Tampilkan Detail"}
           >
             <span>{isExpanded ? "Tutup" : "Detail"}</span>
@@ -649,21 +649,21 @@ function DaftarNamaAnakMobileCardItem({
 
       {/* Detail Konten (Disembunyikan secara default) */}
       {isExpanded && (
-        <div className="space-y-3 pt-2 border-t border-slate-200/60 dark:border-slate-800 animate-in fade-in duration-150">
+        <div className="space-y-3 pt-2 border-t border-border/60 animate-in fade-in duration-150">
           {/* Info Status / Sekolah */}
-          <div className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 space-y-1">
-            <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+          <div className="p-2.5 rounded-lg bg-muted/30 border border-border/70 space-y-1">
+            <div className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
               {isBersekolah ? "Satuan PAUD Binaan" : "Faktor / Alasan Belum Sekolah"}
             </div>
-            <div className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+            <div className="text-xs font-bold text-foreground flex items-center gap-1.5">
               {isBersekolah ? (
                 <>
-                  <School className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                  <School className="h-3.5 w-3.5 text-primary shrink-0" />
                   <span>{item.namaSekolah}</span>
                 </>
               ) : (
                 <>
-                  <Baby className="h-3.5 w-3.5 text-blue-600 shrink-0" />
+                  <Baby className="h-3.5 w-3.5 text-secondary shrink-0" />
                   <span>{item.alasan}</span>
                 </>
               )}
@@ -671,29 +671,29 @@ function DaftarNamaAnakMobileCardItem({
           </div>
 
           {/* Info Orang Tua & Domisili */}
-          <div className="space-y-1 text-xs text-slate-600 dark:text-slate-400">
+          <div className="space-y-1 text-xs text-muted-foreground">
             <div className="flex items-center justify-between">
-              <span className="text-slate-500">Orang Tua / Wali:</span>
-              <span className="font-semibold text-slate-800 dark:text-slate-200">
+              <span className="text-muted-foreground">Orang Tua / Wali:</span>
+              <span className="font-semibold text-foreground">
                 {item.namaOrangtua}
               </span>
             </div>
             {item.nomorHp && item.nomorHp !== "-" && (
               <div className="flex items-center justify-between">
-                <span className="text-slate-500">WhatsApp:</span>
+                <span className="text-muted-foreground">WhatsApp:</span>
                 <a
                   href={`https://wa.me/${item.nomorHp.replace(/\D/g, "").replace(/^0/, "62")}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="font-mono text-emerald-600 dark:text-emerald-400 font-bold hover:underline"
+                  className="font-mono text-primary font-bold hover:underline"
                 >
                   {item.nomorHp}
                 </a>
               </div>
             )}
-            <div className="flex items-start justify-between gap-2 pt-1 border-t border-slate-200/60 dark:border-slate-800">
-              <span className="text-slate-500 shrink-0">Alamat:</span>
-              <span className="text-right text-[11px] text-slate-700 dark:text-slate-300 line-clamp-2">
+            <div className="flex items-start justify-between gap-2 pt-1 border-t border-border/60">
+              <span className="text-muted-foreground shrink-0">Alamat:</span>
+              <span className="text-right text-[11px] text-foreground line-clamp-2">
                 {item.domisiliJalan ? `${item.domisiliJalan}, ` : ""}
                 RT {item.domisiliRt || "01"}/RW {item.domisiliRw || "01"}, Kel. {item.domisiliKelurahan}
               </span>

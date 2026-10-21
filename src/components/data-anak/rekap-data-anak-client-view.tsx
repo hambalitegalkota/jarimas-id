@@ -402,9 +402,9 @@ export function RekapDataAnakClientView({
         <div className="flex items-center justify-between print:hidden print-hide-on-daftar-nama">
           <Link
             href={backHref}
-            className="inline-flex min-h-[44px] h-11 items-center gap-2 rounded-xl bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 px-4 text-sm font-bold text-slate-800 dark:text-slate-200 transition-all hover:bg-slate-50 dark:hover:bg-slate-800 shadow-xs"
+            className="inline-flex min-h-[44px] h-11 items-center gap-2 rounded-lg bg-card border border-border px-4 text-sm font-bold text-foreground transition-all hover:bg-muted shadow-xs"
           >
-            <ArrowLeft className="h-4 w-4 text-blue-700 dark:text-blue-400" />
+            <ArrowLeft className="h-4 w-4 text-primary" />
             <span>{backLabel || "Kembali ke Komunitas"}</span>
           </Link>
         </div>
@@ -414,34 +414,34 @@ export function RekapDataAnakClientView({
       {/* 1. BREADCRUMB & TOP HERO HEADER                           */}
       {/* ========================================================= */}
       <div className="space-y-3 print-hide-on-daftar-nama">
-        <nav className="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
-          <Link href="/" className="hover:text-emerald-600 transition-colors flex items-center gap-1">
+        <nav className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
+          <Link href="/" className="hover:text-primary transition-colors flex items-center gap-1">
             <span>Beranda</span>
           </Link>
-          <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
-          <span className="text-slate-900 dark:text-slate-200 font-bold">
+          <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/60" />
+          <span className="text-foreground font-bold">
             {customScopeTitle || "Pantau Pendataan Anak Usia Dini"}
           </span>
         </nav>
 
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-br from-slate-900 via-slate-800 to-teal-950 p-6 sm:p-8 rounded-3xl text-white shadow-xl shadow-slate-950/10 border border-slate-700/50 relative overflow-hidden print-card-item break-inside-avoid">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-br from-teal-950 via-teal-900 to-slate-900 p-6 sm:p-7 rounded-lg text-white shadow-sm border border-teal-800/40 relative overflow-hidden print-card-item break-inside-avoid">
           {/* Background Glow */}
           <div className="absolute -right-16 -top-16 w-64 h-64 bg-teal-500/10 rounded-full blur-3xl pointer-events-none print:hidden" />
-          <div className="absolute -left-16 -bottom-16 w-64 h-64 bg-sky-500/10 rounded-full blur-3xl pointer-events-none print:hidden" />
+          <div className="absolute -left-16 -bottom-16 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl pointer-events-none print:hidden" />
 
           <div className="space-y-2 relative z-10 max-w-2xl">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="rounded-full bg-emerald-500/20 border border-emerald-400/30 px-3 py-0.5 text-xs font-black text-emerald-300 tracking-wide uppercase">
+              <span className="rounded-full bg-secondary/20 border border-secondary/40 px-3 py-0.5 text-xs font-black text-amber-300 tracking-wide uppercase">
                 {customScopeTitle ? `BERJENJANG: ${customScopeTitle.toUpperCase()}` : "BERJENJANG KOTA TEGAL"}
               </span>
               <span className="text-xs text-slate-300 font-medium">
                 Pembaruan: {initialData.lastUpdated}
               </span>
             </div>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight leading-tight text-white">
+            <h1 className="text-2xl sm:text-3xl font-black tracking-tight leading-tight text-white">
               Rekapitulasi Hasil Pendataan Anak Usia Dini (0–6 Tahun)
             </h1>
-            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+            <p className="text-xs sm:text-sm text-teal-100/80 leading-relaxed">
               Pemantauan berjenjang tingkat Kota Tegal, 4 Kecamatan, dan 27 Kelurahan mencakup sebaran anak bersekolah (TK, RA, KB, SPS, TPA, SKB, PKBM), kelompok umur, jenis kelamin, serta analisis alasan bersekolah dan tidak bersekolah.
             </p>
           </div>
@@ -450,12 +450,12 @@ export function RekapDataAnakClientView({
             <button
               type="button"
               onClick={() => window.print()}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/20 text-xs font-bold text-white transition-all cursor-pointer backdrop-blur-md active:scale-98 shadow-sm"
+              className="inline-flex min-h-[44px] items-center gap-2 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 border border-white/20 text-xs font-bold text-white transition-all cursor-pointer backdrop-blur-md active:scale-98 shadow-xs"
             >
-              <Printer className="h-4 w-4 text-teal-300" />
+              <Printer className="h-4 w-4 text-amber-300" />
               <span>Cetak Rekap</span>
             </button>
-            <div className="text-2xs text-slate-400 font-medium hidden md:block">
+            <div className="text-2xs text-teal-200/70 font-medium hidden md:block">
               {initialData.totalLiveRecords} data tercatat di database
             </div>
           </div>
@@ -465,39 +465,39 @@ export function RekapDataAnakClientView({
       {/* ========================================================= */}
       {/* 2. LEVEL SELECTOR CONTROLS (KOTA / KECAMATAN / KELURAHAN) */}
       {/* ========================================================= */}
-      <div className="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-3xl border-2 border-slate-200 dark:border-slate-800 shadow-xs space-y-4 print-hide-on-daftar-nama print-card-item break-inside-avoid print:p-3 print:space-y-0 print:border-slate-300 print:rounded-2xl">
+      <div className="bg-card p-4 sm:p-5 rounded-lg border border-border shadow-sm space-y-4 print-hide-on-daftar-nama print-card-item break-inside-avoid print:p-3 print:space-y-0 print:border-border">
         {!hideTingkatSelector && (
           <div className="space-y-3.5 print:hidden">
             {/* Header / Selector Label */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
               <div className="flex items-center gap-2">
-                <div className="p-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-800/50">
+                <div className="p-1.5 rounded-lg bg-primary/10 text-primary border border-primary/20">
                   <Layers className="h-4 w-4" />
                 </div>
                 <div>
-                  <span className="text-2xs font-black uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                  <span className="text-2xs font-black uppercase tracking-wider text-muted-foreground">
                     Filter Tingkat Analisis
                   </span>
-                  <h3 className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-slate-100">
+                  <h3 className="text-xs sm:text-sm font-extrabold text-foreground">
                     Pilih Cakupan Wilayah Rekapitulasi
                   </h3>
                 </div>
               </div>
-              <span className="text-2xs text-slate-400 dark:text-slate-500 font-medium">
+              <span className="text-2xs text-muted-foreground font-medium">
                 Pilih tingkat agregasi untuk memperbarui grafik &amp; data
               </span>
             </div>
 
             {/* Level Hierarchy Buttons (Grid 3 Cols, Zero Overflow, No Scrollbar) */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 p-1.5 bg-slate-100/80 dark:bg-slate-800/60 rounded-2xl border border-slate-200/80 dark:border-slate-700/80">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 p-1.5 bg-muted/60 rounded-lg border border-border">
               <button
                 type="button"
                 onClick={() => setSelectedTingkat("kota")}
                 className={cn(
-                  "py-2.5 px-3 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-2 cursor-pointer border",
+                  "py-2 px-3 rounded-md text-xs font-black transition-all flex items-center justify-center gap-2 cursor-pointer border",
                   selectedTingkat === "kota"
-                    ? "bg-slate-900 text-white border-slate-900 dark:bg-emerald-600 dark:border-emerald-600 shadow-xs"
-                    : "bg-transparent border-transparent text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-white/80 dark:hover:bg-slate-700/60"
+                    ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                    : "bg-transparent border-transparent text-muted-foreground hover:text-foreground hover:bg-card"
                 )}
               >
                 <span>🏢</span>
@@ -508,10 +508,10 @@ export function RekapDataAnakClientView({
                 type="button"
                 onClick={() => setSelectedTingkat("kecamatan")}
                 className={cn(
-                  "py-2.5 px-3 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-2 cursor-pointer border",
+                  "py-2 px-3 rounded-md text-xs font-black transition-all flex items-center justify-center gap-2 cursor-pointer border",
                   selectedTingkat === "kecamatan"
-                    ? "bg-blue-600 text-white border-blue-600 shadow-xs"
-                    : "bg-transparent border-transparent text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white/80 dark:hover:bg-slate-700/60"
+                    ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                    : "bg-transparent border-transparent text-muted-foreground hover:text-foreground hover:bg-card"
                 )}
               >
                 <span>🏛️</span>
@@ -522,10 +522,10 @@ export function RekapDataAnakClientView({
                 type="button"
                 onClick={() => setSelectedTingkat("kelurahan")}
                 className={cn(
-                  "py-2.5 px-3 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-2 cursor-pointer border",
+                  "py-2 px-3 rounded-md text-xs font-black transition-all flex items-center justify-center gap-2 cursor-pointer border",
                   selectedTingkat === "kelurahan"
-                    ? "bg-emerald-600 text-white border-emerald-600 shadow-xs"
-                    : "bg-transparent border-transparent text-slate-600 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-white/80 dark:hover:bg-slate-700/60"
+                    ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                    : "bg-transparent border-transparent text-muted-foreground hover:text-foreground hover:bg-card"
                 )}
               >
                 <span>🏘️</span>
@@ -535,13 +535,13 @@ export function RekapDataAnakClientView({
 
             {/* Sub-Filters: Dedicated Panel for Kecamatan */}
             {selectedTingkat === "kecamatan" && (
-              <div className="p-3.5 sm:p-4 rounded-2xl bg-blue-50/70 dark:bg-blue-950/25 border-2 border-blue-200/80 dark:border-blue-900/50 space-y-2.5">
+              <div className="p-3.5 sm:p-4 rounded-lg bg-primary/5 border border-primary/20 space-y-2.5">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-                  <span className="text-xs font-extrabold text-blue-900 dark:text-blue-200 flex items-center gap-1.5">
-                    <MapPin className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+                  <span className="text-xs font-extrabold text-foreground flex items-center gap-1.5">
+                    <MapPin className="h-3.5 w-3.5 text-primary" />
                     Pilih Kecamatan:
                   </span>
-                  <span className="text-2xs text-slate-500 dark:text-slate-400 font-medium">
+                  <span className="text-2xs text-muted-foreground font-medium">
                     Klik salah satu kecamatan untuk melihat data spesifik
                   </span>
                 </div>
@@ -553,10 +553,10 @@ export function RekapDataAnakClientView({
                       type="button"
                       onClick={() => setSelectedKecamatan(kec)}
                       className={cn(
-                        "px-3 py-2.5 rounded-xl text-xs font-extrabold transition-all text-center border-2 cursor-pointer flex items-center justify-center gap-1.5",
+                        "px-3 py-2 rounded-md text-xs font-extrabold transition-all text-center border cursor-pointer flex items-center justify-center gap-1.5",
                         selectedKecamatan === kec
-                          ? "bg-blue-600 text-white border-blue-600 shadow-xs"
-                          : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-blue-300 hover:bg-blue-50/50 dark:hover:bg-slate-700/60"
+                          ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                          : "bg-card text-foreground border-border hover:border-primary/40 hover:bg-primary/5"
                       )}
                     >
                       <span>Kec. {kec}</span>
@@ -568,13 +568,13 @@ export function RekapDataAnakClientView({
 
             {/* Sub-Filters: Dedicated 2-Step Panel for Kelurahan */}
             {selectedTingkat === "kelurahan" && (
-              <div className="p-3.5 sm:p-4 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/25 border-2 border-emerald-200/80 dark:border-emerald-900/50 space-y-3">
+              <div className="p-3.5 sm:p-4 rounded-lg bg-primary/5 border border-primary/20 space-y-3">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-                  <span className="text-xs font-extrabold text-emerald-900 dark:text-emerald-200 flex items-center gap-1.5">
-                    <MapPin className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                  <span className="text-xs font-extrabold text-foreground flex items-center gap-1.5">
+                    <MapPin className="h-3.5 w-3.5 text-primary" />
                     Filter Wilayah Kelurahan:
                   </span>
-                  <span className="text-2xs text-slate-500 dark:text-slate-400 font-medium">
+                  <span className="text-2xs text-muted-foreground font-medium">
                     Langkah 1: Tentukan Kecamatan &bull; Langkah 2: Pilih Kelurahan
                   </span>
                 </div>
@@ -582,8 +582,8 @@ export function RekapDataAnakClientView({
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 items-end">
                   {/* Step 1: Pilih Kecamatan */}
                   <div className="lg:col-span-7 space-y-1.5">
-                    <label className="text-2xs font-black uppercase tracking-wider text-slate-600 dark:text-slate-400 flex items-center gap-1.5">
-                      <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-emerald-600 text-white text-[10px] font-black">
+                    <label className="text-2xs font-black uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                      <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-primary text-primary-foreground text-[10px] font-black">
                         1
                       </span>
                       <span>Kecamatan:</span>
@@ -599,10 +599,10 @@ export function RekapDataAnakClientView({
                             if (firstKel) setSelectedKelurahan(firstKel.nama);
                           }}
                           className={cn(
-                            "px-2.5 py-2 rounded-xl text-2xs font-extrabold transition-all text-center border-2 truncate cursor-pointer",
+                            "px-2.5 py-1.5 rounded-md text-2xs font-extrabold transition-all text-center border truncate cursor-pointer",
                             selectedKecamatan === kec
-                              ? "bg-emerald-700 text-white border-emerald-700 shadow-xs"
-                              : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-emerald-300 hover:bg-emerald-50/50 dark:hover:bg-slate-700/60"
+                              ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                              : "bg-card text-foreground border-border hover:border-primary/40 hover:bg-primary/5"
                           )}
                         >
                           {kec}
@@ -613,14 +613,14 @@ export function RekapDataAnakClientView({
 
                   {/* Step 2: Pilih Kelurahan */}
                   <div className="lg:col-span-5 space-y-1.5">
-                    <div className="flex items-center justify-between text-2xs font-black uppercase tracking-wider text-slate-600 dark:text-slate-400">
+                    <div className="flex items-center justify-between text-2xs font-black uppercase tracking-wider text-muted-foreground">
                       <label className="flex items-center gap-1.5">
-                        <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-emerald-600 text-white text-[10px] font-black">
+                        <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-primary text-primary-foreground text-[10px] font-black">
                           2
                         </span>
                         <span>Kelurahan ({selectedKecamatan}):</span>
                       </label>
-                      <span className="text-emerald-700 dark:text-emerald-400 font-extrabold">
+                      <span className="text-primary font-extrabold">
                         {daftarKelurahanInSelectedKecamatan.length} Kel.
                       </span>
                     </div>
@@ -628,7 +628,7 @@ export function RekapDataAnakClientView({
                       <select
                         value={selectedKelurahan}
                         onChange={(e) => setSelectedKelurahan(e.target.value)}
-                        className="w-full bg-white dark:bg-slate-800 border-2 border-emerald-300 dark:border-emerald-700 text-slate-900 dark:text-slate-100 text-xs font-bold rounded-xl px-3.5 py-2.5 focus:outline-hidden focus:border-emerald-500 cursor-pointer shadow-xs appearance-none pr-9 transition-colors"
+                        className="w-full bg-background border border-border text-foreground text-xs font-bold rounded-lg px-3.5 py-2.5 focus:outline-hidden focus:border-primary cursor-pointer shadow-xs appearance-none pr-9 transition-colors"
                       >
                         {daftarKelurahanInSelectedKecamatan.map((kel) => (
                           <option key={kel.nama} value={kel.nama}>
@@ -636,7 +636,7 @@ export function RekapDataAnakClientView({
                           </option>
                         ))}
                       </select>
-                      <ChevronDown className="h-4 w-4 text-emerald-600 dark:text-emerald-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                      <ChevronDown className="h-4 w-4 text-primary absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                     </div>
                   </div>
                 </div>
@@ -646,11 +646,11 @@ export function RekapDataAnakClientView({
         )}
 
         {/* Selected Wilayah Indicator Badge */}
-        <div className="flex items-center justify-between pt-2.5 border-t border-slate-100 dark:border-slate-800 flex-wrap gap-2 text-xs print:pt-0 print:border-none">
+        <div className="flex items-center justify-between pt-2.5 border-t border-border flex-wrap gap-2 text-xs print:pt-0 print:border-none">
           <div className="flex items-center gap-2">
-            <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse print:hidden" />
-            <span className="font-bold text-slate-500 dark:text-slate-400">Wilayah Aktif:</span>
-            <strong className="text-sm font-black text-slate-900 dark:text-slate-100">
+            <span className="h-2.5 w-2.5 rounded-full bg-primary animate-pulse print:hidden" />
+            <span className="font-bold text-muted-foreground">Wilayah Aktif:</span>
+            <strong className="text-sm font-black text-foreground">
               {currentWilayahData.tingkat === "kota" && "Seluruh Wilayah Kota Tegal"}
               {currentWilayahData.tingkat === "kecamatan" && `Kecamatan ${currentWilayahData.nama}, Kota Tegal`}
               {currentWilayahData.tingkat === "kelurahan" && (
@@ -662,20 +662,20 @@ export function RekapDataAnakClientView({
             </strong>
           </div>
 
-          <div className="flex items-center gap-2 text-2xs font-bold text-slate-500">
+          <div className="flex items-center gap-2 text-2xs font-bold text-muted-foreground">
             <span>Cakupan: {initialRw ? `RW ${initialRw} (Kel. ${currentWilayahData.nama})` : "4 Kecamatan (27 Kelurahan)"}</span>
           </div>
         </div>
       </div>
 
       {/* Ketentuan Privasi & Tingkat Data Rekapitulasi */}
-      <div className="rounded-2xl border-2 border-blue-200 dark:border-blue-900 bg-blue-50/70 dark:bg-blue-950/30 p-4 sm:p-5 flex items-start gap-3 shadow-xs print-hide-on-daftar-nama print-card-item break-inside-avoid print:p-3">
-        <ShieldCheck className="h-5 w-5 text-blue-700 dark:text-blue-400 shrink-0 mt-0.5" />
+      <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 sm:p-4.5 flex items-start gap-3 shadow-xs print-hide-on-daftar-nama print-card-item break-inside-avoid print:p-3">
+        <ShieldCheck className="h-5 w-5 text-primary shrink-0 mt-0.5" />
         <div className="space-y-1">
-          <h4 className="text-sm sm:text-base font-bold text-blue-950 dark:text-blue-200">
+          <h4 className="text-sm sm:text-base font-bold text-foreground">
             Data Rekapitulasi Wilayah &amp; Perlindungan Privasi Anak
           </h4>
-          <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
+          <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
             Data yang ditampilkan pada halaman ini adalah <strong>Data Rekapitulasi Berjenjang</strong>. Sesuai ketentuan perlindungan privasi data, rincian identitas lengkap hanya dapat diakses di <strong>Tingkat KELURAHAN</strong> oleh <strong>Admin di Komunitas Warga Kita</strong>, <strong>Admin PAUD</strong>, <strong>Admin Posyandu</strong> dan <strong>Admin PKBM dan SKB</strong>.
           </p>
         </div>
@@ -686,46 +686,46 @@ export function RekapDataAnakClientView({
       {/* ========================================================= */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 print-hide-on-daftar-nama print-metric-grid break-inside-avoid">
         {/* Card 1: Total Anak Usia Dini */}
-        <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 space-y-2 shadow-xs hover:border-slate-300 transition-colors print-card-item break-inside-avoid print:p-3.5 print:rounded-2xl">
+        <div className="rounded-lg border border-border bg-card p-4 sm:p-5 space-y-2 shadow-sm hover:border-primary/40 transition-colors print-card-item break-inside-avoid print:p-3.5">
           <div className="flex items-center justify-between">
-            <span className="text-2xs sm:text-xs font-black text-slate-500 uppercase tracking-wider">
+            <span className="text-2xs sm:text-xs font-black text-muted-foreground uppercase tracking-wider">
               TOTAL ANAK (0–6 THN)
             </span>
-            <div className="h-8 w-8 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center">
+            <div className="h-8 w-8 rounded-lg bg-muted text-muted-foreground flex items-center justify-center">
               <Baby className="h-4 w-4" />
             </div>
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-2xl sm:text-3xl font-black font-mono text-slate-900 dark:text-slate-100">
+            <span className="text-2xl sm:text-3xl font-black font-mono text-foreground">
               {currentWilayahData.totalAnak.toLocaleString("id-ID")}
             </span>
-            <span className="text-xs font-bold text-slate-500">Jiwa</span>
+            <span className="text-xs font-bold text-muted-foreground">Jiwa</span>
           </div>
-          <div className="flex items-center justify-between text-2xs font-bold text-slate-500 border-t border-slate-100 dark:border-slate-800 pt-2">
+          <div className="flex items-center justify-between text-2xs font-bold text-muted-foreground border-t border-border pt-2">
             <span>Laki-laki: {currentWilayahData.bersekolahGender.lakiLaki + currentWilayahData.tidakBersekolahGender.lakiLaki}</span>
             <span>Perempuan: {currentWilayahData.bersekolahGender.perempuan + currentWilayahData.tidakBersekolahGender.perempuan}</span>
           </div>
         </div>
 
         {/* Card 2: Anak Bersekolah */}
-        <div className="rounded-3xl border-2 border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/20 p-5 space-y-2 shadow-xs hover:border-emerald-300 transition-colors print-card-item break-inside-avoid print:p-3.5 print:rounded-2xl">
+        <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 sm:p-5 space-y-2 shadow-sm hover:border-primary/40 transition-colors print-card-item break-inside-avoid print:p-3.5">
           <div className="flex items-center justify-between">
-            <span className="text-2xs sm:text-xs font-black text-emerald-800 dark:text-emerald-300 uppercase tracking-wider">
+            <span className="text-2xs sm:text-xs font-black text-primary uppercase tracking-wider">
               ANAK BERSEKOLAH (PAUD)
             </span>
-            <div className="h-8 w-8 rounded-xl bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300 flex items-center justify-center">
+            <div className="h-8 w-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
               <GraduationCap className="h-4 w-4" />
             </div>
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-2xl sm:text-3xl font-black font-mono text-emerald-700 dark:text-emerald-400">
+            <span className="text-2xl sm:text-3xl font-black font-mono text-primary">
               {currentWilayahData.totalBersekolah.toLocaleString("id-ID")}
             </span>
-            <span className="text-xs font-bold text-emerald-800 dark:text-emerald-300">
+            <span className="text-xs font-bold text-primary/80">
               ({currentWilayahData.persenBersekolah}%)
             </span>
           </div>
-          <div className="flex items-center justify-between text-2xs font-bold text-emerald-800 dark:text-emerald-300 border-t border-emerald-100 dark:border-emerald-900/40 pt-2">
+          <div className="flex items-center justify-between text-2xs font-bold text-primary/80 border-t border-primary/15 pt-2">
             <span>L: {currentWilayahData.bersekolahGender.lakiLaki}</span>
             <span>P: {currentWilayahData.bersekolahGender.perempuan}</span>
             <span>TK/RA/KB/SPS</span>
@@ -733,55 +733,55 @@ export function RekapDataAnakClientView({
         </div>
 
         {/* Card 3: Belum / Tidak Bersekolah */}
-        <div className="rounded-3xl border-2 border-blue-200 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-950/20 p-5 space-y-2 shadow-xs hover:border-blue-300 transition-colors print-card-item break-inside-avoid print:p-3.5 print:rounded-2xl">
+        <div className="rounded-lg border border-border bg-card p-4 sm:p-5 space-y-2 shadow-sm hover:border-primary/40 transition-colors print-card-item break-inside-avoid print:p-3.5">
           <div className="flex items-center justify-between">
-            <span className="text-2xs sm:text-xs font-black text-blue-800 dark:text-blue-300 uppercase tracking-wider">
+            <span className="text-2xs sm:text-xs font-black text-muted-foreground uppercase tracking-wider">
               BELUM / TIDAK BERSEKOLAH
             </span>
-            <div className="h-8 w-8 rounded-xl bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 flex items-center justify-center">
+            <div className="h-8 w-8 rounded-lg bg-muted text-muted-foreground flex items-center justify-center">
               <HeartHandshake className="h-4 w-4" />
             </div>
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-2xl sm:text-3xl font-black font-mono text-blue-700 dark:text-blue-400">
+            <span className="text-2xl sm:text-3xl font-black font-mono text-foreground">
               {currentWilayahData.totalTidakBersekolah.toLocaleString("id-ID")}
             </span>
-            <span className="text-xs font-bold text-blue-800 dark:text-blue-300">
+            <span className="text-xs font-bold text-muted-foreground">
               ({currentWilayahData.persenTidakBersekolah}%)
             </span>
           </div>
-          <div className="flex items-center justify-between text-2xs font-bold text-blue-800 dark:text-blue-300 border-t border-blue-100 dark:border-blue-900/40 pt-2">
+          <div className="flex items-center justify-between text-2xs font-bold text-muted-foreground border-t border-border pt-2">
             <span>L: {currentWilayahData.tidakBersekolahGender.lakiLaki}</span>
             <span>P: {currentWilayahData.tidakBersekolahGender.perempuan}</span>
-            <span>Didominasi Balita &lt;3 Thn</span>
+            <span>Balita &lt;3 Thn</span>
           </div>
         </div>
 
         {/* Card 4: Angka Partisipasi PAUD */}
-        <div className="rounded-3xl border-2 border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-950/20 p-5 space-y-2 shadow-xs hover:border-amber-300 transition-colors print-card-item break-inside-avoid print:p-3.5 print:rounded-2xl">
+        <div className="rounded-lg border border-secondary/30 bg-secondary/5 p-4 sm:p-5 space-y-2 shadow-sm hover:border-secondary/50 transition-colors print-card-item break-inside-avoid print:p-3.5">
           <div className="flex items-center justify-between">
-            <span className="text-2xs sm:text-xs font-black text-amber-900 dark:text-amber-300 uppercase tracking-wider">
+            <span className="text-2xs sm:text-xs font-black text-secondary-foreground uppercase tracking-wider">
               ANGKA PARTISIPASI PAUD
             </span>
-            <div className="h-8 w-8 rounded-xl bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-300 flex items-center justify-center">
+            <div className="h-8 w-8 rounded-lg bg-secondary/15 text-secondary-foreground flex items-center justify-center">
               <TrendingUp className="h-4 w-4" />
             </div>
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-2xl sm:text-3xl font-black font-mono text-amber-700 dark:text-amber-400">
+            <span className="text-2xl sm:text-3xl font-black font-mono text-secondary-foreground">
               {currentWilayahData.persenBersekolah}%
             </span>
-            <span className="text-xs font-bold text-amber-800 dark:text-amber-300">Cakupan</span>
+            <span className="text-xs font-bold text-muted-foreground">Cakupan</span>
           </div>
-          <div className="flex items-center justify-between text-2xs font-bold text-amber-900 dark:text-amber-300 border-t border-amber-100 dark:border-amber-900/40 pt-2">
+          <div className="flex items-center justify-between text-2xs font-bold text-muted-foreground border-t border-secondary/20 pt-2">
             <span>Target Kota: &gt;75%</span>
             <span className={cn(
               "font-extrabold",
               currentWilayahData.totalAnak === 0
-                ? "text-slate-500"
+                ? "text-muted-foreground"
                 : currentWilayahData.persenBersekolah >= 75
-                ? "text-emerald-600 dark:text-emerald-400"
-                : "text-amber-600 dark:text-amber-400"
+                ? "text-primary"
+                : "text-secondary-foreground"
             )}>
               {currentWilayahData.totalAnak === 0 ? "Belum Ada Data" : currentWilayahData.persenBersekolah >= 75 ? "Optimal" : "Cukup"}
             </span>
@@ -792,15 +792,15 @@ export function RekapDataAnakClientView({
       {/* ========================================================= */}
       {/* 4. NAVIGATION SECTION TABS                                */}
       {/* ========================================================= */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 bg-slate-100 dark:bg-slate-800/80 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-700 print:hidden print-hide-on-daftar-nama">
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 bg-muted/60 p-1.5 rounded-lg border border-border print:hidden print-hide-on-daftar-nama">
         <button
           type="button"
           onClick={() => setActiveTabSection("semua")}
           className={cn(
-            "px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0",
+            "px-3.5 py-2 rounded-md text-xs font-bold transition-all cursor-pointer shrink-0 border",
             activeTabSection === "semua"
-              ? "bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-xs font-black"
-              : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
+              ? "bg-card text-foreground border-border shadow-xs font-black"
+              : "border-transparent text-muted-foreground hover:text-foreground"
           )}
         >
           📊 Ringkasan Visual Lengkap
@@ -810,39 +810,39 @@ export function RekapDataAnakClientView({
           type="button"
           onClick={() => setActiveTabSection("bersekolah")}
           className={cn(
-            "px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0",
+            "px-3.5 py-2 rounded-md text-xs font-bold transition-all cursor-pointer shrink-0 border",
             activeTabSection === "bersekolah"
-              ? "bg-emerald-600 text-white shadow-xs font-black"
-              : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
+              ? "bg-primary text-primary-foreground border-primary shadow-xs font-black"
+              : "border-transparent text-muted-foreground hover:text-foreground"
           )}
         >
-          🎓 Anak Bersekolah (TK/RA/KB/SPS/TPA/SKB/PKBM)
+          🎓 Anak Bersekolah (PAUD)
         </button>
 
         <button
           type="button"
           onClick={() => setActiveTabSection("tidak_sekolah")}
           className={cn(
-            "px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0",
+            "px-3.5 py-2 rounded-md text-xs font-bold transition-all cursor-pointer shrink-0 border",
             activeTabSection === "tidak_sekolah"
-              ? "bg-blue-600 text-white shadow-xs font-black"
-              : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
+              ? "bg-primary text-primary-foreground border-primary shadow-xs font-black"
+              : "border-transparent text-muted-foreground hover:text-foreground"
           )}
         >
-          🏠 Anak Belum / Tidak Bersekolah
+          🏠 Belum / Tidak Bersekolah
         </button>
 
         <button
           type="button"
           onClick={() => setActiveTabSection("tabel")}
           className={cn(
-            "px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0",
+            "px-3.5 py-2 rounded-md text-xs font-bold transition-all cursor-pointer shrink-0 border",
             activeTabSection === "tabel"
-              ? "bg-slate-900 text-white dark:bg-slate-700 shadow-xs font-black"
-              : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
+              ? "bg-card text-foreground border-border shadow-xs font-black"
+              : "border-transparent text-muted-foreground hover:text-foreground"
           )}
         >
-          📑 Tabel Rekapitulasi Berjenjang (27 Kelurahan)
+          📑 Tabel Berjenjang (27 Kelurahan)
         </button>
       </div>
 
@@ -853,14 +853,14 @@ export function RekapDataAnakClientView({
         <div className="space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 print-hide-on-daftar-nama print-section-header break-after-avoid">
             <div className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold">
+              <div className="h-8 w-8 rounded-lg bg-primary text-primary-foreground flex items-center justify-center font-bold">
                 <School className="h-4 w-4" />
               </div>
               <div>
-                <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-slate-100">
+                <h2 className="text-lg sm:text-xl font-black text-foreground">
                   Rekapitulasi Data Anak Bersekolah PAUD
                 </h2>
-                <p className="text-xs text-slate-500 font-medium">
+                <p className="text-xs text-muted-foreground font-medium">
                   Sebaran satuan pendidikan TK, RA, KB, SPS, TPA, SKB, PKBM, jenis kelamin, kelompok umur, dan alasan bersekolah.
                 </p>
               </div>
@@ -869,21 +869,21 @@ export function RekapDataAnakClientView({
               <button
                 type="button"
                 onClick={toggleAll}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition-all shadow-2xs cursor-pointer shrink-0 print:hidden"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-card hover:bg-muted text-foreground text-xs font-bold transition-all shadow-2xs cursor-pointer shrink-0 print:hidden"
               >
                 {isAllHidden ? (
                   <>
-                    <Eye className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
+                    <Eye className="h-3.5 w-3.5 text-primary" />
                     <span>Tampilkan Semua Grafik</span>
                   </>
                 ) : (
                   <>
-                    <EyeOff className="h-3.5 w-3.5 text-slate-500" />
+                    <EyeOff className="h-3.5 w-3.5 text-muted-foreground" />
                     <span>Sembunyikan Semua Grafik</span>
                   </>
                 )}
               </button>
-              <span className="hidden sm:inline-block text-xs font-extrabold px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 font-mono print:inline-block">
+              <span className="hidden sm:inline-block text-xs font-extrabold px-3 py-1.5 rounded-lg bg-primary/10 text-primary border border-primary/20 font-mono print:inline-block">
                 Total: {currentWilayahData.totalBersekolah} Anak
               </span>
             </div>
@@ -891,39 +891,39 @@ export function RekapDataAnakClientView({
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 print-hide-on-daftar-nama print-cards-grid">
             {/* 5.1 Grafik Distribusi Jenjang Institusi PAUD */}
-            <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-6 space-y-4 shadow-xs print-card-item break-inside-avoid print:p-5 print:rounded-2xl">
-              <div className="flex items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3.5">
+            <div className="rounded-lg border border-border bg-card p-5 sm:p-6 space-y-4 shadow-sm print-card-item break-inside-avoid">
+              <div className="flex items-center justify-between gap-3 border-b border-border pb-3.5">
                 <div className="flex items-center gap-2.5 min-w-0">
-                  <div className="h-8 w-8 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
-                    <PieChartIcon className="h-4.5 w-4.5" />
+                  <div className="h-8 w-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                    <PieChartIcon className="h-4 w-4" />
                   </div>
                   <div className="min-w-0">
-                    <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-slate-100 truncate">
+                    <h3 className="text-sm sm:text-base font-extrabold text-foreground truncate">
                       Distribusi Satuan Pendidikan Usia Dini
                     </h3>
-                    <p className="text-2xs sm:text-xs text-slate-500 font-medium truncate">
+                    <p className="text-2xs sm:text-xs text-muted-foreground font-medium truncate">
                       TK, RA, KB, SPS, TPA, SKB, &amp; PKBM se-wilayah
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
-                  <span className="text-2xs sm:text-xs font-black px-2.5 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 font-mono">
+                  <span className="text-2xs sm:text-xs font-black px-2.5 py-1 rounded-md bg-secondary/10 text-secondary-foreground border border-secondary/30 font-mono">
                     7 Satuan
                   </span>
                   <button
                     type="button"
                     onClick={() => toggleChart("satuan_paud")}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700 print:hidden"
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md border border-border bg-card text-foreground text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-muted print:hidden"
                     title={hiddenCharts.satuan_paud ? "Tampilkan Grafik" : "Sembunyikan Grafik"}
                   >
                     {hiddenCharts.satuan_paud ? (
                       <>
-                        <Eye className="h-3 w-3 text-indigo-600 dark:text-indigo-400" />
+                        <Eye className="h-3 w-3 text-primary" />
                         <span>Tampilkan</span>
                       </>
                     ) : (
                       <>
-                        <EyeOff className="h-3 w-3 text-slate-400" />
+                        <EyeOff className="h-3 w-3 text-muted-foreground" />
                         <span>Sembunyikan</span>
                       </>
                     )}
@@ -932,13 +932,13 @@ export function RekapDataAnakClientView({
               </div>
 
               {hiddenCharts.satuan_paud ? (
-                <div className="py-12 text-center text-xs text-slate-500 dark:text-slate-400 bg-slate-50/50 dark:bg-slate-800/40 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700 flex items-center justify-center gap-2">
-                  <EyeOff className="h-4 w-4 text-slate-400" />
+                <div className="py-12 text-center text-xs text-muted-foreground bg-muted/40 rounded-lg border border-dashed border-border flex items-center justify-center gap-2">
+                  <EyeOff className="h-4 w-4 text-muted-foreground" />
                   <span>Grafik satuan pendidikan usia dini disembunyikan.</span>
                   <button
                     type="button"
                     onClick={() => toggleChart("satuan_paud")}
-                    className="font-bold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
+                    className="font-bold text-primary hover:underline cursor-pointer"
                   >
                     Tampilkan kembali
                   </button>
@@ -952,20 +952,20 @@ export function RekapDataAnakClientView({
                   return (
                     <div key={item.key} className="space-y-1">
                       <div className="flex items-center justify-between text-xs font-bold">
-                        <span className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
+                        <span className="flex items-center gap-2 text-foreground">
                           <span className={cn("inline-block h-2.5 w-2.5 rounded-full", conf.bg)} />
                           <span>{conf.label}</span>
                         </span>
                         <div className="flex items-center gap-2 font-mono">
-                          <span className="text-slate-900 dark:text-slate-100 font-black">
+                          <span className="text-foreground font-black">
                             {item.count.toLocaleString("id-ID")}
                           </span>
-                          <span className="text-2xs text-slate-500">
+                          <span className="text-2xs text-muted-foreground">
                             ({item.pct}%)
                           </span>
                         </div>
                       </div>
-                      <div className="h-3 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800 p-0.5">
+                      <div className="h-3 w-full overflow-hidden rounded-full bg-muted p-0.5">
                         <div
                           className={cn("h-full rounded-full transition-all duration-700", conf.bg)}
                           style={{ width: `${item.count > 0 ? Math.max(2, item.pct) : 0}%` }}
@@ -977,11 +977,11 @@ export function RekapDataAnakClientView({
               </div>
 
               {/* Total Jenjang Strip Bar */}
-              <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-2">
-                <span className="text-2xs font-black text-slate-400 uppercase tracking-wider block">
+              <div className="pt-2 border-t border-border space-y-2">
+                <span className="text-2xs font-black text-muted-foreground uppercase tracking-wider block">
                   KOMPOSISI KONTRIBUSI JENJANG
                 </span>
-                <div className="h-4 w-full flex rounded-xl overflow-hidden shadow-inner">
+                <div className="h-4 w-full flex rounded-md overflow-hidden shadow-xs">
                   {jenjangEntries.map((item) => {
                     const conf = JENJANG_COLORS[item.key];
                     if (item.pct <= 0) return null;
@@ -1001,39 +1001,39 @@ export function RekapDataAnakClientView({
             </div>
 
             {/* 5.2 Grafik Kelompok Umur & Gender Anak Bersekolah */}
-            <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-6 space-y-4 shadow-xs print-card-item break-inside-avoid print:p-5 print:rounded-2xl">
-              <div className="flex items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3.5">
+            <div className="rounded-lg border border-border bg-card p-5 sm:p-6 space-y-4 shadow-sm print-card-item break-inside-avoid">
+              <div className="flex items-center justify-between gap-3 border-b border-border pb-3.5">
                 <div className="flex items-center gap-2.5 min-w-0">
-                  <div className="h-8 w-8 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
-                    <BarChart3 className="h-4.5 w-4.5" />
+                  <div className="h-8 w-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                    <BarChart3 className="h-4 w-4" />
                   </div>
                   <div className="min-w-0">
-                    <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-slate-100 truncate">
+                    <h3 className="text-sm sm:text-base font-extrabold text-foreground truncate">
                       Kelompok Umur &amp; Gender (Bersekolah)
                     </h3>
-                    <p className="text-2xs sm:text-xs text-slate-500 font-medium truncate">
+                    <p className="text-2xs sm:text-xs text-muted-foreground font-medium truncate">
                       Rentang usia 0–6 tahun dan rasio jenis kelamin
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
-                  <span className="text-2xs sm:text-xs font-black px-2.5 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 font-mono">
+                  <span className="text-2xs sm:text-xs font-black px-2.5 py-1 rounded-md bg-secondary/10 text-secondary-foreground border border-secondary/30 font-mono">
                     0–6 Thn
                   </span>
                   <button
                     type="button"
                     onClick={() => toggleChart("umur_gender_bersekolah")}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700 print:hidden"
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md border border-border bg-card text-foreground text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-muted print:hidden"
                     title={hiddenCharts.umur_gender_bersekolah ? "Tampilkan Grafik" : "Sembunyikan Grafik"}
                   >
                     {hiddenCharts.umur_gender_bersekolah ? (
                       <>
-                        <Eye className="h-3 w-3 text-indigo-600 dark:text-indigo-400" />
+                        <Eye className="h-3 w-3 text-primary" />
                         <span>Tampilkan</span>
                       </>
                     ) : (
                       <>
-                        <EyeOff className="h-3 w-3 text-slate-400" />
+                        <EyeOff className="h-3 w-3 text-muted-foreground" />
                         <span>Sembunyikan</span>
                       </>
                     )}
@@ -1042,13 +1042,13 @@ export function RekapDataAnakClientView({
               </div>
 
               {hiddenCharts.umur_gender_bersekolah ? (
-                <div className="py-12 text-center text-xs text-slate-500 dark:text-slate-400 bg-slate-50/50 dark:bg-slate-800/40 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700 flex items-center justify-center gap-2">
-                  <EyeOff className="h-4 w-4 text-slate-400" />
+                <div className="py-12 text-center text-xs text-muted-foreground bg-muted/40 rounded-lg border border-dashed border-border flex items-center justify-center gap-2">
+                  <EyeOff className="h-4 w-4 text-muted-foreground" />
                   <span>Grafik kelompok umur &amp; jenis kelamin disembunyikan.</span>
                   <button
                     type="button"
                     onClick={() => toggleChart("umur_gender_bersekolah")}
-                    className="font-bold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
+                    className="font-bold text-primary hover:underline cursor-pointer"
                   >
                     Tampilkan kembali
                   </button>
@@ -1057,7 +1057,7 @@ export function RekapDataAnakClientView({
                 <>
 
               {/* Gender Comparison Pill */}
-              <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-2">
+              <div className="p-3.5 rounded-lg bg-muted/50 border border-border space-y-2">
                 <div className="flex items-center justify-between text-xs font-extrabold">
                   <span className="text-sky-700 dark:text-sky-400 flex items-center gap-1.5">
                     <span className="h-2.5 w-2.5 rounded-full bg-sky-500" />
@@ -1070,7 +1070,7 @@ export function RekapDataAnakClientView({
                     {Math.round((currentWilayahData.bersekolahGender.perempuan / (currentWilayahData.totalBersekolah || 1)) * 100)}%)
                   </span>
                 </div>
-                <div className="h-3 w-full flex rounded-full overflow-hidden bg-slate-200 dark:bg-slate-700">
+                <div className="h-3 w-full flex rounded-full overflow-hidden bg-muted">
                   <div
                     className="bg-sky-500 h-full transition-all"
                     style={{
@@ -1088,7 +1088,7 @@ export function RekapDataAnakClientView({
 
               {/* Age Histogram Breakdown */}
               <div className="space-y-2.5">
-                <span className="text-2xs font-black text-slate-400 uppercase tracking-wider block">
+                <span className="text-2xs font-black text-muted-foreground uppercase tracking-wider block">
                   DISTRIBUSI KELOMPOK UMUR ANAK BERSEKOLAH
                 </span>
 
@@ -1104,12 +1104,12 @@ export function RekapDataAnakClientView({
                   return (
                     <div key={idx} className="space-y-1">
                       <div className="flex items-center justify-between text-xs font-bold">
-                        <span className="text-slate-700 dark:text-slate-300">{ageRow.label}</span>
-                        <span className="font-mono text-slate-900 dark:text-slate-100">
+                        <span className="text-foreground">{ageRow.label}</span>
+                        <span className="font-mono text-foreground">
                           {ageRow.count} ({pct}%)
                         </span>
                       </div>
-                      <div className="h-2.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                      <div className="h-2.5 w-full bg-muted rounded-full overflow-hidden">
                         <div
                           className={cn("h-full rounded-full transition-all", ageRow.color)}
                           style={{ width: `${Math.max(1, pct)}%` }}
@@ -1128,18 +1128,18 @@ export function RekapDataAnakClientView({
           {/* DIAGRAM BATANG TEGAK PANJANG: SEBARAN SATUAN PAUD         */}
           {/* PER RENTANG USIA 0 - 6 TAHUN (TK, RA, KB, SPS, TPA, DLL) */}
           {/* ========================================================= */}
-          <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-6 shadow-xs print-card-item break-inside-avoid print:p-5 print:rounded-2xl">
+          <div className="rounded-lg border border-border bg-card p-5 sm:p-6 space-y-6 shadow-sm print-card-item break-inside-avoid">
             {/* Header Card */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border pb-4">
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-bold shrink-0 shadow-sm">
+                <div className="h-10 w-10 rounded-lg bg-primary text-primary-foreground flex items-center justify-center font-bold shrink-0 shadow-xs">
                   <BarChart2 className="h-5 w-5" />
                 </div>
                 <div>
-                  <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                  <h3 className="text-base sm:text-lg font-black text-foreground flex items-center gap-2">
                     Sebaran Satuan PAUD per Rentang Usia (0–6 Tahun)
                   </h3>
-                  <p className="text-xs text-slate-500 font-medium">
+                  <p className="text-xs text-muted-foreground font-medium">
                     Diagram batang tegak rincian jumlah data anak di tiap rentang usia (0–6 tahun) pada satuan TK, RA, KB, SPS, TPA, PKBM, dan SKB.
                   </p>
                 </div>
@@ -1149,45 +1149,45 @@ export function RekapDataAnakClientView({
                 <button
                   type="button"
                   onClick={() => toggleChart("sebaran_usia_satuan")}
-                  className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700"
+                  className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md border border-border bg-card text-foreground text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-muted"
                   title={hiddenCharts.sebaran_usia_satuan ? "Tampilkan Grafik" : "Sembunyikan Grafik"}
                 >
                   {hiddenCharts.sebaran_usia_satuan ? (
                     <>
-                      <Eye className="h-3 w-3 text-indigo-600 dark:text-indigo-400" />
+                      <Eye className="h-3 w-3 text-primary" />
                       <span>Tampilkan</span>
                     </>
                   ) : (
                     <>
-                      <EyeOff className="h-3 w-3 text-slate-500" />
+                      <EyeOff className="h-3 w-3 text-muted-foreground" />
                       <span>Sembunyikan</span>
                     </>
                   )}
                 </button>
 
                 {/* View Switcher: Diagram vs Matriks Tabel */}
-                <div className="flex items-center gap-1.5 p-1 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                <div className="flex items-center gap-1.5 p-1 rounded-md bg-muted/60 border border-border">
                   <button
                     type="button"
                     onClick={() => setViewModeDiagramUsia("diagram")}
                     className={cn(
-                      "px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5",
+                      "px-3 py-1.5 rounded text-xs font-bold transition-all flex items-center gap-1.5",
                       viewModeDiagramUsia === "diagram"
-                        ? "bg-white dark:bg-slate-900 text-indigo-700 dark:text-indigo-400 shadow-xs"
-                        : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
+                        ? "bg-card text-foreground shadow-xs font-black"
+                        : "text-muted-foreground hover:text-foreground"
                     )}
                   >
                     <BarChart3 className="h-3.5 w-3.5" />
-                    Diagram Batang Tegak
+                    Diagram Batang
                   </button>
                   <button
                     type="button"
                     onClick={() => setViewModeDiagramUsia("matriks")}
                     className={cn(
-                      "px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5",
+                      "px-3 py-1.5 rounded text-xs font-bold transition-all flex items-center gap-1.5",
                       viewModeDiagramUsia === "matriks"
-                        ? "bg-white dark:bg-slate-900 text-indigo-700 dark:text-indigo-400 shadow-xs"
-                        : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
+                        ? "bg-card text-foreground shadow-xs font-black"
+                        : "text-muted-foreground hover:text-foreground"
                     )}
                   >
                     <TableIcon className="h-3.5 w-3.5" />
@@ -1198,13 +1198,13 @@ export function RekapDataAnakClientView({
             </div>
 
             {hiddenCharts.sebaran_usia_satuan ? (
-              <div className="py-16 text-center text-xs text-slate-500 dark:text-slate-400 bg-slate-50/50 dark:bg-slate-800/40 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700 flex items-center justify-center gap-2">
-                <EyeOff className="h-4 w-4 text-slate-400" />
+              <div className="py-16 text-center text-xs text-muted-foreground bg-muted/40 rounded-lg border border-dashed border-border flex items-center justify-center gap-2">
+                <EyeOff className="h-4 w-4 text-muted-foreground" />
                 <span>Grafik sebaran satuan PAUD per rentang usia disembunyikan.</span>
                 <button
                   type="button"
                   onClick={() => toggleChart("sebaran_usia_satuan")}
-                  className="font-bold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
+                  className="font-bold text-primary hover:underline cursor-pointer"
                 >
                   Tampilkan kembali
                 </button>
@@ -1213,7 +1213,7 @@ export function RekapDataAnakClientView({
               <>
                 {/* Interactive Legend Badges */}
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-2xs font-black uppercase tracking-wider text-slate-400 shrink-0 mr-1">
+              <span className="text-2xs font-black uppercase tracking-wider text-muted-foreground shrink-0 mr-1">
                 Bentuk Satuan PAUD:
               </span>
               {DAFTAR_SATUAN_PAUD_KEYS.map((s) => {
@@ -1224,13 +1224,13 @@ export function RekapDataAnakClientView({
                 return (
                   <div
                     key={s.key}
-                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs font-bold"
+                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-muted/50 border border-border text-xs font-bold"
                   >
                     <span className={cn("h-2.5 w-2.5 rounded-full shrink-0", s.bg)} />
-                    <span className="text-slate-700 dark:text-slate-300">
+                    <span className="text-foreground">
                       {s.shortLabel} ({s.label})
                     </span>
-                    <span className="ml-0.5 px-1.5 py-0.2 rounded-md bg-white dark:bg-slate-900 text-2xs font-mono font-black text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-slate-700">
+                    <span className="ml-0.5 px-1.5 py-0.2 rounded-md bg-card text-2xs font-mono font-black text-foreground border border-border">
                       {totalSatuan.toLocaleString("id-ID")}
                     </span>
                   </div>
@@ -1242,13 +1242,13 @@ export function RekapDataAnakClientView({
             {viewModeDiagramUsia === "diagram" && (
               <div className="space-y-4">
                 {/* Visual Canvas Container */}
-                <div className="relative rounded-2xl bg-slate-50/70 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-700/80 p-4 sm:p-6 overflow-x-auto">
+                <div className="relative rounded-lg bg-muted/30 border border-border p-4 sm:p-6 overflow-x-auto">
                   {/* Grid Background Lines */}
                   <div className="absolute inset-x-6 top-6 bottom-20 flex flex-col justify-between pointer-events-none opacity-30">
-                    <div className="border-b border-dashed border-slate-300 dark:border-slate-600 w-full" />
-                    <div className="border-b border-dashed border-slate-300 dark:border-slate-600 w-full" />
-                    <div className="border-b border-dashed border-slate-300 dark:border-slate-600 w-full" />
-                    <div className="border-b border-dashed border-slate-300 dark:border-slate-600 w-full" />
+                    <div className="border-b border-dashed border-border w-full" />
+                    <div className="border-b border-dashed border-border w-full" />
+                    <div className="border-b border-dashed border-border w-full" />
+                    <div className="border-b border-dashed border-border w-full" />
                   </div>
 
                   {/* 7 Columns for Ages 0 to 6 */}
@@ -1270,10 +1270,10 @@ export function RekapDataAnakClientView({
                       return (
                         <div
                           key={age}
-                          className="h-full flex flex-col justify-end items-center relative group px-1 rounded-xl transition-colors hover:bg-slate-100/50 dark:hover:bg-slate-800/40"
+                          className="h-full flex flex-col justify-end items-center relative group px-1 rounded-md transition-colors hover:bg-muted/40"
                         >
                           {/* Bars Cluster */}
-                          <div className="w-full max-w-[110px] mx-auto flex items-end justify-center gap-1 sm:gap-1.5 h-48 px-1 pb-1 border-b-2 border-slate-200 dark:border-slate-700">
+                          <div className="w-full max-w-[110px] mx-auto flex items-end justify-center gap-1 sm:gap-1.5 h-48 px-1 pb-1 border-b border-border">
                             {DAFTAR_SATUAN_PAUD_KEYS.map((s) => {
                               const val = dataAge[s.key] || 0;
                               const heightPct = maxBarValue > 0 ? (val / maxBarValue) * 100 : 0;
@@ -1304,8 +1304,8 @@ export function RekapDataAnakClientView({
                                         className={cn(
                                           "px-1.5 py-0.5 rounded text-[10px] font-mono font-black shadow-xs",
                                           isHovered
-                                            ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-md ring-1 ring-white/20"
-                                            : "bg-white/95 dark:bg-slate-900/95 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700"
+                                            ? "bg-foreground text-background shadow-md ring-1 ring-white/20"
+                                            : "bg-card text-foreground border border-border"
                                         )}
                                       >
                                         {val.toLocaleString("id-ID")}
@@ -1321,7 +1321,7 @@ export function RekapDataAnakClientView({
                                       val > 0
                                         ? "hover:brightness-110 shadow-xs"
                                         : "opacity-20",
-                                      isHovered && "ring-2 ring-slate-900 dark:ring-white ring-offset-1 brightness-110"
+                                      isHovered && "ring-2 ring-primary ring-offset-1 brightness-110"
                                     )}
                                     style={{
                                       height: val > 0 ? `${Math.max(8, heightPct)}%` : "3px",
@@ -1335,11 +1335,11 @@ export function RekapDataAnakClientView({
 
                           {/* Age Column Footer */}
                           <div className="w-full text-center pt-2.5 space-y-1">
-                            <span className="inline-block px-2.5 py-0.5 rounded-md bg-slate-200/80 dark:bg-slate-700/80 text-xs font-black text-slate-800 dark:text-slate-200">
+                            <span className="inline-block px-2.5 py-0.5 rounded-md bg-muted text-xs font-black text-foreground">
                               {label}
                             </span>
-                            <div className="font-mono text-2xs font-bold text-slate-600 dark:text-slate-400">
-                              Total: <span className="text-slate-900 dark:text-slate-100 font-extrabold">{totalAge.toLocaleString("id-ID")}</span>
+                            <div className="font-mono text-2xs font-bold text-muted-foreground">
+                              Total: <span className="text-foreground font-extrabold">{totalAge.toLocaleString("id-ID")}</span>
                             </div>
                           </div>
                         </div>
@@ -1350,12 +1350,12 @@ export function RekapDataAnakClientView({
 
                 {/* Tooltip Card Info Bar when hovering */}
                 {activeHoverBar && (
-                  <div className="flex items-center justify-between p-3 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800/50 text-xs font-bold text-indigo-950 dark:text-indigo-200 animate-in fade-in">
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-primary/10 border border-primary/20 text-xs font-bold text-foreground animate-in fade-in">
                     <span className="flex items-center gap-2">
                       <span
                         className={cn(
                           "h-2.5 w-2.5 rounded-full shrink-0",
-                          DAFTAR_SATUAN_PAUD_KEYS.find((k) => k.key === activeHoverBar.key)?.bg || "bg-indigo-600"
+                          DAFTAR_SATUAN_PAUD_KEYS.find((k) => k.key === activeHoverBar.key)?.bg || "bg-primary"
                         )}
                       />
                       <span>
@@ -1363,7 +1363,7 @@ export function RekapDataAnakClientView({
                         {DAFTAR_SATUAN_PAUD_KEYS.find((k) => k.key === activeHoverBar.key)?.label || activeHoverBar.key.toUpperCase()}
                       </span>
                     </span>
-                    <span className="font-mono text-sm font-black text-indigo-700 dark:text-indigo-300">
+                    <span className="font-mono text-sm font-black text-primary">
                       {activeHoverBar.val.toLocaleString("id-ID")} Anak
                     </span>
                   </div>
@@ -1373,9 +1373,9 @@ export function RekapDataAnakClientView({
 
             {/* View Mode 2: TABEL MATRIKS CROSS-TABULATION */}
             {viewModeDiagramUsia === "matriks" && (
-              <div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800">
+              <div className="overflow-x-auto rounded-lg border border-border">
                 <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-100 dark:bg-slate-800/90 text-slate-700 dark:text-slate-300 font-extrabold uppercase text-2xs tracking-wider border-b border-slate-200 dark:border-slate-700">
+                  <thead className="bg-muted/60 text-muted-foreground font-extrabold uppercase text-2xs tracking-wider border-b border-border">
                     <tr>
                       <th className="py-3 px-4">Rentang Usia</th>
                       <th className="py-3 px-3 text-center">TK</th>
@@ -1388,7 +1388,7 @@ export function RekapDataAnakClientView({
                       <th className="py-3 px-4 text-right">Total Anak</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
+                  <tbody className="divide-y divide-border font-medium">
                     {RENTANG_USIA_LIST.map(({ age, label }) => {
                       const dataAge = currentWilayahData.bersekolahUsiaJenjang?.[age] || {
                         tk: 0,
@@ -1403,63 +1403,63 @@ export function RekapDataAnakClientView({
                         dataAge.tk + dataAge.ra + dataAge.kb + dataAge.sps + dataAge.tpa + dataAge.skb + dataAge.pkbm;
 
                       return (
-                        <tr key={age} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                          <td className="py-2.5 px-4 font-bold text-slate-800 dark:text-slate-200">
+                        <tr key={age} className="hover:bg-muted/40 transition-colors">
+                          <td className="py-2.5 px-4 font-bold text-foreground">
                             {label}
                           </td>
-                          <td className="py-2.5 px-3 text-center font-mono font-bold text-slate-700 dark:text-slate-300">
+                          <td className="py-2.5 px-3 text-center font-mono font-bold text-muted-foreground">
                             {dataAge.tk || "-"}
                           </td>
-                          <td className="py-2.5 px-3 text-center font-mono font-bold text-slate-700 dark:text-slate-300">
+                          <td className="py-2.5 px-3 text-center font-mono font-bold text-muted-foreground">
                             {dataAge.ra || "-"}
                           </td>
-                          <td className="py-2.5 px-3 text-center font-mono font-bold text-indigo-600 dark:text-indigo-400">
+                          <td className="py-2.5 px-3 text-center font-mono font-bold text-primary">
                             {dataAge.kb || "-"}
                           </td>
-                          <td className="py-2.5 px-3 text-center font-mono font-bold text-slate-700 dark:text-slate-300">
+                          <td className="py-2.5 px-3 text-center font-mono font-bold text-muted-foreground">
                             {dataAge.sps || "-"}
                           </td>
-                          <td className="py-2.5 px-3 text-center font-mono font-bold text-slate-700 dark:text-slate-300">
+                          <td className="py-2.5 px-3 text-center font-mono font-bold text-muted-foreground">
                             {dataAge.tpa || "-"}
                           </td>
-                          <td className="py-2.5 px-3 text-center font-mono font-bold text-slate-700 dark:text-slate-300">
+                          <td className="py-2.5 px-3 text-center font-mono font-bold text-muted-foreground">
                             {dataAge.pkbm || "-"}
                           </td>
-                          <td className="py-2.5 px-3 text-center font-mono font-bold text-slate-700 dark:text-slate-300">
+                          <td className="py-2.5 px-3 text-center font-mono font-bold text-muted-foreground">
                             {dataAge.skb || "-"}
                           </td>
-                          <td className="py-2.5 px-4 text-right font-mono font-black text-slate-900 dark:text-slate-100">
+                          <td className="py-2.5 px-4 text-right font-mono font-black text-foreground">
                             {totalAge} Anak
                           </td>
                         </tr>
                       );
                     })}
                   </tbody>
-                  <tfoot className="bg-slate-50 dark:bg-slate-800/60 font-black border-t-2 border-slate-200 dark:border-slate-700">
+                  <tfoot className="bg-muted/50 font-black border-t border-border">
                     <tr>
-                      <td className="py-3 px-4 text-slate-900 dark:text-slate-100">Total Keseluruhan</td>
-                      <td className="py-3 px-3 text-center font-mono text-slate-900 dark:text-slate-100">
+                      <td className="py-3 px-4 text-foreground">Total Keseluruhan</td>
+                      <td className="py-3 px-3 text-center font-mono text-foreground">
                         {currentWilayahData.bersekolahJenjang.tk}
                       </td>
-                      <td className="py-3 px-3 text-center font-mono text-slate-900 dark:text-slate-100">
+                      <td className="py-3 px-3 text-center font-mono text-foreground">
                         {currentWilayahData.bersekolahJenjang.ra}
                       </td>
-                      <td className="py-3 px-3 text-center font-mono text-indigo-600 dark:text-indigo-400">
+                      <td className="py-3 px-3 text-center font-mono text-primary">
                         {currentWilayahData.bersekolahJenjang.kb}
                       </td>
-                      <td className="py-3 px-3 text-center font-mono text-slate-900 dark:text-slate-100">
+                      <td className="py-3 px-3 text-center font-mono text-foreground">
                         {currentWilayahData.bersekolahJenjang.sps}
                       </td>
-                      <td className="py-3 px-3 text-center font-mono text-slate-900 dark:text-slate-100">
+                      <td className="py-3 px-3 text-center font-mono text-foreground">
                         {currentWilayahData.bersekolahJenjang.tpa}
                       </td>
-                      <td className="py-3 px-3 text-center font-mono text-slate-900 dark:text-slate-100">
+                      <td className="py-3 px-3 text-center font-mono text-foreground">
                         {currentWilayahData.bersekolahJenjang.pkbm}
                       </td>
-                      <td className="py-3 px-3 text-center font-mono text-slate-900 dark:text-slate-100">
+                      <td className="py-3 px-3 text-center font-mono text-foreground">
                         {currentWilayahData.bersekolahJenjang.skb}
                       </td>
-                      <td className="py-3 px-4 text-right font-mono text-emerald-600 dark:text-emerald-400">
+                      <td className="py-3 px-4 text-right font-mono text-primary font-black">
                         {currentWilayahData.totalBersekolah} Anak
                       </td>
                     </tr>
@@ -1472,15 +1472,15 @@ export function RekapDataAnakClientView({
           </div>
 
           {/* 5.3 Grafik / Chart Alasan Anak Bersekolah */}
-          <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-4 shadow-xs print-card-item break-inside-avoid print:p-5 print:rounded-2xl">
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+          <div className="rounded-lg border border-border bg-card p-5 sm:p-6 space-y-4 shadow-sm print-card-item break-inside-avoid">
+            <div className="flex items-center justify-between border-b border-border pb-3">
               <div className="flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-emerald-600" />
+                <Sparkles className="h-5 w-5 text-primary" />
                 <div>
-                  <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-slate-100">
+                  <h3 className="text-sm sm:text-base font-extrabold text-foreground">
                     Analisis Alasan Utama Anak Bersekolah PAUD
                   </h3>
-                  <p className="text-xs text-slate-500 font-medium">
+                  <p className="text-xs text-muted-foreground font-medium">
                     Faktor motivasi dan tujuan orang tua menyekolahkan anak di jenjang usia dini
                   </p>
                 </div>
@@ -1488,17 +1488,17 @@ export function RekapDataAnakClientView({
               <button
                 type="button"
                 onClick={() => toggleChart("alasan_bersekolah")}
-                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700 print:hidden"
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md border border-border bg-card text-foreground text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-muted print:hidden"
                 title={hiddenCharts.alasan_bersekolah ? "Tampilkan Grafik" : "Sembunyikan Grafik"}
               >
                 {hiddenCharts.alasan_bersekolah ? (
                   <>
-                    <Eye className="h-3 w-3 text-indigo-600 dark:text-indigo-400" />
+                    <Eye className="h-3 w-3 text-primary" />
                     <span>Tampilkan</span>
                   </>
                 ) : (
                   <>
-                    <EyeOff className="h-3 w-3 text-slate-500" />
+                    <EyeOff className="h-3 w-3 text-muted-foreground" />
                     <span>Sembunyikan</span>
                   </>
                 )}
@@ -1506,13 +1506,13 @@ export function RekapDataAnakClientView({
             </div>
 
             {hiddenCharts.alasan_bersekolah ? (
-              <div className="py-12 text-center text-xs text-slate-500 dark:text-slate-400 bg-slate-50/50 dark:bg-slate-800/40 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700 flex items-center justify-center gap-2">
-                <EyeOff className="h-4 w-4 text-slate-400" />
+              <div className="py-12 text-center text-xs text-muted-foreground bg-muted/40 rounded-lg border border-dashed border-border flex items-center justify-center gap-2">
+                <EyeOff className="h-4 w-4 text-muted-foreground" />
                 <span>Grafik analisis alasan utama bersekolah disembunyikan.</span>
                 <button
                   type="button"
                   onClick={() => toggleChart("alasan_bersekolah")}
-                  className="font-bold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
+                  className="font-bold text-primary hover:underline cursor-pointer"
                 >
                   Tampilkan kembali
                 </button>
@@ -1522,19 +1522,19 @@ export function RekapDataAnakClientView({
                 {currentWilayahData.bersekolahAlasan.map((r, idx) => (
                   <div
                     key={idx}
-                    className="p-3.5 rounded-2xl bg-emerald-50/40 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30 space-y-1.5"
+                    className="p-3.5 rounded-lg bg-primary/5 border border-primary/15 space-y-1.5"
                   >
                     <div className="flex items-start justify-between gap-2 text-xs font-bold">
-                      <span className="text-emerald-950 dark:text-emerald-200 leading-snug">
+                      <span className="text-foreground leading-snug">
                         {idx + 1}. {r.alasan}
                       </span>
-                      <span className="font-mono text-emerald-700 dark:text-emerald-400 shrink-0 font-black">
+                      <span className="font-mono text-primary shrink-0 font-black">
                         {r.jumlah} anak ({r.persentase}%)
                       </span>
                     </div>
-                    <div className="h-2 w-full bg-emerald-200/50 dark:bg-emerald-900/40 rounded-full overflow-hidden">
+                    <div className="h-2 w-full bg-primary/20 rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-emerald-600 rounded-full transition-all"
+                        className="h-full bg-primary rounded-full transition-all"
                         style={{ width: `${Math.max(2, r.persentase)}%` }}
                       />
                     </div>
@@ -1565,14 +1565,14 @@ export function RekapDataAnakClientView({
         <div className="space-y-4 pt-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 print-hide-on-daftar-nama print-section-header break-after-avoid">
             <div className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold">
+              <div className="h-8 w-8 rounded-lg bg-primary text-primary-foreground flex items-center justify-center font-bold">
                 <HeartHandshake className="h-4 w-4" />
               </div>
               <div>
-                <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-slate-100">
+                <h2 className="text-lg sm:text-xl font-black text-foreground">
                   Rekapitulasi Data Anak Belum Bersekolah PAUD
                 </h2>
-                <p className="text-xs text-slate-500 font-medium">
+                <p className="text-xs text-muted-foreground font-medium">
                   Analisis sebaran umur, jenis kelamin, serta faktor penyebab belum mengikuti pendidikan formal PAUD.
                 </p>
               </div>
@@ -1581,21 +1581,21 @@ export function RekapDataAnakClientView({
               <button
                 type="button"
                 onClick={toggleAll}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition-all shadow-2xs cursor-pointer shrink-0 print:hidden"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-card hover:bg-muted text-foreground text-xs font-bold transition-all shadow-2xs cursor-pointer shrink-0 print:hidden"
               >
                 {isAllHidden ? (
                   <>
-                    <Eye className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
+                    <Eye className="h-3.5 w-3.5 text-primary" />
                     <span>Tampilkan Semua Grafik</span>
                   </>
                 ) : (
                   <>
-                    <EyeOff className="h-3.5 w-3.5 text-slate-500" />
+                    <EyeOff className="h-3.5 w-3.5 text-muted-foreground" />
                     <span>Sembunyikan Semua Grafik</span>
                   </>
                 )}
               </button>
-              <span className="hidden sm:inline-block text-xs font-extrabold px-3 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-800 dark:text-blue-300 border border-blue-200 dark:border-blue-800 font-mono print:inline-block">
+              <span className="hidden sm:inline-block text-xs font-extrabold px-3 py-1.5 rounded-lg bg-primary/10 text-primary border border-primary/20 font-mono print:inline-block">
                 Total: {currentWilayahData.totalTidakBersekolah} Anak
               </span>
             </div>
@@ -1603,39 +1603,39 @@ export function RekapDataAnakClientView({
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 print-hide-on-daftar-nama print-cards-grid">
             {/* 6.1 Kelompok Umur Anak Belum Bersekolah */}
-            <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-6 space-y-4 shadow-xs print-card-item break-inside-avoid print:p-5 print:rounded-2xl">
-              <div className="flex items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3.5">
+            <div className="rounded-lg border border-border bg-card p-5 sm:p-6 space-y-4 shadow-sm print-card-item break-inside-avoid">
+              <div className="flex items-center justify-between gap-3 border-b border-border pb-3.5">
                 <div className="flex items-center gap-2.5 min-w-0">
-                  <div className="h-8 w-8 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
-                    <Baby className="h-4.5 w-4.5" />
+                  <div className="h-8 w-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                    <Baby className="h-4 w-4" />
                   </div>
                   <div className="min-w-0">
-                    <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-slate-100 truncate">
+                    <h3 className="text-sm sm:text-base font-extrabold text-foreground truncate">
                       Sebaran Usia Belum Bersekolah
                     </h3>
-                    <p className="text-2xs sm:text-xs text-slate-500 font-medium truncate">
+                    <p className="text-2xs sm:text-xs text-muted-foreground font-medium truncate">
                       Anak usia 0–6 tahun yang belum terdaftar di lembaga PAUD/TK
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
-                  <span className="text-2xs sm:text-xs font-black px-2.5 py-1 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 font-mono">
+                  <span className="text-2xs sm:text-xs font-black px-2.5 py-1 rounded-md bg-secondary/10 text-secondary-foreground border border-secondary/30 font-mono">
                     0–6 Thn
                   </span>
                   <button
                     type="button"
                     onClick={() => toggleChart("umur_gender_tidak_sekolah")}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700 print:hidden"
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md border border-border bg-card text-foreground text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-muted print:hidden"
                     title={hiddenCharts.umur_gender_tidak_sekolah ? "Tampilkan Grafik" : "Sembunyikan Grafik"}
                   >
                     {hiddenCharts.umur_gender_tidak_sekolah ? (
                       <>
-                        <Eye className="h-3 w-3 text-indigo-600 dark:text-indigo-400" />
+                        <Eye className="h-3 w-3 text-primary" />
                         <span>Tampilkan</span>
                       </>
                     ) : (
                       <>
-                        <EyeOff className="h-3 w-3 text-slate-400" />
+                        <EyeOff className="h-3 w-3 text-muted-foreground" />
                         <span>Sembunyikan</span>
                       </>
                     )}
@@ -1644,13 +1644,13 @@ export function RekapDataAnakClientView({
               </div>
 
               {hiddenCharts.umur_gender_tidak_sekolah ? (
-                <div className="py-12 text-center text-xs text-slate-500 dark:text-slate-400 bg-slate-50/50 dark:bg-slate-800/40 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700 flex items-center justify-center gap-2">
-                  <EyeOff className="h-4 w-4 text-slate-400" />
+                <div className="py-12 text-center text-xs text-muted-foreground bg-muted/40 rounded-lg border border-dashed border-border flex items-center justify-center gap-2">
+                  <EyeOff className="h-4 w-4 text-muted-foreground" />
                   <span>Grafik usia anak belum bersekolah disembunyikan.</span>
                   <button
                     type="button"
                     onClick={() => toggleChart("umur_gender_tidak_sekolah")}
-                    className="font-bold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
+                    className="font-bold text-primary hover:underline cursor-pointer"
                   >
                     Tampilkan kembali
                   </button>
@@ -1658,7 +1658,7 @@ export function RekapDataAnakClientView({
               ) : (
                 <>
                   {/* Gender comparison for Non-enrolled */}
-                  <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-2">
+                  <div className="p-3.5 rounded-lg bg-muted/50 border border-border space-y-2">
                 <div className="flex items-center justify-between text-xs font-extrabold">
                   <span className="text-sky-700 dark:text-sky-400 flex items-center gap-1.5">
                     <span className="h-2.5 w-2.5 rounded-full bg-sky-500" />
@@ -1671,7 +1671,7 @@ export function RekapDataAnakClientView({
                     {Math.round((currentWilayahData.tidakBersekolahGender.perempuan / (currentWilayahData.totalTidakBersekolah || 1)) * 100)}%)
                   </span>
                 </div>
-                <div className="h-3 w-full flex rounded-full overflow-hidden bg-slate-200 dark:bg-slate-700">
+                <div className="h-3 w-full flex rounded-full overflow-hidden bg-muted">
                   <div
                     className="bg-sky-500 h-full transition-all"
                     style={{
@@ -1690,9 +1690,9 @@ export function RekapDataAnakClientView({
               {/* Age Breakdown Bars */}
               <div className="space-y-2.5">
                 {[
-                  { label: "0–1 Tahun (Bayi / Masih Belum Wajib)", count: currentWilayahData.tidakBersekolahUsia.age0_1, color: "bg-blue-500" },
-                  { label: "2 Tahun (Batita / Pola Asuh Rumah)", count: currentWilayahData.tidakBersekolahUsia.age2, color: "bg-blue-600" },
-                  { label: "3 Tahun (Usia Mulai PAUD / Perlu Edukasi)", count: currentWilayahData.tidakBersekolahUsia.age3, color: "bg-indigo-500" },
+                  { label: "0–1 Tahun (Bayi / Masih Belum Wajib)", count: currentWilayahData.tidakBersekolahUsia.age0_1, color: "bg-teal-500" },
+                  { label: "2 Tahun (Batita / Pola Asuh Rumah)", count: currentWilayahData.tidakBersekolahUsia.age2, color: "bg-teal-600" },
+                  { label: "3 Tahun (Usia Mulai PAUD / Perlu Edukasi)", count: currentWilayahData.tidakBersekolahUsia.age3, color: "bg-emerald-500" },
                   { label: "4 Tahun (Usia KB / Potensi ATS)", count: currentWilayahData.tidakBersekolahUsia.age4, color: "bg-amber-500" },
                   { label: "5 Tahun (Usia TK / Perlu Intervensi)", count: currentWilayahData.tidakBersekolahUsia.age5, color: "bg-amber-600" },
                   { label: "6 Tahun (Usia Pra-SD / Prioritas Intervensi)", count: currentWilayahData.tidakBersekolahUsia.age6, color: "bg-rose-600" },
@@ -1701,12 +1701,12 @@ export function RekapDataAnakClientView({
                   return (
                     <div key={idx} className="space-y-1">
                       <div className="flex items-center justify-between text-xs font-bold">
-                        <span className="text-slate-700 dark:text-slate-300">{ageRow.label}</span>
-                        <span className="font-mono text-slate-900 dark:text-slate-100">
+                        <span className="text-foreground">{ageRow.label}</span>
+                        <span className="font-mono text-foreground">
                           {ageRow.count} ({pct}%)
                         </span>
                       </div>
-                      <div className="h-2.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                      <div className="h-2.5 w-full bg-muted rounded-full overflow-hidden">
                         <div
                           className={cn("h-full rounded-full transition-all", ageRow.color)}
                           style={{ width: `${Math.max(1, pct)}%` }}
@@ -1721,17 +1721,17 @@ export function RekapDataAnakClientView({
             </div>
 
             {/* 6.2 Alasan Tidak / Belum Bersekolah */}
-            <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-6 space-y-4 shadow-xs print-card-item break-inside-avoid print:p-5 print:rounded-2xl">
-              <div className="flex items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3.5">
+            <div className="rounded-lg border border-border bg-card p-5 sm:p-6 space-y-4 shadow-sm print-card-item break-inside-avoid">
+              <div className="flex items-center justify-between gap-3 border-b border-border pb-3.5">
                 <div className="flex items-center gap-2.5 min-w-0">
-                  <div className="h-8 w-8 rounded-xl bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
-                    <AlertCircle className="h-4.5 w-4.5" />
+                  <div className="h-8 w-8 rounded-lg bg-rose-500/10 text-rose-600 flex items-center justify-center shrink-0">
+                    <AlertCircle className="h-4 w-4" />
                   </div>
                   <div className="min-w-0">
-                    <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-slate-100 truncate">
+                    <h3 className="text-sm sm:text-base font-extrabold text-foreground truncate">
                       Alasan Belum / Tidak Bersekolah
                     </h3>
-                    <p className="text-2xs sm:text-xs text-slate-500 font-medium truncate">
+                    <p className="text-2xs sm:text-xs text-muted-foreground font-medium truncate">
                       Penyebab anak belum terdaftar di lembaga PAUD/TK
                     </p>
                   </div>
@@ -1740,17 +1740,17 @@ export function RekapDataAnakClientView({
                   <button
                     type="button"
                     onClick={() => toggleChart("alasan_tidak_sekolah")}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700 print:hidden"
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md border border-border bg-card text-foreground text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-muted print:hidden"
                     title={hiddenCharts.alasan_tidak_sekolah ? "Tampilkan Grafik" : "Sembunyikan Grafik"}
                   >
                     {hiddenCharts.alasan_tidak_sekolah ? (
                       <>
-                        <Eye className="h-3 w-3 text-indigo-600 dark:text-indigo-400" />
+                        <Eye className="h-3 w-3 text-primary" />
                         <span>Tampilkan</span>
                       </>
                     ) : (
                       <>
-                        <EyeOff className="h-3 w-3 text-slate-400" />
+                        <EyeOff className="h-3 w-3 text-muted-foreground" />
                         <span>Sembunyikan</span>
                       </>
                     )}
@@ -1759,13 +1759,13 @@ export function RekapDataAnakClientView({
               </div>
 
               {hiddenCharts.alasan_tidak_sekolah ? (
-                <div className="py-12 text-center text-xs text-slate-500 dark:text-slate-400 bg-slate-50/50 dark:bg-slate-800/40 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700 flex items-center justify-center gap-2">
-                  <EyeOff className="h-4 w-4 text-slate-400" />
+                <div className="py-12 text-center text-xs text-muted-foreground bg-muted/40 rounded-lg border border-dashed border-border flex items-center justify-center gap-2">
+                  <EyeOff className="h-4 w-4 text-muted-foreground" />
                   <span>Grafik alasan belum / tidak bersekolah disembunyikan.</span>
                   <button
                     type="button"
                     onClick={() => toggleChart("alasan_tidak_sekolah")}
-                    className="font-bold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
+                    className="font-bold text-primary hover:underline cursor-pointer"
                   >
                     Tampilkan kembali
                   </button>
@@ -1775,19 +1775,19 @@ export function RekapDataAnakClientView({
                   {currentWilayahData.tidakBersekolahAlasan.map((r, idx) => (
                     <div
                       key={idx}
-                      className="p-3 rounded-2xl bg-blue-50/50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/30 space-y-1.5"
+                      className="p-3 rounded-lg bg-primary/5 border border-primary/15 space-y-1.5"
                     >
                       <div className="flex items-start justify-between gap-2 text-xs font-bold">
-                        <span className="text-blue-950 dark:text-blue-200 leading-snug">
+                        <span className="text-foreground leading-snug">
                           {idx + 1}. {r.alasan}
                         </span>
-                        <span className="font-mono text-blue-700 dark:text-blue-400 shrink-0 font-black">
+                        <span className="font-mono text-primary shrink-0 font-black">
                           {r.jumlah} anak ({r.persentase}%)
                         </span>
                       </div>
-                      <div className="h-2 w-full bg-blue-200/50 dark:bg-blue-900/40 rounded-full overflow-hidden">
+                      <div className="h-2 w-full bg-primary/20 rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-blue-600 rounded-full transition-all"
+                          className="h-full bg-primary rounded-full transition-all"
                           style={{ width: `${Math.max(2, r.persentase)}%` }}
                         />
                       </div>
@@ -1819,14 +1819,14 @@ export function RekapDataAnakClientView({
         <div className="space-y-4 pt-4 print-hide-on-daftar-nama">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 print-section-header break-after-avoid">
             <div className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-xl bg-slate-900 dark:bg-slate-700 text-white flex items-center justify-center font-bold">
+              <div className="h-8 w-8 rounded-lg bg-primary text-primary-foreground flex items-center justify-center font-bold">
                 <Building2 className="h-4 w-4" />
               </div>
               <div>
-                <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-slate-100">
+                <h2 className="text-lg sm:text-xl font-black text-foreground">
                   Tabel Rekapitulasi Berjenjang per Kelurahan &amp; Kecamatan
                 </h2>
-                <p className="text-xs text-slate-500 font-medium">
+                <p className="text-xs text-muted-foreground font-medium">
                   Rincian komparatif jumlah anak bersekolah per satuan PAUD &amp; belum sekolah se-Kota Tegal
                 </p>
               </div>
@@ -1835,7 +1835,7 @@ export function RekapDataAnakClientView({
             {/* Table Search Input & Sort Badge */}
             <div className="flex flex-wrap items-center gap-2 print:hidden">
               {sortColumn !== "default" && (
-                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 text-xs font-bold text-blue-800 dark:text-blue-300 shadow-2xs animate-in fade-in">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 border border-primary/20 text-xs font-bold text-primary shadow-2xs animate-in fade-in">
                   <span>
                     Urutan: <strong>{TABLE_SORT_LABELS[sortColumn]}</strong> (
                     {sortDirection === "desc"
@@ -1850,7 +1850,7 @@ export function RekapDataAnakClientView({
                   <button
                     type="button"
                     onClick={handleResetSort}
-                    className="ml-1 px-1.5 py-0.5 rounded-md bg-blue-200 hover:bg-blue-300 dark:bg-blue-900 dark:hover:bg-blue-800 text-blue-900 dark:text-blue-200 cursor-pointer transition-colors text-2xs"
+                    className="ml-1 px-1.5 py-0.5 rounded-md bg-primary/20 hover:bg-primary/30 text-primary cursor-pointer transition-colors text-2xs"
                     title="Reset urutan ke nomor asli"
                   >
                     ✕ Reset
@@ -1859,31 +1859,31 @@ export function RekapDataAnakClientView({
               )}
 
               <div className="relative w-full sm:w-64">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                 <input
                   type="text"
                   value={tableSearch}
                   onChange={(e) => setTableSearch(e.target.value)}
                   placeholder="Cari Kelurahan / Kecamatan..."
-                  className="w-full bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 rounded-2xl pl-9 pr-3 py-1.5 text-xs font-bold text-slate-900 dark:text-slate-100 focus:outline-hidden focus:border-blue-500"
+                  className="w-full bg-card border border-border rounded-lg pl-9 pr-3 py-1.5 text-xs font-bold text-foreground focus:outline-hidden focus:border-primary"
                 />
               </div>
             </div>
           </div>
 
-          <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-xs print-card-item print:rounded-2xl">
+          <div className="rounded-lg border border-border bg-card overflow-hidden shadow-sm print-card-item">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
-                  <tr className="bg-slate-100 dark:bg-slate-800/80 border-b-2 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-black">
+                  <tr className="bg-muted/60 border-b border-border text-muted-foreground font-black">
                     <th
                       scope="col"
                       onClick={handleResetSort}
                       className={cn(
                         "py-2 sm:py-2.5 px-2 select-none cursor-pointer transition-colors group",
                         sortColumn === "default"
-                          ? "hover:bg-slate-200/60 dark:hover:bg-slate-700/60"
-                          : "hover:bg-rose-50 dark:hover:bg-rose-950/30 text-rose-600 dark:text-rose-400"
+                          ? "hover:bg-muted"
+                          : "hover:bg-rose-50 text-rose-600"
                       )}
                       title={sortColumn === "default" ? "Nomor Urut Default" : "Klik untuk reset ke nomor urut asli"}
                     >
@@ -1911,7 +1911,7 @@ export function RekapDataAnakClientView({
                     {renderSortTh("persenBersekolah", "Cakupan", "center", "px-1.5")}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
+                <tbody className="divide-y divide-border font-medium">
                   {filteredTableRows.map((kel, idx) => {
                     const isSelected = selectedKelurahan === kel.nama && selectedTingkat === "kelurahan";
                     return (
@@ -1923,48 +1923,48 @@ export function RekapDataAnakClientView({
                           setSelectedKelurahan(kel.nama);
                         }}
                         className={cn(
-                          "transition-colors cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50",
-                          isSelected ? "bg-emerald-50/70 dark:bg-emerald-950/30 font-bold" : ""
+                          "transition-colors cursor-pointer hover:bg-muted/40",
+                          isSelected ? "bg-primary/10 font-bold" : ""
                         )}
                       >
-                        <td className="py-2 px-2 text-center font-mono text-2xs sm:text-xs text-slate-500">{idx + 1}</td>
-                        <td className={cn("py-2 px-2 text-2xs sm:text-xs", sortColumn === "nama" && "bg-blue-50/40 dark:bg-blue-950/20")}>
-                          <strong className="text-slate-900 dark:text-slate-100">{kel.nama}</strong>
+                        <td className="py-2 px-2 text-center font-mono text-2xs sm:text-xs text-muted-foreground">{idx + 1}</td>
+                        <td className={cn("py-2 px-2 text-2xs sm:text-xs", sortColumn === "nama" && "bg-primary/5")}>
+                          <strong className="text-foreground">{kel.nama}</strong>
                         </td>
-                        <td className={cn("py-2 px-2 text-2xs sm:text-xs text-slate-600 dark:text-slate-400", sortColumn === "kecamatan" && "bg-blue-50/40 dark:bg-blue-950/20 font-bold")}>
+                        <td className={cn("py-2 px-2 text-2xs sm:text-xs text-muted-foreground", sortColumn === "kecamatan" && "bg-primary/5 font-bold")}>
                           {kel.kecamatan}
                         </td>
-                        <td className={cn("py-2 px-1.5 text-center font-mono font-bold text-slate-900 dark:text-slate-100 text-2xs sm:text-xs", sortColumn === "totalAnak" && "bg-blue-50/60 dark:bg-blue-950/30 text-blue-950 dark:text-blue-100 font-black")}>
+                        <td className={cn("py-2 px-1.5 text-center font-mono font-bold text-foreground text-2xs sm:text-xs", sortColumn === "totalAnak" && "bg-primary/10 text-primary font-black")}>
                           {kel.totalAnak}
                         </td>
-                        <td className={cn("py-2 px-1.5 text-center font-mono font-bold text-emerald-700 dark:text-emerald-400 text-2xs sm:text-xs", sortColumn === "totalBersekolah" && "bg-emerald-50/60 dark:bg-emerald-950/30 font-black")}>
+                        <td className={cn("py-2 px-1.5 text-center font-mono font-bold text-primary text-2xs sm:text-xs", sortColumn === "totalBersekolah" && "bg-primary/10 font-black")}>
                           {kel.totalBersekolah}
                         </td>
-                        <td className={cn("py-2 px-1 text-center font-mono text-slate-700 dark:text-slate-300 text-2xs sm:text-xs", sortColumn === "tk" && "bg-blue-50/60 dark:bg-blue-950/30 font-bold text-blue-950 dark:text-blue-100")}>
+                        <td className={cn("py-2 px-1 text-center font-mono text-muted-foreground text-2xs sm:text-xs", sortColumn === "tk" && "bg-primary/5 font-bold text-foreground")}>
                           {kel.bersekolahJenjang.tk}
                         </td>
-                        <td className={cn("py-2 px-1 text-center font-mono text-slate-700 dark:text-slate-300 text-2xs sm:text-xs", sortColumn === "ra" && "bg-blue-50/60 dark:bg-blue-950/30 font-bold text-blue-950 dark:text-blue-100")}>
+                        <td className={cn("py-2 px-1 text-center font-mono text-muted-foreground text-2xs sm:text-xs", sortColumn === "ra" && "bg-primary/5 font-bold text-foreground")}>
                           {kel.bersekolahJenjang.ra}
                         </td>
-                        <td className={cn("py-2 px-1 text-center font-mono text-slate-700 dark:text-slate-300 text-2xs sm:text-xs", sortColumn === "kb" && "bg-blue-50/60 dark:bg-blue-950/30 font-bold text-blue-950 dark:text-blue-100")}>
+                        <td className={cn("py-2 px-1 text-center font-mono text-muted-foreground text-2xs sm:text-xs", sortColumn === "kb" && "bg-primary/5 font-bold text-foreground")}>
                           {kel.bersekolahJenjang.kb}
                         </td>
-                        <td className={cn("py-2 px-1 text-center font-mono text-slate-700 dark:text-slate-300 text-2xs sm:text-xs", sortColumn === "sps" && "bg-blue-50/60 dark:bg-blue-950/30 font-bold text-blue-950 dark:text-blue-100")}>
+                        <td className={cn("py-2 px-1 text-center font-mono text-muted-foreground text-2xs sm:text-xs", sortColumn === "sps" && "bg-primary/5 font-bold text-foreground")}>
                           {kel.bersekolahJenjang.sps}
                         </td>
-                        <td className={cn("py-2 px-1 text-center font-mono text-slate-700 dark:text-slate-300 text-2xs sm:text-xs", sortColumn === "tpa" && "bg-blue-50/60 dark:bg-blue-950/30 font-bold text-blue-950 dark:text-blue-100")}>
+                        <td className={cn("py-2 px-1 text-center font-mono text-muted-foreground text-2xs sm:text-xs", sortColumn === "tpa" && "bg-primary/5 font-bold text-foreground")}>
                           {kel.bersekolahJenjang.tpa}
                         </td>
-                        <td className={cn("py-2 px-1 text-center font-mono text-slate-700 dark:text-slate-300 text-2xs sm:text-xs", sortColumn === "skb" && "bg-blue-50/60 dark:bg-blue-950/30 font-bold text-blue-950 dark:text-blue-100")}>
+                        <td className={cn("py-2 px-1 text-center font-mono text-muted-foreground text-2xs sm:text-xs", sortColumn === "skb" && "bg-primary/5 font-bold text-foreground")}>
                           {kel.bersekolahJenjang.skb}
                         </td>
-                        <td className={cn("py-2 px-1 text-center font-mono text-slate-700 dark:text-slate-300 text-2xs sm:text-xs", sortColumn === "pkbm" && "bg-blue-50/60 dark:bg-blue-950/30 font-bold text-blue-950 dark:text-blue-100")}>
+                        <td className={cn("py-2 px-1 text-center font-mono text-muted-foreground text-2xs sm:text-xs", sortColumn === "pkbm" && "bg-primary/5 font-bold text-foreground")}>
                           {kel.bersekolahJenjang.pkbm}
                         </td>
-                        <td className={cn("py-2 px-1.5 text-center font-mono font-bold text-blue-700 dark:text-blue-400 text-2xs sm:text-xs", sortColumn === "totalTidakBersekolah" && "bg-blue-50/60 dark:bg-blue-950/30 font-black")}>
+                        <td className={cn("py-2 px-1.5 text-center font-mono font-bold text-muted-foreground text-2xs sm:text-xs", sortColumn === "totalTidakBersekolah" && "bg-primary/10 font-black")}>
                           {kel.totalTidakBersekolah}
                         </td>
-                        <td className={cn("py-2 px-1.5 text-center", sortColumn === "persenBersekolah" && "bg-blue-50/60 dark:bg-blue-950/30 font-black")}>
+                        <td className={cn("py-2 px-1.5 text-center", sortColumn === "persenBersekolah" && "bg-primary/10 font-black")}>
                           <span
                             className={cn(
                               "inline-block px-1.5 py-0.5 rounded-full font-black text-[10px] font-mono",
@@ -1985,11 +1985,11 @@ export function RekapDataAnakClientView({
               </table>
             </div>
 
-            <div className="p-4 bg-slate-50 dark:bg-slate-800/40 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-slate-500 font-medium">
+            <div className="p-4 bg-muted/40 border-t border-border flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-muted-foreground font-medium">
               <div className="flex flex-wrap items-center gap-2">
                 <span>Menampilkan {filteredTableRows.length} kelurahan se-Kota Tegal</span>
                 {sortColumn !== "default" && (
-                  <span className="font-bold text-blue-600 dark:text-blue-400">
+                  <span className="font-bold text-primary">
                     • Diurutkan berdasarkan {TABLE_SORT_LABELS[sortColumn]} (
                     {sortDirection === "desc"
                       ? sortColumn === "nama" || sortColumn === "kecamatan"
@@ -2007,7 +2007,7 @@ export function RekapDataAnakClientView({
                   <button
                     type="button"
                     onClick={handleResetSort}
-                    className="font-bold text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 underline cursor-pointer"
+                    className="font-bold text-muted-foreground hover:text-primary underline cursor-pointer"
                   >
                     Kembalikan Urutan Asli
                   </button>
@@ -2022,25 +2022,25 @@ export function RekapDataAnakClientView({
       {/* ========================================================= */}
       {/* 8. FOOTER CALL-TO-ACTION & LINK TO ATS / POSYANDU         */}
       {/* ========================================================= */}
-      <div className="p-6 rounded-3xl bg-slate-100 dark:bg-slate-800/60 border-2 border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row items-center justify-between gap-4 print:hidden print-hide-on-daftar-nama">
+      <div className="p-5 sm:p-6 rounded-lg bg-card border border-border flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm print:hidden print-hide-on-daftar-nama">
         <div className="space-y-1 text-center sm:text-left">
-          <h4 className="text-sm sm:text-base font-black text-slate-900 dark:text-slate-100">
+          <h4 className="text-sm sm:text-base font-black text-foreground">
             Ingin Mendaftarkan Balita atau Menemukan Anak Tidak Sekolah?
           </h4>
-          <p className="text-xs text-slate-600 dark:text-slate-400">
+          <p className="text-xs text-muted-foreground">
             Kader Posyandu, Pengurus RT/RW, dan Guru PAUD dapat melakukan input data anak langsung di Komunitas masing-masing.
           </p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <Link
             href="/komunitas?tab=posyandu"
-            className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-md active:scale-98"
+            className="px-4 py-2.5 rounded-lg bg-primary hover:bg-primary-hover text-primary-foreground text-xs font-bold transition-all shadow-xs active:scale-98"
           >
             Pendaftaran Posyandu
           </Link>
           <Link
             href="/komunitas?tab=satuan_paud"
-            className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-md active:scale-98"
+            className="px-4 py-2.5 rounded-lg bg-secondary hover:bg-secondary-hover text-secondary-foreground text-xs font-bold transition-all shadow-xs active:scale-98"
           >
             Lembaga PAUD
           </Link>

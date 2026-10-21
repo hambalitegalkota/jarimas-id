@@ -20,7 +20,7 @@ export default async function DataAnakRekapPage() {
   ]);
 
   return (
-    <main className="w-full min-h-screen bg-slate-50 dark:bg-slate-950 py-4 sm:py-6 print:py-0 print:bg-white print:min-h-0">
+    <main className="w-full min-h-screen bg-background py-4 sm:py-6 print:py-0 print:bg-white print:min-h-0">
       <RekapDataAnakClientView
         initialData={rekapData}
         canAccessDaftarNamaAnak={authAccess.canAccess}

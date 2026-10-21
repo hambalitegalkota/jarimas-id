@@ -144,12 +144,12 @@ export function CardDataAts({
 
   return (
     <>
-      <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 sm:p-3.5 space-y-2.5 transition-all hover:border-indigo-400 hover:shadow-xs break-inside-avoid print:bg-white print:border-gray-300 print:text-black print:shadow-none">
+      <div className="overflow-hidden rounded-lg border border-border bg-card p-3 sm:p-3.5 space-y-2.5 transition-all hover:border-primary/40 hover:shadow-xs break-inside-avoid print:bg-white print:border-gray-300 print:text-black print:shadow-none">
         {/* Header: Nama Anak, Jenjang, & Status Approval */}
         <div
           className={cn(
             "flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 transition-all",
-            isExpanded ? "border-b border-slate-100 dark:border-slate-800 pb-2.5" : "pb-0"
+            isExpanded ? "border-b border-border/60 pb-2.5" : "pb-0"
           )}
         >
           <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
@@ -158,7 +158,7 @@ export function CardDataAts({
                 "flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-lg border font-bold",
                 currentAts.jenis_kelamin === "L" ||
                   currentAts.jenis_kelamin === "Laki-laki"
-                  ? "border-blue-200 dark:border-blue-800/80 bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300"
+                  ? "border-primary/20 bg-primary/10 text-primary"
                   : "border-rose-200 dark:border-rose-800/80 bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300"
               )}
             >
@@ -167,21 +167,21 @@ export function CardDataAts({
 
             <div className="space-y-0.5 min-w-0">
               <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-                <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 leading-tight truncate">
+                <h3 className="text-xs sm:text-sm font-bold text-foreground leading-tight truncate">
                   {currentAts.nama_lengkap}
                 </h3>
                 {/* Jenjang Badge */}
-                <span className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] sm:text-2xs font-bold border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/60 text-blue-800 dark:text-blue-300 shrink-0">
+                <span className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] sm:text-2xs font-bold border border-primary/20 bg-primary/10 text-primary shrink-0">
                   <BookOpen className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                   <span>{jenjangInfo.badgeLabel}</span>
                 </span>
               </div>
 
-              <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-2xs sm:text-xs text-slate-500 dark:text-slate-400 font-medium">
-                <span className="font-bold text-slate-800 dark:text-slate-200 font-mono" suppressHydrationWarning>
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-2xs sm:text-xs text-muted-foreground font-medium">
+                <span className="font-bold text-foreground font-mono" suppressHydrationWarning>
                   {ageString}
                 </span>
-                <span className="text-slate-300 dark:text-slate-600">•</span>
+                <span className="text-muted-foreground/40">•</span>
                 <span>
                   {currentAts.jenis_kelamin === "L" ||
                   currentAts.jenis_kelamin === "Laki-laki"
@@ -190,8 +190,8 @@ export function CardDataAts({
                 </span>
                 {currentAts.kelurahan && (
                   <>
-                    <span className="text-slate-300 dark:text-slate-600">•</span>
-                    <span className="text-blue-700 dark:text-blue-400 font-semibold truncate">
+                    <span className="text-muted-foreground/40">•</span>
+                    <span className="text-primary font-semibold truncate">
                       {rtRwHeaderStr}Kel. {currentAts.kelurahan}
                     </span>
                   </>
@@ -203,13 +203,13 @@ export function CardDataAts({
           {/* Status Badge & Toggle Button */}
           <div className="flex items-center gap-1.5 self-start sm:self-center shrink-0">
             {isApproved ? (
-              <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 text-[10px] sm:text-2xs font-bold text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
-                <CheckCircle2 className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-emerald-600 dark:text-emerald-400" />
+              <span className="inline-flex items-center gap-1 rounded-md bg-teal-500/10 text-teal-700 dark:text-teal-300 px-2 py-0.5 text-[10px] sm:text-2xs font-bold border border-teal-500/20">
+                <CheckCircle2 className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-primary" />
                 <span>TERVERIFIKASI</span>
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1 rounded-md bg-amber-50 dark:bg-amber-950/60 px-2 py-0.5 text-[10px] sm:text-2xs font-bold text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-800">
-                <Clock className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-amber-600 dark:text-amber-400" />
+              <span className="inline-flex items-center gap-1 rounded-md bg-secondary/15 text-amber-900 dark:text-amber-200 px-2 py-0.5 text-[10px] sm:text-2xs font-bold border border-secondary/30">
+                <Clock className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-secondary" />
                 <span>MENUNGGU</span>
               </span>
             )}
@@ -222,8 +222,8 @@ export function CardDataAts({
               className={cn(
                 "inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] sm:text-2xs font-bold transition-all active:scale-95 cursor-pointer border print:hidden",
                 isExpanded
-                  ? "border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300"
-                  : "border-blue-300 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/60 hover:bg-blue-100 text-blue-800 dark:text-blue-300"
+                  ? "border-border bg-muted/60 hover:bg-muted text-muted-foreground"
+                  : "border-primary/20 bg-primary/10 hover:bg-primary/20 text-primary"
               )}
               title={isExpanded ? "Sembunyikan Detail Kartu" : "Tampilkan Detail Kartu"}
             >
@@ -242,11 +242,11 @@ export function CardDataAts({
           {/* Info Grid: Orang Tua / Wali & Alamat Domisili */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
             {/* Orang Tua / Wali */}
-            <div className="flex items-center gap-2 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/80 p-2 min-w-0">
-              <User className="h-3.5 w-3.5 text-slate-500 shrink-0" />
-              <span className="text-slate-500 font-bold text-2xs shrink-0">WALI:</span>
+            <div className="flex items-center gap-2 rounded-lg bg-muted/40 border border-border/70 p-2 min-w-0">
+              <User className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+              <span className="text-muted-foreground font-bold text-2xs shrink-0">WALI:</span>
               <span
-                className="font-bold text-slate-900 dark:text-slate-100 truncate"
+                className="font-bold text-foreground truncate"
                 title={`${currentAts.nama_orangtua} (${currentAts.tinggal_bersama})`}
               >
                 {currentAts.nama_orangtua} ({currentAts.tinggal_bersama})
@@ -254,11 +254,11 @@ export function CardDataAts({
             </div>
 
             {/* Alamat Domisili */}
-            <div className="flex items-center gap-2 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/80 p-2 min-w-0">
-              <MapPin className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
-              <span className="text-slate-500 font-bold text-2xs shrink-0">ALAMAT:</span>
+            <div className="flex items-center gap-2 rounded-lg bg-muted/40 border border-border/70 p-2 min-w-0">
+              <MapPin className="h-3.5 w-3.5 text-primary shrink-0" />
+              <span className="text-muted-foreground font-bold text-2xs shrink-0">ALAMAT:</span>
               <span
-                className="font-medium text-slate-800 dark:text-slate-200 truncate"
+                className="font-medium text-foreground truncate"
                 title={alamatLengkap || "-"}
               >
                 {alamatLengkap || "-"}
@@ -269,15 +269,15 @@ export function CardDataAts({
           {/* Info Grid: Keinginan Sekolah & Alasan Tidak Sekolah */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
             {/* Keinginan Sekolah */}
-            <div className="flex items-center gap-2 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/80 p-2 min-w-0">
-              <HelpCircle className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
-              <span className="text-slate-500 font-bold text-2xs shrink-0">MINAT:</span>
+            <div className="flex items-center gap-2 rounded-lg bg-muted/40 border border-border/70 p-2 min-w-0">
+              <HelpCircle className="h-3.5 w-3.5 text-primary shrink-0" />
+              <span className="text-muted-foreground font-bold text-2xs shrink-0">MINAT:</span>
               <span
                 className={cn(
                   "font-bold truncate px-1.5 py-0.5 rounded text-2xs",
                   normalizeKeinginanSekolah(currentAts.keinginan_sekolah) === "Masih Ada"
-                    ? "bg-emerald-100 dark:bg-emerald-950/80 text-emerald-900 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800"
-                    : "bg-amber-100 dark:bg-amber-950/80 text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-800"
+                    ? "bg-teal-500/10 text-teal-800 dark:text-teal-300 border border-teal-500/20"
+                    : "bg-secondary/15 text-amber-900 dark:text-amber-200 border border-secondary/30"
                 )}
               >
                 {normalizeKeinginanSekolah(currentAts.keinginan_sekolah) === "Masih Ada"
@@ -287,11 +287,11 @@ export function CardDataAts({
             </div>
 
             {/* Alasan Tidak Sekolah */}
-            <div className="flex items-center gap-2 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/80 p-2 min-w-0">
-              <AlertCircle className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
-              <span className="text-slate-500 font-bold text-2xs shrink-0">ALASAN:</span>
+            <div className="flex items-center gap-2 rounded-lg bg-muted/40 border border-border/70 p-2 min-w-0">
+              <AlertCircle className="h-3.5 w-3.5 text-secondary shrink-0" />
+              <span className="text-muted-foreground font-bold text-2xs shrink-0">ALASAN:</span>
               <span
-                className="font-bold text-slate-900 dark:text-slate-100 truncate"
+                className="font-bold text-foreground truncate"
                 title={currentAts.alasan_tidak_sekolah}
               >
                 {currentAts.alasan_tidak_sekolah}
@@ -301,8 +301,8 @@ export function CardDataAts({
 
           {/* Keterangan Alasan Tambahan jika ada */}
           {currentAts.keterangan && (
-            <div className="rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/80 p-2 text-xs text-slate-700 dark:text-slate-300 flex items-start gap-2">
-              <span className="text-2xs font-bold text-blue-700 dark:text-blue-300 shrink-0 bg-blue-100 dark:bg-blue-950 px-1.5 py-0.5 rounded">KET</span>
+            <div className="rounded-lg bg-muted/40 border border-border/70 p-2 text-xs text-foreground flex items-start gap-2">
+              <span className="text-2xs font-bold text-primary shrink-0 bg-primary/10 border border-primary/20 px-1.5 py-0.5 rounded">KET</span>
               <p className="leading-relaxed italic">&ldquo;{currentAts.keterangan}&rdquo;</p>
             </div>
           )}
@@ -311,11 +311,11 @@ export function CardDataAts({
           {(currentAts.sekolah_sebelumnya || currentAts.kelas_terakhir) && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
               {currentAts.sekolah_sebelumnya && (
-                <div className="flex items-center gap-2 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/80 p-2 min-w-0">
-                  <School className="h-3.5 w-3.5 text-slate-500 shrink-0" />
-                  <span className="text-slate-500 font-bold text-2xs shrink-0">SEKOLAH:</span>
+                <div className="flex items-center gap-2 rounded-lg bg-muted/40 border border-border/70 p-2 min-w-0">
+                  <School className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                  <span className="text-muted-foreground font-bold text-2xs shrink-0">SEKOLAH:</span>
                   <span
-                    className="font-bold text-slate-900 dark:text-slate-100 truncate"
+                    className="font-bold text-foreground truncate"
                     title={currentAts.sekolah_sebelumnya}
                   >
                     {currentAts.sekolah_sebelumnya}
@@ -323,11 +323,11 @@ export function CardDataAts({
                 </div>
               )}
               {currentAts.kelas_terakhir && (
-                <div className="flex items-center gap-2 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/80 p-2 min-w-0">
-                  <BookOpen className="h-3.5 w-3.5 text-slate-500 shrink-0" />
-                  <span className="text-slate-500 font-bold text-2xs shrink-0">KELAS:</span>
+                <div className="flex items-center gap-2 rounded-lg bg-muted/40 border border-border/70 p-2 min-w-0">
+                  <BookOpen className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                  <span className="text-muted-foreground font-bold text-2xs shrink-0">KELAS:</span>
                   <span
-                    className="font-bold text-slate-900 dark:text-slate-100 truncate"
+                    className="font-bold text-foreground truncate"
                     title={currentAts.kelas_terakhir}
                   >
                     {currentAts.kelas_terakhir}
@@ -339,14 +339,14 @@ export function CardDataAts({
 
           {/* Action Buttons Bar: VALIDASI, KEMBALI BERSEKOLAH, EDIT, HAPUS */}
           {((!isApproved && canValidate) || canPerformActions) && (
-            <div className="grid grid-cols-1 sm:flex sm:items-center gap-2 pt-2 border-t border-slate-100 dark:border-slate-800 w-full print:hidden">
+            <div className="grid grid-cols-1 sm:flex sm:items-center gap-2 pt-2 border-t border-border/60 w-full print:hidden">
               {/* 1. Tombol Validasi (jika status masih pending) */}
               {!isApproved && canValidate && (
                 <button
                   type="button"
                   onClick={handleValidate}
                   disabled={isPendingValidate}
-                  className="flex-1 min-h-[38px] h-9 flex items-center justify-center gap-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 active:scale-[0.98] px-3 text-xs font-bold text-white transition-all shadow-xs disabled:opacity-50 cursor-pointer"
+                  className="flex-1 min-h-[38px] h-9 flex items-center justify-center gap-1.5 rounded-lg bg-secondary hover:bg-secondary-hover active:scale-[0.98] px-3 text-xs font-bold text-secondary-foreground transition-all shadow-xs disabled:opacity-50 cursor-pointer"
                   title="Validasi Data ATS"
                 >
                   {isPendingValidate ? (
@@ -367,7 +367,7 @@ export function CardDataAts({
                   <button
                     type="button"
                     onClick={() => setIsKembaliSekolahOpen(true)}
-                    className="flex-1 min-h-[38px] h-9 flex items-center justify-center gap-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] px-3 text-xs font-bold text-white transition-all shadow-xs cursor-pointer"
+                    className="flex-1 min-h-[38px] h-9 flex items-center justify-center gap-1.5 rounded-lg bg-primary hover:bg-primary-hover active:scale-[0.98] px-3 text-xs font-bold text-primary-foreground transition-all shadow-xs cursor-pointer"
                     title="Catat Kembali Bersekolah"
                   >
                     <GraduationCap className="h-3.5 w-3.5 shrink-0" />
@@ -379,10 +379,10 @@ export function CardDataAts({
                     <button
                       type="button"
                       onClick={() => setIsEditOpen(true)}
-                      className="flex-1 min-h-[38px] h-9 flex items-center justify-center gap-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 px-3 text-xs font-bold text-slate-800 dark:text-slate-200 transition-all cursor-pointer"
+                      className="flex-1 min-h-[38px] h-9 flex items-center justify-center gap-1.5 rounded-lg border border-border bg-muted hover:bg-muted/80 text-foreground px-3 text-xs font-bold transition-all cursor-pointer"
                       title="Edit Data ATS"
                     >
-                      <Pencil className="h-3.5 w-3.5 shrink-0 text-slate-600 dark:text-slate-300" />
+                      <Pencil className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                       <span>EDIT</span>
                     </button>
 
@@ -390,10 +390,10 @@ export function CardDataAts({
                     <button
                       type="button"
                       onClick={() => setIsDeleteOpen(true)}
-                      className="min-h-[38px] h-9 flex items-center justify-center gap-1.5 rounded-lg border border-red-200 dark:border-red-900/60 bg-red-50 dark:bg-red-950/40 hover:bg-red-100 text-red-700 dark:text-red-300 px-3 text-xs font-bold transition-all cursor-pointer"
+                      className="min-h-[38px] h-9 flex items-center justify-center gap-1.5 rounded-lg border border-rose-200 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 text-rose-700 dark:text-rose-300 px-3 text-xs font-bold transition-all cursor-pointer"
                       title="Hapus Data ATS"
                     >
-                      <Trash2 className="h-3.5 w-3.5 shrink-0 text-red-600" />
+                      <Trash2 className="h-3.5 w-3.5 shrink-0 text-rose-600" />
                       <span>HAPUS</span>
                     </button>
                   </div>

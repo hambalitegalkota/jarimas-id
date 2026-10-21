@@ -533,9 +533,9 @@ export function RekapDataAtsClientView({
         <div className="flex items-center justify-between print:hidden print-hide-on-daftar-nama">
           <Link
             href={backHref}
-            className="inline-flex min-h-[44px] h-11 items-center gap-2 rounded-xl bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 px-4 text-sm font-bold text-slate-800 dark:text-slate-200 transition-all hover:bg-slate-50 dark:hover:bg-slate-800 shadow-xs"
+            className="inline-flex min-h-[40px] h-10 items-center gap-2 rounded-lg bg-card border border-border px-3.5 text-xs font-semibold text-foreground transition-all hover:bg-muted shadow-2xs"
           >
-            <ArrowLeft className="h-4 w-4 text-blue-700 dark:text-blue-400" />
+            <ArrowLeft className="h-4 w-4 text-primary" />
             <span>{backLabel || "Kembali ke Komunitas"}</span>
           </Link>
         </div>
@@ -545,24 +545,24 @@ export function RekapDataAtsClientView({
       {/* 1. BREADCRUMB & HERO HEADER                               */}
       {/* ========================================================= */}
       <div className="space-y-3 print-hide-on-daftar-nama">
-        <nav className="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
-          <Link href="/" className="hover:text-blue-600 transition-colors flex items-center gap-1">
+        <nav className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
+          <Link href="/" className="hover:text-primary transition-colors flex items-center gap-1">
             <span>Beranda</span>
           </Link>
-          <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
-          <span className="text-slate-900 dark:text-slate-200 font-bold">
+          <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/40" />
+          <span className="text-foreground font-bold">
             {customScopeTitle || "Pantau Hasil Pendataan ATS"}
           </span>
         </nav>
 
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-br from-slate-900 via-indigo-950 to-blue-950 p-6 sm:p-8 rounded-3xl text-white shadow-xl shadow-slate-950/10 border border-slate-700/50 relative overflow-hidden print-card-item break-inside-avoid">
-          {/* Background Glow */}
-          <div className="absolute -right-16 -top-16 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl pointer-events-none print:hidden" />
-          <div className="absolute -left-16 -bottom-16 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none print:hidden" />
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-br from-teal-950 via-teal-900 to-slate-900 p-6 sm:p-7 rounded-lg text-white shadow-sm border border-teal-800/40 relative overflow-hidden print-card-item break-inside-avoid">
+          {/* Subtle Glow */}
+          <div className="absolute -right-16 -top-16 w-64 h-64 bg-teal-500/10 rounded-full blur-3xl pointer-events-none print:hidden" />
+          <div className="absolute -left-16 -bottom-16 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl pointer-events-none print:hidden" />
 
           <div className="space-y-2 relative z-10 max-w-2xl">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="rounded-full bg-blue-500/20 border border-blue-400/30 px-3 py-0.5 text-xs font-black text-blue-300 tracking-wide uppercase">
+              <span className="rounded-lg bg-secondary/20 border border-secondary/40 px-3 py-0.5 text-xs font-black text-amber-300 tracking-wide uppercase">
                 {customScopeTitle ? `BERJENJANG: ${customScopeTitle.toUpperCase()}` : "PENDATAAN ANAK TIDAK SEKOLAH (ATS)"}
               </span>
               <span className="text-xs text-slate-300 font-medium">
@@ -581,9 +581,9 @@ export function RekapDataAtsClientView({
             <button
               type="button"
               onClick={() => window.print()}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/20 text-xs font-bold text-white transition-all cursor-pointer backdrop-blur-md active:scale-98 shadow-sm"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white/10 hover:bg-white/20 border border-white/20 text-xs font-bold text-white transition-all cursor-pointer backdrop-blur-md active:scale-98 shadow-sm"
             >
-              <Printer className="h-4 w-4 text-blue-300" />
+              <Printer className="h-4 w-4 text-amber-300" />
               <span>Cetak Rekap ATS</span>
             </button>
             <div className="text-2xs text-slate-400 font-medium hidden md:block">
@@ -596,39 +596,39 @@ export function RekapDataAtsClientView({
       {/* ========================================================= */}
       {/* 2. LEVEL SELECTOR CONTROLS (KOTA / KECAMATAN / KELURAHAN) */}
       {/* ========================================================= */}
-      <div className="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-3xl border-2 border-slate-200 dark:border-slate-800 shadow-xs space-y-4 print-hide-on-daftar-nama print-card-item break-inside-avoid print:p-3 print:space-y-0 print:border-slate-300 print:rounded-2xl">
+      <div className="bg-card p-4 sm:p-5 rounded-lg border border-border shadow-sm space-y-4 print-hide-on-daftar-nama print-card-item break-inside-avoid print:p-3 print:space-y-0 print:border-slate-300 print:rounded-lg">
         {!hideTingkatSelector && (
           <div className="space-y-3.5 print:hidden">
             {/* Header / Selector Label */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
               <div className="flex items-center gap-2">
-                <div className="p-1.5 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border border-blue-200/50 dark:border-blue-800/50">
+                <div className="p-1.5 rounded-lg bg-primary/10 text-primary border border-primary/20">
                   <Layers className="h-4 w-4" />
                 </div>
                 <div>
-                  <span className="text-2xs font-black uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                  <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">
                     Filter Tingkat Analisis ATS
                   </span>
-                  <h3 className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-slate-100">
+                  <h3 className="text-xs sm:text-sm font-bold text-foreground">
                     Pilih Cakupan Wilayah Rekapitulasi ATS
                   </h3>
                 </div>
               </div>
-              <span className="text-2xs text-slate-400 dark:text-slate-500 font-medium">
+              <span className="text-2xs text-muted-foreground font-medium">
                 Pilih tingkat agregasi untuk memperbarui grafik &amp; data ATS
               </span>
             </div>
 
             {/* Level Hierarchy Buttons (Grid 3 Cols, Zero Overflow, No Scrollbar) */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 p-1.5 bg-slate-100/80 dark:bg-slate-800/60 rounded-2xl border border-slate-200/80 dark:border-slate-700/80">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 p-1.5 bg-muted/60 rounded-lg border border-border">
               <button
                 type="button"
                 onClick={() => setSelectedTingkat("kota")}
                 className={cn(
-                  "py-2.5 px-3 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-2 cursor-pointer border",
+                  "py-2.5 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer border",
                   selectedTingkat === "kota"
-                    ? "bg-slate-900 text-white border-slate-900 dark:bg-blue-600 dark:border-blue-600 shadow-xs"
-                    : "bg-transparent border-transparent text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-white/80 dark:hover:bg-slate-700/60"
+                    ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                    : "bg-transparent border-transparent text-muted-foreground hover:text-foreground hover:bg-card"
                 )}
               >
                 <span>🏢</span>
@@ -639,10 +639,10 @@ export function RekapDataAtsClientView({
                 type="button"
                 onClick={() => setSelectedTingkat("kecamatan")}
                 className={cn(
-                  "py-2.5 px-3 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-2 cursor-pointer border",
+                  "py-2.5 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer border",
                   selectedTingkat === "kecamatan"
-                    ? "bg-blue-600 text-white border-blue-600 shadow-xs"
-                    : "bg-transparent border-transparent text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white/80 dark:hover:bg-slate-700/60"
+                    ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                    : "bg-transparent border-transparent text-muted-foreground hover:text-primary hover:bg-card"
                 )}
               >
                 <span>🏛️</span>
@@ -653,10 +653,10 @@ export function RekapDataAtsClientView({
                 type="button"
                 onClick={() => setSelectedTingkat("kelurahan")}
                 className={cn(
-                  "py-2.5 px-3 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-2 cursor-pointer border",
+                  "py-2.5 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer border",
                   selectedTingkat === "kelurahan"
-                    ? "bg-indigo-600 text-white border-indigo-600 shadow-xs"
-                    : "bg-transparent border-transparent text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-white/80 dark:hover:bg-slate-700/60"
+                    ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                    : "bg-transparent border-transparent text-muted-foreground hover:text-primary hover:bg-card"
                 )}
               >
                 <span>🏘️</span>
@@ -666,13 +666,13 @@ export function RekapDataAtsClientView({
 
             {/* Sub-Filters: Dedicated Panel for Kecamatan */}
             {selectedTingkat === "kecamatan" && (
-              <div className="p-3.5 sm:p-4 rounded-2xl bg-blue-50/70 dark:bg-blue-950/25 border-2 border-blue-200/80 dark:border-blue-900/50 space-y-2.5">
+              <div className="p-3.5 sm:p-4 rounded-lg bg-primary/5 border border-primary/20 space-y-2.5">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-                  <span className="text-xs font-extrabold text-blue-900 dark:text-blue-200 flex items-center gap-1.5">
-                    <MapPin className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+                  <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                    <MapPin className="h-3.5 w-3.5 text-primary" />
                     Pilih Kecamatan:
                   </span>
-                  <span className="text-2xs text-slate-500 dark:text-slate-400 font-medium">
+                  <span className="text-2xs text-muted-foreground font-medium">
                     Klik salah satu kecamatan untuk melihat data spesifik
                   </span>
                 </div>
@@ -684,10 +684,10 @@ export function RekapDataAtsClientView({
                       type="button"
                       onClick={() => setSelectedKecamatan(kec)}
                       className={cn(
-                        "px-3 py-2.5 rounded-xl text-xs font-extrabold transition-all text-center border-2 cursor-pointer flex items-center justify-center gap-1.5",
+                        "px-3 py-2.5 rounded-lg text-xs font-bold transition-all text-center border cursor-pointer flex items-center justify-center gap-1.5",
                         selectedKecamatan === kec
-                          ? "bg-blue-600 text-white border-blue-600 shadow-xs"
-                          : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-blue-300 hover:bg-blue-50/50 dark:hover:bg-slate-700/60"
+                          ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                          : "bg-card text-foreground border-border hover:border-primary/40 hover:bg-muted"
                       )}
                     >
                       <span>Kec. {kec}</span>
@@ -699,13 +699,13 @@ export function RekapDataAtsClientView({
 
             {/* Sub-Filters: Dedicated 2-Step Panel for Kelurahan */}
             {selectedTingkat === "kelurahan" && (
-              <div className="p-3.5 sm:p-4 rounded-2xl bg-indigo-50/70 dark:bg-indigo-950/25 border-2 border-indigo-200/80 dark:border-indigo-900/50 space-y-3">
+              <div className="p-3.5 sm:p-4 rounded-lg bg-primary/5 border border-primary/20 space-y-3">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-                  <span className="text-xs font-extrabold text-indigo-900 dark:text-indigo-200 flex items-center gap-1.5">
-                    <MapPin className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
+                  <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                    <MapPin className="h-3.5 w-3.5 text-primary" />
                     Filter Wilayah Kelurahan ATS:
                   </span>
-                  <span className="text-2xs text-slate-500 dark:text-slate-400 font-medium">
+                  <span className="text-2xs text-muted-foreground font-medium">
                     Langkah 1: Tentukan Kecamatan &bull; Langkah 2: Pilih Kelurahan
                   </span>
                 </div>
@@ -713,8 +713,8 @@ export function RekapDataAtsClientView({
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 items-end">
                   {/* Step 1: Pilih Kecamatan */}
                   <div className="lg:col-span-7 space-y-1.5">
-                    <label className="text-2xs font-black uppercase tracking-wider text-slate-600 dark:text-slate-400 flex items-center gap-1.5">
-                      <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-indigo-600 text-white text-[10px] font-black">
+                    <label className="text-2xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                      <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-primary text-primary-foreground text-[10px] font-bold">
                         1
                       </span>
                       <span>Kecamatan:</span>
@@ -730,10 +730,10 @@ export function RekapDataAtsClientView({
                             if (firstKel) setSelectedKelurahan(firstKel.nama);
                           }}
                           className={cn(
-                            "px-2.5 py-2 rounded-xl text-2xs font-extrabold transition-all text-center border-2 truncate cursor-pointer",
+                            "px-2.5 py-2 rounded-lg text-2xs font-bold transition-all text-center border truncate cursor-pointer",
                             selectedKecamatan === kec
-                              ? "bg-indigo-700 text-white border-indigo-700 shadow-xs"
-                              : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-indigo-300 hover:bg-indigo-50/50 dark:hover:bg-slate-700/60"
+                              ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                              : "bg-card text-foreground border-border hover:border-primary/40 hover:bg-muted"
                           )}
                         >
                           {kec}
@@ -744,14 +744,14 @@ export function RekapDataAtsClientView({
 
                   {/* Step 2: Pilih Kelurahan */}
                   <div className="lg:col-span-5 space-y-1.5">
-                    <div className="flex items-center justify-between text-2xs font-black uppercase tracking-wider text-slate-600 dark:text-slate-400">
+                    <div className="flex items-center justify-between text-2xs font-bold uppercase tracking-wider text-muted-foreground">
                       <label className="flex items-center gap-1.5">
-                        <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-indigo-600 text-white text-[10px] font-black">
+                        <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-primary text-primary-foreground text-[10px] font-bold">
                           2
                         </span>
                         <span>Kelurahan ({selectedKecamatan}):</span>
                       </label>
-                      <span className="text-indigo-700 dark:text-indigo-400 font-extrabold">
+                      <span className="text-primary font-bold">
                         {daftarKelurahanInSelectedKecamatan.length} Kel.
                       </span>
                     </div>
@@ -759,7 +759,7 @@ export function RekapDataAtsClientView({
                       <select
                         value={selectedKelurahan}
                         onChange={(e) => setSelectedKelurahan(e.target.value)}
-                        className="w-full bg-white dark:bg-slate-800 border-2 border-indigo-300 dark:border-indigo-700 text-slate-900 dark:text-slate-100 text-xs font-bold rounded-xl px-3.5 py-2.5 focus:outline-hidden focus:border-indigo-500 cursor-pointer shadow-xs appearance-none pr-9 transition-colors"
+                        className="w-full bg-background border border-primary/30 text-foreground text-xs font-bold rounded-lg px-3.5 py-2.5 focus:outline-hidden focus:border-primary cursor-pointer shadow-xs appearance-none pr-9 transition-colors"
                       >
                         {daftarKelurahanInSelectedKecamatan.map((kel) => (
                           <option key={kel.nama} value={kel.nama}>
@@ -767,7 +767,7 @@ export function RekapDataAtsClientView({
                           </option>
                         ))}
                       </select>
-                      <ChevronDown className="h-4 w-4 text-indigo-600 dark:text-indigo-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                      <ChevronDown className="h-4 w-4 text-primary absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                     </div>
                   </div>
                 </div>
@@ -777,11 +777,11 @@ export function RekapDataAtsClientView({
         )}
 
         {/* Selected Wilayah Indicator Badge */}
-        <div className="flex items-center justify-between pt-2.5 border-t border-slate-100 dark:border-slate-800/80 flex-wrap gap-2 text-xs print:pt-0 print:border-none">
+        <div className="flex items-center justify-between pt-2.5 border-t border-border flex-wrap gap-2 text-xs print:pt-0 print:border-none">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="h-2.5 w-2.5 rounded-full bg-blue-500 animate-pulse print:hidden shrink-0" />
-            <span className="font-bold text-slate-500 dark:text-slate-400">Wilayah Rekap ATS:</span>
-            <strong className="text-sm font-black text-slate-900 dark:text-slate-100">
+            <span className="h-2.5 w-2.5 rounded-full bg-primary animate-pulse print:hidden shrink-0" />
+            <span className="font-bold text-muted-foreground">Wilayah Rekap ATS:</span>
+            <strong className="text-sm font-black text-foreground">
               {currentWilayahData.tingkat === "kota" && "Seluruh Wilayah Kota Tegal"}
               {currentWilayahData.tingkat === "kecamatan" && `Kecamatan ${currentWilayahData.nama}, Kota Tegal`}
               {currentWilayahData.tingkat === "kelurahan" && (
@@ -793,8 +793,8 @@ export function RekapDataAtsClientView({
             </strong>
           </div>
 
-          <div className="flex items-center gap-2 text-2xs font-bold text-slate-500 dark:text-slate-400">
-            <span className="px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono">
+          <div className="flex items-center gap-2 text-2xs font-bold text-muted-foreground">
+            <span className="px-2 py-0.5 rounded-lg bg-muted border border-border font-mono">
               {initialRw ? `RW ${initialRw} (Kel. ${currentWilayahData.nama})` : "Intervensi: SKB & PKBM Kota Tegal"}
             </span>
           </div>
@@ -802,13 +802,13 @@ export function RekapDataAtsClientView({
       </div>
 
       {/* Ketentuan Privasi & Tingkat Data Rekapitulasi ATS */}
-      <div className="rounded-2xl border-2 border-amber-200 dark:border-amber-900 bg-amber-50/70 dark:bg-amber-950/30 p-4 sm:p-5 flex items-start gap-3 shadow-xs print-hide-on-daftar-nama print-card-item break-inside-avoid print:p-3">
-        <ShieldCheck className="h-5 w-5 text-amber-700 dark:text-amber-400 shrink-0 mt-0.5" />
+      <div className="rounded-lg border border-secondary/30 bg-secondary/10 p-4 sm:p-5 flex items-start gap-3 shadow-xs print-hide-on-daftar-nama print-card-item break-inside-avoid print:p-3">
+        <ShieldCheck className="h-5 w-5 text-secondary shrink-0 mt-0.5" />
         <div className="space-y-1">
-          <h4 className="text-sm sm:text-base font-bold text-amber-950 dark:text-amber-200">
+          <h4 className="text-sm sm:text-base font-bold text-amber-900 dark:text-amber-200">
             Data Rekapitulasi Wilayah &amp; Perlindungan Privasi ATS
           </h4>
-          <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
+          <p className="text-xs sm:text-sm text-foreground leading-relaxed">
             Data yang ditampilkan pada halaman ini adalah <strong>Data Rekapitulasi Hasil Pendataan ATS</strong>. Sesuai ketentuan perlindungan privasi data, rincian identitas lengkap anak tidak sekolah hanya dapat diakses di <strong>Tingkat KELURAHAN</strong> oleh <strong>Admin di Komunitas Warga Kita</strong>, <strong>Admin PAUD</strong>, <strong>Admin Posyandu</strong> dan <strong>Admin PKBM dan SKB</strong>.
           </p>
         </div>
@@ -817,15 +817,15 @@ export function RekapDataAtsClientView({
       {/* ========================================================= */}
       {/* 4. SECTION NAVIGATION TABS                                */}
       {/* ========================================================= */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 bg-slate-100 dark:bg-slate-800/80 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-700 print:hidden print-hide-on-daftar-nama">
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 bg-muted/60 p-1.5 rounded-lg border border-border print:hidden print-hide-on-daftar-nama">
         <button
           type="button"
           onClick={() => setActiveTabSection("semua")}
           className={cn(
-            "px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0",
+            "px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer shrink-0 border",
             activeTabSection === "semua"
-              ? "bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-xs font-black"
-              : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+              ? "bg-primary text-primary-foreground border-primary shadow-xs font-black"
+              : "bg-transparent border-transparent text-muted-foreground hover:text-foreground hover:bg-card"
           )}
         >
           📊 Ringkasan Visual ATS
@@ -835,10 +835,10 @@ export function RekapDataAtsClientView({
           type="button"
           onClick={() => setActiveTabSection("kategori")}
           className={cn(
-            "px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0",
+            "px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer shrink-0 border",
             activeTabSection === "kategori"
-              ? "bg-blue-600 text-white shadow-xs font-black"
-              : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+              ? "bg-primary text-primary-foreground border-primary shadow-xs font-black"
+              : "bg-transparent border-transparent text-muted-foreground hover:text-foreground hover:bg-card"
           )}
         >
           🎯 Kategori &amp; Keinginan Sekolah
@@ -848,10 +848,10 @@ export function RekapDataAtsClientView({
           type="button"
           onClick={() => setActiveTabSection("jenjang_usia")}
           className={cn(
-            "px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0",
+            "px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer shrink-0 border",
             activeTabSection === "jenjang_usia"
-              ? "bg-indigo-600 text-white shadow-xs font-black"
-              : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+              ? "bg-primary text-primary-foreground border-primary shadow-xs font-black"
+              : "bg-transparent border-transparent text-muted-foreground hover:text-foreground hover:bg-card"
           )}
         >
           📚 Jenjang Asal &amp; Kelompok Usia
@@ -861,10 +861,10 @@ export function RekapDataAtsClientView({
           type="button"
           onClick={() => setActiveTabSection("tabel")}
           className={cn(
-            "px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0",
+            "px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer shrink-0 border",
             activeTabSection === "tabel"
-              ? "bg-slate-900 text-white dark:bg-slate-700 shadow-xs font-black"
-              : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+              ? "bg-primary text-primary-foreground border-primary shadow-xs font-black"
+              : "bg-transparent border-transparent text-muted-foreground hover:text-foreground hover:bg-card"
           )}
         >
           📑 Tabel Rekapitulasi Berjenjang (27 Kelurahan)
@@ -878,14 +878,14 @@ export function RekapDataAtsClientView({
         <div className="space-y-4 print-hide-on-daftar-nama">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 print-section-header break-after-avoid">
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white flex items-center justify-center font-bold shadow-xs shrink-0">
+              <div className="h-9 w-9 rounded-lg bg-primary text-primary-foreground flex items-center justify-center font-bold shadow-xs shrink-0">
                 <PieChartIcon className="h-4.5 w-4.5" />
               </div>
               <div className="min-w-0">
-                <h2 className="text-base sm:text-lg font-black text-slate-900 dark:text-slate-100">
+                <h2 className="text-base sm:text-lg font-black text-foreground">
                   Kategori ATS &amp; Kesiapan Kembali Bersekolah
                 </h2>
-                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                <p className="text-xs text-muted-foreground font-medium">
                   Status putus sekolah, lulus tidak melanjutkan, serta kemauan anak untuk kembali belajar.
                 </p>
               </div>
@@ -895,10 +895,10 @@ export function RekapDataAtsClientView({
                 type="button"
                 onClick={toggleAll}
                 className={cn(
-                  "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all border cursor-pointer print:hidden shrink-0",
+                  "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all border cursor-pointer print:hidden shrink-0",
                   isAllHidden
-                    ? "bg-blue-600 hover:bg-blue-700 text-white border-blue-600 shadow-xs"
-                    : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 shadow-2xs"
+                    ? "bg-primary hover:bg-primary-hover text-primary-foreground border-primary shadow-xs"
+                    : "bg-card text-foreground border-border hover:bg-muted shadow-2xs"
                 )}
                 title={isAllHidden ? "Tampilkan Seluruh Grafik" : "Sembunyikan Seluruh Grafik"}
               >
@@ -909,12 +909,12 @@ export function RekapDataAtsClientView({
                   </>
                 ) : (
                   <>
-                    <EyeOff className="h-3.5 w-3.5 text-slate-500" />
+                    <EyeOff className="h-3.5 w-3.5 text-muted-foreground" />
                     <span>Sembunyikan Semua Grafik</span>
                   </>
                 )}
               </button>
-              <span className="hidden sm:inline-block text-xs font-extrabold px-3 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-800 dark:text-blue-300 border border-blue-200 dark:border-blue-800 font-mono print:inline-block shrink-0">
+              <span className="hidden sm:inline-block text-xs font-bold px-3 py-1.5 rounded-lg bg-primary/10 text-primary border border-primary/20 font-mono print:inline-block shrink-0">
                 Total: {currentWilayahData.totalAts} Anak
               </span>
             </div>
@@ -922,18 +922,18 @@ export function RekapDataAtsClientView({
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 print-cards-grid">
             {/* 5.1 Kategori ATS Breakdown */}
-            <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-6 space-y-4 shadow-xs print-card-item break-inside-avoid print:p-5 print:rounded-2xl flex flex-col justify-between">
+            <div className="rounded-lg border border-border bg-card p-4 sm:p-5 space-y-4 shadow-sm print-card-item break-inside-avoid print:p-4 print:rounded-lg flex flex-col justify-between">
               <div>
-                <div className="flex items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3.5">
+                <div className="flex items-center justify-between gap-3 border-b border-border/60 pb-3">
                   <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center shrink-0 shadow-2xs">
+                    <div className="h-8 w-8 rounded-lg bg-primary text-primary-foreground flex items-center justify-center shrink-0 shadow-2xs">
                       <BarChart3 className="h-4.5 w-4.5" />
                     </div>
                     <div className="min-w-0">
-                      <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-slate-100 truncate">
+                      <h3 className="text-sm sm:text-base font-bold text-foreground truncate">
                         Distribusi Kategori ATS
                       </h3>
-                      <p className="text-2xs sm:text-xs text-slate-500 font-medium truncate">
+                      <p className="text-2xs sm:text-xs text-muted-foreground font-medium truncate">
                         Status DO, LTM, dan Belum Pernah Sekolah
                       </p>
                     </div>
@@ -1116,18 +1116,18 @@ export function RekapDataAtsClientView({
             </div>
 
             {/* 5.2 Keinginan Bersekolah Kembali & Rasio Gender */}
-            <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-6 space-y-4 shadow-xs print-card-item break-inside-avoid print:p-5 print:rounded-2xl flex flex-col justify-between">
+            <div className="rounded-lg border border-border bg-card p-4 sm:p-5 space-y-4 shadow-sm print-card-item break-inside-avoid print:p-4 print:rounded-lg flex flex-col justify-between">
               <div>
-                <div className="flex items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3.5">
+                <div className="flex items-center justify-between gap-3 border-b border-border/60 pb-3">
                   <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white flex items-center justify-center shrink-0 shadow-2xs">
+                    <div className="h-8 w-8 rounded-lg bg-primary text-primary-foreground flex items-center justify-center shrink-0 shadow-2xs">
                       <CheckCircle2 className="h-4.5 w-4.5" />
                     </div>
                     <div className="min-w-0">
-                      <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-slate-100 truncate">
+                      <h3 className="text-sm sm:text-base font-bold text-foreground truncate">
                         Kesiapan Kembali Bersekolah
                       </h3>
-                      <p className="text-2xs sm:text-xs text-slate-500 font-medium truncate">
+                      <p className="text-2xs sm:text-xs text-muted-foreground font-medium truncate">
                         Minat belajar kembali &amp; profil gender anak ATS
                       </p>
                     </div>
@@ -1136,17 +1136,17 @@ export function RekapDataAtsClientView({
                     <button
                       type="button"
                       onClick={() => toggleChart("keinginan")}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700 print:hidden"
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-border bg-card text-foreground text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-muted print:hidden"
                       title={hiddenCharts.keinginan ? "Tampilkan Grafik" : "Sembunyikan Grafik"}
                     >
                       {hiddenCharts.keinginan ? (
                         <>
-                          <Eye className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
+                          <Eye className="h-3 w-3 text-primary" />
                           <span>Tampilkan</span>
                         </>
                       ) : (
                         <>
-                          <EyeOff className="h-3 w-3 text-slate-400" />
+                          <EyeOff className="h-3 w-3 text-muted-foreground" />
                           <span>Sembunyikan</span>
                         </>
                       )}
@@ -1341,14 +1341,14 @@ export function RekapDataAtsClientView({
           {/* Section 6 Header */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 print-section-header break-after-avoid">
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-indigo-600 to-violet-700 text-white flex items-center justify-center font-bold shadow-xs shrink-0">
+              <div className="h-9 w-9 rounded-lg bg-primary text-primary-foreground flex items-center justify-center font-bold shadow-xs shrink-0">
                 <BookOpen className="h-4.5 w-4.5" />
               </div>
               <div className="min-w-0">
-                <h2 className="text-base sm:text-lg font-black text-slate-900 dark:text-slate-100 truncate">
+                <h2 className="text-base sm:text-lg font-black text-foreground truncate">
                   Jenjang Sekolah Asal, Kelompok Usia &amp; Alasan Tidak Sekolah
                 </h2>
-                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium truncate">
+                <p className="text-xs text-muted-foreground font-medium truncate">
                   Rincian tingkatan kelas terakhir, distribusi rentang umur, dan faktor penyebab putus sekolah.
                 </p>
               </div>
@@ -1358,26 +1358,26 @@ export function RekapDataAtsClientView({
                 type="button"
                 onClick={toggleAll}
                 className={cn(
-                  "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all border cursor-pointer print:hidden shrink-0",
+                  "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all border cursor-pointer print:hidden shrink-0",
                   isAllHidden
-                    ? "bg-indigo-600 hover:bg-indigo-700 text-white border-indigo-600 shadow-xs"
-                    : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 shadow-2xs"
+                    ? "bg-primary hover:bg-primary-hover text-primary-foreground border-primary shadow-xs"
+                    : "bg-card text-foreground border-border hover:bg-muted shadow-2xs"
                 )}
                 title={isAllHidden ? "Tampilkan Seluruh Grafik" : "Sembunyikan Seluruh Grafik"}
               >
                 {isAllHidden ? (
                   <>
-                    <Eye className="h-3.5 w-3.5 text-white" />
+                    <Eye className="h-3.5 w-3.5 text-primary-foreground" />
                     <span>Tampilkan Semua Grafik</span>
                   </>
                 ) : (
                   <>
-                    <EyeOff className="h-3.5 w-3.5 text-slate-500" />
+                    <EyeOff className="h-3.5 w-3.5 text-muted-foreground" />
                     <span>Sembunyikan Semua Grafik</span>
                   </>
                 )}
               </button>
-              <span className="hidden sm:inline-block text-xs font-extrabold px-3 py-1.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-800 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 font-mono print:inline-block shrink-0">
+              <span className="hidden sm:inline-block text-xs font-bold px-3 py-1.5 rounded-lg bg-primary/10 text-primary border border-primary/20 font-mono print:inline-block shrink-0">
                 Total: {currentWilayahData.totalAts} Anak
               </span>
             </div>
@@ -1385,18 +1385,18 @@ export function RekapDataAtsClientView({
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 print-cards-grid">
             {/* 6.1 Diagram Batang: Jenjang Sekolah Asal / Kelas Terakhir ATS */}
-            <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-6 space-y-4 shadow-xs print-card-item break-inside-avoid print:p-5 print:rounded-2xl flex flex-col justify-between">
+            <div className="rounded-lg border border-border bg-card p-4 sm:p-5 space-y-4 shadow-sm print-card-item break-inside-avoid print:p-4 print:rounded-lg flex flex-col justify-between">
               <div>
-                <div className="flex items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3.5">
+                <div className="flex items-center justify-between gap-3 border-b border-border/60 pb-3">
                   <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white flex items-center justify-center shrink-0 shadow-2xs">
+                    <div className="h-8 w-8 rounded-lg bg-primary text-primary-foreground flex items-center justify-center shrink-0 shadow-2xs">
                       <School className="h-4.5 w-4.5" />
                     </div>
                     <div className="min-w-0">
-                      <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-slate-100 truncate">
+                      <h3 className="text-sm sm:text-base font-bold text-foreground truncate">
                         Jenjang &amp; Kelas Terakhir ATS
                       </h3>
-                      <p className="text-2xs sm:text-xs text-slate-500 font-medium truncate">
+                      <p className="text-2xs sm:text-xs text-muted-foreground font-medium truncate">
                         Tingkat kelas DO, LTM, dan belum pernah sekolah
                       </p>
                     </div>
@@ -1404,15 +1404,15 @@ export function RekapDataAtsClientView({
 
                   <div className="flex items-center gap-2 shrink-0">
                     {/* View Mode Toggle (15 Kelas vs 4 Jenjang) */}
-                    <div className="hidden sm:inline-flex items-center p-0.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                    <div className="hidden sm:inline-flex items-center p-0.5 rounded-lg bg-muted/60 border border-border">
                       <button
                         type="button"
                         onClick={() => setKelasViewMode("15_kelas")}
                         className={cn(
-                          "px-2 py-0.5 rounded-lg text-2xs font-extrabold transition-all cursor-pointer",
+                          "px-2 py-0.5 rounded-md text-2xs font-bold transition-all cursor-pointer",
                           kelasViewMode === "15_kelas"
-                            ? "bg-white dark:bg-slate-900 text-indigo-700 dark:text-indigo-300 shadow-2xs"
-                            : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
+                            ? "bg-card text-foreground shadow-2xs font-black"
+                            : "text-muted-foreground hover:text-foreground"
                         )}
                         title="Tampilkan rincian 15 tingkatan kelas"
                       >
@@ -1422,10 +1422,10 @@ export function RekapDataAtsClientView({
                         type="button"
                         onClick={() => setKelasViewMode("jenjang")}
                         className={cn(
-                          "px-2 py-0.5 rounded-lg text-2xs font-extrabold transition-all cursor-pointer",
+                          "px-2 py-0.5 rounded-md text-2xs font-bold transition-all cursor-pointer",
                           kelasViewMode === "jenjang"
-                            ? "bg-white dark:bg-slate-900 text-indigo-700 dark:text-indigo-300 shadow-2xs"
-                            : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
+                            ? "bg-card text-foreground shadow-2xs font-black"
+                            : "text-muted-foreground hover:text-foreground"
                         )}
                         title="Tampilkan ringkasan 4 jenjang pendidikan"
                       >
@@ -1436,17 +1436,17 @@ export function RekapDataAtsClientView({
                     <button
                       type="button"
                       onClick={() => toggleChart("kelas")}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700 print:hidden"
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-border bg-card text-foreground text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-muted print:hidden"
                       title={hiddenCharts.kelas ? "Tampilkan Grafik" : "Sembunyikan Grafik"}
                     >
                       {hiddenCharts.kelas ? (
                         <>
-                          <Eye className="h-3 w-3 text-indigo-600 dark:text-indigo-400" />
+                          <Eye className="h-3 w-3 text-primary" />
                           <span>Tampilkan</span>
                         </>
                       ) : (
                         <>
-                          <EyeOff className="h-3 w-3 text-slate-400" />
+                          <EyeOff className="h-3 w-3 text-muted-foreground" />
                           <span>Sembunyikan</span>
                         </>
                       )}
@@ -1720,40 +1720,40 @@ export function RekapDataAtsClientView({
             </div>
 
             {/* 6.2 Diagram Batang: Distribusi Usia ATS (6 - 18 Tahun) */}
-            <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-6 space-y-4 shadow-xs print-card-item break-inside-avoid print:p-5 print:rounded-2xl flex flex-col justify-between">
+            <div className="rounded-lg border border-border bg-card p-4 sm:p-5 space-y-4 shadow-sm print-card-item break-inside-avoid print:p-4 print:rounded-lg flex flex-col justify-between">
               <div>
-                <div className="flex items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3.5">
+                <div className="flex items-center justify-between gap-3 border-b border-border/60 pb-3">
                   <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-sky-500 to-blue-600 text-white flex items-center justify-center shrink-0 shadow-2xs">
+                    <div className="h-8 w-8 rounded-lg bg-primary text-primary-foreground flex items-center justify-center shrink-0 shadow-2xs">
                       <BarChart3 className="h-4.5 w-4.5" />
                     </div>
                     <div className="min-w-0">
-                      <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-slate-100 truncate">
+                      <h3 className="text-sm sm:text-base font-bold text-foreground truncate">
                         Distribusi Usia ATS (6 – 18 Tahun)
                       </h3>
-                      <p className="text-2xs sm:text-xs text-slate-500 font-medium truncate">
+                      <p className="text-2xs sm:text-xs text-muted-foreground font-medium truncate">
                         Jumlah anak tidak sekolah pada kelompok umur wajib belajar
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
-                    <span className="text-2xs sm:text-xs font-black px-2.5 py-1 rounded-xl bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800 font-mono">
+                    <span className="text-2xs sm:text-xs font-bold px-2.5 py-1 rounded-lg bg-primary/10 text-primary border border-primary/20 font-mono">
                       13 Kelompok Usia
                     </span>
                     <button
                       type="button"
                       onClick={() => toggleChart("usia")}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700 print:hidden"
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-border bg-card text-foreground text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-muted print:hidden"
                       title={hiddenCharts.usia ? "Tampilkan Grafik" : "Sembunyikan Grafik"}
                     >
                       {hiddenCharts.usia ? (
                         <>
-                          <Eye className="h-3 w-3 text-sky-600 dark:text-sky-400" />
+                          <Eye className="h-3 w-3 text-primary" />
                           <span>Tampilkan</span>
                         </>
                       ) : (
                         <>
-                          <EyeOff className="h-3 w-3 text-slate-400" />
+                          <EyeOff className="h-3 w-3 text-muted-foreground" />
                           <span>Sembunyikan</span>
                         </>
                       )}
@@ -1949,39 +1949,39 @@ export function RekapDataAtsClientView({
           </div>
 
           {/* 6.3 Diagram Batang Faktor Penyebab & Alasan Tidak Sekolah (Urutan Terbanyak s/d Tersedikit) */}
-          <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-6 space-y-4 shadow-xs print-card-item break-inside-avoid print:p-5 print:rounded-2xl">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3.5">
+          <div className="rounded-lg border border-border bg-card p-4 sm:p-5 space-y-4 shadow-sm print-card-item break-inside-avoid print:p-4 print:rounded-lg">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/60 pb-3">
               <div className="flex items-center gap-2.5 min-w-0">
-                <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-rose-500 to-pink-600 text-white flex items-center justify-center shrink-0 shadow-2xs">
+                <div className="h-8 w-8 rounded-lg bg-secondary text-secondary-foreground flex items-center justify-center shrink-0 shadow-2xs">
                   <AlertCircle className="h-4.5 w-4.5" />
                 </div>
                 <div className="min-w-0">
-                  <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-slate-100 truncate">
+                  <h3 className="text-sm sm:text-base font-bold text-foreground truncate">
                     Alasan &amp; Faktor Menjadi ATS
                   </h3>
-                  <p className="text-2xs sm:text-xs text-slate-500 font-medium truncate">
+                  <p className="text-2xs sm:text-xs text-muted-foreground font-medium truncate">
                     Peringkat faktor penyebab anak tidak bersekolah (terbanyak ke tersedikit)
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-2 self-start sm:self-center shrink-0">
-                <span className="text-2xs sm:text-xs font-black px-2.5 py-1 rounded-xl bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 font-mono">
+                <span className="text-2xs sm:text-xs font-bold px-2.5 py-1 rounded-lg bg-secondary/15 text-amber-900 dark:text-amber-200 border border-secondary/30 font-mono">
                   Ranking Kasus
                 </span>
                 <button
                   type="button"
                   onClick={() => toggleChart("alasan")}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700 print:hidden"
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-border bg-card text-foreground text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-muted print:hidden"
                   title={hiddenCharts.alasan ? "Tampilkan Grafik" : "Sembunyikan Grafik"}
                 >
                   {hiddenCharts.alasan ? (
                     <>
-                      <Eye className="h-3 w-3 text-rose-600 dark:text-rose-400" />
+                      <Eye className="h-3 w-3 text-secondary" />
                       <span>Tampilkan</span>
                     </>
                   ) : (
                     <>
-                      <EyeOff className="h-3 w-3 text-slate-400" />
+                      <EyeOff className="h-3 w-3 text-muted-foreground" />
                       <span>Sembunyikan</span>
                     </>
                   )}
@@ -2204,14 +2204,14 @@ export function RekapDataAtsClientView({
         <div className="space-y-4 pt-4 print-hide-on-daftar-nama">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 print-section-header break-after-avoid">
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-slate-800 to-indigo-950 text-white flex items-center justify-center font-bold shadow-xs shrink-0">
+              <div className="h-9 w-9 rounded-lg bg-primary text-primary-foreground flex items-center justify-center font-bold shadow-xs shrink-0">
                 <Building2 className="h-4.5 w-4.5" />
               </div>
               <div className="min-w-0">
-                <h2 className="text-base sm:text-lg font-black text-slate-900 dark:text-slate-100 truncate">
+                <h2 className="text-base sm:text-lg font-black text-foreground truncate">
                   Tabel Rekapitulasi Berjenjang ATS per Kelurahan
                 </h2>
-                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium truncate">
+                <p className="text-xs text-muted-foreground font-medium truncate">
                   Rincian komparatif jumlah ATS, kategori DO/LTM/BPB, dan kesiapan sekolah kembali se-Kota Tegal
                 </p>
               </div>
@@ -2220,7 +2220,7 @@ export function RekapDataAtsClientView({
             {/* Table Search Input & Sort Badge */}
             <div className="flex flex-wrap items-center gap-2 print:hidden">
               {sortColumn !== "default" && (
-                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 text-xs font-bold text-blue-800 dark:text-blue-300 shadow-2xs animate-in fade-in">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 border border-primary/20 text-xs font-bold text-primary shadow-2xs animate-in fade-in">
                   <span>
                     Urutan: <strong>{TABLE_ATS_SORT_LABELS[sortColumn]}</strong> (
                     {sortDirection === "desc"
@@ -2235,7 +2235,7 @@ export function RekapDataAtsClientView({
                   <button
                     type="button"
                     onClick={handleResetSort}
-                    className="ml-1 px-1.5 py-0.5 rounded-md bg-blue-200 hover:bg-blue-300 dark:bg-blue-900 dark:hover:bg-blue-800 text-blue-900 dark:text-blue-200 cursor-pointer transition-colors text-2xs"
+                    className="ml-1 px-1.5 py-0.5 rounded-md bg-primary/20 hover:bg-primary/30 text-primary cursor-pointer transition-colors text-2xs"
                     title="Reset urutan ke nomor asli"
                   >
                     ✕ Reset
@@ -2244,19 +2244,19 @@ export function RekapDataAtsClientView({
               )}
 
               <div className="relative w-full sm:w-64">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                 <input
                   type="text"
                   value={tableSearch}
                   onChange={(e) => setTableSearch(e.target.value)}
                   placeholder="Cari Kelurahan / Kecamatan..."
-                  className="w-full bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 rounded-2xl pl-9 pr-8 py-1.5 text-xs font-bold text-slate-900 dark:text-slate-100 focus:outline-hidden focus:border-blue-500 shadow-2xs"
+                  className="w-full bg-background border border-border rounded-lg pl-9 pr-8 py-1.5 text-xs font-semibold text-foreground focus:outline-hidden focus:border-primary shadow-2xs"
                 />
                 {tableSearch && (
                   <button
                     type="button"
                     onClick={() => setTableSearch("")}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-0.5 rounded-full"
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-0.5 rounded-full"
                     title="Hapus pencarian"
                   >
                     <X className="h-3 w-3" />
@@ -2267,8 +2267,8 @@ export function RekapDataAtsClientView({
           </div>
 
           {/* Quick Priority Filter Pills */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 text-2xs font-extrabold print:hidden">
-            <span className="text-slate-400 dark:text-slate-500 uppercase flex items-center gap-1 shrink-0 font-bold">
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 text-2xs font-bold print:hidden">
+            <span className="text-muted-foreground uppercase flex items-center gap-1 shrink-0 font-bold">
               <Filter className="h-3 w-3" />
               <span>Prioritas:</span>
             </span>
@@ -2276,10 +2276,10 @@ export function RekapDataAtsClientView({
               type="button"
               onClick={() => setTablePriorityFilter("semua")}
               className={cn(
-                "px-2.5 py-1 rounded-xl transition-all cursor-pointer shrink-0 border",
+                "px-2.5 py-1 rounded-lg transition-all cursor-pointer shrink-0 border",
                 tablePriorityFilter === "semua"
-                  ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 border-slate-900 dark:border-slate-100 shadow-2xs"
-                  : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50"
+                  ? "bg-primary text-primary-foreground border-primary shadow-2xs"
+                  : "bg-card text-foreground border-border hover:bg-muted"
               )}
             >
               Semua ({priorityCounts.total})
@@ -2288,10 +2288,10 @@ export function RekapDataAtsClientView({
               type="button"
               onClick={() => setTablePriorityFilter("tinggi")}
               className={cn(
-                "px-2.5 py-1 rounded-xl transition-all cursor-pointer shrink-0 border",
+                "px-2.5 py-1 rounded-lg transition-all cursor-pointer shrink-0 border",
                 tablePriorityFilter === "tinggi"
                   ? "bg-rose-600 text-white border-rose-600 shadow-2xs"
-                  : "bg-rose-50/70 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300 border-rose-200 dark:border-rose-800 hover:bg-rose-100/70"
+                  : "bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300 border-rose-200 dark:border-rose-800 hover:bg-rose-100"
               )}
             >
               Tinggi (≥25): {priorityCounts.tinggi}
@@ -2300,10 +2300,10 @@ export function RekapDataAtsClientView({
               type="button"
               onClick={() => setTablePriorityFilter("sedang")}
               className={cn(
-                "px-2.5 py-1 rounded-xl transition-all cursor-pointer shrink-0 border",
+                "px-2.5 py-1 rounded-lg transition-all cursor-pointer shrink-0 border",
                 tablePriorityFilter === "sedang"
                   ? "bg-amber-600 text-white border-amber-600 shadow-2xs"
-                  : "bg-amber-50/70 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 border-amber-200 dark:border-amber-800 hover:bg-amber-100/70"
+                  : "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 border-amber-200 dark:border-amber-800 hover:bg-amber-100"
               )}
             >
               Sedang (15–24): {priorityCounts.sedang}
@@ -2312,21 +2312,21 @@ export function RekapDataAtsClientView({
               type="button"
               onClick={() => setTablePriorityFilter("terkendali")}
               className={cn(
-                "px-2.5 py-1 rounded-xl transition-all cursor-pointer shrink-0 border",
+                "px-2.5 py-1 rounded-lg transition-all cursor-pointer shrink-0 border",
                 tablePriorityFilter === "terkendali"
                   ? "bg-emerald-600 text-white border-emerald-600 shadow-2xs"
-                  : "bg-emerald-50/70 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100/70"
+                  : "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100"
               )}
             >
               Terkendali (&lt;15): {priorityCounts.terkendali}
             </button>
           </div>
 
-          <div className="rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-xs print-card-item print:rounded-2xl">
+          <div className="rounded-lg border border-border bg-card overflow-hidden shadow-sm print-card-item print:rounded-lg">
             <div className="overflow-x-auto max-h-[640px] overflow-y-auto">
               <table className="w-full text-left text-xs border-collapse">
-                <thead className="sticky top-0 z-10 bg-slate-100/95 dark:bg-slate-800/95 backdrop-blur-xs shadow-2xs">
-                  <tr className="border-b-2 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-black">
+                <thead className="sticky top-0 z-10 bg-muted/95 backdrop-blur-xs shadow-2xs">
+                  <tr className="border-b border-border text-foreground font-bold">
                     <th
                       scope="col"
                       onClick={handleResetSort}
@@ -2511,17 +2511,17 @@ export function RekapDataAtsClientView({
       {/* ========================================================= */}
       {/* 9. FOOTER CALL-TO-ACTION & LINK TO ATS / PKBM             */}
       {/* ========================================================= */}
-      <div className="p-6 sm:p-7 rounded-3xl bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 border border-indigo-900/40 text-white shadow-xl flex flex-col sm:flex-row items-center justify-between gap-5 print:hidden print-hide-on-daftar-nama relative overflow-hidden">
+      <div className="p-5 sm:p-6 rounded-lg bg-gradient-to-br from-teal-950 via-teal-900 to-slate-900 border border-teal-800/40 text-white shadow-sm flex flex-col sm:flex-row items-center justify-between gap-5 print:hidden print-hide-on-daftar-nama relative overflow-hidden">
         {/* Glow Effects */}
-        <div className="absolute right-0 top-0 w-48 h-48 bg-blue-500/10 rounded-full blur-2xl pointer-events-none" />
-        <div className="absolute left-0 bottom-0 w-48 h-48 bg-indigo-500/10 rounded-full blur-2xl pointer-events-none" />
+        <div className="absolute right-0 top-0 w-48 h-48 bg-teal-500/10 rounded-full blur-2xl pointer-events-none" />
+        <div className="absolute left-0 bottom-0 w-48 h-48 bg-secondary/10 rounded-full blur-2xl pointer-events-none" />
 
         <div className="space-y-1.5 text-center sm:text-left relative z-10 max-w-xl">
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-500/20 border border-blue-400/30 text-[10px] font-mono font-bold text-blue-300 uppercase">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-secondary/20 border border-secondary/40 text-[10px] font-mono font-bold text-amber-200 uppercase">
             <Sparkles className="h-3 w-3" />
             <span>Kolaborasi Pengentasan ATS</span>
           </div>
-          <h4 className="text-base sm:text-lg font-black text-white">
+          <h4 className="text-base sm:text-lg font-bold text-white">
             Kader RT/RW Menemukan Anak Putus Sekolah di Lingkungan Anda?
           </h4>
           <p className="text-xs text-slate-300 leading-relaxed">
@@ -2532,13 +2532,13 @@ export function RekapDataAtsClientView({
         <div className="flex items-center gap-2.5 shrink-0 relative z-10">
           <Link
             href="/komunitas?tab=warga_kita"
-            className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition-all shadow-md active:scale-98"
+            className="px-4 py-2.5 rounded-lg bg-secondary hover:bg-secondary-hover text-secondary-foreground text-xs font-bold transition-all shadow-xs active:scale-98"
           >
             Input ATS di Warga Kita
           </Link>
           <Link
             href="/komunitas?tab=satuan_paud"
-            className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-bold transition-all backdrop-blur-md active:scale-98"
+            className="px-4 py-2.5 rounded-lg bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-bold transition-all backdrop-blur-md active:scale-98"
           >
             Lembaga PKBM / SKB
           </Link>
