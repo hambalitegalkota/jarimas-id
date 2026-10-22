@@ -726,6 +726,28 @@ export interface RekapitulasiWargaKomunitasResult {
   totalWargaWargaKita?: number;
 }
 
+// ==============================================================================
+// PERPUSTAKAAN DIGITAL (BUKU DIGITAL / MODUL)
+// ==============================================================================
 
+export interface BukuDigital {
+  id: string;
+  judul: string;
+  kategori?: string | null;
+  url_sampul?: string | null;
+  sinopsis?: string | null;
+  url_baca?: string | null;
+  created_at: string;
+  updated_at?: string;
+}
 
+// Alias sesuai konvensi Item di database.ts (seperti DataAnakItem, LaporanKaderSpmItem)
+export type BukuDigitalItem = BukuDigital;
 
+export interface BukuDigitalFormData {
+  judul: string;
+  kategori: string;
+  url_sampul: string;
+  sinopsis: string;
+  url_baca: string;
+}

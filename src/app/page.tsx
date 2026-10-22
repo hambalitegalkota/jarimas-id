@@ -300,7 +300,7 @@ export default async function HomePage() {
           <span className="text-[11px] font-medium text-primary">Akses Cepat</span>
         </div>
 
-        <div className="grid grid-cols-4 sm:grid-cols-8 gap-2.5 sm:gap-3">
+        <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-9 gap-2.5 sm:gap-3">
           {/* 1. Warga Kita */}
           <Link
             href="/komunitas?tab=warga_kita"
@@ -366,7 +366,20 @@ export default async function HomePage() {
             </span>
           </Link>
 
-          {/* 6. Jarimas Market */}
+          {/* 6. Perpustakaan Digital */}
+          <Link
+            href="/perpustakaan"
+            className="flex flex-col items-center gap-1.5 p-2 rounded-lg bg-card border border-border hover:border-teal-500/50 hover:bg-muted/50 transition-all text-center group active:scale-95 shadow-sm"
+          >
+            <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 border border-emerald-200 dark:border-emerald-800/60 group-hover:scale-105 transition-transform">
+              <BookOpen className="h-5 w-5" />
+            </div>
+            <span className="text-[11px] sm:text-xs font-semibold text-foreground line-clamp-1">
+              Perpustakaan
+            </span>
+          </Link>
+
+          {/* 7. Jarimas Market */}
           <Link
             href="/market"
             className="flex flex-col items-center gap-1.5 p-2 rounded-lg bg-card border border-border hover:border-secondary/50 hover:bg-muted/50 transition-all text-center group active:scale-95 shadow-sm"
@@ -379,12 +392,12 @@ export default async function HomePage() {
             </span>
           </Link>
 
-          {/* 7. Kabar Warga */}
+          {/* 8. Kabar Warga */}
           <Link
             href="/kabar"
             className="flex flex-col items-center gap-1.5 p-2 rounded-lg bg-card border border-border hover:border-primary/50 hover:bg-muted/50 transition-all text-center group active:scale-95 shadow-sm"
           >
-            <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 border border-emerald-200 dark:border-emerald-800/60 group-hover:scale-105 transition-transform">
+            <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-cyan-50 dark:bg-cyan-950/60 text-cyan-600 border border-cyan-200 dark:border-cyan-800/60 group-hover:scale-105 transition-transform">
               <MessageSquare className="h-5 w-5" />
             </div>
             <span className="text-[11px] sm:text-xs font-semibold text-foreground line-clamp-1">
@@ -392,7 +405,7 @@ export default async function HomePage() {
             </span>
           </Link>
 
-          {/* 8. PKBM & SKB */}
+          {/* 9. PKBM & SKB */}
           <Link
             href="/komunitas?tab=pkbm_skb"
             className="flex flex-col items-center gap-1.5 p-2 rounded-lg bg-card border border-border hover:border-primary/50 hover:bg-muted/50 transition-all text-center group active:scale-95 shadow-sm"
