@@ -5,7 +5,7 @@ import { createClient } from "@/utils/supabase/server";
 import type { BukuDigital, BukuDigitalFormData } from "@/types/database";
 
 // Fallback data kurasi buku & modul digital Kota Tegal
-export const FALLBACK_BUKU_DIGITAL: BukuDigital[] = [
+const FALLBACK_BUKU_DIGITAL: BukuDigital[] = [
   {
     id: "sample-buku-1",
     judul: "Panduan Stimulasi Tumbuh Kembang Balita 0-6 Tahun",
