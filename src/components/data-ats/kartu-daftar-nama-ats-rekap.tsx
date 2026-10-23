@@ -24,6 +24,7 @@ import {
   BookOpen,
   ArrowRight,
   User,
+  Pencil,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -31,6 +32,35 @@ import {
   type DaftarNamaAtsItem,
 } from "@/app/actions/rekap-data-ats";
 import { normalizeKeinginanSekolah } from "@/lib/ats-helpers";
+import { ModalKembaliBersekolah } from "./modal-kembali-bersekolah";
+import { ModalEditAts } from "./modal-edit-ats";
+import type { DataAtsItem } from "@/types/database";
+
+function itemToDataAts(item: DaftarNamaAtsItem): DataAtsItem {
+  return {
+    id: item.id,
+    komunitas_id: item.komunitasId,
+    nama_lengkap: item.namaLengkap,
+    jenis_kelamin: item.jenisKelamin,
+    usia: String(item.usia),
+    tanggal_lahir: item.tanggalLahir || "",
+    nama_orangtua: item.namaOrangtua,
+    tinggal_bersama: item.tinggalBersama,
+    nomor_hp: item.nomorHp && item.nomorHp !== "-" ? item.nomorHp : "",
+    alamat: item.alamat,
+    rt: item.rt,
+    rw: item.rw,
+    kelurahan: item.kelurahan,
+    kecamatan: item.kecamatan,
+    keinginan_sekolah: item.keinginanSekolah === "Tidak Ada" ? "Tidak Ada" : "Masih Ada",
+    alasan_tidak_sekolah: item.alasanTidakSekolah,
+    sekolah_sebelumnya: item.sekolahSebelumnya !== "-" ? item.sekolahSebelumnya : undefined,
+    kelas_terakhir: item.kelasTerakhir !== "-" ? item.kelasTerakhir : undefined,
+    keterangan: item.keterangan || undefined,
+    status_approval: "approved",
+    created_at: new Date().toISOString(),
+  };
+}
 
 interface KartuDaftarNamaAtsRekapProps {
   tingkat: "kota" | "kecamatan" | "kelurahan";
@@ -65,6 +95,42 @@ export function KartuDaftarNamaAtsRekap({
   const [genderFilter, setGenderFilter] = useState<"semua" | "L" | "P">("semua");
   const [isPending, startTransition] = useTransition();
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  // Modal States
+  const [selectedForBersekolah, setSelectedForBersekolah] = useState<DataAtsItem | null>(null);
+  const [selectedForEdit, setSelectedForEdit] = useState<DataAtsItem | null>(null);
+
+  const handleOpenBersekolah = (item: DaftarNamaAtsItem) => {
+    setSelectedForBersekolah(itemToDataAts(item));
+  };
+
+  const handleOpenEdit = (item: DaftarNamaAtsItem) => {
+    setSelectedForEdit(itemToDataAts(item));
+  };
+
+  const handleBersekolahSuccess = (atsId: string, namaSekolah: string) => {
+    setDataList((prev) => prev.filter((item) => item.id !== atsId));
+    setSelectedForBersekolah(null);
+  };
+
+  const handleEditSuccess = (updatedItem: DataAtsItem) => {
+    setDataList((prev) =>
+      prev.map((item) =>
+        item.id === updatedItem.id
+          ? {
+              ...item,
+              namaLengkap: updatedItem.nama_lengkap,
+              namaOrangtua: updatedItem.nama_orangtua,
+              alasanTidakSekolah: updatedItem.alasan_tidak_sekolah,
+              alamat: updatedItem.alamat || "",
+              kelurahan: updatedItem.kelurahan || "",
+              kecamatan: updatedItem.kecamatan || "",
+            }
+          : item
+      )
+    );
+    setSelectedForEdit(null);
+  };
 
   // Fetch data ketika kartu dibuka atau filter wilayah berubah
   useEffect(() => {
@@ -400,12 +466,13 @@ export function KartuDaftarNamaAtsRekap({
                   <thead>
                     <tr className="bg-muted/70 text-foreground font-bold border-b border-border print:bg-slate-200 print:text-black print:border-slate-400">
                       <th className="py-2.5 px-2 w-[4%] text-center font-bold print:py-1.5">No</th>
-                      <th className="py-2.5 px-2.5 w-[21%] font-bold print:py-1.5">Nama Lengkap &amp; Usia</th>
-                      <th className="py-2.5 px-2 w-[15%] font-bold print:py-1.5">Kategori &amp; Keinginan</th>
-                      <th className="py-2.5 px-2 w-[17%] font-bold print:py-1.5">Sekolah Asal &amp; Alasan</th>
-                      <th className="py-2.5 px-2 w-[16%] font-bold print:py-1.5">Orang Tua / Wali &amp; Kontak</th>
-                      <th className="py-2.5 px-2 w-[15%] font-bold print:py-1.5">Alamat Domisili</th>
-                      <th className="py-2.5 px-2 w-[12%] font-bold print:py-1.5">Komunitas</th>
+                      <th className="py-2.5 px-2 w-[19%] font-bold print:py-1.5">Nama Lengkap &amp; Usia</th>
+                      <th className="py-2.5 px-2 w-[13%] font-bold print:py-1.5">Kategori &amp; Keinginan</th>
+                      <th className="py-2.5 px-2 w-[15%] font-bold print:py-1.5">Sekolah Asal &amp; Alasan</th>
+                      <th className="py-2.5 px-2 w-[14%] font-bold print:py-1.5">Orang Tua / Wali &amp; Kontak</th>
+                      <th className="py-2.5 px-2 w-[13%] font-bold print:py-1.5">Alamat Domisili</th>
+                      <th className="py-2.5 px-2 w-[10%] font-bold print:py-1.5">Komunitas</th>
+                      <th className="py-2.5 px-2 w-[12%] font-bold print:hidden text-center">Aksi</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border/60 print:divide-slate-200">
@@ -561,6 +628,30 @@ export function KartuDaftarNamaAtsRekap({
                               </span>
                             </div>
                           </td>
+
+                          {/* Aksi Intervensi: Bersekolah & Edit */}
+                          <td className="py-2.5 px-2 align-top print:hidden">
+                            <div className="flex flex-col gap-1.5">
+                              <button
+                                type="button"
+                                onClick={() => handleOpenBersekolah(item)}
+                                className="inline-flex items-center justify-center gap-1 px-2 py-1.5 rounded-md bg-primary hover:bg-primary-hover text-white text-[11px] font-bold shadow-2xs transition-all active:scale-95 cursor-pointer"
+                                title="Catat Kembali Bersekolah ke PKBM / SKB"
+                              >
+                                <GraduationCap className="h-3 w-3 shrink-0" />
+                                <span>BERSEKOLAH</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleOpenEdit(item)}
+                                className="inline-flex items-center justify-center gap-1 px-2 py-1 rounded-md border border-border bg-muted hover:bg-muted/80 text-foreground text-[10px] font-bold transition-all active:scale-95 cursor-pointer"
+                                title="Edit Data ATS"
+                              >
+                                <Pencil className="h-3 w-3 shrink-0 text-muted-foreground" />
+                                <span>EDIT</span>
+                              </button>
+                            </div>
+                          </td>
                         </tr>
                       );
                     })}
@@ -592,12 +683,40 @@ export function KartuDaftarNamaAtsRekap({
               {/* Mobile Card List */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:hidden print:hidden gap-3">
                 {filteredData.map((item, idx) => (
-                  <DaftarNamaAtsMobileCardItem key={item.id} item={item} idx={idx} />
+                  <DaftarNamaAtsMobileCardItem
+                    key={item.id}
+                    item={item}
+                    idx={idx}
+                    onBersekolah={handleOpenBersekolah}
+                    onEdit={handleOpenEdit}
+                  />
                 ))}
               </div>
             </>
           )}
         </div>
+      )}
+
+      {/* Modal Kembali Bersekolah */}
+      {selectedForBersekolah && (
+        <ModalKembaliBersekolah
+          isOpen={Boolean(selectedForBersekolah)}
+          ats={selectedForBersekolah}
+          komunitasId={selectedForBersekolah.komunitas_id}
+          onClose={() => setSelectedForBersekolah(null)}
+          onSuccess={handleBersekolahSuccess}
+        />
+      )}
+
+      {/* Modal Edit ATS */}
+      {selectedForEdit && (
+        <ModalEditAts
+          isOpen={Boolean(selectedForEdit)}
+          ats={selectedForEdit}
+          komunitasId={selectedForEdit.komunitas_id}
+          onClose={() => setSelectedForEdit(null)}
+          onSuccess={handleEditSuccess}
+        />
       )}
     </div>
   );
@@ -606,9 +725,13 @@ export function KartuDaftarNamaAtsRekap({
 function DaftarNamaAtsMobileCardItem({
   item,
   idx,
+  onBersekolah,
+  onEdit,
 }: {
   item: DaftarNamaAtsItem;
   idx: number;
+  onBersekolah: (item: DaftarNamaAtsItem) => void;
+  onEdit: (item: DaftarNamaAtsItem) => void;
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const isL = item.jenisKelamin === "L";
@@ -733,6 +856,28 @@ function DaftarNamaAtsMobileCardItem({
           </div>
         </div>
       )}
+
+      {/* Tombol Aksi Bersekolah & Edit Data (Selalu Tampil di Kartu) */}
+      <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border/60">
+        <button
+          type="button"
+          onClick={() => onBersekolah(item)}
+          className="inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg bg-primary hover:bg-primary-hover active:scale-98 text-white text-xs font-bold transition-all cursor-pointer shadow-2xs"
+          title="Catat Kembali Bersekolah ke PKBM / SKB"
+        >
+          <GraduationCap className="h-3.5 w-3.5 shrink-0" />
+          <span>BERSEKOLAH</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => onEdit(item)}
+          className="inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg border border-border bg-muted hover:bg-muted/80 active:scale-98 text-foreground text-xs font-bold transition-all cursor-pointer"
+          title="Edit Data ATS"
+        >
+          <Pencil className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+          <span>EDIT</span>
+        </button>
+      </div>
     </div>
   );
 }

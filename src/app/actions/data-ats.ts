@@ -955,17 +955,108 @@ export async function kembaliBersekolah(
         : ""
     }${payload.catatan?.trim() ? ` | Catatan: ${payload.catatan.trim()}` : ""}`;
 
+    // Cari apakah tempat kembali bersekolah merujuk ke PKBM atau SKB di Kota Tegal
+    let destinationKomunitasId: string | null = null;
+    const cleanNamaSekolah = payload.namaSekolah.trim().toLowerCase();
+    const isPkbmOrSkbTarget =
+      payload.kategoriSekolah?.toLowerCase().includes("pkbm") ||
+      payload.kategoriSekolah?.toLowerCase().includes("skb") ||
+      cleanNamaSekolah.includes("pkbm") ||
+      cleanNamaSekolah.includes("skb") ||
+      cleanNamaSekolah.includes("sanggar kegiatan belajar");
+
+    if (isPkbmOrSkbTarget) {
+      // 1. Cek apakah komunitas pemroses (payload.komunitasId) adalah PKBM/SKB yang cocok
+      if (payload.komunitasId) {
+        const { data: activeKom } = await supabase
+          .from("komunitas")
+          .select("id, nama, jenis, jenis_institusi")
+          .eq("id", toValidUUID(payload.komunitasId))
+          .maybeSingle();
+
+        if (activeKom) {
+          const akn = (activeKom.nama || "").toLowerCase();
+          const cleanAkn = akn.replace(/^(uptd\s+spnf\s+|pkbm\s+|skb\s+)/i, "").trim();
+          const cleanTarget = cleanNamaSekolah.replace(/^(uptd\s+spnf\s+|pkbm\s+|skb\s+)/i, "").trim();
+
+          if (
+            akn === cleanNamaSekolah ||
+            akn.includes(cleanNamaSekolah) ||
+            cleanNamaSekolah.includes(akn) ||
+            (cleanAkn.length >= 3 && cleanTarget.includes(cleanAkn))
+          ) {
+            destinationKomunitasId = activeKom.id;
+          }
+        }
+      }
+
+      // 2. Jika belum cocok, cari dari seluruh komunitas PKBM & SKB resmi di database
+      if (!destinationKomunitasId) {
+        const { data: allPkbmKoms } = await supabase
+          .from("komunitas")
+          .select("id, nama, jenis, jenis_institusi")
+          .or("jenis.eq.pkbm_skb,jenis_institusi.eq.PKBM,jenis_institusi.eq.SKB,nama.ilike.%PKBM%,nama.ilike.%SKB%");
+
+        if (allPkbmKoms && allPkbmKoms.length > 0) {
+          const matched = allPkbmKoms.find((k: any) => {
+            const kn = (k.nama || "").toLowerCase().trim();
+            const cleanKn = kn.replace(/^(uptd\s+spnf\s+|pkbm\s+|skb\s+)/i, "").trim();
+            const cleanTarget = cleanNamaSekolah.replace(/^(uptd\s+spnf\s+|pkbm\s+|skb\s+)/i, "").trim();
+            return (
+              kn === cleanNamaSekolah ||
+              cleanNamaSekolah.includes(kn) ||
+              kn.includes(cleanNamaSekolah) ||
+              (cleanKn.length >= 3 && cleanTarget.includes(cleanKn)) ||
+              (cleanTarget.length >= 3 && cleanKn.includes(cleanTarget))
+            );
+          });
+
+          if (matched) {
+            destinationKomunitasId = matched.id;
+          }
+        }
+      }
+
+      // 3. Fallback: Jika aksi dilakukan dari komunitas PKBM/SKB dan belum terpetakan, gunakan komunitas tersebut
+      if (!destinationKomunitasId && payload.komunitasId) {
+        const { data: fallbackKom } = await supabase
+          .from("komunitas")
+          .select("id, jenis, jenis_institusi, nama")
+          .eq("id", toValidUUID(payload.komunitasId))
+          .maybeSingle();
+
+        const cleanFallbackName = (fallbackKom?.nama || "").toLowerCase();
+        if (
+          fallbackKom && (
+            fallbackKom.jenis === "pkbm_skb" ||
+            fallbackKom.jenis_institusi === "PKBM" ||
+            fallbackKom.jenis_institusi === "SKB" ||
+            cleanFallbackName.includes("pkbm") ||
+            cleanFallbackName.includes("skb")
+          )
+        ) {
+          destinationKomunitasId = fallbackKom.id;
+        }
+      }
+    }
+
+    const updateFields: any = {
+      is_sekolah: true,
+      nama_sekolah: payload.namaSekolah.trim(),
+      alasan_sekolah: schoolNote,
+      status_approval: "approved",
+      validated_by: user.id,
+      validated_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    if (destinationKomunitasId) {
+      updateFields.komunitas_id = destinationKomunitasId;
+    }
+
     const { error: updateError } = await supabase
       .from("data_anak")
-      .update({
-        is_sekolah: true,
-        nama_sekolah: payload.namaSekolah.trim(),
-        alasan_sekolah: schoolNote,
-        status_approval: "approved",
-        validated_by: user.id,
-        validated_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      })
+      .update(updateFields)
       .eq("id", dataAtsId);
 
     if (updateError) {
@@ -976,7 +1067,7 @@ export async function kembaliBersekolah(
       };
     }
 
-    const targetKomunitasId = payload.komunitasId || existingChild.komunitas_id;
+    const targetKomunitasId = destinationKomunitasId || payload.komunitasId || existingChild.komunitas_id;
     revalidatePath(`/komunitas/${targetKomunitasId}/ats`);
     revalidatePath(`/komunitas/${targetKomunitasId}/data`);
     revalidatePath(`/komunitas/${targetKomunitasId}`);
@@ -984,6 +1075,11 @@ export async function kembaliBersekolah(
       revalidatePath(`/komunitas/${existingChild.komunitas_id}/ats`);
       revalidatePath(`/komunitas/${existingChild.komunitas_id}/data`);
       revalidatePath(`/komunitas/${existingChild.komunitas_id}`);
+    }
+    if (destinationKomunitasId && destinationKomunitasId !== targetKomunitasId) {
+      revalidatePath(`/komunitas/${destinationKomunitasId}/ats`);
+      revalidatePath(`/komunitas/${destinationKomunitasId}/data`);
+      revalidatePath(`/komunitas/${destinationKomunitasId}`);
     }
     revalidatePath("/komunitas");
     revalidatePath("/data-ats");

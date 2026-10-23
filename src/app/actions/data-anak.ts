@@ -669,6 +669,7 @@ export async function getDataAnakByKomunitas(
 
         userRole = member?.peran || (isSuperAdmin ? "Super Admin" : isAdminPusat ? "Admin Pusat" : "Pengunjung");
         const roleLower = (member?.peran || "").toLowerCase();
+        const isAdminRole = isRoleAdmin(roleLower);
 
         if (isSuperOrPusat) {
           canCreate = true;
@@ -679,10 +680,17 @@ export async function getDataAnakByKomunitas(
           isReadOnly = false;
           canViewDetail = true;
         } else if (member && member.status === "approved") {
-          const isAdminRole = isRoleAdmin(member.peran);
+          const cleanTargetNama = (targetKomunitas?.nama || "").toLowerCase();
+          const isPkbmOrSkbTarget =
+            targetJenis === "pkbm_skb" ||
+            targetKomunitas?.jenis_institusi === "PKBM" ||
+            targetKomunitas?.jenis_institusi === "SKB" ||
+            cleanTargetNama.includes("pkbm") ||
+            cleanTargetNama.includes("skb") ||
+            cleanTargetNama.includes("sanggar kegiatan belajar");
 
-          if (isKomunitasLayananPaud(targetKomunitas, targetKomunitas?.nama, targetJenis)) {
-            // Admin, Kepala Sekolah, Guru PAUD / Pendidik -> Full Access
+          if (isKomunitasLayananPaud(targetKomunitas, targetKomunitas?.nama, targetJenis) || isPkbmOrSkbTarget) {
+            // Admin, Kepala Sekolah, Guru PAUD / Tutor PKBM / Pendidik -> Full Access
             const isPaudStaff =
               isAdminRole ||
               roleLower.includes("admin") ||
@@ -814,7 +822,16 @@ export async function getDataAnakByKomunitas(
         ddks_records (*)
       `;
 
-    if (isKomunitasLayananPaud(targetKomunitas, targetKomunitas?.nama, targetJenis)) {
+    const cleanKomNama = (targetKomunitas?.nama || "").toLowerCase();
+    const isPkbmOrSkbTarget =
+      targetJenis === "pkbm_skb" ||
+      targetKomunitas?.jenis_institusi === "PKBM" ||
+      targetKomunitas?.jenis_institusi === "SKB" ||
+      cleanKomNama.includes("pkbm") ||
+      cleanKomNama.includes("skb") ||
+      cleanKomNama.includes("sanggar kegiatan belajar");
+
+    if (isKomunitasLayananPaud(targetKomunitas, targetKomunitas?.nama, targetJenis) || isPkbmOrSkbTarget) {
       const rawPaudName = (targetKomunitas?.nama || "").trim();
       const cleanPaudName = rawPaudName
         .replace(/^(KB|TK|TPA|SPS|RA|PKBM|SKB|POS PAUD)\s+/i, "")

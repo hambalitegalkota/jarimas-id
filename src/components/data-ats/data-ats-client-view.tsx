@@ -15,6 +15,9 @@ import {
   ChevronUp,
   Eye,
   EyeOff,
+  Building2,
+  Layers,
+  Compass,
 } from "lucide-react";
 import { CardDataAts } from "./card-data-ats";
 import { FormDataAts } from "./form-data-ats";
@@ -34,6 +37,14 @@ import {
 } from "@/lib/ats-helpers";
 import type { KomunitasWithMembership, DataAtsItem } from "@/types/database";
 import { cn, hasFullProfilDataAccess, isRoleAdmin } from "@/lib/utils";
+
+const KECAMATAN_LIST = ["Tegal Timur", "Tegal Barat", "Tegal Selatan", "Margadana"];
+const KELURAHAN_BY_KEC: Record<string, string[]> = {
+  "Tegal Timur": ["Kejambon", "Mangkukusuman", "Mintaragen", "Panggung", "Slerok"],
+  "Tegal Barat": ["Kraton", "Pekauman", "Pesurungan Kidul", "Tegalsari", "Kembarongan", "Muarareja", "Debong Lor"],
+  "Tegal Selatan": ["Bandung", "Debong Kulon", "Debong Tengah", "Debong Kidul", "Kalinyamat Wetan", "Kalinyamat Kulon", "Randugunting", "Keturen"],
+  "Margadana": ["Cabawan", "Kaligangsa", "Kalinyamat", "Kragan", "Margadana", "Pesurungan Lor", "Sumurpanggang"],
+};
 
 interface DataAtsClientViewProps {
   komunitas: KomunitasWithMembership;
@@ -68,7 +79,14 @@ export function DataAtsClientView({
   const [selectedKelasAts, setSelectedKelasAts] = useState<string | null>(null);
   const [selectedGender, setSelectedGender] = useState<"semua" | "L" | "P">("semua");
   const [statusFilter, setStatusFilter] = useState<"semua" | "approved" | "pending">("semua");
-  const [isListExpanded, setIsListExpanded] = useState<boolean>(false);
+
+  // Filter Wilayah Berjenjang Kota Tegal (Khusus PKBM & SKB)
+  const [filterWilayahTingkat, setFilterWilayahTingkat] = useState<"kota" | "kecamatan" | "kelurahan">("kota");
+  const [filterKecamatan, setFilterKecamatan] = useState<string>("Tegal Timur");
+  const [filterKelurahan, setFilterKelurahan] = useState<string>("semua");
+
+  // Default isListExpanded true agar kartu langsung terbuka
+  const [isListExpanded, setIsListExpanded] = useState<boolean>(true);
   const [feedbackToast, setFeedbackToast] = useState<{
     type: "success" | "info" | "error";
     message: string;
@@ -78,11 +96,24 @@ export function DataAtsClientView({
   const isWargaKita = komunitas.jenis === "warga_kita";
   const isApprovedMember = komunitas.currentUserMembership?.status === "approved";
   const userPeranLower = userPeran.toLowerCase();
+  const cleanNama = (komunitas.nama || "").toLowerCase().trim();
+  const isSkb =
+    komunitas.jenis_institusi === "SKB" ||
+    cleanNama.includes("skb") ||
+    cleanNama.includes("sanggar kegiatan belajar");
+  const isPkbmOrSkb =
+    komunitas.jenis === "pkbm_skb" ||
+    komunitas.jenis_institusi === "PKBM" ||
+    komunitas.jenis_institusi === "SKB" ||
+    cleanNama.includes("pkbm") ||
+    isSkb;
   const isAdminOrPengurus =
     isRoleAdmin(userPeranLower) ||
     userPeranLower.includes("admin") ||
     userPeranLower.includes("pengurus") ||
     userPeranLower.includes("kader") ||
+    userPeranLower.includes("tutor") ||
+    userPeranLower.includes("pengelola") ||
     userPeranLower.includes("ketua");
 
   // Sesuai ketentuan perlindungan privasi data, rincian identitas lengkap anak tidak sekolah hanya dapat diakses di Tingkat KELURAHAN oleh Admin di Komunitas Warga Kita, Admin PAUD, Admin Posyandu dan Admin PKBM dan SKB
@@ -142,7 +173,25 @@ export function DataAtsClientView({
     const matchesStatus =
       statusFilter === "semua" || c.status_approval === statusFilter;
 
+    const matchesWilayah = (() => {
+      if (filterWilayahTingkat === "kota") return true;
+      const itemKec = (c.kecamatan || "").toLowerCase();
+      const itemKel = (c.kelurahan || "").toLowerCase();
+
+      if (filterWilayahTingkat === "kecamatan") {
+        if (filterKecamatan === "semua") return true;
+        return itemKec.includes(filterKecamatan.toLowerCase());
+      }
+      if (filterWilayahTingkat === "kelurahan") {
+        const kecMatch = filterKecamatan === "semua" || itemKec.includes(filterKecamatan.toLowerCase());
+        const kelMatch = filterKelurahan === "semua" || itemKel.includes(filterKelurahan.toLowerCase());
+        return kecMatch && kelMatch;
+      }
+      return true;
+    })();
+
     return (
+      matchesWilayah &&
       matchesSearch &&
       matchesJenjang &&
       matchesKategori &&
@@ -372,6 +421,196 @@ export function DataAtsClientView({
           >
             <X className="h-4 w-4" />
           </button>
+        </div>
+      )}
+
+      {/* 1. HERO BANNER HASIL PENDATAAN ATS (Khusus Komunitas PKBM & SKB / Tingkat Kota) */}
+      {isPkbmOrSkb && (
+        <div className="rounded-2xl bg-gradient-to-r from-emerald-950 via-teal-900 to-emerald-900 text-white p-6 sm:p-7 shadow-md border border-emerald-800/50 break-inside-avoid print:bg-white print:border-gray-400 print:text-black">
+          <div className="space-y-2.5">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="rounded-md bg-amber-500/20 text-amber-300 border border-amber-400/30 px-2.5 py-0.5 text-2xs font-mono font-bold uppercase tracking-wider">
+                PENDATAAN ANAK TIDAK SEKOLAH (ATS)
+              </span>
+              <span className="text-2xs text-emerald-200/80">
+                Pembaruan Sistem Realtime
+              </span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white print:text-black">
+              Hasil Pendataan Anak Tidak Sekolah (ATS)
+            </h1>
+            <p className="text-xs sm:text-sm text-emerald-100/90 print:text-slate-700 leading-relaxed max-w-2xl">
+              Dashboard rekapitulasi penanganan ATS se-Kota Tegal berjenjang 4 Kecamatan dan 27 Kelurahan untuk intervensi program kesetaraan di {komunitas.nama}. Fasilitasi anak tidak sekolah untuk kembali bersekolah melalui Paket A, Paket B, dan Paket C.
+            </p>
+            <div className="pt-1 text-xs font-mono font-semibold text-emerald-200 print:text-black flex items-center gap-2">
+              <span className="inline-block h-2 w-2 rounded-full bg-emerald-400 animate-pulse print:hidden" />
+              <span>{totalAts} data valid di database Kota Tegal</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* FILTER TINGKAT ANALISIS ATS (Sesuai Dashboard Hasil Pendataan ATS) */}
+      {isPkbmOrSkb && (
+        <div className="rounded-2xl border-2 border-slate-200 bg-white p-5 space-y-4 shadow-xs print:hidden">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-teal-50 text-teal-700 border border-teal-200">
+                <Layers className="h-4 w-4" />
+              </div>
+              <div>
+                <h4 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-800">
+                  FILTER TINGKAT ANALISIS ATS
+                </h4>
+                <p className="text-xs text-slate-500">
+                  Pilih Cakupan Wilayah Rekapitulasi ATS untuk Intervensi
+                </p>
+              </div>
+            </div>
+            <span className="text-xs text-slate-500 font-semibold self-start sm:self-center">
+              Pilih tingkat agregasi untuk memperbarui grafik &amp; data ATS
+            </span>
+          </div>
+
+          {/* Tab Pilihan Tingkat */}
+          <div className="grid grid-cols-3 gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setFilterWilayahTingkat("kota");
+                setFilterKecamatan("semua");
+                setFilterKelurahan("semua");
+              }}
+              className={cn(
+                "py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold transition-all border-2 cursor-pointer flex items-center justify-center gap-2",
+                filterWilayahTingkat === "kota"
+                  ? "bg-teal-700 text-white border-teal-700 shadow-xs"
+                  : "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100"
+              )}
+            >
+              <Building2 className="h-4 w-4 shrink-0" />
+              <span>Kota Tegal (Agregat)</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setFilterWilayahTingkat("kecamatan");
+                if (filterKecamatan === "semua") setFilterKecamatan("Tegal Timur");
+              }}
+              className={cn(
+                "py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold transition-all border-2 cursor-pointer flex items-center justify-center gap-2",
+                filterWilayahTingkat === "kecamatan"
+                  ? "bg-teal-700 text-white border-teal-700 shadow-xs"
+                  : "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100"
+              )}
+            >
+              <Compass className="h-4 w-4 shrink-0" />
+              <span>Tingkat Kecamatan</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setFilterWilayahTingkat("kelurahan");
+                if (filterKecamatan === "semua") setFilterKecamatan("Tegal Timur");
+              }}
+              className={cn(
+                "py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold transition-all border-2 cursor-pointer flex items-center justify-center gap-2",
+                filterWilayahTingkat === "kelurahan"
+                  ? "bg-teal-700 text-white border-teal-700 shadow-xs"
+                  : "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100"
+              )}
+            >
+              <MapPin className="h-4 w-4 shrink-0" />
+              <span>Tingkat Kelurahan</span>
+            </button>
+          </div>
+
+          {/* Subfilter Kecamatan & Kelurahan jika tingkat Kecamatan / Kelurahan aktif */}
+          {filterWilayahTingkat !== "kota" && (
+            <div className="rounded-xl border border-teal-200 bg-teal-50/40 p-3.5 space-y-3 animate-in fade-in duration-150">
+              {/* Langkah 1: Pilih Kecamatan */}
+              <div className="space-y-1.5">
+                <span className="text-2xs font-bold uppercase tracking-wider text-teal-900 block">
+                  1. PILIH KECAMATAN:
+                </span>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {KECAMATAN_LIST.map((kec) => (
+                    <button
+                      key={kec}
+                      type="button"
+                      onClick={() => {
+                        setFilterKecamatan(kec);
+                        setFilterKelurahan("semua");
+                      }}
+                      className={cn(
+                        "py-2 px-3 rounded-lg text-xs font-bold transition-all border cursor-pointer text-center",
+                        filterKecamatan.toLowerCase() === kec.toLowerCase()
+                          ? "bg-teal-700 text-white border-teal-700 shadow-2xs"
+                          : "bg-white border-teal-200 text-slate-700 hover:bg-teal-50"
+                      )}
+                    >
+                      {kec}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Langkah 2: Pilih Kelurahan jika tingkat kelurahan */}
+              {filterWilayahTingkat === "kelurahan" && (
+                <div className="space-y-1.5 pt-2 border-t border-teal-200/60">
+                  <span className="text-2xs font-bold uppercase tracking-wider text-teal-900 block">
+                    2. PILIH KELURAHAN ({filterKecamatan.toUpperCase()}):
+                  </span>
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setFilterKelurahan("semua")}
+                      className={cn(
+                        "py-1.5 px-3 rounded-lg text-xs font-bold transition-all border cursor-pointer",
+                        filterKelurahan === "semua"
+                          ? "bg-teal-700 text-white border-teal-700 shadow-2xs"
+                          : "bg-white border-teal-200 text-slate-700 hover:bg-teal-50"
+                      )}
+                    >
+                      Semua Kelurahan
+                    </button>
+                    {(KELURAHAN_BY_KEC[filterKecamatan] || []).map((kel) => {
+                      const countKel = atsList.filter(
+                        (a) => (a.kelurahan || "").toLowerCase() === kel.toLowerCase()
+                      ).length;
+                      return (
+                        <button
+                          key={kel}
+                          type="button"
+                          onClick={() => setFilterKelurahan(kel)}
+                          className={cn(
+                            "py-1.5 px-3 rounded-lg text-xs font-bold transition-all border cursor-pointer flex items-center gap-1.5",
+                            filterKelurahan.toLowerCase() === kel.toLowerCase()
+                              ? "bg-teal-700 text-white border-teal-700 shadow-2xs"
+                              : "bg-white border-teal-200 text-slate-700 hover:bg-teal-50"
+                          )}
+                        >
+                          <span>Kel. {kel}</span>
+                          <span
+                            className={cn(
+                              "px-1.5 py-0.2 rounded text-[10px] font-mono",
+                              filterKelurahan.toLowerCase() === kel.toLowerCase()
+                                ? "bg-white/20 text-white"
+                                : "bg-teal-100 text-teal-800"
+                            )}
+                          >
+                            {countKel} ATS
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
 

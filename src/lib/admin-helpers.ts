@@ -611,7 +611,7 @@ export function getKomunitasFeatureCards(komunitas: any) {
   if (hasCustomDataAnak) {
     canShowDataAnak = true;
   } else if (!isRestrictedCommunity) {
-    if (isOfficialPosyandu || isOfficialPaud || isSkb || isStarOfTomorrow || isOfficialWarga) {
+    if (isOfficialPosyandu || isOfficialPaud || isPkbmOrSkb || isOfficialWarga) {
       canShowDataAnak = true;
     }
   }
