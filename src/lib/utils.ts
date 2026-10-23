@@ -258,6 +258,45 @@ export function isSuperOrAdminPusat(profileOrUser?: {
 }
 
 /**
+ * Mengecek apakah pengguna memiliki peran sebagai Admin Bidang (SPM) tertentu atau umum
+ */
+export function isAdminBidang(
+  profileOrRole?: any,
+  targetBidang?: string
+): boolean {
+  if (!profileOrRole) return false;
+
+  // Jika input adalah string peran langsung
+  if (typeof profileOrRole === "string") {
+    const p = profileOrRole.toLowerCase();
+    if (!p.includes("admin bidang") && !p.includes("admin_bidang")) return false;
+    if (!targetBidang) return true;
+    return p.includes(targetBidang.toLowerCase().replace(/_/g, " "));
+  }
+
+  // Jika berupa array string (admin_bidang)
+  if (Array.isArray(profileOrRole.admin_bidang) && profileOrRole.admin_bidang.length > 0) {
+    if (!targetBidang) return true;
+    const targetClean = targetBidang.toLowerCase().replace(/_/g, "");
+    return profileOrRole.admin_bidang.some((b: string) =>
+      b.toLowerCase().replace(/_/g, "").includes(targetClean)
+    );
+  }
+
+  // Cek pada list komunitas
+  if (Array.isArray(profileOrRole.komunitas_list)) {
+    return profileOrRole.komunitas_list.some((c: any) => {
+      const p = (c.peran || "").toLowerCase();
+      if (!p.includes("admin bidang") && !p.includes("admin_bidang")) return false;
+      if (!targetBidang) return true;
+      return p.includes(targetBidang.toLowerCase().replace(/_/g, " "));
+    });
+  }
+
+  return false;
+}
+
+/**
  * Mengecek apakah peran tertentu merupakan peran Admin / Pengurus / Kader
  */
 export function isRoleAdmin(peran?: string | null): boolean {
@@ -288,6 +327,8 @@ export function isRoleAdmin(peran?: string | null): boolean {
     p.includes("super admin") ||
     p.includes("admin_pusat") ||
     p.includes("admin pusat") ||
+    p.includes("admin bidang") ||
+    p.includes("admin_bidang") ||
     p.includes("nakes") ||
     p.includes("bidan") ||
     p.includes("kepala") ||
@@ -348,6 +389,11 @@ export function canManageDataAnakInKomunitas(
   const p = peran.toLowerCase().trim();
   if (p.includes("admin pusat") || p.includes("admin_pusat") || p.includes("super admin") || p.includes("super_admin")) {
     return { canCreate: true, canEdit: true, canDelete: true, isReadOnly: false };
+  }
+
+  // Admin Bidang memiliki hak akses melihat detail seluruh data (Read-Only), tidak bisa tambah/edit/hapus
+  if (p.includes("admin bidang") || p.includes("admin_bidang")) {
+    return { canCreate: false, canEdit: false, canDelete: false, isReadOnly: true };
   }
 
   const jenis = (jenisKomunitas || "").toLowerCase().trim();

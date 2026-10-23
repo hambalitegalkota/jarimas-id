@@ -24,6 +24,7 @@ import { CleanupTestDataTool } from "@/components/admin/cleanup-test-data-tool";
 import { KomunitasManagementTools } from "@/components/admin/komunitas-management-tools";
 import { KecamatanMonitoringAccordion } from "@/components/admin/kecamatan-monitoring-accordion";
 import { SuperAdminWargaMonitoringTool } from "@/components/admin/super-admin-warga-monitoring-tool";
+import { AdminBidangManagementCard } from "@/components/admin/admin-bidang-management-card";
 import {
   formatPeranDisplay,
   isRoleAdmin,
@@ -603,6 +604,17 @@ export default async function ProfilePage() {
             userAdminInfo.tierLevel === "admin_kota") && (
             <SuperAdminWargaMonitoringTool
               initialUsers={registeredUsersResult.users || []}
+              currentUserId={user.id}
+              viewerTier={userAdminInfo.tierLevel}
+            />
+          )}
+
+          {/* Pengangkatan & Manajemen Admin Bidang (SPM 6 Bidang): Super Admin, Admin Pusat, Admin Kota */}
+          {(userAdminInfo.tierLevel === "super_admin" ||
+            userAdminInfo.tierLevel === "admin_pusat" ||
+            userAdminInfo.tierLevel === "admin_kota") && (
+            <AdminBidangManagementCard
+              registeredUsers={registeredUsersResult.users || []}
               currentUserId={user.id}
               viewerTier={userAdminInfo.tierLevel}
             />

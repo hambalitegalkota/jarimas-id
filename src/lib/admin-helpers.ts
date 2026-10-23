@@ -803,6 +803,7 @@ export type AdminTierLevel =
   | "admin_kelurahan"
   | "admin_rw"
   | "admin_rt"
+  | "admin_bidang"
   | "admin_komunitas";
 
 export interface UserAdminInfo {
@@ -985,6 +986,23 @@ export function getUserAdminInfo({
         });
         continue;
       }
+    }
+
+    // Tingkat Admin Bidang (SPM Kota Tegal)
+    const rLower = (item.raw_peran || item.peran || "").toLowerCase();
+    if (rLower.includes("admin bidang") || rLower.includes("admin_bidang")) {
+      const bidangName = (item.peran || "Admin Bidang").replace(/^Admin\s*/i, "");
+      candidateTiers.push({
+        isAdmin: true,
+        tierLevel: "admin_bidang",
+        tierRank: 8.5,
+        panelTitle: null, // Admin Bidang tidak mengangkat admin lain
+        tierBadgeLabel: `Admin ${bidangName}`,
+        wilayahLabel: "Kota Tegal",
+        canAppointRole: null,
+        canAppointRoleLabel: null,
+      });
+      continue;
     }
 
     // Tingkat Lembaga / Komunitas Khusus

@@ -187,6 +187,10 @@ export async function getRegisteredUsers(params?: {
       console.warn("Gagal memetakan komunitas user:", commErr);
     }
 
+    const isCurrentAdminBidang = (communityMap[currentUserId] || []).some(
+      (c) => (c.peran || "").toLowerCase().includes("admin bidang")
+    );
+
     // 3b. Hitung rekapitulasi sebaran warga satu komunitas (Kota Tegal, Kecamatan, Kelurahan, RW, RT, Komunitas Lain)
     // Aturan penting: Warga yang sama hanya dihitung satu kali (tidak dihitung ganda jika terdaftar di beberapa komunitas)
     const kotaSet = new Set<string>();
@@ -198,7 +202,7 @@ export async function getRegisteredUsers(params?: {
     const totalUniqueSet = new Set<string>();
 
     const targetRekapUserIds =
-      isSuperAdmin || isAdminPusatUser || sameCommunityUserIds.size === 0
+      isSuperAdmin || isAdminPusatUser || isCurrentAdminBidang || sameCommunityUserIds.size === 0
         ? new Set(Object.keys(userCategoriesMap))
         : sameCommunityUserIds;
 
@@ -226,10 +230,10 @@ export async function getRegisteredUsers(params?: {
     };
 
     // 4. Ambil profil pengguna sesuai hak akses:
-    // - Super Admin: Mengambil semua profil terdaftar
+    // - Super Admin, Admin Pusat, Admin Bidang: Mengambil semua profil terdaftar
     // - User Reguler: HANYA mengambil profil pengguna yang satu komunitas
     let targetProfiles: any[] = [];
-    if (isSuperAdmin || isAdminPusatUser) {
+    if (isSuperAdmin || isAdminPusatUser || isCurrentAdminBidang) {
       const { data: profiles, error: profileErr } = await supabase
         .from("profiles")
         .select("id, nama_lengkap, email, nomor_hp, avatar_url, is_super_admin, created_at")
@@ -367,6 +371,10 @@ export async function getRegisteredUsers(params?: {
 
       const userIsSuperAdmin = checkIsSuperAdmin(p);
       const userIsAdminPusat = !userIsSuperAdmin && isAdminPusat(p);
+      const userAdminBidang = (communityMap[p.id] || [])
+        .filter((c) => (c.peran || "").toLowerCase().includes("admin bidang"))
+        .map((c) => c.peran.replace(/^Admin\s*/i, ""));
+
       return {
         id: p.id,
         nama_lengkap: p.nama_lengkap || "Warga Jarimas",
@@ -375,6 +383,7 @@ export async function getRegisteredUsers(params?: {
         avatar_url: p.avatar_url,
         is_super_admin: userIsSuperAdmin,
         is_admin_pusat: userIsAdminPusat,
+        admin_bidang: userAdminBidang,
         created_at: p.created_at || new Date().toISOString(),
         komunitas_list: communityMap[p.id] || [],
         categories: Array.from(userCategoriesMap[p.id] || []),
@@ -508,8 +517,18 @@ export async function sendFriendRequest(targetUserId: string): Promise<{
 
     const isTargetSuperAdmin = checkIsSuperAdmin(targetProfile) || isAdminPusat(targetProfile);
 
-    // Jika bukan super admin dan target bukan super admin, validasi kesamaan komunitas
-    if (!isCurrentSuperAdmin && !isTargetSuperAdmin) {
+    // Cek apakah pengirim atau target adalah Admin Bidang (memiliki hak komunikasi bebas tanpa batas)
+    const { data: adminBidangCheck } = await supabase
+      .from("anggota_komunitas")
+      .select("id, user_id, peran")
+      .in("user_id", [user.id, targetUserId])
+      .ilike("peran", "%Admin Bidang%")
+      .eq("status", "approved");
+
+    const hasAdminBidangAccess = (adminBidangCheck || []).length > 0;
+
+    // Jika bukan super admin, bukan admin pusat, dan bukan admin bidang, validasi kesamaan komunitas
+    if (!isCurrentSuperAdmin && !isTargetSuperAdmin && !hasAdminBidangAccess) {
       const { data: myComms } = await supabase
         .from("anggota_komunitas")
         .select("komunitas_id")

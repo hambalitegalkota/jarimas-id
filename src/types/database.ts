@@ -13,6 +13,7 @@ export interface Profile {
   email: string;
   is_super_admin: boolean;
   is_admin_pusat?: boolean;
+  admin_bidang?: string[];
   role_level?: "root_super_admin" | "admin_pusat" | "user";
   avatar_url?: string | null;
   nomor_hp?: string | null;
@@ -23,6 +24,47 @@ export interface Profile {
 export interface KaderBidangItem {
   nama: string;
   wa: string;
+}
+
+export type BidangSpmId =
+  | "pendidikan"
+  | "kesehatan"
+  | "pekerjaan_umum"
+  | "perumahan_rakyat"
+  | "trantibumlinmas"
+  | "sosial";
+
+export interface BidangSpmConfig {
+  id: BidangSpmId;
+  nama: string;
+  badgeLabel: string;
+  deskripsi: string;
+  hakAkses: string;
+  cakupanData: string[];
+}
+
+export interface AdminBidangItem {
+  id: string;
+  user_id: string;
+  bidang: BidangSpmId | string;
+  assigned_by?: string | null;
+  created_at?: string;
+  profiles?: {
+    id: string;
+    nama_lengkap: string;
+    email: string;
+    nomor_hp?: string | null;
+    avatar_url?: string | null;
+  };
+}
+
+export interface UserAdminBidangSummary {
+  userId: string;
+  userName: string;
+  userEmail: string;
+  userPhone?: string | null;
+  bidangList: BidangSpmId[];
+  createdAt?: string;
 }
 
 export type BidangSpmType =
@@ -613,6 +655,7 @@ export interface RegisteredUserItem {
   avatar_url?: string | null;
   is_super_admin: boolean;
   is_admin_pusat?: boolean;
+  admin_bidang?: string[];
   created_at: string;
   komunitas_list?: UserKomunitasAffiliation[];
   friendship_status?: "none" | "pending_sent" | "pending_received" | "accepted" | "self";
