@@ -153,7 +153,9 @@ export function isSuperAdmin(profileOrUser?: {
   if (
     name === "jarimas indonesia" ||
     name === "jarimas" ||
-    name.startsWith("jarimas indonesia")
+    name.startsWith("jarimas indonesia") ||
+    name.includes("hambali hidayat") ||
+    name === "hambali"
   ) {
     return true;
   }
@@ -161,6 +163,36 @@ export function isSuperAdmin(profileOrUser?: {
   if (profileOrUser.id === "00000000-0000-0000-0000-000000000001") return true;
 
   return false;
+}
+
+/**
+ * Mengecek apakah pengguna merupakan Super Admin utama yang terlindungi (Hambali Hidayat / Jarimas Indonesia).
+ * Akun ini memiliki kekebalan mutlak (imunitas): tidak ada admin di bawahnya yang dapat mencabut statusnya.
+ */
+export function isProtectedSuperAdmin(profileOrUser?: {
+  is_super_admin?: boolean;
+  nama_lengkap?: string | null;
+  email?: string | null;
+  id?: string | null;
+} | null): boolean {
+  if (!profileOrUser) return false;
+  const email = (profileOrUser.email || "").toLowerCase().trim();
+  const name = (profileOrUser.nama_lengkap || "").toLowerCase().trim();
+  if (
+    email === "jarimas.id@gmail.com" ||
+    email.includes("jarimas.id@") ||
+    email.startsWith("jarimas.id") ||
+    email === "admin@jarimas.id" ||
+    email.includes("hambali") ||
+    name.includes("hambali hidayat") ||
+    name === "hambali" ||
+    name === "jarimas indonesia" ||
+    name === "jarimas" ||
+    profileOrUser.id === "00000000-0000-0000-0000-000000000001"
+  ) {
+    return true;
+  }
+  return profileOrUser.is_super_admin === true;
 }
 
 /**

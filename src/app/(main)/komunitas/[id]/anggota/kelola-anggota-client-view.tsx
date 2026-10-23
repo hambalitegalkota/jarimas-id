@@ -15,6 +15,8 @@ import {
   AlertTriangle,
   X,
   UserPlus,
+  Shield,
+  ShieldAlert,
 } from "lucide-react";
 import {
   approveAnggotaByAdmin,
@@ -22,24 +24,30 @@ import {
   kickMemberByAdmin,
   getAnggotaKomunitas,
 } from "@/app/actions/komunitas";
+import { assignOrRevokeKomunitasAdminAction } from "@/app/actions/admin";
 import { ManageGrupMembersModal } from "@/components/kabar/manage-grup-members-modal";
 import type { AnggotaKomunitasDetail } from "@/types/database";
-import { cn, formatPeranDisplay } from "@/lib/utils";
+import { cn, formatPeranDisplay, isRoleAdmin, isProtectedSuperAdmin } from "@/lib/utils";
 
 interface KelolaAnggotaClientViewProps {
   komunitasId: string;
   komunitasNama?: string;
+  komunitasJenis?: string;
   initialMembers: AnggotaKomunitasDetail[];
+  canAssignAdmin?: boolean;
 }
 
 export function KelolaAnggotaClientView({
   komunitasId,
   komunitasNama,
+  komunitasJenis,
   initialMembers,
+  canAssignAdmin = false,
 }: KelolaAnggotaClientViewProps) {
   const [members, setMembers] = useState<AnggotaKomunitasDetail[]>(initialMembers);
   const [activeTab, setActiveTab] = useState<"pending" | "approved">("pending");
   const [loadingId, setLoadingId] = useState<string | null>(null);
+  const [assigningId, setAssigningId] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<{
     type: "success" | "error";
     message: string;
@@ -48,6 +56,83 @@ export function KelolaAnggotaClientView({
   const [kickTargetMember, setKickTargetMember] = useState<AnggotaKomunitasDetail | null>(null);
   const [isKicking, setIsKicking] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+
+  const getDefaultAdminRole = (jenis?: string) => {
+    switch (jenis) {
+      case "warga_kita":
+        return "Pengurus";
+      case "posyandu":
+        return "Kader";
+      case "satuan_paud":
+        return "Admin PAUD";
+      case "pkbm_skb":
+        return "Admin PKBM";
+      default:
+        return "Pengurus";
+    }
+  };
+
+  const getDefaultNonAdminRole = (jenis?: string) => {
+    switch (jenis) {
+      case "warga_kita":
+        return "Penduduk";
+      case "posyandu":
+        return "Warga";
+      case "satuan_paud":
+        return "Wali Murid";
+      case "pkbm_skb":
+        return "Warga Belajar";
+      default:
+        return "Anggota";
+    }
+  };
+
+  const handleToggleAdminRole = (
+    member: AnggotaKomunitasDetail,
+    makeAdmin: boolean
+  ) => {
+    const targetName = member.profiles?.nama_lengkap || "Pengguna";
+    const newRole = makeAdmin
+      ? getDefaultAdminRole(komunitasJenis)
+      : getDefaultNonAdminRole(komunitasJenis);
+
+    setAssigningId(member.id);
+    setFeedback(null);
+
+    startTransition(async () => {
+      const res = await assignOrRevokeKomunitasAdminAction({
+        anggotaId: member.id,
+        newRole,
+        komunitasId,
+      });
+
+      if (res.success) {
+        setMembers((prev) =>
+          prev.map((m) =>
+            m.id === member.id
+              ? {
+                  ...m,
+                  peran: newRole,
+                  peran_diajukan: null,
+                }
+              : m
+          )
+        );
+        setFeedback({
+          type: "success",
+          message:
+            res.message ||
+            `${targetName} berhasil diubah statusnya menjadi ${newRole}`,
+        });
+      } else {
+        setFeedback({
+          type: "error",
+          message: res.message || "Gagal mengubah status admin anggota.",
+        });
+      }
+      setAssigningId(null);
+    });
+  };
 
   const pendingMembers = members.filter(
     (m) =>
@@ -334,10 +419,56 @@ export function KelolaAnggotaClientView({
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2 shrink-0">
+                  <div className="flex flex-wrap items-center gap-2 shrink-0">
                     <span className="rounded-md bg-primary/10 px-2.5 py-1 text-xs font-bold text-primary border border-primary/20">
                       {formatPeranDisplay(member.peran)}
                     </span>
+
+                    {/* Tombol Pengangkatan & Pencabutan Admin 1-Klik Berjenjang */}
+                    {canAssignAdmin && (
+                      <>
+                        {isProtectedSuperAdmin(member.profiles) ? (
+                          <span
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30 cursor-not-allowed select-none"
+                            title="Akun Super Admin tertinggi (Hambali Hidayat) memiliki imunitas mutlak dan tidak bisa dicabut atau diturunkan peran adminnya."
+                          >
+                            <Shield className="h-3 w-3 text-amber-500" />
+                            <span className="hidden sm:inline">Super Admin (Permanen)</span>
+                            <span className="sm:hidden">Super Admin</span>
+                          </span>
+                        ) : isRoleAdmin(member.peran) ? (
+                          <button
+                            type="button"
+                            disabled={assigningId === member.id}
+                            onClick={() => handleToggleAdminRole(member, false)}
+                            className="inline-flex h-8 items-center gap-1 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-rose-700 dark:text-rose-400 px-2.5 text-xs font-semibold transition-all cursor-pointer disabled:opacity-50"
+                            title={`Cabut status admin untuk ${name} (jadikan ${getDefaultNonAdminRole(komunitasJenis)})`}
+                          >
+                            {assigningId === member.id ? (
+                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            ) : (
+                              <ShieldAlert className="h-3.5 w-3.5 text-rose-600 dark:text-rose-400" />
+                            )}
+                            <span>Cabut Status Admin</span>
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            disabled={assigningId === member.id}
+                            onClick={() => handleToggleAdminRole(member, true)}
+                            className="inline-flex h-8 items-center gap-1 rounded-lg border border-teal-500/30 bg-teal-500/10 hover:bg-teal-500/20 text-teal-800 dark:text-teal-300 px-2.5 text-xs font-semibold transition-all cursor-pointer disabled:opacity-50"
+                            title={`Angkat ${name} menjadi admin (${getDefaultAdminRole(komunitasJenis)}) dengan 1 kali klik`}
+                          >
+                            {assigningId === member.id ? (
+                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            ) : (
+                              <Shield className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400" />
+                            )}
+                            <span>+ Angkat Jadi Admin</span>
+                          </button>
+                        )}
+                      </>
+                    )}
 
                     {/* Tombol Keluarkan Anggota oleh Admin */}
                     <button

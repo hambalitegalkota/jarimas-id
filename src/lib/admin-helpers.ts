@@ -634,3 +634,115 @@ export function getKomunitasFeatureCards(komunitas: any) {
     hasCustomDataAts,
   };
 }
+
+/**
+ * Mengecek apakah pengguna aktif memiliki wewenang untuk mengangkat atau mencabut
+ * peran admin seorang anggota di komunitas target sesuai aturan berjenjang:
+ * - Super Admin & Admin Pusat: Berwenang di seluruh tingkatan dan seluruh komunitas
+ * - Admin Kota: Berwenang di seluruh Kecamatan, Kelurahan, RW, RT, Posyandu, PAUD, PKBM & SKB
+ * - Admin Kecamatan: Berwenang di wilayah kecamatannya (Kelurahan, RW, RT, Posyandu, PAUD, PKBM & SKB)
+ * - Admin Kelurahan: Berwenang di wilayah kelurahannya (RW, RT) serta Posyandu, Satuan PAUD, dan PKBM & SKB setempat
+ * - Admin RW: Berwenang di lingkungan RT dalam RW-nya
+ * - Admin komunitas itu sendiri: Berwenang mengangkat/mencabut rekan admin di komunitasnya
+ */
+export function checkUserCanAssignAdminRole({
+  isSuperAdmin,
+  isAdminPusat = false,
+  userAdminKomunitas,
+  targetKomunitas,
+}: {
+  isSuperAdmin: boolean;
+  isAdminPusat?: boolean;
+  userAdminKomunitas: any[];
+  targetKomunitas: any;
+}): boolean {
+  if (isSuperAdmin || isAdminPusat) return true;
+  if (!targetKomunitas || !userAdminKomunitas || userAdminKomunitas.length === 0) return false;
+
+  const targetMeta = extractKomunitasMetadata(targetKomunitas);
+  const targetId = targetKomunitas.id || targetKomunitas.komunitas_id;
+
+  // 1. Cek apakah pengguna merupakan Admin/Pengurus di komunitas target itu sendiri
+  const isDirectAdmin = userAdminKomunitas.some((uKom) => {
+    return uKom.id === targetId || (uKom.komunitas_id && uKom.komunitas_id === targetId);
+  });
+  if (isDirectAdmin) return true;
+
+  // 2. Evaluasi hierarki wilayah Warga Kita
+  if (targetMeta.jenis === "warga_kita") {
+    return userAdminKomunitas.some((uKom) => {
+      const u = extractKomunitasMetadata(uKom);
+      if (u.jenis !== "warga_kita") return false;
+
+      // Admin Kota Tegal
+      if (!u.hasKel && !u.hasRw && !u.hasRt && (u.rawKec === "Kota Tegal" || !u.kec || u.kec === "kota tegal")) {
+        return true;
+      }
+
+      const targetKec = targetMeta.kec || normalizeStr(KELURAHAN_TO_KECAMATAN_MAP[targetMeta.kel]);
+      const kecMatch = Boolean(u.kec && targetKec && u.kec === targetKec);
+
+      // A. Target adalah RT -> bisa diangkat oleh Admin RW, Kelurahan, atau Kecamatan di atasnya
+      if (targetMeta.hasRt && targetMeta.hasRw) {
+        if (u.hasRw && !u.hasRt && u.rw === targetMeta.rw && (!targetMeta.hasKel || !u.hasKel || u.kel === targetMeta.kel)) return true;
+        if (u.hasKel && !u.hasRw && !u.hasRt && u.kel === targetMeta.kel) return true;
+        if (u.kec && !u.hasKel && !u.hasRw && !u.hasRt && kecMatch) return true;
+      }
+
+      // B. Target adalah RW -> bisa diangkat oleh Admin Kelurahan atau Kecamatan di atasnya
+      if (targetMeta.hasRw && !targetMeta.hasRt) {
+        if (u.hasKel && !u.hasRw && !u.hasRt && u.kel === targetMeta.kel) return true;
+        if (u.kec && !u.hasKel && !u.hasRw && !u.hasRt && kecMatch) return true;
+      }
+
+      // C. Target adalah Kelurahan -> bisa diangkat oleh Admin Kecamatan di atasnya
+      if (targetMeta.hasKel && !targetMeta.hasRw && !targetMeta.hasRt) {
+        if (u.kec && !u.hasKel && !u.hasRw && !u.hasRt && kecMatch) return true;
+      }
+
+      return false;
+    });
+  }
+
+  // 3. Evaluasi Lembaga: Posyandu, Satuan PAUD, dan PKBM & SKB
+  const isLembaga =
+    targetMeta.jenis === "posyandu" ||
+    targetMeta.jenis === "satuan_paud" ||
+    targetMeta.jenis === "pkbm_skb";
+
+  if (isLembaga) {
+    const targetKelClean = (targetMeta.kel || "").replace(/\s+/g, "");
+    const targetKecClean = (
+      targetMeta.kec ||
+      normalizeStr(KELURAHAN_TO_KECAMATAN_MAP[targetMeta.kel])
+    ).replace(/\s+/g, "");
+
+    return userAdminKomunitas.some((uKom) => {
+      const u = extractKomunitasMetadata(uKom);
+      if (u.jenis !== "warga_kita") return false;
+
+      // Admin Kota
+      if (!u.hasKel && !u.hasRw && !u.hasRt && (u.rawKec === "Kota Tegal" || !u.kec || u.kec === "kota tegal")) {
+        return true;
+      }
+
+      const uKelClean = (u.kel || "").replace(/\s+/g, "");
+      const uKecClean = (u.kec || "").replace(/\s+/g, "");
+
+      // Admin Kelurahan setempat (Kewenangan menetapkan Admin Posyandu, PAUD, PKBM & SKB di kelurahannya)
+      if (u.hasKel && !u.hasRw && !u.hasRt) {
+        if (targetKelClean && uKelClean === targetKelClean) return true;
+      }
+
+      // Admin Kecamatan setempat
+      if (u.kec && !u.hasKel && !u.hasRw && !u.hasRt) {
+        if (targetKecClean && uKecClean === targetKecClean) return true;
+      }
+
+      return false;
+    });
+  }
+
+  return false;
+}
+

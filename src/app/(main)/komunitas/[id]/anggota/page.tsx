@@ -5,6 +5,7 @@ import {
   getKomunitasDetail,
   getAnggotaKomunitas,
 } from "@/app/actions/komunitas";
+import { checkCanManageKomunitasAdminsAction } from "@/app/actions/admin";
 import { KelolaAnggotaClientView } from "./kelola-anggota-client-view";
 
 interface KelolaAnggotaPageProps {
@@ -21,9 +22,11 @@ export default async function KelolaAnggotaPage({
   const [
     { data: komunitas, currentUserId, isAdminOrKader },
     { data: allMembers },
+    canAssignAdmin,
   ] = await Promise.all([
     getKomunitasDetail(id),
     getAnggotaKomunitas(id),
+    checkCanManageKomunitasAdminsAction(id),
   ]);
 
   if (!komunitas) {
@@ -110,7 +113,9 @@ export default async function KelolaAnggotaPage({
       <KelolaAnggotaClientView
         komunitasId={id}
         komunitasNama={komunitas.nama}
+        komunitasJenis={komunitas.jenis}
         initialMembers={allMembers}
+        canAssignAdmin={canAssignAdmin}
       />
     </div>
   );

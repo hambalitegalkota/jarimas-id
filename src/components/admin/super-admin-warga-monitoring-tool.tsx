@@ -21,9 +21,13 @@ import {
   Radio,
   UserCheck,
   CheckCircle2,
+  Shield,
+  ShieldAlert,
+  Loader2,
 } from "lucide-react";
 import { useGlobalMessageNotification } from "@/components/notifications/global-message-notification-provider";
-import { isSuperAdmin, isAdminPusat, formatWhatsAppUrl } from "@/lib/utils";
+import { isSuperAdmin, isAdminPusat, isProtectedSuperAdmin, formatWhatsAppUrl, cn } from "@/lib/utils";
+import { toggleAdminPusatRoleAction } from "@/app/actions/admin";
 import type { RegisteredUserItem } from "@/types/database";
 
 interface SuperAdminWargaMonitoringToolProps {
@@ -36,6 +40,9 @@ export function SuperAdminWargaMonitoringTool({
   currentUserId,
 }: SuperAdminWargaMonitoringToolProps) {
   const [isOpen, setIsOpen] = useState(true);
+  const [usersList, setUsersList] = useState<RegisteredUserItem[]>(initialUsers);
+  const [processingUserId, setProcessingUserId] = useState<string | null>(null);
+  const [toastMessage, setToastMessage] = useState<{ text: string; isError?: boolean } | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedFilter, setSelectedFilter] = useState<
     "semua" | "online" | "posyandu" | "paud" | "warga_kita"
@@ -44,16 +51,46 @@ export function SuperAdminWargaMonitoringTool({
   const { onlineUserIds, isUserOnline, openChatWithUser } =
     useGlobalMessageNotification();
 
+  const handleToggleAdminPusat = async (userItem: RegisteredUserItem) => {
+    const isCurrentlyAdminPusat = Boolean(userItem.is_admin_pusat || isAdminPusat(userItem));
+    const targetName = userItem.nama_lengkap || userItem.email || "Pengguna";
+    const confirmMsg = isCurrentlyAdminPusat
+      ? `Cabut status Admin Pusat dari ${targetName}? Pengguna ini tidak lagi memiliki hak manajerial global.`
+      : `Angkat ${targetName} sebagai Admin Pusat? Pengguna ini akan memiliki wewenang manajerial global, mengelola Jarimas Market, dan menetapkan admin wilayah berjenjang.`;
+
+    if (!window.confirm(confirmMsg)) return;
+
+    setProcessingUserId(userItem.id);
+    try {
+      const res = await toggleAdminPusatRoleAction(userItem.id, !isCurrentlyAdminPusat);
+      if (res.success) {
+        setUsersList((prev) =>
+          prev.map((u) =>
+            u.id === userItem.id ? { ...u, is_admin_pusat: !isCurrentlyAdminPusat } : u
+          )
+        );
+        setToastMessage({ text: res.message });
+      } else {
+        setToastMessage({ text: res.message, isError: true });
+      }
+    } catch (err: any) {
+      setToastMessage({ text: err.message || "Gagal memproses peran.", isError: true });
+    } finally {
+      setProcessingUserId(null);
+      setTimeout(() => setToastMessage(null), 5000);
+    }
+  };
+
   // Hitung jumlah online secara realtime
   const onlineCount = useMemo(() => {
-    return initialUsers.filter(
+    return usersList.filter(
       (u) => u.id !== currentUserId && onlineUserIds.has(u.id)
     ).length;
-  }, [initialUsers, currentUserId, onlineUserIds]);
+  }, [usersList, currentUserId, onlineUserIds]);
 
   // Filter daftar pengguna berdasarkan pencarian dan tab filter
   const filteredUsers = useMemo(() => {
-    let result = initialUsers.filter((u) => u.id !== currentUserId);
+    let result = usersList.filter((u) => u.id !== currentUserId);
 
     // Filter tab
     if (selectedFilter === "online") {
@@ -101,7 +138,7 @@ export function SuperAdminWargaMonitoringTool({
         new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       );
     });
-  }, [initialUsers, currentUserId, selectedFilter, searchQuery, onlineUserIds]);
+  }, [usersList, currentUserId, selectedFilter, searchQuery, onlineUserIds]);
 
   return (
     <div className="rounded-lg border border-border bg-card shadow-xs overflow-hidden transition-all">
@@ -154,6 +191,27 @@ export function SuperAdminWargaMonitoringTool({
       {/* Accordion Content Body */}
       {isOpen && (
         <div className="p-4 sm:p-5 space-y-4">
+          {/* Toast Notification Banner */}
+          {toastMessage && (
+            <div
+              className={cn(
+                "p-3 rounded-lg text-xs font-semibold flex items-center justify-between gap-2 border animate-in fade-in duration-200",
+                toastMessage.isError
+                  ? "bg-destructive/10 border-destructive/30 text-destructive"
+                  : "bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-400"
+              )}
+            >
+              <span>{toastMessage.text}</span>
+              <button
+                type="button"
+                onClick={() => setToastMessage(null)}
+                className="text-xs opacity-70 hover:opacity-100 p-1"
+              >
+                ✕
+              </button>
+            </div>
+          )}
+
           {/* Quick Metrics Bar */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div className="p-3.5 rounded-lg bg-muted/40 border border-border space-y-1">
@@ -453,12 +511,51 @@ export function SuperAdminWargaMonitoringTool({
                     </div>
 
                     {/* Action Bar */}
-                    <div className="pt-3 mt-3 border-t border-border flex items-center justify-between gap-2">
-                      <div className="text-[10px] text-muted-foreground">
-                        Direct Chat Aktif
+                    <div className="pt-3 mt-3 border-t border-border flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        {/* Tombol Penetapan / Pencabutan Admin Pusat oleh Super Admin */}
+                        {isProtectedSuperAdmin(userItem) ? (
+                          <span
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30 cursor-not-allowed select-none"
+                            title="Super Admin tertinggi (Hambali Hidayat) memiliki status imunitas mutlak dan tidak bisa dicabut atau diturunkan"
+                          >
+                            <Shield className="h-3 w-3 text-amber-500" />
+                            Super Admin (Permanen)
+                          </span>
+                        ) : userItem.is_admin_pusat || isAdminPusat(userItem) ? (
+                          <button
+                            type="button"
+                            disabled={processingUserId === userItem.id}
+                            onClick={() => handleToggleAdminPusat(userItem)}
+                            className="inline-flex min-h-[32px] items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-rose-700 dark:text-rose-400 transition-all cursor-pointer disabled:opacity-50"
+                            title="Cabut wewenang sebagai Admin Pusat (kembalikan ke warga biasa)"
+                          >
+                            {processingUserId === userItem.id ? (
+                              <Loader2 className="h-3 w-3 animate-spin" />
+                            ) : (
+                              <ShieldAlert className="h-3 w-3 text-rose-600 dark:text-rose-400" />
+                            )}
+                            Cabut Admin Pusat
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            disabled={processingUserId === userItem.id}
+                            onClick={() => handleToggleAdminPusat(userItem)}
+                            className="inline-flex min-h-[32px] items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold border border-teal-500/30 bg-teal-500/10 hover:bg-teal-500/20 text-teal-800 dark:text-teal-300 transition-all cursor-pointer disabled:opacity-50"
+                            title="Angkat pengguna ini menjadi Admin Pusat dengan 1 kali klik"
+                          >
+                            {processingUserId === userItem.id ? (
+                              <Loader2 className="h-3 w-3 animate-spin" />
+                            ) : (
+                              <Shield className="h-3 w-3 text-teal-600 dark:text-teal-400" />
+                            )}
+                            + Angkat Admin Pusat
+                          </button>
+                        )}
                       </div>
 
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-1.5 ml-auto">
                         {waUrl && (
                           <a
                             href={waUrl}

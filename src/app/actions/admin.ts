@@ -9,11 +9,13 @@ import {
   isSuperAdmin as checkIsSuperAdmin,
   isAdminPusat as checkIsAdminPusat,
   isSuperOrAdminPusat as checkIsSuperOrAdminPusat,
+  isProtectedSuperAdmin,
 } from "@/lib/utils";
 import { findOrGenerateKomunitasSeed } from "@/lib/constants/tegal-data";
 import {
   computeTierAndApprover,
   checkUserCanApproveItem,
+  checkUserCanAssignAdminRole,
 } from "@/lib/admin-helpers";
 import type { PendingApprovalItem } from "@/types/database";
 
@@ -1169,5 +1171,249 @@ export async function cleanupNonSuperAdminDataAction(): Promise<{
     };
   }
 }
+
+/**
+ * Server Action: Mengangkat atau Mencabut peran Admin Pusat
+ * Aturan Mutlak:
+ * - HANYA Super Admin (Hambali Hidayat) yang berhak menetapkan atau mencabut Admin Pusat.
+ * - Akun Super Admin tidak bisa dicabut atau diubah statusnya (Imunitas Super Admin).
+ */
+export async function toggleAdminPusatRoleAction(
+  targetUserId: string,
+  newStatus: boolean
+): Promise<{
+  success: boolean;
+  message: string;
+}> {
+  try {
+    const { supabase, isSuperAdmin, user } =
+      await getAuthenticatedUserContext();
+    const currentUserId = user.id;
+
+    if (!isSuperAdmin) {
+      return {
+        success: false,
+        message:
+          "Akses ditolak: Penetapan dan pencabutan status Admin Pusat hanya dapat dilakukan oleh Super Admin (Hambali Hidayat).",
+      };
+    }
+
+    if (!targetUserId) {
+      return {
+        success: false,
+        message: "ID Pengguna target tidak valid.",
+      };
+    }
+
+    // Ambil data profil target
+    const { data: targetProfile, error: fetchErr } = await supabase
+      .from("profiles")
+      .select("id, nama_lengkap, email, is_super_admin, is_admin_pusat")
+      .eq("id", targetUserId)
+      .maybeSingle();
+
+    if (fetchErr || !targetProfile) {
+      return {
+        success: false,
+        message: "Profil pengguna target tidak ditemukan.",
+      };
+    }
+
+    // Proteksi Imunitas Super Admin: Akun Super Admin tidak dapat dicabut
+    if (isProtectedSuperAdmin(targetProfile)) {
+      return {
+        success: false,
+        message:
+          "Tindakan ditolak: Status Super Admin (Hambali Hidayat) bersifat absolut dan tertinggi, tidak dapat diubah atau dicabut oleh siapapun.",
+      };
+    }
+
+    const adminClient = createAdminClient() || supabase;
+    const { error: updateErr } = await adminClient
+      .from("profiles")
+      .update({
+        is_admin_pusat: newStatus,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", targetUserId);
+
+    if (updateErr) {
+      throw updateErr;
+    }
+
+    const actionName = newStatus ? "diangkat menjadi Admin Pusat" : "dicabut dari status Admin Pusat";
+    const targetName = targetProfile.nama_lengkap || targetProfile.email || "Pengguna";
+
+    revalidatePath("/profil");
+    revalidatePath("/admin");
+    revalidatePath("/admin/market");
+    revalidatePath("/kabar");
+
+    return {
+      success: true,
+      message: `Akun ${targetName} berhasil ${actionName}.`,
+    };
+  } catch (err: any) {
+    console.error("Error toggleAdminPusatRoleAction:", err);
+    return {
+      success: false,
+      message: err.message || "Gagal memperbarui status Admin Pusat.",
+    };
+  }
+}
+
+/**
+ * Server Action: Mengangkat atau Mencabut peran Admin/Pengurus di Komunitas secara berjenjang (1 Klik)
+ * Aturan Hierarkis:
+ * - Super Admin & Admin Pusat: Dapat mengangkat/mencabut admin di seluruh komunitas
+ * - Admin Kota: Dapat mengangkat/mencabut admin di seluruh Kecamatan, Kelurahan, RW, RT, Posyandu, PAUD, PKBM & SKB
+ * - Admin Kecamatan: Dapat mengangkat/mencabut admin di Kelurahan, RW, RT, Posyandu, PAUD, PKBM & SKB dalam kecamatannya
+ * - Admin Kelurahan: Dapat mengangkat/mencabut admin RW, RT, serta Posyandu, PAUD, PKBM & SKB di kelurahannya
+ * - Admin RW: Dapat mengangkat/mencabut admin RT di RW-nya
+ * - Admin Komunitas: Dapat mengangkat/mencabut rekan admin di komunitasnya
+ * - Imunitas Super Admin: Peran Super Admin tidak dapat dicabut atau diturunkan oleh siapapun
+ */
+export async function assignOrRevokeKomunitasAdminAction({
+  anggotaId,
+  newRole,
+  komunitasId,
+}: {
+  anggotaId: string;
+  newRole: string;
+  komunitasId: string;
+}): Promise<{
+  success: boolean;
+  message: string;
+}> {
+  try {
+    const { supabase, isSuperAdmin, isAdminPusat, userAdminKomunitas, user } =
+      await getAuthenticatedUserContext();
+    const currentUserId = user.id;
+
+    if (!anggotaId || !komunitasId || !newRole) {
+      return {
+        success: false,
+        message: "Parameter penetapan peran tidak lengkap.",
+      };
+    }
+
+    // Ambil data anggota komunitas target
+    const { data: memberTarget, error: memberErr } = await supabase
+      .from("anggota_komunitas")
+      .select("id, user_id, komunitas_id, peran, status, profiles(id, nama_lengkap, email, is_super_admin)")
+      .eq("id", anggotaId)
+      .maybeSingle();
+
+    if (memberErr || !memberTarget) {
+      return {
+        success: false,
+        message: "Data keanggotaan tidak ditemukan.",
+      };
+    }
+
+    // Proteksi Imunitas Super Admin: Jika target adalah Super Admin dan perannya hendak dicabut/diturunkan
+    const targetProf = (memberTarget as any).profiles;
+    if (isProtectedSuperAdmin(targetProf) && !isRoleAdmin(newRole)) {
+      return {
+        success: false,
+        message:
+          "Tindakan ditolak: Akun Super Admin memiliki imunitas mutlak dan tidak dapat dicabut peran kepengurusannya.",
+      };
+    }
+
+    // Ambil data komunitas target
+    const { data: komDb } = await supabase
+      .from("komunitas")
+      .select("id, nama, jenis, kecamatan, kelurahan, rw, rt")
+      .eq("id", toValidUUID(komunitasId))
+      .maybeSingle();
+
+    const targetKomunitas = komDb || findOrGenerateKomunitasSeed(komunitasId);
+
+    // Periksa wewenang hierarki
+    const canAssign = checkUserCanAssignAdminRole({
+      isSuperAdmin,
+      isAdminPusat,
+      userAdminKomunitas,
+      targetKomunitas,
+    });
+
+    if (!canAssign) {
+      return {
+        success: false,
+        message:
+          "Akses ditolak: Anda tidak memiliki wewenang hierarkis untuk menetapkan atau mencabut admin di komunitas ini.",
+      };
+    }
+
+    const adminClient = createAdminClient() || supabase;
+    const { error: updateErr } = await adminClient
+      .from("anggota_komunitas")
+      .update({
+        peran: newRole,
+        peran_diajukan: null,
+        status: "approved",
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", anggotaId);
+
+    if (updateErr) {
+      throw updateErr;
+    }
+
+    const targetName = targetProf?.nama_lengkap || targetProf?.email || "Anggota";
+    const actionDesc = isRoleAdmin(newRole)
+      ? `berhasil diangkat sebagai ${newRole}`
+      : `berhasil diubah status perannya menjadi ${newRole}`;
+
+    revalidatePath(`/komunitas/${komunitasId}`);
+    revalidatePath(`/komunitas/${komunitasId}/anggota`);
+    revalidatePath("/profil");
+
+    return {
+      success: true,
+      message: `${targetName} ${actionDesc}!`,
+    };
+  } catch (err: any) {
+    console.error("Error assignOrRevokeKomunitasAdminAction:", err);
+    return {
+      success: false,
+      message: err.message || "Gagal mengubah peran admin anggota.",
+    };
+  }
+}
+
+/**
+ * Server Action: Memeriksa apakah pengguna yang sedang login memiliki wewenang hierarkis
+ * untuk menetapkan atau mencabut status admin anggota di komunitas target.
+ */
+export async function checkCanManageKomunitasAdminsAction(
+  komunitasId: string
+): Promise<boolean> {
+  try {
+    const { supabase, isSuperAdmin, isAdminPusat, userAdminKomunitas } =
+      await getAuthenticatedUserContext();
+
+    if (isSuperAdmin || isAdminPusat) return true;
+
+    const { data: komDb } = await supabase
+      .from("komunitas")
+      .select("id, nama, jenis, kecamatan, kelurahan, rw, rt")
+      .eq("id", toValidUUID(komunitasId))
+      .maybeSingle();
+
+    const targetKomunitas = komDb || findOrGenerateKomunitasSeed(komunitasId);
+
+    return checkUserCanAssignAdminRole({
+      isSuperAdmin,
+      isAdminPusat,
+      userAdminKomunitas,
+      targetKomunitas,
+    });
+  } catch {
+    return false;
+  }
+}
+
 
 

@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/utils/supabase/server";
 import { MarketProdukSchema } from "@/lib/zod-schemas";
-import { isSuperAdmin as checkIsSuperAdmin } from "@/lib/utils";
+import { isSuperOrAdminPusat } from "@/lib/utils";
 import type {
   MarketProduk,
   MarketPesanan,
@@ -11,7 +11,7 @@ import type {
 } from "@/types/database";
 
 /**
- * Server Action: Tambah atau Perbarui Produk (Khusus Super Admin)
+ * Server Action: Tambah atau Perbarui Produk (Khusus Super Admin & Admin Pusat)
  */
 export async function upsertProduk(formData: FormData): Promise<{
   success: boolean;
@@ -28,18 +28,18 @@ export async function upsertProduk(formData: FormData): Promise<{
     if (authError || !user) {
       return {
         success: false,
-        message: "Akses ditolak. Silakan masuk sebagai Super Admin.",
+        message: "Akses ditolak. Silakan masuk sebagai Super Admin atau Admin Pusat.",
       };
     }
 
-    // Verifikasi Super Admin
+    // Verifikasi Super Admin & Admin Pusat
     const { data: profile } = await supabase
       .from("profiles")
       .select("id, is_super_admin, is_admin_pusat, nama_lengkap, email")
       .eq("id", user.id)
       .maybeSingle();
 
-    if (!checkIsSuperAdmin({
+    if (!isSuperOrAdminPusat({
       ...profile,
       id: user.id,
       email: profile?.email || user.email,
@@ -47,7 +47,7 @@ export async function upsertProduk(formData: FormData): Promise<{
     })) {
       return {
         success: false,
-        message: "Hanya Super Admin yang berhak mengelola produk Jarimas Market.",
+        message: "Hanya Super Admin dan Admin Pusat yang berhak mengelola produk Jarimas Market.",
       };
     }
 
@@ -170,14 +170,14 @@ export async function getSemuaPesanan(): Promise<{
       };
     }
 
-    // Cek hak akses
+    // Cek hak akses Super Admin & Admin Pusat
     const { data: profile } = await supabase
       .from("profiles")
       .select("id, is_super_admin, is_admin_pusat, nama_lengkap, email")
       .eq("id", user.id)
       .maybeSingle();
 
-    if (!checkIsSuperAdmin({
+    if (!isSuperOrAdminPusat({
       ...profile,
       id: user.id,
       email: profile?.email || user.email,
@@ -185,7 +185,7 @@ export async function getSemuaPesanan(): Promise<{
     })) {
       return {
         success: false,
-        message: "Akses ditolak. Rute ini hanya untuk Super Admin.",
+        message: "Akses ditolak. Rute ini hanya untuk Super Admin dan Admin Pusat.",
         data: [],
       };
     }
@@ -221,7 +221,7 @@ export async function getSemuaPesanan(): Promise<{
 }
 
 /**
- * Server Action: Memperbarui Status Transaksi & Pengiriman (Khusus Super Admin)
+ * Server Action: Memperbarui Status Transaksi & Pengiriman (Khusus Super Admin & Admin Pusat)
  */
 export async function updateStatusPesanan(
   pesananId: string,
@@ -245,14 +245,14 @@ export async function updateStatusPesanan(
       };
     }
 
-    // Verifikasi Super Admin
+    // Verifikasi Super Admin & Admin Pusat
     const { data: profile } = await supabase
       .from("profiles")
       .select("id, is_super_admin, is_admin_pusat, nama_lengkap, email")
       .eq("id", user.id)
       .maybeSingle();
 
-    if (!checkIsSuperAdmin({
+    if (!isSuperOrAdminPusat({
       ...profile,
       id: user.id,
       email: profile?.email || user.email,
@@ -260,7 +260,7 @@ export async function updateStatusPesanan(
     })) {
       return {
         success: false,
-        message: "Akses ditolak: Hanya Super Admin yang berhak memperbarui pesanan.",
+        message: "Akses ditolak: Hanya Super Admin dan Admin Pusat yang berhak memperbarui pesanan.",
       };
     }
 

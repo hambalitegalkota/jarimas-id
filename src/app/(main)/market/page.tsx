@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { createClient } from "@/utils/supabase/server";
 import { getMarketProduk } from "@/app/actions/market";
-import { isSuperAdmin as checkIsSuperAdmin } from "@/lib/utils";
+import { isSuperOrAdminPusat } from "@/lib/utils";
 import { MarketClientView } from "./market-client-view";
 
 export const metadata: Metadata = {
@@ -16,7 +16,7 @@ export default async function MarketPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  let isSuperAdmin = false;
+  let canManageMarket = false;
   if (user) {
     const { data: profile } = await supabase
       .from("profiles")
@@ -24,7 +24,7 @@ export default async function MarketPage() {
       .eq("id", user.id)
       .maybeSingle();
 
-    isSuperAdmin = checkIsSuperAdmin({
+    canManageMarket = isSuperOrAdminPusat({
       ...profile,
       id: user.id,
       email: profile?.email || user.email,
@@ -37,7 +37,7 @@ export default async function MarketPage() {
   return (
     <MarketClientView
       initialProducts={products || []}
-      isSuperAdmin={isSuperAdmin}
+      isSuperAdmin={canManageMarket}
     />
   );
 }
