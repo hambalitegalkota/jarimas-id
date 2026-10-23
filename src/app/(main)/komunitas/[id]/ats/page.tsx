@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { getKomunitasDetail } from "@/app/actions/komunitas";
-import { getDataAtsByKomunitas } from "@/app/actions/data-ats";
+import { getDataAtsByKomunitas, checkIsPkbmOrSkb } from "@/app/actions/data-ats";
 import { getRekapDataAtsAction } from "@/app/actions/rekap-data-ats";
 import { checkUserRekapAdminAccess } from "@/app/actions/rekap-data-anak";
 import { DataAtsClientView } from "@/components/data-ats/data-ats-client-view";
@@ -42,12 +42,12 @@ export default async function KomunitasDataAtsPage({
     komunitas.jenis_institusi === "SKB" ||
     cleanNama.includes("skb") ||
     cleanNama.includes("sanggar kegiatan belajar");
-  const isPkbmOrSkb =
-    komunitas.jenis === "pkbm_skb" ||
-    komunitas.jenis_institusi === "PKBM" ||
-    komunitas.jenis_institusi === "SKB" ||
-    cleanNama.includes("pkbm") ||
-    isSkb;
+  const isPkbmOrSkb = checkIsPkbmOrSkb(komunitas, id);
+
+  if (isPkbmOrSkb) {
+    komunitas.jenis = "pkbm_skb";
+    (komunitas as any).jenis_institusi = (komunitas as any).jenis_institusi || (isSkb ? "SKB" : "PKBM");
+  }
 
   const meta = extractKomunitasMetadata(komunitas);
   const isWargaKita = komunitas.jenis === "warga_kita";
@@ -181,9 +181,9 @@ export default async function KomunitasDataAtsPage({
       <DataAtsClientView
         komunitas={komunitas}
         initialAts={atsList}
-        canValidate={hasRootAccess ? true : canValidate}
+        canValidate={hasRootAccess || (isPkbmOrSkb && (canManage || isAdminOrPengurus)) ? true : canValidate}
         canEditDdtk={hasRootAccess ? true : canEditDdtk}
-        canManage={hasRootAccess ? true : canManage}
+        canManage={hasRootAccess || (isPkbmOrSkb && (canManage || isAdminOrPengurus)) ? true : canManage}
         canAccessDaftarNama={canAccessDaftarNama}
         currentUserId={currentUserId}
         isSuperAdmin={hasRootAccess}

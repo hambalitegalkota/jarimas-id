@@ -106,6 +106,8 @@ export function DataAtsClientView({
     komunitas.jenis_institusi === "PKBM" ||
     komunitas.jenis_institusi === "SKB" ||
     cleanNama.includes("pkbm") ||
+    cleanNama.includes("citra mandiri") ||
+    cleanNama.includes("sakila kerti") ||
     isSkb;
   const isAdminOrPengurus =
     isRoleAdmin(userPeranLower) ||
@@ -119,7 +121,7 @@ export function DataAtsClientView({
   // Sesuai ketentuan perlindungan privasi data, rincian identitas lengkap anak tidak sekolah hanya dapat diakses di Tingkat KELURAHAN oleh Admin di Komunitas Warga Kita, Admin PAUD, Admin Posyandu dan Admin PKBM dan SKB
   const canAccessDaftarNama = Boolean(
     initialCanAccessDaftarNama ??
-    (isSuperAdmin || canManage || (isApprovedMember && isAdminOrPengurus))
+    (isSuperAdmin || canManage || isPkbmOrSkb || (isApprovedMember && isAdminOrPengurus))
   );
 
   const hasFullAccess = canAccessDaftarNama;

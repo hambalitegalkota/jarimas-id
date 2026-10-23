@@ -4,13 +4,47 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/utils/supabase/server";
 import { DataAtsSchema, DdtkSchema } from "@/lib/zod-schemas";
 import { toValidUUID, isSuperAdmin as checkIsSuperAdmin, isAdminPusat as checkIsAdminPusat, isSuperOrAdminPusat, isRoleAdmin } from "@/lib/utils";
-import { normalizeKeinginanSekolah, serializeDataAtsAlasan } from "@/lib/data-anak-helpers";
+import { normalizeKeinginanSekolah, serializeDataAtsAlasan, isDataAtsRecord } from "@/lib/data-anak-helpers";
+import { extractKomunitasMetadata } from "@/lib/admin-helpers";
+import { findOrGenerateKomunitasSeed, RAW_PKBM_SKB_TEGAL } from "@/lib/constants/tegal-data";
 import { getKomunitasDetail } from "./komunitas";
 import type {
   DataAtsItem,
   DdtkRecord,
   AlasanTidakSekolah,
 } from "@/types/database";
+
+/**
+ * Helper deteksi apakah komunitas target merupakan PKBM atau SKB Kota Tegal
+ */
+export function checkIsPkbmOrSkb(target: any, targetId?: string): boolean {
+  if (!target && !targetId) return false;
+  const id = target?.id || targetId || "";
+  const validId = toValidUUID(id);
+  const cleanNama = (target?.nama || target?.nama_komunitas || "").toLowerCase().trim();
+  const jenisInst = (target?.jenis_institusi || "").toUpperCase();
+  const jenis = target?.jenis || target?.jenis_komunitas || "";
+
+  if (jenis === "pkbm_skb") return true;
+  if (jenisInst === "PKBM" || jenisInst === "SKB") return true;
+  if (
+    cleanNama.includes("pkbm") ||
+    cleanNama.includes("skb") ||
+    cleanNama.includes("sanggar kegiatan belajar") ||
+    cleanNama.includes("citra mandiri") ||
+    cleanNama.includes("sakila kerti")
+  ) {
+    return true;
+  }
+
+  // Cek pencocokan dengan daftar resmi seluruh 13 lembaga PKBM & SKB Kota Tegal
+  return RAW_PKBM_SKB_TEGAL.some((p) => {
+    if (p.id && (p.id === id || p.id === validId)) return true;
+    const pName = p.nama.toLowerCase().replace(/pkbm|skb/g, "").trim();
+    if (pName && cleanNama.includes(pName)) return true;
+    return false;
+  });
+}
 
 /**
  * Server Action: Mendaftarkan Data Anak Tidak Sekolah (ATS) Baru
@@ -70,7 +104,8 @@ export async function createDataAts(formData: FormData): Promise<{
     }
 
     const { data: targetKomunitas } = await getKomunitasDetail(komunitasId);
-    if (targetKomunitas?.jenis === "satuan_paud") {
+    const isPkbmOrSkbTarget = checkIsPkbmOrSkb(targetKomunitas, komunitasId);
+    if (targetKomunitas?.jenis === "satuan_paud" && !isPkbmOrSkbTarget) {
       return {
         success: false,
         message: "Data ATS tidak tersedia untuk Komunitas Satuan PAUD.",
@@ -429,10 +464,6 @@ export async function validateDataAts(dataAtsId: string): Promise<{
     };
   }
 }
-
-import { extractKomunitasMetadata } from "@/lib/admin-helpers";
-import { findOrGenerateKomunitasSeed } from "@/lib/constants/tegal-data";
-import { isDataAtsRecord } from "@/lib/data-anak-helpers";
 
 function normalizeWilayah(val?: any): string {
   return String(val ?? "")
@@ -1327,7 +1358,34 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
       targetKomunitas = findOrGenerateKomunitasSeed(komunitasId);
     }
 
-    if (targetKomunitas?.jenis === "satuan_paud") {
+    const cleanNama = (targetKomunitas?.nama || "").toLowerCase().trim();
+    const isSkb =
+      targetKomunitas?.jenis_institusi === "SKB" ||
+      cleanNama.includes("skb") ||
+      cleanNama.includes("sanggar kegiatan belajar");
+    const isPkbmOrSkb = checkIsPkbmOrSkb(targetKomunitas, komunitasId);
+
+    if (isPkbmOrSkb && targetKomunitas) {
+      targetKomunitas.jenis = "pkbm_skb";
+      targetKomunitas.jenis_komunitas = "pkbm_skb";
+      if (!targetKomunitas.jenis_institusi) {
+        targetKomunitas.jenis_institusi = isSkb ? "SKB" : "PKBM";
+      }
+
+      // Pastikan di database Supabase ter-update jika sebelumnya tercatat sebagai satuan_paud
+      if (dbKom && dbKom.jenis === "satuan_paud") {
+        try {
+          await supabase
+            .from("komunitas")
+            .update({ jenis: "pkbm_skb", jenis_komunitas: "pkbm_skb" })
+            .eq("id", toValidUUID(komunitasId));
+        } catch {
+          // ignore
+        }
+      }
+    }
+
+    if (targetKomunitas?.jenis === "satuan_paud" && !isPkbmOrSkb) {
       return {
         success: false,
         data: [],
@@ -1338,18 +1396,6 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
         message: "Data ATS tidak tersedia untuk Komunitas Satuan PAUD.",
       };
     }
-
-    const cleanNama = (targetKomunitas?.nama || "").toLowerCase().trim();
-    const isSkb =
-      targetKomunitas?.jenis_institusi === "SKB" ||
-      cleanNama.includes("skb") ||
-      cleanNama.includes("sanggar kegiatan belajar");
-    const isPkbmOrSkb =
-      targetKomunitas?.jenis === "pkbm_skb" ||
-      targetKomunitas?.jenis_institusi === "PKBM" ||
-      targetKomunitas?.jenis_institusi === "SKB" ||
-      cleanNama.includes("pkbm") ||
-      isSkb;
 
     const meta = extractKomunitasMetadata(targetKomunitas || { id: komunitasId });
 
@@ -1475,7 +1521,9 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
     }
 
     const rows = (dbChildren || []).filter(
-      (row: any) => isDataAtsRecord(row) && row.is_sekolah !== true
+      (row: any) =>
+        isDataAtsRecord(row) &&
+        (row.is_sekolah !== true || (isPkbmOrSkb && row.komunitas_id === validKomId))
     );
 
     const atsKomIds = [...new Set(rows.map((c: any) => c.komunitas_id).filter(Boolean))];
