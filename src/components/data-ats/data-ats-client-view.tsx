@@ -34,6 +34,7 @@ import {
   DAFTAR_15_KELAS_ATS,
   type JenjangAtsId,
   type KategoriAtsId,
+  checkIsPkbmOrSkb,
 } from "@/lib/ats-helpers";
 import type { KomunitasWithMembership, DataAtsItem } from "@/types/database";
 import { cn, hasFullProfilDataAccess, isRoleAdmin } from "@/lib/utils";
@@ -101,14 +102,7 @@ export function DataAtsClientView({
     komunitas.jenis_institusi === "SKB" ||
     cleanNama.includes("skb") ||
     cleanNama.includes("sanggar kegiatan belajar");
-  const isPkbmOrSkb =
-    komunitas.jenis === "pkbm_skb" ||
-    komunitas.jenis_institusi === "PKBM" ||
-    komunitas.jenis_institusi === "SKB" ||
-    cleanNama.includes("pkbm") ||
-    cleanNama.includes("citra mandiri") ||
-    cleanNama.includes("sakila kerti") ||
-    isSkb;
+  const isPkbmOrSkb = checkIsPkbmOrSkb(komunitas);
   const isAdminOrPengurus =
     isRoleAdmin(userPeranLower) ||
     userPeranLower.includes("admin") ||

@@ -1,5 +1,7 @@
 import { extractKomunitasMetadata } from "@/lib/admin-helpers";
 import type { KomunitasWithMembership } from "@/types/database";
+import { toValidUUID } from "@/lib/utils";
+import { RAW_PKBM_SKB_TEGAL } from "@/lib/constants/tegal-data";
 
 export type JenjangAtsId = "semua" | "sd" | "smp" | "sma" | "dewasa";
 
@@ -559,5 +561,37 @@ export function classifyKategoriAts(item: {
   }
 
   return "bpb";
+}
+
+/**
+ * Helper deteksi apakah suatu objek komunitas atau ID merupakan PKBM atau SKB Kota Tegal
+ */
+export function checkIsPkbmOrSkb(target: any, targetId?: string): boolean {
+  if (!target && !targetId) return false;
+  const id = target?.id || targetId || "";
+  const validId = toValidUUID(id);
+  const cleanNama = (target?.nama || target?.nama_komunitas || "").toLowerCase().trim();
+  const jenisInst = (target?.jenis_institusi || "").toUpperCase();
+  const jenis = target?.jenis || target?.jenis_komunitas || "";
+
+  if (jenis === "pkbm_skb") return true;
+  if (jenisInst === "PKBM" || jenisInst === "SKB") return true;
+  if (
+    cleanNama.includes("pkbm") ||
+    cleanNama.includes("skb") ||
+    cleanNama.includes("sanggar kegiatan belajar") ||
+    cleanNama.includes("citra mandiri") ||
+    cleanNama.includes("sakila kerti")
+  ) {
+    return true;
+  }
+
+  // Cek pencocokan dengan daftar resmi seluruh 13 lembaga PKBM & SKB Kota Tegal
+  return RAW_PKBM_SKB_TEGAL.some((p) => {
+    if (p.id && (p.id === id || p.id === validId)) return true;
+    const pName = p.nama.toLowerCase().replace(/pkbm|skb/g, "").trim();
+    if (pName && cleanNama.includes(pName)) return true;
+    return false;
+  });
 }
 
