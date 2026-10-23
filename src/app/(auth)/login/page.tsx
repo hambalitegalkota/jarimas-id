@@ -50,6 +50,9 @@ function OAuthErrorMessage() {
   );
 }
 
+// Flag untuk mengaktifkan/menonaktifkan fitur Google OAuth (disembunyikan sementara)
+export const SHOW_GOOGLE_AUTH = false;
+
 export default function LoginPage() {
   const [state, formAction, isPending] = useActionState(loginUser, initialState);
   const [showPassword, setShowPassword] = useState(false);
@@ -75,9 +78,11 @@ export default function LoginPage() {
         {/* Form Card */}
         <div className="rounded-lg border border-border bg-card p-6 sm:p-7 shadow-xs space-y-5">
           {/* OAuth Error Alert */}
-          <Suspense fallback={null}>
-            <OAuthErrorMessage />
-          </Suspense>
+          {SHOW_GOOGLE_AUTH && (
+            <Suspense fallback={null}>
+              <OAuthErrorMessage />
+            </Suspense>
+          )}
 
           {/* Prominent Action Error Banner */}
           {state.message && !state.success && (
@@ -95,20 +100,23 @@ export default function LoginPage() {
             </div>
           )}
 
-          {/* Tombol Masuk dengan Google */}
-          <GoogleAuthButton text="Masuk dengan Google" mode="login" />
+          {/* Tombol Masuk dengan Google (Disembunyikan Sementara) */}
+          {SHOW_GOOGLE_AUTH && (
+            <>
+              <GoogleAuthButton text="Masuk dengan Google" mode="login" />
 
-          {/* Divider */}
-          <div className="relative my-4">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-border" />
-            </div>
-            <div className="relative flex justify-center text-2xs uppercase">
-              <span className="bg-card px-2.5 text-muted-foreground font-semibold">
-                atau masuk dengan email
-              </span>
-            </div>
-          </div>
+              <div className="relative my-4">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-border" />
+                </div>
+                <div className="relative flex justify-center text-2xs uppercase">
+                  <span className="bg-card px-2.5 text-muted-foreground font-semibold">
+                    atau masuk dengan email
+                  </span>
+                </div>
+              </div>
+            </>
+          )}
 
           <form action={formAction} className="space-y-4">
             {/* Email */}

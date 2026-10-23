@@ -109,7 +109,6 @@ export async function registerUser(
             nama_lengkap: namaLengkap,
             email: email,
             is_super_admin: isSuper,
-            is_profile_completed: true,
             updated_at: new Date().toISOString(),
           },
           { onConflict: "id" }

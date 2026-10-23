@@ -88,49 +88,55 @@ export async function updateSession(request: NextRequest) {
       return NextResponse.redirect(url);
     }
 
+    // Flag untuk mengaktifkan alur onboarding pencegatan /lengkapi-profil
+    // Dinonaktifkan sementara agar tidak mengganggu rute utama
+    const ENABLE_ONBOARDING_INTERCEPTION = false;
+
     // Logika jika user sedang login
     if (user && !isExcludedFromInterception) {
-      // 1. Cek status kelengkapan profil (nama asli)
-      let isProfileCompleted = user.user_metadata?.is_profile_completed === true;
+      if (ENABLE_ONBOARDING_INTERCEPTION) {
+        // 1. Cek status kelengkapan profil (nama asli)
+        let isProfileCompleted = user.user_metadata?.is_profile_completed === true;
 
-      // Jika belum terkonfirmasi di metadata, periksa langsung ke tabel profiles
-      if (!isProfileCompleted) {
-        try {
-          const { data: profile } = await supabase
-            .from("profiles")
-            .select("nama_lengkap, is_profile_completed")
-            .eq("id", user.id)
-            .maybeSingle();
+        // Jika belum terkonfirmasi di metadata, periksa langsung ke tabel profiles
+        if (!isProfileCompleted) {
+          try {
+            const { data: profile } = await supabase
+              .from("profiles")
+              .select("nama_lengkap, is_profile_completed")
+              .eq("id", user.id)
+              .maybeSingle();
 
-          if (
-            profile?.is_profile_completed === true &&
-            profile?.nama_lengkap &&
-            profile.nama_lengkap.trim() !== ""
-          ) {
-            isProfileCompleted = true;
+            if (
+              profile?.is_profile_completed === true &&
+              profile?.nama_lengkap &&
+              profile.nama_lengkap.trim() !== ""
+            ) {
+              isProfileCompleted = true;
+            }
+          } catch (dbCheckErr) {
+            console.warn("Middleware gagal memeriksa profil DB:", dbCheckErr);
           }
-        } catch (dbCheckErr) {
-          console.warn("Middleware gagal memeriksa profil DB:", dbCheckErr);
         }
-      }
 
-      // Pencegatan: Jika profil (nama asli) belum lengkap
-      if (!isProfileCompleted) {
-        // Jika sedang tidak di halaman /lengkapi-profil, paksa arahkan ke /lengkapi-profil
-        if (pathname !== "/lengkapi-profil") {
+        // Pencegatan: Jika profil (nama asli) belum lengkap
+        if (!isProfileCompleted) {
+          // Jika sedang tidak di halaman /lengkapi-profil, paksa arahkan ke /lengkapi-profil
+          if (pathname !== "/lengkapi-profil") {
+            const url = request.nextUrl.clone();
+            url.pathname = "/lengkapi-profil";
+            return NextResponse.redirect(url);
+          }
+          // Jika sudah di /lengkapi-profil, izinkan akses formulir
+          return supabaseResponse;
+        }
+
+        // Jika profil SUDAH lengkap, cegah akses kembali ke /lengkapi-profil
+        if (isProfileCompleted && pathname === "/lengkapi-profil") {
           const url = request.nextUrl.clone();
-          url.pathname = "/lengkapi-profil";
+          url.pathname = "/";
           return NextResponse.redirect(url);
         }
-        // Jika sudah di /lengkapi-profil, izinkan akses formulir
-        return supabaseResponse;
-      }
-
-      // Jika profil SUDAH lengkap, cegah akses kembali ke /lengkapi-profil
-      if (isProfileCompleted && pathname === "/lengkapi-profil") {
-        const url = request.nextUrl.clone();
-        url.pathname = "/";
-        return NextResponse.redirect(url);
       }
 
       // Redirect ke halaman beranda jika user sudah login tapi mengakses login/register
