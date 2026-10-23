@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/utils/supabase/server";
-import { RegisterSchema, LoginSchema } from "@/lib/zod-schemas";
+import { RegisterSchema, LoginSchema, LengkapiProfilSchema } from "@/lib/zod-schemas";
 import { sendJarimasWelcomeGreeting } from "@/app/actions/pertemanan";
 import { isSuperAdmin as checkIsSuperAdmin } from "@/lib/utils";
 import type { AuthActionState } from "@/types/database";
@@ -62,6 +62,7 @@ export async function registerUser(
       options: {
         data: {
           nama_lengkap: namaLengkap,
+          is_profile_completed: true,
         },
       },
     });
@@ -108,6 +109,7 @@ export async function registerUser(
             nama_lengkap: namaLengkap,
             email: email,
             is_super_admin: isSuper,
+            is_profile_completed: true,
             updated_at: new Date().toISOString(),
           },
           { onConflict: "id" }
@@ -298,4 +300,136 @@ export async function logoutUser(): Promise<void> {
   }
   revalidatePath("/", "layout");
   redirect("/login");
+}
+
+/**
+ * Server Action: Menyimpan Nama Asli Pengguna Baru (Onboarding Google OAuth)
+ */
+export async function completeUserProfile(
+  _prevState: AuthActionState,
+  formData: FormData
+): Promise<AuthActionState> {
+  let shouldRedirect = false;
+
+  try {
+    const rawData = {
+      namaLengkap: formData.get("namaLengkap"),
+    };
+
+    // Validasi data dengan Zod
+    const validationResult = LengkapiProfilSchema.safeParse(rawData);
+    if (!validationResult.success) {
+      const formattedErrors: Record<string, string[]> = {};
+      for (const issue of validationResult.error.issues) {
+        const field = issue.path[0] as string;
+        if (!formattedErrors[field]) {
+          formattedErrors[field] = [];
+        }
+        formattedErrors[field].push(issue.message);
+      }
+      return {
+        success: false,
+        message: "Mohon masukkan Nama Asli Anda dengan benar sesuai format resmi.",
+        errors: formattedErrors,
+      };
+    }
+
+    const { namaLengkap } = validationResult.data;
+
+    let supabase;
+    try {
+      supabase = await createClient();
+    } catch (clientErr: any) {
+      return {
+        success: false,
+        message: NETWORK_ERROR_MESSAGE,
+      };
+    }
+
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      return {
+        success: false,
+        message: "Sesi login Anda tidak ditemukan atau sudah kedaluwarsa. Silakan masuk kembali.",
+      };
+    }
+
+    const isSuper = checkIsSuperAdmin({
+      email: user.email,
+      nama_lengkap: namaLengkap,
+      id: user.id,
+    });
+
+    const avatarUrl =
+      user.user_metadata?.avatar_url ||
+      user.user_metadata?.picture ||
+      null;
+
+    // 1. Simpan Nama Asli ke tabel public.profiles
+    const { error: profileError } = await supabase.from("profiles").upsert(
+      {
+        id: user.id,
+        nama_lengkap: namaLengkap,
+        email: user.email,
+        avatar_url: avatarUrl,
+        is_super_admin: isSuper,
+        is_profile_completed: true,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "id" }
+    );
+
+    if (profileError) {
+      console.error("Gagal menyimpan nama asli ke profiles:", profileError);
+      return {
+        success: false,
+        message: `Gagal menyimpan data ke database: ${profileError.message}`,
+      };
+    }
+
+    // 2. Sinkronkan ke auth.users metadata agar terbaca langsung di sesi Next.js/middleware
+    try {
+      await supabase.auth.updateUser({
+        data: {
+          nama_lengkap: namaLengkap,
+          is_profile_completed: true,
+        },
+      });
+    } catch (updateAuthErr) {
+      console.warn("Gagal memperbarui user_metadata:", updateAuthErr);
+    }
+
+    // 3. Kirim pesan salam pembuka dari bot Jarimas
+    try {
+      await sendJarimasWelcomeGreeting(user.id, namaLengkap);
+    } catch (greetErr) {
+      console.warn("Gagal mengirim salam pembuka Jarimas saat lengkapi profil:", greetErr);
+    }
+
+    shouldRedirect = true;
+  } catch (err: any) {
+    if (
+      err?.message === "NEXT_REDIRECT" ||
+      err?.digest?.startsWith("NEXT_REDIRECT")
+    ) {
+      throw err;
+    }
+
+    console.error("Error pada completeUserProfile:", err);
+    return {
+      success: false,
+      message: err?.message || "Terjadi kesalahan saat menyimpan profil pengguna.",
+    };
+  }
+
+  if (shouldRedirect) {
+    revalidatePath("/", "layout");
+    redirect("/");
+  }
+
+  return { success: false, message: "" };
 }

@@ -101,7 +101,7 @@ export function BottomNav() {
   };
 
   // Jangan render navbar di halaman auth fullscreen tertentu jika diperlukan
-  const hideOnPaths = ["/login", "/register"];
+  const hideOnPaths = ["/login", "/register", "/lengkapi-profil"];
   const shouldHide = hideOnPaths.some((path) => pathname.startsWith(path));
 
   if (shouldHide) {

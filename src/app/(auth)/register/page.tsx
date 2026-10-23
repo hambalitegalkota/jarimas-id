@@ -15,6 +15,7 @@ import {
   UserPlus,
 } from "lucide-react";
 import { registerUser } from "@/app/actions/auth";
+import { GoogleAuthButton } from "@/components/auth/google-auth-button";
 import type { AuthActionState } from "@/types/database";
 
 const initialState: AuthActionState = {
@@ -88,6 +89,21 @@ export default function RegisterPage() {
                 </div>
               </div>
             )}
+
+            {/* Tombol Daftar dengan Google */}
+            <GoogleAuthButton text="Daftar dengan Google" mode="register" />
+
+            {/* Divider */}
+            <div className="relative my-3">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-border" />
+              </div>
+              <div className="relative flex justify-center text-2xs uppercase">
+                <span className="bg-card px-2.5 text-muted-foreground font-semibold">
+                  atau daftar dengan formulir
+                </span>
+              </div>
+            </div>
 
             <form action={formAction} className="space-y-4">
               {/* Nama Lengkap */}

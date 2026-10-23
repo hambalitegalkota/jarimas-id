@@ -16,6 +16,7 @@ export interface Profile {
   role_level?: "root_super_admin" | "admin_pusat" | "user";
   avatar_url?: string | null;
   nomor_hp?: string | null;
+  is_profile_completed?: boolean;
   created_at?: string;
   updated_at?: string;
 }

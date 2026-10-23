@@ -1,7 +1,8 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useState, Suspense } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import {
   Mail,
   Lock,
@@ -13,12 +14,41 @@ import {
   LogIn,
 } from "lucide-react";
 import { loginUser } from "@/app/actions/auth";
+import { GoogleAuthButton } from "@/components/auth/google-auth-button";
 import type { AuthActionState } from "@/types/database";
 
 const initialState: AuthActionState = {
   success: false,
   message: "",
 };
+
+function OAuthErrorMessage() {
+  const searchParams = useSearchParams();
+  const error = searchParams.get("error");
+  if (!error) return null;
+
+  let message = "Gagal masuk menggunakan Google. Silakan coba kembali.";
+  if (error === "user_not_found") {
+    message = "Pengguna tidak ditemukan dalam sistem autentikasi.";
+  } else if (error === "no_code_provided") {
+    message = "Kode otorisasi Google tidak ditemukan.";
+  }
+
+  return (
+    <div
+      role="alert"
+      className="rounded-lg border border-destructive/30 bg-destructive/10 p-3.5 text-destructive animate-in fade-in slide-in-from-top-2"
+    >
+      <div className="flex items-start gap-2.5">
+        <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
+        <div className="space-y-0.5 text-xs leading-relaxed">
+          <p className="font-bold">Autentikasi Google Gagal</p>
+          <p className="opacity-90">{message}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function LoginPage() {
   const [state, formAction, isPending] = useActionState(loginUser, initialState);
@@ -44,7 +74,12 @@ export default function LoginPage() {
 
         {/* Form Card */}
         <div className="rounded-lg border border-border bg-card p-6 sm:p-7 shadow-xs space-y-5">
-          {/* Prominent Error Banner */}
+          {/* OAuth Error Alert */}
+          <Suspense fallback={null}>
+            <OAuthErrorMessage />
+          </Suspense>
+
+          {/* Prominent Action Error Banner */}
           {state.message && !state.success && (
             <div
               role="alert"
@@ -59,6 +94,21 @@ export default function LoginPage() {
               </div>
             </div>
           )}
+
+          {/* Tombol Masuk dengan Google */}
+          <GoogleAuthButton text="Masuk dengan Google" mode="login" />
+
+          {/* Divider */}
+          <div className="relative my-4">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-border" />
+            </div>
+            <div className="relative flex justify-center text-2xs uppercase">
+              <span className="bg-card px-2.5 text-muted-foreground font-semibold">
+                atau masuk dengan email
+              </span>
+            </div>
+          </div>
 
           <form action={formAction} className="space-y-4">
             {/* Email */}

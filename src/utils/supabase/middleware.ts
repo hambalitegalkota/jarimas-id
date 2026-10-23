@@ -52,6 +52,18 @@ export async function updateSession(request: NextRequest) {
 
     const { pathname } = request.nextUrl;
 
+    // Rute yang dikecualikan dari pencegatan
+    const isExcludedFromInterception =
+      pathname.startsWith("/auth/callback") ||
+      pathname.startsWith("/api");
+
+    // Jika user belum login dan mengakses /lengkapi-profil, arahkan ke login
+    if (!user && pathname.startsWith("/lengkapi-profil")) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/login";
+      return NextResponse.redirect(url);
+    }
+
     // Daftar rute yang memerlukan autentikasi
     const protectedPaths = [
       "/profil",
@@ -76,11 +88,57 @@ export async function updateSession(request: NextRequest) {
       return NextResponse.redirect(url);
     }
 
-    // Redirect ke halaman beranda jika user sudah login tapi mengakses login/register
-    if (user && isAuthRoute) {
-      const url = request.nextUrl.clone();
-      url.pathname = "/";
-      return NextResponse.redirect(url);
+    // Logika jika user sedang login
+    if (user && !isExcludedFromInterception) {
+      // 1. Cek status kelengkapan profil (nama asli)
+      let isProfileCompleted = user.user_metadata?.is_profile_completed === true;
+
+      // Jika belum terkonfirmasi di metadata, periksa langsung ke tabel profiles
+      if (!isProfileCompleted) {
+        try {
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("nama_lengkap, is_profile_completed")
+            .eq("id", user.id)
+            .maybeSingle();
+
+          if (
+            profile?.is_profile_completed === true &&
+            profile?.nama_lengkap &&
+            profile.nama_lengkap.trim() !== ""
+          ) {
+            isProfileCompleted = true;
+          }
+        } catch (dbCheckErr) {
+          console.warn("Middleware gagal memeriksa profil DB:", dbCheckErr);
+        }
+      }
+
+      // Pencegatan: Jika profil (nama asli) belum lengkap
+      if (!isProfileCompleted) {
+        // Jika sedang tidak di halaman /lengkapi-profil, paksa arahkan ke /lengkapi-profil
+        if (pathname !== "/lengkapi-profil") {
+          const url = request.nextUrl.clone();
+          url.pathname = "/lengkapi-profil";
+          return NextResponse.redirect(url);
+        }
+        // Jika sudah di /lengkapi-profil, izinkan akses formulir
+        return supabaseResponse;
+      }
+
+      // Jika profil SUDAH lengkap, cegah akses kembali ke /lengkapi-profil
+      if (isProfileCompleted && pathname === "/lengkapi-profil") {
+        const url = request.nextUrl.clone();
+        url.pathname = "/";
+        return NextResponse.redirect(url);
+      }
+
+      // Redirect ke halaman beranda jika user sudah login tapi mengakses login/register
+      if (isAuthRoute) {
+        const url = request.nextUrl.clone();
+        url.pathname = "/";
+        return NextResponse.redirect(url);
+      }
     }
   } catch (error) {
     console.warn("Middleware session update skipped:", error);
