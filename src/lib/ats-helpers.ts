@@ -292,6 +292,34 @@ export function getWilayahScopeInfo(komunitas: KomunitasWithMembership | null | 
     };
   }
 
+  const rawKomName = typeof (komunitas as any)?.nama === "string" ? (komunitas as any).nama : "";
+  const cleanNama = rawKomName.toLowerCase();
+  const jenisInst = (komunitas as any)?.jenis_institusi;
+  const isSkb =
+    jenisInst === "SKB" ||
+    cleanNama.includes("skb") ||
+    cleanNama.includes("sanggar kegiatan belajar");
+  const isPkbmOrSkb =
+    (komunitas as any)?.jenis === "pkbm_skb" ||
+    jenisInst === "PKBM" ||
+    jenisInst === "SKB" ||
+    cleanNama.includes("pkbm") ||
+    isSkb;
+
+  if (isPkbmOrSkb) {
+    return {
+      tierLevel: "Kota",
+      scopeTitle: `Seluruh Wilayah Kota Tegal`,
+      scopeSubtitle: `Intervensi ATS ${rawKomName || "PKBM / SKB"} • Seluruh 27 Kelurahan`,
+      badgeLabel: `Seluruh Kota Tegal`,
+      isWargaKita: false,
+      kecamatan: "Kota Tegal",
+      kelurahan: "",
+      rw: "",
+      rt: "",
+    };
+  }
+
   const namaKomunitas = typeof komunitas?.nama === "string" ? komunitas.nama : "Komunitas";
   const lokasiKomunitas = typeof komunitas?.lokasi === "string" ? komunitas.lokasi : "Kota Tegal";
 

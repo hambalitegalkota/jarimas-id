@@ -138,6 +138,7 @@ export default async function KomunitasDataAtsPage({
     hasRootAccess ||
     serverCanAccess ||
     canManage ||
+    isPkbmOrSkb ||
     (isApprovedMember && (isWargaKita || isPkbmOrSkb ? isAdminOrPengurus : isKader || isAdminOrPengurus))
   );
 
@@ -166,10 +167,12 @@ export default async function KomunitasDataAtsPage({
             </span>
           </div>
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
-            Data Anak Tidak Sekolah (ATS)
+            Data Anak Tidak Sekolah (ATS) {isPkbmOrSkb ? "- Seluruh Kota Tegal" : ""}
           </h1>
-          <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed max-w-lg">
-            Pendataan, verifikasi alasan tidak sekolah, dan perencanaan intervensi kembali bersekolah di {komunitas.nama}.
+          <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed max-w-xl">
+            {isPkbmOrSkb
+              ? `Pemantauan data seluruh Anak Tidak Sekolah se-Kota Tegal tanpa sekat wilayah untuk diintervensi oleh ${komunitas.nama} agar kembali bersekolah.`
+              : `Pendataan, verifikasi alasan tidak sekolah, dan perencanaan intervensi kembali bersekolah di ${komunitas.nama}.`}
           </p>
         </div>
       </div>

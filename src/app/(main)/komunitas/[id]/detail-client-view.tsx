@@ -551,10 +551,16 @@ export function KomunitasDetailClientView({
               : "Data ATS (Anak Tidak Sekolah)",
             subtitle: isRekapOnlyTier
               ? `Pantau rekapitulasi penanganan ATS, kelompok umur, dan rekomendasi intervensi ${tierLevelLabel}`
+              : isPkbmOrSkb
+              ? "Data seluruh Anak Tidak Sekolah se-Kota Tegal untuk dipantau dan diintervensi kembali bersekolah"
               : hasFullAccess
               ? "Pendataan Anak Tidak Sekolah, pemantauan alasan, dan verifikasi data RT"
               : `Pantau hasil pendataan kasus anak tidak sekolah ${tierLevelLabel}`,
-            badgeText: isRekapOnlyTier ? "Data Rekapitulasi" : `${dataAtsState.length} Kasus ATS`,
+            badgeText: isRekapOnlyTier
+              ? "Data Rekapitulasi"
+              : isPkbmOrSkb
+              ? `${dataAtsState.length} Kasus ATS (Se-Kota Tegal)`
+              : `${dataAtsState.length} Kasus ATS`,
             icon: GraduationCap,
             hoverBorder: "hover:border-secondary/40",
             hoverBg: "hover:bg-secondary/10",

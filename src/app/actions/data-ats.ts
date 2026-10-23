@@ -848,7 +848,8 @@ export async function kembaliBersekolah(
     const isCreator = existingChild.created_by === user.id;
 
     if (!isSuperOrPusat && !isCreator) {
-      const { data: membership } = await supabase
+      // 1. Cek keanggotaan di komunitas asal anak
+      const { data: origMembership } = await supabase
         .from("anggota_komunitas")
         .select("peran, status")
         .eq("user_id", user.id)
@@ -856,19 +857,90 @@ export async function kembaliBersekolah(
         .eq("status", "approved")
         .maybeSingle();
 
-      const roleLower = (membership?.peran || "").toLowerCase();
-      const isAuthorized =
-        roleLower.includes("kader") ||
-        roleLower.includes("pengurus") ||
-        roleLower.includes("nakes") ||
-        roleLower.includes("medis") ||
-        roleLower.includes("admin");
+      let isAuthorized = false;
+      if (origMembership) {
+        const roleLower = (origMembership.peran || "").toLowerCase();
+        isAuthorized =
+          roleLower.includes("kader") ||
+          roleLower.includes("pengurus") ||
+          roleLower.includes("nakes") ||
+          roleLower.includes("medis") ||
+          roleLower.includes("admin") ||
+          roleLower.includes("tutor") ||
+          roleLower.includes("pengelola") ||
+          roleLower.includes("guru") ||
+          roleLower.includes("ketua");
+      }
+
+      // 2. Cek apakah aksi dilakukan dari komunitas PKBM / SKB (payload.komunitasId)
+      if (!isAuthorized && payload.komunitasId) {
+        const { data: currentKomMembership } = await supabase
+          .from("anggota_komunitas")
+          .select("peran, status")
+          .eq("user_id", user.id)
+          .eq("komunitas_id", toValidUUID(payload.komunitasId))
+          .eq("status", "approved")
+          .maybeSingle();
+
+        if (currentKomMembership) {
+          const roleLower = (currentKomMembership.peran || "").toLowerCase();
+          isAuthorized =
+            roleLower.includes("kader") ||
+            roleLower.includes("pengurus") ||
+            roleLower.includes("admin") ||
+            roleLower.includes("tutor") ||
+            roleLower.includes("pengelola") ||
+            roleLower.includes("guru") ||
+            roleLower.includes("fasilitator") ||
+            roleLower.includes("ketua");
+        }
+      }
+
+      // 3. Cek apakah user memiliki keanggotaan aktif pengurus/tutor di salah satu PKBM/SKB Kota Tegal
+      if (!isAuthorized) {
+        const { data: allMemberships } = await supabase
+          .from("anggota_komunitas")
+          .select("peran, status, komunitas:komunitas_id ( id, nama, jenis, jenis_institusi )")
+          .eq("user_id", user.id)
+          .eq("status", "approved");
+
+        if (allMemberships && allMemberships.length > 0) {
+          for (const m of allMemberships as any[]) {
+            const komObj = m.komunitas;
+            const komName = (komObj?.nama || "").toLowerCase();
+            const komJenisInst = komObj?.jenis_institusi;
+            const isPkbmOrSkbKom =
+              komObj?.jenis === "pkbm_skb" ||
+              komJenisInst === "PKBM" ||
+              komJenisInst === "SKB" ||
+              komName.includes("pkbm") ||
+              komName.includes("skb") ||
+              komName.includes("sanggar kegiatan belajar");
+
+            if (isPkbmOrSkbKom) {
+              const rLower = (m.peran || "").toLowerCase();
+              if (
+                rLower.includes("pengurus") ||
+                rLower.includes("admin") ||
+                rLower.includes("tutor") ||
+                rLower.includes("pengelola") ||
+                rLower.includes("guru") ||
+                rLower.includes("kader") ||
+                rLower.includes("ketua")
+              ) {
+                isAuthorized = true;
+                break;
+              }
+            }
+          }
+        }
+      }
 
       if (!isAuthorized) {
         return {
           success: false,
           message:
-            "Akses ditolak: Hanya Pengurus, Kader, atau pembuat data yang dapat mencatat kembali bersekolah.",
+            "Akses ditolak: Hanya Pengurus/Tutor PKBM/SKB, Kader Posyandu/RT, atau pembuat data yang dapat mencatat kembali bersekolah.",
         };
       }
     }
@@ -908,6 +980,11 @@ export async function kembaliBersekolah(
     revalidatePath(`/komunitas/${targetKomunitasId}/ats`);
     revalidatePath(`/komunitas/${targetKomunitasId}/data`);
     revalidatePath(`/komunitas/${targetKomunitasId}`);
+    if (existingChild.komunitas_id && existingChild.komunitas_id !== targetKomunitasId) {
+      revalidatePath(`/komunitas/${existingChild.komunitas_id}/ats`);
+      revalidatePath(`/komunitas/${existingChild.komunitas_id}/data`);
+      revalidatePath(`/komunitas/${existingChild.komunitas_id}`);
+    }
     revalidatePath("/komunitas");
     revalidatePath("/data-ats");
     revalidatePath("/data-anak");
@@ -1125,7 +1202,12 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
           isAdminRole ||
           roleLower.includes("pengurus") ||
           roleLower.includes("admin") ||
-          roleLower.includes("ketua");
+          roleLower.includes("ketua") ||
+          roleLower.includes("tutor") ||
+          roleLower.includes("pengelola") ||
+          roleLower.includes("guru") ||
+          roleLower.includes("fasilitator") ||
+          roleLower.includes("instruktur");
 
         canValidate = isSuperOrPusat || isKader || isPengurus;
         canEditDdtk = isSuperOrPusat || isKader;
@@ -1161,9 +1243,22 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
       };
     }
 
+    const cleanNama = (targetKomunitas?.nama || "").toLowerCase().trim();
+    const isSkb =
+      targetKomunitas?.jenis_institusi === "SKB" ||
+      cleanNama.includes("skb") ||
+      cleanNama.includes("sanggar kegiatan belajar");
+    const isPkbmOrSkb =
+      targetKomunitas?.jenis === "pkbm_skb" ||
+      targetKomunitas?.jenis_institusi === "PKBM" ||
+      targetKomunitas?.jenis_institusi === "SKB" ||
+      cleanNama.includes("pkbm") ||
+      isSkb;
+
     const meta = extractKomunitasMetadata(targetKomunitas || { id: komunitasId });
 
-    // Jenjang RT dan Posyandu memiliki wewenang untuk memvalidasi / memverifikasi Data ATS warga di wilayahnya
+    // Jenjang RT dan Posyandu memiliki wewenang untuk memvalidasi / memverifikasi Data ATS warga di wilayahnya.
+    // Komunitas PKBM dan SKB memiliki wewenang mengintervensi / memproses anak kembali bersekolah.
     const isRtCommunity = Boolean(
       meta.jenis === "warga_kita" &&
       ((meta.hasRt && meta.hasRw) ||
@@ -1172,12 +1267,17 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
     const isPosyanduCommunity = Boolean(
       meta.jenis === "posyandu" || targetKomunitas?.jenis === "posyandu"
     );
-    canValidate = isSuperAdmin || ((isRtCommunity || isPosyanduCommunity) && canManage);
+    canValidate =
+      isSuperAdmin ||
+      ((isRtCommunity || isPosyanduCommunity || isPkbmOrSkb) && canManage);
 
     // 2. Otorisasi Daftar Rincian Lengkap Nama Anak:
-    // Sesuai ketentuan: Data lengkap hanya dapat dilihat di level RT oleh Admin Komunitas Warga Kita,
-    // serta Admin di PAUD dan Posyandu. Pada tingkat RW, Kelurahan, Kecamatan, dan Kota Tegal, data yang ditampilkan hanya data rekap saja.
+    // Sesuai ketentuan: Data lengkap dapat dilihat di level RT oleh Admin Komunitas Warga Kita,
+    // Admin di Posyandu, serta Admin, Pengurus, dan Tutor di seluruh PKBM dan SKB Kota Tegal.
     if (isSuperAdmin) {
+      canAccessDaftarNama = true;
+    } else if (isPkbmOrSkb) {
+      // Komunitas PKBM dan SKB di Kota Tegal dapat melihat seluruh rincian anak ATS untuk intervensi
       canAccessDaftarNama = true;
     } else if (isPosyanduCommunity && canManage) {
       canAccessDaftarNama = true;
@@ -1194,6 +1294,7 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
         ? meta.rawKel
         : null;
 
+    const queryLimit = isPkbmOrSkb ? 2500 : 150;
     let dbChildren: any[] | null = null;
     try {
       let atsQuery = supabase
@@ -1221,13 +1322,15 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
         .or("is_sekolah.eq.false,is_sekolah.is.null,nama_sekolah.ilike.%ATS%,alasan_sekolah.ilike.%KEINGINAN%")
         .order("created_at", { ascending: false });
 
-      if (targetKel) {
+      if (isPkbmOrSkb) {
+        // Untuk PKBM dan SKB: Ambil seluruh Data ATS se-Kota Tegal tanpa memisahkan berdasarkan alamat kelurahan/komunitas
+      } else if (targetKel) {
         atsQuery = atsQuery.or(`komunitas_id.eq.${validKomId},alasan_sekolah.ilike.%${targetKel}%`);
       } else {
         atsQuery = atsQuery.eq("komunitas_id", validKomId);
       }
 
-      const { data, error: childError } = await atsQuery.limit(150);
+      const { data, error: childError } = await atsQuery.limit(queryLimit);
 
       if (childError) {
         console.warn("Query data_ats with relation error:", childError.message);
@@ -1263,13 +1366,15 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
         .or("is_sekolah.eq.false,is_sekolah.is.null,nama_sekolah.ilike.%ATS%,alasan_sekolah.ilike.%KEINGINAN%")
         .order("created_at", { ascending: false });
 
-      if (targetKel) {
+      if (isPkbmOrSkb) {
+        // Untuk PKBM dan SKB: Ambil seluruh Data ATS se-Kota Tegal tanpa filter
+      } else if (targetKel) {
         fallbackQuery = fallbackQuery.or(`komunitas_id.eq.${validKomId},alasan_sekolah.ilike.%${targetKel}%`);
       } else {
         fallbackQuery = fallbackQuery.eq("komunitas_id", validKomId);
       }
 
-      const { data: fallbackData } = await fallbackQuery.limit(150);
+      const { data: fallbackData } = await fallbackQuery.limit(queryLimit);
       dbChildren = fallbackData || [];
     }
 
@@ -1358,6 +1463,11 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
           rawItemRt === "-" ||
           rawItemRt === "0" ||
           rawItemRt === "00";
+
+        // -1. Komunitas PKBM dan SKB Kota Tegal: Tampilkan seluruh data Anak ATS se-Kota Tegal tanpa memisah-misahkan menurut alamat
+        if (isPkbmOrSkb) {
+          return true;
+        }
 
         // 0. Komunitas Posyandu: Tampilkan seluruh data Anak ATS di Kelurahan tempat Posyandu berada
         if (meta.jenis === "posyandu" || targetKomunitas?.jenis === "posyandu") {
