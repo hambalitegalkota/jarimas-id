@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { CardDataAnak } from "@/components/data-anak/card-data-anak";
 import { FormDataAnak } from "@/components/data-anak/form-data-anak";
+import { isKomunitasLayananPaud } from "@/lib/data-anak-helpers";
 import type { KomunitasWithMembership, DataAnakItem } from "@/types/database";
 import { cn } from "@/lib/utils";
 
@@ -60,7 +61,7 @@ export function DataAnakClientView({
 
   const effectiveRole = userRole || komunitas.currentUserMembership?.peran || "Pengunjung";
   const isWargaKita = komunitas.jenis === "warga_kita";
-  const isPaud = komunitas.jenis === "satuan_paud";
+  const isPaud = isKomunitasLayananPaud(komunitas, komunitas.nama, komunitas.jenis);
   const isPosyandu = komunitas.jenis === "posyandu";
 
   const totalChildren = stats?.total ?? childrenList.length;

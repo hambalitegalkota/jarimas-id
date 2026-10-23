@@ -16,10 +16,12 @@ import {
   Pencil,
   Check,
   FileText,
+  Baby,
 } from "lucide-react";
 import { updateDataAnak } from "@/app/actions/data-anak";
 import {
   ALASAN_SEKOLAH_PAUD,
+  ALASAN_BELUM_SEKOLAH,
   USIA_ANAK_OPTIONS,
 } from "./form-data-anak";
 import {
@@ -30,6 +32,7 @@ import {
   getRwListByKelurahan,
   getRtListByKelurahan,
 } from "@/lib/constants/tegal-data";
+import { isKomunitasLayananPaud } from "@/lib/data-anak-helpers";
 import type { DataAnakItem, JenisKomunitas } from "@/types/database";
 import { cn } from "@/lib/utils";
 
@@ -101,8 +104,9 @@ export function ModalEditDataAnak({
   const [jarakRumahKm, setJarakRumahKm] = useState(
     anak.jarak_rumah_km ? String(anak.jarak_rumah_km) : "0.5"
   );
+  const isPaud = isKomunitasLayananPaud(null, komunitasNama, String(jenisKomunitas));
   const [alasanSekolah, setAlasanSekolah] = useState(
-    anak.alasan_sekolah || ALASAN_SEKOLAH_PAUD[0]
+    anak.alasan_sekolah || (isPaud ? ALASAN_SEKOLAH_PAUD[0] : ALASAN_BELUM_SEKOLAH[0])
   );
 
   // Alamat Sesuai KK
@@ -231,9 +235,13 @@ export function ModalEditDataAnak({
       formData.append("domisiliJalan", isDomLuar ? "" : domisiliJalan);
     }
 
-    formData.append("isSekolah", "true");
-    formData.append("namaSekolah", komunitasNama);
-    formData.append("alasanSekolah", alasanSekolah || ALASAN_SEKOLAH_PAUD[0]);
+    const isPaud = isKomunitasLayananPaud(null, komunitasNama, String(jenisKomunitas));
+    formData.append("isSekolah", isPaud ? "true" : "false");
+    formData.append("namaSekolah", isPaud ? (komunitasNama || "Satuan PAUD") : "Belum Sekolah");
+    formData.append(
+      "alasanSekolah",
+      alasanSekolah || (isPaud ? ALASAN_SEKOLAH_PAUD[0] : ALASAN_BELUM_SEKOLAH[0])
+    );
 
     startTransition(async () => {
       const res = await updateDataAnak(anak.id, formData);
@@ -891,52 +899,95 @@ export function ModalEditDataAnak({
               Status Pendidikan PAUD
             </h4>
 
-            {/* Status Bersekolah Terkunci */}
-            <div className="space-y-1.5">
-              <label className="text-sm font-bold text-slate-900">
-                Apakah Anak Sudah Bersekolah? <span className="text-rose-600">*</span>
-              </label>
-              <div className="flex min-h-[46px] items-center justify-between rounded-xl border-2 border-emerald-600 bg-emerald-50 text-emerald-950 px-3.5 py-2 shadow-xs">
-                <div className="flex items-center gap-2">
-                  <GraduationCap className="h-4 w-4 text-emerald-700 shrink-0" />
-                  <span className="text-sm font-bold">Sudah Bersekolah</span>
+            {isPaud ? (
+              <>
+                {/* Status Bersekolah Terkunci untuk PAUD */}
+                <div className="space-y-1.5">
+                  <label className="text-sm font-bold text-slate-900">
+                    Apakah Anak Sudah Bersekolah? <span className="text-rose-600">*</span>
+                  </label>
+                  <div className="flex min-h-[46px] items-center justify-between rounded-xl border-2 border-emerald-600 bg-emerald-50 text-emerald-950 px-3.5 py-2 shadow-xs">
+                    <div className="flex items-center gap-2">
+                      <GraduationCap className="h-4 w-4 text-emerald-700 shrink-0" />
+                      <span className="text-sm font-bold">Sudah Bersekolah</span>
+                    </div>
+                    <span className="rounded-md bg-emerald-100 px-2 py-0.5 text-xs font-bold text-emerald-900 border border-emerald-300">
+                      Terkunci
+                    </span>
+                  </div>
                 </div>
-                <span className="rounded-md bg-emerald-100 px-2 py-0.5 text-xs font-bold text-emerald-900 border border-emerald-300">
-                  Terkunci
-                </span>
-              </div>
-            </div>
 
-            {/* Nama Satuan PAUD */}
-            <div className="space-y-1.5">
-              <label className="text-sm font-bold text-slate-900">
-                Nama Satuan PAUD / TK <span className="text-rose-600">*</span>
-              </label>
-              <input
-                type="text"
-                readOnly
-                value={komunitasNama}
-                className="w-full min-h-[46px] h-11 rounded-xl border-2 border-slate-300 bg-slate-100/80 px-3.5 text-sm font-bold text-slate-800 cursor-not-allowed select-none focus:outline-hidden"
-              />
-            </div>
+                {/* Nama Satuan PAUD */}
+                <div className="space-y-1.5">
+                  <label className="text-sm font-bold text-slate-900">
+                    Nama Satuan PAUD / TK <span className="text-rose-600">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    readOnly
+                    value={komunitasNama || "Satuan PAUD"}
+                    className="w-full min-h-[46px] h-11 rounded-xl border-2 border-slate-300 bg-slate-100/80 px-3.5 text-sm font-bold text-slate-800 cursor-not-allowed select-none focus:outline-hidden"
+                  />
+                </div>
 
-            {/* Alasan Sekolah */}
-            <div className="space-y-1.5">
-              <label className="text-sm font-bold text-slate-900">
-                Alasan Mengikuti PAUD <span className="text-rose-600">*</span>
-              </label>
-              <select
-                value={alasanSekolah}
-                onChange={(e) => setAlasanSekolah(e.target.value)}
-                className="w-full min-h-[46px] h-11 rounded-xl border-2 border-slate-300 bg-white px-3.5 text-sm font-bold text-slate-900 focus:border-blue-600 focus:outline-hidden cursor-pointer"
-              >
-                {ALASAN_SEKOLAH_PAUD.map((alasan) => (
-                  <option key={alasan} value={alasan}>
-                    {alasan}
-                  </option>
-                ))}
-              </select>
-            </div>
+                {/* Alasan Sekolah */}
+                <div className="space-y-1.5">
+                  <label className="text-sm font-bold text-slate-900">
+                    Alasan Mengikuti PAUD <span className="text-rose-600">*</span>
+                  </label>
+                  <select
+                    value={alasanSekolah}
+                    onChange={(e) => setAlasanSekolah(e.target.value)}
+                    className="w-full min-h-[46px] h-11 rounded-xl border-2 border-slate-300 bg-white px-3.5 text-sm font-bold text-slate-900 focus:border-blue-600 focus:outline-hidden cursor-pointer"
+                  >
+                    {ALASAN_SEKOLAH_PAUD.map((alasan) => (
+                      <option key={alasan} value={alasan}>
+                        {alasan}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </>
+            ) : (
+              <>
+                {/* Status Belum Bersekolah Terkunci untuk Non-PAUD */}
+                <div className="space-y-1.5">
+                  <label className="text-sm font-bold text-slate-900">
+                    Apakah Anak Sudah Bersekolah? <span className="text-rose-600">*</span>
+                  </label>
+                  <div className="flex min-h-[46px] items-center justify-between rounded-xl border-2 border-amber-600 bg-amber-50 text-amber-950 px-3.5 py-2 shadow-xs">
+                    <div className="flex items-center gap-2">
+                      <Baby className="h-4 w-4 text-amber-700 shrink-0" />
+                      <span className="text-sm font-bold">Belum Bersekolah</span>
+                    </div>
+                    <span className="rounded-md bg-amber-100 px-2 py-0.5 text-xs font-bold text-amber-900 border border-amber-300">
+                      Terkunci
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-500 font-medium">
+                    Pembaruan data anak di komunitas wilayah/posyandu hanya diperuntukkan bagi anak yang belum bersekolah.
+                  </p>
+                </div>
+
+                {/* Alasan Belum Bersekolah */}
+                <div className="space-y-1.5">
+                  <label className="text-sm font-bold text-slate-900">
+                    Alasan Belum Bersekolah PAUD <span className="text-rose-600">*</span>
+                  </label>
+                  <select
+                    value={alasanSekolah}
+                    onChange={(e) => setAlasanSekolah(e.target.value)}
+                    className="w-full min-h-[46px] h-11 rounded-xl border-2 border-slate-300 bg-white px-3.5 text-sm font-bold text-slate-900 focus:border-blue-600 focus:outline-hidden cursor-pointer"
+                  >
+                    {ALASAN_BELUM_SEKOLAH.map((alasan) => (
+                      <option key={alasan} value={alasan}>
+                        {alasan}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </>
+            )}
           </div>
 
           {/* Actions */}

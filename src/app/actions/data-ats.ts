@@ -787,6 +787,7 @@ export async function kembaliBersekolah(
   payload: {
     namaSekolah: string;
     jenjang?: string;
+    kategoriSekolah?: string;
     bentukIntervensi?: string;
     catatan?: string;
     komunitasId?: string;
@@ -872,7 +873,9 @@ export async function kembaliBersekolah(
       }
     }
 
-    const schoolNote = `[KEMBALI BERSEKOLAH] Sekolah: ${payload.namaSekolah.trim()}${
+    const schoolNote = `[KEMBALI BERSEKOLAH]${
+      payload.kategoriSekolah ? ` Kategori: ${payload.kategoriSekolah} |` : ""
+    } Sekolah: ${payload.namaSekolah.trim()}${
       payload.jenjang ? ` | Jenjang: ${payload.jenjang}` : ""
     }${
       payload.bentukIntervensi

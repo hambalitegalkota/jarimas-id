@@ -14,6 +14,7 @@ import {
   isDummyDataAnak,
   isSchoolNameMatching,
   extractSchoolNumberToken,
+  isKomunitasLayananPaud,
 } from "@/lib/data-anak-helpers";
 import type {
   DataAnakItem,
@@ -108,24 +109,27 @@ export async function createDataAnak(formData: FormData): Promise<{
     const domisiliRt = formData.get("domisiliRt")?.toString()?.trim() || "";
     const domisiliJalan = formData.get("domisiliJalan")?.toString()?.trim() || "";
 
-    // Logika Status & Alasan Sekolah sesuai tipe komunitas
-    let isSekolah = jenisKomunitas === "satuan_paud";
-    let namaSekolah = formData.get("namaSekolah")?.toString()?.trim() || "";
+    // Verifikasi jenis komunitas dari database: Satuan PAUD, PKBM Star of Tomorrow, dan SKB Kota Tegal berhak mendaftarkan peserta didik PAUD
+    const validKomId = toValidUUID(komunitasId);
+    const { data: dbKom } = await supabase
+      .from("komunitas")
+      .select("id, nama, jenis, jenis_institusi")
+      .eq("id", validKomId)
+      .maybeSingle();
+
+    const isPaudKomunitas = isKomunitasLayananPaud(dbKom, komunitasNama, jenisKomunitas);
+
+    const isSekolah = isPaudKomunitas;
+    const namaSekolah = isPaudKomunitas
+      ? (dbKom?.nama || komunitasNama || "Satuan PAUD")
+      : "Belum Sekolah";
     let rawAlasanSekolah = formData.get("alasanSekolah")?.toString()?.trim() || "";
 
-    if (jenisKomunitas === "satuan_paud") {
-      isSekolah = true;
-      if (!namaSekolah) {
-        namaSekolah = komunitasNama || "Satuan PAUD";
-      }
+    if (isPaudKomunitas) {
       if (!rawAlasanSekolah) {
         rawAlasanSekolah = "Sudah Usia PAUD";
       }
     } else {
-      isSekolah = false;
-      if (!namaSekolah) {
-        namaSekolah = "Belum Sekolah";
-      }
       if (!rawAlasanSekolah) {
         rawAlasanSekolah = "Belum Wajib (Masih Balita)";
       }
@@ -677,7 +681,7 @@ export async function getDataAnakByKomunitas(
         } else if (member && member.status === "approved") {
           const isAdminRole = isRoleAdmin(member.peran);
 
-          if (targetJenis === "satuan_paud") {
+          if (isKomunitasLayananPaud(targetKomunitas, targetKomunitas?.nama, targetJenis)) {
             // Admin, Kepala Sekolah, Guru PAUD / Pendidik -> Full Access
             const isPaudStaff =
               isAdminRole ||
@@ -810,7 +814,7 @@ export async function getDataAnakByKomunitas(
         ddks_records (*)
       `;
 
-    if (targetJenis === "satuan_paud") {
+    if (isKomunitasLayananPaud(targetKomunitas, targetKomunitas?.nama, targetJenis)) {
       const rawPaudName = (targetKomunitas?.nama || "").trim();
       const cleanPaudName = rawPaudName
         .replace(/^(KB|TK|TPA|SPS|RA|PKBM|SKB|POS PAUD)\s+/i, "")
@@ -1280,21 +1284,27 @@ export async function updateDataAnak(
     const domisiliRt = formData.get("domisiliRt")?.toString()?.trim() || "";
     const domisiliJalan = formData.get("domisiliJalan")?.toString()?.trim() || "";
 
-    const isSekolah = jenisKomunitas === "satuan_paud";
-    let namaSekolah = formData.get("namaSekolah")?.toString()?.trim() || "";
+    // Verifikasi jenis komunitas dari database: Satuan PAUD, PKBM Star of Tomorrow, dan SKB Kota Tegal berhak mengelola peserta didik PAUD
+    const validKomId = toValidUUID(komunitasId);
+    const { data: dbKom } = await supabase
+      .from("komunitas")
+      .select("id, nama, jenis, jenis_institusi")
+      .eq("id", validKomId)
+      .maybeSingle();
+
+    const isPaudKomunitas = isKomunitasLayananPaud(dbKom, komunitasNama, jenisKomunitas);
+
+    const isSekolah = isPaudKomunitas;
+    const namaSekolah = isPaudKomunitas
+      ? (dbKom?.nama || komunitasNama || "Satuan PAUD")
+      : "Belum Sekolah";
     let rawAlasanSekolah = formData.get("alasanSekolah")?.toString()?.trim() || "";
 
-    if (jenisKomunitas === "satuan_paud") {
-      if (!namaSekolah) {
-        namaSekolah = komunitasNama || "Satuan PAUD";
-      }
+    if (isPaudKomunitas) {
       if (!rawAlasanSekolah) {
         rawAlasanSekolah = "Sudah Usia PAUD";
       }
     } else {
-      if (!namaSekolah) {
-        namaSekolah = "Belum Sekolah";
-      }
       if (!rawAlasanSekolah) {
         rawAlasanSekolah = "Belum Wajib (Masih Balita)";
       }
@@ -1698,110 +1708,5 @@ export async function deleteDataAnak(
   }
 }
 
-/**
- * Server Action: Mendistribusikan / Menautkan Data Anak yang Bersekolah ke Komunitas PAUD Masing-Masing
- * Memperbarui kolom komunitas_id pada tabel data_anak agar langsung menunjuk ke komunitas PAUD yang sesuai.
- */
-export async function distribusikanDataAnakKePaudAction(): Promise<{
-  success: boolean;
-  message: string;
-  totalDistributed: number;
-}> {
-  try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
 
-    if (authError || !user) {
-      return {
-        success: false,
-        message: "Silakan masuk terlebih dahulu untuk menjalankan aksi ini.",
-        totalDistributed: 0,
-      };
-    }
-
-    // Ambil daftar seluruh Satuan PAUD
-    const { data: dbPauds, error: paudErr } = await supabase
-      .from("komunitas")
-      .select("id, nama, jenis")
-      .eq("jenis", "satuan_paud");
-
-    if (paudErr || !dbPauds || dbPauds.length === 0) {
-      return {
-        success: false,
-        message: "Gagal memuat daftar Komunitas Satuan PAUD: " + (paudErr?.message || "Data kosong"),
-        totalDistributed: 0,
-      };
-    }
-
-    // Ambil data_anak yang bersekolah (maksimal 1.000 per eksekusi agar proses selesai dalam < 3 detik)
-    const { data: chunk } = await supabase
-      .from("data_anak")
-      .select("id, nama_sekolah, komunitas_id, is_sekolah")
-      .eq("is_sekolah", true)
-      .order("created_at", { ascending: false })
-      .limit(1000);
-
-    const allChildren = chunk || [];
-
-    let updatedCount = 0;
-    const paudUpdates = new Map<string, string[]>();
-
-    for (const child of allChildren) {
-      if (!child.nama_sekolah || isDataAtsRecord(child) || isDummyDataAnak(child)) continue;
-      const matchedPaud = dbPauds.find((p: any) =>
-        isSchoolNameMatching(child.nama_sekolah, p.nama)
-      );
-
-      if (matchedPaud && child.komunitas_id !== matchedPaud.id) {
-        const list = paudUpdates.get(matchedPaud.id) || [];
-        list.push(child.id);
-        paudUpdates.set(matchedPaud.id, list);
-      }
-    }
-
-    // Eksekusi pembaruan komunitas PAUD secara paralel
-    const updatePromises: Promise<void>[] = [];
-    for (const [paudId, childIds] of paudUpdates.entries()) {
-      for (let i = 0; i < childIds.length; i += 200) {
-        const batchIds = childIds.slice(i, i + 200);
-        updatePromises.push(
-          (async () => {
-            const { error: updErr } = await supabase
-              .from("data_anak")
-              .update({
-                komunitas_id: paudId,
-                updated_at: new Date().toISOString(),
-              })
-              .in("id", batchIds);
-
-            if (!updErr) {
-              updatedCount += batchIds.length;
-            }
-          })()
-        );
-      }
-    }
-    await Promise.all(updatePromises);
-
-    revalidatePath("/komunitas");
-    revalidatePath("/data-anak");
-    revalidatePath("/profil");
-    revalidatePath("/");
-
-    return {
-      success: true,
-      message: `Berhasil mendistribusikan ${updatedCount} data anak ke Komunitas Satuan PAUD masing-masing!`,
-      totalDistributed: updatedCount,
-    };
-  } catch (err: any) {
-    return {
-      success: false,
-      message: err.message || "Gagal mendistribusikan data anak ke PAUD.",
-      totalDistributed: 0,
-    };
-  }
-}
 

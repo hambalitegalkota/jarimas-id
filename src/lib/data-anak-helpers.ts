@@ -85,6 +85,49 @@ export function isDataAtsRecord(row: any): boolean {
 }
 
 /**
+ * Memeriksa apakah suatu komunitas berhak menyelenggarakan dan mengisikan data peserta didik PAUD aktif (sudah bersekolah).
+ * Meliputi:
+ * 1. Satuan PAUD Resmi (jenis === "satuan_paud")
+ * 2. PKBM Star of Tomorrow (satuan pendidikan kesetaraan yang memiliki layanan PAUD)
+ * 3. SKB Kota Tegal / UPTD SPNF Sanggar Kegiatan Belajar (memiliki layanan PAUD)
+ */
+export function isKomunitasLayananPaud(
+  komunitas?: {
+    id?: string;
+    nama?: string;
+    jenis?: string;
+    jenis_institusi?: string;
+  } | null,
+  fallbackNama?: string,
+  fallbackJenis?: string
+): boolean {
+  const jenis = String(komunitas?.jenis || fallbackJenis || "").toLowerCase().trim();
+  const nama = String(komunitas?.nama || fallbackNama || "").toLowerCase().trim();
+  const institusi = String(komunitas?.jenis_institusi || "").toLowerCase().trim();
+
+  // 1. Seluruh Satuan PAUD Resmi (TK, KB, RA, SPS, TPA)
+  if (jenis === "satuan_paud") {
+    return true;
+  }
+
+  // 2. PKBM Star of Tomorrow (memiliki layanan PAUD resmi)
+  if (nama.includes("star of tomorrow")) {
+    return true;
+  }
+
+  // 3. SKB Kota Tegal / UPTD SPNF Sanggar Kegiatan Belajar (memiliki layanan PAUD resmi)
+  if (
+    institusi === "skb" ||
+    nama.includes("skb") ||
+    nama.includes("sanggar kegiatan belajar")
+  ) {
+    return true;
+  }
+
+  return false;
+}
+
+/**
  * Mendeteksi apakah suatu baris data merupakan data uji coba / dummy anak
  */
 export function isDummyDataAnak(row: any): boolean {

@@ -24,7 +24,7 @@ import {
 import { createDataAnak } from "@/app/actions/data-anak";
 import { type JenisKomunitas } from "@/types/database";
 import { extractKomunitasMetadata } from "@/lib/admin-helpers";
-import { findPaudLocation } from "@/lib/data-anak-helpers";
+import { findPaudLocation, isKomunitasLayananPaud } from "@/lib/data-anak-helpers";
 import {
   DAFTAR_KECAMATAN_TEGAL,
   DAFTAR_RW_TEGAL,
@@ -140,7 +140,7 @@ export function FormDataAnak({
   const [domisiliRt, setDomisiliRt] = useState(initialRt);
   const [domisiliJalan, setDomisiliJalan] = useState("");
 
-  const isPaud = jenisKomunitas === "satuan_paud";
+  const isPaud = isKomunitasLayananPaud(komunitas, komunitasNama, String(jenisKomunitas));
   const isPosyandu = jenisKomunitas === "posyandu";
 
   // Sekolah State
@@ -978,7 +978,7 @@ export function FormDataAnak({
                 </div>
               </div>
               <p className="text-2xs text-muted-foreground font-medium">
-                Pendaftaran data balita di komunitas non-PAUD (Posyandu / Warga Kita) terkunci pada status Belum Bersekolah.
+                Pendaftaran peserta didik PAUD aktif (sudah bersekolah) hanya dapat dilakukan oleh Satuan PAUD, PKBM Star of Tomorrow, atau SKB Kota Tegal. Di komunitas wilayah/posyandu, anak dicatat sebagai belum bersekolah.
               </p>
             </div>
 
