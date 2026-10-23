@@ -81,7 +81,23 @@ export default async function ProfilePage() {
       id: user.id,
     });
 
-  // Self-healing: jika akun adalah Super Admin tetapi is_super_admin di DB belum true, sinkronkan ke DB
+  // Self-healing / normalisasi: jika akun BUKAN Super Admin tetapi is_super_admin di DB masih true (misal: kreasi.hambali@gmail.com), kembalikan ke false
+  if (!isSuperAdmin && profile?.is_super_admin === true) {
+    try {
+      await supabase
+        .from("profiles")
+        .update({
+          is_super_admin: false,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", user.id);
+      if (profile) profile.is_super_admin = false;
+    } catch (normErr) {
+      console.warn("Gagal normalisasi status super admin non-admin:", normErr);
+    }
+  }
+
+  // Self-healing: jika akun adalah Super Admin sah tetapi is_super_admin di DB belum true, sinkronkan ke DB
   if (isSuperAdmin && profile?.is_super_admin !== true) {
     try {
       await supabase.from("profiles").upsert(
@@ -94,6 +110,7 @@ export default async function ProfilePage() {
         },
         { onConflict: "id" }
       );
+      if (profile) profile.is_super_admin = true;
     } catch (dbErr) {
       console.warn("Gagal auto-upgrade Super Admin profile di DB:", dbErr);
     }

@@ -1175,8 +1175,9 @@ export async function cleanupNonSuperAdminDataAction(): Promise<{
 /**
  * Server Action: Mengangkat atau Mencabut peran Admin Pusat
  * Aturan Mutlak:
- * - HANYA Super Admin (Hambali Hidayat) yang berhak menetapkan atau mencabut Admin Pusat.
+ * - HANYA Super Admin yang berhak menetapkan atau mencabut Admin Pusat.
  * - Akun Super Admin tidak bisa dicabut atau diubah statusnya (Imunitas Super Admin).
+ * - Pengangkatan berjenjang: Pengguna harus berstatus admin di bawahnya terlebih dahulu.
  */
 export async function toggleAdminPusatRoleAction(
   targetUserId: string,
@@ -1194,7 +1195,7 @@ export async function toggleAdminPusatRoleAction(
       return {
         success: false,
         message:
-          "Akses ditolak: Penetapan dan pencabutan status Admin Pusat hanya dapat dilakukan oleh Super Admin (Hambali Hidayat).",
+          "Akses ditolak: Penetapan dan pencabutan status Admin Pusat hanya dapat dilakukan oleh Super Admin.",
       };
     }
 
@@ -1224,8 +1225,26 @@ export async function toggleAdminPusatRoleAction(
       return {
         success: false,
         message:
-          "Tindakan ditolak: Status Super Admin (Hambali Hidayat) bersifat absolut dan tertinggi, tidak dapat diubah atau dicabut oleh siapapun.",
+          "Tindakan ditolak: Status Super Admin bersifat absolut dan tertinggi, tidak dapat diubah atau dicabut oleh siapapun.",
       };
+    }
+
+    // Pengangkatan Admin Pusat berjenjang: Target harus sudah memiliki peran admin di bawahnya (misal Admin Kota / Wilayah / Komunitas)
+    if (newStatus) {
+      const { data: adminMemberships } = await supabase
+        .from("anggota_komunitas")
+        .select("peran, status")
+        .eq("user_id", targetUserId)
+        .eq("status", "approved");
+
+      const hasAdminRole = (adminMemberships || []).some((m) => isRoleAdmin(m.peran));
+      if (!hasAdminRole) {
+        return {
+          success: false,
+          message:
+            "Tindakan ditolak: Pengangkatan Admin Pusat harus berjenjang. Pengguna harus sudah terverifikasi memiliki peran Admin terlebih dahulu sebelum dapat dipromosikan.",
+        };
+      }
     }
 
     const adminClient = createAdminClient() || supabase;

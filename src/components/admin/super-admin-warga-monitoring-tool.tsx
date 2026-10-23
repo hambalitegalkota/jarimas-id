@@ -583,20 +583,20 @@ export function SuperAdminWargaMonitoringTool({
                         {isProtectedSuperAdmin(userItem) ? (
                           <span
                             className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30 cursor-not-allowed select-none"
-                            title="Super Admin tertinggi (Hambali Hidayat) memiliki status imunitas mutlak dan tidak bisa dicabut atau diturunkan"
+                            title="Akun Super Admin memiliki status imunitas mutlak dan tidak bisa dicabut atau diturunkan"
                           >
                             <Shield className="h-3 w-3 text-amber-500" />
                             Super Admin (Permanen)
                           </span>
                         ) : viewerTier === "super_admin" ? (
-                          /* HANYA SUPER ADMIN yang memiliki tombol Angkat/Cabut Admin Pusat */
+                          /* HANYA SUPER ADMIN yang mengelola Admin Pusat */
                           userItem.is_admin_pusat || isAdminPusat(userItem) ? (
                             <button
                               type="button"
                               disabled={processingUserId === userItem.id}
                               onClick={() => handleToggleAdminPusat(userItem)}
                               className="inline-flex min-h-[32px] items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-rose-700 dark:text-rose-400 transition-all cursor-pointer disabled:opacity-50"
-                              title="Cabut wewenang sebagai Admin Pusat (kembalikan ke warga biasa)"
+                              title="Cabut wewenang sebagai Admin Pusat"
                             >
                               {processingUserId === userItem.id ? (
                                 <Loader2 className="h-3 w-3 animate-spin" />
@@ -605,13 +605,14 @@ export function SuperAdminWargaMonitoringTool({
                               )}
                               Cabut Admin Pusat
                             </button>
-                          ) : (
+                          ) : (userItem.komunitas_list?.some((c) => isRoleAdmin(c.peran))) ? (
+                            /* Pengangkatan Admin Pusat secara berjenjang HANYA tersedia bagi pengguna yang sudah berstatus Admin */
                             <button
                               type="button"
                               disabled={processingUserId === userItem.id}
                               onClick={() => handleToggleAdminPusat(userItem)}
                               className="inline-flex min-h-[32px] items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold border border-teal-500/30 bg-teal-500/10 hover:bg-teal-500/20 text-teal-800 dark:text-teal-300 transition-all cursor-pointer disabled:opacity-50"
-                              title="Angkat pengguna ini menjadi Admin Pusat dengan 1 kali klik"
+                              title="Angkat Admin ini menjadi Admin Pusat secara berjenjang"
                             >
                               {processingUserId === userItem.id ? (
                                 <Loader2 className="h-3 w-3 animate-spin" />
@@ -620,9 +621,9 @@ export function SuperAdminWargaMonitoringTool({
                               )}
                               + Angkat Admin Pusat
                             </button>
-                          )
+                          ) : null
                         ) : viewerTier === "admin_pusat" ? (
-                          /* ADMIN PUSAT: Hanya bisa mengangkat Admin di bawahnya (Admin Kota), TIDAK BISA mengangkat Admin Pusat atau Super Admin */
+                          /* ADMIN PUSAT: Hanya bisa mengelola Admin di bawahnya (Admin Kota) */
                           userItem.is_admin_pusat || isAdminPusat(userItem) ? (
                             <span
                               className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold bg-primary/10 text-primary border border-primary/25 select-none"
@@ -651,13 +652,13 @@ export function SuperAdminWargaMonitoringTool({
                               )}
                               Cabut Admin Kota
                             </button>
-                          ) : (
+                          ) : userItem.komunitas_list?.some((c) => isRoleAdmin(c.peran)) ? (
                             <button
                               type="button"
                               disabled={processingUserId === userItem.id}
                               onClick={() => handleToggleAdminKota(userItem)}
                               className="inline-flex min-h-[32px] items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold border border-teal-500/30 bg-teal-500/10 hover:bg-teal-500/20 text-teal-800 dark:text-teal-300 transition-all cursor-pointer disabled:opacity-50"
-                              title="Angkat pengguna ini menjadi Admin Kota Tegal dengan 1 kali klik"
+                              title="Angkat Admin ini menjadi Admin Kota Tegal secara berjenjang"
                             >
                               {processingUserId === userItem.id ? (
                                 <Loader2 className="h-3 w-3 animate-spin" />
@@ -666,7 +667,7 @@ export function SuperAdminWargaMonitoringTool({
                               )}
                               + Angkat Admin Kota
                             </button>
-                          )
+                          ) : null
                         ) : (
                           /* Tingkat Admin lainnya: Menampilkan label status pengguna */
                           userItem.is_admin_pusat || isAdminPusat(userItem) ? (

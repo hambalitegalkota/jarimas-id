@@ -430,7 +430,7 @@ export function KelolaAnggotaClientView({
                         {isProtectedSuperAdmin(member.profiles) ? (
                           <span
                             className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30 cursor-not-allowed select-none"
-                            title="Akun Super Admin tertinggi (Hambali Hidayat) memiliki imunitas mutlak dan tidak bisa dicabut atau diturunkan peran adminnya."
+                            title="Akun Super Admin memiliki imunitas mutlak dan tidak bisa dicabut atau diturunkan peran adminnya."
                           >
                             <Shield className="h-3 w-3 text-amber-500" />
                             <span className="hidden sm:inline">Super Admin (Permanen)</span>

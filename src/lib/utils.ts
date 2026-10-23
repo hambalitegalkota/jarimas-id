@@ -137,37 +137,43 @@ export function isSuperAdmin(profileOrUser?: {
   id?: string | null;
 } | null): boolean {
   if (!profileOrUser) return false;
-  if (profileOrUser.is_super_admin === true) return true;
 
   const email = (profileOrUser.email || "").toLowerCase().trim();
+  // Akun warga umum yang bukan Super Admin (misal: Ali Hambali Hidayat / kreasi.hambali@gmail.com)
+  if (email === "kreasi.hambali@gmail.com") {
+    return false;
+  }
+
+  // Akun Super Admin Resmi Platform JARIMAS
   if (
     email === "jarimas.id@gmail.com" ||
     email.includes("jarimas.id@") ||
     email.startsWith("jarimas.id") ||
-    email === "admin@jarimas.id"
+    email === "admin@jarimas.id" ||
+    email === "hambali.tegalkota@gmail.com"
   ) {
     return true;
   }
 
   const name = (profileOrUser.nama_lengkap || "").toLowerCase().trim();
   if (
-    name === "jarimas indonesia" ||
-    name === "jarimas" ||
-    name.startsWith("jarimas indonesia") ||
-    name.includes("hambali hidayat") ||
-    name === "hambali"
+    (name === "jarimas indonesia" || name === "hambali hidayat") &&
+    email !== "kreasi.hambali@gmail.com"
   ) {
     return true;
   }
 
   if (profileOrUser.id === "00000000-0000-0000-0000-000000000001") return true;
 
+  // Jika kolom is_super_admin di database aktif dan bukan akun yang dikecualikan
+  if (profileOrUser.is_super_admin === true) return true;
+
   return false;
 }
 
 /**
- * Mengecek apakah pengguna merupakan Super Admin utama yang terlindungi (Hambali Hidayat / Jarimas Indonesia).
- * Akun ini memiliki kekebalan mutlak (imunitas): tidak ada admin di bawahnya yang dapat mencabut statusnya.
+ * Mengecek apakah pengguna merupakan Super Admin platform yang terlindungi.
+ * Akun ini memiliki status permanen sehingga tidak dapat dicabut oleh admin di bawahnya.
  */
 export function isProtectedSuperAdmin(profileOrUser?: {
   is_super_admin?: boolean;
@@ -177,21 +183,27 @@ export function isProtectedSuperAdmin(profileOrUser?: {
 } | null): boolean {
   if (!profileOrUser) return false;
   const email = (profileOrUser.email || "").toLowerCase().trim();
-  const name = (profileOrUser.nama_lengkap || "").toLowerCase().trim();
+  if (email === "kreasi.hambali@gmail.com") return false;
+
   if (
     email === "jarimas.id@gmail.com" ||
     email.includes("jarimas.id@") ||
     email.startsWith("jarimas.id") ||
     email === "admin@jarimas.id" ||
-    email.includes("hambali") ||
-    name.includes("hambali hidayat") ||
-    name === "hambali" ||
-    name === "jarimas indonesia" ||
-    name === "jarimas" ||
+    email === "hambali.tegalkota@gmail.com" ||
     profileOrUser.id === "00000000-0000-0000-0000-000000000001"
   ) {
     return true;
   }
+
+  const name = (profileOrUser.nama_lengkap || "").toLowerCase().trim();
+  if (
+    (name === "jarimas indonesia" || name === "hambali hidayat") &&
+    email !== "kreasi.hambali@gmail.com"
+  ) {
+    return true;
+  }
+
   return profileOrUser.is_super_admin === true;
 }
 
