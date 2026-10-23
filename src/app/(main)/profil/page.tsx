@@ -147,6 +147,16 @@ export default async function ProfilePage() {
     }
   }
 
+  // Pembersihan otomatis akun dummy Test Cleanup jika masih tersisa di DB
+  if (isSuperAdmin || isAdminPusatUser) {
+    try {
+      await adminClient
+        .from("profiles")
+        .delete()
+        .or("id.eq.66cb035a-5a95-469a-8df0-381b428cac7d,email.eq.test_cleanup_bot_123@example.com");
+    } catch {}
+  }
+
   // 3. Ambil data permohonan pending, komunitas user, daftar pengguna terdaftar, dan komunitas buatan admin
   const [
     pendingApprovalsResult,

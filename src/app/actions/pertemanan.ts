@@ -203,6 +203,7 @@ export async function getRegisteredUsers(params?: {
         : sameCommunityUserIds;
 
     targetRekapUserIds.forEach((uid) => {
+      if (uid === "66cb035a-5a95-469a-8df0-381b428cac7d") return;
       const catSet = userCategoriesMap[uid];
       if (!catSet || catSet.size === 0) return;
       totalUniqueSet.add(uid);
@@ -238,7 +239,15 @@ export async function getRegisteredUsers(params?: {
       if (profileErr) {
         console.warn("Gagal mengambil profiles untuk super admin / admin pusat:", profileErr);
       }
-      targetProfiles = profiles || [];
+      targetProfiles = (profiles || []).filter((p: any) => {
+        const email = (p.email || "").toLowerCase().trim();
+        const name = (p.nama_lengkap || "").toLowerCase().trim();
+        return (
+          !email.includes("test_cleanup_bot") &&
+          name !== "test cleanup" &&
+          p.id !== "66cb035a-5a95-469a-8df0-381b428cac7d"
+        );
+      });
     } else {
       const userIdsToFetch = new Set<string>(sameCommunityUserIds);
 
@@ -266,7 +275,15 @@ export async function getRegisteredUsers(params?: {
         if (profileErr) {
           console.warn("Gagal mengambil profiles satu komunitas:", profileErr);
         }
-        targetProfiles = profiles || [];
+        targetProfiles = (profiles || []).filter((p: any) => {
+          const email = (p.email || "").toLowerCase().trim();
+          const name = (p.nama_lengkap || "").toLowerCase().trim();
+          return (
+            !email.includes("test_cleanup_bot") &&
+            name !== "test cleanup" &&
+            p.id !== "66cb035a-5a95-469a-8df0-381b428cac7d"
+          );
+        });
       } else {
         // User belum bergabung di komunitas manapun dan tidak ada super admin ditemukan
         targetProfiles = [];
