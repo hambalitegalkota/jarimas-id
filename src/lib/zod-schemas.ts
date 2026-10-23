@@ -25,24 +25,6 @@ export type RegisterInput = z.infer<typeof RegisterSchema>;
 export type RegisterFormValues = RegisterInput;
 
 /**
- * Skema Validasi Kelengkapan Profil Pengguna (Nama Asli)
- */
-export const LengkapiProfilSchema = z.object({
-  namaLengkap: z
-    .string()
-    .trim()
-    .min(3, "Nama asli minimal 3 karakter")
-    .max(100, "Nama asli maksimal 100 karakter")
-    .regex(
-      /^[a-zA-Z\s.,'`-]+$/,
-      "Nama hanya boleh mengandung huruf, spasi, dan tanda baca standar (titik, koma, petik)"
-    ),
-});
-
-export type LengkapiProfilInput = z.infer<typeof LengkapiProfilSchema>;
-export type LengkapiProfilFormValues = LengkapiProfilInput;
-
-/**
  * Skema Validasi Login Pengguna
  */
 export const LoginSchema = z.object({
