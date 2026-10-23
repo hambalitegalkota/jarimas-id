@@ -28,7 +28,7 @@ import {
   RegisteredUserItem,
 } from "@/types/database";
 import { useGlobalMessageNotification } from "@/components/notifications/global-message-notification-provider";
-import { toValidUUID } from "@/lib/utils";
+import { toValidUUID, isSuperAdmin, isAdminPusat } from "@/lib/utils";
 
 interface ManageGrupMembersModalProps {
   isOpen: boolean;
@@ -498,12 +498,12 @@ export function ManageGrupMembersModal({
                               {prof?.nama_lengkap || "Warga Jarimas"}
                               {isMe && " (Anda)"}
                             </span>
-                            {prof?.is_super_admin && (
+                            {isSuperAdmin(prof) && (
                               <span className="rounded-md bg-secondary/15 border border-secondary/30 text-secondary px-1.5 py-0.2 text-[9px] font-semibold">
                                 Super Admin
                               </span>
                             )}
-                            {prof?.is_admin_pusat && (
+                            {isAdminPusat(prof) && (
                               <span className="rounded-md bg-primary/15 border border-primary/30 text-primary px-1.5 py-0.2 text-[9px] font-semibold">
                                 Admin Pusat
                               </span>
@@ -519,7 +519,7 @@ export function ManageGrupMembersModal({
                       </div>
 
                       {/* Action: Keluarkan jika Admin & bukan pembuat */}
-                      {canManage && !isMe && !prof?.is_super_admin && (
+                      {canManage && !isMe && !isSuperAdmin(prof) && (
                         <button
                           type="button"
                           onClick={() =>

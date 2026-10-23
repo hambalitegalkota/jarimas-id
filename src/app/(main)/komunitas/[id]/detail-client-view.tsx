@@ -1464,7 +1464,7 @@ export function KomunitasDetailClientView({
                 const name = member.profiles?.nama_lengkap || "Warga Komunitas";
                 const initial = name.charAt(0).toUpperCase();
                 const isMe = currentUserId && member.user_id === currentUserId;
-                const isTargetSuperAdmin = (member.profiles as any)?.is_super_admin === true || isSuperAdmin(member.profiles);
+                const isTargetSuperAdmin = isSuperAdmin(member.profiles);
                 const canKickThisMember = canManageMembers && !isMe && !isTargetSuperAdmin;
 
                 return (

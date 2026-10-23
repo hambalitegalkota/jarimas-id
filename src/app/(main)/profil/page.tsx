@@ -15,7 +15,7 @@ import {
   ArrowRight,
   Sparkles,
 } from "lucide-react";
-import { createClient } from "@/utils/supabase/server";
+import { createClient, createAdminClient } from "@/utils/supabase/server";
 import { logoutUser } from "@/app/actions/auth";
 import { getPendingApprovals } from "@/app/actions/admin";
 import { getRegisteredUsers } from "@/app/actions/pertemanan";
@@ -81,36 +81,67 @@ export default async function ProfilePage() {
       id: user.id,
     });
 
-  // Self-healing / normalisasi: jika akun BUKAN Super Admin tetapi is_super_admin di DB masih true (misal: kreasi.hambali@gmail.com), kembalikan ke false
-  if (!isSuperAdmin && profile?.is_super_admin === true) {
+  // Self-healing / sinkronisasi untuk Admin Pusat (Jarimas Indonesia):
+  // Pastikan di database is_admin_pusat = true dan is_super_admin = false
+  const adminClient = createAdminClient() || supabase;
+
+  if (isAdminPusatUser && (profile?.is_admin_pusat !== true || profile?.is_super_admin === true)) {
     try {
-      await supabase
+      await adminClient
         .from("profiles")
         .update({
+          is_admin_pusat: true,
           is_super_admin: false,
           updated_at: new Date().toISOString(),
         })
         .eq("id", user.id);
-      if (profile) profile.is_super_admin = false;
+      if (profile) {
+        profile.is_admin_pusat = true;
+        profile.is_super_admin = false;
+      }
+    } catch (adminPusatErr) {
+      console.warn("Gagal sinkronisasi Admin Pusat profile di DB:", adminPusatErr);
+    }
+  }
+
+  // Self-healing / normalisasi: jika akun BUKAN Super Admin dan BUKAN Admin Pusat tetapi is_super_admin/is_admin_pusat di DB masih true (misal: kreasi.hambali@gmail.com), kembalikan ke false
+  if (!isSuperAdmin && !isAdminPusatUser && (profile?.is_super_admin === true || profile?.is_admin_pusat === true)) {
+    try {
+      await adminClient
+        .from("profiles")
+        .update({
+          is_super_admin: false,
+          is_admin_pusat: false,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", user.id);
+      if (profile) {
+        profile.is_super_admin = false;
+        profile.is_admin_pusat = false;
+      }
     } catch (normErr) {
       console.warn("Gagal normalisasi status super admin non-admin:", normErr);
     }
   }
 
-  // Self-healing: jika akun adalah Super Admin sah tetapi is_super_admin di DB belum true, sinkronkan ke DB
-  if (isSuperAdmin && profile?.is_super_admin !== true) {
+  // Self-healing: jika akun adalah Super Admin sah (Hambali Hidayat) tetapi is_super_admin di DB belum true, sinkronkan ke DB
+  if (isSuperAdmin && (profile?.is_super_admin !== true || profile?.is_admin_pusat === true)) {
     try {
-      await supabase.from("profiles").upsert(
+      await adminClient.from("profiles").upsert(
         {
           id: user.id,
           nama_lengkap: namaLengkap,
           email: userEmail,
           is_super_admin: true,
+          is_admin_pusat: false,
           updated_at: new Date().toISOString(),
         },
         { onConflict: "id" }
       );
-      if (profile) profile.is_super_admin = true;
+      if (profile) {
+        profile.is_super_admin = true;
+        profile.is_admin_pusat = false;
+      }
     } catch (dbErr) {
       console.warn("Gagal auto-upgrade Super Admin profile di DB:", dbErr);
     }

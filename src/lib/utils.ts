@@ -139,41 +139,43 @@ export function isSuperAdmin(profileOrUser?: {
   if (!profileOrUser) return false;
 
   const email = (profileOrUser.email || "").toLowerCase().trim();
-  // Akun warga umum yang bukan Super Admin (misal: Ali Hambali Hidayat / kreasi.hambali@gmail.com)
-  if (email === "kreasi.hambali@gmail.com") {
+  const name = (profileOrUser.nama_lengkap || "").toLowerCase().trim();
+
+  // Akun Jarimas Indonesia adalah ADMIN PUSAT, BUKAN Super Admin!
+  // Akun Ali Hambali Hidayat adalah WARGA BIASA.
+  if (
+    email === "jarimas.id@gmail.com" ||
+    email.startsWith("jarimas.id") ||
+    email.includes("jarimas.id@") ||
+    email === "admin@jarimas.id" ||
+    name === "jarimas indonesia" ||
+    name === "jarimas" ||
+    email === "kreasi.hambali@gmail.com"
+  ) {
     return false;
   }
 
-  // Akun Super Admin Resmi Platform JARIMAS
+  // SUPER ADMIN HANYA AKUN HAMBALI HIDAYAT (hambali.tegalkota@gmail.com)
   if (
-    email === "jarimas.id@gmail.com" ||
-    email.includes("jarimas.id@") ||
-    email.startsWith("jarimas.id") ||
-    email === "admin@jarimas.id" ||
-    email === "hambali.tegalkota@gmail.com"
+    email === "hambali.tegalkota@gmail.com" ||
+    profileOrUser.id === "00000000-0000-0000-0000-000000000001"
   ) {
     return true;
   }
 
-  const name = (profileOrUser.nama_lengkap || "").toLowerCase().trim();
-  if (
-    (name === "jarimas indonesia" || name === "hambali hidayat") &&
-    email !== "kreasi.hambali@gmail.com"
-  ) {
+  if (name === "hambali hidayat" && email !== "kreasi.hambali@gmail.com") {
     return true;
   }
 
-  if (profileOrUser.id === "00000000-0000-0000-0000-000000000001") return true;
-
-  // Jika kolom is_super_admin di database aktif dan bukan akun yang dikecualikan
+  // Jika kolom is_super_admin di database aktif dan bukan akun Jarimas Indonesia atau Ali Hambali
   if (profileOrUser.is_super_admin === true) return true;
 
   return false;
 }
 
 /**
- * Mengecek apakah pengguna merupakan Super Admin platform yang terlindungi.
- * Akun ini memiliki status permanen sehingga tidak dapat dicabut oleh admin di bawahnya.
+ * Mengecek apakah pengguna merupakan Super Admin platform yang terlindungi (Hambali Hidayat).
+ * Akun ini memiliki status permanen tertinggi dan kebal dari pencabutan status oleh admin manapun.
  */
 export function isProtectedSuperAdmin(profileOrUser?: {
   is_super_admin?: boolean;
@@ -183,32 +185,34 @@ export function isProtectedSuperAdmin(profileOrUser?: {
 } | null): boolean {
   if (!profileOrUser) return false;
   const email = (profileOrUser.email || "").toLowerCase().trim();
-  if (email === "kreasi.hambali@gmail.com") return false;
+  const name = (profileOrUser.nama_lengkap || "").toLowerCase().trim();
 
   if (
     email === "jarimas.id@gmail.com" ||
-    email.includes("jarimas.id@") ||
     email.startsWith("jarimas.id") ||
-    email === "admin@jarimas.id" ||
+    name === "jarimas indonesia" ||
+    email === "kreasi.hambali@gmail.com"
+  ) {
+    return false;
+  }
+
+  if (
     email === "hambali.tegalkota@gmail.com" ||
     profileOrUser.id === "00000000-0000-0000-0000-000000000001"
   ) {
     return true;
   }
 
-  const name = (profileOrUser.nama_lengkap || "").toLowerCase().trim();
-  if (
-    (name === "jarimas indonesia" || name === "hambali hidayat") &&
-    email !== "kreasi.hambali@gmail.com"
-  ) {
+  if (name === "hambali hidayat" && email !== "kreasi.hambali@gmail.com") {
     return true;
   }
 
-  return profileOrUser.is_super_admin === true;
+  return isSuperAdmin(profileOrUser);
 }
 
 /**
  * Mengecek apakah pengguna memiliki status peran Admin Pusat (Manajerial Global di bawah Super Admin)
+ * Akun resmi Admin Pusat adalah Jarimas Indonesia (jarimas.id@gmail.com).
  */
 export function isAdminPusat(profileOrUser?: {
   is_admin_pusat?: boolean;
@@ -219,6 +223,22 @@ export function isAdminPusat(profileOrUser?: {
 } | null): boolean {
   if (!profileOrUser) return false;
   if (isSuperAdmin(profileOrUser)) return false; // Super Admin adalah tingkatan di atas Admin Pusat
+
+  const email = (profileOrUser.email || "").toLowerCase().trim();
+  const name = (profileOrUser.nama_lengkap || "").toLowerCase().trim();
+
+  // Akun Resmi Admin Pusat Platform: Jarimas Indonesia
+  if (
+    email === "jarimas.id@gmail.com" ||
+    email.includes("jarimas.id@") ||
+    email.startsWith("jarimas.id") ||
+    email === "admin@jarimas.id" ||
+    name === "jarimas indonesia" ||
+    name === "jarimas"
+  ) {
+    return true;
+  }
+
   if (profileOrUser.is_admin_pusat === true) return true;
   return false;
 }

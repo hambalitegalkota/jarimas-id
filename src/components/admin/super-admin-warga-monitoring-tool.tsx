@@ -496,11 +496,11 @@ export function SuperAdminWargaMonitoringTool({
                                 Online
                               </span>
                             )}
-                            {userItem.is_super_admin || isSuperAdmin(userItem) ? (
+                            {isSuperAdmin(userItem) ? (
                               <span className="rounded-md bg-amber-500/10 text-amber-700 dark:text-amber-400 px-1.5 py-0.5 text-[9px] font-bold border border-amber-500/30">
                                 Super Admin
                               </span>
-                            ) : userItem.is_admin_pusat || isAdminPusat(userItem) ? (
+                            ) : isAdminPusat(userItem) ? (
                               <span className="rounded-md bg-primary/10 text-primary px-1.5 py-0.5 text-[9px] font-bold border border-primary/30">
                                 Admin Pusat
                               </span>
@@ -590,7 +590,7 @@ export function SuperAdminWargaMonitoringTool({
                           </span>
                         ) : viewerTier === "super_admin" ? (
                           /* HANYA SUPER ADMIN yang mengelola Admin Pusat */
-                          userItem.is_admin_pusat || isAdminPusat(userItem) ? (
+                          isAdminPusat(userItem) ? (
                             <button
                               type="button"
                               disabled={processingUserId === userItem.id}
@@ -605,14 +605,19 @@ export function SuperAdminWargaMonitoringTool({
                               )}
                               Cabut Admin Pusat
                             </button>
-                          ) : (userItem.komunitas_list?.some((c) => isRoleAdmin(c.peran))) ? (
-                            /* Pengangkatan Admin Pusat secara berjenjang HANYA tersedia bagi pengguna yang sudah berstatus Admin */
+                          ) : (userItem.komunitas_list?.some(
+                              (c) =>
+                                (c.nama.toLowerCase().includes("warga kota tegal") ||
+                                  (c.jenis === "warga_kita" && (c.kecamatan === "Kota Tegal" || !c.kecamatan))) &&
+                                isRoleAdmin(c.peran)
+                            )) ? (
+                            /* Pengangkatan Admin Pusat secara berjenjang HANYA tersedia bagi Admin Kota Tegal */
                             <button
                               type="button"
                               disabled={processingUserId === userItem.id}
                               onClick={() => handleToggleAdminPusat(userItem)}
                               className="inline-flex min-h-[32px] items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold border border-teal-500/30 bg-teal-500/10 hover:bg-teal-500/20 text-teal-800 dark:text-teal-300 transition-all cursor-pointer disabled:opacity-50"
-                              title="Angkat Admin ini menjadi Admin Pusat secara berjenjang"
+                              title="Promosikan Admin Kota ini menjadi Admin Pusat secara berjenjang"
                             >
                               {processingUserId === userItem.id ? (
                                 <Loader2 className="h-3 w-3 animate-spin" />
@@ -624,7 +629,7 @@ export function SuperAdminWargaMonitoringTool({
                           ) : null
                         ) : viewerTier === "admin_pusat" ? (
                           /* ADMIN PUSAT: Hanya bisa mengelola Admin di bawahnya (Admin Kota) */
-                          userItem.is_admin_pusat || isAdminPusat(userItem) ? (
+                          isAdminPusat(userItem) ? (
                             <span
                               className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold bg-primary/10 text-primary border border-primary/25 select-none"
                               title="Pengguna ini adalah sesama Admin Pusat (satu level)"
@@ -670,7 +675,7 @@ export function SuperAdminWargaMonitoringTool({
                           ) : null
                         ) : (
                           /* Tingkat Admin lainnya: Menampilkan label status pengguna */
-                          userItem.is_admin_pusat || isAdminPusat(userItem) ? (
+                          isAdminPusat(userItem) ? (
                             <span
                               className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold bg-primary/10 text-primary border border-primary/25 select-none"
                               title="Admin Pusat"

@@ -394,7 +394,7 @@ export function KomunitasPercakapanTab({
             messages.map((msg) => {
               const isMe = currentUserId && msg.user_id === currentUserId;
               const senderName = msg.profiles?.nama_lengkap || "Warga Komunitas";
-              const isSuper = msg.profiles?.is_super_admin === true || isSuperAdmin(msg.profiles);
+              const isSuper = isSuperAdmin(msg.profiles);
               const isPusat = !isSuper && isAdminPusat(msg.profiles);
               const roleDisplay = msg.user_role || (isSuper ? "Super Admin" : isPusat ? "Admin Pusat" : "Anggota");
 

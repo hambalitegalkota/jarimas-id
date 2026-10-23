@@ -367,11 +367,11 @@ export function DaftarWargaKabarSection({
                     Online
                   </span>
                 )}
-                {(userItem.is_super_admin || isSuperAdmin(userItem)) ? (
+                {isSuperAdmin(userItem) ? (
                   <span className="rounded-md bg-secondary/15 text-secondary border border-secondary/30 px-1.5 py-0.2 text-[9px] font-semibold">
                     Super Admin
                   </span>
-                ) : (userItem.is_admin_pusat || isAdminPusat(userItem)) ? (
+                ) : isAdminPusat(userItem) ? (
                   <span className="rounded-md bg-primary/15 text-primary border border-primary/30 px-1.5 py-0.2 text-[9px] font-semibold">
                     Admin Pusat
                   </span>

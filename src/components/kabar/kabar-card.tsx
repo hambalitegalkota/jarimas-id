@@ -426,7 +426,7 @@ export function KabarCard({
               <h3 className="text-sm sm:text-base font-bold text-foreground leading-tight">
                 {authorName}
               </h3>
-              {(kabar.profiles?.is_super_admin || checkIsSuperAdmin(kabar.profiles)) ? (
+              {checkIsSuperAdmin(kabar.profiles) ? (
                 <span className="rounded-md bg-secondary/15 px-2 py-0.5 text-2xs font-bold text-secondary border border-secondary/30">
                   SUPER ADMIN
                 </span>
