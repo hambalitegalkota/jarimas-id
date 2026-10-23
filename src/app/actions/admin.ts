@@ -1263,6 +1263,140 @@ export async function toggleAdminPusatRoleAction(
 }
 
 /**
+ * Server Action: Mengangkat atau Mencabut peran Admin Kota Tegal
+ * Aturan Berjenjang:
+ * - HANYA Super Admin dan Admin Pusat yang berhak mengangkat/mencabut Admin Kota Tegal.
+ * - Admin Kota TIDAK BISA mengangkat Admin Kota lain (tidak bisa mengangkat admin satu level).
+ * - Super Admin memiliki imunitas mutlak dan tidak bisa diubah statusnya.
+ */
+export async function toggleAdminKotaRoleAction(
+  targetUserId: string,
+  newStatus: boolean
+): Promise<{
+  success: boolean;
+  message: string;
+}> {
+  try {
+    const { supabase, isSuperAdmin, isAdminPusat } =
+      await getAuthenticatedUserContext();
+
+    if (!isSuperAdmin && !isAdminPusat) {
+      return {
+        success: false,
+        message:
+          "Akses ditolak: Penetapan dan pencabutan status Admin Kota Tegal hanya dapat dilakukan oleh Super Admin atau Admin Pusat.",
+      };
+    }
+
+    if (!targetUserId) {
+      return {
+        success: false,
+        message: "ID Pengguna target tidak valid.",
+      };
+    }
+
+    // Ambil data profil target
+    const { data: targetProfile, error: fetchErr } = await supabase
+      .from("profiles")
+      .select("id, nama_lengkap, email, is_super_admin, is_admin_pusat")
+      .eq("id", targetUserId)
+      .maybeSingle();
+
+    if (fetchErr || !targetProfile) {
+      return {
+        success: false,
+        message: "Profil pengguna target tidak ditemukan.",
+      };
+    }
+
+    if (isProtectedSuperAdmin(targetProfile)) {
+      return {
+        success: false,
+        message:
+          "Tindakan ditolak: Akun Super Admin memiliki status absolut dan tidak dapat diubah perannya.",
+      };
+    }
+
+    // Admin Pusat tidak bisa mengubah Admin Pusat lain
+    if (!isSuperAdmin && (targetProfile.is_admin_pusat || checkIsAdminPusat(targetProfile))) {
+      return {
+        success: false,
+        message:
+          "Tindakan ditolak: Admin Pusat tidak dapat mengubah peran sesama Admin Pusat.",
+      };
+    }
+
+    // Cari ID Komunitas Warga Kota Tegal
+    const { data: kotaKom } = await supabase
+      .from("komunitas")
+      .select("id")
+      .ilike("nama", "%Warga Kota Tegal%")
+      .maybeSingle();
+
+    const kotaKomId = kotaKom?.id || toValidUUID("kom-warga-kota-tegal");
+
+    const adminClient = createAdminClient() || supabase;
+
+    // Cek apakah target sudah terdaftar di anggota_komunitas
+    const { data: existingMember } = await adminClient
+      .from("anggota_komunitas")
+      .select("id")
+      .eq("komunitas_id", kotaKomId)
+      .eq("user_id", targetUserId)
+      .maybeSingle();
+
+    const targetRole = newStatus ? "Admin Kota Tegal" : "Penduduk";
+
+    if (existingMember) {
+      const { error: updateErr } = await adminClient
+        .from("anggota_komunitas")
+        .update({
+          peran: targetRole,
+          peran_diajukan: null,
+          status: "approved",
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", existingMember.id);
+
+      if (updateErr) throw updateErr;
+    } else {
+      const { error: insertErr } = await adminClient
+        .from("anggota_komunitas")
+        .insert({
+          komunitas_id: kotaKomId,
+          user_id: targetUserId,
+          peran: targetRole,
+          peran_diajukan: null,
+          status: "approved",
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        });
+
+      if (insertErr) throw insertErr;
+    }
+
+    const actionName = newStatus ? "diangkat menjadi Admin Kota Tegal" : "dicabut dari status Admin Kota Tegal";
+    const targetName = targetProfile.nama_lengkap || targetProfile.email || "Pengguna";
+
+    revalidatePath("/profil");
+    revalidatePath("/admin");
+    revalidatePath(`/komunitas/${kotaKomId}`);
+    revalidatePath("/kabar");
+
+    return {
+      success: true,
+      message: `Akun ${targetName} berhasil ${actionName}.`,
+    };
+  } catch (err: any) {
+    console.error("Error toggleAdminKotaRoleAction:", err);
+    return {
+      success: false,
+      message: err.message || "Gagal memperbarui status Admin Kota Tegal.",
+    };
+  }
+}
+
+/**
  * Server Action: Mengangkat atau Mencabut peran Admin/Pengurus di Komunitas secara berjenjang (1 Klik)
  * Aturan Hierarkis:
  * - Super Admin & Admin Pusat: Dapat mengangkat/mencabut admin di seluruh komunitas

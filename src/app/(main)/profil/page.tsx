@@ -31,7 +31,7 @@ import {
   isSuperAdmin as checkIsSuperAdmin,
   isAdminPusat as checkIsAdminPusat,
 } from "@/lib/utils";
-import { extractKomunitasMetadata } from "@/lib/admin-helpers";
+import { extractKomunitasMetadata, getUserAdminInfo } from "@/lib/admin-helpers";
 import { getWargaHierarchyChain, findKecamatanByKelurahan, slugify } from "@/lib/constants/tegal-data";
 import { UserCheck, Users } from "lucide-react";
 import { type WargaTierItem } from "@/components/komunitas/unified-warga-card";
@@ -435,6 +435,13 @@ export default async function ProfilePage() {
 
   const totalCardCount = (wargaKitaSummary ? 1 : 0) + nonWargaMemberships.length;
 
+  // Dapatkan informasi tingkat kewenangan admin pengguna secara berjenjang
+  const userAdminInfo = getUserAdminInfo({
+    profile,
+    userCommunities,
+    currentUserId: user.id,
+  });
+
   return (
     <div className="flex flex-col flex-1 px-4 sm:px-6 md:px-8 py-4 sm:py-6 gap-5 sm:gap-6 max-w-5xl xl:max-w-6xl mx-auto w-full pb-24 bg-background">
       {/* Header Profil Card - Super App Clean Card */}
@@ -460,11 +467,15 @@ export default async function ProfilePage() {
             <div className="flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-lg border border-primary/20 bg-primary/10 text-primary font-bold shadow-xs">
               <User className="h-7 w-7 sm:h-8 sm:w-8" />
             </div>
-            {isSuperAdmin && (
+            {userAdminInfo.tierLevel === "super_admin" ? (
               <div className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-secondary text-white shadow-sm border border-card">
                 <Crown className="h-3 w-3" />
               </div>
-            )}
+            ) : userAdminInfo.isAdmin ? (
+              <div className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-white shadow-sm border border-card">
+                <ShieldCheck className="h-3 w-3" />
+              </div>
+            ) : null}
           </div>
 
           {/* User Details */}
@@ -475,16 +486,20 @@ export default async function ProfilePage() {
                   {namaLengkap}
                 </h1>
 
-                {/* Role Badge */}
-                {isSuperAdmin ? (
+                {/* Role Badge Berjenjang */}
+                {userAdminInfo.isAdmin ? (
                   <span className="inline-flex items-center gap-1.5 rounded-md border border-secondary/30 bg-secondary/15 px-2.5 py-1 text-xs font-bold text-amber-950 dark:text-amber-200 shadow-2xs">
-                    <Crown className="h-3.5 w-3.5 text-secondary" />
-                    SUPER ADMIN
+                    {userAdminInfo.tierLevel === "super_admin" ? (
+                      <Crown className="h-3.5 w-3.5 text-secondary" />
+                    ) : (
+                      <ShieldCheck className="h-3.5 w-3.5 text-secondary" />
+                    )}
+                    {userAdminInfo.tierBadgeLabel.toUpperCase()}
                   </span>
                 ) : (
                   <span className="inline-flex items-center gap-1.5 rounded-md border border-primary/20 bg-primary/10 px-2.5 py-1 text-xs font-bold text-primary">
                     <ShieldCheck className="h-3.5 w-3.5 text-primary" />
-                    PENGGUNA TERVERIFIKASI
+                    WARGA TERVERIFIKASI
                   </span>
                 )}
               </div>
@@ -508,44 +523,77 @@ export default async function ProfilePage() {
         registeredUsers={registeredUsersResult.users || []}
       />
 
-      {/* Main Content Area: Super Admin Panel */}
-      {isSuperAdmin && (
-        /* SUPER ADMIN VIEW: Approval Dashboard & Seeding Tools */
+      {/* SECTION: Panel Kendali Berjenjang Sesuai Tingkat Kewenangan Admin */}
+      {/* Aturan Mutlak: Selain Admin TIDAK BOLEH ada Panel Kendali di profilnya */}
+      {userAdminInfo.isAdmin && userAdminInfo.panelTitle && (
         <section className="space-y-6">
-          <div className="flex items-center gap-2 px-1">
-            <Sparkles className="h-5 w-5 text-secondary" />
-            <h2 className="text-base font-bold uppercase tracking-wider text-foreground">
-              Panel Kendali Super Admin
-            </h2>
+          <div className="flex items-center justify-between px-1">
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-secondary" />
+              <h2 className="text-base sm:text-lg font-bold uppercase tracking-wider text-foreground">
+                {userAdminInfo.panelTitle}
+              </h2>
+            </div>
+            <span className="inline-flex items-center gap-1 rounded-full border border-secondary/30 bg-secondary/10 px-2.5 py-0.5 text-[10px] font-bold text-secondary uppercase tracking-wider">
+              {userAdminInfo.tierBadgeLabel}
+            </span>
           </div>
 
-          {/* Monitoring Seluruh Pengguna & Warga Online Realtime */}
-          <SuperAdminWargaMonitoringTool
-            initialUsers={registeredUsersResult.users || []}
-            currentUserId={user.id}
-          />
+          {/* Monitoring Warga Realtime: Ditampilkan untuk Super Admin, Admin Pusat, dan Admin Kota */}
+          {(userAdminInfo.tierLevel === "super_admin" ||
+            userAdminInfo.tierLevel === "admin_pusat" ||
+            userAdminInfo.tierLevel === "admin_kota") && (
+            <SuperAdminWargaMonitoringTool
+              initialUsers={registeredUsersResult.users || []}
+              currentUserId={user.id}
+              viewerTier={userAdminInfo.tierLevel}
+            />
+          )}
 
-          {/* Pembersih Data Uji Coba (Testing Clean-up) */}
-          <CleanupTestDataTool />
+          {/* Pembersih Data Uji Coba: HANYA untuk Super Admin */}
+          {userAdminInfo.tierLevel === "super_admin" && <CleanupTestDataTool />}
 
-          {/* Monitoring Seluruh Permohonan Wilayah Berjenjang (Accordion per Kecamatan) */}
-          <KecamatanMonitoringAccordion initialItems={allHierarchyPendingApprovals} />
+          {/* Monitoring Hierarki Wilayah (Kecamatan Accordion) untuk Super Admin & Admin Pusat */}
+          {(userAdminInfo.tierLevel === "super_admin" || userAdminInfo.tierLevel === "admin_pusat") && (
+            <KecamatanMonitoringAccordion initialItems={allHierarchyPendingApprovals} />
+          )}
 
-          {/* Manajemen & Audit Komunitas Kota Tegal (Tambah, Nonaktifkan, Hapus & Cek Kesesuaian) */}
-          <KomunitasManagementTools />
-        </section>
-      )}
+          {/* Manajemen Komunitas Kota Tegal untuk Super Admin & Admin Pusat */}
+          {(userAdminInfo.tierLevel === "super_admin" || userAdminInfo.tierLevel === "admin_pusat") && (
+            <KomunitasManagementTools />
+          )}
 
-      {!isSuperAdmin && (userCommunities.some((item) => isRoleAdmin(item.raw_peran) && item.status === "approved") || pendingApprovals.length > 0) && (
-        /* COMMUNITY ADMIN VIEW: Tiered Approval List */
-        <section className="space-y-4">
-          <div className="flex items-center gap-2 px-1">
-            <UserCheck className="h-5 w-5 text-primary" />
-            <h2 className="text-base font-bold uppercase tracking-wider text-foreground">
-              Persetujuan Peran &amp; Admin Komunitas
-            </h2>
-          </div>
-          <ApprovalList initialApprovals={pendingApprovals} isSuperAdmin={false} />
+          {/* Daftar Permohonan Persetujuan Peran Berjenjang yang Sesuai Wewenang */}
+          {pendingApprovals.length > 0 ? (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 px-1">
+                <UserCheck className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-bold uppercase tracking-wider text-foreground">
+                  Daftar Permohonan Warga ({pendingApprovals.length})
+                </h3>
+              </div>
+              <ApprovalList
+                initialApprovals={pendingApprovals}
+                isSuperAdmin={userAdminInfo.tierLevel === "super_admin"}
+              />
+            </div>
+          ) : (
+            userAdminInfo.tierLevel !== "super_admin" &&
+            userAdminInfo.tierLevel !== "admin_pusat" &&
+            userAdminInfo.tierLevel !== "admin_kota" && (
+              <div className="rounded-lg border border-border bg-card p-6 text-center space-y-2 shadow-xs">
+                <div className="flex h-10 w-10 mx-auto items-center justify-center rounded-lg bg-primary/10 text-primary">
+                  <CheckCircle2 className="h-5 w-5" />
+                </div>
+                <h3 className="text-sm font-bold text-foreground">
+                  Tidak Ada Permohonan Tertunda
+                </h3>
+                <p className="text-xs text-muted-foreground max-w-md mx-auto">
+                  Semua permohonan warga dan peran di wilayah kewenangan Anda telah diproses. Anda dapat mengelola anggota aktif langsung melalui kartu komunitas di atas.
+                </p>
+              </div>
+            )
+          )}
         </section>
       )}
     </div>

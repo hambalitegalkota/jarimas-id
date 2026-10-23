@@ -1,6 +1,10 @@
 import type { PendingApprovalItem } from "@/types/database";
 import { findOrGenerateKomunitasSeed } from "@/lib/constants/tegal-data";
-import { isRoleAdmin } from "@/lib/utils";
+import {
+  isRoleAdmin,
+  isSuperAdmin as isRoleSuperAdmin,
+  isAdminPusat as isRoleAdminPusat,
+} from "@/lib/utils";
 
 function normalizeStr(str?: string | null): string {
   return (str || "")
@@ -656,61 +660,97 @@ export function checkUserCanAssignAdminRole({
   userAdminKomunitas: any[];
   targetKomunitas: any;
 }): boolean {
-  if (isSuperAdmin || isAdminPusat) return true;
-  if (!targetKomunitas || !userAdminKomunitas || userAdminKomunitas.length === 0) return false;
+  if (isSuperAdmin) return true;
+  if (!targetKomunitas) return false;
 
   const targetMeta = extractKomunitasMetadata(targetKomunitas);
   const targetId = targetKomunitas.id || targetKomunitas.komunitas_id;
 
-  // 1. Cek apakah pengguna merupakan Admin/Pengurus di komunitas target itu sendiri
-  const isDirectAdmin = userAdminKomunitas.some((uKom) => {
-    return uKom.id === targetId || (uKom.komunitas_id && uKom.komunitas_id === targetId);
-  });
-  if (isDirectAdmin) return true;
-
-  // 2. Evaluasi hierarki wilayah Warga Kita
+  // 1. Evaluasi Komunitas Warga Kita Berjenjang
+  // Aturan Mutlak: Admin HANYA bisa mengangkat Admin di bawahnya, TIDAK BISA mengangkat Admin yang satu level apalagi lebih tinggi!
   if (targetMeta.jenis === "warga_kita") {
-    return userAdminKomunitas.some((uKom) => {
-      const u = extractKomunitasMetadata(uKom);
-      if (u.jenis !== "warga_kita") return false;
+    // A. Target adalah Tingkat Kota (Kota Tegal) -> HANYA Super Admin & Admin Pusat yang berhak mengangkat Admin Kota
+    if (!targetMeta.hasKel && !targetMeta.hasRw && !targetMeta.hasRt && (targetMeta.rawKec === "Kota Tegal" || !targetMeta.kec || targetMeta.kec === "kota tegal")) {
+      return isSuperAdmin || isAdminPusat;
+    }
 
-      // Admin Kota Tegal
-      if (!u.hasKel && !u.hasRw && !u.hasRt && (u.rawKec === "Kota Tegal" || !u.kec || u.kec === "kota tegal")) {
-        return true;
-      }
+    // B. Target adalah Tingkat Kecamatan -> HANYA Super Admin, Admin Pusat, dan Admin Kota yang berhak mengangkat Admin Kecamatan
+    if (!targetMeta.hasKel && !targetMeta.hasRw && !targetMeta.hasRt && targetMeta.rawKec && targetMeta.rawKec !== "Kota Tegal") {
+      if (isSuperAdmin || isAdminPusat) return true;
+      return userAdminKomunitas.some((uKom) => {
+        const u = extractKomunitasMetadata(uKom);
+        if (u.jenis !== "warga_kita") return false;
+        // Admin Kota Tegal
+        return !u.hasKel && !u.hasRw && !u.hasRt && (u.rawKec === "Kota Tegal" || !u.kec || u.kec === "kota tegal");
+      });
+    }
 
-      const targetKec = targetMeta.kec || normalizeStr(KELURAHAN_TO_KECAMATAN_MAP[targetMeta.kel]);
-      const kecMatch = Boolean(u.kec && targetKec && u.kec === targetKec);
+    // C. Target adalah Tingkat Kelurahan -> Bisa diangkat oleh Admin Kecamatan di atasnya, Admin Kota, Admin Pusat, Super Admin
+    if (targetMeta.hasKel && !targetMeta.hasRw && !targetMeta.hasRt) {
+      if (isSuperAdmin || isAdminPusat) return true;
+      return userAdminKomunitas.some((uKom) => {
+        const u = extractKomunitasMetadata(uKom);
+        if (u.jenis !== "warga_kita") return false;
+        // Admin Kota
+        if (!u.hasKel && !u.hasRw && !u.hasRt && (u.rawKec === "Kota Tegal" || !u.kec || u.kec === "kota tegal")) return true;
+        // Admin Kecamatan di atasnya (Kecamatan yang sama)
+        const targetKec = targetMeta.kec || normalizeStr(KELURAHAN_TO_KECAMATAN_MAP[targetMeta.kel]);
+        const kecMatch = Boolean(u.kec && targetKec && u.kec === targetKec);
+        if (u.kec && !u.hasKel && !u.hasRw && !u.hasRt && kecMatch) return true;
+        return false;
+      });
+    }
 
-      // A. Target adalah RT -> bisa diangkat oleh Admin RW, Kelurahan, atau Kecamatan di atasnya
-      if (targetMeta.hasRt && targetMeta.hasRw) {
+    // D. Target adalah Tingkat RW -> Bisa diangkat oleh Admin Kelurahan di atasnya, Admin Kecamatan di atasnya, Admin Kota, Admin Pusat, Super Admin
+    if (targetMeta.hasRw && !targetMeta.hasRt) {
+      if (isSuperAdmin || isAdminPusat) return true;
+      return userAdminKomunitas.some((uKom) => {
+        const u = extractKomunitasMetadata(uKom);
+        if (u.jenis !== "warga_kita") return false;
+        // Admin Kota
+        if (!u.hasKel && !u.hasRw && !u.hasRt && (u.rawKec === "Kota Tegal" || !u.kec || u.kec === "kota tegal")) return true;
+        // Admin Kecamatan
+        const targetKec = targetMeta.kec || normalizeStr(KELURAHAN_TO_KECAMATAN_MAP[targetMeta.kel]);
+        const kecMatch = Boolean(u.kec && targetKec && u.kec === targetKec);
+        if (u.kec && !u.hasKel && !u.hasRw && !u.hasRt && kecMatch) return true;
+        // Admin Kelurahan di atasnya
+        if (u.hasKel && !u.hasRw && !u.hasRt && u.kel === targetMeta.kel) return true;
+        return false;
+      });
+    }
+
+    // E. Target adalah Tingkat RT -> Bisa diangkat oleh Admin RW di atasnya, Admin Kelurahan, Admin Kecamatan, Admin Kota, Admin Pusat, Super Admin
+    if (targetMeta.hasRt && targetMeta.hasRw) {
+      if (isSuperAdmin || isAdminPusat) return true;
+      return userAdminKomunitas.some((uKom) => {
+        const u = extractKomunitasMetadata(uKom);
+        if (u.jenis !== "warga_kita") return false;
+        // Admin Kota
+        if (!u.hasKel && !u.hasRw && !u.hasRt && (u.rawKec === "Kota Tegal" || !u.kec || u.kec === "kota tegal")) return true;
+        // Admin Kecamatan
+        const targetKec = targetMeta.kec || normalizeStr(KELURAHAN_TO_KECAMATAN_MAP[targetMeta.kel]);
+        const kecMatch = Boolean(u.kec && targetKec && u.kec === targetKec);
+        if (u.kec && !u.hasKel && !u.hasRw && !u.hasRt && kecMatch) return true;
+        // Admin Kelurahan
+        if (u.hasKel && !u.hasRw && !u.hasRt && u.kel === targetMeta.kel) return true;
+        // Admin RW di atasnya (RW yang sama)
         if (u.hasRw && !u.hasRt && u.rw === targetMeta.rw && (!targetMeta.hasKel || !u.hasKel || u.kel === targetMeta.kel)) return true;
-        if (u.hasKel && !u.hasRw && !u.hasRt && u.kel === targetMeta.kel) return true;
-        if (u.kec && !u.hasKel && !u.hasRw && !u.hasRt && kecMatch) return true;
-      }
+        return false;
+      });
+    }
 
-      // B. Target adalah RW -> bisa diangkat oleh Admin Kelurahan atau Kecamatan di atasnya
-      if (targetMeta.hasRw && !targetMeta.hasRt) {
-        if (u.hasKel && !u.hasRw && !u.hasRt && u.kel === targetMeta.kel) return true;
-        if (u.kec && !u.hasKel && !u.hasRw && !u.hasRt && kecMatch) return true;
-      }
-
-      // C. Target adalah Kelurahan -> bisa diangkat oleh Admin Kecamatan di atasnya
-      if (targetMeta.hasKel && !targetMeta.hasRw && !targetMeta.hasRt) {
-        if (u.kec && !u.hasKel && !u.hasRw && !u.hasRt && kecMatch) return true;
-      }
-
-      return false;
-    });
+    return false;
   }
 
-  // 3. Evaluasi Lembaga: Posyandu, Satuan PAUD, dan PKBM & SKB
+  // 2. Evaluasi Lembaga: Posyandu, Satuan PAUD, dan PKBM & SKB
   const isLembaga =
     targetMeta.jenis === "posyandu" ||
     targetMeta.jenis === "satuan_paud" ||
     targetMeta.jenis === "pkbm_skb";
 
   if (isLembaga) {
+    if (isSuperAdmin || isAdminPusat) return true;
+
     const targetKelClean = (targetMeta.kel || "").replace(/\s+/g, "");
     const targetKecClean = (
       targetMeta.kec ||
@@ -743,6 +783,239 @@ export function checkUserCanAssignAdminRole({
     });
   }
 
+  // 3. Komunitas Mandiri / Grup Kegiatan (Non-Wilayah)
+  // Pengelola yang ditunjuk atau pembuat grup dapat mengelola anggota grupnya
+  if (targetMeta.jenis === "kegiatan") {
+    if (isSuperAdmin || isAdminPusat) return true;
+    return userAdminKomunitas.some((uKom) => {
+      return uKom.id === targetId || (uKom.komunitas_id && uKom.komunitas_id === targetId);
+    });
+  }
+
   return false;
 }
+
+export type AdminTierLevel =
+  | "super_admin"
+  | "admin_pusat"
+  | "admin_kota"
+  | "admin_kecamatan"
+  | "admin_kelurahan"
+  | "admin_rw"
+  | "admin_rt"
+  | "admin_komunitas";
+
+export interface UserAdminInfo {
+  isAdmin: boolean;
+  tierLevel: AdminTierLevel | null;
+  tierRank: number;
+  panelTitle: string | null;
+  tierBadgeLabel: string;
+  wilayahLabel?: string;
+  canAppointRole:
+    | "admin_pusat"
+    | "admin_kota"
+    | "admin_kecamatan"
+    | "admin_kelurahan"
+    | "admin_rw"
+    | "admin_rt"
+    | null;
+  canAppointRoleLabel: string | null;
+}
+
+/**
+ * Menghitung tingkat dan nama Panel Kendali seorang pengguna secara deterministik dan berjenjang.
+ * Aturan:
+ * 1. Super Admin: "Panel Kendali Super Admin"
+ * 2. Admin Pusat: "Panel Kendali Admin Pusat"
+ * 3. Admin Kota: "Panel Kendali Admin Kota" (Kota Tegal)
+ * 4. Admin Kecamatan: "Panel Kendali Admin Kecamatan [Nama]"
+ * 5. Admin Kelurahan: "Panel Kendali Admin Kelurahan [Nama]"
+ * 6. Admin RW: "Panel Kendali Admin RW [Nomor]"
+ * 7. Admin RT: "Panel Kendali Admin RT [Nomor]"
+ * 8. Admin Komunitas: "Panel Kendali Admin [Nama Komunitas]"
+ * 9. Selain Admin: TIDAK ADA Panel Kendali di profilnya (isAdmin: false, panelTitle: null)
+ */
+export function getUserAdminInfo({
+  profile,
+  userCommunities = [],
+  currentUserId,
+}: {
+  profile?: any;
+  userCommunities?: any[];
+  currentUserId?: string | null;
+}): UserAdminInfo {
+  const userFull = {
+    ...profile,
+    id: currentUserId || profile?.id,
+    email: profile?.email,
+    nama_lengkap: profile?.nama_lengkap,
+  };
+
+  // 1. Super Admin (Root Platform)
+  if (isRoleSuperAdmin(userFull)) {
+    return {
+      isAdmin: true,
+      tierLevel: "super_admin",
+      tierRank: 1,
+      panelTitle: "Panel Kendali Super Admin",
+      tierBadgeLabel: "Super Admin",
+      wilayahLabel: "Platform JARIMAS",
+      canAppointRole: "admin_pusat",
+      canAppointRoleLabel: "Admin Pusat",
+    };
+  }
+
+  // 2. Admin Pusat (Platform Manager)
+  if (isRoleAdminPusat(userFull)) {
+    return {
+      isAdmin: true,
+      tierLevel: "admin_pusat",
+      tierRank: 2,
+      panelTitle: "Panel Kendali Admin Pusat",
+      tierBadgeLabel: "Admin Pusat",
+      wilayahLabel: "Platform JARIMAS",
+      canAppointRole: "admin_kota",
+      canAppointRoleLabel: "Admin Kota",
+    };
+  }
+
+  // 3. Evaluasi dari Komunitas yang disetujui (Approved)
+  const approvedAdminCommunities = (userCommunities || []).filter((item) => {
+    if (item.status !== "approved") return false;
+    const role = (item.raw_peran || item.peran || "").toLowerCase().trim();
+    return isRoleAdmin(role);
+  });
+
+  if (approvedAdminCommunities.length === 0) {
+    return {
+      isAdmin: false,
+      tierLevel: null,
+      tierRank: 999,
+      panelTitle: null,
+      tierBadgeLabel: "Warga",
+      canAppointRole: null,
+      canAppointRoleLabel: null,
+    };
+  }
+
+  const candidateTiers: UserAdminInfo[] = [];
+
+  for (const item of approvedAdminCommunities) {
+    const kom = item.komunitas || {};
+    const meta = extractKomunitasMetadata(kom);
+
+    if (meta.jenis === "warga_kita") {
+      // Tingkat Kota
+      if (
+        !meta.hasKel &&
+        !meta.hasRw &&
+        !meta.hasRt &&
+        (meta.rawKec === "Kota Tegal" || !meta.kec || meta.kec === "kota tegal" || item.komunitas_id === "kom-warga-kota-tegal")
+      ) {
+        candidateTiers.push({
+          isAdmin: true,
+          tierLevel: "admin_kota",
+          tierRank: 3,
+          panelTitle: "Panel Kendali Admin Kota Tegal",
+          tierBadgeLabel: "Admin Kota",
+          wilayahLabel: "Kota Tegal",
+          canAppointRole: "admin_kecamatan",
+          canAppointRoleLabel: "Admin Kecamatan",
+        });
+        continue;
+      }
+
+      // Tingkat Kecamatan
+      if (meta.rawKec && meta.rawKec !== "Kota Tegal" && !meta.hasKel && !meta.hasRw && !meta.hasRt) {
+        candidateTiers.push({
+          isAdmin: true,
+          tierLevel: "admin_kecamatan",
+          tierRank: 4,
+          panelTitle: `Panel Kendali Admin Kecamatan ${meta.rawKec}`,
+          tierBadgeLabel: `Admin Kec. ${meta.rawKec}`,
+          wilayahLabel: `Kecamatan ${meta.rawKec}`,
+          canAppointRole: "admin_kelurahan",
+          canAppointRoleLabel: "Admin Kelurahan",
+        });
+        continue;
+      }
+
+      // Tingkat Kelurahan
+      if (meta.hasKel && !meta.hasRw && !meta.hasRt) {
+        candidateTiers.push({
+          isAdmin: true,
+          tierLevel: "admin_kelurahan",
+          tierRank: 5,
+          panelTitle: `Panel Kendali Admin Kelurahan ${meta.rawKel}`,
+          tierBadgeLabel: `Admin Kel. ${meta.rawKel}`,
+          wilayahLabel: `Kelurahan ${meta.rawKel}`,
+          canAppointRole: "admin_rw",
+          canAppointRoleLabel: "Admin RW",
+        });
+        continue;
+      }
+
+      // Tingkat RW
+      if (meta.hasRw && !meta.hasRt) {
+        candidateTiers.push({
+          isAdmin: true,
+          tierLevel: "admin_rw",
+          tierRank: 6,
+          panelTitle: `Panel Kendali Admin RW ${meta.rw}${meta.rawKel ? ` Kel. ${meta.rawKel}` : ""}`,
+          tierBadgeLabel: `Admin RW ${meta.rw}`,
+          wilayahLabel: `RW ${meta.rw}${meta.rawKel ? `, ${meta.rawKel}` : ""}`,
+          canAppointRole: "admin_rt",
+          canAppointRoleLabel: "Admin RT",
+        });
+        continue;
+      }
+
+      // Tingkat RT
+      if (meta.hasRt) {
+        candidateTiers.push({
+          isAdmin: true,
+          tierLevel: "admin_rt",
+          tierRank: 7,
+          panelTitle: `Panel Kendali Admin RT ${meta.rt}${meta.rw ? ` / RW ${meta.rw}` : ""}`,
+          tierBadgeLabel: `Admin RT ${meta.rt}`,
+          wilayahLabel: `RT ${meta.rt}${meta.rw ? `, RW ${meta.rw}` : ""}`,
+          canAppointRole: null,
+          canAppointRoleLabel: null,
+        });
+        continue;
+      }
+    }
+
+    // Tingkat Lembaga / Komunitas Khusus
+    const komNama = kom.nama || "Komunitas";
+    candidateTiers.push({
+      isAdmin: true,
+      tierLevel: "admin_komunitas",
+      tierRank: 8,
+      panelTitle: `Panel Kendali Admin ${komNama}`,
+      tierBadgeLabel: `Admin ${kom.jenis === "posyandu" ? "Posyandu" : kom.jenis === "satuan_paud" ? "PAUD" : "Komunitas"}`,
+      wilayahLabel: komNama,
+      canAppointRole: null,
+      canAppointRoleLabel: null,
+    });
+  }
+
+  if (candidateTiers.length === 0) {
+    return {
+      isAdmin: false,
+      tierLevel: null,
+      tierRank: 999,
+      panelTitle: null,
+      tierBadgeLabel: "Warga",
+      canAppointRole: null,
+      canAppointRoleLabel: null,
+    };
+  }
+
+  // Ambil jenjang tertinggi
+  candidateTiers.sort((a, b) => a.tierRank - b.tierRank);
+  return candidateTiers[0];
+}
+
 
