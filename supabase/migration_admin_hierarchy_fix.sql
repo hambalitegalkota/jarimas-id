@@ -3,6 +3,10 @@
 -- Jalankan skrip ini di: Supabase Dashboard -> SQL Editor -> New Query -> Run
 -- ==============================================================================
 
+-- 0. Pastikan kolom peran admin global tersedia pada tabel profiles
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS is_super_admin BOOLEAN DEFAULT false;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS is_admin_pusat BOOLEAN DEFAULT false;
+
 -- 1. Pastikan kolom-kolom penting tersedia pada tabel anggota_komunitas
 ALTER TABLE public.anggota_komunitas ADD COLUMN IF NOT EXISTS peran TEXT NOT NULL DEFAULT 'Pengunjung';
 ALTER TABLE public.anggota_komunitas ADD COLUMN IF NOT EXISTS peran_diajukan TEXT;
@@ -10,7 +14,7 @@ ALTER TABLE public.anggota_komunitas ADD COLUMN IF NOT EXISTS status TEXT NOT NU
 ALTER TABLE public.anggota_komunitas ADD COLUMN IF NOT EXISTS approved_by UUID REFERENCES public.profiles(id) ON DELETE SET NULL;
 ALTER TABLE public.anggota_komunitas ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT now();
 
--- 2. Helper function: Memeriksa wewenang hierarki admin (Kecamatan -> Kelurahan -> RW -> RT)
+-- 2. Helper function: Memeriksa wewenang hierarki admin (Super Admin / Admin Pusat -> Kecamatan -> Kelurahan -> RW -> RT)
 CREATE OR REPLACE FUNCTION public.check_user_can_manage_community(
   p_user_id UUID,
   p_target_komunitas_id UUID
@@ -21,6 +25,8 @@ SECURITY DEFINER
 AS $$
 DECLARE
   v_is_super BOOLEAN;
+  v_is_admin_pusat BOOLEAN;
+  v_user_email TEXT;
   v_target_nama TEXT;
   v_target_jenis TEXT;
   v_target_kec TEXT;
@@ -32,9 +38,22 @@ BEGIN
     RETURN false;
   END IF;
 
-  -- 1. Cek apakah Super Admin
-  SELECT is_super_admin INTO v_is_super FROM public.profiles WHERE id = p_user_id;
-  IF v_is_super = true THEN
+  -- 1. Cek apakah Super Admin atau Admin Pusat
+  SELECT is_super_admin, is_admin_pusat, email 
+  INTO v_is_super, v_is_admin_pusat, v_user_email 
+  FROM public.profiles 
+  WHERE id = p_user_id;
+
+  IF v_is_super = true OR v_is_admin_pusat = true THEN
+    RETURN true;
+  END IF;
+
+  -- Fallback cek email root administrator platform
+  IF v_user_email IS NOT NULL AND (
+    LOWER(v_user_email) = 'jarimas.id@gmail.com' OR
+    LOWER(v_user_email) = 'admin@jarimas.id' OR
+    v_user_email ILIKE '%jarimas.id%'
+  ) THEN
     RETURN true;
   END IF;
 
@@ -61,10 +80,6 @@ BEGIN
   FROM public.komunitas
   WHERE id = p_target_komunitas_id;
 
-  IF v_target_jenis IS NULL OR v_target_jenis != 'warga_kita' THEN
-    RETURN false;
-  END IF;
-
   -- Fallback ekstraksi kelurahan jika kosong dari nama
   IF v_target_kel IS NULL OR v_target_kel = '' THEN
     v_target_kel := substring(v_target_nama from '(?i)Kelurahan[:\s]*([a-zA-Z\s]+?)(?:,|$)');
@@ -75,7 +90,54 @@ BEGIN
     v_target_rw := substring(v_target_nama from '(?i)RW[:\s]*([0-9]+)');
   END IF;
 
-  -- 4. Cek Wewenang Hierarkis:
+  -- 4. Cek Wewenang Khusus Lembaga Wilayah (Posyandu, Satuan PAUD, SKB & PKBM):
+  -- Admin Kelurahan memiliki tugas dan wewenang untuk menyetujui permohonan admin dan anggota dari PAUD, SKB & PKBM, serta Posyandu di wilayah kelurahannya
+  IF v_target_jenis IN ('posyandu', 'satuan_paud', 'pkbm_skb') THEN
+    -- A. Admin Kelurahan di kelurahan yang sama
+    IF v_target_kel IS NOT NULL AND v_target_kel != '' AND EXISTS (
+      SELECT 1 FROM public.anggota_komunitas ak
+      JOIN public.komunitas k ON k.id = ak.komunitas_id
+      WHERE ak.user_id = p_user_id
+        AND ak.status::text = 'approved'
+        AND (ak.peran::text ILIKE '%pengurus%' OR ak.peran::text ILIKE '%admin%')
+        AND k.jenis = 'warga_kita'
+        AND (
+          LOWER(TRIM(k.kelurahan)) = LOWER(TRIM(v_target_kel)) OR
+          k.nama ILIKE '%' || v_target_kel || '%'
+        )
+        AND (k.rw IS NULL OR k.rw = '' OR k.rw = '00')
+        AND (k.rt IS NULL OR k.rt = '' OR k.rt = '00')
+    ) THEN
+      RETURN true;
+    END IF;
+
+    -- B. Admin Kecamatan di kecamatan yang sama
+    IF v_target_kec IS NOT NULL AND v_target_kec != '' AND EXISTS (
+      SELECT 1 FROM public.anggota_komunitas ak
+      JOIN public.komunitas k ON k.id = ak.komunitas_id
+      WHERE ak.user_id = p_user_id
+        AND ak.status::text = 'approved'
+        AND (ak.peran::text ILIKE '%pengurus%' OR ak.peran::text ILIKE '%admin%')
+        AND k.jenis = 'warga_kita'
+        AND (
+          LOWER(TRIM(k.kecamatan)) = LOWER(TRIM(v_target_kec)) OR
+          k.nama ILIKE '%' || v_target_kec || '%'
+        )
+        AND (k.kelurahan IS NULL OR k.kelurahan = '' OR LOWER(TRIM(k.kelurahan)) = 'semua kelurahan' OR k.nama NOT ILIKE '%kelurahan%')
+        AND (k.rw IS NULL OR k.rw = '' OR k.rw = '00')
+        AND (k.rt IS NULL OR k.rt = '' OR k.rt = '00')
+    ) THEN
+      RETURN true;
+    END IF;
+
+    RETURN false;
+  END IF;
+
+  IF v_target_jenis != 'warga_kita' THEN
+    RETURN false;
+  END IF;
+
+  -- 5. Cek Wewenang Hierarkis Warga Kita:
   -- A. Admin Kecamatan -> Mengelola Kelurahan, RW, RT dalam Kecamatan yang sama
   IF EXISTS (
     SELECT 1 FROM public.anggota_komunitas ak

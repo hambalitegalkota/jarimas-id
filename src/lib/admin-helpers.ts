@@ -246,28 +246,31 @@ export function computeTierAndApprover(
   }
 
   if (meta.jenis === "posyandu") {
+    const kelDisplay = meta.rawKel ? `Admin Kelurahan ${meta.rawKel}` : "Admin Kelurahan Terkait";
     return {
       tierLevel: "Posyandu",
       targetApproverTitle: isAdmin
-        ? "Super Admin"
+        ? `${kelDisplay} / Super Admin`
         : "Pengurus / Kader Posyandu",
     };
   }
 
   if (meta.jenis === "satuan_paud") {
+    const kelDisplay = meta.rawKel ? `Admin Kelurahan ${meta.rawKel}` : "Admin Kelurahan Terkait";
     return {
       tierLevel: "Satuan PAUD",
       targetApproverTitle: isAdmin
-        ? "Super Admin"
+        ? `${kelDisplay} / Super Admin`
         : "Admin / Kepala Sekolah / Guru",
     };
   }
 
   if (meta.jenis === "pkbm_skb") {
+    const kelDisplay = meta.rawKel ? `Admin Kelurahan ${meta.rawKel}` : "Admin Kelurahan Terkait";
     return {
       tierLevel: "PKBM & SKB",
       targetApproverTitle: isAdmin
-        ? "Super Admin"
+        ? `${kelDisplay} / Super Admin`
         : "Admin / Kepala PKBM & SKB / Pamong Belajar",
     };
   }
@@ -282,10 +285,10 @@ export function computeTierAndApprover(
  * Memeriksa apakah user saat ini memiliki wewenang untuk menyetujui/menolak permohonan tertentu
  * Aturan Hierarkis:
  * - Admin Kecamatan: Berhak menyetujui permohonan Admin & Warga di tingkat Kelurahan, RW, dan RT dalam kecamatannya
- * - Admin Kelurahan: Berhak menyetujui permohonan Admin & Warga di tingkat RW dan RT dalam kelurahannya
+ * - Admin Kelurahan: Berhak menyetujui permohonan Admin & Warga di tingkat RW dan RT, serta memiliki tugas menyetujui permohonan Admin dari PAUD, SKB & PKBM, dan Posyandu di wilayah masing-masing
  * - Admin RW: Berhak menyetujui permohonan Admin & Warga di tingkat RT dalam RW-nya
  * - Admin RT: Berhak menyetujui pendaftaran Warga di tingkat RT-nya
- * - Super Admin / Admin Kota: Berhak menyetujui seluruh tingkatan (Kecamatan, Kelurahan, RW, RT, Posyandu, Satuan PAUD)
+ * - Super Admin / Admin Pusat: Berhak menyetujui seluruh tingkatan (Kecamatan, Kelurahan, RW, RT, Posyandu, Satuan PAUD, SKB & PKBM)
  */
 export function checkUserCanApproveItem({
   isSuperAdmin,
@@ -445,15 +448,68 @@ export function checkUserCanApproveItem({
     }
   }
 
-  // Untuk Posyandu / PAUD / Komunitas Khusus
-  if (isAdminApp) {
-    // Pengajuan peran Admin di PAUD / Posyandu disetujui oleh Super Admin
-    return isSuperAdmin;
+  // Untuk Lembaga Wilayah: Posyandu, Satuan PAUD, dan SKB & PKBM
+  const isLembagaKelurahan =
+    targetMeta.jenis === "posyandu" ||
+    targetMeta.jenis === "satuan_paud" ||
+    targetMeta.jenis === "pkbm_skb";
+
+  if (isLembagaKelurahan) {
+    const targetKelClean = (targetMeta.kel || "").replace(/\s+/g, "");
+    const targetKecClean = (
+      targetMeta.kec ||
+      normalizeStr(KELURAHAN_TO_KECAMATAN_MAP[targetMeta.kel])
+    ).replace(/\s+/g, "");
+
+    // Cek apakah pengguna saat ini adalah Admin Kelurahan atau Admin Kecamatan di wilayah lembaga tersebut
+    const isTerritoryAdmin = userAdminKomunitas.some((uKom) => {
+      const u = extractKomunitasMetadata(uKom);
+      if (u.jenis !== "warga_kita") return false;
+
+      const uKelClean = (u.kel || "").replace(/\s+/g, "");
+      const uKecClean = (u.kec || "").replace(/\s+/g, "");
+
+      // 1. Admin Kelurahan di wilayah kelurahan yang sama (Tugas menyetujui permohonan Admin PAUD, SKB & PKBM, Posyandu)
+      if (u.hasKel && !u.hasRw && !u.hasRt) {
+        if (targetKelClean && uKelClean === targetKelClean) return true;
+      }
+
+      // 2. Admin Kecamatan di wilayah kecamatan yang sama
+      if (u.kec && !u.hasKel && !u.hasRw && !u.hasRt) {
+        if (targetKecClean && uKecClean === targetKecClean) return true;
+      }
+
+      return false;
+    });
+
+    // Jika pengguna adalah Admin Kelurahan/Kecamatan di wilayah lembaga ini, berhak menyetujui peran Admin maupun Anggota
+    if (isTerritoryAdmin) {
+      return true;
+    }
+
+    if (isAdminApp) {
+      // Pengajuan peran Admin di PAUD, SKB & PKBM, Posyandu jika bukan Admin Kelurahan wilayah terkait, disetujui oleh Super Admin / Admin Pusat
+      return isSuperAdmin || isAdminPusat;
+    }
+
+    // Pengajuan peran anggota / staf (Guru, Orangtua, dll) dapat disetujui oleh Super Admin, Admin Kelurahan setempat, atau Pengurus/Admin lembaga tersebut
+    return (
+      isSuperAdmin ||
+      isAdminPusat ||
+      userAdminKomunitas.some(
+        (uKom) => uKom.id === targetItem.komunitas_id || uKom.id === kom.id
+      )
+    );
   }
 
-  // Pengajuan peran anggota / staf (Guru, Orangtua, dll) di PAUD / Posyandu dapat disetujui oleh Super Admin, Admin, Kepala Sekolah, atau Guru komunitas tersebut
+  // Untuk Komunitas Khusus lainnya
+  if (isAdminApp) {
+    return isSuperAdmin || isAdminPusat;
+  }
+
   return (
     isSuperAdmin ||
+    isAdminPusat ||
     userAdminKomunitas.some(
       (uKom) => uKom.id === targetItem.komunitas_id || uKom.id === kom.id
     )

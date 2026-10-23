@@ -45,16 +45,31 @@ export async function createClient() {
 
 /**
  * Client Supabase dengan Service Role Key untuk operasi administratif backend (bypasses RLS)
- * Hanya aktif jika SUPABASE_SERVICE_ROLE_KEY tersedia di environment.
+ * Hanya aktif jika SUPABASE_SERVICE_ROLE_KEY tersedia di environment dan valid formatnya.
  */
 export function createAdminClient() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || DEFAULT_SUPABASE_URL;
-  const serviceRoleKey =
+  const supabaseUrl = (process.env.NEXT_PUBLIC_SUPABASE_URL || DEFAULT_SUPABASE_URL).trim();
+  const rawKey =
     process.env.SUPABASE_SERVICE_ROLE_KEY ||
     process.env.SUPABASE_SECRET_KEY ||
     process.env.SUPABASE_SERVICE_KEY;
 
-  if (!supabaseUrl || !serviceRoleKey) {
+  if (!rawKey) {
+    return null;
+  }
+
+  // Bersihkan kutip pembungkus, whitespace, dan karakter escape baris baru
+  const serviceRoleKey = rawKey.trim().replace(/^["']|["']$/g, "").trim();
+
+  // Validasi format dasar service role key Supabase (bukan placeholder / bukan anon key / panjang valid)
+  if (
+    !serviceRoleKey ||
+    serviceRoleKey.length < 25 ||
+    serviceRoleKey === "undefined" ||
+    serviceRoleKey === "null" ||
+    serviceRoleKey.includes("your-") ||
+    serviceRoleKey.startsWith("sb_publishable_")
+  ) {
     return null;
   }
 
@@ -65,3 +80,4 @@ export function createAdminClient() {
     },
   });
 }
+

@@ -28,7 +28,7 @@ interface ApprovalListProps {
   isSuperAdmin?: boolean;
 }
 
-type FilterTier = "semua" | "admin_rt" | "admin_rw" | "admin_kel" | "admin_kec" | "satuan_paud" | "posyandu" | "warga";
+type FilterTier = "semua" | "admin_rt" | "admin_rw" | "admin_kel" | "admin_kec" | "satuan_paud" | "pkbm_skb" | "posyandu" | "warga";
 
 export function ApprovalList({
   initialApprovals,
@@ -107,6 +107,9 @@ export function ApprovalList({
     if (activeTier === "satuan_paud") {
       return jenis === "satuan_paud" || item.tierLevel === "Satuan PAUD";
     }
+    if (activeTier === "pkbm_skb") {
+      return jenis === "pkbm_skb" || item.tierLevel === "PKBM & SKB";
+    }
     if (activeTier === "posyandu") {
       return jenis === "posyandu" || item.tierLevel === "Posyandu";
     }
@@ -145,6 +148,9 @@ export function ApprovalList({
     ).length,
     satuan_paud: approvals.filter(
       (i) => i.komunitas?.jenis === "satuan_paud" || i.tierLevel === "Satuan PAUD"
+    ).length,
+    pkbm_skb: approvals.filter(
+      (i) => i.komunitas?.jenis === "pkbm_skb" || i.tierLevel === "PKBM & SKB"
     ).length,
     posyandu: approvals.filter(
       (i) => i.komunitas?.jenis === "posyandu" || i.tierLevel === "Posyandu"
@@ -195,6 +201,19 @@ export function ApprovalList({
           {approvals.length} Permohonan Tertunda
         </span>
       </div>
+
+      {/* Information Banner for Territorial Approval */}
+      {!isSuperAdmin && (
+        <div className="rounded-lg border border-primary/20 bg-primary/5 p-3.5 text-xs text-foreground flex items-start gap-2.5">
+          <Shield className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+          <div className="space-y-0.5">
+            <p className="font-bold text-foreground">Wewenang Persetujuan Admin Wilayah</p>
+            <p className="text-muted-foreground text-xs leading-relaxed">
+              Admin Kelurahan bertugas memverifikasi dan menyetujui permohonan admin &amp; pengurus dari <strong>PAUD</strong>, <strong>SKB &amp; PKBM</strong>, <strong>Posyandu</strong>, serta pengurus <strong>RW &amp; RT</strong> di wilayah kelurahan masing-masing.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Filter Tabs by Tier Hierarchy */}
       {approvals.length > 0 && (
@@ -305,6 +324,24 @@ export function ApprovalList({
             </button>
           )}
 
+          {counts.pkbm_skb > 0 && (
+            <button
+              type="button"
+              onClick={() => setActiveTier("pkbm_skb")}
+              className={cn(
+                "inline-flex shrink-0 items-center min-h-[44px] h-11 rounded-lg px-3.5 text-xs font-semibold transition-all cursor-pointer gap-2 shadow-xs",
+                activeTier === "pkbm_skb"
+                  ? "bg-indigo-600 text-white shadow-xs"
+                  : "bg-card border border-border text-muted-foreground hover:text-foreground hover:bg-muted"
+              )}
+            >
+              <span>PKBM &amp; SKB</span>
+              <span className={cn("rounded-md px-1.5 py-0.2 text-2xs font-mono font-bold", activeTier === "pkbm_skb" ? "bg-white/20 text-white" : "bg-indigo-500/10 text-indigo-600")}>
+                {counts.pkbm_skb}
+              </span>
+            </button>
+          )}
+
           {counts.posyandu > 0 && (
             <button
               type="button"
@@ -406,9 +443,11 @@ export function ApprovalList({
                                 "border-purple-500/30 bg-purple-500/10 text-purple-600",
                               item.tierLevel === "Satuan PAUD" &&
                                 "border-secondary/30 bg-secondary/10 text-secondary",
+                              item.tierLevel === "PKBM & SKB" &&
+                                "border-indigo-500/30 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400",
                               item.tierLevel === "Posyandu" &&
                                 "border-primary/30 bg-primary/10 text-primary",
-                              !["RT", "RW", "Kelurahan", "Kecamatan", "Satuan PAUD", "Posyandu"].includes(item.tierLevel) &&
+                              !["RT", "RW", "Kelurahan", "Kecamatan", "Satuan PAUD", "PKBM & SKB", "Posyandu"].includes(item.tierLevel) &&
                                 "border-border bg-muted text-muted-foreground"
                             )}
                           >

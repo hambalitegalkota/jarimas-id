@@ -229,7 +229,10 @@ export function isRoleAdmin(peran?: string | null): boolean {
     p.includes("kepala") ||
     p.includes("guru") ||
     p.includes("tenaga") ||
-    p.includes("pendidik")
+    p.includes("pendidik") ||
+    p.includes("tutor") ||
+    p.includes("instruktur") ||
+    p.includes("pamong")
   );
 }
 

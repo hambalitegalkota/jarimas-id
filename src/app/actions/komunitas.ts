@@ -1352,6 +1352,26 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
         };
       }
 
+      // Jika belum teridentifikasi sebagai admin langsung, cek apakah user adalah Admin Kelurahan di wilayah komunitas ini
+      if (!isPengurusOrKader) {
+        const isTerritoryAdmin = userMembershipsList.some((m) => {
+          if (!isRoleAdmin(m.peran) || m.status !== "approved") return false;
+          const mKom = dbKomMap.get(m.komunitas_id) || findOrGenerateKomunitasSeed(m.komunitas_id);
+          const mMeta = extractKomunitasMetadata(mKom || { id: m.komunitas_id });
+          if (mMeta.jenis !== "warga_kita") return false;
+          if (mMeta.hasKel && !mMeta.hasRw && !mMeta.hasRt) {
+            const mKelClean = (mMeta.kel || "").replace(/\s+/g, "");
+            const pKelClean = (pageMeta.kel || "").replace(/\s+/g, "");
+            return Boolean(mKelClean && pKelClean && mKelClean === pKelClean);
+          }
+          return false;
+        });
+
+        if (isTerritoryAdmin) {
+          isPengurusOrKader = true;
+        }
+      }
+
       // Root bypass: Super Admin dan Admin Pusat otomatis berstatus approved di seluruh komunitas tanpa harus mendaftar
       if (isSuperOrPusat && !currentUserMembership) {
         currentUserMembership = {

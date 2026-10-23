@@ -47,20 +47,17 @@ export default async function KelolaAnggotaPage({
             roleLower.includes("ketua") ||
             roleLower.includes("admin") ||
             roleLower.includes("pimpinan")));
-    } else if (komunitas.jenis === "satuan_paud") {
+    } else if (komunitas.jenis === "satuan_paud" || komunitas.jenis === "pkbm_skb") {
       hasManagePermission =
-        (isAdminOrKader &&
-          (roleLower.includes("kepala") ||
-            roleLower.includes("pimpinan") ||
-            roleLower.includes("pengelola") ||
-            roleLower.includes("admin") ||
-            roleLower.includes("super_admin") ||
-            roleLower.includes("super admin"))) ||
+        isAdminOrKader ||
         (isApproved &&
           (roleLower.includes("kepala") ||
             roleLower.includes("pimpinan") ||
             roleLower.includes("pengelola") ||
-            roleLower.includes("admin")));
+            roleLower.includes("admin") ||
+            roleLower.includes("guru") ||
+            roleLower.includes("tutor") ||
+            roleLower.includes("pamong")));
     } else if (komunitas.jenis === "posyandu") {
       hasManagePermission =
         isAdminOrKader ||

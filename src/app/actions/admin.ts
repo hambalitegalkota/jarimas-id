@@ -70,6 +70,25 @@ async function getAuthenticatedUserContext() {
     }
   }
 
+  // Auto-sync Admin Pusat status in DB
+  if (isAdminPusat && profile?.is_admin_pusat !== true) {
+    try {
+      await supabase.from("profiles").upsert(
+        {
+          id: user.id,
+          nama_lengkap: userFullProfile.nama_lengkap,
+          email: userFullProfile.email,
+          is_admin_pusat: true,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "id" }
+      );
+    } catch (err) {
+      console.warn("Auto-sync admin pusat profile error in admin action:", err);
+    }
+  }
+
+
   // Ambil data komunitas di mana pengguna merupakan Admin/Pengurus/Kader aktif
   let userAdminKomunitas: any[] = [];
   if (!isSuperOrAdminPusat) {
@@ -264,6 +283,7 @@ export async function getPendingApprovals(): Promise<{
 
       const canApprove = checkUserCanApproveItem({
         isSuperAdmin,
+        isAdminPusat,
         userAdminKomunitas,
         targetItem: targetItemForPermCheck,
       });
@@ -391,15 +411,45 @@ export async function approveMemberRole(anggotaId: string): Promise<{
     }
 
     const targetPeran = memberTarget.peran_diajukan || memberTarget.peran;
-
-    // Tentukan write client (Admin Client jika Service Role Key tersedia, atau user supabase client)
-    const adminClient = createAdminClient();
-    const writeClient = adminClient || supabase;
+    const approvePayload = {
+      peran: targetPeran,
+      peran_diajukan: null,
+      status: "approved",
+      updated_at: new Date().toISOString(),
+    };
 
     let updateSuccess = false;
+    let lastErrorMessage = "";
+    let activeWriteClient = supabase;
 
-    // 1. Coba via RPC hierarkis jika menggunakan user client biasa
-    if (!adminClient) {
+    // 1. Coba via adminClient (Service Role) jika tersedia
+    const adminClient = createAdminClient();
+    if (adminClient) {
+      try {
+        const { data: adminRows, error: adminErr } = await adminClient
+          .from("anggota_komunitas")
+          .update(approvePayload)
+          .eq("id", anggotaId)
+          .select("id");
+
+        if (!adminErr && adminRows && adminRows.length > 0) {
+          updateSuccess = true;
+          activeWriteClient = adminClient;
+        } else if (adminErr) {
+          console.warn(
+            "adminClient update error in approveMemberRole, falling back to authenticated user client:",
+            adminErr.message
+          );
+          lastErrorMessage = adminErr.message;
+        }
+      } catch (adminEx: any) {
+        console.warn("adminClient exception in approveMemberRole, falling back:", adminEx);
+        lastErrorMessage = adminEx?.message || "";
+      }
+    }
+
+    // 2. Coba via RPC hierarkis (SECURITY DEFINER)
+    if (!updateSuccess) {
       try {
         const { data: rpcRes, error: rpcErr } = await supabase.rpc(
           "approve_member_role_hierarchical",
@@ -413,40 +463,44 @@ export async function approveMemberRole(anggotaId: string): Promise<{
           const resObj = typeof rpcRes === "string" ? JSON.parse(rpcRes) : rpcRes;
           if (resObj && resObj.success) {
             updateSuccess = true;
+          } else if (resObj && resObj.message) {
+            lastErrorMessage = resObj.message;
           }
+        } else if (rpcErr) {
+          console.warn("RPC approve error, falling back to direct supabase update:", rpcErr.message);
+          lastErrorMessage = rpcErr.message;
         }
-      } catch {
-        // Fallback ke direct update
+      } catch (rpcEx: any) {
+        lastErrorMessage = rpcEx?.message || "";
       }
     }
 
-    // 2. Direct update jika RPC tidak tersedia atau jika menggunakan adminClient
+    // 3. Coba direct update dengan client terautentikasi pengguna
     if (!updateSuccess) {
-      const { data: updatedRows, error: updateError } = await writeClient
-        .from("anggota_komunitas")
-        .update({
-          peran: targetPeran,
-          peran_diajukan: null,
-          status: "approved",
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", anggotaId)
-        .select("id");
+      try {
+        const { data: userRows, error: userErr } = await supabase
+          .from("anggota_komunitas")
+          .update(approvePayload)
+          .eq("id", anggotaId)
+          .select("id");
 
-      if (updateError) {
-        return {
-          success: false,
-          message: "Gagal menyetujui permohonan: " + updateError.message,
-        };
+        if (!userErr && userRows && userRows.length > 0) {
+          updateSuccess = true;
+        } else if (userErr) {
+          lastErrorMessage = userErr.message;
+        }
+      } catch (userEx: any) {
+        lastErrorMessage = userEx?.message || "";
       }
+    }
 
-      if (!updatedRows || updatedRows.length === 0) {
-        return {
-          success: false,
-          message:
-            "Perubahan dibatasi oleh kebijakan keamanan (RLS) Supabase. Mohon terapkan skrip SQL Hierarki Admin di Supabase SQL Editor atau tambahkan SUPABASE_SERVICE_ROLE_KEY di server.",
-        };
-      }
+    if (!updateSuccess) {
+      return {
+        success: false,
+        message:
+          "Gagal menyetujui permohonan: " +
+          (lastErrorMessage ? lastErrorMessage : "Perubahan dibatasi oleh kebijakan keamanan (RLS) Supabase. Mohon terapkan skrip SQL Hierarki Admin di Supabase SQL Editor."),
+      };
     }
 
     // Jika permohonan merupakan peran Admin ("Pengurus"), pastikan aturan Satu Komunitas Satu Admin:
@@ -454,7 +508,7 @@ export async function approveMemberRole(anggotaId: string): Promise<{
     // 2. Bersihkan juga status pending ("Penduduk" / "Pengurus") pada keanggotaan lain milik user ini
     if (targetPeran === "Pengurus" || isRoleAdmin(targetPeran)) {
       try {
-        await writeClient
+        await activeWriteClient
           .from("anggota_komunitas")
           .update({
             peran_diajukan: null,
@@ -465,7 +519,7 @@ export async function approveMemberRole(anggotaId: string): Promise<{
           .neq("id", anggotaId);
 
         if (komInfo?.jenis === "warga_kita") {
-          await writeClient
+          await activeWriteClient
             .from("anggota_komunitas")
             .update({
               peran_diajukan: null,
@@ -494,7 +548,7 @@ export async function approveMemberRole(anggotaId: string): Promise<{
       targetPeran !== "Pengurus"
     ) {
       try {
-        const { data: otherWargaMemberships } = await writeClient
+        const { data: otherWargaMemberships } = await activeWriteClient
           .from("anggota_komunitas")
           .select("id, komunitas_id, peran_diajukan")
           .eq("user_id", memberTarget.user_id);
@@ -505,7 +559,7 @@ export async function approveMemberRole(anggotaId: string): Promise<{
             .map((m: { id: string }) => m.id);
 
           if (otherIds.length > 0) {
-            await writeClient
+            await activeWriteClient
               .from("anggota_komunitas")
               .update({
                 peran: targetPeran,
@@ -601,13 +655,49 @@ export async function rejectMemberRole(anggotaId: string): Promise<{
       };
     }
 
-    const adminClient = createAdminClient();
-    const writeClient = adminClient || supabase;
+    const isExistingApproved =
+      memberTarget.status === "approved" && Boolean(memberTarget.peran_diajukan);
+    const updatePayload = isExistingApproved
+      ? {
+          peran_diajukan: null,
+          updated_at: new Date().toISOString(),
+        }
+      : {
+          status: "rejected",
+          peran_diajukan: null,
+          updated_at: new Date().toISOString(),
+        };
 
     let updateSuccess = false;
+    let lastErrorMessage = "";
 
-    // 1. Coba via RPC hierarkis jika menggunakan user client biasa
-    if (!adminClient) {
+    // 1. Coba via adminClient (Service Role) jika tersedia
+    const adminClient = createAdminClient();
+    if (adminClient) {
+      try {
+        const { data: adminRows, error: adminErr } = await adminClient
+          .from("anggota_komunitas")
+          .update(updatePayload)
+          .eq("id", anggotaId)
+          .select("id");
+
+        if (!adminErr && adminRows && adminRows.length > 0) {
+          updateSuccess = true;
+        } else if (adminErr) {
+          console.warn(
+            "adminClient update error in rejectMemberRole, falling back to authenticated user client:",
+            adminErr.message
+          );
+          lastErrorMessage = adminErr.message;
+        }
+      } catch (adminEx: any) {
+        console.warn("adminClient exception in rejectMemberRole, falling back:", adminEx);
+        lastErrorMessage = adminEx?.message || "";
+      }
+    }
+
+    // 2. Coba via RPC hierarkis (SECURITY DEFINER) menggunakan client terautentikasi pengguna
+    if (!updateSuccess) {
       try {
         const { data: rpcRes, error: rpcErr } = await supabase.rpc(
           "reject_member_role_hierarchical",
@@ -620,64 +710,46 @@ export async function rejectMemberRole(anggotaId: string): Promise<{
           const resObj = typeof rpcRes === "string" ? JSON.parse(rpcRes) : rpcRes;
           if (resObj && resObj.success) {
             updateSuccess = true;
+          } else if (resObj && resObj.message) {
+            lastErrorMessage = resObj.message;
           }
+        } else if (rpcErr) {
+          console.warn("RPC reject error, falling back to direct supabase update:", rpcErr.message);
+          lastErrorMessage = rpcErr.message;
         }
-      } catch {
-        // Fallback ke direct update
+      } catch (rpcEx: any) {
+        lastErrorMessage = rpcEx?.message || "";
+      }
+    }
+
+    // 3. Coba direct update dengan client terautentikasi pengguna
+    if (!updateSuccess) {
+      try {
+        const { data: userRows, error: userErr } = await supabase
+          .from("anggota_komunitas")
+          .update(updatePayload)
+          .eq("id", anggotaId)
+          .select("id");
+
+        if (!userErr && userRows && userRows.length > 0) {
+          updateSuccess = true;
+        } else if (userErr) {
+          lastErrorMessage = userErr.message;
+        }
+      } catch (userEx: any) {
+        lastErrorMessage = userEx?.message || "";
       }
     }
 
     if (!updateSuccess) {
-      if (memberTarget.status === "approved" && memberTarget.peran_diajukan) {
-        const { data: updatedRows, error: updateErr } = await writeClient
-          .from("anggota_komunitas")
-          .update({
-            peran_diajukan: null,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", anggotaId)
-          .select("id");
-
-        if (updateErr) {
-          return {
-            success: false,
-            message: "Gagal menolak pengajuan peran: " + updateErr.message,
-          };
-        }
-
-        if (!updatedRows || updatedRows.length === 0) {
-          return {
-            success: false,
-            message:
-              "Perubahan dibatasi oleh kebijakan keamanan (RLS) Supabase. Mohon terapkan skrip SQL Hierarki Admin di Supabase SQL Editor.",
-          };
-        }
-      } else {
-        const { data: updatedRows, error: updateErr } = await writeClient
-          .from("anggota_komunitas")
-          .update({
-            status: "rejected",
-            peran_diajukan: null,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", anggotaId)
-          .select("id");
-
-        if (updateErr) {
-          return {
-            success: false,
-            message: "Gagal menolak permohonan: " + updateErr.message,
-          };
-        }
-
-        if (!updatedRows || updatedRows.length === 0) {
-          return {
-            success: false,
-            message:
-              "Perubahan dibatasi oleh kebijakan keamanan (RLS) Supabase. Mohon terapkan skrip SQL Hierarki Admin di Supabase SQL Editor.",
-          };
-        }
-      }
+      return {
+        success: false,
+        message:
+          "Gagal menolak pengajuan peran: " +
+          (lastErrorMessage
+            ? lastErrorMessage
+            : "Perubahan dibatasi oleh kebijakan keamanan (RLS) Supabase. Mohon terapkan skrip SQL Hierarki Admin di Supabase SQL Editor."),
+      };
     }
 
     revalidatePath("/profil");

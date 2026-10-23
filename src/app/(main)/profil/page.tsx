@@ -540,7 +540,7 @@ export default async function ProfilePage() {
         </section>
       )}
 
-      {!isSuperAdmin && pendingApprovals.length > 0 && (
+      {!isSuperAdmin && (userCommunities.some((item) => isRoleAdmin(item.raw_peran) && item.status === "approved") || pendingApprovals.length > 0) && (
         /* COMMUNITY ADMIN VIEW: Tiered Approval List */
         <section className="space-y-4">
           <div className="flex items-center gap-2 px-1">
