@@ -36,7 +36,7 @@ import type {
   KomunitasWithMembership,
   DataAnakItem,
 } from "@/types/database";
-import type { WilayahRekapItem } from "@/app/actions/rekap-data-anak";
+import type { WilayahRekapItem } from "@/lib/rekap-data-anak-shared";
 import { cn } from "@/lib/utils";
 
 interface DataAnakClientViewProps {

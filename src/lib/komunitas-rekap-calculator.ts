@@ -11,7 +11,7 @@ import {
   createEmptyUsiaJenjang,
   DAFTAR_ALASAN_BERSEKOLAH,
   DAFTAR_ALASAN_TIDAK_SEKOLAH,
-} from "@/app/actions/rekap-data-anak";
+} from "@/lib/rekap-data-anak-shared";
 import { extractKomunitasMetadata } from "@/lib/admin-helpers";
 import { normalizeRtRwNum, isKomunitasLayananPaud } from "@/lib/data-anak-helpers";
 

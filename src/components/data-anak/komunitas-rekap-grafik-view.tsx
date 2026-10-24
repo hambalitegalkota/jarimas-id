@@ -26,7 +26,7 @@ import type {
   WilayahRekapItem,
   SchoolTypeBreakdown,
   ReasonCount,
-} from "@/app/actions/rekap-data-anak";
+} from "@/lib/rekap-data-anak-shared";
 
 export interface KomunitasRekapGrafikViewProps {
   scopeRekapItem: WilayahRekapItem;
