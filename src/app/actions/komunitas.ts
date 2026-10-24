@@ -3685,7 +3685,53 @@ export async function getKomunitasAdminListAction(params: GetKomunitasAdminListP
 }
 
 /**
- * Server Action: Menambah Komunitas Baru oleh Super Admin
+ * Helper: Memverifikasi apakah pengguna berstatus Super Admin, Admin Pusat, atau Admin Kota Tegal
+ */
+async function verifyAdminKomunitasPermission(supabase: any, user: any): Promise<boolean> {
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("id, is_super_admin, is_admin_pusat, nama_lengkap, email, peran")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  const userProfileCtx = {
+    ...profile,
+    id: user.id,
+    email: profile?.email || user.email,
+    nama_lengkap: profile?.nama_lengkap || user.user_metadata?.nama_lengkap,
+  };
+
+  if (checkIsSuperAdmin(userProfileCtx) || checkIsAdminPusat(userProfileCtx)) {
+    return true;
+  }
+
+  // Cek apakah peran di profil langsung menyebutkan Admin Kota
+  const peranProfil = (profile?.peran || "").toLowerCase();
+  if (peranProfil.includes("admin kota") || peranProfil.includes("admin_kota")) {
+    return true;
+  }
+
+  // Cek keanggotaan Admin Kota Tegal di tabel anggota_komunitas
+  const { data: kotaMemberships } = await supabase
+    .from("anggota_komunitas")
+    .select("peran, status, komunitas(nama, jenis)")
+    .eq("user_id", user.id)
+    .eq("status", "approved");
+
+  const isAdminKota = (kotaMemberships || []).some((m: any) => {
+    const peran = (m.peran || "").toLowerCase();
+    const komNama = (m.komunitas?.nama || "").toLowerCase();
+    return (
+      peran.includes("admin kota") ||
+      (komNama.includes("warga kota tegal") && isRoleAdmin(peran))
+    );
+  });
+
+  return isAdminKota;
+}
+
+/**
+ * Server Action: Menambah Komunitas Baru oleh Super Admin, Admin Pusat, dan Admin Kota
  */
 export async function createKomunitasAdminAction(formData: FormData): Promise<{
   success: boolean;
@@ -3703,21 +3749,12 @@ export async function createKomunitasAdminAction(formData: FormData): Promise<{
       return { success: false, message: "Akses ditolak: Anda harus masuk terlebih dahulu." };
     }
 
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("id, is_super_admin, is_admin_pusat, nama_lengkap, email")
-      .eq("id", user.id)
-      .maybeSingle();
-
-    const userProfileCtx = {
-      ...profile,
-      id: user.id,
-      email: profile?.email || user.email,
-      nama_lengkap: profile?.nama_lengkap || user.user_metadata?.nama_lengkap,
-    };
-
-    if (!checkIsSuperAdmin(userProfileCtx) && !checkIsAdminPusat(userProfileCtx)) {
-      return { success: false, message: "Akses ditolak: Hanya Super Admin dan Admin Pusat yang dapat menambahkan komunitas baru." };
+    const isAuthorized = await verifyAdminKomunitasPermission(supabase, user);
+    if (!isAuthorized) {
+      return {
+        success: false,
+        message: "Akses ditolak: Hanya Super Admin, Admin Pusat, dan Admin Kota yang dapat menambahkan komunitas baru.",
+      };
     }
 
     const nama = formData.get("nama")?.toString()?.trim();
@@ -3762,7 +3799,8 @@ export async function createKomunitasAdminAction(formData: FormData): Promise<{
       updated_at: new Date().toISOString(),
     };
 
-    const { data: inserted, error: insertError } = await supabase
+    const adminClient = createAdminClient() || supabase;
+    const { data: inserted, error: insertError } = await adminClient
       .from("komunitas")
       .insert(payload)
       .select()
@@ -3790,7 +3828,7 @@ export async function createKomunitasAdminAction(formData: FormData): Promise<{
 }
 
 /**
- * Server Action: Mengubah Data Komunitas oleh Super Admin
+ * Server Action: Mengubah Data Komunitas oleh Super Admin, Admin Pusat, dan Admin Kota
  */
 export async function updateKomunitasAdminAction(
   komunitasId: string,
@@ -3811,21 +3849,12 @@ export async function updateKomunitasAdminAction(
       return { success: false, message: "Akses ditolak: Anda harus masuk terlebih dahulu." };
     }
 
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("id, is_super_admin, is_admin_pusat, nama_lengkap, email")
-      .eq("id", user.id)
-      .maybeSingle();
-
-    const userProfileCtx = {
-      ...profile,
-      id: user.id,
-      email: profile?.email || user.email,
-      nama_lengkap: profile?.nama_lengkap || user.user_metadata?.nama_lengkap,
-    };
-
-    if (!checkIsSuperAdmin(userProfileCtx) && !checkIsAdminPusat(userProfileCtx)) {
-      return { success: false, message: "Akses ditolak: Hanya Super Admin dan Admin Pusat yang dapat mengubah data komunitas." };
+    const isAuthorized = await verifyAdminKomunitasPermission(supabase, user);
+    if (!isAuthorized) {
+      return {
+        success: false,
+        message: "Akses ditolak: Hanya Super Admin, Admin Pusat, dan Admin Kota yang dapat mengubah data komunitas.",
+      };
     }
 
     const nama = formData.get("nama")?.toString()?.trim();
@@ -3862,7 +3891,8 @@ export async function updateKomunitasAdminAction(
     updatePayload.kontak = kontak;
     updatePayload.jadwal = jadwal;
 
-    const { data: updated, error: updateError } = await supabase
+    const adminClient = createAdminClient() || supabase;
+    const { data: updated, error: updateError } = await adminClient
       .from("komunitas")
       .update(updatePayload)
       .eq("id", komunitasId)
@@ -3891,7 +3921,7 @@ export async function updateKomunitasAdminAction(
 }
 
 /**
- * Server Action: Menghapus Komunitas oleh Super Admin
+ * Server Action: Menghapus Komunitas oleh Super Admin, Admin Pusat, dan Admin Kota
  */
 export async function deleteKomunitasAdminAction(komunitasId: string): Promise<{
   success: boolean;
@@ -3908,31 +3938,24 @@ export async function deleteKomunitasAdminAction(komunitasId: string): Promise<{
       return { success: false, message: "Akses ditolak: Anda harus masuk terlebih dahulu." };
     }
 
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("id, is_super_admin, is_admin_pusat, nama_lengkap, email")
-      .eq("id", user.id)
-      .maybeSingle();
-
-    const userProfileCtx = {
-      ...profile,
-      id: user.id,
-      email: profile?.email || user.email,
-      nama_lengkap: profile?.nama_lengkap || user.user_metadata?.nama_lengkap,
-    };
-
-    if (!checkIsSuperAdmin(userProfileCtx) && !checkIsAdminPusat(userProfileCtx)) {
-      return { success: false, message: "Akses ditolak: Hanya Super Admin dan Admin Pusat yang dapat menghapus komunitas." };
+    const isAuthorized = await verifyAdminKomunitasPermission(supabase, user);
+    if (!isAuthorized) {
+      return {
+        success: false,
+        message: "Akses ditolak: Hanya Super Admin, Admin Pusat, dan Admin Kota yang dapat menghapus komunitas.",
+      };
     }
 
+    const adminClient = createAdminClient() || supabase;
+
     // 1. Bersihkan anggota terkait
-    await supabase
+    await adminClient
       .from("anggota_komunitas")
       .delete()
       .eq("komunitas_id", komunitasId);
 
     // 2. Hapus komunitas
-    const { error } = await supabase
+    const { error } = await adminClient
       .from("komunitas")
       .delete()
       .eq("id", komunitasId);

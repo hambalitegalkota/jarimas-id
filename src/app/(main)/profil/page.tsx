@@ -24,6 +24,7 @@ import { CleanupTestDataTool } from "@/components/admin/cleanup-test-data-tool";
 import { KecamatanMonitoringAccordion } from "@/components/admin/kecamatan-monitoring-accordion";
 import { SuperAdminWargaMonitoringTool } from "@/components/admin/super-admin-warga-monitoring-tool";
 import { AdminBidangManagementCard } from "@/components/admin/admin-bidang-management-card";
+import { KomunitasManagementTools } from "@/components/admin/komunitas-management-tools";
 import {
   formatPeranDisplay,
   isRoleAdmin,
@@ -617,6 +618,13 @@ export default async function ProfilePage() {
               currentUserId={user.id}
               viewerTier={userAdminInfo.tierLevel}
             />
+          )}
+
+          {/* Manajemen Komunitas (Tambah, Cari, Edit, Delete): Super Admin, Admin Pusat, Admin Kota */}
+          {(userAdminInfo.tierLevel === "super_admin" ||
+            userAdminInfo.tierLevel === "admin_pusat" ||
+            userAdminInfo.tierLevel === "admin_kota") && (
+            <KomunitasManagementTools />
           )}
 
           {/* Pembersih Data Uji Coba: HANYA untuk Super Admin */}
