@@ -304,13 +304,12 @@ export async function assignAdminBidangAction(
     );
 
     // 2. SIMPAN KE TABEL UTAMA: public.admin_bidang
-    const { error: delErr } = await adminClient
-      .from("admin_bidang")
-      .delete()
-      .eq("user_id", targetUserId);
-
+    // Coba simpan menggunakan adminClient terlebih dahulu, jika gagal (misal service key invalid) fallback ke supabase user client
+    let delErr = (await adminClient.from("admin_bidang").delete().eq("user_id", targetUserId)).error;
     if (delErr) {
-      console.warn("Peringatan saat menghapus penugasan lama admin_bidang:", delErr);
+      console.warn("delete admin_bidang via adminClient gagal, mencoba fallback ke client user:", delErr);
+      const fallbackDel = await supabase.from("admin_bidang").delete().eq("user_id", targetUserId);
+      delErr = fallbackDel.error;
     }
 
     if (validBidangList.length > 0) {
@@ -322,24 +321,25 @@ export async function assignAdminBidangAction(
         updated_at: new Date().toISOString(),
       }));
 
-      const { error: insErr } = await adminClient
-        .from("admin_bidang")
-        .insert(dedicatedRows);
+      let insErr = (await adminClient.from("admin_bidang").insert(dedicatedRows)).error;
+      if (insErr) {
+        console.warn("insert admin_bidang via adminClient gagal, mencoba fallback ke client user:", insErr);
+        const fallbackIns = await supabase.from("admin_bidang").insert(dedicatedRows);
+        insErr = fallbackIns.error;
+      }
 
       if (insErr) {
         console.error("Gagal menyisipkan ke tabel admin_bidang:", insErr);
         return {
           success: false,
-          message:
-            insErr.message ||
-            "Gagal menyimpan penetapan ke tabel admin_bidang. Pastikan konfigurasi SUPABASE_SERVICE_ROLE_KEY di server sudah benar.",
+          message: `Gagal menyimpan ke tabel admin_bidang: ${insErr.message || "Izin ditolak atau kendala basis data"}.`,
         };
       }
     }
 
     // 3. SINKRONISASI AMAN KE anggota_komunitas (agar nama peran terbaca di profil & seluruh modul)
     try {
-      const { data: kotaKom } = await supabase
+      const { data: kotaKom } = await (adminClient || supabase)
         .from("komunitas")
         .select("id")
         .ilike("nama", "%Warga Kota Tegal%")
@@ -347,7 +347,7 @@ export async function assignAdminBidangAction(
 
       if (kotaKom?.id) {
         // Ambil data keanggotaan existing di komunitas Warga Kota Tegal
-        const { data: existingMember } = await supabase
+        const { data: existingMember } = await (adminClient || supabase)
           .from("anggota_komunitas")
           .select("id, peran")
           .eq("komunitas_id", kotaKom.id)
@@ -363,7 +363,7 @@ export async function assignAdminBidangAction(
                   .join(", ")})`;
 
           if (existingMember) {
-            await adminClient
+            const upd = await adminClient
               .from("anggota_komunitas")
               .update({
                 peran: consolidatedRole,
@@ -372,8 +372,19 @@ export async function assignAdminBidangAction(
                 updated_at: new Date().toISOString(),
               })
               .eq("id", existingMember.id);
+            if (upd.error) {
+              await supabase
+                .from("anggota_komunitas")
+                .update({
+                  peran: consolidatedRole,
+                  status: "approved",
+                  approved_by: user.id,
+                  updated_at: new Date().toISOString(),
+                })
+                .eq("id", existingMember.id);
+            }
           } else {
-            await adminClient
+            const ins = await adminClient
               .from("anggota_komunitas")
               .insert({
                 komunitas_id: kotaKom.id,
@@ -384,6 +395,19 @@ export async function assignAdminBidangAction(
                 created_at: new Date().toISOString(),
                 updated_at: new Date().toISOString(),
               });
+            if (ins.error) {
+              await supabase
+                .from("anggota_komunitas")
+                .insert({
+                  komunitas_id: kotaKom.id,
+                  user_id: targetUserId,
+                  peran: consolidatedRole,
+                  status: "approved",
+                  approved_by: user.id,
+                  created_at: new Date().toISOString(),
+                  updated_at: new Date().toISOString(),
+                });
+            }
           }
         } else if (
           existingMember &&
@@ -408,13 +432,6 @@ export async function assignAdminBidangAction(
       validBidangList.length > 0
         ? `berhasil ditetapkan sebagai Admin pada ${validBidangList.length} Bidang (${validBidangList.map((b) => BIDANG_LABEL_MAP[b].replace("Admin ", "")).join(", ")})`
         : "berhasil dicabut dari seluruh penugasan Admin Bidang";
-
-    try {
-      revalidatePath("/profil");
-      revalidatePath("/data-anak");
-    } catch (revErr) {
-      console.warn("revalidatePath opsional dilewati:", revErr);
-    }
 
     return {
       success: true,
@@ -523,13 +540,6 @@ export async function revokeAdminBidangAction(
       }
     } catch (syncErr) {
       console.warn("Sinkronisasi pencabutan anggota_komunitas dilewati:", syncErr);
-    }
-
-    try {
-      revalidatePath("/profil");
-      revalidatePath("/data-anak");
-    } catch (revErr) {
-      console.warn("revalidatePath opsional dilewati:", revErr);
     }
 
     return {
