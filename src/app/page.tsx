@@ -146,13 +146,13 @@ export default async function HomePage() {
   const topKabarItem =
     allKabar.length > 0
       ? [...allKabar].sort((a, b) => {
-          const scoreA = (a.jumlah_reaksi || 0) * 2 + (a.jumlah_komentar || 0) * 3;
-          const scoreB = (b.jumlah_reaksi || 0) * 2 + (b.jumlah_komentar || 0) * 3;
-          if (scoreB !== scoreA) {
-            return scoreB - scoreA; // paling banyak interaksi/populer
-          }
-          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime(); // terbaru
-        })[0]
+        const scoreA = (a.jumlah_reaksi || 0) * 2 + (a.jumlah_komentar || 0) * 3;
+        const scoreB = (b.jumlah_reaksi || 0) * 2 + (b.jumlah_komentar || 0) * 3;
+        if (scoreB !== scoreA) {
+          return scoreB - scoreA; // paling banyak interaksi/populer
+        }
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime(); // terbaru
+      })[0]
       : null;
 
   const topKabarItems = topKabarItem ? [topKabarItem] : [];
@@ -172,9 +172,17 @@ export default async function HomePage() {
       {/* ========================================================= */}
       <header className="flex items-center justify-between gap-3 pt-0.5">
         <div className="flex items-center gap-2.5 sm:gap-3">
-          <div className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-lg bg-primary text-primary-foreground font-black shadow-sm shrink-0">
-            <Sparkles className="h-5 w-5 text-amber-200" />
+          <div className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-lg bg-primary text-primary-foreground font-black shadow-sm shrink-0 overflow-hidden">
+            <Image
+              src="/logo.svg"
+              alt="Logo JARIMAS.ID"
+              width={28}
+              height={28}
+              className="h-7 w-7 object-contain"
+              priority
+            />
           </div>
+
           <div>
             <div className="flex items-center gap-1.5 flex-wrap">
               <span className="text-base sm:text-lg font-black tracking-tight text-foreground">
