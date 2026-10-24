@@ -203,10 +203,16 @@ export default async function HomePage() {
             <div className="flex items-center gap-1.5 sm:gap-2">
               <Link
                 href="/login"
-                className="inline-flex min-h-[36px] sm:min-h-[40px] items-center justify-center gap-1.5 rounded-lg bg-secondary hover:brightness-95 px-3.5 sm:px-4 py-1.5 text-xs font-bold text-secondary-foreground transition-all active:scale-95 shadow-sm"
+                className="inline-flex min-h-[36px] sm:min-h-[40px] items-center justify-center rounded-lg border border-border bg-card hover:bg-muted px-2.5 sm:px-3.5 py-1.5 text-xs font-semibold text-foreground transition-all active:scale-95 shadow-xs"
               >
                 <span>Masuk</span>
-                <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+              <Link
+                href="/register"
+                className="inline-flex min-h-[36px] sm:min-h-[40px] items-center justify-center gap-1.5 rounded-lg bg-secondary hover:brightness-95 px-3 sm:px-4 py-1.5 text-xs font-bold text-secondary-foreground transition-all active:scale-95 shadow-sm"
+              >
+                <UserPlus className="h-3.5 w-3.5" />
+                <span>Registrasi</span>
               </Link>
             </div>
           )}
