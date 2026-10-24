@@ -773,7 +773,7 @@ export async function rejectMemberRole(anggotaId: string): Promise<{
 }
 
 /**
- * Server Action: Menghapus seluruh Data Anak & Riwayat Pengukuran DDTK Uji Coba
+ * Server Action: Menghapus seluruh Data Anak Uji Coba
  * Khusus Super Admin.
  */
 export async function cleanupAllDataAnakAction(): Promise<{
@@ -841,7 +841,7 @@ export async function cleanupAllDataAnakAction(): Promise<{
 
     return {
       success: true,
-      message: `Berhasil membersihkan ${childIds.length} Data Anak (PAUD & ATS) & seluruh riwayat DDTK uji coba! Database Data Anak kini bersih (0) dan siap untuk pemantauan data uji coba terbaru.`,
+      message: `Berhasil membersihkan ${childIds.length} Data Anak (PAUD & ATS) uji coba! Database Data Anak kini bersih (0) dan siap untuk pemantauan data uji coba terbaru.`,
       deletedCount: childIds.length,
     };
   } catch (err: any) {
@@ -923,7 +923,7 @@ export async function cleanupAllKaderAndAnggotaAction(): Promise<{
 
 /**
  * Server Action: Pembersihan Total Seluruh Data Uji Coba
- * (Pengguna Non-Admin, Data Anak & DDTK, Kader & Anggota Komunitas, Postingan Kabar Test)
+ * (Pengguna Non-Admin, Data Anak, Kader & Anggota Komunitas, Postingan Kabar Test)
  * Khusus Super Admin.
  */
 export async function cleanupAllTestDataAction(): Promise<{
@@ -1035,7 +1035,7 @@ export async function cleanupAllTestDataAction(): Promise<{
 
     return {
       success: true,
-      message: `Pembersihan menyeluruh berhasil! Dihapus: ${childIds.length} Data Anak & DDTK, ${memberIds.length} Keanggotaan & Kader, serta ${nonAdminIds.length} Akun Non-Admin.`,
+      message: `Pembersihan menyeluruh berhasil! Dihapus: ${childIds.length} Data Anak, ${memberIds.length} Keanggotaan & Kader, serta ${nonAdminIds.length} Akun Non-Admin.`,
       deletedCount: {
         users: nonAdminIds.length,
         children: childIds.length,

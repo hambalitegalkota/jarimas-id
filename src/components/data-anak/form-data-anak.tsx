@@ -9,17 +9,13 @@ import {
   Home,
   MapPin,
   GraduationCap,
-  Scale,
-  Ruler,
-  Activity,
-  Send,
-  Loader2,
-  AlertCircle,
   CheckCircle2,
   Check,
-  Lock,
   FileText,
   Copy,
+  AlertCircle,
+  Loader2,
+  Send,
 } from "lucide-react";
 import { createDataAnak } from "@/app/actions/data-anak";
 import { type JenisKomunitas } from "@/types/database";
@@ -148,13 +144,6 @@ export function FormDataAnak({
     isPaud ? ALASAN_SEKOLAH_PAUD[0] : ALASAN_BELUM_SEKOLAH[0]
   );
 
-  // DDKS State
-  const [beratBadan, setBeratBadan] = useState("");
-  const [tinggiBadan, setTinggiBadan] = useState("");
-  const [panjangBadan, setPanjangBadan] = useState("");
-  const [lingkarKepala, setLingkarKepala] = useState("");
-  const [catatanDdks, setCatatanDdks] = useState("");
-
   const [feedback, setFeedback] = useState<{
     type: "success" | "error";
     message: string;
@@ -238,15 +227,6 @@ export function FormDataAnak({
     formData.append("isSekolah", isPaud ? "true" : "false");
     formData.append("namaSekolah", finalNamaSekolah);
     formData.append("alasanSekolah", finalAlasanSekolah);
-
-    // Pengukuran DDTK hanya dikirim jika pendaftaran dilakukan di Komunitas Posyandu
-    if (isPosyandu) {
-      if (beratBadan) formData.append("beratBadan", beratBadan);
-      if (tinggiBadan) formData.append("tinggiBadan", tinggiBadan);
-      if (panjangBadan) formData.append("panjangBadan", panjangBadan);
-      if (lingkarKepala) formData.append("lingkarKepala", lingkarKepala);
-      if (catatanDdks) formData.append("catatanDdks", catatanDdks);
-    }
 
     startTransition(async () => {
       const res = await createDataAnak(formData);
@@ -1000,195 +980,6 @@ export function FormDataAnak({
               </select>
             </div>
           </>
-        )}
-      </div>
-
-      {/* SECTION 3: PENGUKURAN DDTK AWAL (OPSIONAL) */}
-      <div className="rounded-lg border border-border bg-card p-4 sm:p-5 space-y-4 shadow-sm">
-        <div className="flex items-center justify-between border-b border-border pb-3">
-          <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary font-bold text-xs shrink-0">
-              3
-            </div>
-            <div>
-              <h3 className="text-sm sm:text-base font-bold text-foreground leading-tight">
-                Pengukuran DDTK Posyandu (Opsional)
-              </h3>
-              <p className="text-2xs sm:text-xs font-medium text-muted-foreground">
-                Antropometri &amp; tumbuh kembang balita
-              </p>
-            </div>
-          </div>
-          {!isPosyandu && (
-            <span className="inline-flex items-center gap-1 rounded-md bg-secondary/15 px-2 py-0.5 text-2xs font-extrabold text-secondary border border-secondary/30">
-              <Lock className="h-3 w-3" />
-              <span>Terkunci</span>
-            </span>
-          )}
-        </div>
-
-        {isPosyandu ? (
-          <>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              Masukkan hasil pengukuran terakhir jika anak baru saja ditimbang di Posyandu atau diperiksa Bidan.
-            </p>
-
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-              {/* Berat Badan */}
-              <div className="space-y-1">
-                <label className="text-2xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
-                  <Scale className="h-3 w-3 text-primary" />
-                  BB (KG)
-                </label>
-                <input
-                  type="number"
-                  step="0.1"
-                  min="0"
-                  value={beratBadan}
-                  onChange={(e) => setBeratBadan(e.target.value)}
-                  placeholder="12.5"
-                  className="w-full min-h-[44px] h-11 rounded-lg border border-border bg-background px-3 text-xs sm:text-sm font-mono font-bold text-foreground focus:border-primary focus:outline-none"
-                />
-              </div>
-
-              {/* Tinggi Badan */}
-              <div className="space-y-1">
-                <label className="text-2xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
-                  <Ruler className="h-3 w-3 text-primary" />
-                  TB (CM)
-                </label>
-                <input
-                  type="number"
-                  step="0.5"
-                  min="0"
-                  value={tinggiBadan}
-                  onChange={(e) => setTinggiBadan(e.target.value)}
-                  placeholder="88.0"
-                  className="w-full min-h-[44px] h-11 rounded-lg border border-border bg-background px-3 text-xs sm:text-sm font-mono font-bold text-foreground focus:border-primary focus:outline-none"
-                />
-              </div>
-
-              {/* Panjang Badan */}
-              <div className="space-y-1">
-                <label className="text-2xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
-                  <Ruler className="h-3 w-3 text-primary" />
-                  PB (CM)
-                </label>
-                <input
-                  type="number"
-                  step="0.5"
-                  min="0"
-                  value={panjangBadan}
-                  onChange={(e) => setPanjangBadan(e.target.value)}
-                  placeholder="88.0"
-                  className="w-full min-h-[44px] h-11 rounded-lg border border-border bg-background px-3 text-xs sm:text-sm font-mono font-bold text-foreground focus:border-primary focus:outline-none"
-                />
-              </div>
-
-              {/* Lingkar Kepala */}
-              <div className="space-y-1">
-                <label className="text-2xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
-                  <Activity className="h-3 w-3 text-primary" />
-                  LK (CM)
-                </label>
-                <input
-                  type="number"
-                  step="0.1"
-                  min="0"
-                  value={lingkarKepala}
-                  onChange={(e) => setLingkarKepala(e.target.value)}
-                  placeholder="47.0"
-                  className="w-full min-h-[44px] h-11 rounded-lg border border-border bg-background px-3 text-xs sm:text-sm font-mono font-bold text-foreground focus:border-primary focus:outline-none"
-                />
-              </div>
-            </div>
-
-            {/* Catatan DDKS */}
-            <div className="space-y-1.5">
-              <label className="text-xs sm:text-sm font-bold text-foreground leading-snug block">
-                Catatan Kesehatan / Perkembangan
-              </label>
-              <input
-                type="text"
-                value={catatanDdks}
-                onChange={(e) => setCatatanDdks(e.target.value)}
-                placeholder="Contoh: Sudah bisa berjalan lancar, imunisasi campak lengkap."
-                className="w-full min-h-[44px] h-11 rounded-lg border border-border bg-background px-3 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
-              />
-            </div>
-          </>
-        ) : (
-          <div className="space-y-3">
-            {/* Locked Notice Banner */}
-            <div className="rounded-lg border border-secondary/30 bg-secondary/10 p-3.5 flex items-start gap-3 text-foreground shadow-2xs">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-secondary/20 text-secondary">
-                <Lock className="h-4 w-4" />
-              </div>
-              <div className="space-y-0.5 min-w-0">
-                <h4 className="text-xs sm:text-sm font-bold text-foreground flex items-center gap-2">
-                  <span>Data Belum Diisi Oleh Posyandu</span>
-                </h4>
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  Pengukuran antropometri DDTK (Berat Badan, Tinggi Badan, Panjang Badan, &amp; Lingkar Kepala) terkunci dan hanya dapat diisi oleh Kader di Komunitas Posyandu.
-                </p>
-              </div>
-            </div>
-
-            {/* Disabled Preview Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 opacity-60 pointer-events-none select-none">
-              <div className="space-y-1">
-                <label className="text-2xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
-                  <Scale className="h-3 w-3" />
-                  BB (KG)
-                </label>
-                <input
-                  type="text"
-                  disabled
-                  value="-"
-                  className="w-full min-h-[44px] h-11 rounded-lg border border-border bg-muted px-3 text-center text-xs sm:text-sm font-mono font-bold text-muted-foreground cursor-not-allowed"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-2xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
-                  <Ruler className="h-3 w-3" />
-                  TB (CM)
-                </label>
-                <input
-                  type="text"
-                  disabled
-                  value="-"
-                  className="w-full min-h-[44px] h-11 rounded-lg border border-border bg-muted px-3 text-center text-xs sm:text-sm font-mono font-bold text-muted-foreground cursor-not-allowed"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-2xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
-                  <Ruler className="h-3 w-3" />
-                  PB (CM)
-                </label>
-                <input
-                  type="text"
-                  disabled
-                  value="-"
-                  className="w-full min-h-[44px] h-11 rounded-lg border border-border bg-muted px-3 text-center text-xs sm:text-sm font-mono font-bold text-muted-foreground cursor-not-allowed"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-2xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
-                  <Activity className="h-3 w-3" />
-                  LK (CM)
-                </label>
-                <input
-                  type="text"
-                  disabled
-                  value="-"
-                  className="w-full min-h-[44px] h-11 rounded-lg border border-border bg-muted px-3 text-center text-xs sm:text-sm font-mono font-bold text-muted-foreground cursor-not-allowed"
-                />
-              </div>
-            </div>
-          </div>
         )}
       </div>
 

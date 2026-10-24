@@ -24,7 +24,7 @@ import type { MarketProduk } from "@/types/database";
 
 const KATEGORI_LIST = [
   "Semua",
-  "Antropometri",
+  "Alat Ukur Balita",
   "PMT & Nutrisi",
   "Edukasi PAUD",
   "Alat Posyandu",
@@ -54,7 +54,7 @@ export function MarketClientView({
     const matchesKategori =
       selectedKategori === "Semua" ||
       p.kategori.toLowerCase() === selectedKategori.toLowerCase() ||
-      (selectedKategori === "Antropometri" && p.kategori.toLowerCase().includes("antropometri")) ||
+      (selectedKategori === "Alat Ukur Balita" && (p.kategori.toLowerCase().includes("alat ukur") || p.kategori.toLowerCase().includes("antropometri") || p.kategori.toLowerCase().includes("timbangan") || p.kategori.toLowerCase().includes("stadiometer") || p.kategori.toLowerCase().includes("peralatan posyandu"))) ||
       (selectedKategori === "PMT & Nutrisi" && (p.kategori.toLowerCase().includes("pmt") || p.kategori.toLowerCase().includes("nutrisi") || p.kategori.toLowerCase().includes("gizi"))) ||
       (selectedKategori === "Edukasi PAUD" && (p.kategori.toLowerCase().includes("paud") || p.kategori.toLowerCase().includes("edukasi")));
     return matchesSearch && matchesKategori;
@@ -81,7 +81,7 @@ export function MarketClientView({
             </h1>
 
             <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed max-w-xl">
-              Pusat pengadaan alat ukur antropometri standar Kemenkes RI, modul stimulasi motorik PAUD, dan paket PMT bergizi untuk posyandu se-Kota Tegal.
+              Pusat pengadaan alat ukur balita presisi standar Kemenkes RI, modul stimulasi motorik PAUD, dan paket PMT bergizi untuk posyandu se-Kota Tegal.
             </p>
 
             {/* Action Links */}

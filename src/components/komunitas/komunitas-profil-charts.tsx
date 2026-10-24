@@ -13,7 +13,6 @@ import {
   ShieldCheck,
   CheckCircle2,
   AlertTriangle,
-  HeartPulse,
   ArrowRight,
   Clock,
   BookOpen,
@@ -56,7 +55,7 @@ export function KomunitasProfilCharts({
   const canShowDataAnak = !isPkbmOrSkb || isSkb || isStarOfTomorrow;
   const canShowDataAts = !isPurePaud;
 
-  const [activeChartFilter, setActiveChartFilter] = useState<"semua" | "usia" | "paud" | "ats" | "ddtk">(
+  const [activeChartFilter, setActiveChartFilter] = useState<"semua" | "usia" | "paud" | "ats">(
     canShowDataAnak ? "semua" : "ats"
   );
   const [isAllHidden, setIsAllHidden] = useState(false);
@@ -78,7 +77,6 @@ export function KomunitasProfilCharts({
       setHiddenCharts({
         usia: true,
         paud: true,
-        ddtk: true,
         ats: true,
         warga: true,
       });
@@ -98,8 +96,6 @@ export function KomunitasProfilCharts({
   let sudahPaud = 0;
   let belumSekolah = 0;
   let potensiAts = 0;
-  let ddtkSesuai = 0;
-  let ddtkPantau = 0;
 
   dataAnakList.forEach((child) => {
     // 1. Jenis Kelamin
@@ -139,13 +135,6 @@ export function KomunitasProfilCharts({
         potensiAts++;
       }
     }
-
-    // 4. Status DDTK
-    if (child.latest_ddks) {
-      ddtkSesuai++;
-    } else {
-      ddtkPantau++;
-    }
   });
 
   // Statistik ATS Khusus
@@ -170,7 +159,6 @@ export function KomunitasProfilCharts({
 
   const combinedAtsCount = totalAts > 0 ? totalAts : potensiAts;
   const pctPaud = totalBalita > 0 ? Math.round((sudahPaud / totalBalita) * 100) : 0;
-  const pctDdtk = totalBalita > 0 ? Math.round((ddtkSesuai / totalBalita) * 100) : 0;
   const pct0to2 = totalBalita > 0 ? Math.round((usia0to2 / totalBalita) * 100) : 0;
   const pct3to4 = totalBalita > 0 ? Math.round((usia3to4 / totalBalita) * 100) : 0;
   const pct5to6 = totalBalita > 0 ? Math.round((usia5to6 / totalBalita) * 100) : 0;
@@ -203,7 +191,7 @@ export function KomunitasProfilCharts({
           <p className="text-xs sm:text-sm text-slate-600 font-medium">
             {!canShowDataAnak
               ? "Rekapitulasi penanganan dan pendataan Anak Tidak Sekolah (ATS) se-wilayah."
-              : "Rekapitulasi data anak usia dini (0–6 tahun), partisipasi PAUD, pemantauan DDTK, dan pendataan ATS se-wilayah."}
+              : "Rekapitulasi data anak usia dini (0–6 tahun), partisipasi PAUD, dan pendataan ATS se-wilayah."}
           </p>
         </div>
 
@@ -261,20 +249,6 @@ export function KomunitasProfilCharts({
               )}
             >
               Data ATS
-            </button>
-          )}
-          {canShowDataAnak && (
-            <button
-              type="button"
-              onClick={() => setActiveChartFilter("ddtk")}
-              className={cn(
-                "px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer",
-                activeChartFilter === "ddtk"
-                  ? "bg-white text-blue-700 shadow-xs border border-slate-200 font-black"
-                  : "text-slate-600 hover:text-slate-900"
-              )}
-            >
-              Tumbuh Kembang
             </button>
           )}
 
@@ -340,20 +314,20 @@ export function KomunitasProfilCharts({
             </span>
           </div>
 
-          <div className="rounded-2xl border-2 border-blue-200 bg-blue-50/50 p-4 space-y-1 shadow-xs">
-            <span className="text-xs font-bold text-blue-800 uppercase tracking-wider block">
-              DDTK SESUAI USIA
+          <div className="rounded-2xl border-2 border-slate-200 bg-slate-50/60 p-4 space-y-1 shadow-xs">
+            <span className="text-xs font-bold text-slate-700 uppercase tracking-wider block">
+              BELUM BER-PAUD
             </span>
             <div className="flex items-baseline gap-2">
-              <span className="text-2xl sm:text-3xl font-black font-mono text-blue-700">
-                {ddtkSesuai}
+              <span className="text-2xl sm:text-3xl font-black font-mono text-slate-700">
+                {belumSekolah}
               </span>
-              <span className="text-xs font-bold text-blue-800">
-                ({pctDdtk}%)
+              <span className="text-xs font-bold text-slate-600">
+                ({pctBelum}%)
               </span>
             </div>
-            <span className="text-xs font-semibold text-blue-700 block">
-              Tumbuh Kembang Normal
+            <span className="text-xs font-semibold text-slate-600 block">
+              Belum Sekolah
             </span>
           </div>
 
@@ -662,101 +636,6 @@ export function KomunitasProfilCharts({
           </div>
         )}
 
-        {/* Chart 3: Indikator Tumbuh Kembang (DDTK) */}
-        {canShowDataAnak && (activeChartFilter === "semua" || activeChartFilter === "ddtk") && (
-          <div className="rounded-2xl border-2 border-slate-200 bg-white p-5 space-y-4 shadow-xs">
-            <div className="flex items-center justify-between gap-3 border-b-2 border-slate-100 pb-3">
-              <div className="flex items-center gap-2 min-w-0">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 text-blue-700 shrink-0">
-                  <HeartPulse className="h-4 w-4" />
-                </div>
-                <div className="min-w-0">
-                  <h4 className="text-sm sm:text-base font-bold text-slate-900 truncate">
-                    Pemantauan Tumbuh Kembang (DDTK)
-                  </h4>
-                  <p className="text-xs text-slate-500 font-medium truncate">
-                    Hasil skrining berkala berat/tinggi badan &amp; stimulasi
-                  </p>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => toggleChart("ddtk")}
-                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-bold transition-all cursor-pointer shadow-2xs shrink-0"
-                title={hiddenCharts["ddtk"] ? "Tampilkan Grafik" : "Sembunyikan Grafik"}
-              >
-                {hiddenCharts["ddtk"] ? (
-                  <>
-                    <Eye className="h-3.5 w-3.5 text-blue-600" />
-                    <span>Tampilkan</span>
-                  </>
-                ) : (
-                  <>
-                    <EyeOff className="h-3.5 w-3.5 text-slate-500" />
-                    <span>Sembunyikan</span>
-                  </>
-                )}
-              </button>
-            </div>
-
-            {hiddenCharts["ddtk"] ? (
-              <div className="py-4 text-center text-xs text-slate-500 bg-slate-50 rounded-xl border border-dashed border-slate-200 flex items-center justify-center gap-2">
-                <EyeOff className="h-4 w-4 text-slate-400" />
-                <span>Grafik Pemantauan Tumbuh Kembang (DDTK) disembunyikan.</span>
-                <button
-                  type="button"
-                  onClick={() => toggleChart("ddtk")}
-                  className="font-bold text-blue-600 hover:underline cursor-pointer"
-                >
-                  Tampilkan
-                </button>
-              </div>
-            ) : totalBalita === 0 ? (
-              <div className="rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 p-6 text-center space-y-2">
-                <HeartPulse className="h-8 w-8 text-slate-400 mx-auto" />
-                <p className="text-sm font-bold text-slate-700">Belum Ada Riwayat DDTK</p>
-                <p className="text-xs text-slate-500 max-w-xs mx-auto">
-                  Pencatatan pengukuran berkala berat/tinggi badan balita oleh Kader Posyandu/Nakes akan terakumulasi di sini.
-                </p>
-              </div>
-            ) : (
-              <>
-                <div className="grid grid-cols-2 gap-3 pt-1">
-                  <div className="rounded-xl border-2 border-emerald-200 bg-emerald-50/60 p-3.5 text-center space-y-1">
-                    <div className="flex items-center justify-center gap-1 text-emerald-800 font-bold text-xs">
-                      <CheckCircle2 className="h-3.5 w-3.5" />
-                      <span>Sesuai Usia (Normal)</span>
-                    </div>
-                    <div className="text-2xl font-black font-mono text-emerald-700">
-                      {ddtkSesuai}
-                    </div>
-                    <p className="text-xs font-medium text-emerald-800">
-                      Tumbuh Kembang Optimal
-                    </p>
-                  </div>
-
-                  <div className="rounded-xl border-2 border-amber-200 bg-amber-50/60 p-3.5 text-center space-y-1">
-                    <div className="flex items-center justify-center gap-1 text-amber-900 font-bold text-xs">
-                      <AlertTriangle className="h-3.5 w-3.5" />
-                      <span>Pantauan Berkala</span>
-                    </div>
-                    <div className="text-2xl font-black font-mono text-amber-700">
-                      {ddtkPantau}
-                    </div>
-                    <p className="text-xs font-medium text-amber-900">
-                      Stimulasi &amp; Gizi
-                    </p>
-                  </div>
-                </div>
-
-                <div className="text-xs font-medium text-slate-600 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
-                  💡 Posyandu &amp; PAUD melakukan deteksi dini berkala untuk memastikan stimulasi motorik &amp; kognitif anak terpenuhi.
-                </div>
-              </>
-            )}
-          </div>
-        )}
 
         {/* Chart 4: Statistik Anak Tidak Sekolah (ATS) */}
         {canShowDataAts && (activeChartFilter === "semua" || activeChartFilter === "ats") && (

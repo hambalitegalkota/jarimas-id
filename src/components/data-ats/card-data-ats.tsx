@@ -31,7 +31,6 @@ interface CardDataAtsProps {
   komunitasId: string;
   komunitasNama?: string;
   canValidate: boolean;
-  canEditDdtk?: boolean;
   canManage?: boolean;
   currentUserId?: string | null;
   isSuperAdmin?: boolean;

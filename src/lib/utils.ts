@@ -126,7 +126,7 @@ export function formatPeranDisplay(peran?: string | null): string {
 
 /**
  * Mengecek apakah pengguna memiliki status peran Super Admin (Root Administrator Platform JARIMAS)
- * Super Admin memiliki hak akses penuh (bypass mutlak) ke seluruh komunitas, data anak, DDTK, ATS,
+ * Super Admin memiliki hak akses penuh (bypass mutlak) ke seluruh komunitas, data anak usia dini, ATS,
  * laporan kader, persetujuan admin berjenjang, dan tata kelola akun.
  */
 export function isSuperAdmin(profileOrUser?: {

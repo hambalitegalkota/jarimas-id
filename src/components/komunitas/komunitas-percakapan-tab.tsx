@@ -37,7 +37,7 @@ interface KomunitasPercakapanTabProps {
 const QUICK_CHAT_PRESETS: Record<string, string[]> = {
   posyandu: [
     "Halo ibu-ibu kader & bidan desa! 👋",
-    "Bagaimana jadwal penimbangan & DDTK bulan ini? 🩺",
+    "Bagaimana jadwal kegiatan posyandu bulan ini? 🩺",
     "Stok PMT dan vitamin balita sudah siap 🥛",
     "Konfirmasi kehadiran kader posyandu 📋",
   ],

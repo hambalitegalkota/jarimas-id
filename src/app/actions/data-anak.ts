@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/utils/supabase/server";
-import { DataAnakSchema, DdksSchema } from "@/lib/zod-schemas";
+import { DataAnakSchema } from "@/lib/zod-schemas";
 import { toValidUUID, isSuperAdmin as checkIsSuperAdmin, isAdminPusat as checkIsAdminPusat, isSuperOrAdminPusat, isRoleAdmin } from "@/lib/utils";
 import { extractKomunitasMetadata } from "@/lib/admin-helpers";
 import { findOrGenerateKomunitasSeed } from "@/lib/constants/tegal-data";
@@ -187,16 +187,6 @@ export async function createDataAnak(formData: FormData): Promise<{
       };
     }
 
-    // DDKS Awal Parameter
-    const beratBadanStr = formData.get("beratBadan")?.toString();
-    const tinggiBadanStr = formData.get("tinggiBadan")?.toString();
-    const panjangBadanStr = formData.get("panjangBadan")?.toString();
-    const lingkarKepalaStr = formData.get("lingkarKepala")?.toString();
-    const catatanDdks = formData.get("catatanDdks")?.toString()?.trim() || "";
-
-    const hasDdksInput =
-      beratBadanStr && tinggiBadanStr && lingkarKepalaStr;
-
     // Simpan ke Supabase Data Anak
     const childPayload = {
       nama_lengkap: namaLengkap,
@@ -231,46 +221,6 @@ export async function createDataAnak(formData: FormData): Promise<{
     }
 
     const newChildId = insertedChild.id;
-
-    // Simpan DDKS awal jika diisi dan khusus di Komunitas Posyandu
-    if (hasDdksInput && jenisKomunitas === "posyandu") {
-      const ddksValidation = DdksSchema.safeParse({
-        beratBadan: parseFloat(beratBadanStr),
-        tinggiBadan: parseFloat(tinggiBadanStr),
-        panjangBadan: panjangBadanStr ? parseFloat(panjangBadanStr) : null,
-        lingkarKepala: parseFloat(lingkarKepalaStr),
-      });
-
-      if (ddksValidation.success) {
-        const ddksPayload: any = {
-          data_anak_id: newChildId,
-          berat_badan: parseFloat(beratBadanStr || "0"),
-          tinggi_badan: parseFloat(tinggiBadanStr || "0"),
-          panjang_badan: panjangBadanStr ? parseFloat(panjangBadanStr) : null,
-          lingkar_kepala: parseFloat(lingkarKepalaStr || "0"),
-          catatan: catatanDdks || "Pengukuran awal pendaftaran anak.",
-          dicatat_oleh: user.id,
-          recorded_by: user.id,
-          created_at: new Date().toISOString(),
-        };
-
-        const { error: ddksError } = await supabase
-          .from("ddks_records")
-          .insert(ddksPayload);
-
-        if (ddksError) {
-          if (ddksError.message.includes("recorded_by")) {
-            delete ddksPayload.recorded_by;
-            await supabase.from("ddks_records").insert(ddksPayload);
-          } else if (ddksError.message.includes("dicatat_oleh")) {
-            delete ddksPayload.dicatat_oleh;
-            await supabase.from("ddks_records").insert(ddksPayload);
-          } else {
-            console.warn("Insert ddks_records warning:", ddksError.message);
-          }
-        }
-      }
-    }
 
     revalidatePath(`/komunitas/${komunitasId}/data`);
     revalidatePath(`/komunitas/${komunitasId}`);
@@ -397,182 +347,19 @@ export async function validateDataAnak(dataAnakId: string): Promise<{
 /**
  * Server Action: Menambahkan Riwayat Pengukuran DDKS Baru (Khusus Kader / Nakes Posyandu)
  */
-export async function addDdksRecord(formData: FormData): Promise<{
+export async function addDdksRecord(_formData?: FormData): Promise<{
   success: boolean;
   message: string;
   record?: DdksRecord;
 }> {
-  try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return {
-        success: false,
-        message: "Akses ditolak: Anda harus masuk terlebih dahulu.",
-      };
-    }
-
-    const dataAnakId = formData.get("dataAnakId")?.toString();
-    const beratBadan = parseFloat(formData.get("beratBadan")?.toString() || "0");
-    const tinggiBadan = parseFloat(formData.get("tinggiBadan")?.toString() || "0");
-    const panjangBadan = formData.get("panjangBadan")
-      ? parseFloat(formData.get("panjangBadan")!.toString())
-      : null;
-    const lingkarKepala = parseFloat(
-      formData.get("lingkarKepala")?.toString() || "0"
-    );
-    const catatan = formData.get("catatan")?.toString()?.trim() || "";
-
-    if (!dataAnakId) {
-      return {
-        success: false,
-        message: "ID Data Anak tidak ditemukan.",
-      };
-    }
-
-    // Validasi Zod DDKS
-    const validation = DdksSchema.safeParse({
-      beratBadan,
-      tinggiBadan,
-      panjangBadan,
-      lingkarKepala,
-    });
-
-    if (!validation.success) {
-      return {
-        success: false,
-        message:
-          validation.error.issues[0]?.message ||
-          "Data pengukuran DDKS tidak valid.",
-      };
-    }
-
-    // Verifikasi otorisasi Kader/Nakes
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("is_super_admin, is_admin_pusat, nama_lengkap, email")
-      .eq("id", user.id)
-      .maybeSingle();
-
-    const isSuperOrPusat = isSuperOrAdminPusat({
-      ...profile,
-      id: user.id,
-      email: profile?.email || user.email,
-      nama_lengkap: profile?.nama_lengkap || user.user_metadata?.nama_lengkap,
-    });
-
-    if (!isSuperOrPusat) {
-      const { data: memberships } = await supabase
-        .from("anggota_komunitas")
-        .select("peran, status")
-        .eq("user_id", user.id)
-        .eq("status", "approved");
-
-      const isKaderOrNakes = (memberships || []).some((m: any) => {
-        const role = (m.peran || "").toLowerCase();
-        return (
-          role.includes("kader") ||
-          role.includes("medis") ||
-          role.includes("nakes") ||
-          role.includes("bidan") ||
-          role.includes("pengurus")
-        );
-      });
-
-      if (!isKaderOrNakes) {
-        return {
-          success: false,
-          message:
-            "Akses ditolak: Penginputan DDKS hanya dapat dilakukan oleh Kader Posyandu atau Tenaga Kesehatan.",
-        };
-      }
-    }
-
-    const payload: any = {
-      data_anak_id: dataAnakId,
-      berat_badan: beratBadan,
-      tinggi_badan: tinggiBadan,
-      panjang_badan: panjangBadan,
-      lingkar_kepala: lingkarKepala,
-      catatan: catatan || "Pengukuran rutin DDKS Posyandu.",
-      dicatat_oleh: user.id,
-      recorded_by: user.id,
-      created_at: new Date().toISOString(),
-    };
-
-    let insertedRecord: any = null;
-    let insertError: any = null;
-
-    const res1 = await supabase
-      .from("ddks_records")
-      .insert(payload)
-      .select("*")
-      .maybeSingle();
-
-    if (res1.error) {
-      if (res1.error.message.includes("recorded_by")) {
-        const payloadOnlyDicatatOleh = { ...payload };
-        delete payloadOnlyDicatatOleh.recorded_by;
-        const res2 = await supabase
-          .from("ddks_records")
-          .insert(payloadOnlyDicatatOleh)
-          .select("*")
-          .maybeSingle();
-        insertedRecord = res2.data;
-        insertError = res2.error;
-      } else if (res1.error.message.includes("dicatat_oleh")) {
-        const payloadOnlyRecordedBy = { ...payload };
-        delete payloadOnlyRecordedBy.dicatat_oleh;
-        const res3 = await supabase
-          .from("ddks_records")
-          .insert(payloadOnlyRecordedBy)
-          .select("*")
-          .maybeSingle();
-        insertedRecord = res3.data;
-        insertError = res3.error;
-      } else {
-        insertError = res1.error;
-      }
-    } else {
-      insertedRecord = res1.data;
-    }
-
-    if (insertError || !insertedRecord) {
-      return {
-        success: false,
-        message:
-          "Gagal menyimpan DDKS: " +
-          (insertError?.message || "Kesalahan database"),
-      };
-    }
-
-    revalidatePath("/komunitas");
-    revalidatePath("/data-anak");
-    revalidatePath("/data-ats");
-    revalidatePath("/profil");
-    revalidatePath("/");
-    return {
-      success: true,
-      message: "Catatan pengukuran DDKS berhasil disimpan!",
-      record: {
-        ...insertedRecord,
-        profiles: { nama_lengkap: profile?.nama_lengkap || "Kader Posyandu" },
-      },
-    };
-  } catch (err: any) {
-    return {
-      success: false,
-      message: err.message || "Gagal menyimpan data DDKS.",
-    };
-  }
+  return {
+    success: false,
+    message: "Fitur pencatatan DDTK / Rekam Medis dinonaktifkan.",
+  };
 }
 
 /**
- * Server Action: Mengambil Data Anak Terkait Komunitas Beserta Riwayat DDKS
+ * Server Action: Mengambil Data Anak Terkait Komunitas
  * Mendukung pemetaan lintas komunitas:
  * - Data yang di-input di PAUD akan muncul di Komunitas Kabupaten/Kota, Kecamatan, Kelurahan, RW, RT sesuai alamat KK / Domisili dan Komunitas Posyandu
  */
@@ -593,7 +380,7 @@ export async function getDataAnakByKomunitas(
   canViewDetail?: boolean;
   isAuthenticated?: boolean;
   canValidate: boolean;
-  canEditDdks: boolean;
+  canEditDdks?: boolean;
   canCreate: boolean;
   canEdit: boolean;
   canDelete: boolean;

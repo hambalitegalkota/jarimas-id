@@ -108,7 +108,6 @@ export default async function KomunitasDataAtsPage({
   const {
     data: atsList,
     canValidate,
-    canEditDdtk,
     canManage,
     canAccessDaftarNama: serverCanAccess,
     currentUserId,
@@ -183,7 +182,6 @@ export default async function KomunitasDataAtsPage({
         komunitas={komunitas}
         initialAts={atsList}
         canValidate={hasRootAccess || (isPkbmOrSkb && (canManage || isAdminOrPengurus)) ? true : canValidate}
-        canEditDdtk={hasRootAccess ? true : canEditDdtk}
         canManage={hasRootAccess || (isPkbmOrSkb && (canManage || isAdminOrPengurus)) ? true : canManage}
         canAccessDaftarNama={canAccessDaftarNama}
         currentUserId={currentUserId}

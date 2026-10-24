@@ -51,7 +51,6 @@ interface DataAtsClientViewProps {
   komunitas: KomunitasWithMembership;
   initialAts: DataAtsItem[];
   canValidate: boolean;
-  canEditDdtk: boolean;
   canManage?: boolean;
   canAccessDaftarNama?: boolean;
   currentUserId?: string | null;
@@ -62,7 +61,6 @@ export function DataAtsClientView({
   komunitas,
   initialAts,
   canValidate,
-  canEditDdtk,
   canManage = false,
   canAccessDaftarNama: initialCanAccessDaftarNama,
   currentUserId = null,
@@ -930,7 +928,6 @@ export function DataAtsClientView({
                     komunitasId={komunitas.id}
                     komunitasNama={komunitas.nama}
                     canValidate={canValidate}
-                    canEditDdtk={canEditDdtk}
                     canManage={canManage}
                     currentUserId={currentUserId}
                     isSuperAdmin={isSuperAdmin}

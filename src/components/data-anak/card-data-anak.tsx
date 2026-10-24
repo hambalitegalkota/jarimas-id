@@ -25,17 +25,15 @@ import {
 } from "lucide-react";
 import { validateDataAnak } from "@/app/actions/data-anak";
 import { formatNamaSekolahDisplay } from "@/lib/data-anak-helpers";
-import { DdksDrawer } from "./ddks-drawer";
 import { ModalEditDataAnak } from "./modal-edit-data-anak";
 import { ModalKeluarDataAnak } from "./modal-keluar-data-anak";
-import type { DataAnakItem, DdksRecord, KomunitasWithMembership } from "@/types/database";
+import type { DataAnakItem, KomunitasWithMembership } from "@/types/database";
 import { cn } from "@/lib/utils";
 
 interface CardDataAnakProps {
   anak: DataAnakItem;
   komunitas?: KomunitasWithMembership;
   canValidate: boolean;
-  canEditDdks: boolean;
   canEdit?: boolean;
   canDelete?: boolean;
   isReadOnly?: boolean;
@@ -111,7 +109,6 @@ export function CardDataAnak({
   anak,
   komunitas,
   canValidate,
-  canEditDdks,
   canEdit,
   canDelete,
   isReadOnly,
@@ -120,7 +117,6 @@ export function CardDataAnak({
 }: CardDataAnakProps) {
   const [currentChild, setCurrentChild] = useState<DataAnakItem>(anak);
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isKeluarModalOpen, setIsKeluarModalOpen] = useState(false);
   const [isPendingValidate, startValidateTransition] = useTransition();
@@ -128,7 +124,6 @@ export function CardDataAnak({
   const isPaud = komunitas?.jenis === "satuan_paud" || currentChild.is_sekolah;
   const isApproved = currentChild.status_approval === "approved";
   const ageString = calculateAge(currentChild.tanggal_lahir);
-  const latestDdks = currentChild.latest_ddks;
 
   const kkAddressStr = formatAddressString(
     currentChild.kk_jalan,
@@ -165,16 +160,6 @@ export function CardDataAnak({
         alert(res.message);
       }
     });
-  };
-
-  const handleRecordAdded = (newRecord: DdksRecord) => {
-    const updated = {
-      ...currentChild,
-      latest_ddks: newRecord,
-      ddks_history: [newRecord, ...(currentChild.ddks_history || [])],
-    };
-    setCurrentChild(updated);
-    onUpdate?.(updated);
   };
 
   const handleChildUpdated = (updated: DataAnakItem) => {
@@ -333,52 +318,11 @@ export function CardDataAnak({
             </div>
           )}
 
-          {/* DDTK Highlight Bar */}
-          {latestDdks ? (
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1.5 rounded-lg bg-primary/5 border border-primary/20 px-2.5 py-1.5 text-xs">
-              <div className="flex flex-wrap items-center gap-3 font-semibold">
-                <div className="flex items-center gap-1 text-primary">
-                  <Scale className="h-3.5 w-3.5 text-primary" />
-                  <span>{latestDdks.berat_badan} kg</span>
-                </div>
-                <div className="flex items-center gap-1 text-foreground">
-                  <Ruler className="h-3.5 w-3.5 text-muted-foreground" />
-                  <span>{latestDdks.tinggi_badan} cm</span>
-                </div>
-                <div className="flex items-center gap-1 text-muted-foreground">
-                  <Activity className="h-3.5 w-3.5 text-muted-foreground" />
-                  <span>LK {latestDdks.lingkar_kepala} cm</span>
-                </div>
-              </div>
-              <span className="text-[11px] font-medium text-muted-foreground" suppressHydrationWarning>
-                {new Date(latestDdks.created_at).toLocaleDateString("id-ID", {
-                  month: "short",
-                  year: "numeric",
-                })}
-              </span>
-            </div>
-          ) : (
-            <div className="rounded-lg bg-secondary/10 border border-secondary/25 px-2.5 py-1.5 text-center text-xs font-medium text-amber-900 dark:text-amber-200 flex items-center justify-center gap-1.5">
-              <AlertCircle className="h-3.5 w-3.5 text-secondary shrink-0" />
-              <span>Data Belum Di Isi Oleh Posyandu</span>
-            </div>
-          )}
-
           {/* Action Buttons Bar */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-1.5 pt-2 border-t border-border/60">
-            <button
-              type="button"
-              onClick={() => setIsDrawerOpen(true)}
-              className="flex flex-1 h-8 sm:h-8.5 items-center justify-center gap-1.5 rounded-lg bg-muted hover:bg-muted/80 active:scale-98 border border-border px-2.5 text-xs font-semibold text-foreground transition-all cursor-pointer"
-            >
-              <Activity className="h-3.5 w-3.5 text-muted-foreground" />
-              <span>{canEditDdks ? "Catat DDTK Posyandu" : "Rekam DDTK"}</span>
-              <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
-            </button>
-
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-1.5 pt-2 border-t border-border/60">
             {/* Menu Edit Data & Keluar untuk Data Anak (Admin, Kepala Sekolah, Guru PAUD / Pengurus / Pembuat Data) */}
-            {(canEdit || canDelete || isPaud) && (
-              <div className="flex items-center gap-1.5 shrink-0">
+            {(canEdit || canDelete || isPaud) ? (
+              <div className="flex items-center gap-1.5">
                 {canEdit !== false && (
                   <button
                     type="button"
@@ -401,14 +345,14 @@ export function CardDataAnak({
                   </button>
                 )}
               </div>
-            )}
+            ) : <div />}
 
             {!isApproved && canValidate && (
               <button
                 type="button"
                 onClick={handleValidate}
                 disabled={isPendingValidate}
-                className="flex h-8 sm:h-8.5 items-center justify-center gap-1.5 rounded-lg bg-primary hover:bg-primary-hover active:scale-98 px-3 text-xs font-bold text-primary-foreground transition-all shadow-sm disabled:opacity-50 cursor-pointer"
+                className="flex h-8 sm:h-8.5 items-center justify-center gap-1.5 rounded-lg bg-primary hover:bg-primary-hover active:scale-98 px-3 text-xs font-bold text-primary-foreground transition-all shadow-sm disabled:opacity-50 cursor-pointer ml-auto"
               >
                 {isPendingValidate ? (
                   <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -423,15 +367,6 @@ export function CardDataAnak({
           </div>
         </div>
       </div>
-
-      {/* DDKS Drawer */}
-      <DdksDrawer
-        anak={currentChild}
-        isOpen={isDrawerOpen}
-        canEditDdks={canEditDdks}
-        onClose={() => setIsDrawerOpen(false)}
-        onRecordAdded={handleRecordAdded}
-      />
 
       {/* Edit Data Anak Modal */}
       {isEditModalOpen && (

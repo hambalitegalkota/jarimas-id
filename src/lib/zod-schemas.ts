@@ -316,35 +316,7 @@ export const DataAtsSchema = z.object({
 export type DataAtsInput = z.infer<typeof DataAtsSchema>;
 export type DataAtsFormValues = DataAtsInput;
 
-/**
- * Skema Validasi Deteksi Dini Tumbuh Kembang (DDTK / DDKS) / Antropometri
- */
-export const DdksSchema = z.object({
-  beratBadan: z.coerce
-    .number()
-    .positive("Berat badan harus lebih dari 0 kg")
-    .max(150, "Berat badan maksimal 150 kg"),
-  tinggiBadan: z.coerce
-    .number()
-    .positive("Tinggi badan harus lebih dari 0 cm")
-    .max(250, "Tinggi badan maksimal 250 cm"),
-  panjangBadan: z.coerce
-    .number()
-    .positive("Panjang badan harus lebih dari 0 cm")
-    .max(250, "Panjang badan maksimal 250 cm")
-    .optional()
-    .nullable(),
-  lingkarKepala: z.coerce
-    .number()
-    .positive("Lingkar kepala harus lebih dari 0 cm")
-    .max(100, "Lingkar kepala maksimal 100 cm"),
-});
 
-export const DdtkSchema = DdksSchema;
-export type DdksInput = z.infer<typeof DdksSchema>;
-export type DdksFormValues = DdksInput;
-export type DdtkInput = DdksInput;
-export type DdtkFormValues = DdksFormValues;
 
 /**
  * Skema Validasi Kabar Warga

@@ -49,7 +49,7 @@ const FALLBACK_SHOWCASE_PRODUCTS: MarketProduk[] = [
     nama: "Stadiometer Portabel Presisi Posyandu",
     deskripsi:
       "Alat ukur tinggi badan presisi standar Kemenkes RI dengan baseboard kokoh dan mistar lipat untuk kader Posyandu.",
-    kategori: "Antropometri",
+    kategori: "Peralatan Posyandu",
     harga: 450000,
     stok: 15,
     gambar_url:
@@ -61,7 +61,7 @@ const FALLBACK_SHOWCASE_PRODUCTS: MarketProduk[] = [
     nama: "Baby Scale & Timbangan Digital 2-in-1",
     deskripsi:
       "Timbangan digital balita dengan tray lepas-pasang, akurasi 5 gram, fitur tare, dan pembacaan instan berlayar LCD.",
-    kategori: "Antropometri",
+    kategori: "Peralatan Posyandu",
     harga: 620000,
     stok: 12,
     gambar_url:
@@ -81,8 +81,8 @@ const FALLBACK_SHOWCASE_PRODUCTS: MarketProduk[] = [
     is_active: true,
   },
   {
-    id: "sample-modul-ddtk-4",
-    nama: "Modul Edukasi Stimulasi Motorik & DDTK",
+    id: "sample-modul-edukasi-4",
+    nama: "Modul Edukasi Stimulasi Motorik Anak",
     deskripsi:
       "Buku panduan stimulasi motorik kasar, halus, dan bicara usia 0-6 tahun lengkap dengan kartu stimulasi PAUD.",
     kategori: "Edukasi PAUD",
@@ -258,7 +258,7 @@ export default async function HomePage() {
               <span className="text-amber-300">Kota Tegal</span>
             </h1>
             <p className="text-xs sm:text-sm text-teal-100/90 leading-relaxed font-normal">
-              Akses cepat data riil pemantauan DDTK Posyandu, pemetaan Anak Tidak Sekolah (ATS), dan jejaring komunitas RT/RW se-Kota Tegal.
+              Akses cepat data riil pendataan anak usia dini (0-6 tahun), pemetaan Anak Tidak Sekolah (ATS), dan jejaring komunitas RT/RW se-Kota Tegal.
             </p>
           </div>
 
@@ -300,7 +300,7 @@ export default async function HomePage() {
               <span className="text-base sm:text-lg font-black text-amber-300 block font-mono">
                 209 Posyandu
               </span>
-              <span className="text-[11px] text-teal-100/80">Layanan DDTK</span>
+              <span className="text-[11px] text-teal-100/80">Layanan Posyandu</span>
             </div>
             <div className="p-2.5 rounded-md bg-white/5 border border-white/10">
               <span className="text-base sm:text-lg font-black text-teal-200 block font-mono">
@@ -571,33 +571,33 @@ export default async function HomePage() {
             </Link>
           </div>
 
-          {/* Bento Card 3: Pemantauan Tumbuh Kembang & Antropometri */}
+          {/* Bento Card 3: Pendataan Anak Usia Dini */}
           <div className="rounded-lg border border-border bg-card p-4 sm:p-5 space-y-3.5 shadow-sm hover:border-primary/40 transition-colors flex flex-col justify-between">
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-rose-50 dark:bg-rose-950/60 text-rose-600 border border-rose-200 dark:border-rose-800 shadow-xs">
-                  <HeartPulse className="h-5 w-5" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 border border-blue-200 dark:border-blue-800 shadow-xs">
+                  <Baby className="h-5 w-5" />
                 </div>
-                <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-md bg-rose-50 text-rose-800 dark:bg-rose-950 dark:text-rose-300 border border-rose-200 dark:border-rose-800">
-                  DDTK Posyandu
+                <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-md bg-blue-50 text-blue-800 dark:bg-blue-950 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                  Data Anak Usia Dini
                 </span>
               </div>
 
               <div className="space-y-1">
                 <h3 className="text-sm sm:text-base font-bold text-card-foreground">
-                  Pemantauan Tumbuh Kembang &amp; Antropometri
+                  Pendataan Anak Usia Dini
                 </h3>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  Pencatatan berkala berat badan, tinggi badan, lingkar kepala, dan deteksi dini risiko stunting dengan kurva pertumbuhan standar WHO.
+                  Pendataan identitas, kependudukan, data orang tua, dan partisipasi pendidikan anak usia 0-6 tahun berbasis kolaborasi warga.
                 </p>
               </div>
             </div>
 
             <Link
-              href="/komunitas?tab=posyandu"
+              href="/komunitas"
               className="inline-flex items-center gap-1.5 text-xs font-bold text-primary hover:underline pt-1"
             >
-              <span>Pantau di Komunitas Posyandu</span>
+              <span>Pantau di Komunitas</span>
               <ChevronRight className="h-3.5 w-3.5" />
             </Link>
           </div>

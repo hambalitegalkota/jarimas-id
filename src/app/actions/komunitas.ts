@@ -2923,7 +2923,7 @@ export async function seedPosyanduToSupabase(): Promise<{
       const cleanNama = `Posyandu ${coreName}`;
       const cleanDeskripsi = (
         p.deskripsi ||
-        `Layanan terpadu Posyandu ${coreName} ${p.kelurahan}: penimbangan berat badan, tinggi badan, imunisasi, DDKS, dan PMT balita serta ibu hamil.`
+        `Layanan terpadu Posyandu ${coreName} ${p.kelurahan}: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.`
       ).replace(/Posyandu\s+Posyandu/gi, "Posyandu");
 
       return {

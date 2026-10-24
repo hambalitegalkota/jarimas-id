@@ -477,7 +477,7 @@ export async function POST(req: NextRequest) {
 
 /**
  * GET /api/sync/data-anak
- * Mengambil data anak terkini beserta status verifikasi & pengukuran fisik (DDTK)
+ * Mengambil data anak terkini beserta status verifikasi
  * untuk ditarik ke Google Sheet (fitur "Tarik Data Terbaru dari Website")
  */
 export async function GET(req: NextRequest) {
@@ -495,7 +495,7 @@ export async function GET(req: NextRequest) {
 
     const supabase = getSupabaseAdmin();
 
-    // Ambil seluruh data anak (0–6 tahun) beserta riwayat DDTK terakhir secara paralel chunk
+    // Ambil seluruh data anak (0–6 tahun) secara paralel chunk
     // untuk mencegah batasan maksimal 1.000 baris PostgREST
     const { count: totalRowCount, error: countErr } = await supabase
       .from("data_anak")
@@ -528,13 +528,7 @@ export async function GET(req: NextRequest) {
             alasan_sekolah,
             status_approval,
             created_at,
-            updated_at,
-            ddks_records (
-              berat_badan,
-              tinggi_badan,
-              lingkar_kepala,
-              created_at
-            )
+            updated_at
           `)
           .order("created_at", { ascending: false })
           .range(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE - 1)
@@ -551,10 +545,6 @@ export async function GET(req: NextRequest) {
 
     const formattedList = validChildren.map((c: any) => {
       const parsed = parseDataAnakDetails(c.alasan_sekolah);
-      const sortedDdks = (c.ddks_records || []).sort(
-        (a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-      );
-      const latestDdks = sortedDdks[0] || null;
 
       return {
         id: c.id,
@@ -572,9 +562,6 @@ export async function GET(req: NextRequest) {
         rw: parsed.domisiliRw || parsed.kkRw || "",
         rt: parsed.domisiliRt || parsed.kkRt || "",
         alamat_jalan: parsed.domisiliJalan || parsed.kkJalan || "",
-        berat_badan_kg: latestDdks?.berat_badan || "",
-        tinggi_badan_cm: latestDdks?.tinggi_badan || "",
-        lingkar_kepala_cm: latestDdks?.lingkar_kepala || "",
         status_verifikasi: c.status_approval === "approved" ? "Terverifikasi" : "Pending",
         terakhir_update: c.updated_at || c.created_at,
       };

@@ -57,7 +57,6 @@ export async function updateSession(request: NextRequest) {
       "/profil",
       "/dashboard",
       "/anak",
-      "/ddks",
       "/input-data",
     ];
     const isProtectedRoute = protectedPaths.some((path) =>

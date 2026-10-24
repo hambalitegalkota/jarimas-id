@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/utils/supabase/server";
-import { DataAtsSchema, DdtkSchema } from "@/lib/zod-schemas";
+import { DataAtsSchema } from "@/lib/zod-schemas";
 import { toValidUUID, isSuperAdmin as checkIsSuperAdmin, isAdminPusat as checkIsAdminPusat, isSuperOrAdminPusat, isRoleAdmin } from "@/lib/utils";
 import { normalizeKeinginanSekolah, serializeDataAtsAlasan, isDataAtsRecord } from "@/lib/data-anak-helpers";
 import { extractKomunitasMetadata } from "@/lib/admin-helpers";
@@ -10,7 +10,6 @@ import { findOrGenerateKomunitasSeed, RAW_PKBM_SKB_TEGAL } from "@/lib/constants
 import { getKomunitasDetail } from "./komunitas";
 import type {
   DataAtsItem,
-  DdtkRecord,
   AlasanTidakSekolah,
 } from "@/types/database";
 
@@ -244,46 +243,6 @@ export async function createDataAts(formData: FormData): Promise<{
     }
 
     const newChildId = insertedChild.id;
-
-    // Optional: Simpan DDTK awal jika diisi
-    const beratBadanStr = formData.get("beratBadan")?.toString();
-    const tinggiBadanStr = formData.get("tinggiBadan")?.toString();
-    const lingkarKepalaStr = formData.get("lingkarKepala")?.toString();
-
-    if (beratBadanStr && tinggiBadanStr && lingkarKepalaStr) {
-      const ddtkValidation = DdtkSchema.safeParse({
-        beratBadan: parseFloat(beratBadanStr),
-        tinggiBadan: parseFloat(tinggiBadanStr),
-        lingkarKepala: parseFloat(lingkarKepalaStr),
-      });
-
-      if (ddtkValidation.success) {
-        const ddtkPayload: any = {
-          data_anak_id: newChildId,
-          berat_badan: parseFloat(beratBadanStr),
-          tinggi_badan: parseFloat(tinggiBadanStr),
-          lingkar_kepala: parseFloat(lingkarKepalaStr),
-          catatan: "Pencatatan DDTK saat pendataan awal ATS",
-          dicatat_oleh: user.id,
-          recorded_by: user.id,
-          created_at: new Date().toISOString(),
-        };
-
-        const { error: ddtkError } = await supabase
-          .from("ddks_records")
-          .insert(ddtkPayload);
-
-        if (ddtkError) {
-          if (ddtkError.message.includes("recorded_by")) {
-            delete ddtkPayload.recorded_by;
-            await supabase.from("ddks_records").insert(ddtkPayload);
-          } else if (ddtkError.message.includes("dicatat_oleh")) {
-            delete ddtkPayload.dicatat_oleh;
-            await supabase.from("ddks_records").insert(ddtkPayload);
-          }
-        }
-      }
-    }
 
     revalidatePath(`/komunitas/${komunitasId}/ats`);
     revalidatePath(`/komunitas/${komunitasId}/data`);
@@ -1239,7 +1198,7 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
   success: boolean;
   data: DataAtsItem[];
   canValidate: boolean;
-  canEditDdtk: boolean;
+  canEditDdtk?: boolean;
   canManage: boolean;
   canAccessDaftarNama?: boolean;
   currentUserId?: string | null;
@@ -1428,8 +1387,7 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
           validated_by,
           validated_at,
           created_by,
-          created_at,
-          ddks_records (*)
+          created_at
         `)
         .or("is_sekolah.eq.false,is_sekolah.is.null,nama_sekolah.ilike.%ATS%,alasan_sekolah.ilike.%KEINGINAN%")
         .order("created_at", { ascending: false });
@@ -1505,14 +1463,6 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
 
     const items: DataAtsItem[] = rows
       .map((row: any) => {
-        const records: DdtkRecord[] = (row.ddks_records || []).map((r: any) => ({
-          ...r,
-          recorded_by: r.recorded_by || r.dicatat_oleh || r.created_by || r.user_id,
-        })).sort(
-          (a: any, b: any) =>
-            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-        );
-
         const childKomObj =
           dbKomMap.get(row.komunitas_id) ||
           findOrGenerateKomunitasSeed(row.komunitas_id) ||
@@ -1544,8 +1494,8 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
           validated_at: row.validated_at,
           created_by: row.created_by,
           created_at: row.created_at,
-          latest_ddtk: records[0] || null,
-          ddtk_history: records,
+          latest_ddtk: null,
+          ddtk_history: [],
         };
       })
       .filter((item) => {

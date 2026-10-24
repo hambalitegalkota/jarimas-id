@@ -33,7 +33,6 @@ interface DataAnakClientViewProps {
   canViewDetail?: boolean;
   isAuthenticated?: boolean;
   canValidate: boolean;
-  canEditDdks: boolean;
   canCreate?: boolean;
   canEdit?: boolean;
   canDelete?: boolean;
@@ -48,7 +47,6 @@ export function DataAnakClientView({
   canViewDetail = false,
   isAuthenticated = false,
   canValidate,
-  canEditDdks,
   canCreate = true,
   canEdit = true,
   canDelete = true,
@@ -197,7 +195,7 @@ export function DataAnakClientView({
                   <p className="text-xs text-muted-foreground leading-relaxed">
                     {isPaud
                       ? "Admin, Kepala Sekolah, dan Guru PAUD dapat menambahkan siswa terdaftar di satuan PAUD ini."
-                      : "Daftarkan data balita / PAUD 0–6 tahun pertama untuk pemantauan tumbuh kembang dan verifikasi wilayah."}
+                      : "Daftarkan data balita / PAUD 0–6 tahun pertama untuk pendataan dan verifikasi wilayah."}
                   </p>
                 </div>
               </div>
@@ -208,7 +206,6 @@ export function DataAnakClientView({
                   anak={child}
                   komunitas={komunitas}
                   canValidate={canValidate}
-                  canEditDdks={canEditDdks}
                   canEdit={canEdit}
                   canDelete={canDelete}
                   isReadOnly={isReadOnly}

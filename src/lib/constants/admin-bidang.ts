@@ -21,13 +21,13 @@ export const DAFTAR_BIDANG_SPM_CONFIG: BidangSpmConfig[] = [
     nama: "Bidang Kesehatan",
     badgeLabel: "Kesehatan",
     deskripsi:
-      "Layanan Kesehatan Balita, Posyandu, Pertumbuhan Anak, dan Deteksi Dini Tumbuh Kembang (DDTK)",
+      "Layanan Kesehatan Balita, Posyandu, dan Pertumbuhan Anak Sehat",
     hakAkses:
-      "Melihat rincian detail seluruh hasil pengukuran DDTK, status gizi balita, riwayat penimbangan posyandu, dan cakupan imunisasi se-Kota Tegal (Read-Only).",
+      "Melihat rincian rekapitulasi balita, status gizi, dan cakupan layanan posyandu se-Kota Tegal (Read-Only).",
     cakupanData: [
-      "Riwayat Pengukuran DDTK (Deteksi Dini Tumbuh Kembang) Balita",
-      "Data Layanan dan Kehadiran Penimbangan Posyandu",
-      "Status Gizi, Stunting & Tumbuh Kembang Balita",
+      "Data Pendataan Balita dan Anak Usia Dini",
+      "Data Layanan dan Kehadiran Posyandu",
+      "Status Gizi & Kesehatan Balita",
       "Rekapitulasi Layanan Kesehatan Anak & Kader Posyandu",
     ],
   },

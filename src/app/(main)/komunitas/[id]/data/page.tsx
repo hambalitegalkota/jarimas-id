@@ -98,7 +98,6 @@ export default async function KomunitasDataAnakPage({
     canViewDetail,
     isAuthenticated,
     canValidate,
-    canEditDdks,
     canCreate,
     canEdit,
     canDelete,
@@ -126,7 +125,7 @@ export default async function KomunitasDataAnakPage({
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <span className="rounded-md bg-primary/10 px-2.5 py-0.5 text-xs font-bold text-primary border border-primary/20">
-              DATA ANAK &amp; DDTK
+              DATA ANAK USIA DINI
             </span>
             <span className="text-xs font-semibold text-muted-foreground uppercase">{komunitas.nama}</span>
           </div>
@@ -134,7 +133,7 @@ export default async function KomunitasDataAnakPage({
             Data Anak (0–6 Tahun)
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed max-w-lg">
-            Pemantauan data anak usia dini, verifikasi data, dan catatan DDTK tumbuh kembang di {komunitas.nama}.
+            Pemantauan dan verifikasi pendataan anak usia dini (0–6 tahun) di {komunitas.nama}.
           </p>
         </div>
       </div>
@@ -147,7 +146,6 @@ export default async function KomunitasDataAnakPage({
         canViewDetail={hasRootAccess ? true : canViewDetail}
         isAuthenticated={hasRootAccess ? true : isAuthenticated}
         canValidate={hasRootAccess ? true : canValidate}
-        canEditDdks={hasRootAccess ? true : canEditDdks}
         canCreate={hasRootAccess ? true : canCreate}
         canEdit={hasRootAccess ? true : canEdit}
         canDelete={hasRootAccess ? true : canDelete}

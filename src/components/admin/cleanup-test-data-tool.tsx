@@ -114,7 +114,7 @@ export function CleanupTestDataTool() {
                 </span>
               </div>
               <p className="text-2xs text-muted-foreground mt-0.5">
-                Alat bantu reset dan pembersihan data uji coba (Data Anak, DDTK, Kader, Akun Test) secara selektif maupun menyeluruh.
+                Alat bantu reset dan pembersihan data uji coba (Data Anak, Kader, Akun Test) secara selektif maupun menyeluruh.
               </p>
             </div>
           </div>
@@ -136,7 +136,7 @@ export function CleanupTestDataTool() {
 
             {/* Grid 3 Opsi Terarah */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {/* Opsi 1: Data Anak & DDTK */}
+              {/* Opsi 1: Data Anak */}
               <div className="p-3.5 rounded-lg border border-border bg-card flex flex-col justify-between gap-3 shadow-xs">
                 <div className="space-y-1">
                   <div className="flex items-center gap-1.5 text-primary font-semibold text-xs">
@@ -144,7 +144,7 @@ export function CleanupTestDataTool() {
                     <span>1. Bersihkan Data Anak</span>
                   </div>
                   <p className="text-2xs text-muted-foreground leading-relaxed">
-                    Menghapus seluruh Data Anak (0-6 thn, Balita, PAUD, ATS) &amp; riwayat pengukuran DDTK uji coba ke 0.
+                    Menghapus seluruh Data Anak (0-6 thn, Balita, PAUD, ATS) uji coba ke 0.
                   </p>
                 </div>
 
@@ -215,7 +215,7 @@ export function CleanupTestDataTool() {
                     <span>Pembersihan Menyeluruh (Full Testing Reset)</span>
                   </div>
                   <p className="text-2xs text-muted-foreground leading-relaxed">
-                    Menghapus sekaligus: Semua Data Anak &amp; DDTK, Semua Data Kader &amp; Keanggotaan, Postingan Kabar Uji Coba, dan Akun Pengguna Non-Admin. Akun Super Admin tetap aman.
+                    Menghapus sekaligus: Semua Data Anak, Semua Data Kader &amp; Keanggotaan, Postingan Kabar Uji Coba, dan Akun Pengguna Non-Admin. Akun Super Admin tetap aman.
                   </p>
                 </div>
 
@@ -238,10 +238,10 @@ export function CleanupTestDataTool() {
                   <AlertTriangle className="h-4 w-4 text-secondary shrink-0 mt-0.5" />
                   <div>
                     <span className="font-bold text-destructive block mb-0.5">
-                      Konfirmasi Penghapusan Permanen:
+                       Konfirmasi Penghapusan Permanen:
                     </span>
                     {confirmType === "anak" && (
-                      <span className="text-muted-foreground">Apakah Anda yakin ingin menghapus seluruh Data Anak &amp; riwayat pengukuran DDTK uji coba?</span>
+                      <span className="text-muted-foreground">Apakah Anda yakin ingin menghapus seluruh Data Anak uji coba?</span>
                     )}
                     {confirmType === "kader" && (
                       <span className="text-muted-foreground">Apakah Anda yakin ingin menghapus seluruh Data Kader &amp; keanggotaan komunitas uji coba?</span>
@@ -250,7 +250,7 @@ export function CleanupTestDataTool() {
                       <span className="text-muted-foreground">Apakah Anda yakin ingin menghapus seluruh akun pengguna selain Super Admin?</span>
                     )}
                     {confirmType === "all" && (
-                      <span className="text-muted-foreground">Apakah Anda yakin ingin melakukan pembersihan MENYELURUH (Data Anak, DDTK, Kader, Postingan, dan Akun Non-Admin)?</span>
+                      <span className="text-muted-foreground">Apakah Anda yakin ingin melakukan pembersihan MENYELURUH (Data Anak, Kader, Postingan, dan Akun Non-Admin)?</span>
                     )}
                   </div>
                 </div>
