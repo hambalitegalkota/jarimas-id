@@ -371,7 +371,20 @@ export default async function HomePage() {
             </span>
           </Link>
 
-          {/* 4. Data Balita */}
+          {/* 4. PKBM & SKB */}
+          <Link
+            href="/komunitas?tab=pkbm_skb"
+            className="flex flex-col items-center gap-1.5 p-2 rounded-lg bg-card border border-border hover:border-primary/50 hover:bg-muted/50 transition-all text-center group active:scale-95 shadow-sm"
+          >
+            <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-purple-50 dark:bg-purple-950/60 text-purple-600 border border-purple-200 dark:border-purple-800/60 group-hover:scale-105 transition-transform">
+              <School className="h-5 w-5" />
+            </div>
+            <span className="text-[11px] sm:text-xs font-semibold text-foreground line-clamp-1">
+              PKBM &amp; SKB
+            </span>
+          </Link>
+
+          {/* 5. Data Balita */}
           <Link
             href="/data-anak"
             className="flex flex-col items-center gap-1.5 p-2 rounded-lg bg-card border border-border hover:border-primary/50 hover:bg-muted/50 transition-all text-center group active:scale-95 shadow-sm"
@@ -384,7 +397,7 @@ export default async function HomePage() {
             </span>
           </Link>
 
-          {/* 5. Cek ATS */}
+          {/* 6. Cek ATS */}
           <Link
             href="/data-ats"
             className="flex flex-col items-center gap-1.5 p-2 rounded-lg bg-card border border-border hover:border-primary/50 hover:bg-muted/50 transition-all text-center group active:scale-95 shadow-sm"
@@ -397,7 +410,7 @@ export default async function HomePage() {
             </span>
           </Link>
 
-          {/* 6. Perpustakaan Digital */}
+          {/* 7. Perpustakaan Digital */}
           <Link
             href="/perpustakaan"
             className="flex flex-col items-center gap-1.5 p-2 rounded-lg bg-card border border-border hover:border-teal-500/50 hover:bg-muted/50 transition-all text-center group active:scale-95 shadow-sm"
@@ -410,7 +423,7 @@ export default async function HomePage() {
             </span>
           </Link>
 
-          {/* 7. Jarimas Market */}
+          {/* 8. Jarimas Market */}
           <Link
             href="/market"
             className="flex flex-col items-center gap-1.5 p-2 rounded-lg bg-card border border-border hover:border-secondary/50 hover:bg-muted/50 transition-all text-center group active:scale-95 shadow-sm"
@@ -423,7 +436,7 @@ export default async function HomePage() {
             </span>
           </Link>
 
-          {/* 8. Kabar Warga */}
+          {/* 9. Kabar Warga */}
           <Link
             href="/kabar"
             className="flex flex-col items-center gap-1.5 p-2 rounded-lg bg-card border border-border hover:border-primary/50 hover:bg-muted/50 transition-all text-center group active:scale-95 shadow-sm"
@@ -433,19 +446,6 @@ export default async function HomePage() {
             </div>
             <span className="text-[11px] sm:text-xs font-semibold text-foreground line-clamp-1">
               Kabar Warga
-            </span>
-          </Link>
-
-          {/* 9. PKBM & SKB */}
-          <Link
-            href="/komunitas?tab=pkbm_skb"
-            className="flex flex-col items-center gap-1.5 p-2 rounded-lg bg-card border border-border hover:border-primary/50 hover:bg-muted/50 transition-all text-center group active:scale-95 shadow-sm"
-          >
-            <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-purple-50 dark:bg-purple-950/60 text-purple-600 border border-purple-200 dark:border-purple-800/60 group-hover:scale-105 transition-transform">
-              <School className="h-5 w-5" />
-            </div>
-            <span className="text-[11px] sm:text-xs font-semibold text-foreground line-clamp-1">
-              PKBM &amp; SKB
             </span>
           </Link>
         </div>
