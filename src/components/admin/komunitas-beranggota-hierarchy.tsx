@@ -56,7 +56,7 @@ export function KomunitasBeranggotaHierarchy() {
         setError(res.message || "Gagal memuat data hierarki komunitas.");
       }
     } catch (err: any) {
-      setError(err.message || "Terjadi kesalahan jaringan.");
+      setError("Gagal memuat hierarki komunitas beranggota. Silakan segarkan halaman.");
     } finally {
       setLoading(false);
     }
