@@ -384,7 +384,7 @@ export default async function HomePage() {
             </span>
           </Link>
 
-          {/* 5. Data Balita */}
+          {/* 5. Anak 0-6 Tahun */}
           <Link
             href="/data-anak"
             className="flex flex-col items-center gap-1.5 p-2 rounded-lg bg-card border border-border hover:border-primary/50 hover:bg-muted/50 transition-all text-center group active:scale-95 shadow-sm"
@@ -393,7 +393,7 @@ export default async function HomePage() {
               <Baby className="h-5 w-5" />
             </div>
             <span className="text-[11px] sm:text-xs font-semibold text-foreground line-clamp-1">
-              Data Balita
+              Anak 0-6 Tahun
             </span>
           </Link>
 
