@@ -20,8 +20,8 @@ import type {
   UserAdminBidangSummary,
 } from "@/types/database";
 
-// Re-export constants for backwards compatibility if needed
-export { DAFTAR_BIDANG_SPM_CONFIG, BIDANG_LABEL_MAP, BIDANG_SLUG_MAP };
+// Constants diimpor dari @/lib/constants/admin-bidang untuk penggunaan internal
+
 
 /**
  * Memeriksa hak wewenang pengguna pemanggil:
