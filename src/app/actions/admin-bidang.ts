@@ -27,7 +27,24 @@ export { DAFTAR_BIDANG_SPM_CONFIG, BIDANG_LABEL_MAP, BIDANG_SLUG_MAP };
  * Memeriksa hak wewenang pengguna pemanggil:
  * Hanya Super Admin, Admin Pusat, dan Admin Kota yang dapat mengelola Admin Bidang.
  */
-async function verifyAdminBidangManagerContext() {
+/**
+ * Memeriksa hak wewenang pengguna pemanggil:
+ * Hanya Super Admin, Admin Pusat, dan Admin Kota yang dapat mengelola Admin Bidang.
+ */
+async function verifyAdminBidangManagerContext(): Promise<
+  | {
+      authorized: true;
+      supabase: any;
+      user: any;
+      isSuperAdmin: boolean;
+      isAdminPusat: boolean;
+      isAdminKota: boolean;
+    }
+  | {
+      authorized: false;
+      errorResponse: { success: false; message: string; data?: any[] };
+    }
+> {
   const supabase = await createClient();
   const {
     data: { user },
@@ -35,7 +52,13 @@ async function verifyAdminBidangManagerContext() {
   } = await supabase.auth.getUser();
 
   if (authError || !user) {
-    throw new Error("Akses ditolak: Anda harus masuk terlebih dahulu.");
+    return {
+      authorized: false,
+      errorResponse: {
+        success: false,
+        message: "Akses ditolak: Anda harus masuk terlebih dahulu.",
+      },
+    };
   }
 
   const { data: profile } = await supabase
@@ -55,7 +78,14 @@ async function verifyAdminBidangManagerContext() {
   const isPusat = !isSuper && checkIsAdminPusat(userProfileCtx);
 
   if (isSuper || isPusat) {
-    return { supabase, user, isSuperAdmin: isSuper, isAdminPusat: isPusat, isAdminKota: true };
+    return {
+      authorized: true,
+      supabase,
+      user,
+      isSuperAdmin: isSuper,
+      isAdminPusat: isPusat,
+      isAdminKota: true,
+    };
   }
 
   // Cek apakah pengguna merupakan Admin Kota Tegal
@@ -75,12 +105,24 @@ async function verifyAdminBidangManagerContext() {
   });
 
   if (!isAdminKota) {
-    throw new Error(
-      "Akses ditolak: Hanya Super Admin, Admin Pusat, dan Admin Kota yang berhak mengangkat atau mencabut Admin Bidang."
-    );
+    return {
+      authorized: false,
+      errorResponse: {
+        success: false,
+        message:
+          "Akses ditolak: Hanya Super Admin, Admin Pusat, dan Admin Kota yang berhak mengangkat atau mencabut Admin Bidang.",
+      },
+    };
   }
 
-  return { supabase, user, isSuperAdmin: false, isAdminPusat: false, isAdminKota: true };
+  return {
+    authorized: true,
+    supabase,
+    user,
+    isSuperAdmin: false,
+    isAdminPusat: false,
+    isAdminKota: true,
+  };
 }
 
 /**
@@ -92,7 +134,15 @@ export async function getAdminBidangListAction(): Promise<{
   data: UserAdminBidangSummary[];
 }> {
   try {
-    const { supabase } = await verifyAdminBidangManagerContext();
+    const ctx = await verifyAdminBidangManagerContext();
+    if (!ctx.authorized) {
+      return {
+        success: false,
+        message: ctx.errorResponse.message,
+        data: [],
+      };
+    }
+    const { supabase } = ctx;
 
     // 1. Ambil dari anggota_komunitas dengan peran 'Admin Bidang %'
     const { data: memberRows, error: memberErr } = await supabase
@@ -120,7 +170,7 @@ export async function getAdminBidangListAction(): Promise<{
     const userCreatedAtMap = new Map<string, string>();
 
     // Mapping dari anggota_komunitas
-    (memberRows || []).forEach((row) => {
+    (memberRows || []).forEach((row: any) => {
       const p = (row.peran || "").toLowerCase();
       let matchedBidang: BidangSpmId | null = null;
       if (p.includes("pendidikan")) matchedBidang = "pendidikan";
@@ -142,10 +192,10 @@ export async function getAdminBidangListAction(): Promise<{
     });
 
     // Mapping dari dedicated admin_bidang table
-    dedicatedRows.forEach((row) => {
+    dedicatedRows.forEach((row: any) => {
       if (row.user_id && row.bidang) {
-        const rawB = row.bidang.toLowerCase().trim();
-        const bKey = BIDANG_SLUG_MAP[rawB] || (rawB as BidangSpmId);
+        const rawB = String(row.bidang).toLowerCase().trim();
+        const bKey = (BIDANG_SLUG_MAP[rawB] || rawB) as BidangSpmId;
         if (bKey && BIDANG_LABEL_MAP[bKey]) {
           if (!userBidangMap.has(row.user_id)) {
             userBidangMap.set(row.user_id, new Set());
@@ -169,7 +219,7 @@ export async function getAdminBidangListAction(): Promise<{
       .select("id, nama_lengkap, email, nomor_hp")
       .in("id", userIds);
 
-    const profileMap = new Map((profiles || []).map((p) => [p.id, p]));
+    const profileMap = new Map<string, any>((profiles || []).map((p: any) => [p.id, p]));
 
     const result: UserAdminBidangSummary[] = userIds.map((uid) => {
       const prof = profileMap.get(uid);
@@ -214,7 +264,14 @@ export async function assignAdminBidangAction(
   message: string;
 }> {
   try {
-    const { supabase, user } = await verifyAdminBidangManagerContext();
+    const ctx = await verifyAdminBidangManagerContext();
+    if (!ctx.authorized) {
+      return {
+        success: false,
+        message: ctx.errorResponse.message,
+      };
+    }
+    const { supabase, user } = ctx;
 
     if (!targetUserId) {
       return { success: false, message: "ID Pengguna target tidak valid." };
@@ -270,7 +327,12 @@ export async function assignAdminBidangAction(
 
       if (insErr) {
         console.error("Gagal menyisipkan ke tabel admin_bidang:", insErr);
-        throw new Error(insErr.message || "Gagal menyimpan penetapan ke tabel admin_bidang.");
+        return {
+          success: false,
+          message:
+            insErr.message ||
+            "Gagal menyimpan penetapan ke tabel admin_bidang. Pastikan konfigurasi SUPABASE_SERVICE_ROLE_KEY di server sudah benar.",
+        };
       }
     }
 
@@ -346,11 +408,12 @@ export async function assignAdminBidangAction(
         ? `berhasil ditetapkan sebagai Admin pada ${validBidangList.length} Bidang (${validBidangList.map((b) => BIDANG_LABEL_MAP[b].replace("Admin ", "")).join(", ")})`
         : "berhasil dicabut dari seluruh penugasan Admin Bidang";
 
-    revalidatePath("/profil");
-    revalidatePath("/data-anak");
-    revalidatePath("/data-ats");
-    revalidatePath("/komunitas");
-    revalidatePath("/kabar");
+    try {
+      revalidatePath("/profil");
+      revalidatePath("/data-anak");
+    } catch (revErr) {
+      console.warn("revalidatePath opsional dilewati:", revErr);
+    }
 
     return {
       success: true,
@@ -360,7 +423,7 @@ export async function assignAdminBidangAction(
     console.error("Error assignAdminBidangAction:", err);
     return {
       success: false,
-      message: err.message || "Gagal memperbarui penetapan Admin Bidang.",
+      message: err?.message || "Gagal memperbarui penetapan Admin Bidang.",
     };
   }
 }
@@ -376,7 +439,14 @@ export async function revokeAdminBidangAction(
   message: string;
 }> {
   try {
-    const { supabase, user } = await verifyAdminBidangManagerContext();
+    const ctx = await verifyAdminBidangManagerContext();
+    if (!ctx.authorized) {
+      return {
+        success: false,
+        message: ctx.errorResponse.message,
+      };
+    }
+    const { supabase, user } = ctx;
 
     if (!targetUserId) {
       return { success: false, message: "ID Pengguna target tidak valid." };
@@ -422,7 +492,9 @@ export async function revokeAdminBidangAction(
 
         if (existingMember) {
           if (remainingBidang && remainingBidang.length > 0) {
-            const bList = remainingBidang.map((r: any) => r.bidang as BidangSpmId);
+            const bList: BidangSpmId[] = remainingBidang
+              .map((r: any) => r.bidang as BidangSpmId)
+              .filter((b: BidangSpmId) => Boolean(BIDANG_LABEL_MAP[b]));
             const consolidatedRole =
               bList.length === 1
                 ? BIDANG_LABEL_MAP[bList[0]]
@@ -452,9 +524,12 @@ export async function revokeAdminBidangAction(
       console.warn("Sinkronisasi pencabutan anggota_komunitas dilewati:", syncErr);
     }
 
-    revalidatePath("/profil");
-    revalidatePath("/data-anak");
-    revalidatePath("/data-ats");
+    try {
+      revalidatePath("/profil");
+      revalidatePath("/data-anak");
+    } catch (revErr) {
+      console.warn("revalidatePath opsional dilewati:", revErr);
+    }
 
     return {
       success: true,
@@ -464,7 +539,7 @@ export async function revokeAdminBidangAction(
     console.error("Error revokeAdminBidangAction:", err);
     return {
       success: false,
-      message: err.message || "Gagal mencabut Admin Bidang.",
+      message: err?.message || "Gagal mencabut Admin Bidang.",
     };
   }
 }

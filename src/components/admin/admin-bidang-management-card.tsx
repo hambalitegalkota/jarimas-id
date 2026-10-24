@@ -229,8 +229,13 @@ export function AdminBidangManagementCard({
           setToastMessage({ text: res.message, isError: true });
         }
       } catch (err: any) {
+        const rawMsg = err?.message || "";
+        const cleanMsg =
+          rawMsg.includes("Minified React error") || rawMsg.includes("Server Components")
+            ? "Terjadi kendala koneksi server saat menyimpan penetapan. Silakan segarkan halaman dan coba kembali."
+            : rawMsg || "Gagal menyimpan penetapan Admin Bidang.";
         setToastMessage({
-          text: err.message || "Gagal menyimpan penetapan Admin Bidang.",
+          text: cleanMsg,
           isError: true,
         });
       } finally {
@@ -272,7 +277,12 @@ export function AdminBidangManagementCard({
           setToastMessage({ text: res.message, isError: true });
         }
       } catch (err: any) {
-        setToastMessage({ text: err.message || "Gagal mencabut Admin Bidang.", isError: true });
+        const rawMsg = err?.message || "";
+        const cleanMsg =
+          rawMsg.includes("Minified React error") || rawMsg.includes("Server Components")
+            ? "Terjadi kendala koneksi server saat mencabut penugasan. Silakan segarkan halaman dan coba kembali."
+            : rawMsg || "Gagal mencabut Admin Bidang.";
+        setToastMessage({ text: cleanMsg, isError: true });
       } finally {
         setTimeout(() => setToastMessage(null), 5000);
       }
