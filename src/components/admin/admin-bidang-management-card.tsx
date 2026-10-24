@@ -28,11 +28,11 @@ import {
 } from "lucide-react";
 import { useGlobalMessageNotification } from "@/components/notifications/global-message-notification-provider";
 import {
-  DAFTAR_BIDANG_SPM_CONFIG,
   getAdminBidangListAction,
   assignAdminBidangAction,
   revokeAdminBidangAction,
 } from "@/app/actions/admin-bidang";
+import { DAFTAR_BIDANG_SPM_CONFIG } from "@/lib/constants/admin-bidang";
 import { formatWhatsAppUrl, cn } from "@/lib/utils";
 import type {
   BidangSpmId,
@@ -94,6 +94,13 @@ const BIDANG_COLOR_MAP: Record<BidangSpmId, { bg: string; text: string; border: 
     border: "border-purple-500/30",
     activeBg: "bg-purple-600 text-white",
   },
+};
+
+const DEFAULT_COLOR = {
+  bg: "bg-slate-500/10",
+  text: "text-slate-800 dark:text-slate-300",
+  border: "border-slate-500/30",
+  activeBg: "bg-slate-600 text-white",
 };
 
 export function AdminBidangManagementCard({
@@ -451,9 +458,9 @@ export function AdminBidangManagementCard({
 
                           {/* Daftar Badges Bidang yang Ditugaskan */}
                           <div className="flex flex-wrap gap-1.5 pt-1">
-                            {item.bidangList.map((bId) => {
-                              const config = DAFTAR_BIDANG_SPM_CONFIG.find((b) => b.id === bId);
-                              const color = BIDANG_COLOR_MAP[bId];
+                            {(item.bidangList || []).map((bId) => {
+                              const config = (DAFTAR_BIDANG_SPM_CONFIG || []).find((b) => b.id === bId);
+                              const color = BIDANG_COLOR_MAP[bId] || DEFAULT_COLOR;
                               const Icon = BIDANG_ICON_MAP[bId] || Shield;
 
                               return (
@@ -666,9 +673,9 @@ export function AdminBidangManagementCard({
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-                    {DAFTAR_BIDANG_SPM_CONFIG.map((b) => {
+                    {(DAFTAR_BIDANG_SPM_CONFIG || []).map((b) => {
                       const isSelected = selectedBidangSet.has(b.id);
-                      const color = BIDANG_COLOR_MAP[b.id];
+                      const color = BIDANG_COLOR_MAP[b.id] || DEFAULT_COLOR;
                       const Icon = BIDANG_ICON_MAP[b.id] || Shield;
 
                       return (
@@ -781,8 +788,8 @@ export function AdminBidangManagementCard({
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {DAFTAR_BIDANG_SPM_CONFIG.map((b, idx) => {
-                  const color = BIDANG_COLOR_MAP[b.id];
+                {(DAFTAR_BIDANG_SPM_CONFIG || []).map((b, idx) => {
+                  const color = BIDANG_COLOR_MAP[b.id] || DEFAULT_COLOR;
                   const Icon = BIDANG_ICON_MAP[b.id] || Shield;
 
                   return (
@@ -834,12 +841,13 @@ export function AdminBidangManagementCard({
                             Cakupan Dataset &amp; Modul:
                           </span>
                           <ul className="space-y-1 text-xs text-foreground">
-                            {b.cakupanData.map((item, i) => (
-                              <li key={i} className="flex items-center gap-1.5 text-[11px]">
-                                <span className="h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
-                                <span>{item}</span>
-                              </li>
-                            ))}
+                            {Array.isArray(b.cakupanData) &&
+                              b.cakupanData.map((item, i) => (
+                                <li key={i} className="flex items-center gap-1.5 text-[11px]">
+                                  <span className="h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
+                                  <span>{item}</span>
+                                </li>
+                              ))}
                           </ul>
                         </div>
                       </div>
