@@ -23,11 +23,14 @@ import {
 import { getDataAnakByKomunitas } from "@/app/actions/data-anak";
 import { getDataAtsByKomunitas } from "@/app/actions/data-ats";
 import { getKabarFeed } from "@/app/actions/kabar";
+import { getRekapDataAnakUsiaDiniAction } from "@/app/actions/rekap-data-anak";
 import { toValidUUID } from "@/lib/utils";
 import { KabarCard } from "@/components/kabar/kabar-card";
 import { CreateKabarModal } from "@/components/kabar/create-kabar-modal";
 import { KomunitasDetailClientView } from "./detail-client-view";
 import { getKomunitasFeatureCards } from "@/lib/admin-helpers";
+import { isKomunitasLayananPaud } from "@/lib/data-anak-helpers";
+import { buildKomunitasScopedRekap } from "@/lib/komunitas-rekap-calculator";
 
 interface KomunitasDetailPageProps {
   params: Promise<{
@@ -60,20 +63,38 @@ export default async function KomunitasDetailPage({
   }
 
   const { canShowDataAnak, canShowDataAts } = getKomunitasFeatureCards(komunitas);
+  const isPaud = isKomunitasLayananPaud(komunitas, komunitas.nama, komunitas.jenis);
 
-  // Ambil data anggota, data anak, data ATS, dan kabar secara paralel untuk render awal yang cepat dan akurat
+  // Ambil data anggota, data anak, data ATS, kabar, dan rekap secara paralel
   const [
     { data: anggotaList },
     dataAnakRes,
     dataAtsRes,
     { data: allKabar },
+    rekapDataRes,
   ] = await Promise.all([
     getAnggotaKomunitas(id),
     canShowDataAnak
-      ? getDataAnakByKomunitas(id, { countOnly: true, preloadedKomunitas: komunitas })
-      : Promise.resolve({ data: [] }),
+      ? getDataAnakByKomunitas(id, {
+          countOnly: !isPaud,
+          preloadedKomunitas: komunitas,
+        })
+      : Promise.resolve({
+          success: true,
+          data: [],
+          stats: { total: 0, approved: 0, pending: 0 },
+          canViewDetail: false,
+          isAuthenticated: false,
+          canValidate: false,
+          canCreate: false,
+          canEdit: false,
+          canDelete: false,
+          isReadOnly: true,
+          userRole: "Pengunjung",
+        }),
     canShowDataAts ? getDataAtsByKomunitas(id) : Promise.resolve({ data: [] }),
     getKabarFeed({ filterVisibilitas: "semua", limit: 20 }),
+    isPaud ? getRekapDataAnakUsiaDiniAction() : Promise.resolve({ data: null }),
   ]);
 
   const dataAnakList = dataAnakRes?.data || [];
@@ -97,6 +118,11 @@ export default async function KomunitasDetailPage({
     return false;
   });
 
+  // Hitung rekap dinamis untuk Komunitas PAUD
+  const scopedRekapCalc = isPaud
+    ? buildKomunitasScopedRekap(komunitas, dataAnakList, rekapDataRes?.data || undefined)
+    : null;
+
   return (
     <div className="flex flex-col flex-1 px-4 sm:px-6 md:px-8 py-4 sm:py-6 gap-5 sm:gap-6 max-w-5xl xl:max-w-6xl mx-auto w-full pb-24">
       {/* Back Navigation Bar */}
@@ -110,7 +136,7 @@ export default async function KomunitasDetailPage({
         </Link>
       </div>
 
-      {/* Hero Header Card */}
+      {/* Hero Header Card & Client View */}
       <KomunitasDetailClientView
         komunitas={komunitas}
         currentUserId={currentUserId}
@@ -123,6 +149,15 @@ export default async function KomunitasDetailPage({
         kabarKomunitas={kabarKomunitas}
         dataAnakList={dataAnakList || []}
         dataAtsList={dataAtsList || []}
+        dataAnakStats={dataAnakRes?.stats}
+        canValidateDataAnak={dataAnakRes?.canValidate ?? isAdminOrKader}
+        canCreateDataAnak={dataAnakRes?.canCreate ?? isAdminOrKader}
+        canEditDataAnak={dataAnakRes?.canEdit ?? isAdminOrKader}
+        canDeleteDataAnak={dataAnakRes?.canDelete ?? isAdminOrKader}
+        isReadOnlyDataAnak={dataAnakRes?.isReadOnly ?? false}
+        canViewDetailDataAnak={dataAnakRes?.canViewDetail ?? true}
+        userRoleDataAnak={dataAnakRes?.userRole}
+        scopedRekapResult={scopedRekapCalc}
       />
     </div>
   );
