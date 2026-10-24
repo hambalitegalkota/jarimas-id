@@ -54,6 +54,7 @@ export function KomunitasManagementTools() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [loadingList, setLoadingList] = useState(true);
+  const [listError, setListError] = useState<string | null>(null);
 
   const [filterJenis, setFilterJenis] = useState<string>("semua");
   const [filterKecamatan, setFilterKecamatan] = useState<string>("semua");
@@ -100,6 +101,7 @@ export function KomunitasManagementTools() {
     currentSortOrder = sortOrder
   ) => {
     setLoadingList(true);
+    setListError(null);
     try {
       const res = await getKomunitasAdminListAction({
         jenis: filterJenis,
@@ -112,21 +114,18 @@ export function KomunitasManagementTools() {
         limit: 15,
       });
 
-      if (res.success) {
-        setItems(res.data);
-        setTotalCount(res.totalCount);
-        setPage(res.page);
-        setTotalPages(res.totalPages);
+      if (res && res.success) {
+        setItems(res.data || []);
+        setTotalCount(res.totalCount || 0);
+        setPage(res.page || 1);
+        setTotalPages(res.totalPages || 1);
+        setListError(null);
       } else {
-        setFeedback({ type: "error", message: res.message || "Gagal memuat daftar komunitas." });
+        setListError(res?.message || "Gagal memuat daftar komunitas.");
       }
     } catch (err: any) {
       console.error("Gagal memuat daftar komunitas:", err);
-      const rawMsg = err?.message || "";
-      const cleanMsg = rawMsg.includes("Minified React error")
-        ? "Terjadi kendala saat memuat daftar komunitas. Silakan segarkan halaman."
-        : rawMsg || "Terjadi kesalahan jaringan.";
-      setFeedback({ type: "error", message: cleanMsg });
+      setListError("Terjadi kendala saat memuat daftar komunitas. Silakan klik tombol Coba Lagi di bawah.");
     } finally {
       setLoadingList(false);
     }
@@ -559,6 +558,22 @@ export function KomunitasManagementTools() {
           <div className="flex flex-col items-center justify-center py-16 text-muted-foreground gap-3 border-t border-border">
             <Loader2 className="h-6 w-6 animate-spin text-primary" />
             <span className="text-sm font-medium">Memuat data komunitas...</span>
+          </div>
+        ) : listError ? (
+          <div className="flex flex-col items-center justify-center py-12 px-4 text-center rounded-lg border border-rose-200 dark:border-rose-900/30 bg-rose-50/50 dark:bg-rose-950/20 space-y-3">
+            <AlertCircle className="h-8 w-8 text-rose-600 dark:text-rose-400" />
+            <div className="space-y-1">
+              <h4 className="font-bold text-foreground text-sm">Gagal Memuat Komunitas</h4>
+              <p className="text-xs text-muted-foreground max-w-sm">{listError}</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => fetchList(page, sortBy, sortOrder)}
+              className="inline-flex min-h-[38px] h-9 items-center gap-2 px-4 rounded-lg bg-primary hover:bg-primary-hover text-primary-foreground font-bold text-xs transition-colors cursor-pointer shadow-xs"
+            >
+              <RefreshCw className="h-3.5 w-3.5" />
+              <span>Coba Muat Ulang</span>
+            </button>
           </div>
         ) : items.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-14 px-4 text-center rounded-lg border border-dashed border-border bg-card space-y-3">

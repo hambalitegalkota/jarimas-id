@@ -3378,7 +3378,8 @@ export async function getKomunitasAuditSummaryAction(): Promise<{
   message?: string;
 }> {
   try {
-    const supabase = await createClient();
+    const adminClient = createAdminClient();
+    const supabase = adminClient || (await createClient());
 
     const allInvalidIds = [...(INVALID_POSYANDU_IDS || []), ...(INVALID_PAUD_IDS || [])];
     const invalidSet = new Set(allInvalidIds);
@@ -3479,7 +3480,8 @@ export async function getKomunitasAdminListAction(params: GetKomunitasAdminListP
   message?: string;
 }> {
   try {
-    const supabase = await createClient();
+    const adminClient = createAdminClient();
+    const supabase = adminClient || (await createClient());
     const page = Math.max(1, Number(params.page) || 1);
     const limit = Math.min(100, Math.max(1, Number(params.limit) || 15));
     const offset = (page - 1) * limit;
@@ -3488,7 +3490,7 @@ export async function getKomunitasAdminListAction(params: GetKomunitasAdminListP
 
     let query = supabase
       .from("komunitas")
-      .select("id, nama, jenis, kecamatan, kelurahan, rw, rt, lokasi, deskripsi, kontak, jadwal, created_at", { count: "exact" });
+      .select("id, nama, jenis, kecamatan, kelurahan, rw, rt, lokasi, deskripsi, kontak, jadwal, created_at", { count: "estimated" });
 
     const allInvalidIds = [...(INVALID_POSYANDU_IDS || []), ...(INVALID_PAUD_IDS || [])];
     const invalidSet = new Set(allInvalidIds);
