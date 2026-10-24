@@ -10,6 +10,9 @@ import {
   X,
   Loader2,
   Users,
+  HeartPulse,
+  GraduationCap,
+  BookOpen,
   Sparkles,
 } from "lucide-react";
 import {
@@ -51,7 +54,7 @@ export function KomunitasFilter({
   const [searchValue, setSearchValue] = useState(currentSearch);
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const activeTab = currentTab || searchParams.get("tab") || "posyandu";
+  const activeTab = currentTab || searchParams.get("tab") || "warga_kita";
   const isWargaKita = activeTab === "warga_kita";
 
   // Sync state if URL search param changes from outside (e.g. browser back/forward)
@@ -241,31 +244,98 @@ export function KomunitasFilter({
     ? "Cari nama PKBM, SKB, atau kelurahan..."
     : "Cari nama PAUD, KB, TK, SPS, RA, TPA...";
 
+  const welcomeConfig = useMemo(() => {
+    switch (activeTab) {
+      case "warga_kita":
+        return {
+          title: "Selamat Datang Di Komunitas Warga Kita",
+          tag: "STRUKTUR WILAYAH KOTA TEGAL",
+          desc: (
+            <>
+              Saat ini terdapat <strong className="text-foreground">1 Komunitas Kota Tegal</strong>, <strong className="text-foreground">4 Komunitas Kecamatan</strong>, <strong className="text-foreground">27 Komunitas Kelurahan</strong>, <strong className="text-foreground">167 Komunitas RW</strong> dan <strong className="text-foreground">1.712 Komunitas RT</strong>.
+            </>
+          ),
+          prompt: "Komunitas mana yang akan anda kunjungi, silakan cari di sini atau gunakan filter di bawah ini.",
+          icon: Users,
+          iconBg: "bg-sky-600 text-white",
+          tagColor: "text-sky-600 dark:text-sky-400",
+          boxBorder: "border-sky-500/25 bg-sky-500/5",
+        };
+      case "posyandu":
+        return {
+          title: "Selamat Datang Di Komunitas Posyandu",
+          tag: "LAYANAN KESEHATAN IBU, BAYI & BALITA KOTA TEGAL",
+          desc: (
+            <>
+              Saat ini terdapat <strong className="text-foreground">209 Posyandu</strong> yang tersebar di 27 Kelurahan dan 4 Kecamatan se-Kota Tegal untuk pemantauan tumbuh kembang, gizi, dan imunisasi balita.
+            </>
+          ),
+          prompt: "Posyandu mana yang akan anda kunjungi, silakan cari di sini atau gunakan filter di bawah ini.",
+          icon: HeartPulse,
+          iconBg: "bg-teal-700 text-white",
+          tagColor: "text-teal-700 dark:text-teal-400",
+          boxBorder: "border-teal-500/25 bg-teal-500/5",
+        };
+      case "satuan_paud":
+        return {
+          title: "Selamat Datang Di Komunitas PAUD",
+          tag: "PENDIDIKAN ANAK USIA DINI (0–6 TAHUN) KOTA TEGAL",
+          desc: (
+            <>
+              Saat ini terdapat <strong className="text-foreground">208 Satuan PAUD</strong> (TK, KB, TPA, SPS, RA, PKBM Star of Tomorrow &amp; SKB Mitra) se-Kota Tegal yang melayani pendidikan ramah anak.
+            </>
+          ),
+          prompt: "Lembaga PAUD mana yang akan anda kunjungi, silakan cari di sini atau gunakan filter di bawah ini.",
+          icon: GraduationCap,
+          iconBg: "bg-emerald-700 text-white",
+          tagColor: "text-emerald-700 dark:text-emerald-400",
+          boxBorder: "border-emerald-500/25 bg-emerald-500/5",
+        };
+      case "pkbm_skb":
+        return {
+          title: "Selamat Datang Di Komunitas PKBM & SKB",
+          tag: "PENDIDIKAN NONFORMAL & KESETARAAN KOTA TEGAL",
+          desc: (
+            <>
+              Saat ini terdapat <strong className="text-foreground">12 PKBM</strong> dan <strong className="text-foreground">1 SKB Negeri Kota Tegal</strong> penyelenggara Pendidikan Kesetaraan (Paket A, B, C) serta penanganan Anak Tidak Sekolah (ATS).
+            </>
+          ),
+          prompt: "Lembaga PKBM atau SKB mana yang akan anda kunjungi, silakan cari di sini atau gunakan filter di bawah ini.",
+          icon: BookOpen,
+          iconBg: "bg-amber-600 text-white",
+          tagColor: "text-amber-600 dark:text-amber-400",
+          boxBorder: "border-amber-500/25 bg-amber-500/5",
+        };
+      default:
+        return null;
+    }
+  }, [activeTab]);
+
   return (
     <div className="rounded-lg border border-border bg-card p-4 sm:p-5 space-y-4 shadow-sm text-card-foreground">
-      {/* 1. Header Khusus Tab Warga Kita sesuai Permintaan Pengguna */}
-      {isWargaKita && (
-        <div className="rounded-lg border border-sky-500/20 bg-sky-500/5 p-3.5 sm:p-4 space-y-2">
+      {/* 1. Header Sambutan Seragam untuk Seluruh Kategori Komunitas */}
+      {welcomeConfig && (
+        <div className={cn("rounded-lg border p-3.5 sm:p-4 space-y-2", welcomeConfig.boxBorder)}>
           <div className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-sky-600 text-white shadow-xs">
-              <Users className="h-4.5 w-4.5" />
+            <div className={cn("flex h-9 w-9 shrink-0 items-center justify-center rounded-lg shadow-xs", welcomeConfig.iconBg)}>
+              <welcomeConfig.icon className="h-4.5 w-4.5" />
             </div>
             <div>
               <h2 className="text-base sm:text-lg font-bold tracking-tight text-foreground">
-                Selamat Datang Di Komunitas Warga Kita
+                {welcomeConfig.title}
               </h2>
-              <span className="text-[11px] font-bold text-sky-600 dark:text-sky-400 uppercase tracking-wider">
-                STRUKTUR WILAYAH KOTA TEGAL
+              <span className={cn("text-[11px] font-bold uppercase tracking-wider", welcomeConfig.tagColor)}>
+                {welcomeConfig.tag}
               </span>
             </div>
           </div>
 
           <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-            Saat ini terdapat <strong className="text-foreground">1 Komunitas Kota Tegal</strong>, <strong className="text-foreground">4 Komunitas Kecamatan</strong>, <strong className="text-foreground">27 Komunitas Kelurahan</strong>, <strong className="text-foreground">167 Komunitas RW</strong> dan <strong className="text-foreground">1.712 Komunitas RT</strong>.
+            {welcomeConfig.desc}
           </p>
 
           <p className="text-xs text-muted-foreground leading-relaxed">
-            Komunitas mana yang akan anda kunjungi, silakan cari di sini atau gunakan filter di bawah ini.
+            {welcomeConfig.prompt}
           </p>
         </div>
       )}
