@@ -76,7 +76,7 @@ export default async function KomunitasDetailPage({
     getAnggotaKomunitas(id),
     canShowDataAnak
       ? getDataAnakByKomunitas(id, {
-          countOnly: !isPaud,
+          countOnly: false,
           preloadedKomunitas: komunitas,
         })
       : Promise.resolve({
@@ -94,7 +94,7 @@ export default async function KomunitasDetailPage({
         }),
     canShowDataAts ? getDataAtsByKomunitas(id) : Promise.resolve({ data: [] }),
     getKabarFeed({ filterVisibilitas: "semua", limit: 20 }),
-    isPaud ? getRekapDataAnakUsiaDiniAction() : Promise.resolve({ data: null }),
+    canShowDataAnak ? getRekapDataAnakUsiaDiniAction() : Promise.resolve({ data: null }),
   ]);
 
   const dataAnakList = dataAnakRes?.data || [];
@@ -118,8 +118,8 @@ export default async function KomunitasDetailPage({
     return false;
   });
 
-  // Hitung rekap dinamis untuk Komunitas PAUD
-  const scopedRekapCalc = isPaud
+  // Hitung rekap dinamis untuk seluruh jenis Komunitas (PAUD, Posyandu, Warga Kita, PKBM/SKB)
+  const scopedRekapCalc = canShowDataAnak
     ? buildKomunitasScopedRekap(komunitas, dataAnakList, rekapDataRes?.data || undefined)
     : null;
 
