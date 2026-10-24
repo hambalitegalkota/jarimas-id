@@ -84,19 +84,24 @@ export function DataAnakClientView({
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Nav Switcher: 📊 Rekapitulasi & Grafik vs 📋 Daftar Rincian Anak
-  const [mainViewTab, setMainViewTab] = useState<"rekap" | "rincian">("rekap");
-
-  // Sub-Tab Pemisah Jenis Data: Semua Anak | Bersekolah | Belum Bersekolah
-  const [dataFilterTab, setDataFilterTab] = useState<
-    "semua" | "bersekolah" | "belum_bersekolah"
-  >("semua");
-
   const effectiveRole =
     userRole || komunitas.currentUserMembership?.peran || "Pengunjung";
   const isWargaKita = komunitas.jenis === "warga_kita";
   const isPaud = isKomunitasLayananPaud(komunitas, komunitas.nama, komunitas.jenis);
   const isPosyandu = komunitas.jenis === "posyandu";
+
+  // Nav Switcher: Untuk Komunitas PAUD default ke "rincian" (Daftar Detail Anak), untuk wilayah default ke "rekap"
+  const [mainViewTab, setMainViewTab] = useState<"rekap" | "rincian">(
+    isPaud ? "rincian" : "rekap"
+  );
+
+  // Filter Status Khusus Komunitas PAUD (Kondisi 2 commit sebelum ini): Semua | Terverifikasi | Menunggu Validasi
+  const [paudStatusFilter, setPaudStatusFilter] = useState<"semua" | "approved" | "pending">("semua");
+
+  // Sub-Tab Pemisah Jenis Data untuk Wilayah / Warga Kita: Semua Anak | Bersekolah | Belum Bersekolah
+  const [dataFilterTab, setDataFilterTab] = useState<
+    "semua" | "bersekolah" | "belum_bersekolah"
+  >("semua");
 
   // Hitung ulang rekap scoped jika data anak diperbarui di client
   const rekapCalc: KomunitasScopedRekapResult = useMemo(() => {
@@ -155,7 +160,26 @@ export function DataAnakClientView({
     stats?.pending ??
     childrenList.filter((c) => c.status_approval === "pending").length;
 
-  // Filter daftar berdasarkan sub-tab & search
+  // Filter daftar khusus Komunitas PAUD (Kondisi 2 commit sebelum ini): Berdasarkan status verifikasi & pencarian
+  const paudDisplayedChildren = useMemo(() => {
+    let list = childrenList;
+    if (paudStatusFilter === "approved") {
+      list = list.filter((c) => c.status_approval === "approved");
+    } else if (paudStatusFilter === "pending") {
+      list = list.filter((c) => c.status_approval !== "approved");
+    }
+
+    if (!searchQuery.trim()) return list;
+    const q = searchQuery.toLowerCase().trim();
+    return list.filter(
+      (c) =>
+        c.nama_lengkap.toLowerCase().includes(q) ||
+        c.nama_orangtua.toLowerCase().includes(q) ||
+        (c.alasan_sekolah && c.alasan_sekolah.toLowerCase().includes(q))
+    );
+  }, [childrenList, paudStatusFilter, searchQuery]);
+
+  // Filter daftar berdasarkan sub-tab & search (untuk Wilayah / Warga Kita)
   const displayedChildren = useMemo(() => {
     let baseList = childrenList;
     if (dataFilterTab === "bersekolah") {
@@ -211,33 +235,67 @@ export function DataAnakClientView({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/80 pb-3">
         {/* View Switcher Tabs: Rekapitulasi & Grafik vs Rincian Data Anak */}
         <div className="flex items-center gap-1.5 bg-muted/60 p-1 rounded-lg border border-border">
-          <button
-            type="button"
-            onClick={() => setMainViewTab("rekap")}
-            className={cn(
-              "flex items-center gap-2 px-3.5 py-2 rounded-md text-xs font-bold transition-all cursor-pointer border",
-              mainViewTab === "rekap"
-                ? "bg-card text-foreground border-border shadow-xs font-black"
-                : "border-transparent text-muted-foreground hover:text-foreground"
-            )}
-          >
-            <BarChart3 className="h-4 w-4 text-primary" />
-            <span>Rekap, Grafik &amp; Diagram</span>
-          </button>
+          {isPaud ? (
+            <>
+              <button
+                type="button"
+                onClick={() => setMainViewTab("rincian")}
+                className={cn(
+                  "flex items-center gap-2 px-3.5 py-2 rounded-md text-xs font-bold transition-all cursor-pointer border",
+                  mainViewTab === "rincian"
+                    ? "bg-card text-foreground border-border shadow-xs font-black"
+                    : "border-transparent text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <Users className="h-4 w-4 text-teal-600 dark:text-teal-400" />
+                <span>Daftar Detail Anak ({totalChildren})</span>
+              </button>
 
-          <button
-            type="button"
-            onClick={() => setMainViewTab("rincian")}
-            className={cn(
-              "flex items-center gap-2 px-3.5 py-2 rounded-md text-xs font-bold transition-all cursor-pointer border",
-              mainViewTab === "rincian"
-                ? "bg-card text-foreground border-border shadow-xs font-black"
-                : "border-transparent text-muted-foreground hover:text-foreground"
-            )}
-          >
-            <Users className="h-4 w-4 text-teal-600 dark:text-teal-400" />
-            <span>Daftar Rincian Anak ({totalChildren})</span>
-          </button>
+              <button
+                type="button"
+                onClick={() => setMainViewTab("rekap")}
+                className={cn(
+                  "flex items-center gap-2 px-3.5 py-2 rounded-md text-xs font-bold transition-all cursor-pointer border",
+                  mainViewTab === "rekap"
+                    ? "bg-card text-foreground border-border shadow-xs font-black"
+                    : "border-transparent text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <BarChart3 className="h-4 w-4 text-primary" />
+                <span>Rekap, Grafik &amp; Diagram</span>
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                type="button"
+                onClick={() => setMainViewTab("rekap")}
+                className={cn(
+                  "flex items-center gap-2 px-3.5 py-2 rounded-md text-xs font-bold transition-all cursor-pointer border",
+                  mainViewTab === "rekap"
+                    ? "bg-card text-foreground border-border shadow-xs font-black"
+                    : "border-transparent text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <BarChart3 className="h-4 w-4 text-primary" />
+                <span>Rekap, Grafik &amp; Diagram</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setMainViewTab("rincian")}
+                className={cn(
+                  "flex items-center gap-2 px-3.5 py-2 rounded-md text-xs font-bold transition-all cursor-pointer border",
+                  mainViewTab === "rincian"
+                    ? "bg-card text-foreground border-border shadow-xs font-black"
+                    : "border-transparent text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <Users className="h-4 w-4 text-teal-600 dark:text-teal-400" />
+                <span>Daftar Rincian Anak ({totalChildren})</span>
+              </button>
+            </>
+          )}
         </div>
 
         {/* Action Button: Contextual Tambah Data */}
@@ -249,7 +307,7 @@ export function DataAnakClientView({
             <Plus className="h-4 w-4" />
             <span>
               {isPaud
-                ? "TAMBAH SISWA PAUD BARU"
+                ? "TAMBAH DATA ANAK"
                 : "TAMBAH DATA ANAK BELUM BERSEKOLAH"}
             </span>
           </button>
@@ -270,88 +328,113 @@ export function DataAnakClientView({
         </div>
       )}
 
-      {/* 4. TAMPILAN UTAMA: TAB RINCIAN DATA ANAK DENGAN PEMISAHAN JELAS */}
+      {/* 4. TAMPILAN UTAMA: TAB RINCIAN DATA ANAK */}
       {mainViewTab === "rincian" && (
         <div className="space-y-5 animate-in fade-in duration-150">
           {canViewDetail ? (
-            <>
-              {/* METRIC COUNTER MINI BAR */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div
-                  onClick={() => setDataFilterTab("semua")}
-                  className={cn(
-                    "rounded-lg border p-3.5 text-center space-y-1 shadow-xs cursor-pointer transition-all",
-                    dataFilterTab === "semua"
-                      ? "border-primary bg-primary/10 shadow-2xs"
-                      : "border-border bg-card hover:bg-muted/30"
-                  )}
-                >
-                  <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground block">
-                    TOTAL SELURUH ANAK
-                  </span>
-                  <span className="text-2xl font-bold font-mono text-foreground">
-                    {totalChildren}
-                  </span>
-                  <span className="text-2xs font-semibold text-muted-foreground block">
-                    {isPaud ? "Siswa Terdaftar" : "Balita & Anak 0–6 Thn"}
-                  </span>
+            isPaud ? (
+              /* ================= KOMUNITAS PAUD (KONDISI COMMIT 3149226) ================= */
+              <>
+                {/* 1. STATISTIC METRIC CARDS KONDISI COMMIT 3149226 */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div
+                    onClick={() => setPaudStatusFilter("semua")}
+                    className={cn(
+                      "rounded-lg border p-4 text-center space-y-1 shadow-sm cursor-pointer transition-all",
+                      paudStatusFilter === "semua"
+                        ? "border-primary bg-primary/10 shadow-2xs ring-1 ring-primary/30"
+                        : "border-border bg-card hover:bg-muted/30"
+                    )}
+                  >
+                    <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">
+                      TOTAL DATA ANAK
+                    </span>
+                    <span className="text-2xl sm:text-3xl font-bold font-mono text-foreground">
+                      {totalChildren}
+                    </span>
+                    <span className="text-xs font-semibold text-muted-foreground block">
+                      Siswa Terdata
+                    </span>
+                  </div>
+
+                  <div
+                    onClick={() => setPaudStatusFilter("approved")}
+                    className={cn(
+                      "rounded-lg border p-4 text-center space-y-1 shadow-sm cursor-pointer transition-all",
+                      paudStatusFilter === "approved"
+                        ? "border-teal-500 bg-teal-500/15 shadow-2xs ring-1 ring-teal-500/30"
+                        : "border-teal-500/30 bg-teal-500/10 hover:bg-teal-500/15"
+                    )}
+                  >
+                    <span className="text-xs font-bold uppercase tracking-wider text-teal-800 dark:text-teal-300 block">
+                      TERVERIFIKASI
+                    </span>
+                    <span className="text-2xl sm:text-3xl font-bold font-mono text-teal-700 dark:text-teal-300">
+                      {totalApproved}
+                    </span>
+                    <span className="text-xs font-semibold text-teal-800 dark:text-teal-300 block">
+                      Status Valid
+                    </span>
+                  </div>
+
+                  <div
+                    onClick={() => setPaudStatusFilter("pending")}
+                    className={cn(
+                      "rounded-lg border p-4 text-center space-y-1 shadow-sm cursor-pointer transition-all",
+                      paudStatusFilter === "pending"
+                        ? "border-secondary bg-secondary/20 shadow-2xs ring-1 ring-secondary/40"
+                        : "border-secondary/30 bg-secondary/10 hover:bg-secondary/15"
+                    )}
+                  >
+                    <span className="text-xs font-bold uppercase tracking-wider text-amber-900 dark:text-amber-200 block">
+                      MENUNGGU VALIDASI
+                    </span>
+                    <span className="text-2xl sm:text-3xl font-bold font-mono text-secondary">
+                      {totalPending}
+                    </span>
+                    <span className="text-xs font-semibold text-amber-900 dark:text-amber-200 block">
+                      Perlu Verifikasi
+                    </span>
+                  </div>
                 </div>
 
-                <div
-                  onClick={() => setDataFilterTab("bersekolah")}
-                  className={cn(
-                    "rounded-lg border p-3.5 text-center space-y-1 shadow-xs cursor-pointer transition-all",
-                    dataFilterTab === "bersekolah"
-                      ? "border-teal-500 bg-teal-500/15 shadow-2xs"
-                      : "border-teal-500/25 bg-teal-500/5 hover:bg-teal-500/10"
+                {/* 2. SEARCH & ADD BUTTON */}
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                  <div className="relative flex-1">
+                    <Search className="pointer-events-none absolute left-3.5 top-3 h-4 w-4 text-muted-foreground" />
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Cari nama anak atau orang tua..."
+                      className="w-full h-10 rounded-lg border border-border bg-background pl-10 pr-4 text-xs text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-hidden"
+                    />
+                  </div>
+
+                  {canCreate && (
+                    <button
+                      onClick={() => setIsAddModalOpen(true)}
+                      className="flex h-10 items-center justify-center gap-2 rounded-lg bg-primary hover:bg-primary-hover active:scale-[0.98] text-primary-foreground px-4 text-xs font-bold shadow-xs transition-all shrink-0 cursor-pointer"
+                    >
+                      <Plus className="h-4 w-4" />
+                      <span>TAMBAH DATA ANAK</span>
+                    </button>
                   )}
-                >
-                  <span className="text-2xs font-bold uppercase tracking-wider text-teal-800 dark:text-teal-300 block">
-                    ANAK BERSEKOLAH (PAUD)
-                  </span>
-                  <span className="text-2xl font-bold font-mono text-teal-700 dark:text-teal-300">
-                    {totalBersekolahCount}
-                  </span>
-                  <span className="text-2xs font-semibold text-teal-800 dark:text-teal-300 block">
-                    Sumber: Satuan PAUD
-                  </span>
                 </div>
 
-                <div
-                  onClick={() => setDataFilterTab("belum_bersekolah")}
-                  className={cn(
-                    "rounded-lg border p-3.5 text-center space-y-1 shadow-xs cursor-pointer transition-all",
-                    dataFilterTab === "belum_bersekolah"
-                      ? "border-amber-500 bg-amber-500/20 shadow-2xs"
-                      : "border-amber-500/25 bg-amber-500/5 hover:bg-amber-500/10"
-                  )}
-                >
-                  <span className="text-2xs font-bold uppercase tracking-wider text-amber-900 dark:text-amber-200 block">
-                    BELUM BERSEKOLAH
-                  </span>
-                  <span className="text-2xl font-bold font-mono text-amber-700 dark:text-amber-300">
-                    {totalBelumBersekolahCount}
-                  </span>
-                  <span className="text-2xs font-semibold text-amber-900 dark:text-amber-200 block">
-                    Pendataan Warga / RT
-                  </span>
-                </div>
-              </div>
-
-              {/* PEMISAHAN KATEGORI DATA: TAB FILTER JELAS */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
+                {/* 3. FILTER CHIPS STATUS */}
                 <div className="flex items-center gap-2 overflow-x-auto pb-1">
                   <button
                     type="button"
-                    onClick={() => setDataFilterTab("semua")}
+                    onClick={() => setPaudStatusFilter("semua")}
                     className={cn(
-                      "px-3.5 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer border shrink-0 flex items-center gap-1.5",
-                      dataFilterTab === "semua"
+                      "px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer border shrink-0 flex items-center gap-1.5",
+                      paudStatusFilter === "semua"
                         ? "bg-primary text-primary-foreground border-primary shadow-xs"
                         : "bg-card text-muted-foreground border-border hover:bg-muted hover:text-foreground"
                     )}
                   >
-                    <span>Semua Anak</span>
+                    <span>Semua Siswa</span>
                     <span className="px-1.5 py-0.2 rounded-md bg-background/20 font-mono text-2xs">
                       {totalChildren}
                     </span>
@@ -359,140 +442,312 @@ export function DataAnakClientView({
 
                   <button
                     type="button"
-                    onClick={() => setDataFilterTab("bersekolah")}
+                    onClick={() => setPaudStatusFilter("approved")}
                     className={cn(
-                      "px-3.5 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer border shrink-0 flex items-center gap-1.5",
-                      dataFilterTab === "bersekolah"
+                      "px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer border shrink-0 flex items-center gap-1.5",
+                      paudStatusFilter === "approved"
                         ? "bg-teal-600 text-white border-teal-600 shadow-xs"
                         : "bg-card text-muted-foreground border-border hover:bg-teal-500/10 hover:text-teal-700"
                     )}
                   >
-                    <GraduationCap className="h-3.5 w-3.5" />
-                    <span>Anak Bersekolah (PAUD / PKBM / SKB)</span>
+                    <CheckCircle2 className="h-3.5 w-3.5" />
+                    <span>Terverifikasi</span>
                     <span className="px-1.5 py-0.2 rounded-md bg-background/20 font-mono text-2xs">
-                      {totalBersekolahCount}
+                      {totalApproved}
                     </span>
                   </button>
 
                   <button
                     type="button"
-                    onClick={() => setDataFilterTab("belum_bersekolah")}
+                    onClick={() => setPaudStatusFilter("pending")}
                     className={cn(
-                      "px-3.5 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer border shrink-0 flex items-center gap-1.5",
-                      dataFilterTab === "belum_bersekolah"
+                      "px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer border shrink-0 flex items-center gap-1.5",
+                      paudStatusFilter === "pending"
                         ? "bg-amber-600 text-white border-amber-600 shadow-xs"
                         : "bg-card text-muted-foreground border-border hover:bg-amber-500/10 hover:text-amber-800"
                     )}
                   >
-                    <Baby className="h-3.5 w-3.5" />
-                    <span>Anak Belum Bersekolah</span>
+                    <AlertCircle className="h-3.5 w-3.5" />
+                    <span>Menunggu Validasi</span>
                     <span className="px-1.5 py-0.2 rounded-md bg-background/20 font-mono text-2xs">
-                      {totalBelumBersekolahCount}
+                      {totalPending}
                     </span>
                   </button>
                 </div>
 
-                {/* Search Box */}
-                <div className="relative w-full sm:w-64">
-                  <Search className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Cari nama anak, ortu, sekolah..."
-                    className="w-full h-9 rounded-lg border border-border bg-background pl-9 pr-3 text-xs text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-hidden"
-                  />
-                </div>
-              </div>
-
-              {/* INFORMATIVE NOTICE BERDASARKAN TAB AKTIF */}
-              {dataFilterTab === "bersekolah" && (
-                <div className="rounded-lg border border-teal-500/30 bg-teal-500/10 p-3 sm:p-3.5 flex items-start gap-2.5 shadow-xs">
-                  <ShieldCheck className="h-4.5 w-4.5 text-teal-600 dark:text-teal-400 shrink-0 mt-0.5" />
-                  <div className="space-y-0.5 text-xs text-foreground">
-                    <span className="font-bold text-teal-900 dark:text-teal-100 block">
-                      Data Anak Bersekolah PAUD (Read-Only di Luar Komunitas PAUD)
+                {/* 4. LIST DATA ANAK */}
+                <div className="space-y-2 sm:space-y-2.5 pb-16">
+                  <div className="flex items-center justify-between border-b border-border/60 pb-2">
+                    <h3 className="text-xs font-bold uppercase text-foreground tracking-wider flex items-center gap-1.5">
+                      <span>DAFTAR DETAIL ANAK</span>
+                      <span className="font-mono text-muted-foreground">
+                        ({paudDisplayedChildren.length} DATA)
+                      </span>
+                    </h3>
+                    <span className="text-xs font-mono font-bold text-muted-foreground">
+                      {paudDisplayedChildren.length} dari total {totalChildren} anak
                     </span>
-                    <p className="text-muted-foreground leading-relaxed">
-                      {isPaud
-                        ? "Seluruh siswa terdaftar di satuan PAUD ini. Pendidik/Admin PAUD dapat melakukan fungsi Edit Data, Keluar / Hapus, dan Validasi (TERVERIFIKASI / MENUNGGU)."
-                        : "Data anak usia 0–6 tahun yang bersekolah bersumber dari Komunitas Satuan PAUD, PKBM Star of Tomorrow, dan SKB Kota Tegal. Data ini ditampilkan sebagai referensi pemantauan warga dan tidak dapat di-edit di komunitas ini."}
-                    </p>
                   </div>
-                </div>
-              )}
 
-              {dataFilterTab === "belum_bersekolah" && (
-                <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 sm:p-3.5 flex items-start gap-2.5 shadow-xs">
-                  <Baby className="h-4.5 w-4.5 text-amber-700 dark:text-amber-300 shrink-0 mt-0.5" />
-                  <div className="space-y-0.5 text-xs text-foreground">
-                    <span className="font-bold text-amber-950 dark:text-amber-100 block">
-                      Data Anak Usia 0–6 Tahun Belum Bersekolah
-                    </span>
-                    <p className="text-muted-foreground leading-relaxed">
-                      Daftar anak usia dini yang belum mengikuti layanan PAUD hasil pendataan kader/pengurus di lingkungan {komunitas.nama}. Gunakan tombol <strong>Tambah Data Anak Belum Bersekolah</strong> untuk mendaftarkan balita baru.
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {/* LIST KARTU DATA ANAK */}
-              <div className="space-y-2.5 pb-16">
-                <div className="flex items-center justify-between border-b border-border/60 pb-2">
-                  <h3 className="text-xs font-bold uppercase text-foreground tracking-wider flex items-center gap-1.5">
-                    <span>DAFTAR RINCIAN ANAK</span>
-                    <span className="font-mono text-muted-foreground">
-                      ({displayedChildren.length} DATA)
-                    </span>
-                  </h3>
-                  <span className="text-xs font-mono font-bold text-muted-foreground">
-                    {displayedChildren.length} dari total {totalChildren} anak
-                  </span>
-                </div>
-
-                {displayedChildren.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border bg-card p-10 text-center space-y-3">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 border border-primary/20 text-primary">
-                      <Baby className="h-6 w-6" />
+                  {paudDisplayedChildren.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border bg-card p-10 text-center space-y-3">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 border border-primary/20 text-primary">
+                        <Baby className="h-6 w-6" />
+                      </div>
+                      <div className="space-y-1 max-w-sm">
+                        <h4 className="text-sm font-bold tracking-tight text-foreground">
+                          Belum Ada Data Anak
+                        </h4>
+                        <p className="text-xs text-muted-foreground leading-relaxed">
+                          Admin, Kepala Sekolah, dan Guru PAUD dapat menambahkan siswa terdaftar di satuan PAUD ini.
+                        </p>
+                      </div>
                     </div>
-                    <div className="space-y-1 max-w-sm">
-                      <h4 className="text-sm font-bold tracking-tight text-foreground">
-                        Belum Ada Data Anak Ditampilkan
-                      </h4>
-                      <p className="text-xs text-muted-foreground leading-relaxed">
-                        {dataFilterTab === "bersekolah"
-                          ? "Belum ada anak yang bersekolah PAUD tercatat di wilayah ini."
-                          : dataFilterTab === "belum_bersekolah"
-                          ? "Belum ada anak yang dicatat sebagai belum bersekolah."
-                          : "Belum ada data anak balita / PAUD 0–6 tahun yang terdata di komunitas ini."}
+                  ) : (
+                    paudDisplayedChildren.map((child) => (
+                      <CardDataAnak
+                        key={child.id}
+                        anak={child}
+                        komunitas={komunitas}
+                        canValidate={canValidate}
+                        canEdit={canEdit}
+                        canDelete={canDelete}
+                        isReadOnly={isReadOnly}
+                        onUpdate={(updated) => {
+                          setChildrenList((prev) =>
+                            prev.map((c) => (c.id === updated.id ? updated : c))
+                          );
+                        }}
+                        onDelete={(deletedId) => {
+                          setChildrenList((prev) =>
+                            prev.filter((c) => c.id !== deletedId)
+                          );
+                        }}
+                      />
+                    ))
+                  )}
+                </div>
+              </>
+            ) : (
+              /* ================= KOMUNITAS NON-PAUD (WARGA KITA / POSYANDU) ================= */
+              <>
+                {/* METRIC COUNTER MINI BAR */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div
+                    onClick={() => setDataFilterTab("semua")}
+                    className={cn(
+                      "rounded-lg border p-3.5 text-center space-y-1 shadow-xs cursor-pointer transition-all",
+                      dataFilterTab === "semua"
+                        ? "border-primary bg-primary/10 shadow-2xs"
+                        : "border-border bg-card hover:bg-muted/30"
+                    )}
+                  >
+                    <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground block">
+                      TOTAL SELURUH ANAK
+                    </span>
+                    <span className="text-2xl font-bold font-mono text-foreground">
+                      {totalChildren}
+                    </span>
+                    <span className="text-2xs font-semibold text-muted-foreground block">
+                      Balita &amp; Anak 0–6 Thn
+                    </span>
+                  </div>
+
+                  <div
+                    onClick={() => setDataFilterTab("bersekolah")}
+                    className={cn(
+                      "rounded-lg border p-3.5 text-center space-y-1 shadow-xs cursor-pointer transition-all",
+                      dataFilterTab === "bersekolah"
+                        ? "border-teal-500 bg-teal-500/15 shadow-2xs"
+                        : "border-teal-500/25 bg-teal-500/5 hover:bg-teal-500/10"
+                    )}
+                  >
+                    <span className="text-2xs font-bold uppercase tracking-wider text-teal-800 dark:text-teal-300 block">
+                      ANAK BERSEKOLAH (PAUD)
+                    </span>
+                    <span className="text-2xl font-bold font-mono text-teal-700 dark:text-teal-300">
+                      {totalBersekolahCount}
+                    </span>
+                    <span className="text-2xs font-semibold text-teal-800 dark:text-teal-300 block">
+                      Sumber: Satuan PAUD
+                    </span>
+                  </div>
+
+                  <div
+                    onClick={() => setDataFilterTab("belum_bersekolah")}
+                    className={cn(
+                      "rounded-lg border p-3.5 text-center space-y-1 shadow-xs cursor-pointer transition-all",
+                      dataFilterTab === "belum_bersekolah"
+                        ? "border-amber-500 bg-amber-500/20 shadow-2xs"
+                        : "border-amber-500/25 bg-amber-500/5 hover:bg-amber-500/10"
+                    )}
+                  >
+                    <span className="text-2xs font-bold uppercase tracking-wider text-amber-900 dark:text-amber-200 block">
+                      BELUM BERSEKOLAH
+                    </span>
+                    <span className="text-2xl font-bold font-mono text-amber-700 dark:text-amber-300">
+                      {totalBelumBersekolahCount}
+                    </span>
+                    <span className="text-2xs font-semibold text-amber-900 dark:text-amber-200 block">
+                      Pendataan Warga / RT
+                    </span>
+                  </div>
+                </div>
+
+                {/* PEMISAHAN KATEGORI DATA: TAB FILTER JELAS */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
+                  <div className="flex items-center gap-2 overflow-x-auto pb-1">
+                    <button
+                      type="button"
+                      onClick={() => setDataFilterTab("semua")}
+                      className={cn(
+                        "px-3.5 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer border shrink-0 flex items-center gap-1.5",
+                        dataFilterTab === "semua"
+                          ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                          : "bg-card text-muted-foreground border-border hover:bg-muted hover:text-foreground"
+                      )}
+                    >
+                      <span>Semua Anak</span>
+                      <span className="px-1.5 py-0.2 rounded-md bg-background/20 font-mono text-2xs">
+                        {totalChildren}
+                      </span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setDataFilterTab("bersekolah")}
+                      className={cn(
+                        "px-3.5 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer border shrink-0 flex items-center gap-1.5",
+                        dataFilterTab === "bersekolah"
+                          ? "bg-teal-600 text-white border-teal-600 shadow-xs"
+                          : "bg-card text-muted-foreground border-border hover:bg-teal-500/10 hover:text-teal-700"
+                      )}
+                    >
+                      <GraduationCap className="h-3.5 w-3.5" />
+                      <span>Anak Bersekolah (PAUD / PKBM / SKB)</span>
+                      <span className="px-1.5 py-0.2 rounded-md bg-background/20 font-mono text-2xs">
+                        {totalBersekolahCount}
+                      </span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setDataFilterTab("belum_bersekolah")}
+                      className={cn(
+                        "px-3.5 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer border shrink-0 flex items-center gap-1.5",
+                        dataFilterTab === "belum_bersekolah"
+                          ? "bg-amber-600 text-white border-amber-600 shadow-xs"
+                          : "bg-card text-muted-foreground border-border hover:bg-amber-500/10 hover:text-amber-800"
+                      )}
+                    >
+                      <Baby className="h-3.5 w-3.5" />
+                      <span>Anak Belum Bersekolah</span>
+                      <span className="px-1.5 py-0.2 rounded-md bg-background/20 font-mono text-2xs">
+                        {totalBelumBersekolahCount}
+                      </span>
+                    </button>
+                  </div>
+
+                  {/* Search Box */}
+                  <div className="relative w-full sm:w-64">
+                    <Search className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Cari nama anak, ortu, sekolah..."
+                      className="w-full h-9 rounded-lg border border-border bg-background pl-9 pr-3 text-xs text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-hidden"
+                    />
+                  </div>
+                </div>
+
+                {/* INFORMATIVE NOTICE BERDASARKAN TAB AKTIF */}
+                {dataFilterTab === "bersekolah" && (
+                  <div className="rounded-lg border border-teal-500/30 bg-teal-500/10 p-3 sm:p-3.5 flex items-start gap-2.5 shadow-xs">
+                    <ShieldCheck className="h-4.5 w-4.5 text-teal-600 dark:text-teal-400 shrink-0 mt-0.5" />
+                    <div className="space-y-0.5 text-xs text-foreground">
+                      <span className="font-bold text-teal-900 dark:text-teal-100 block">
+                        Data Anak Bersekolah PAUD (Read-Only di Luar Komunitas PAUD)
+                      </span>
+                      <p className="text-muted-foreground leading-relaxed">
+                        Data anak usia 0–6 tahun yang bersekolah bersumber dari Komunitas Satuan PAUD, PKBM Star of Tomorrow, dan SKB Kota Tegal. Data ini ditampilkan sebagai referensi pemantauan warga dan tidak dapat di-edit di komunitas ini.
                       </p>
                     </div>
                   </div>
-                ) : (
-                  displayedChildren.map((child) => (
-                    <CardDataAnak
-                      key={child.id}
-                      anak={child}
-                      komunitas={komunitas}
-                      canValidate={isPaud && canValidate}
-                      canEdit={isPaud ? canEdit : !child.is_sekolah && canEdit}
-                      canDelete={isPaud ? canDelete : !child.is_sekolah && canDelete}
-                      isReadOnly={isReadOnly}
-                      onUpdate={(updated) => {
-                        setChildrenList((prev) =>
-                          prev.map((c) => (c.id === updated.id ? updated : c))
-                        );
-                      }}
-                      onDelete={(deletedId) => {
-                        setChildrenList((prev) =>
-                          prev.filter((c) => c.id !== deletedId)
-                        );
-                      }}
-                    />
-                  ))
                 )}
-              </div>
-            </>
+
+                {dataFilterTab === "belum_bersekolah" && (
+                  <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 sm:p-3.5 flex items-start gap-2.5 shadow-xs">
+                    <Baby className="h-4.5 w-4.5 text-amber-700 dark:text-amber-300 shrink-0 mt-0.5" />
+                    <div className="space-y-0.5 text-xs text-foreground">
+                      <span className="font-bold text-amber-950 dark:text-amber-100 block">
+                        Data Anak Usia 0–6 Tahun Belum Bersekolah
+                      </span>
+                      <p className="text-muted-foreground leading-relaxed">
+                        Daftar anak usia dini yang belum mengikuti layanan PAUD hasil pendataan kader/pengurus di lingkungan {komunitas.nama}. Gunakan tombol <strong>Tambah Data Anak Belum Bersekolah</strong> untuk mendaftarkan balita baru.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* LIST KARTU DATA ANAK */}
+                <div className="space-y-2.5 pb-16">
+                  <div className="flex items-center justify-between border-b border-border/60 pb-2">
+                    <h3 className="text-xs font-bold uppercase text-foreground tracking-wider flex items-center gap-1.5">
+                      <span>DAFTAR RINCIAN ANAK</span>
+                      <span className="font-mono text-muted-foreground">
+                        ({displayedChildren.length} DATA)
+                      </span>
+                    </h3>
+                    <span className="text-xs font-mono font-bold text-muted-foreground">
+                      {displayedChildren.length} dari total {totalChildren} anak
+                    </span>
+                  </div>
+
+                  {displayedChildren.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border bg-card p-10 text-center space-y-3">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 border border-primary/20 text-primary">
+                        <Baby className="h-6 w-6" />
+                      </div>
+                      <div className="space-y-1 max-w-sm">
+                        <h4 className="text-sm font-bold tracking-tight text-foreground">
+                          Belum Ada Data Anak Ditampilkan
+                        </h4>
+                        <p className="text-xs text-muted-foreground leading-relaxed">
+                          {dataFilterTab === "bersekolah"
+                            ? "Belum ada anak yang bersekolah PAUD tercatat di wilayah ini."
+                            : dataFilterTab === "belum_bersekolah"
+                            ? "Belum ada anak yang dicatat sebagai belum bersekolah."
+                            : "Belum ada data anak balita / PAUD 0–6 tahun yang terdata di komunitas ini."}
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    displayedChildren.map((child) => (
+                      <CardDataAnak
+                        key={child.id}
+                        anak={child}
+                        komunitas={komunitas}
+                        canValidate={false}
+                        canEdit={!child.is_sekolah && canEdit}
+                        canDelete={!child.is_sekolah && canDelete}
+                        isReadOnly={isReadOnly}
+                        onUpdate={(updated) => {
+                          setChildrenList((prev) =>
+                            prev.map((c) => (c.id === updated.id ? updated : c))
+                          );
+                        }}
+                        onDelete={(deletedId) => {
+                          setChildrenList((prev) =>
+                            prev.filter((c) => c.id !== deletedId)
+                          );
+                        }}
+                      />
+                    ))
+                  )}
+                </div>
+              </>
+            )
           ) : (
             /* BLOK AKSES TERBATAS UNTUK PENGUNJUNG / TAMU BELUM TEREGISTRASI */
             <div className="rounded-lg border border-border bg-card p-6 text-center space-y-4 shadow-sm">

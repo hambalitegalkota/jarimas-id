@@ -95,12 +95,12 @@ export default async function KomunitasDataAnakPage({
           </div>
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
             {isPaud
-              ? "Peserta Didik PAUD & Pemantauan Tumbuh Kembang"
+              ? "Daftar Detail Anak Usia 0–6 Tahun"
               : "Data Anak Usia Dini (0–6 Tahun)"}
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed max-w-2xl">
             {isPaud
-              ? `Pengelolaan peserta didik aktif, riwayat verifikasi, serta pemantauan tumbuh kembang anak di ${komunitas.nama}.`
+              ? `Pemantauan, verifikasi status, dan pengelolaan data anak usia dini (0–6 tahun) di ${komunitas.nama}.`
               : `Pemantauan status pendidikan anak usia 0–6 tahun di ${komunitas.nama}: anak yang sudah bersekolah (PAUD/PKBM/SKB) dan anak yang belum bersekolah.`}
           </p>
         </div>
