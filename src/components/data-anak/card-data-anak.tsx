@@ -217,9 +217,9 @@ export function CardDataAnak({
             </div>
           </div>
 
-          {/* Status Badge (Hanya tampil di Komunitas PAUD) & Toggle Button */}
+          {/* Status Badge & Toggle Button */}
           <div className="flex items-center gap-1.5 sm:gap-2 self-start sm:self-center shrink-0">
-            {isKomunitasPaud && (
+            {isKomunitasPaud ? (
               isApproved ? (
                 <span className="inline-flex items-center gap-1 rounded-lg bg-teal-500/10 px-2 py-1 text-[11px] font-bold text-teal-700 dark:text-teal-300 border border-teal-500/20">
                   <CheckCircle2 className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400" />
@@ -231,6 +231,16 @@ export function CardDataAnak({
                   <span>MENUNGGU</span>
                 </span>
               )
+            ) : currentChild.is_sekolah ? (
+              <span className="inline-flex items-center gap-1 rounded-lg bg-teal-500/10 px-2 py-1 text-[11px] font-bold text-teal-700 dark:text-teal-300 border border-teal-500/20" title="Data Bersumber dari Satuan PAUD (Read-Only)">
+                <GraduationCap className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400" />
+                <span>BERSEKOLAH</span>
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 rounded-lg bg-amber-500/10 px-2 py-1 text-[11px] font-bold text-amber-900 dark:text-amber-200 border border-amber-500/30">
+                <Baby className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
+                <span>BELUM BERSEKOLAH</span>
+              </span>
             )}
 
             {/* Toggle Sembunyikan / Tampilkan Button */}
@@ -324,8 +334,8 @@ export function CardDataAnak({
             </div>
           )}
 
-          {/* Action Buttons Bar: Edit Data, Keluar / Hapus, dan Validasi (Hanya di Komunitas PAUD) */}
-          {isKomunitasPaud && (
+          {/* Action Buttons Bar: Edit Data, Keluar / Hapus, dan Validasi */}
+          {isKomunitasPaud ? (
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-1.5 pt-2 border-t border-border/60">
               {(canEdit !== false || canDelete !== false) ? (
                 <div className="flex items-center gap-1.5">
@@ -371,25 +381,62 @@ export function CardDataAnak({
                 </button>
               )}
             </div>
+          ) : currentChild.is_sekolah ? (
+            /* Di Komunitas Lain untuk Data Anak Bersekolah: Tidak Bisa Diedit (Read-Only) */
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 pt-2 border-t border-border/60">
+              <div className="inline-flex items-center gap-1.5 text-2xs font-bold text-teal-800 dark:text-teal-300 bg-teal-500/10 px-2.5 py-1 rounded-md border border-teal-500/20">
+                <ShieldCheck className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400 shrink-0" />
+                <span>Sumber Data: Satuan PAUD / PKBM / SKB (Data Terverifikasi Sekolah, Terkunci &amp; Tidak Dapat Diedit)</span>
+              </div>
+            </div>
+          ) : (
+            /* Di Komunitas Lain untuk Data Anak Belum Bersekolah: Pengurus/Kader dapat mengedit atau menghapus */
+            (canEdit || canDelete) && (
+              <div className="flex items-center justify-between gap-1.5 pt-2 border-t border-border/60">
+                <div className="flex items-center gap-1.5">
+                  {canEdit && (
+                    <button
+                      type="button"
+                      onClick={() => setIsEditModalOpen(true)}
+                      className="flex h-8 items-center justify-center gap-1 rounded-lg bg-secondary/15 hover:bg-secondary/25 active:scale-98 border border-secondary/30 px-2.5 text-xs font-semibold text-amber-900 dark:text-amber-200 transition-all cursor-pointer"
+                    >
+                      <Pencil className="h-3.5 w-3.5 text-secondary" />
+                      <span>Edit Data Belum Sekolah</span>
+                    </button>
+                  )}
+
+                  {canDelete && (
+                    <button
+                      type="button"
+                      onClick={() => setIsKeluarModalOpen(true)}
+                      className="flex h-8 items-center justify-center gap-1 rounded-lg bg-rose-50 hover:bg-rose-100 active:scale-98 border border-rose-200 px-2.5 text-xs font-semibold text-rose-700 transition-all cursor-pointer"
+                    >
+                      <LogOut className="h-3.5 w-3.5 text-rose-700" />
+                      <span>Hapus Data</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+            )
           )}
         </div>
       </div>
 
-      {/* Edit Data Anak Modal (Hanya di Komunitas PAUD) */}
-      {isKomunitasPaud && isEditModalOpen && (
+      {/* Edit Data Anak Modal */}
+      {isEditModalOpen && (
         <ModalEditDataAnak
           isOpen={isEditModalOpen}
           anak={currentChild}
           komunitasId={komunitas?.id || currentChild.komunitas_id}
           komunitasNama={komunitas?.nama || formatNamaSekolahDisplay(currentChild.nama_sekolah) || "Satuan PAUD"}
-          jenisKomunitas={komunitas?.jenis || "satuan_paud"}
+          jenisKomunitas={komunitas?.jenis || (currentChild.is_sekolah ? "satuan_paud" : "warga_kita")}
           onClose={() => setIsEditModalOpen(false)}
           onSuccess={handleChildUpdated}
         />
       )}
 
-      {/* Keluar Data Anak Modal (Hanya di Komunitas PAUD) */}
-      {isKomunitasPaud && isKeluarModalOpen && (
+      {/* Keluar / Hapus Data Anak Modal */}
+      {isKeluarModalOpen && (
         <ModalKeluarDataAnak
           isOpen={isKeluarModalOpen}
           anak={currentChild}

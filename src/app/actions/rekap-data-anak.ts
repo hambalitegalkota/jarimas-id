@@ -107,7 +107,7 @@ export interface RekapDataAnakUsiaDiniResult {
   totalLiveRecords: number;
 }
 
-const DAFTAR_ALASAN_BERSEKOLAH = [
+export const DAFTAR_ALASAN_BERSEKOLAH = [
   "Stimulasi & Pendidikan Usia Dini",
   "Melatih Kemandirian & Sosialisasi",
   "Persiapan Masuk Sekolah Dasar (SD)",
@@ -118,7 +118,7 @@ const DAFTAR_ALASAN_BERSEKOLAH = [
   "Alasan Lainnya",
 ];
 
-const DAFTAR_ALASAN_TIDAK_SEKOLAH = [
+export const DAFTAR_ALASAN_TIDAK_SEKOLAH = [
   "Belum Cukup Usia / Masih Balita",
   "Keterbatasan Biaya / Ekonomi",
   "Jarak ke Sekolah Jauh / Transportasi",
@@ -129,7 +129,7 @@ const DAFTAR_ALASAN_TIDAK_SEKOLAH = [
   "Alasan Lainnya",
 ];
 
-function calculateAgeFromBirthDate(birthDateStr?: string | null): number {
+export function calculateAgeFromBirthDate(birthDateStr?: string | null): number {
   if (!birthDateStr) return 4;
   let s = String(birthDateStr).trim();
 
@@ -153,7 +153,7 @@ function calculateAgeFromBirthDate(birthDateStr?: string | null): number {
   return Math.max(0, Math.min(10, age));
 }
 
-function classifySchoolType(namaSekolah?: string | null): keyof SchoolTypeBreakdown {
+export function classifySchoolType(namaSekolah?: string | null): keyof SchoolTypeBreakdown {
   const s = (namaSekolah || "").trim();
   if (!s) return "kb";
 
@@ -188,7 +188,7 @@ function classifySchoolType(namaSekolah?: string | null): keyof SchoolTypeBreakd
   return "tk";
 }
 
-function normalizeReasonBersekolah(raw?: string | null): string {
+export function normalizeReasonBersekolah(raw?: string | null): string {
   const s = (raw || "").toLowerCase();
   if (s.includes("stimulasi") || s.includes("pendidikan") || s.includes("terbaik")) return "Stimulasi & Pendidikan Usia Dini";
   if (s.includes("mandiri") || s.includes("sosialisasi") || s.includes("teman")) return "Melatih Kemandirian & Sosialisasi";
@@ -200,7 +200,7 @@ function normalizeReasonBersekolah(raw?: string | null): string {
   return "Stimulasi & Pendidikan Usia Dini";
 }
 
-function normalizeReasonTidakSekolah(raw?: string | null, age: number = 2): string {
+export function normalizeReasonTidakSekolah(raw?: string | null, age: number = 2): string {
   const s = (raw || "").toLowerCase();
   if (s.includes("belum wajib") || s.includes("balita") || s.includes("usia") || s.includes("belum cukup") || age <= 2) {
     return "Belum Cukup Usia / Masih Balita";
@@ -226,7 +226,7 @@ function normalizeReasonTidakSekolah(raw?: string | null, age: number = 2): stri
   return "Belum Cukup Usia / Masih Balita";
 }
 
-function createEmptyUsiaJenjang(): Record<number, SchoolTypeBreakdown> {
+export function createEmptyUsiaJenjang(): Record<number, SchoolTypeBreakdown> {
   const res: Record<number, SchoolTypeBreakdown> = {};
   for (let age = 0; age <= 6; age++) {
     res[age] = { tk: 0, ra: 0, kb: 0, sps: 0, tpa: 0, skb: 0, pkbm: 0 };
@@ -234,7 +234,7 @@ function createEmptyUsiaJenjang(): Record<number, SchoolTypeBreakdown> {
   return res;
 }
 
-function createEmptyRekapWilayah(id: string, nama: string, tingkat: "kota" | "kecamatan" | "kelurahan", kecamatan?: string): WilayahRekapItem {
+export function createEmptyRekapWilayah(id: string, nama: string, tingkat: "kota" | "kecamatan" | "kelurahan", kecamatan?: string): WilayahRekapItem {
   return {
     id,
     nama,

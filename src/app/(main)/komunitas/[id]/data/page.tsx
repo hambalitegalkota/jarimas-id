@@ -3,10 +3,14 @@ import { notFound, redirect } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { getKomunitasDetail } from "@/app/actions/komunitas";
 import { getDataAnakByKomunitas } from "@/app/actions/data-anak";
-import { getRekapDataAnakUsiaDiniAction, checkUserRekapAdminAccess } from "@/app/actions/rekap-data-anak";
+import {
+  getRekapDataAnakUsiaDiniAction,
+  checkUserRekapAdminAccess,
+} from "@/app/actions/rekap-data-anak";
 import { DataAnakClientView } from "./data-anak-client-view";
-import { RekapDataAnakClientView } from "@/components/data-anak/rekap-data-anak-client-view";
 import { extractKomunitasMetadata, getKomunitasFeatureCards } from "@/lib/admin-helpers";
+import { buildKomunitasScopedRekap } from "@/lib/komunitas-rekap-calculator";
+import { isKomunitasLayananPaud } from "@/lib/data-anak-helpers";
 
 interface KomunitasDataAnakPageProps {
   params: Promise<{
@@ -35,62 +39,12 @@ export default async function KomunitasDataAnakPage({
     redirect(`/komunitas/${id}`);
   }
 
-  const meta = extractKomunitasMetadata(komunitas);
-  const isWargaKita = komunitas.jenis === "warga_kita";
-  const isRt = isWargaKita && meta.hasRt;
-  const isRekapOnlyTier = isWargaKita && !meta.hasRt;
-
-  // Untuk komunitas RW, Kelurahan, Kecamatan, dan Kota Tegal:
-  // Data yang ditampilkan HANYA DATA REKAP SAJA disesuaikan levelnya.
-  // Super Admin dan Admin Pusat memiliki akses penuh ke daftar nama & rincian di seluruh level.
-  if (isRekapOnlyTier) {
-    const [{ data: rekapData }, authAccess] = await Promise.all([
-      getRekapDataAnakUsiaDiniAction(),
-      checkUserRekapAdminAccess(),
-    ]);
-
-    let initialTingkat: "kota" | "kecamatan" | "kelurahan" = "kota";
-    if (meta.hasRw || meta.hasKel) {
-      initialTingkat = "kelurahan";
-    } else if (meta.rawKec && meta.rawKec !== "Kota Tegal") {
-      initialTingkat = "kecamatan";
-    }
-
-    const canAccessNames = Boolean(
-      isSuperOrAdminPusat ||
-      isSuperAdmin ||
-      isAdminPusat ||
-      authAccess.canAccess
-    );
-
-    return (
-      <main className="w-full min-h-screen bg-background py-4 sm:py-6 print:py-0 print:bg-white print:min-h-0">
-        <RekapDataAnakClientView
-          initialData={rekapData}
-          canAccessDaftarNamaAnak={canAccessNames}
-          userPeran={
-            isSuperAdmin
-              ? "Super Admin"
-              : isAdminPusat
-              ? "Admin Pusat"
-              : authAccess.userPeran
-          }
-          initialTingkat={initialTingkat}
-          initialKecamatan={meta.rawKec || "Tegal Timur"}
-          initialKelurahan={meta.rawKel || "Kejambon"}
-          initialRw={meta.rawRw || undefined}
-          customScopeTitle={komunitas.nama}
-          backHref={`/komunitas/${id}`}
-          backLabel={`Kembali ke ${komunitas.nama}`}
-        />
-      </main>
-    );
-  }
-
-  // Khusus Komunitas Tingkat RT, Satuan PAUD, dan Posyandu:
-  const dataAnakResult = await getDataAnakByKomunitas(id, {
-    preloadedKomunitas: komunitas,
-  });
+  // Ambil data rincian anak komunitas dan rekapitulasi kota secara paralel
+  const [dataAnakResult, { data: rekapData }, authAccess] = await Promise.all([
+    getDataAnakByKomunitas(id, { preloadedKomunitas: komunitas }),
+    getRekapDataAnakUsiaDiniAction(),
+    checkUserRekapAdminAccess(),
+  ]);
 
   const {
     data: childrenList,
@@ -106,6 +60,14 @@ export default async function KomunitasDataAnakPage({
   } = dataAnakResult;
 
   const hasRootAccess = Boolean(isSuperOrAdminPusat || isSuperAdmin || isAdminPusat);
+  const isPaud = isKomunitasLayananPaud(komunitas, komunitas.nama, komunitas.jenis);
+
+  // Bangun Rekapitulasi, Diagram, dan Sub-tabel yang sudah menyesuaikan jenjang komunitas ini
+  const scopedRekapCalc = buildKomunitasScopedRekap(
+    komunitas,
+    childrenList,
+    rekapData
+  );
 
   return (
     <div className="flex flex-col flex-1 px-4 sm:px-6 md:px-8 py-4 sm:py-6 gap-5 sm:gap-6 max-w-5xl xl:max-w-6xl mx-auto w-full pb-24">
@@ -123,26 +85,37 @@ export default async function KomunitasDataAnakPage({
       {/* Header Info */}
       <div className="flex items-start justify-between gap-3 border-b border-border/60 pb-4">
         <div className="space-y-1">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <span className="rounded-md bg-primary/10 px-2.5 py-0.5 text-xs font-bold text-primary border border-primary/20">
-              DATA ANAK USIA DINI
+              DATA ANAK USIA DINI (0–6 TAHUN)
             </span>
-            <span className="text-xs font-semibold text-muted-foreground uppercase">{komunitas.nama}</span>
+            <span className="text-xs font-semibold text-muted-foreground uppercase">
+              {komunitas.nama}
+            </span>
           </div>
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
-            Data Anak (0–6 Tahun)
+            {isPaud
+              ? "Peserta Didik PAUD & Pemantauan Tumbuh Kembang"
+              : "Data Anak Usia Dini (0–6 Tahun)"}
           </h1>
-          <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed max-w-lg">
-            Pemantauan dan verifikasi pendataan anak usia dini (0–6 tahun) di {komunitas.nama}.
+          <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed max-w-2xl">
+            {isPaud
+              ? `Pengelolaan peserta didik aktif, riwayat verifikasi, serta pemantauan tumbuh kembang anak di ${komunitas.nama}.`
+              : `Pemantauan status pendidikan anak usia 0–6 tahun di ${komunitas.nama}: anak yang sudah bersekolah (PAUD/PKBM/SKB) dan anak yang belum bersekolah.`}
           </p>
         </div>
       </div>
 
-      {/* Interactive Client View */}
+      {/* Interactive Client View dengan Rekap, Grafik, dan Pemisahan Jelas */}
       <DataAnakClientView
         komunitas={komunitas}
         initialChildren={childrenList}
         stats={stats}
+        scopedRekapItem={scopedRekapCalc.scopeRekapItem}
+        subTierItems={scopedRekapCalc.subTierItems}
+        subTierTitle={scopedRekapCalc.subTierTitle}
+        subTierColumnLabel={scopedRekapCalc.subTierColumnLabel}
+        scopeType={scopedRekapCalc.scopeType}
         canViewDetail={hasRootAccess ? true : canViewDetail}
         isAuthenticated={hasRootAccess ? true : isAuthenticated}
         canValidate={hasRootAccess ? true : canValidate}

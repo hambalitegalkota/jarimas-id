@@ -271,6 +271,33 @@ export function FormDataAnak({
         </div>
       )}
 
+      {/* Banner Identifikasi Jenis Formulir */}
+      {isPaud ? (
+        <div className="rounded-lg border border-teal-500/30 bg-teal-500/10 p-3 sm:p-3.5 flex items-start gap-2.5 shadow-2xs">
+          <GraduationCap className="h-5 w-5 text-teal-700 dark:text-teal-300 shrink-0 mt-0.5" />
+          <div className="space-y-0.5 text-xs text-foreground">
+            <span className="font-bold text-teal-900 dark:text-teal-100 block">
+              Formulir Pendaftaran Siswa PAUD Baru ({komunitasNama})
+            </span>
+            <p className="text-muted-foreground leading-relaxed">
+              Formulir ini untuk mendaftarkan peserta didik baru di Satuan PAUD / PKBM Star of Tomorrow / SKB. Data akan berstatus aktif bersekolah dan terhubung ke wilayah domisili anak.
+            </p>
+          </div>
+        </div>
+      ) : (
+        <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 sm:p-3.5 flex items-start gap-2.5 shadow-2xs">
+          <Baby className="h-5 w-5 text-amber-700 dark:text-amber-300 shrink-0 mt-0.5" />
+          <div className="space-y-0.5 text-xs text-foreground">
+            <span className="font-bold text-amber-950 dark:text-amber-100 block">
+              Formulir Pendataan Anak Belum Bersekolah (0–6 Tahun)
+            </span>
+            <p className="text-muted-foreground leading-relaxed">
+              Formulir ini khusus untuk mendata anak usia 0–6 tahun yang <strong>belum bersekolah</strong> di lingkungan {komunitasNama}. Untuk anak yang sudah bersekolah di PAUD/TK, data didaftarkan langsung oleh pihak Satuan PAUD terkait.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* SECTION 1: IDENTITAS ANAK */}
       <div className="rounded-lg border border-border bg-card p-4 sm:p-5 space-y-4 shadow-sm">
         <div className="flex items-center gap-3 border-b border-border pb-3">

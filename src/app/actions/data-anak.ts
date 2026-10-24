@@ -538,27 +538,26 @@ export async function getDataAnakByKomunitas(
             }
           } else {
             // Warga Kita (RT, RW, Kelurahan, Kecamatan, Kota Tegal)
-            // Ketentuan: Data lengkap hanya bisa dilihat di level RT oleh Admin Komunitas Warga Kita.
-            // Di level RW, Kelurahan, Kecamatan, dan Kota Tegal hanya data rekap saja.
-            const isRt = Boolean(targetMeta.hasRt);
+            // Seluruh admin/pengurus/kader di Warga Kita berhak menambahkan data anak belum bersekolah dan melihat rincian
             const isWargaAdmin =
               isAdminRole ||
               roleLower.includes("admin") ||
               roleLower.includes("pengurus") ||
-              roleLower.includes("ketua");
+              roleLower.includes("ketua") ||
+              roleLower.includes("kader");
 
-            if (isRt && isWargaAdmin) {
+            if (isWargaAdmin) {
               canViewDetail = true;
               canCreate = true;
               canEdit = true;
               canDelete = true;
-              canValidate = true;
+              canValidate = false;
               canEditDdks = true;
               isReadOnly = false;
             } else {
-              // Non-admin di RT atau di level RW, Kelurahan, Kecamatan, Kota Tegal: Data rekap saja, data lengkap terkunci
-              canViewDetail = false;
-              canCreate = false;
+              // Anggota Warga Kita yang disetujui: Dapat melihat rincian dan mendaftarkan anak belum sekolah
+              canViewDetail = true;
+              canCreate = true;
               canEdit = false;
               canDelete = false;
               canValidate = false;
@@ -703,9 +702,12 @@ export async function getDataAnakByKomunitas(
         dbChildren = paudDirect;
       }
     } else {
-      // Komunitas Posyandu, Warga Kita, SPM: filter targeted per komunitas_id atau kelurahan
+      // Komunitas Posyandu, Warga Kita, SPM: filter targeted per komunitas_id, kelurahan, atau kecamatan
       const targetKel = targetKomunitas?.kelurahan && targetKomunitas.kelurahan !== "semua" && targetKomunitas.kelurahan !== "Semua Kelurahan"
         ? targetKomunitas.kelurahan
+        : null;
+      const targetKec = targetKomunitas?.kecamatan && targetKomunitas.kecamatan !== "semua" && targetKomunitas.kecamatan !== "Kota Tegal"
+        ? targetKomunitas.kecamatan
         : null;
 
       let directQuery = supabase
@@ -714,26 +716,18 @@ export async function getDataAnakByKomunitas(
         .order("created_at", { ascending: false });
 
       if (targetKel) {
-        directQuery = directQuery.or(`komunitas_id.eq.${validKomId},alasan_sekolah.ilike.%${targetKel}%`);
+        directQuery = directQuery.or(`komunitas_id.eq.${validKomId},alasan_sekolah.ilike.%${targetKel}%`).limit(1500);
+      } else if (targetKec) {
+        directQuery = directQuery.or(`komunitas_id.eq.${validKomId},alasan_sekolah.ilike.%${targetKec}%`).limit(3000);
       } else {
-        directQuery = directQuery.eq("komunitas_id", validKomId);
+        directQuery = directQuery.limit(5000);
       }
 
-      const { data: directData, error: directErr } = await directQuery.limit(200);
+      const { data: directData, error: directErr } = await directQuery;
       if (directErr) {
         childError = directErr;
       } else if (directData && directData.length > 0) {
         dbChildren = directData;
-      } else if (!targetKel) {
-        // Fallback hanya jika di level kota (tanpa kelurahan), dibatasi maksimal 200 data terbaru
-        const { data: fallbackChunk, error: fallbackErr } = await supabase
-          .from("data_anak")
-          .select(selectFields)
-          .order("created_at", { ascending: false })
-          .limit(200);
-
-        if (fallbackErr) childError = fallbackErr;
-        else if (fallbackChunk) dbChildren = fallbackChunk;
       }
     }
 
