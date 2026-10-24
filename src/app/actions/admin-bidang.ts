@@ -143,9 +143,10 @@ export async function getAdminBidangListAction(): Promise<{
       };
     }
     const { supabase } = ctx;
+    const adminClient = createAdminClient() || supabase;
 
     // 1. Ambil dari anggota_komunitas dengan peran 'Admin Bidang %'
-    const { data: memberRows, error: memberErr } = await supabase
+    const { data: memberRows, error: memberErr } = await adminClient
       .from("anggota_komunitas")
       .select("id, user_id, peran, created_at")
       .ilike("peran", "%Admin Bidang%")
@@ -158,7 +159,7 @@ export async function getAdminBidangListAction(): Promise<{
     // 2. Ambil dari tabel admin_bidang jika tabel ada
     let dedicatedRows: any[] = [];
     try {
-      const { data: dedicatedData } = await supabase
+      const { data: dedicatedData } = await adminClient
         .from("admin_bidang")
         .select("id, user_id, bidang, created_at");
       if (dedicatedData) {

@@ -193,6 +193,15 @@ export function AdminBidangManagementCard({
       return;
     }
 
+    const isExisting = adminBidangList.some((a) => a.userId === selectedTargetUser.id);
+    if (!isExisting && selectedBidangSet.size === 0) {
+      setToastMessage({
+        text: "Silakan centang minimal 1 bidang penugasan untuk mengangkat pengguna ini.",
+        isError: true,
+      });
+      return;
+    }
+
     const bidangArray = Array.from(selectedBidangSet);
     const targetName = selectedTargetUser.nama_lengkap || selectedTargetUser.email || "Pengguna";
 
@@ -288,6 +297,10 @@ export function AdminBidangManagementCard({
       }
     });
   };
+
+  const isExistingAdmin = Boolean(
+    selectedTargetUser && adminBidangList.some((a) => a.userId === selectedTargetUser.id)
+  );
 
   return (
     <div className="rounded-lg border border-border bg-card overflow-hidden shadow-xs transition-all">
@@ -386,7 +399,7 @@ export function AdminBidangManagementCard({
               )}
             >
               <UserPlus className="h-3.5 w-3.5" />
-              <span>{selectedTargetUser ? "Ubah Penugasan" : "+ Angkat Admin Bidang"}</span>
+              <span>{isExistingAdmin ? "Ubah Penugasan" : "+ Angkat Admin Bidang"}</span>
             </button>
 
             <button
@@ -793,8 +806,13 @@ export function AdminBidangManagementCard({
                     <button
                       type="button"
                       onClick={handleSaveAssignment}
-                      disabled={isProcessing}
-                      className="inline-flex min-h-[38px] items-center gap-2 px-5 py-2 rounded-lg text-xs font-bold bg-primary hover:bg-primary-hover text-primary-foreground transition-all shadow-xs cursor-pointer disabled:opacity-50"
+                      disabled={isProcessing || (!isExistingAdmin && selectedBidangSet.size === 0)}
+                      className={cn(
+                        "inline-flex min-h-[38px] items-center gap-2 px-5 py-2 rounded-lg text-xs font-bold transition-all shadow-xs cursor-pointer disabled:opacity-50",
+                        isExistingAdmin && selectedBidangSet.size === 0
+                          ? "bg-rose-600 hover:bg-rose-700 text-white"
+                          : "bg-primary hover:bg-primary-hover text-primary-foreground"
+                      )}
                     >
                       {isProcessing ? (
                         <>
@@ -805,9 +823,13 @@ export function AdminBidangManagementCard({
                         <>
                           <Check className="h-4 w-4" />
                           <span>
-                            {selectedBidangSet.size === 0
+                            {!isExistingAdmin
+                              ? selectedBidangSet.size === 0
+                                ? "Pilih Minimal 1 Bidang"
+                                : `Tetapkan Admin (${selectedBidangSet.size} Bidang)`
+                              : selectedBidangSet.size === 0
                               ? "Cabut Wewenang Admin Bidang"
-                              : `Simpan Penetapan (${selectedBidangSet.size} Bidang)`}
+                              : `Simpan Perubahan (${selectedBidangSet.size} Bidang)`}
                           </span>
                         </>
                       )}
