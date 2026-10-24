@@ -20,7 +20,12 @@ import {
   Sparkles,
 } from "lucide-react";
 import { updateKomunitasInformasiOperasional } from "@/app/actions/komunitas";
-import { parseKontakKomunitas } from "@/lib/utils";
+import {
+  parseKontakKomunitas,
+  parseJadwalPosyandu,
+  serializeJadwalPosyandu,
+  parseCakupanWilayah,
+} from "@/lib/utils";
 import type {
   KomunitasWithMembership,
   KontakKomunitasDetail,
@@ -33,6 +38,7 @@ interface EditInformasiOperasionalModalProps {
   onClose: () => void;
   onSuccess?: (updated: {
     lokasi: string;
+    cakupan_wilayah?: string;
     jadwal?: string | null;
     deskripsi?: string | null;
     kontak?: string | null;
@@ -46,9 +52,22 @@ export function EditInformasiOperasionalModal({
   onSuccess,
 }: EditInformasiOperasionalModalProps) {
   const initialKontak = parseKontakKomunitas(komunitas.kontak);
+  const initialCakupan = parseCakupanWilayah(komunitas);
+  const initialJadwalPosyandu = parseJadwalPosyandu(komunitas.jadwal);
 
   const [lokasi, setLokasi] = useState(komunitas.lokasi || "");
+  const [cakupanWilayah, setCakupanWilayah] = useState(
+    komunitas.cakupan_wilayah || initialKontak.cakupan_wilayah || initialCakupan || ""
+  );
+
+  // Jadwal Umum (Non-Posyandu)
   const [jadwal, setJadwal] = useState(komunitas.jadwal || "");
+
+  // Jadwal Posyandu Siklus Hidup (ILP)
+  const [jadwalBalita, setJadwalBalita] = useState(initialJadwalPosyandu.balita);
+  const [jadwalLansia, setJadwalLansia] = useState(initialJadwalPosyandu.lansia);
+  const [jadwalRemaja, setJadwalRemaja] = useState(initialJadwalPosyandu.remaja);
+
   const [deskripsi, setDeskripsi] = useState(komunitas.deskripsi || "");
   const [kontakUtama, setKontakUtama] = useState(initialKontak.utama || "");
 
@@ -73,8 +92,18 @@ export function EditInformasiOperasionalModal({
     e.preventDefault();
     setFeedback(null);
 
+    const finalJadwal =
+      komunitas.jenis === "posyandu"
+        ? serializeJadwalPosyandu({
+            balita: jadwalBalita,
+            lansia: jadwalLansia,
+            remaja: jadwalRemaja,
+          })
+        : jadwal.trim();
+
     const fullKontakDetail: KontakKomunitasDetail = {
       utama: kontakUtama.trim(),
+      cakupan_wilayah: cakupanWilayah.trim(),
       kader_pendidikan: {
         nama: kaderPendidikan.nama.trim(),
         wa: kaderPendidikan.wa.trim(),
@@ -105,7 +134,8 @@ export function EditInformasiOperasionalModal({
       const res = await updateKomunitasInformasiOperasional({
         komunitasId: komunitas.id,
         lokasi: lokasi.trim(),
-        jadwal: jadwal.trim(),
+        cakupan_wilayah: cakupanWilayah.trim(),
+        jadwal: finalJadwal,
         deskripsi: deskripsi.trim(),
         kontakDetail: fullKontakDetail,
       });
@@ -117,7 +147,8 @@ export function EditInformasiOperasionalModal({
         });
         onSuccess?.({
           lokasi: lokasi.trim(),
-          jadwal: jadwal.trim(),
+          cakupan_wilayah: cakupanWilayah.trim(),
+          jadwal: finalJadwal,
           deskripsi: deskripsi.trim(),
           kontak: JSON.stringify(fullKontakDetail),
         });
@@ -235,7 +266,7 @@ export function EditInformasiOperasionalModal({
                 <div className="space-y-1.5">
                   <label className="flex items-center gap-1.5 font-bold text-foreground text-xs">
                     <MapPin className="h-4 w-4 text-primary" />
-                    <span>Alamat Lokasi Lengkap</span>
+                    <span>Alamat Lokasi Gedung / Pos</span>
                     <span className="text-destructive">*</span>
                   </label>
                   <input
@@ -248,20 +279,113 @@ export function EditInformasiOperasionalModal({
                   />
                 </div>
 
-                {/* Jadwal Layanan */}
-                <div className="space-y-1.5">
-                  <label className="flex items-center gap-1.5 font-bold text-foreground text-xs">
-                    <Calendar className="h-4 w-4 text-primary" />
-                    <span>Jadwal Layanan / Kegiatan Rutin</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={jadwal}
-                    onChange={(e) => setJadwal(e.target.value)}
-                    placeholder="Contoh: Setiap Hari Rabu Minggu ke-2 Pukul 08.30 – 11.30 WIB"
-                    className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm font-semibold focus:border-primary focus:outline-none"
-                  />
-                </div>
+                {/* Cakupan Wilayah Layanan (RW / RT yang dilayani) */}
+                {komunitas.jenis === "posyandu" && (
+                  <div className="space-y-1.5 p-3 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50/40 dark:bg-emerald-950/20">
+                    <div className="flex items-center justify-between">
+                      <label className="flex items-center gap-1.5 font-bold text-emerald-900 dark:text-emerald-300 text-xs">
+                        <Users className="h-4 w-4 text-emerald-600" />
+                        <span>Cakupan Wilayah Layanan (RW &amp; RT yang Dilayani)</span>
+                        <span className="text-destructive">*</span>
+                      </label>
+                      <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-md bg-emerald-100 text-emerald-800 border border-emerald-300">
+                        RW &amp; RT Sasaran
+                      </span>
+                    </div>
+                    <input
+                      type="text"
+                      required
+                      value={cakupanWilayah}
+                      onChange={(e) => setCakupanWilayah(e.target.value)}
+                      placeholder="Contoh: Melayani Warga RW 02 (RT 01, RT 02, RT 03, RT 04, RT 05)"
+                      className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm font-semibold focus:border-emerald-600 focus:outline-none"
+                    />
+                    <p className="text-2xs text-muted-foreground font-medium">
+                      Tuliskan keterangan RW dan RT berapa saja yang menjadi sasaran dan dilayani oleh posyandu ini.
+                    </p>
+                  </div>
+                )}
+
+                {/* Jadwal Layanan: Posyandu vs Non-Posyandu */}
+                {komunitas.jenis === "posyandu" ? (
+                  <div className="space-y-3 p-3.5 rounded-xl border border-blue-200 dark:border-blue-900/60 bg-blue-50/30 dark:bg-blue-950/20">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5">
+                        <Calendar className="h-4 w-4 text-blue-600" />
+                        <span className="font-bold text-foreground text-xs uppercase tracking-wide">
+                          Jadwal Layanan Posyandu Terpadu
+                        </span>
+                      </div>
+                      <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-md bg-blue-100 text-blue-800 border border-blue-200">
+                        Siklus Hidup (ILP)
+                      </span>
+                    </div>
+                    <p className="text-2xs text-muted-foreground font-medium">
+                      Atur jadwal kegiatan Posyandu Balita, Posyandu Lansia, dan Posyandu Remaja sesuai jadwal bulanan.
+                    </p>
+
+                    <div className="space-y-2.5 pt-0.5">
+                      {/* 1. Jadwal Posyandu Balita */}
+                      <div className="space-y-1 p-2.5 rounded-lg bg-card border border-border/80">
+                        <label className="flex items-center gap-1.5 font-bold text-blue-900 dark:text-blue-300 text-xs">
+                          <span>👶</span>
+                          <span>Jadwal Posyandu Balita, Anak &amp; Ibu Hamil</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={jadwalBalita}
+                          onChange={(e) => setJadwalBalita(e.target.value)}
+                          placeholder="Contoh: Setiap Hari Rabu Minggu ke-2 Pukul 08.30 – 11.30 WIB"
+                          className="w-full px-3 py-1.5 rounded-lg border border-border bg-background text-foreground text-xs font-semibold focus:border-blue-600 focus:outline-none"
+                        />
+                      </div>
+
+                      {/* 2. Jadwal Posyandu Lansia */}
+                      <div className="space-y-1 p-2.5 rounded-lg bg-card border border-border/80">
+                        <label className="flex items-center gap-1.5 font-bold text-purple-900 dark:text-purple-300 text-xs">
+                          <span>🧓</span>
+                          <span>Jadwal Posyandu Lansia (Lanjut Usia)</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={jadwalLansia}
+                          onChange={(e) => setJadwalLansia(e.target.value)}
+                          placeholder="Contoh: Setiap Hari Sabtu Minggu ke-1 Pukul 08.30 – 11.00 WIB"
+                          className="w-full px-3 py-1.5 rounded-lg border border-border bg-background text-foreground text-xs font-semibold focus:border-purple-600 focus:outline-none"
+                        />
+                      </div>
+
+                      {/* 3. Jadwal Posyandu Remaja */}
+                      <div className="space-y-1 p-2.5 rounded-lg bg-card border border-border/80">
+                        <label className="flex items-center gap-1.5 font-bold text-emerald-900 dark:text-emerald-300 text-xs">
+                          <span>🧑</span>
+                          <span>Jadwal Posyandu Remaja &amp; Usia Produktif Muda</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={jadwalRemaja}
+                          onChange={(e) => setJadwalRemaja(e.target.value)}
+                          placeholder="Contoh: Setiap Hari Minggu Minggu ke-3 Pukul 09.00 – 11.30 WIB"
+                          className="w-full px-3 py-1.5 rounded-lg border border-border bg-background text-foreground text-xs font-semibold focus:border-emerald-600 focus:outline-none"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-1.5">
+                    <label className="flex items-center gap-1.5 font-bold text-foreground text-xs">
+                      <Calendar className="h-4 w-4 text-primary" />
+                      <span>Jadwal Layanan / Kegiatan Rutin</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={jadwal}
+                      onChange={(e) => setJadwal(e.target.value)}
+                      placeholder="Contoh: Setiap Hari Rabu Minggu ke-2 Pukul 08.30 – 11.30 WIB"
+                      className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm font-semibold focus:border-primary focus:outline-none"
+                    />
+                  </div>
+                )}
 
                 {/* Kontak Utama / Sekretariat (untuk Komunitas Non-Posyandu) */}
                 {komunitas.jenis !== "posyandu" && (

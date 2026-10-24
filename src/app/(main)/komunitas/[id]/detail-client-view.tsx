@@ -59,7 +59,17 @@ import type {
   DataAnakItem,
   DataAtsItem,
 } from "@/types/database";
-import { cn, hasFullProfilDataAccess, parseKontakKomunitas, formatWhatsAppUrl, formatPeranDisplay, isRoleAdmin, isSuperAdmin } from "@/lib/utils";
+import {
+  cn,
+  hasFullProfilDataAccess,
+  parseKontakKomunitas,
+  parseJadwalPosyandu,
+  parseCakupanWilayah,
+  formatWhatsAppUrl,
+  formatPeranDisplay,
+  isRoleAdmin,
+  isSuperAdmin,
+} from "@/lib/utils";
 import { extractKomunitasMetadata, getKomunitasFeatureCards, cleanDeskripsiDisplay } from "@/lib/admin-helpers";
 
 interface KomunitasDetailClientViewProps {
@@ -305,6 +315,16 @@ export function KomunitasDetailClientView({
   const parsedKontak = useMemo(
     () => parseKontakKomunitas(komunitasData.kontak),
     [komunitasData.kontak]
+  );
+
+  const parsedCakupanWilayah = useMemo(
+    () => parseCakupanWilayah(komunitasData),
+    [komunitasData]
+  );
+
+  const parsedJadwalPosyandu = useMemo(
+    () => parseJadwalPosyandu(komunitasData.jadwal),
+    [komunitasData.jadwal]
   );
 
   let formattedTitle = komunitasData.nama;
@@ -1148,28 +1168,106 @@ export function KomunitasDetailClientView({
             </div>
 
             <div className="space-y-2.5 text-xs">
-              {/* Alamat Lokasi */}
-              <div className="flex items-start gap-2.5 p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
-                <MapPin className="h-4 w-4 text-slate-500 shrink-0 mt-0.5" />
-                <div className="space-y-0.5 min-w-0">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">ALAMAT LOKASI</span>
-                  <p className="text-slate-900 dark:text-slate-100 font-semibold leading-relaxed">
-                    {komunitasData.lokasi}
-                  </p>
-                </div>
-              </div>
-
-              {/* Jadwal Layanan */}
-              {komunitasData.jadwal && (
-                <div className="flex items-start gap-2.5 p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
-                  <Calendar className="h-4 w-4 text-blue-700 shrink-0 mt-0.5" />
-                  <div className="space-y-0.5 min-w-0">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">JADWAL LAYANAN</span>
+              {/* Alamat Lokasi & Cakupan Wilayah */}
+              <div className="p-2.5 sm:p-3 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-2">
+                <div className="flex items-start gap-2.5">
+                  <MapPin className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
+                  <div className="space-y-0.5 min-w-0 flex-1">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                      ALAMAT LOKASI {komunitasData.jenis === "posyandu" ? "POSYANDU" : ""}
+                    </span>
                     <p className="text-slate-900 dark:text-slate-100 font-semibold leading-relaxed">
-                      {komunitasData.jadwal}
+                      {komunitasData.lokasi}
                     </p>
                   </div>
                 </div>
+
+                {/* Cakupan Wilayah Layanan (RW & RT yang Dilayani) */}
+                {komunitasData.jenis === "posyandu" && (
+                  <div className="pt-2 border-t border-slate-200/80 dark:border-slate-700/80 flex flex-wrap items-center gap-2">
+                    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-emerald-100/90 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700 font-bold text-[10px] tracking-wide shrink-0">
+                      <Users className="h-3 w-3 text-emerald-600" />
+                      CAKUPAN WILAYAH
+                    </span>
+                    <p className="text-slate-900 dark:text-slate-100 font-bold text-xs">
+                      {parsedCakupanWilayah}
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Jadwal Layanan (Khusus Posyandu: Menampilkan Jadwal Balita, Lansia, dan Remaja) */}
+              {komunitasData.jenis === "posyandu" ? (
+                <div className="rounded-xl border border-blue-200 dark:border-blue-900/60 bg-blue-50/40 dark:bg-blue-950/20 p-2.5 sm:p-3 space-y-2.5">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-1.5">
+                      <Calendar className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+                      <h4 className="text-[11px] font-black text-blue-950 dark:text-blue-300 uppercase tracking-wider">
+                        Jadwal Layanan Posyandu Terpadu
+                      </h4>
+                    </div>
+                    <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                      Siklus Hidup (ILP)
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
+                    {/* 1. Posyandu Balita & Ibu Hamil */}
+                    <div className="p-2.5 rounded-lg bg-white dark:bg-slate-800 border border-blue-100 dark:border-blue-900/40 shadow-2xs space-y-1">
+                      <div className="flex items-center gap-1.5 text-blue-700 dark:text-blue-400 font-bold text-xs">
+                        <span className="text-sm">👶</span>
+                        <span>Posyandu Balita</span>
+                      </div>
+                      <span className="text-[10px] text-muted-foreground font-medium block">
+                        Balita, Anak &amp; Ibu Hamil
+                      </span>
+                      <p className="text-slate-800 dark:text-slate-100 font-semibold text-xs leading-relaxed pt-0.5">
+                        {parsedJadwalPosyandu.balita || "Belum ditentukan"}
+                      </p>
+                    </div>
+
+                    {/* 2. Posyandu Lansia */}
+                    <div className="p-2.5 rounded-lg bg-white dark:bg-slate-800 border border-purple-100 dark:border-purple-900/40 shadow-2xs space-y-1">
+                      <div className="flex items-center gap-1.5 text-purple-700 dark:text-purple-400 font-bold text-xs">
+                        <span className="text-sm">🧓</span>
+                        <span>Posyandu Lansia</span>
+                      </div>
+                      <span className="text-[10px] text-muted-foreground font-medium block">
+                        Warga Usia Lanjut
+                      </span>
+                      <p className="text-slate-800 dark:text-slate-100 font-semibold text-xs leading-relaxed pt-0.5">
+                        {parsedJadwalPosyandu.lansia || "Belum ditentukan"}
+                      </p>
+                    </div>
+
+                    {/* 3. Posyandu Remaja */}
+                    <div className="p-2.5 rounded-lg bg-white dark:bg-slate-800 border border-emerald-100 dark:border-emerald-900/40 shadow-2xs space-y-1">
+                      <div className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400 font-bold text-xs">
+                        <span className="text-sm">🧑</span>
+                        <span>Posyandu Remaja</span>
+                      </div>
+                      <span className="text-[10px] text-muted-foreground font-medium block">
+                        Remaja &amp; Usia Produktif
+                      </span>
+                      <p className="text-slate-800 dark:text-slate-100 font-semibold text-xs leading-relaxed pt-0.5">
+                        {parsedJadwalPosyandu.remaja || "Belum ditentukan"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                /* Jadwal Komunitas Non-Posyandu */
+                komunitasData.jadwal && (
+                  <div className="flex items-start gap-2.5 p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
+                    <Calendar className="h-4 w-4 text-blue-700 shrink-0 mt-0.5" />
+                    <div className="space-y-0.5 min-w-0">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">JADWAL LAYANAN</span>
+                      <p className="text-slate-900 dark:text-slate-100 font-semibold leading-relaxed">
+                        {komunitasData.jadwal}
+                      </p>
+                    </div>
+                  </div>
+                )
               )}
 
               {/* Kontak Resmi Utama */}

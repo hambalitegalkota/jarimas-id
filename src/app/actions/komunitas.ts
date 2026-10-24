@@ -4427,12 +4427,14 @@ import type { KontakKomunitasDetail } from "@/types/database";
 export async function updateKomunitasInformasiOperasional({
   komunitasId,
   lokasi,
+  cakupan_wilayah,
   jadwal,
   deskripsi,
   kontakDetail,
 }: {
   komunitasId: string;
   lokasi?: string;
+  cakupan_wilayah?: string;
   jadwal?: string;
   deskripsi?: string;
   kontakDetail: KontakKomunitasDetail;
@@ -4555,6 +4557,9 @@ export async function updateKomunitasInformasiOperasional({
 
     // Pastikan komunitas sudah ada di database atau buat fallback seed
     const seedItem = findOrGenerateKomunitasSeed(komunitasId);
+    if (cakupan_wilayah !== undefined) {
+      kontakDetail.cakupan_wilayah = cakupan_wilayah.trim();
+    }
     const serializedKontak = JSON.stringify(kontakDetail);
 
     const updatePayload: Record<string, any> = {

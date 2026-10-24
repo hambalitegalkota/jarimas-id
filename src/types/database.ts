@@ -112,8 +112,15 @@ export interface LaporanKaderSpmItem {
   } | null;
 }
 
+export interface JadwalPosyanduDetail {
+  balita: string;
+  lansia: string;
+  remaja: string;
+}
+
 export interface KontakKomunitasDetail {
   utama: string;
+  cakupan_wilayah?: string;
   kader_pendidikan: KaderBidangItem;
   kader_kesehatan: KaderBidangItem;
   kader_pekerjaan_umum: KaderBidangItem;
@@ -133,6 +140,7 @@ export interface Komunitas {
   rt?: string | null;
   rw?: string | null;
   lokasi: string;
+  cakupan_wilayah?: string | null;
   deskripsi?: string | null;
   logo_url?: string | null;
   kontak?: string | null;

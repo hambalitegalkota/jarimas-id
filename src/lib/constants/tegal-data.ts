@@ -801,6 +801,7 @@ export interface MasterKomunitasSeedItem {
   rt?: string;
   rw?: string;
   lokasi: string;
+  cakupan_wilayah?: string;
   deskripsi: string;
   kontak: string;
   jadwal: string;

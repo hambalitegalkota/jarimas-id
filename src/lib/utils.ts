@@ -453,7 +453,7 @@ export function canManageDataAnakInKomunitas(
   return { canCreate: false, canEdit: false, canDelete: false, isReadOnly: true };
 }
 
-import type { KontakKomunitasDetail, KaderBidangItem } from "@/types/database";
+import type { KontakKomunitasDetail, KaderBidangItem, JadwalPosyanduDetail } from "@/types/database";
 
 /**
  * Format nomor HP / WhatsApp menjadi tautan wa.me yang valid
@@ -478,6 +478,7 @@ export function parseKontakKomunitas(rawKontak?: string | null): KontakKomunitas
   const emptyKader = (): KaderBidangItem => ({ nama: "", wa: "" });
   const result: KontakKomunitasDetail = {
     utama: "",
+    cakupan_wilayah: "",
     kader_pendidikan: emptyKader(),
     kader_kesehatan: emptyKader(),
     kader_pekerjaan_umum: emptyKader(),
@@ -493,6 +494,9 @@ export function parseKontakKomunitas(rawKontak?: string | null): KontakKomunitas
     try {
       const parsed = JSON.parse(trimmed);
       result.utama = parsed.utama || parsed.telepon || "";
+      if (parsed.cakupan_wilayah) {
+        result.cakupan_wilayah = parsed.cakupan_wilayah;
+      }
       if (parsed.kader_pendidikan) {
         result.kader_pendidikan = {
           nama: parsed.kader_pendidikan.nama || "",
@@ -537,6 +541,101 @@ export function parseKontakKomunitas(rawKontak?: string | null): KontakKomunitas
 
   result.utama = rawKontak;
   return result;
+}
+
+/**
+ * Mengurai string jadwal posyandu menjadi rincian jadwal balita, lansia, dan remaja
+ */
+export function parseJadwalPosyandu(rawJadwal?: string | null): JadwalPosyanduDetail {
+  const defaultBalita = "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB";
+  const defaultLansia = "Setiap Hari Sabtu Minggu ke-1 Pukul 08.30 - 11.00 WIB";
+  const defaultRemaja = "Setiap Hari Minggu Minggu ke-3 Pukul 09.00 - 11.30 WIB";
+
+  if (!rawJadwal) {
+    return {
+      balita: defaultBalita,
+      lansia: defaultLansia,
+      remaja: defaultRemaja,
+    };
+  }
+
+  const trimmed = rawJadwal.trim();
+  if (trimmed.startsWith("{") && trimmed.endsWith("}")) {
+    try {
+      const parsed = JSON.parse(trimmed);
+      return {
+        balita: parsed.balita || defaultBalita,
+        lansia: parsed.lansia || defaultLansia,
+        remaja: parsed.remaja || defaultRemaja,
+      };
+    } catch {
+      // fallback ke default
+    }
+  }
+
+  // Jika format teks biasa lama (biasanya adalah jadwal posyandu balita)
+  return {
+    balita: trimmed || defaultBalita,
+    lansia: defaultLansia,
+    remaja: defaultRemaja,
+  };
+}
+
+/**
+ * Menyimpan objek jadwal posyandu menjadi string JSON
+ */
+export function serializeJadwalPosyandu(jadwal: {
+  balita?: string | null;
+  lansia?: string | null;
+  remaja?: string | null;
+}): string {
+  return JSON.stringify({
+    balita: (jadwal.balita || "").trim(),
+    lansia: (jadwal.lansia || "").trim(),
+    remaja: (jadwal.remaja || "").trim(),
+  });
+}
+
+/**
+ * Mengurai cakupan wilayah layanan posyandu (RW dan RT yang dilayani)
+ */
+export function parseCakupanWilayah(komunitas?: {
+  cakupan_wilayah?: string | null;
+  kontak?: string | null;
+  rw?: string | null;
+  rt?: string | null;
+  kelurahan?: string | null;
+} | null): string {
+  if (!komunitas) return "";
+
+  if (komunitas.cakupan_wilayah && komunitas.cakupan_wilayah.trim()) {
+    return komunitas.cakupan_wilayah.trim();
+  }
+
+  if (komunitas.kontak) {
+    const trimmed = komunitas.kontak.trim();
+    if (trimmed.startsWith("{") && trimmed.endsWith("}")) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        if (parsed.cakupan_wilayah && String(parsed.cakupan_wilayah).trim()) {
+          return String(parsed.cakupan_wilayah).trim();
+        }
+      } catch {}
+    }
+  }
+
+  const rw = komunitas.rw ? String(komunitas.rw).replace(/\D/g, "").padStart(2, "0") : "";
+  const rt = komunitas.rt ? String(komunitas.rt).replace(/\D/g, "").padStart(2, "0") : "";
+
+  if (rw && rt) {
+    return `Melayani Warga RW ${rw} (RT ${rt})`;
+  } else if (rw) {
+    return `Melayani Seluruh Warga RW ${rw}`;
+  } else if (komunitas.kelurahan) {
+    return `Melayani Seluruh Warga Kelurahan ${komunitas.kelurahan}`;
+  }
+
+  return "Melayani Warga Lingkungan Sekitar";
 }
 
 

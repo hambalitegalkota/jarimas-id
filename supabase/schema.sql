@@ -98,6 +98,7 @@ ALTER TABLE public.komunitas ADD COLUMN IF NOT EXISTS kelurahan TEXT;
 ALTER TABLE public.komunitas ADD COLUMN IF NOT EXISTS rt TEXT;
 ALTER TABLE public.komunitas ADD COLUMN IF NOT EXISTS rw TEXT;
 ALTER TABLE public.komunitas ADD COLUMN IF NOT EXISTS lokasi TEXT;
+ALTER TABLE public.komunitas ADD COLUMN IF NOT EXISTS cakupan_wilayah TEXT;
 ALTER TABLE public.komunitas ADD COLUMN IF NOT EXISTS deskripsi TEXT;
 ALTER TABLE public.komunitas ADD COLUMN IF NOT EXISTS logo_url TEXT;
 ALTER TABLE public.komunitas ADD COLUMN IF NOT EXISTS kontak TEXT;

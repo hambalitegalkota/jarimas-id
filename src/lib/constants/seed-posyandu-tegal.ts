@@ -32,6 +32,7 @@ export interface RawPosyanduItem {
   kelurahan: string;
   rt?: string;
   rw?: string;
+  cakupan_wilayah?: string;
   jadwal?: string;
   kontak?: string;
   lokasi?: string;
@@ -358,6 +359,15 @@ function buildPosyanduMasterSeed(): MasterKomunitasSeedItem[] {
     const fullDeskripsi =
       item.deskripsi ||
       `Layanan kesehatan terpadu balita dan ibu hamil di Posyandu ${coreName}, Kelurahan ${item.kelurahan}, ${item.kecamatan}.`;
+    const cleanRw = item.rw ? String(item.rw).replace(/\D/g, "").padStart(2, "0") : "";
+    const cleanRt = item.rt ? String(item.rt).replace(/\D/g, "").padStart(2, "0") : "";
+    const fullCakupan =
+      item.cakupan_wilayah ||
+      (cleanRw && cleanRt
+        ? `Melayani Warga RW ${cleanRw} (RT ${cleanRt})`
+        : cleanRw
+        ? `Melayani Seluruh Warga RW ${cleanRw}`
+        : `Melayani Warga Kelurahan ${item.kelurahan}`);
 
     return {
       id: item.id || `posyandu-${slug}-${kelSlug}-${kecSlug}`,
@@ -370,6 +380,7 @@ function buildPosyanduMasterSeed(): MasterKomunitasSeedItem[] {
       rw: item.rw || undefined,
       rt: item.rt || undefined,
       lokasi: fullLokasi,
+      cakupan_wilayah: fullCakupan,
       deskripsi: fullDeskripsi,
       kontak: item.kontak || "0813-2233-4455",
       jadwal: item.jadwal || "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB",
