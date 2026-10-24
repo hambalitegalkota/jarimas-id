@@ -3,7 +3,12 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/utils/supabase/server";
-import { RegisterSchema, LoginSchema } from "@/lib/zod-schemas";
+import {
+  RegisterSchema,
+  LoginSchema,
+  ForgotPasswordSchema,
+  ResetPasswordSchema,
+} from "@/lib/zod-schemas";
 import { sendJarimasWelcomeGreeting } from "@/app/actions/pertemanan";
 import { isSuperAdmin as checkIsSuperAdmin } from "@/lib/utils";
 import type { AuthActionState } from "@/types/database";
@@ -299,3 +304,147 @@ export async function logoutUser(): Promise<void> {
   revalidatePath("/", "layout");
   redirect("/login");
 }
+
+/**
+ * Server Action: Permintaan Lupa Kata Sandi (Kirim Tautan ke Email)
+ */
+export async function forgotPasswordUser(
+  _prevState: AuthActionState,
+  formData: FormData
+): Promise<AuthActionState> {
+  try {
+    const rawData = {
+      email: formData.get("email"),
+    };
+
+    const validationResult = ForgotPasswordSchema.safeParse(rawData);
+    if (!validationResult.success) {
+      const formattedErrors: Record<string, string[]> = {};
+      for (const issue of validationResult.error.issues) {
+        const field = issue.path[0] as string;
+        if (!formattedErrors[field]) {
+          formattedErrors[field] = [];
+        }
+        formattedErrors[field].push(issue.message);
+      }
+      return {
+        success: false,
+        message: "Format email tidak valid.",
+        errors: formattedErrors,
+      };
+    }
+
+    const { email } = validationResult.data;
+
+    let supabase;
+    try {
+      supabase = await createClient();
+    } catch {
+      return {
+        success: false,
+        message: NETWORK_ERROR_MESSAGE,
+      };
+    }
+
+    const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://jarimas.id").replace(/\/$/, "");
+    const redirectTo = `${siteUrl}/auth/callback?next=/reset-password`;
+
+    const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo,
+    });
+
+    if (resetError) {
+      console.warn("Gagal mengirim email reset password:", resetError.message);
+      return {
+        success: false,
+        message:
+          resetError.message.includes("rate limit")
+            ? "Terlalu banyak permintaan reset kata sandi. Mohon tunggu beberapa saat sebelum mencoba lagi."
+            : resetError.message || "Gagal mengirim tautan atur ulang kata sandi.",
+      };
+    }
+
+    return {
+      success: true,
+      message:
+        "Tautan untuk mengatur ulang kata sandi telah dikirim ke email Anda. Silakan periksa Kotak Masuk (atau folder Spam) email Anda.",
+    };
+  } catch (err: any) {
+    console.error("Error pada forgotPasswordUser:", err);
+    return {
+      success: false,
+      message: err?.message || "Terjadi kesalahan saat memproses permintaan lupa kata sandi.",
+    };
+  }
+}
+
+/**
+ * Server Action: Reset Kata Sandi Baru
+ */
+export async function resetPasswordUser(
+  _prevState: AuthActionState,
+  formData: FormData
+): Promise<AuthActionState> {
+  try {
+    const rawData = {
+      password: formData.get("password"),
+      confirmPassword: formData.get("confirmPassword"),
+    };
+
+    const validationResult = ResetPasswordSchema.safeParse(rawData);
+    if (!validationResult.success) {
+      const formattedErrors: Record<string, string[]> = {};
+      for (const issue of validationResult.error.issues) {
+        const field = issue.path[0] as string;
+        if (!formattedErrors[field]) {
+          formattedErrors[field] = [];
+        }
+        formattedErrors[field].push(issue.message);
+      }
+      return {
+        success: false,
+        message: "Periksa kembali kata sandi baru yang dimasukkan.",
+        errors: formattedErrors,
+      };
+    }
+
+    const { password } = validationResult.data;
+
+    let supabase;
+    try {
+      supabase = await createClient();
+    } catch {
+      return {
+        success: false,
+        message: NETWORK_ERROR_MESSAGE,
+      };
+    }
+
+    const { error: updateError } = await supabase.auth.updateUser({
+      password,
+    });
+
+    if (updateError) {
+      console.warn("Gagal memperbarui kata sandi:", updateError.message);
+      return {
+        success: false,
+        message:
+          updateError.message.includes("same_password")
+            ? "Kata sandi baru tidak boleh sama dengan kata sandi sebelumnya."
+            : updateError.message || "Gagal memperbarui kata sandi.",
+      };
+    }
+
+    return {
+      success: true,
+      message: "Kata sandi Anda berhasil diperbarui! Silakan masuk dengan kata sandi baru Anda.",
+    };
+  } catch (err: any) {
+    console.error("Error pada resetPasswordUser:", err);
+    return {
+      success: false,
+      message: err?.message || "Terjadi kesalahan saat mengatur ulang kata sandi.",
+    };
+  }
+}
+

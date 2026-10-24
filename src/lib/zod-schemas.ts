@@ -43,6 +43,40 @@ export type LoginInput = z.infer<typeof LoginSchema>;
 export type LoginFormValues = LoginInput;
 
 /**
+ * Skema Validasi Lupa Kata Sandi (Kirim Tautan Email)
+ */
+export const ForgotPasswordSchema = z.object({
+  email: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .min(1, "Email wajib diisi")
+    .email("Format email tidak valid"),
+});
+
+export type ForgotPasswordInput = z.infer<typeof ForgotPasswordSchema>;
+
+/**
+ * Skema Validasi Reset Kata Sandi Baru
+ */
+export const ResetPasswordSchema = z
+  .object({
+    password: z
+      .string()
+      .min(8, "Password baru minimal 8 karakter")
+      .max(100, "Password maksimal 100 karakter"),
+    confirmPassword: z
+      .string()
+      .min(8, "Konfirmasi password minimal 8 karakter"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Konfirmasi kata sandi tidak cocok dengan kata sandi baru",
+    path: ["confirmPassword"],
+  });
+
+export type ResetPasswordInput = z.infer<typeof ResetPasswordSchema>;
+
+/**
  * Skema Validasi Data Anak / Profil Anak
  */
 export const DataAnakSchema = z.object({

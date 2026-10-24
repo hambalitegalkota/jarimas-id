@@ -92,12 +92,20 @@ export default function LoginPage() {
 
             {/* Password */}
             <div className="space-y-1.5">
-              <label
-                htmlFor="password"
-                className="block text-xs font-semibold text-foreground leading-snug"
-              >
-                Kata Sandi <span className="text-destructive">*</span>
-              </label>
+              <div className="flex items-center justify-between">
+                <label
+                  htmlFor="password"
+                  className="block text-xs font-semibold text-foreground leading-snug"
+                >
+                  Kata Sandi <span className="text-destructive">*</span>
+                </label>
+                <Link
+                  href="/lupa-password"
+                  className="text-2xs font-semibold text-primary hover:text-primary-hover hover:underline transition-colors"
+                >
+                  Lupa kata sandi?
+                </Link>
+              </div>
               <div className="relative">
                 <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-muted-foreground">
                   <Lock className="h-4 w-4" />
