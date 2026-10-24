@@ -121,7 +121,12 @@ export function KomunitasManagementTools() {
         setFeedback({ type: "error", message: res.message || "Gagal memuat daftar komunitas." });
       }
     } catch (err: any) {
-      setFeedback({ type: "error", message: err.message || "Terjadi kesalahan jaringan." });
+      console.error("Gagal memuat daftar komunitas:", err);
+      const rawMsg = err?.message || "";
+      const cleanMsg = rawMsg.includes("Minified React error")
+        ? "Terjadi kendala saat memuat daftar komunitas. Silakan segarkan halaman."
+        : rawMsg || "Terjadi kesalahan jaringan.";
+      setFeedback({ type: "error", message: cleanMsg });
     } finally {
       setLoadingList(false);
     }

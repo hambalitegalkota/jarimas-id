@@ -3381,29 +3381,22 @@ export async function getKomunitasAuditSummaryAction(): Promise<{
     const supabase = await createClient();
 
     const allInvalidIds = [...(INVALID_POSYANDU_IDS || []), ...(INVALID_PAUD_IDS || [])];
+    const invalidSet = new Set(allInvalidIds);
 
-    // 1. Upayakan pembersihan data dummy/salah input posyandu & PAUD secara otomatis
-    if (allInvalidIds.length > 0) {
-      try {
-        await supabase.from("komunitas").delete().in("id", allInvalidIds);
-      } catch {
-        // Abaikan jika user bukan super admin (RLS restrict)
-      }
-    }
-
-    const invalidFilter = `(${allInvalidIds.join(",")})`;
-
-    // Query exact database items efficiently in 1 single lightweight query instead of 20 separate round-trips
-    let query = supabase
+    // Query exact database items efficiently in 1 single lightweight query
+    const { data: allKomItems, error } = await supabase
       .from("komunitas")
       .select("id, jenis, kecamatan");
 
-    if (allInvalidIds.length > 0) {
-      query = query.not("id", "in", invalidFilter);
+    if (error) {
+      console.error("Error query audit komunitas:", error);
+      return {
+        success: false,
+        message: error.message || "Gagal memuat ringkasan audit komunitas.",
+      };
     }
 
-    const { data: allKomItems } = await query;
-    const items = allKomItems || [];
+    const items = (allKomItems || []).filter((k) => !invalidSet.has(k.id));
 
     const totalKomunitas = items.length;
     const posyanduCount = items.filter((k) => k.jenis === "posyandu").length;
@@ -3498,13 +3491,7 @@ export async function getKomunitasAdminListAction(params: GetKomunitasAdminListP
       .select("id, nama, jenis, kecamatan, kelurahan, rw, rt, lokasi, deskripsi, kontak, jadwal, created_at", { count: "exact" });
 
     const allInvalidIds = [...(INVALID_POSYANDU_IDS || []), ...(INVALID_PAUD_IDS || [])];
-    if (allInvalidIds.length > 0) {
-      try {
-        await supabase.from("komunitas").delete().in("id", allInvalidIds);
-      } catch {}
-      const invalidFilter = `(${allInvalidIds.join(",")})`;
-      query = query.not("id", "in", invalidFilter);
-    }
+    const invalidSet = new Set(allInvalidIds);
 
     if (params.jenis && params.jenis !== "semua") {
       query = query.eq("jenis", params.jenis);
@@ -3522,7 +3509,17 @@ export async function getKomunitasAdminListAction(params: GetKomunitasAdminListP
 
     if (sortBy === "jumlah_anggota") {
       const { data: allRawKoms, count, error } = await query;
-      if (error) throw error;
+      if (error) {
+        console.error("Error query getKomunitasAdminListAction (jumlah_anggota):", error);
+        return {
+          success: false,
+          data: [],
+          totalCount: 0,
+          page: 1,
+          totalPages: 1,
+          message: error.message || "Gagal mengambil daftar komunitas.",
+        };
+      }
 
       const totalCount = count || (allRawKoms ? allRawKoms.length : 0);
       const totalPages = Math.max(1, Math.ceil(totalCount / limit));
@@ -3603,7 +3600,17 @@ export async function getKomunitasAdminListAction(params: GetKomunitasAdminListP
       query = query.range(offset, offset + limit - 1);
 
       const { data: rawKoms, count, error } = await query;
-      if (error) throw error;
+      if (error) {
+        console.error("Error query getKomunitasAdminListAction:", error);
+        return {
+          success: false,
+          data: [],
+          totalCount: 0,
+          page: 1,
+          totalPages: 1,
+          message: error.message || "Gagal mengambil daftar komunitas.",
+        };
+      }
 
       const totalCount = count || 0;
       const totalPages = Math.max(1, Math.ceil(totalCount / limit));
