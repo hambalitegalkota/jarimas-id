@@ -224,6 +224,7 @@ export function AdminBidangManagementCard({
           setSelectedBidangSet(new Set());
           setSearchUserQuery("");
           setActiveTab("daftar");
+          await loadAdminBidangList();
         } else {
           setToastMessage({ text: res.message, isError: true });
         }
@@ -233,7 +234,7 @@ export function AdminBidangManagementCard({
           isError: true,
         });
       } finally {
-        setTimeout(() => setToastMessage(null), 5000);
+        setTimeout(() => setToastMessage(null), 6000);
       }
     });
   };
@@ -737,6 +738,33 @@ export function AdminBidangManagementCard({
                       );
                     })}
                   </div>
+
+                  {/* Feedback Inline jika terjadi kendala saat simpan */}
+                  {toastMessage && (
+                    <div
+                      className={`p-3 rounded-lg text-xs font-semibold flex items-center justify-between gap-2 border shadow-xs ${
+                        toastMessage.isError
+                          ? "bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-200 border-rose-500/30"
+                          : "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-200 border-emerald-500/30"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        {toastMessage.isError ? (
+                          <AlertCircle className="h-4 w-4 shrink-0 text-rose-600" />
+                        ) : (
+                          <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
+                        )}
+                        <span>{toastMessage.text}</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setToastMessage(null)}
+                        className="text-xs underline hover:opacity-80 cursor-pointer"
+                      >
+                        Tutup
+                      </button>
+                    </div>
+                  )}
 
                   {/* Tombol Simpan */}
                   <div className="pt-3 border-t border-border flex items-center justify-end gap-2.5">

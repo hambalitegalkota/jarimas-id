@@ -143,14 +143,17 @@ export async function getAdminBidangListAction(): Promise<{
 
     // Mapping dari dedicated admin_bidang table
     dedicatedRows.forEach((row) => {
-      const bKey = BIDANG_SLUG_MAP[row.bidang.toLowerCase()];
-      if (bKey) {
-        if (!userBidangMap.has(row.user_id)) {
-          userBidangMap.set(row.user_id, new Set());
-        }
-        userBidangMap.get(row.user_id)!.add(bKey);
-        if (!userCreatedAtMap.has(row.user_id)) {
-          userCreatedAtMap.set(row.user_id, row.created_at);
+      if (row.user_id && row.bidang) {
+        const rawB = row.bidang.toLowerCase().trim();
+        const bKey = BIDANG_SLUG_MAP[rawB] || (rawB as BidangSpmId);
+        if (bKey && BIDANG_LABEL_MAP[bKey]) {
+          if (!userBidangMap.has(row.user_id)) {
+            userBidangMap.set(row.user_id, new Set());
+          }
+          userBidangMap.get(row.user_id)!.add(bKey);
+          if (!userCreatedAtMap.has(row.user_id)) {
+            userCreatedAtMap.set(row.user_id, row.created_at);
+          }
         }
       }
     });
@@ -238,63 +241,104 @@ export async function assignAdminBidangAction(
     }
 
     const adminClient = createAdminClient() || supabase;
-
-    // Cari ID Komunitas Warga Kota Tegal
-    const { data: kotaKom } = await supabase
-      .from("komunitas")
-      .select("id")
-      .ilike("nama", "%Warga Kota Tegal%")
-      .maybeSingle();
-
-    const kotaKomId = kotaKom?.id || toValidUUID("kom-warga-kota-tegal");
-
-    // 2. Hapus seluruh peran Admin Bidang lama milik pengguna ini di anggota_komunitas
-    await adminClient
-      .from("anggota_komunitas")
-      .delete()
-      .eq("user_id", targetUserId)
-      .ilike("peran", "%Admin Bidang%");
-
-    // 3. Masukkan peran Admin Bidang yang dipilih ke anggota_komunitas
     const validBidangList = Array.from(new Set(selectedBidang)).filter((b) =>
       Boolean(BIDANG_LABEL_MAP[b])
     );
 
+    // 2. SIMPAN KE TABEL UTAMA: public.admin_bidang
+    const { error: delErr } = await adminClient
+      .from("admin_bidang")
+      .delete()
+      .eq("user_id", targetUserId);
+
+    if (delErr) {
+      console.warn("Peringatan saat menghapus penugasan lama admin_bidang:", delErr);
+    }
+
     if (validBidangList.length > 0) {
-      const insertRows = validBidangList.map((b) => ({
-        komunitas_id: kotaKomId,
+      const dedicatedRows = validBidangList.map((b) => ({
         user_id: targetUserId,
-        peran: BIDANG_LABEL_MAP[b],
-        status: "approved",
-        approved_by: user.id,
+        bidang: b,
+        assigned_by: user.id,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       }));
 
-      const { error: insertErr } = await adminClient
-        .from("anggota_komunitas")
-        .insert(insertRows);
+      const { error: insErr } = await adminClient
+        .from("admin_bidang")
+        .insert(dedicatedRows);
 
-      if (insertErr) {
-        throw insertErr;
+      if (insErr) {
+        console.error("Gagal menyisipkan ke tabel admin_bidang:", insErr);
+        throw new Error(insErr.message || "Gagal menyimpan penetapan ke tabel admin_bidang.");
       }
     }
 
-    // 4. Sinkronisasi ke tabel dedicated admin_bidang jika tabel ada
+    // 3. SINKRONISASI AMAN KE anggota_komunitas (agar nama peran terbaca di profil & seluruh modul)
     try {
-      await adminClient.from("admin_bidang").delete().eq("user_id", targetUserId);
+      const { data: kotaKom } = await supabase
+        .from("komunitas")
+        .select("id")
+        .ilike("nama", "%Warga Kota Tegal%")
+        .maybeSingle();
 
-      if (validBidangList.length > 0) {
-        const dedicatedRows = validBidangList.map((b) => ({
-          user_id: targetUserId,
-          bidang: b,
-          assigned_by: user.id,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        }));
-        await adminClient.from("admin_bidang").insert(dedicatedRows);
+      if (kotaKom?.id) {
+        // Ambil data keanggotaan existing di komunitas Warga Kota Tegal
+        const { data: existingMember } = await supabase
+          .from("anggota_komunitas")
+          .select("id, peran")
+          .eq("komunitas_id", kotaKom.id)
+          .eq("user_id", targetUserId)
+          .maybeSingle();
+
+        if (validBidangList.length > 0) {
+          const consolidatedRole =
+            validBidangList.length === 1
+              ? BIDANG_LABEL_MAP[validBidangList[0]]
+              : `Admin Bidang SPM (${validBidangList
+                  .map((b) => BIDANG_LABEL_MAP[b].replace("Admin Bidang ", ""))
+                  .join(", ")})`;
+
+          if (existingMember) {
+            await adminClient
+              .from("anggota_komunitas")
+              .update({
+                peran: consolidatedRole,
+                status: "approved",
+                approved_by: user.id,
+                updated_at: new Date().toISOString(),
+              })
+              .eq("id", existingMember.id);
+          } else {
+            await adminClient
+              .from("anggota_komunitas")
+              .insert({
+                komunitas_id: kotaKom.id,
+                user_id: targetUserId,
+                peran: consolidatedRole,
+                status: "approved",
+                approved_by: user.id,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+              });
+          }
+        } else if (
+          existingMember &&
+          (existingMember.peran || "").toLowerCase().includes("admin bidang")
+        ) {
+          // Jika seluruh bidang dicabut, kembalikan peran ke anggota biasa
+          await adminClient
+            .from("anggota_komunitas")
+            .update({
+              peran: "anggota",
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", existingMember.id);
+        }
       }
-    } catch {}
+    } catch (syncErr) {
+      console.warn("Sinkronisasi anggota_komunitas opsional dilewati:", syncErr);
+    }
 
     const targetName = targetProfile.nama_lengkap || targetProfile.email || "Pengguna";
     const actionDesc =
@@ -340,33 +384,72 @@ export async function revokeAdminBidangAction(
 
     const adminClient = createAdminClient() || supabase;
 
+    // 1. Hapus dari tabel dedicated admin_bidang
     if (bidangId) {
-      const targetLabel = BIDANG_LABEL_MAP[bidangId];
-      if (targetLabel) {
-        await adminClient
-          .from("anggota_komunitas")
-          .delete()
-          .eq("user_id", targetUserId)
-          .eq("peran", targetLabel);
-
-        try {
-          await adminClient
-            .from("admin_bidang")
-            .delete()
-            .eq("user_id", targetUserId)
-            .eq("bidang", bidangId);
-        } catch {}
-      }
-    } else {
       await adminClient
-        .from("anggota_komunitas")
+        .from("admin_bidang")
         .delete()
         .eq("user_id", targetUserId)
-        .ilike("peran", "%Admin Bidang%");
+        .eq("bidang", bidangId);
+    } else {
+      await adminClient
+        .from("admin_bidang")
+        .delete()
+        .eq("user_id", targetUserId);
+    }
 
-      try {
-        await adminClient.from("admin_bidang").delete().eq("user_id", targetUserId);
-      } catch {}
+    // 2. Sinkronisasi aman ke anggota_komunitas
+    try {
+      const { data: kotaKom } = await supabase
+        .from("komunitas")
+        .select("id")
+        .ilike("nama", "%Warga Kota Tegal%")
+        .maybeSingle();
+
+      if (kotaKom?.id) {
+        // Cek sisa bidang dari admin_bidang
+        const { data: remainingBidang } = await adminClient
+          .from("admin_bidang")
+          .select("bidang")
+          .eq("user_id", targetUserId);
+
+        const { data: existingMember } = await supabase
+          .from("anggota_komunitas")
+          .select("id, peran")
+          .eq("komunitas_id", kotaKom.id)
+          .eq("user_id", targetUserId)
+          .maybeSingle();
+
+        if (existingMember) {
+          if (remainingBidang && remainingBidang.length > 0) {
+            const bList = remainingBidang.map((r: any) => r.bidang as BidangSpmId);
+            const consolidatedRole =
+              bList.length === 1
+                ? BIDANG_LABEL_MAP[bList[0]]
+                : `Admin Bidang SPM (${bList
+                    .map((b) => BIDANG_LABEL_MAP[b].replace("Admin Bidang ", ""))
+                    .join(", ")})`;
+
+            await adminClient
+              .from("anggota_komunitas")
+              .update({
+                peran: consolidatedRole,
+                updated_at: new Date().toISOString(),
+              })
+              .eq("id", existingMember.id);
+          } else if ((existingMember.peran || "").toLowerCase().includes("admin bidang")) {
+            await adminClient
+              .from("anggota_komunitas")
+              .update({
+                peran: "anggota",
+                updated_at: new Date().toISOString(),
+              })
+              .eq("id", existingMember.id);
+          }
+        }
+      }
+    } catch (syncErr) {
+      console.warn("Sinkronisasi pencabutan anggota_komunitas dilewati:", syncErr);
     }
 
     revalidatePath("/profil");

@@ -30,17 +30,30 @@ CREATE POLICY "Admin bidang dapat dibaca oleh pengguna terautentikasi" ON public
 
 DROP POLICY IF EXISTS "Super Admin, Admin Pusat, dan Admin Kota dapat mengelola admin_bidang" ON public.admin_bidang;
 CREATE POLICY "Super Admin, Admin Pusat, dan Admin Kota dapat mengelola admin_bidang" ON public.admin_bidang 
-  FOR ALL USING (
+  FOR ALL 
+  USING (
+    auth.role() = 'service_role' OR
     EXISTS (
       SELECT 1 FROM public.profiles 
       WHERE id = auth.uid() AND (is_super_admin = true OR is_admin_pusat = true)
     ) OR
     EXISTS (
       SELECT 1 FROM public.anggota_komunitas ak
-      JOIN public.komunitas k ON k.id = ak.komunitas_id
       WHERE ak.user_id = auth.uid() 
         AND ak.status = 'approved'
-        AND (ak.peran ILIKE '%admin kota%' OR (k.nama ILIKE '%warga kota tegal%' AND ak.peran ILIKE '%admin%'))
+        AND (ak.peran ILIKE '%admin%' OR ak.peran ILIKE '%pengurus%')
+    )
+  )
+  WITH CHECK (
+    auth.role() = 'service_role' OR
+    EXISTS (
+      SELECT 1 FROM public.profiles 
+      WHERE id = auth.uid() AND (is_super_admin = true OR is_admin_pusat = true)
     ) OR
-    auth.role() = 'service_role'
+    EXISTS (
+      SELECT 1 FROM public.anggota_komunitas ak
+      WHERE ak.user_id = auth.uid() 
+        AND ak.status = 'approved'
+        AND (ak.peran ILIKE '%admin%' OR ak.peran ILIKE '%pengurus%')
+    )
   );
