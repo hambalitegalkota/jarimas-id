@@ -525,7 +525,7 @@ export default async function HomePage() {
                   <Baby className="h-5 w-5" />
                 </div>
                 <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-md bg-teal-50 text-teal-800 dark:bg-teal-950 dark:text-teal-300 border border-teal-200 dark:border-teal-800">
-                  Data Balita &amp; PAUD
+                  Anak 0-6 Tahun
                 </span>
               </div>
 
@@ -579,33 +579,33 @@ export default async function HomePage() {
             </Link>
           </div>
 
-          {/* Bento Card 3: Pendataan Anak Usia Dini */}
-          <div className="rounded-lg border border-border bg-card p-4 sm:p-5 space-y-3.5 shadow-sm hover:border-primary/40 transition-colors flex flex-col justify-between">
+          {/* Bento Card 3: Layanan & Komunitas Posyandu */}
+          <div className="rounded-lg border border-border bg-card p-4 sm:p-5 space-y-3.5 shadow-sm hover:border-rose-500/40 transition-colors flex flex-col justify-between">
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 border border-blue-200 dark:border-blue-800 shadow-xs">
-                  <Baby className="h-5 w-5" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-rose-50 dark:bg-rose-950/60 text-rose-600 border border-rose-200 dark:border-rose-800/60 shadow-xs">
+                  <HeartPulse className="h-5 w-5" />
                 </div>
-                <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-md bg-blue-50 text-blue-800 dark:bg-blue-950 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
-                  Data Anak Usia Dini
+                <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-md bg-rose-50 text-rose-800 dark:bg-rose-950 dark:text-rose-300 border border-rose-200 dark:border-rose-800">
+                  Layanan Posyandu
                 </span>
               </div>
 
               <div className="space-y-1">
                 <h3 className="text-sm sm:text-base font-bold text-card-foreground">
-                  Pendataan Anak Usia Dini
+                  Komunitas Posyandu
                 </h3>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  Pendataan identitas, kependudukan, data orang tua, dan partisipasi pendidikan anak usia 0-6 tahun berbasis kolaborasi warga.
+                  Pemantauan berkala tumbuh kembang, penimbangan berat badan, imunisasi, dan nutrisi gizi balita terpadu di 209 Posyandu se-Kota Tegal.
                 </p>
               </div>
             </div>
 
             <Link
-              href="/komunitas"
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-primary hover:underline pt-1"
+              href="/komunitas?tab=posyandu"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-rose-600 dark:text-rose-400 hover:underline pt-1"
             >
-              <span>Pantau di Komunitas</span>
+              <span>Jelajahi Komunitas Posyandu</span>
               <ChevronRight className="h-3.5 w-3.5" />
             </Link>
           </div>
