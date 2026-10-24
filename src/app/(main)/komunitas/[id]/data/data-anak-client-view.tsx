@@ -205,9 +205,9 @@ export function DataAnakClientView({
                   key={child.id}
                   anak={child}
                   komunitas={komunitas}
-                  canValidate={canValidate}
-                  canEdit={canEdit}
-                  canDelete={canDelete}
+                  canValidate={isPaud && canValidate}
+                  canEdit={isPaud && canEdit}
+                  canDelete={isPaud && canDelete}
                   isReadOnly={isReadOnly}
                   onUpdate={(updated) => {
                     setChildrenList((prev) =>

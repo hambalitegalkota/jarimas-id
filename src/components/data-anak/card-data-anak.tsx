@@ -24,7 +24,7 @@ import {
   MapPin,
 } from "lucide-react";
 import { validateDataAnak } from "@/app/actions/data-anak";
-import { formatNamaSekolahDisplay } from "@/lib/data-anak-helpers";
+import { formatNamaSekolahDisplay, isKomunitasLayananPaud } from "@/lib/data-anak-helpers";
 import { ModalEditDataAnak } from "./modal-edit-data-anak";
 import { ModalKeluarDataAnak } from "./modal-keluar-data-anak";
 import type { DataAnakItem, KomunitasWithMembership } from "@/types/database";
@@ -121,7 +121,11 @@ export function CardDataAnak({
   const [isKeluarModalOpen, setIsKeluarModalOpen] = useState(false);
   const [isPendingValidate, startValidateTransition] = useTransition();
 
-  const isPaud = komunitas?.jenis === "satuan_paud" || currentChild.is_sekolah;
+  const isKomunitasPaud = isKomunitasLayananPaud(
+    komunitas,
+    komunitas?.nama,
+    komunitas?.jenis
+  );
   const isApproved = currentChild.status_approval === "approved";
   const ageString = calculateAge(currentChild.tanggal_lahir);
 
@@ -213,18 +217,20 @@ export function CardDataAnak({
             </div>
           </div>
 
-          {/* Status Badge & Toggle Button */}
+          {/* Status Badge (Hanya tampil di Komunitas PAUD) & Toggle Button */}
           <div className="flex items-center gap-1.5 sm:gap-2 self-start sm:self-center shrink-0">
-            {isApproved ? (
-              <span className="inline-flex items-center gap-1 rounded-lg bg-teal-500/10 px-2 py-1 text-[11px] font-bold text-teal-700 dark:text-teal-300 border border-teal-500/20">
-                <CheckCircle2 className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400" />
-                <span>TERVERIFIKASI</span>
-              </span>
-            ) : (
-              <span className="inline-flex items-center gap-1 rounded-lg bg-secondary/15 px-2 py-1 text-[11px] font-bold text-amber-900 dark:text-amber-200 border border-secondary/30">
-                <Clock className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
-                <span>MENUNGGU</span>
-              </span>
+            {isKomunitasPaud && (
+              isApproved ? (
+                <span className="inline-flex items-center gap-1 rounded-lg bg-teal-500/10 px-2 py-1 text-[11px] font-bold text-teal-700 dark:text-teal-300 border border-teal-500/20">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400" />
+                  <span>TERVERIFIKASI</span>
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 rounded-lg bg-secondary/15 px-2 py-1 text-[11px] font-bold text-amber-900 dark:text-amber-200 border border-secondary/30">
+                  <Clock className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
+                  <span>MENUNGGU</span>
+                </span>
+              )
             )}
 
             {/* Toggle Sembunyikan / Tampilkan Button */}
@@ -318,58 +324,59 @@ export function CardDataAnak({
             </div>
           )}
 
-          {/* Action Buttons Bar */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-1.5 pt-2 border-t border-border/60">
-            {/* Menu Edit Data & Keluar untuk Data Anak (Admin, Kepala Sekolah, Guru PAUD / Pengurus / Pembuat Data) */}
-            {(canEdit || canDelete || isPaud) ? (
-              <div className="flex items-center gap-1.5">
-                {canEdit !== false && (
-                  <button
-                    type="button"
-                    onClick={() => setIsEditModalOpen(true)}
-                    className="flex h-8 sm:h-8.5 items-center justify-center gap-1 rounded-lg bg-secondary/15 hover:bg-secondary/25 active:scale-98 border border-secondary/30 px-2.5 text-xs font-semibold text-amber-900 dark:text-amber-200 transition-all cursor-pointer"
-                  >
-                    <Pencil className="h-3.5 w-3.5 text-secondary" />
-                    <span>Edit Data</span>
-                  </button>
-                )}
+          {/* Action Buttons Bar: Edit Data, Keluar / Hapus, dan Validasi (Hanya di Komunitas PAUD) */}
+          {isKomunitasPaud && (
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-1.5 pt-2 border-t border-border/60">
+              {(canEdit !== false || canDelete !== false) ? (
+                <div className="flex items-center gap-1.5">
+                  {canEdit !== false && (
+                    <button
+                      type="button"
+                      onClick={() => setIsEditModalOpen(true)}
+                      className="flex h-8 sm:h-8.5 items-center justify-center gap-1 rounded-lg bg-secondary/15 hover:bg-secondary/25 active:scale-98 border border-secondary/30 px-2.5 text-xs font-semibold text-amber-900 dark:text-amber-200 transition-all cursor-pointer"
+                    >
+                      <Pencil className="h-3.5 w-3.5 text-secondary" />
+                      <span>Edit Data</span>
+                    </button>
+                  )}
 
-                {canDelete !== false && (
-                  <button
-                    type="button"
-                    onClick={() => setIsKeluarModalOpen(true)}
-                    className="flex h-8 sm:h-8.5 items-center justify-center gap-1 rounded-lg bg-rose-50 hover:bg-rose-100 active:scale-98 border border-rose-200 px-2.5 text-xs font-semibold text-rose-700 transition-all cursor-pointer"
-                  >
-                    <LogOut className="h-3.5 w-3.5 text-rose-700" />
-                    <span>Keluar / Hapus</span>
-                  </button>
-                )}
-              </div>
-            ) : <div />}
+                  {canDelete !== false && (
+                    <button
+                      type="button"
+                      onClick={() => setIsKeluarModalOpen(true)}
+                      className="flex h-8 sm:h-8.5 items-center justify-center gap-1 rounded-lg bg-rose-50 hover:bg-rose-100 active:scale-98 border border-rose-200 px-2.5 text-xs font-semibold text-rose-700 transition-all cursor-pointer"
+                    >
+                      <LogOut className="h-3.5 w-3.5 text-rose-700" />
+                      <span>Keluar / Hapus</span>
+                    </button>
+                  )}
+                </div>
+              ) : <div />}
 
-            {!isApproved && canValidate && (
-              <button
-                type="button"
-                onClick={handleValidate}
-                disabled={isPendingValidate}
-                className="flex h-8 sm:h-8.5 items-center justify-center gap-1.5 rounded-lg bg-primary hover:bg-primary-hover active:scale-98 px-3 text-xs font-bold text-primary-foreground transition-all shadow-sm disabled:opacity-50 cursor-pointer ml-auto"
-              >
-                {isPendingValidate ? (
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                ) : (
-                  <>
-                    <ShieldCheck className="h-3.5 w-3.5" />
-                    <span>Validasi</span>
-                  </>
-                )}
-              </button>
-            )}
-          </div>
+              {!isApproved && canValidate && (
+                <button
+                  type="button"
+                  onClick={handleValidate}
+                  disabled={isPendingValidate}
+                  className="flex h-8 sm:h-8.5 items-center justify-center gap-1.5 rounded-lg bg-primary hover:bg-primary-hover active:scale-98 px-3 text-xs font-bold text-primary-foreground transition-all shadow-sm disabled:opacity-50 cursor-pointer ml-auto"
+                >
+                  {isPendingValidate ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <>
+                      <ShieldCheck className="h-3.5 w-3.5" />
+                      <span>Validasi</span>
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Edit Data Anak Modal */}
-      {isEditModalOpen && (
+      {/* Edit Data Anak Modal (Hanya di Komunitas PAUD) */}
+      {isKomunitasPaud && isEditModalOpen && (
         <ModalEditDataAnak
           isOpen={isEditModalOpen}
           anak={currentChild}
@@ -381,8 +388,8 @@ export function CardDataAnak({
         />
       )}
 
-      {/* Keluar Data Anak Modal */}
-      {isKeluarModalOpen && (
+      {/* Keluar Data Anak Modal (Hanya di Komunitas PAUD) */}
+      {isKomunitasPaud && isKeluarModalOpen && (
         <ModalKeluarDataAnak
           isOpen={isKeluarModalOpen}
           anak={currentChild}
