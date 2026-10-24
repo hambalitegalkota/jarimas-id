@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, useTransition } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   Shield,
   ShieldCheck,
@@ -27,11 +27,7 @@ import {
   UserPlus,
 } from "lucide-react";
 import { useGlobalMessageNotification } from "@/components/notifications/global-message-notification-provider";
-import {
-  getAdminBidangListAction,
-  assignAdminBidangAction,
-  revokeAdminBidangAction,
-} from "@/app/actions/admin-bidang";
+import { getAdminBidangListAction } from "@/app/actions/admin-bidang";
 import { DAFTAR_BIDANG_SPM_CONFIG } from "@/lib/constants/admin-bidang";
 import { formatWhatsAppUrl, cn } from "@/lib/utils";
 import type {
@@ -117,22 +113,35 @@ export function AdminBidangManagementCard({
   const [searchUserQuery, setSearchUserQuery] = useState("");
   const [selectedTargetUser, setSelectedTargetUser] = useState<RegisteredUserItem | null>(null);
   const [selectedBidangSet, setSelectedBidangSet] = useState<Set<BidangSpmId>>(new Set());
-  const [isProcessing, startTransition] = useTransition();
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const [toastMessage, setToastMessage] = useState<{ text: string; isError?: boolean } | null>(null);
 
   const { openChatWithUser } = useGlobalMessageNotification();
 
-  // Load daftar admin bidang awal
+  // Load daftar admin bidang awal via REST API
   const loadAdminBidangList = async () => {
     setIsLoadingList(true);
     try {
-      const res = await getAdminBidangListAction();
-      if (res.success && res.data) {
-        setAdminBidangList(res.data);
+      const res = await fetch("/api/admin-bidang", { cache: "no-store" });
+      const json = await res.json();
+      if (json.success && json.data) {
+        setAdminBidangList(json.data);
+      } else {
+        const fallback = await getAdminBidangListAction();
+        if (fallback.success && fallback.data) {
+          setAdminBidangList(fallback.data);
+        }
       }
-    } catch (err: any) {
-      console.warn("Gagal memuat list admin bidang:", err);
+    } catch {
+      try {
+        const fallback = await getAdminBidangListAction();
+        if (fallback.success && fallback.data) {
+          setAdminBidangList(fallback.data);
+        }
+      } catch (err: any) {
+        console.warn("Gagal memuat list admin bidang:", err);
+      }
     } finally {
       setIsLoadingList(false);
     }
@@ -187,7 +196,7 @@ export function AdminBidangManagementCard({
     }
   };
 
-  const handleSaveAssignment = () => {
+  const handleSaveAssignment = async () => {
     if (!selectedTargetUser) {
       setToastMessage({ text: "Silakan pilih pengguna terlebih dahulu.", isError: true });
       return;
@@ -205,52 +214,59 @@ export function AdminBidangManagementCard({
     const bidangArray = Array.from(selectedBidangSet);
     const targetName = selectedTargetUser.nama_lengkap || selectedTargetUser.email || "Pengguna";
 
-    startTransition(async () => {
-      try {
-        const res = await assignAdminBidangAction(selectedTargetUser.id, bidangArray);
-        if (res.success) {
-          setToastMessage({ text: res.message });
-          // Perbarui local state
-          setAdminBidangList((prev) => {
-            const filtered = prev.filter((a) => a.userId !== selectedTargetUser.id);
-            if (bidangArray.length > 0) {
-              return [
-                ...filtered,
-                {
-                  userId: selectedTargetUser.id,
-                  userName: targetName,
-                  userEmail: selectedTargetUser.email || "-",
-                  userPhone: selectedTargetUser.nomor_hp || null,
-                  bidangList: bidangArray,
-                  createdAt: new Date().toISOString(),
-                },
-              ];
-            }
-            return filtered;
-          });
-          // Reset form dan kembali ke tab daftar
-          setSelectedTargetUser(null);
-          setSelectedBidangSet(new Set());
-          setSearchUserQuery("");
-          setActiveTab("daftar");
-          await loadAdminBidangList();
-        } else {
-          setToastMessage({ text: res.message, isError: true });
-        }
-      } catch (err: any) {
-        const rawMsg = err?.message || "";
-        const cleanMsg =
-          rawMsg.includes("Minified React error") || rawMsg.includes("Server Components")
-            ? "Terjadi kendala koneksi server saat menyimpan penetapan. Silakan segarkan halaman dan coba kembali."
-            : rawMsg || "Gagal menyimpan penetapan Admin Bidang.";
-        setToastMessage({
-          text: cleanMsg,
-          isError: true,
+    setIsProcessing(true);
+    try {
+      const response = await fetch("/api/admin-bidang", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "assign",
+          targetUserId: selectedTargetUser.id,
+          selectedBidang: bidangArray,
+        }),
+      });
+
+      const res = await response.json();
+
+      if (res.success) {
+        setToastMessage({ text: res.message });
+        // Perbarui local state
+        setAdminBidangList((prev) => {
+          const filtered = prev.filter((a) => a.userId !== selectedTargetUser.id);
+          if (bidangArray.length > 0) {
+            return [
+              ...filtered,
+              {
+                userId: selectedTargetUser.id,
+                userName: targetName,
+                userEmail: selectedTargetUser.email || "-",
+                userPhone: selectedTargetUser.nomor_hp || null,
+                bidangList: bidangArray,
+                createdAt: new Date().toISOString(),
+              },
+            ];
+          }
+          return filtered;
         });
-      } finally {
-        setTimeout(() => setToastMessage(null), 6000);
+        // Reset form dan kembali ke tab daftar
+        setSelectedTargetUser(null);
+        setSelectedBidangSet(new Set());
+        setSearchUserQuery("");
+        setActiveTab("daftar");
+        await loadAdminBidangList();
+      } else {
+        setToastMessage({ text: res.message || "Gagal menyimpan penetapan.", isError: true });
       }
-    });
+    } catch (err: any) {
+      console.error("handleSaveAssignment error:", err);
+      setToastMessage({
+        text: err?.message || "Terjadi kendala koneksi ke server saat menyimpan penetapan.",
+        isError: true,
+      });
+    } finally {
+      setIsProcessing(false);
+      setTimeout(() => setToastMessage(null), 6000);
+    }
   };
 
   const handleStartEditFromList = (item: UserAdminBidangSummary) => {
@@ -267,7 +283,7 @@ export function AdminBidangManagementCard({
     setActiveTab("angkat");
   };
 
-  const handleRevokeAllFromList = (item: UserAdminBidangSummary) => {
+  const handleRevokeAllFromList = async (item: UserAdminBidangSummary) => {
     if (
       !window.confirm(
         `Cabut seluruh peran Admin Bidang dari ${item.userName}? Pengguna ini tidak lagi memiliki hak pengawasan data lintas bidang.`
@@ -276,26 +292,33 @@ export function AdminBidangManagementCard({
       return;
     }
 
-    startTransition(async () => {
-      try {
-        const res = await revokeAdminBidangAction(item.userId);
-        if (res.success) {
-          setToastMessage({ text: res.message });
-          setAdminBidangList((prev) => prev.filter((a) => a.userId !== item.userId));
-        } else {
-          setToastMessage({ text: res.message, isError: true });
-        }
-      } catch (err: any) {
-        const rawMsg = err?.message || "";
-        const cleanMsg =
-          rawMsg.includes("Minified React error") || rawMsg.includes("Server Components")
-            ? "Terjadi kendala koneksi server saat mencabut penugasan. Silakan segarkan halaman dan coba kembali."
-            : rawMsg || "Gagal mencabut Admin Bidang.";
-        setToastMessage({ text: cleanMsg, isError: true });
-      } finally {
-        setTimeout(() => setToastMessage(null), 5000);
+    setIsProcessing(true);
+    try {
+      const response = await fetch("/api/admin-bidang", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "revoke",
+          targetUserId: item.userId,
+        }),
+      });
+
+      const res = await response.json();
+      if (res.success) {
+        setToastMessage({ text: res.message });
+        setAdminBidangList((prev) => prev.filter((a) => a.userId !== item.userId));
+      } else {
+        setToastMessage({ text: res.message || "Gagal mencabut wewenang.", isError: true });
       }
-    });
+    } catch (err: any) {
+      setToastMessage({
+        text: err?.message || "Gagal mencabut wewenang Admin Bidang.",
+        isError: true,
+      });
+    } finally {
+      setIsProcessing(false);
+      setTimeout(() => setToastMessage(null), 5000);
+    }
   };
 
   const isExistingAdmin = Boolean(
