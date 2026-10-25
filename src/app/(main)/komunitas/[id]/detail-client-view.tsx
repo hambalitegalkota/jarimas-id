@@ -20,6 +20,7 @@ import {
   BookOpen,
   GraduationCap,
   ArrowRight,
+  LogIn,
   Loader2,
   X,
   Settings2,
@@ -1382,15 +1383,15 @@ export function KomunitasDetailClientView({
                   </p>
                 </div>
               </div>
-            ) : isReadOnlyDataAnak ? (
+            ) : (isReadOnlyDataAnak && canViewDetailDataAnak) ? (
               <div className="rounded-lg border border-primary/20 bg-primary/5 p-3.5 sm:p-4 flex items-start gap-3 text-foreground shadow-2xs">
                 <Info className="h-5 w-5 text-primary shrink-0 mt-0.5" />
                 <div className="space-y-1">
                   <h4 className="text-sm font-bold text-foreground">
-                    Mode Akses: Tinjauan Siswa ({userRoleDataAnak || userPeran})
+                    Mode Akses: Anggota Komunitas ({userRoleDataAnak || userPeran || "Anggota"})
                   </h4>
                   <p className="text-xs text-muted-foreground leading-relaxed">
-                    Sebagai anggota di satuan ini, Anda memiliki akses melihat profil siswa dan riwayat DDTK secara transparan. Pengelolaan data siswa dikelola oleh Admin, Kepala Sekolah, dan Guru.
+                    Sebagai pengguna yang telah bergabung dalam komunitas ini, Anda memiliki akses melihat data rincian anak (View-Only). Penambahan, perubahan, dan penghapusan data dikelola oleh Admin Komunitas.
                   </p>
                 </div>
               </div>
@@ -1545,171 +1546,235 @@ export function KomunitasDetailClientView({
               </div>
             )}
 
-            {/* SEARCH & TAMBAH DATA ANAK */}
-            <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-              <div className="relative flex-1">
-                <Search className="pointer-events-none absolute left-3.5 top-3 h-4 w-4 text-muted-foreground" />
-                <input
-                  type="text"
-                  value={searchQueryAnak}
-                  onChange={(e) => setSearchQueryAnak(e.target.value)}
-                  placeholder="Cari nama anak, orang tua, atau sekolah..."
-                  className="w-full h-10 rounded-lg border border-border bg-background pl-10 pr-4 text-xs text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-hidden"
-                />
-              </div>
-
-              {canCreateDataAnak && (
-                <button
-                  type="button"
-                  onClick={() => setIsAddChildModalOpen(true)}
-                  className="flex h-10 items-center justify-center gap-2 rounded-lg bg-primary hover:bg-primary-hover active:scale-[0.98] text-primary-foreground px-4 text-xs font-bold shadow-xs transition-all shrink-0 cursor-pointer"
-                >
-                  <Plus className="h-4 w-4" />
-                  <span>TAMBAH DATA ANAK</span>
-                </button>
-              )}
-            </div>
-
-            {/* FILTER CHIPS STATUS */}
-            <div className="flex items-center gap-2 overflow-x-auto pb-1">
-              <button
-                type="button"
-                onClick={() => setPaudStatusFilter("semua")}
-                className={cn(
-                  "px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer border shrink-0 flex items-center gap-1.5",
-                  paudStatusFilter === "semua"
-                    ? "bg-primary text-primary-foreground border-primary shadow-xs"
-                    : "bg-card text-muted-foreground border-border hover:bg-muted hover:text-foreground"
-                )}
-              >
-                <span>Semua Data</span>
-                <span className="px-1.5 py-0.2 rounded-md bg-background/20 font-mono text-2xs">
-                  {totalChildren}
-                </span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setPaudStatusFilter("approved")}
-                className={cn(
-                  "px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer border shrink-0 flex items-center gap-1.5",
-                  paudStatusFilter === "approved"
-                    ? "bg-teal-600 text-white border-teal-600 shadow-xs"
-                    : "bg-card text-muted-foreground border-border hover:bg-teal-500/10 hover:text-teal-700"
-                )}
-              >
-                <CheckCircle2 className="h-3.5 w-3.5" />
-                <span>Terverifikasi</span>
-                <span className="px-1.5 py-0.2 rounded-md bg-background/20 font-mono text-2xs">
-                  {totalApproved}
-                </span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setPaudStatusFilter("pending")}
-                className={cn(
-                  "px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer border shrink-0 flex items-center gap-1.5",
-                  paudStatusFilter === "pending"
-                    ? "bg-amber-600 text-white border-amber-600 shadow-xs"
-                    : "bg-card text-muted-foreground border-border hover:bg-amber-500/10 hover:text-amber-800"
-                )}
-              >
-                <AlertCircle className="h-3.5 w-3.5" />
-                <span>Menunggu Validasi</span>
-                <span className="px-1.5 py-0.2 rounded-md bg-background/20 font-mono text-2xs">
-                  {totalPending}
-                </span>
-              </button>
-            </div>
-
-            {/* LIST KARTU DATA ANAK */}
-            <div className="space-y-2.5 pb-8">
-              <div className="flex items-center justify-between border-b border-border/60 pb-2">
-                <h3 className="text-xs font-bold uppercase text-foreground tracking-wider flex items-center gap-1.5">
-                  <span>DAFTAR DETAIL ANAK</span>
-                  <span className="font-mono text-muted-foreground">
-                    ({displayedChildren.length} DATA)
-                  </span>
-                </h3>
-                <span className="text-xs font-mono font-bold text-muted-foreground">
-                  {displayedChildren.length} dari total {totalChildren} anak
-                </span>
-              </div>
-
-              {displayedChildren.length === 0 ? (
-                <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-card p-10 text-center space-y-3">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 border border-primary/20 text-primary">
-                    <Baby className="h-6 w-6" />
-                  </div>
-                  <div className="space-y-1 max-w-sm">
-                    <h4 className="text-sm font-bold tracking-tight text-foreground">
-                      Belum Ada Data Anak
-                    </h4>
-                    <p className="text-xs text-muted-foreground leading-relaxed">
-                      {searchQueryAnak
-                        ? "Tidak ditemukan data anak yang sesuai dengan kata kunci pencarian."
-                        : isPaudCommunity
-                        ? "Admin, Kepala Sekolah, dan Guru PAUD dapat menambahkan siswa terdaftar di satuan PAUD ini."
-                        : "Kader dan pengurus dapat menambahkan data anak usia 0–6 tahun di lingkungan komunitas ini."}
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                displayedChildren.map((child) => {
-                  const isChildFromPaudSchool =
-                    child.is_sekolah === true ||
-                    Boolean(
-                      child.nama_sekolah &&
-                        !child.nama_sekolah.toLowerCase().includes("belum")
-                    );
-
-                  // Jika di komunitas Warga Kita dan anak tersebut sudah bersekolah di PAUD/TK:
-                  // Data anak ini bersumber dari lembaga PAUD terkait dan bersifat READ-ONLY bagi warga
-                  const isReadOnlyForThisChild =
-                    isWargaKitaCheck && isChildFromPaudSchool
-                      ? true
-                      : isReadOnlyDataAnak ?? false;
-
-                  const canEditForThisChild =
-                    isWargaKitaCheck && isChildFromPaudSchool
-                      ? false
-                      : canEditDataAnak ?? false;
-
-                  const canDeleteForThisChild =
-                    isWargaKitaCheck && isChildFromPaudSchool
-                      ? false
-                      : canDeleteDataAnak ?? false;
-
-                  const canValidateForThisChild =
-                    isWargaKitaCheck && isChildFromPaudSchool
-                      ? false
-                      : canValidateDataAnak ?? false;
-
-                  return (
-                    <CardDataAnak
-                      key={child.id}
-                      anak={child}
-                      komunitas={komunitasData}
-                      canValidate={canValidateForThisChild}
-                      canEdit={canEditForThisChild}
-                      canDelete={canDeleteForThisChild}
-                      isReadOnly={isReadOnlyForThisChild}
-                      onUpdate={(updated) => {
-                        setDataAnakState((prev) =>
-                          prev.map((c) => (c.id === updated.id ? updated : c))
-                        );
-                      }}
-                      onDelete={(deletedId) => {
-                        setDataAnakState((prev) =>
-                          prev.filter((c) => c.id !== deletedId)
-                        );
-                      }}
+            {canViewDetailDataAnak ? (
+              <>
+                {/* SEARCH & TAMBAH DATA ANAK */}
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                  <div className="relative flex-1">
+                    <Search className="pointer-events-none absolute left-3.5 top-3 h-4 w-4 text-muted-foreground" />
+                    <input
+                      type="text"
+                      value={searchQueryAnak}
+                      onChange={(e) => setSearchQueryAnak(e.target.value)}
+                      placeholder="Cari nama anak, orang tua, atau sekolah..."
+                      className="w-full h-10 rounded-lg border border-border bg-background pl-10 pr-4 text-xs text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-hidden"
                     />
-                  );
-                })
-              )}
-            </div>
+                  </div>
+
+                  {canCreateDataAnak && (
+                    <button
+                      type="button"
+                      onClick={() => setIsAddChildModalOpen(true)}
+                      className="flex h-10 items-center justify-center gap-2 rounded-lg bg-primary hover:bg-primary-hover active:scale-[0.98] text-primary-foreground px-4 text-xs font-bold shadow-xs transition-all shrink-0 cursor-pointer"
+                    >
+                      <Plus className="h-4 w-4" />
+                      <span>TAMBAH DATA ANAK</span>
+                    </button>
+                  )}
+                </div>
+
+                {/* FILTER CHIPS STATUS */}
+                <div className="flex items-center gap-2 overflow-x-auto pb-1">
+                  <button
+                    type="button"
+                    onClick={() => setPaudStatusFilter("semua")}
+                    className={cn(
+                      "px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer border shrink-0 flex items-center gap-1.5",
+                      paudStatusFilter === "semua"
+                        ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                        : "bg-card text-muted-foreground border-border hover:bg-muted hover:text-foreground"
+                    )}
+                  >
+                    <span>Semua Data</span>
+                    <span className="px-1.5 py-0.2 rounded-md bg-background/20 font-mono text-2xs">
+                      {totalChildren}
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setPaudStatusFilter("approved")}
+                    className={cn(
+                      "px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer border shrink-0 flex items-center gap-1.5",
+                      paudStatusFilter === "approved"
+                        ? "bg-teal-600 text-white border-teal-600 shadow-xs"
+                        : "bg-card text-muted-foreground border-border hover:bg-teal-500/10 hover:text-teal-700"
+                    )}
+                  >
+                    <CheckCircle2 className="h-3.5 w-3.5" />
+                    <span>Terverifikasi</span>
+                    <span className="px-1.5 py-0.2 rounded-md bg-background/20 font-mono text-2xs">
+                      {totalApproved}
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setPaudStatusFilter("pending")}
+                    className={cn(
+                      "px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer border shrink-0 flex items-center gap-1.5",
+                      paudStatusFilter === "pending"
+                        ? "bg-amber-600 text-white border-amber-600 shadow-xs"
+                        : "bg-card text-muted-foreground border-border hover:bg-amber-500/10 hover:text-amber-800"
+                    )}
+                  >
+                    <AlertCircle className="h-3.5 w-3.5" />
+                    <span>Menunggu Validasi</span>
+                    <span className="px-1.5 py-0.2 rounded-md bg-background/20 font-mono text-2xs">
+                      {totalPending}
+                    </span>
+                  </button>
+                </div>
+
+                {/* LIST KARTU DATA ANAK */}
+                <div className="space-y-2.5 pb-8">
+                  <div className="flex items-center justify-between border-b border-border/60 pb-2">
+                    <h3 className="text-xs font-bold uppercase text-foreground tracking-wider flex items-center gap-1.5">
+                      <span>DAFTAR DETAIL ANAK</span>
+                      <span className="font-mono text-muted-foreground">
+                        ({displayedChildren.length} DATA)
+                      </span>
+                    </h3>
+                    <span className="text-xs font-mono font-bold text-muted-foreground">
+                      {displayedChildren.length} dari total {totalChildren} anak
+                    </span>
+                  </div>
+
+                  {displayedChildren.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-card p-10 text-center space-y-3">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 border border-primary/20 text-primary">
+                        <Baby className="h-6 w-6" />
+                      </div>
+                      <div className="space-y-1 max-w-sm">
+                        <h4 className="text-sm font-bold tracking-tight text-foreground">
+                          Belum Ada Data Anak
+                        </h4>
+                        <p className="text-xs text-muted-foreground leading-relaxed">
+                          {searchQueryAnak
+                            ? "Tidak ditemukan data anak yang sesuai dengan kata kunci pencarian."
+                            : isPaudCommunity
+                            ? "Admin, Kepala Sekolah, dan Guru PAUD dapat menambahkan siswa terdaftar di satuan PAUD ini."
+                            : "Kader dan pengurus dapat menambahkan data anak usia 0–6 tahun di lingkungan komunitas ini."}
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    displayedChildren.map((child) => {
+                      const isChildFromPaudSchool =
+                        child.is_sekolah === true ||
+                        Boolean(
+                          child.nama_sekolah &&
+                            !child.nama_sekolah.toLowerCase().includes("belum")
+                        );
+
+                      const isReadOnlyForThisChild =
+                        (isWargaKitaCheck && isChildFromPaudSchool) || Boolean(isReadOnlyDataAnak);
+
+                      const canEditForThisChild =
+                        (isWargaKitaCheck && isChildFromPaudSchool)
+                          ? false
+                          : Boolean(canEditDataAnak);
+
+                      const canDeleteForThisChild =
+                        (isWargaKitaCheck && isChildFromPaudSchool)
+                          ? false
+                          : Boolean(canDeleteDataAnak);
+
+                      const canValidateForThisChild =
+                        (isWargaKitaCheck && isChildFromPaudSchool)
+                          ? false
+                          : Boolean(canValidateDataAnak);
+
+                      return (
+                        <CardDataAnak
+                          key={child.id}
+                          anak={child}
+                          komunitas={komunitasData}
+                          canViewDetail={true}
+                          canValidate={canValidateForThisChild}
+                          canEdit={canEditForThisChild}
+                          canDelete={canDeleteForThisChild}
+                          isReadOnly={isReadOnlyForThisChild}
+                          onUpdate={(updated) => {
+                            setDataAnakState((prev) =>
+                              prev.map((c) => (c.id === updated.id ? updated : c))
+                            );
+                          }}
+                          onDelete={(deletedId) => {
+                            setDataAnakState((prev) =>
+                              prev.filter((c) => c.id !== deletedId)
+                            );
+                          }}
+                        />
+                      );
+                    })
+                  )}
+                </div>
+              </>
+            ) : (
+              /* BLOK AKSES TERKUNCI UNTUK SELAIN ADMIN DAN PENGGUNA YANG TELAH BERGABUNG */
+              <div className="rounded-lg border border-border bg-card p-6 text-center space-y-4 shadow-sm pb-8">
+                <div className="flex h-14 w-14 mx-auto items-center justify-center rounded-lg bg-secondary/15 border border-secondary/30 text-secondary shadow-2xs">
+                  <Lock className="h-7 w-7" />
+                </div>
+
+                <div className="space-y-1.5 max-w-lg mx-auto">
+                  <div className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-xs font-bold text-muted-foreground border border-border">
+                    <ShieldAlert className="h-3.5 w-3.5 text-secondary" />
+                    <span>Privasi &amp; Perlindungan Data Anak</span>
+                  </div>
+                  <h3 className="text-base sm:text-lg font-bold text-foreground">
+                    Akses Rincian Identitas Anak Terkunci
+                  </h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    Sesuai ketentuan perlindungan privasi data anak, rincian identitas lengkap hanya dapat diakses oleh <strong>Admin Komunitas</strong> serta <strong>Pengguna yang telah bergabung</strong> dalam komunitas ini. Anda tetap dapat meninjau statistik agregat pada tab <strong>Rekap, Grafik &amp; Diagram</strong>.
+                  </p>
+                </div>
+
+                <div className="pt-2 max-w-md mx-auto">
+                  {!currentUserId ? (
+                    <div className="space-y-3 bg-muted/30 border border-border rounded-lg p-4 text-left">
+                      <p className="text-xs text-foreground font-semibold leading-relaxed">
+                        Silakan masuk atau daftar akun JARIMAS-ID untuk bergabung dan mengakses data komunitas:
+                      </p>
+                      <div className="flex flex-col sm:flex-row gap-2.5">
+                        <Link
+                          href={`/login?redirect=/komunitas/${komunitasData.id}`}
+                          className="flex-1 inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-primary hover:bg-primary-hover text-primary-foreground text-xs font-bold shadow-xs transition-all active:scale-[0.98]"
+                        >
+                          <LogIn className="h-3.5 w-3.5" />
+                          <span>Masuk ke Akun</span>
+                        </Link>
+                        <Link
+                          href={`/register?redirect=/komunitas/${komunitasData.id}`}
+                          className="flex-1 inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-card hover:bg-muted border border-border text-foreground text-xs font-bold transition-all active:scale-[0.98]"
+                        >
+                          <UserPlus className="h-3.5 w-3.5" />
+                          <span>Daftar Akun</span>
+                        </Link>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-3 bg-muted/30 border border-border rounded-lg p-4 text-left">
+                      <div className="flex items-start gap-2.5">
+                        <AlertCircle className="h-4 w-4 text-secondary shrink-0 mt-0.5" />
+                        <p className="text-xs text-foreground leading-relaxed">
+                          Anda saat ini belum terdaftar sebagai anggota komunitas ini (atau pendaftaran Anda masih menunggu verifikasi admin). Bergabunglah ke komunitas untuk dapat melihat daftar detail anak.
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setIsJoinModalOpen(true)}
+                        className="w-full inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-primary hover:bg-primary-hover text-primary-foreground text-xs font-bold shadow-xs transition-all active:scale-[0.98] cursor-pointer"
+                      >
+                        <UserPlus className="h-3.5 w-3.5" />
+                        <span>Gabung Komunitas Ini</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         )}
 

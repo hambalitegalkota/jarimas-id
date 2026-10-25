@@ -78,6 +78,8 @@ export default async function KomunitasDetailPage({
       ? getDataAnakByKomunitas(id, {
           countOnly: false,
           preloadedKomunitas: komunitas,
+          isAdminOrKader,
+          currentUserMembership: komunitas.currentUserMembership,
         })
       : Promise.resolve({
           success: true,
@@ -150,12 +152,12 @@ export default async function KomunitasDetailPage({
         dataAnakList={dataAnakList || []}
         dataAtsList={dataAtsList || []}
         dataAnakStats={dataAnakRes?.stats}
-        canValidateDataAnak={dataAnakRes?.canValidate ?? isAdminOrKader}
-        canCreateDataAnak={dataAnakRes?.canCreate ?? isAdminOrKader}
-        canEditDataAnak={dataAnakRes?.canEdit ?? isAdminOrKader}
-        canDeleteDataAnak={dataAnakRes?.canDelete ?? isAdminOrKader}
-        isReadOnlyDataAnak={dataAnakRes?.isReadOnly ?? false}
-        canViewDetailDataAnak={dataAnakRes?.canViewDetail ?? true}
+        canValidateDataAnak={dataAnakRes?.canValidate ?? false}
+        canCreateDataAnak={dataAnakRes?.canCreate ?? false}
+        canEditDataAnak={dataAnakRes?.canEdit ?? false}
+        canDeleteDataAnak={dataAnakRes?.canDelete ?? false}
+        isReadOnlyDataAnak={dataAnakRes?.isReadOnly ?? true}
+        canViewDetailDataAnak={dataAnakRes?.canViewDetail ?? false}
         userRoleDataAnak={dataAnakRes?.userRole}
         scopedRekapResult={scopedRekapCalc}
       />

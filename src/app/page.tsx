@@ -195,7 +195,7 @@ export default async function HomePage() {
             <div className="flex items-center gap-1 text-[11px] font-medium text-muted-foreground">
               <MapPin className="h-3 w-3 text-primary shrink-0" />
               <span className="truncate max-w-[200px] sm:max-w-[280px]">
-                {user ? userLocationLabel : "Gerakan Gotong Royong Warga"}
+                {user ? userLocationLabel : "Kolaborasi Lintas Warga"}
               </span>
             </div>
           </div>
@@ -262,7 +262,7 @@ export default async function HomePage() {
           {/* Heading */}
           <div className="space-y-1.5 max-w-2xl">
             <h1 className="text-lg sm:text-2xl font-black tracking-tight leading-snug">
-              Gotong Royong Tumbuh Kembang &amp; Pendidikan Anak{" "}
+              Kolaborasi Lintas Warga untuk Tumbuh Kembang &amp; Pendidikan Anak{" "}
               <span className="text-amber-300">Kota Tegal</span>
             </h1>
             <p className="text-xs sm:text-sm text-teal-100/90 leading-relaxed font-normal">

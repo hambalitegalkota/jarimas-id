@@ -80,6 +80,53 @@ export async function createDataAnak(formData: FormData): Promise<{
       };
     }
 
+    // Verifikasi otorisasi: Hanya Admin Komunitas / Super Admin / Admin Pusat yang berhak menambah data anak
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("id, is_super_admin, is_admin_pusat, nama_lengkap, email")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    const isSuperOrPusat = isSuperOrAdminPusat({
+      ...profile,
+      id: user.id,
+      email: profile?.email || user.email,
+      nama_lengkap: profile?.nama_lengkap || user.user_metadata?.nama_lengkap,
+    });
+
+    if (!isSuperOrPusat) {
+      const validTargetKomId = toValidUUID(komunitasId);
+      const { data: member } = await supabase
+        .from("anggota_komunitas")
+        .select("peran, status")
+        .eq("user_id", user.id)
+        .eq("komunitas_id", validTargetKomId)
+        .eq("status", "approved")
+        .maybeSingle();
+
+      const roleLower = (member?.peran || "").toLowerCase();
+      const isCommunityAdmin =
+        isRoleAdmin(roleLower) ||
+        roleLower.includes("admin") ||
+        roleLower.includes("kepala") ||
+        roleLower.includes("guru") ||
+        roleLower.includes("pendidik") ||
+        roleLower.includes("tutor") ||
+        roleLower.includes("pengelola") ||
+        roleLower.includes("pengurus") ||
+        roleLower.includes("kader") ||
+        roleLower.includes("pimpinan") ||
+        roleLower.includes("ketua");
+
+      if (!member || member.status !== "approved" || !isCommunityAdmin) {
+        return {
+          success: false,
+          message:
+            "Akses ditolak: Hanya Admin Komunitas yang memiliki wewenang untuk menambahkan data anak.",
+        };
+      }
+    }
+
     const namaLengkap = formData.get("namaLengkap")?.toString() || "";
     const usia = formData.get("usia")?.toString() || "";
     const tanggalLahirInput = formData.get("tanggalLahir")?.toString() || "";
@@ -368,6 +415,8 @@ export async function getDataAnakByKomunitas(
   options?: {
     countOnly?: boolean;
     preloadedKomunitas?: any;
+    isAdminOrKader?: boolean;
+    currentUserMembership?: any;
   }
 ): Promise<{
   success: boolean;
@@ -446,19 +495,26 @@ export async function getDataAnakByKomunitas(
         const isSuperOrPusat = isSuperAdmin || isAdminPusat;
 
         const dbKomunitasId = toValidUUID(komunitasId);
-        const { data: member } = await supabase
-          .from("anggota_komunitas")
-          .select("peran, status")
-          .eq("user_id", user.id)
-          .eq("komunitas_id", dbKomunitasId)
-          .eq("status", "approved")
-          .maybeSingle();
 
+        let member = options?.currentUserMembership;
+        if (!member) {
+          const { data: dbMember } = await supabase
+            .from("anggota_komunitas")
+            .select("peran, status")
+            .eq("user_id", user.id)
+            .eq("komunitas_id", dbKomunitasId)
+            .eq("status", "approved")
+            .maybeSingle();
+          member = dbMember;
+        }
+
+        const isApprovedMember = Boolean(member && member.status === "approved");
         userRole = member?.peran || (isSuperAdmin ? "Super Admin" : isAdminPusat ? "Admin Pusat" : "Pengunjung");
         const roleLower = (member?.peran || "").toLowerCase();
         const isAdminRole = isRoleAdmin(roleLower);
 
         if (isSuperOrPusat) {
+          // Super Admin & Admin Pusat: Hak akses penuh ke seluruh fitur dan data
           canCreate = true;
           canEdit = true;
           canDelete = true;
@@ -466,7 +522,7 @@ export async function getDataAnakByKomunitas(
           canEditDdks = true;
           isReadOnly = false;
           canViewDetail = true;
-        } else if (member && member.status === "approved") {
+        } else if (isApprovedMember) {
           const cleanTargetNama = (targetKomunitas?.nama || "").toLowerCase();
           const isPkbmOrSkbTarget =
             targetJenis === "pkbm_skb" ||
@@ -476,10 +532,12 @@ export async function getDataAnakByKomunitas(
             cleanTargetNama.includes("skb") ||
             cleanTargetNama.includes("sanggar kegiatan belajar");
 
+          const isCommunityAdmin = Boolean(options?.isAdminOrKader || isAdminRole);
+
           if (isKomunitasLayananPaud(targetKomunitas, targetKomunitas?.nama, targetJenis) || isPkbmOrSkbTarget) {
-            // Admin, Kepala Sekolah, Guru PAUD / Tutor PKBM / Pendidik -> Full Access
+            // Admin Komunitas PAUD / PKBM: Admin, Kepala Sekolah, Guru PAUD / Tutor PKBM / Pendidik / Pengurus
             const isPaudStaff =
-              isAdminRole ||
+              isCommunityAdmin ||
               roleLower.includes("admin") ||
               roleLower.includes("kepala") ||
               roleLower.includes("guru") ||
@@ -489,6 +547,7 @@ export async function getDataAnakByKomunitas(
               roleLower.includes("pengurus");
 
             if (isPaudStaff) {
+              // Admin Komunitas: Fitur Lengkap & Lihat Data Detail
               canViewDetail = true;
               canCreate = true;
               canEdit = true;
@@ -497,8 +556,8 @@ export async function getDataAnakByKomunitas(
               canEditDdks = true;
               isReadOnly = false;
             } else {
-              // Orangtua/Wali Murid, Komite, Alumni, Pengunjung -> Hanya Agregat
-              canViewDetail = false;
+              // Pengguna yang telah bergabung dalam komunitas: HANYA BISA MELIHAT SAJA
+              canViewDetail = true;
               canCreate = false;
               canEdit = false;
               canDelete = false;
@@ -507,8 +566,9 @@ export async function getDataAnakByKomunitas(
               isReadOnly = true;
             }
           } else if (targetJenis === "posyandu") {
+            // Admin Komunitas Posyandu: Kader, Nakes, Bidan, Medis, Pengurus, Admin
             const isKader =
-              isAdminRole ||
+              isCommunityAdmin ||
               roleLower.includes("kader") ||
               roleLower.includes("medis") ||
               roleLower.includes("kesehatan") ||
@@ -520,6 +580,7 @@ export async function getDataAnakByKomunitas(
               roleLower.includes("admin");
 
             if (isKader) {
+              // Admin Komunitas: Fitur Lengkap & Lihat Data Detail
               canViewDetail = true;
               canCreate = true;
               canEdit = true;
@@ -528,7 +589,8 @@ export async function getDataAnakByKomunitas(
               canEditDdks = true;
               isReadOnly = false;
             } else {
-              canViewDetail = false;
+              // Pengguna yang telah bergabung dalam komunitas: HANYA BISA MELIHAT SAJA
+              canViewDetail = true;
               canCreate = false;
               canEdit = false;
               canDelete = false;
@@ -538,15 +600,18 @@ export async function getDataAnakByKomunitas(
             }
           } else {
             // Warga Kita (RT, RW, Kelurahan, Kecamatan, Kota Tegal)
-            // Seluruh admin/pengurus/kader di Warga Kita berhak menambahkan data anak belum bersekolah dan melihat rincian
             const isWargaAdmin =
-              isAdminRole ||
+              isCommunityAdmin ||
               roleLower.includes("admin") ||
               roleLower.includes("pengurus") ||
               roleLower.includes("ketua") ||
-              roleLower.includes("kader");
+              roleLower.includes("kader") ||
+              roleLower.includes("rt") ||
+              roleLower.includes("rw") ||
+              roleLower.includes("lurah");
 
             if (isWargaAdmin) {
+              // Admin Komunitas: Fitur Lengkap & Lihat Data Detail
               canViewDetail = true;
               canCreate = true;
               canEdit = true;
@@ -555,9 +620,9 @@ export async function getDataAnakByKomunitas(
               canEditDdks = true;
               isReadOnly = false;
             } else {
-              // Anggota Warga Kita yang disetujui: Dapat melihat rincian dan mendaftarkan anak belum sekolah
+              // Pengguna yang telah bergabung dalam komunitas: HANYA BISA MELIHAT SAJA
               canViewDetail = true;
-              canCreate = true;
+              canCreate = false;
               canEdit = false;
               canDelete = false;
               canValidate = false;
@@ -565,10 +630,27 @@ export async function getDataAnakByKomunitas(
               isReadOnly = true;
             }
           }
+        } else {
+          // Selain admin dan pengguna yang telah bergabung (Tamu/Publik, belum bergabung, atau pending):
+          // TIDAK BISA MELIHAT DATA DETAIL
+          canViewDetail = false;
+          canCreate = false;
+          canEdit = false;
+          canDelete = false;
+          canValidate = false;
+          canEditDdks = false;
+          isReadOnly = true;
         }
       }
     } catch {
-      // Tamu
+      // Tamu / Belum Login
+      canViewDetail = false;
+      canCreate = false;
+      canEdit = false;
+      canDelete = false;
+      canValidate = false;
+      canEditDdks = false;
+      isReadOnly = true;
     }
 
     // 2. Query data_anak dari database (Targeted untuk Satuan PAUD & Paginasi penuh untuk wilayah)
@@ -874,36 +956,36 @@ export async function getDataAnakByKomunitas(
 
         return {
           id: row.id,
-          nama_lengkap: row.nama_lengkap,
+          nama_lengkap: canViewDetail ? row.nama_lengkap : (row.nama_lengkap ? row.nama_lengkap.slice(0, 1) + "***" : "Anak"),
           tanggal_lahir: row.tanggal_lahir,
           jenis_kelamin: row.jenis_kelamin,
-          nama_orangtua: row.nama_orangtua,
-          nomor_hp: row.nomor_hp,
-          tinggal_bersama: row.tinggal_bersama,
+          nama_orangtua: canViewDetail ? row.nama_orangtua : null,
+          nomor_hp: canViewDetail ? row.nomor_hp : null,
+          tinggal_bersama: canViewDetail ? row.tinggal_bersama : null,
           jarak_rumah_km: row.jarak_rumah_km,
           is_sekolah: row.is_sekolah,
           nama_sekolah: row.nama_sekolah,
-          alasan_sekolah: parsed.alasan,
+          alasan_sekolah: canViewDetail ? parsed.alasan : null,
           kk_kabupaten: parsed.kkKabupaten,
           kk_kecamatan: parsed.kkKecamatan,
           kk_kelurahan: parsed.kkKelurahan,
-          kk_rw: parsed.kkRw,
-          kk_rt: parsed.kkRt,
-          kk_jalan: parsed.kkJalan,
+          kk_rw: canViewDetail ? parsed.kkRw : null,
+          kk_rt: canViewDetail ? parsed.kkRt : null,
+          kk_jalan: canViewDetail ? parsed.kkJalan : null,
           domisili_kabupaten: parsed.domisiliKabupaten,
           domisili_kecamatan: parsed.domisiliKecamatan,
           domisili_kelurahan: parsed.domisiliKelurahan,
-          domisili_rw: parsed.domisiliRw,
-          domisili_rt: parsed.domisiliRt,
-          domisili_jalan: parsed.domisiliJalan,
+          domisili_rw: canViewDetail ? parsed.domisiliRw : null,
+          domisili_rt: canViewDetail ? parsed.domisiliRt : null,
+          domisili_jalan: canViewDetail ? parsed.domisiliJalan : null,
           komunitas_id: row.komunitas_id,
           status_approval: row.status_approval || "pending",
-          validated_by: row.validated_by,
-          validated_at: row.validated_at,
-          created_by: row.created_by,
+          validated_by: canViewDetail ? row.validated_by : null,
+          validated_at: canViewDetail ? row.validated_at : null,
+          created_by: canViewDetail ? row.created_by : null,
           created_at: row.created_at,
-          latest_ddks: records[0] || null,
-          ddks_history: records,
+          latest_ddks: canViewDetail ? (records[0] || null) : null,
+          ddks_history: canViewDetail ? records : [],
         };
       })
       .filter((item) => {

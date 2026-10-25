@@ -19,7 +19,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "JARIMAS-ID | Platform Kolaboratif Warga & Posyandu",
+  title: "JARIMAS-ID | Kolaborasi Lintas Warga",
   description:
     "Platform digital kolaboratif berbasis warga (dari warga, oleh warga, untuk warga) untuk interkoneksi data anak usia dini (0-6 tahun), pendataan ATS (Anak Tidak Sekolah), gotong royong lintas komunitas PAUD & Posyandu, serta sarana Jarimas Market Kota Tegal.",
   keywords: [
@@ -31,13 +31,14 @@ export const metadata: Metadata = {
     "Anak Usia Dini",
     "Anak Tidak Sekolah",
     "Warga Kita",
+    "Jaringan Informasi",
     "Komunitas Warga",
   ],
   authors: [{ name: "Inisiatif Warga & Tim JARIMAS-ID" }],
   creator: "Komunitas Warga Jarimas",
   publisher: "Komunitas Warga Jarimas",
   openGraph: {
-    title: "JARIMAS-ID | Platform Kolaboratif Warga & Posyandu",
+    title: "JARIMAS-ID | Kolaborasi Lintas Warga",
     description:
       "Platform digital kolaborasi berbasis warga (dari warga, oleh warga, untuk warga) untuk pemantauan tumbuh kembang dan gotong royong komunitas warga Kota Tegal.",
     siteName: "JARIMAS-ID",

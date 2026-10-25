@@ -33,6 +33,7 @@ import { cn } from "@/lib/utils";
 interface CardDataAnakProps {
   anak: DataAnakItem;
   komunitas?: KomunitasWithMembership;
+  canViewDetail?: boolean;
   canValidate: boolean;
   canEdit?: boolean;
   canDelete?: boolean;
@@ -108,6 +109,7 @@ function cleanAlasanString(raw?: string | null): string {
 export function CardDataAnak({
   anak,
   komunitas,
+  canViewDetail = true,
   canValidate,
   canEdit,
   canDelete,
@@ -120,6 +122,10 @@ export function CardDataAnak({
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isKeluarModalOpen, setIsKeluarModalOpen] = useState(false);
   const [isPendingValidate, startValidateTransition] = useTransition();
+
+  const canEditAllowed = Boolean(canEdit);
+  const canDeleteAllowed = Boolean(canDelete);
+  const canValidateAllowed = Boolean(canValidate);
 
   const isKomunitasPaud = isKomunitasLayananPaud(
     komunitas,
@@ -199,7 +205,7 @@ export function CardDataAnak({
             </div>
 
             <div className="space-y-0.5 min-w-0">
-              <h3 className="text-sm sm:text-base font-bold text-foreground tracking-tight leading-snug truncate">
+              <h3 className="text-sm sm:base font-bold text-foreground tracking-tight leading-snug truncate">
                 {currentChild.nama_lengkap}
               </h3>
               <div className="flex flex-wrap items-center gap-1.5 text-xs font-medium text-muted-foreground">
@@ -244,182 +250,186 @@ export function CardDataAnak({
             )}
 
             {/* Toggle Sembunyikan / Tampilkan Button */}
-            <button
-              type="button"
-              onClick={() => setIsExpanded(!isExpanded)}
-              aria-expanded={isExpanded}
-              className={cn(
-                "inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-semibold transition-all active:scale-95 cursor-pointer border print:hidden",
-                isExpanded
-                  ? "border-border bg-muted hover:bg-muted/80 text-foreground"
-                  : "border-primary/20 bg-primary/5 hover:bg-primary/10 text-primary"
-              )}
-              title={isExpanded ? "Sembunyikan Detail Kartu" : "Tampilkan Detail Kartu"}
-            >
-              <span>{isExpanded ? "Sembunyikan" : "Tampilkan"}</span>
-              {isExpanded ? (
-                <ChevronUp className="h-3.5 w-3.5 shrink-0" />
-              ) : (
-                <ChevronDown className="h-3.5 w-3.5 shrink-0" />
-              )}
-            </button>
+            {canViewDetail ? (
+              <button
+                type="button"
+                onClick={() => setIsExpanded(!isExpanded)}
+                aria-expanded={isExpanded}
+                className={cn(
+                  "inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-semibold transition-all active:scale-95 cursor-pointer border print:hidden",
+                  isExpanded
+                    ? "border-border bg-muted hover:bg-muted/80 text-foreground"
+                    : "border-primary/20 bg-primary/5 hover:bg-primary/10 text-primary"
+                )}
+                title={isExpanded ? "Sembunyikan Detail Kartu" : "Tampilkan Detail Kartu"}
+              >
+                <span>{isExpanded ? "Sembunyikan" : "Tampilkan"}</span>
+                {isExpanded ? (
+                  <ChevronUp className="h-3.5 w-3.5 shrink-0" />
+                ) : (
+                  <ChevronDown className="h-3.5 w-3.5 shrink-0" />
+                )}
+              </button>
+            ) : null}
           </div>
         </div>
 
         {/* Collapsible Detail Section (Padat & Ramping) */}
-        <div className={cn("space-y-2 pt-0.5", !isExpanded && "hidden print:block")}>
-          {/* Info Detail Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 sm:gap-2 text-xs">
-            {/* Orang Tua */}
-            <div className="flex items-center gap-2 rounded-lg bg-muted/40 border border-border/70 px-2.5 py-1.5">
-              <User className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-              <div className="min-w-0">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block leading-tight">
-                  Orang Tua / Wali
-                </span>
-                <span className="font-semibold text-foreground truncate block leading-snug">
-                  {currentChild.nama_orangtua || "-"}
-                </span>
-              </div>
-            </div>
-
-            {/* Pendidikan */}
-            <div className="flex items-center gap-2 rounded-lg bg-muted/40 border border-border/70 px-2.5 py-1.5">
-              <GraduationCap className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-              <div className="min-w-0">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block leading-tight">
-                  Status Pendidikan
-                </span>
-                <span className="font-semibold text-foreground truncate block leading-snug">
-                  {currentChild.is_sekolah
-                    ? formatNamaSekolahDisplay(currentChild.nama_sekolah) || "Bersekolah PAUD"
-                    : "Belum Sekolah"}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Info Alamat KK & Domisili */}
-          <div className="space-y-1 rounded-lg bg-muted/30 border border-border/70 px-2.5 py-1.5 text-xs">
-            {/* Alamat KK */}
-            <div className="flex items-start gap-1.5 text-foreground leading-tight">
-              <FileText className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
-              <div className="min-w-0">
-                <span className="font-semibold text-foreground">Alamat KK: </span>
-                <span className="text-muted-foreground">
-                  {kkAddressStr || "Belum dilengkapi"}
-                </span>
-              </div>
-            </div>
-
-            {/* Alamat Domisili */}
-            <div className="flex items-start gap-1.5 text-foreground leading-tight">
-              <Home className="h-3.5 w-3.5 text-secondary shrink-0 mt-0.5" />
-              <div className="min-w-0">
-                <span className="font-semibold text-foreground">Domisili: </span>
-                <span className="text-muted-foreground">
-                  {isSameAddress
-                    ? "Sama dengan Alamat KK"
-                    : domisiliAddressStr || "Belum dilengkapi"}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Alasan Sekolah / Keterangan Tag */}
-          {cleanedAlasan && (
-            <div className="rounded-lg bg-primary/5 px-2.5 py-1.5 text-xs text-foreground border border-primary/20 leading-snug">
-              <span className="font-semibold text-primary">Keterangan: </span>
-              <span className="text-foreground">{cleanedAlasan}</span>
-            </div>
-          )}
-
-          {/* Action Buttons Bar: Edit Data, Keluar / Hapus, dan Validasi */}
-          {isKomunitasPaud ? (
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-1.5 pt-2 border-t border-border/60">
-              {(canEdit !== false || canDelete !== false) ? (
-                <div className="flex items-center gap-1.5">
-                  {canEdit !== false && (
-                    <button
-                      type="button"
-                      onClick={() => setIsEditModalOpen(true)}
-                      className="flex h-8 sm:h-8.5 items-center justify-center gap-1 rounded-lg bg-secondary/15 hover:bg-secondary/25 active:scale-98 border border-secondary/30 px-2.5 text-xs font-semibold text-amber-900 dark:text-amber-200 transition-all cursor-pointer"
-                    >
-                      <Pencil className="h-3.5 w-3.5 text-secondary" />
-                      <span>Edit Data</span>
-                    </button>
-                  )}
-
-                  {canDelete !== false && (
-                    <button
-                      type="button"
-                      onClick={() => setIsKeluarModalOpen(true)}
-                      className="flex h-8 sm:h-8.5 items-center justify-center gap-1 rounded-lg bg-rose-50 hover:bg-rose-100 active:scale-98 border border-rose-200 px-2.5 text-xs font-semibold text-rose-700 transition-all cursor-pointer"
-                    >
-                      <LogOut className="h-3.5 w-3.5 text-rose-700" />
-                      <span>Keluar / Hapus</span>
-                    </button>
-                  )}
-                </div>
-              ) : <div />}
-
-              {!isApproved && canValidate && (
-                <button
-                  type="button"
-                  onClick={handleValidate}
-                  disabled={isPendingValidate}
-                  className="flex h-8 sm:h-8.5 items-center justify-center gap-1.5 rounded-lg bg-primary hover:bg-primary-hover active:scale-98 px-3 text-xs font-bold text-primary-foreground transition-all shadow-sm disabled:opacity-50 cursor-pointer ml-auto"
-                >
-                  {isPendingValidate ? (
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  ) : (
-                    <>
-                      <ShieldCheck className="h-3.5 w-3.5" />
-                      <span>Validasi</span>
-                    </>
-                  )}
-                </button>
-              )}
-            </div>
-          ) : currentChild.is_sekolah ? (
-            /* Di Komunitas Lain untuk Data Anak Bersekolah: Tidak Bisa Diedit (Read-Only) */
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 pt-2 border-t border-border/60">
-              <div className="inline-flex items-center gap-1.5 text-2xs font-bold text-teal-800 dark:text-teal-300 bg-teal-500/10 px-2.5 py-1 rounded-md border border-teal-500/20">
-                <ShieldCheck className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400 shrink-0" />
-                <span>Sumber Data: Satuan PAUD / PKBM / SKB (Data Terverifikasi Sekolah, Terkunci &amp; Tidak Dapat Diedit)</span>
-              </div>
-            </div>
-          ) : (
-            /* Di Komunitas Lain untuk Data Anak Belum Bersekolah: Pengurus/Kader dapat mengedit atau menghapus */
-            (canEdit || canDelete) && (
-              <div className="flex items-center justify-between gap-1.5 pt-2 border-t border-border/60">
-                <div className="flex items-center gap-1.5">
-                  {canEdit && (
-                    <button
-                      type="button"
-                      onClick={() => setIsEditModalOpen(true)}
-                      className="flex h-8 items-center justify-center gap-1 rounded-lg bg-secondary/15 hover:bg-secondary/25 active:scale-98 border border-secondary/30 px-2.5 text-xs font-semibold text-amber-900 dark:text-amber-200 transition-all cursor-pointer"
-                    >
-                      <Pencil className="h-3.5 w-3.5 text-secondary" />
-                      <span>Edit Data Belum Sekolah</span>
-                    </button>
-                  )}
-
-                  {canDelete && (
-                    <button
-                      type="button"
-                      onClick={() => setIsKeluarModalOpen(true)}
-                      className="flex h-8 items-center justify-center gap-1 rounded-lg bg-rose-50 hover:bg-rose-100 active:scale-98 border border-rose-200 px-2.5 text-xs font-semibold text-rose-700 transition-all cursor-pointer"
-                    >
-                      <LogOut className="h-3.5 w-3.5 text-rose-700" />
-                      <span>Hapus Data</span>
-                    </button>
-                  )}
+        {canViewDetail && (
+          <div className={cn("space-y-2 pt-0.5", !isExpanded && "hidden print:block")}>
+            {/* Info Detail Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 sm:gap-2 text-xs">
+              {/* Orang Tua */}
+              <div className="flex items-center gap-2 rounded-lg bg-muted/40 border border-border/70 px-2.5 py-1.5">
+                <User className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                <div className="min-w-0">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block leading-tight">
+                    Orang Tua / Wali
+                  </span>
+                  <span className="font-semibold text-foreground truncate block leading-snug">
+                    {currentChild.nama_orangtua || "-"}
+                  </span>
                 </div>
               </div>
-            )
-          )}
-        </div>
+
+              {/* Pendidikan */}
+              <div className="flex items-center gap-2 rounded-lg bg-muted/40 border border-border/70 px-2.5 py-1.5">
+                <GraduationCap className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                <div className="min-w-0">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block leading-tight">
+                    Status Pendidikan
+                  </span>
+                  <span className="font-semibold text-foreground truncate block leading-snug">
+                    {currentChild.is_sekolah
+                      ? formatNamaSekolahDisplay(currentChild.nama_sekolah) || "Bersekolah PAUD"
+                      : "Belum Sekolah"}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Info Alamat KK & Domisili */}
+            <div className="space-y-1 rounded-lg bg-muted/30 border border-border/70 px-2.5 py-1.5 text-xs">
+              {/* Alamat KK */}
+              <div className="flex items-start gap-1.5 text-foreground leading-tight">
+                <FileText className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
+                <div className="min-w-0">
+                  <span className="font-semibold text-foreground">Alamat KK: </span>
+                  <span className="text-muted-foreground">
+                    {kkAddressStr || "Belum dilengkapi"}
+                  </span>
+                </div>
+              </div>
+
+              {/* Alamat Domisili */}
+              <div className="flex items-start gap-1.5 text-foreground leading-tight">
+                <Home className="h-3.5 w-3.5 text-secondary shrink-0 mt-0.5" />
+                <div className="min-w-0">
+                  <span className="font-semibold text-foreground">Domisili: </span>
+                  <span className="text-muted-foreground">
+                    {isSameAddress
+                      ? "Sama dengan Alamat KK"
+                      : domisiliAddressStr || "Belum dilengkapi"}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Alasan Sekolah / Keterangan Tag */}
+            {cleanedAlasan && (
+              <div className="rounded-lg bg-primary/5 px-2.5 py-1.5 text-xs text-foreground border border-primary/20 leading-snug">
+                <span className="font-semibold text-primary">Keterangan: </span>
+                <span className="text-foreground">{cleanedAlasan}</span>
+              </div>
+            )}
+
+            {/* Action Buttons Bar: Edit Data, Keluar / Hapus, dan Validasi */}
+            {isKomunitasPaud ? (
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-1.5 pt-2 border-t border-border/60">
+                {(canEditAllowed || canDeleteAllowed) ? (
+                  <div className="flex items-center gap-1.5">
+                    {canEditAllowed && (
+                      <button
+                        type="button"
+                        onClick={() => setIsEditModalOpen(true)}
+                        className="flex h-8 sm:h-8.5 items-center justify-center gap-1 rounded-lg bg-secondary/15 hover:bg-secondary/25 active:scale-98 border border-secondary/30 px-2.5 text-xs font-semibold text-amber-900 dark:text-amber-200 transition-all cursor-pointer"
+                      >
+                        <Pencil className="h-3.5 w-3.5 text-secondary" />
+                        <span>Edit Data</span>
+                      </button>
+                    )}
+
+                    {canDeleteAllowed && (
+                      <button
+                        type="button"
+                        onClick={() => setIsKeluarModalOpen(true)}
+                        className="flex h-8 sm:h-8.5 items-center justify-center gap-1 rounded-lg bg-rose-50 hover:bg-rose-100 active:scale-98 border border-rose-200 px-2.5 text-xs font-semibold text-rose-700 transition-all cursor-pointer"
+                      >
+                        <LogOut className="h-3.5 w-3.5 text-rose-700" />
+                        <span>Keluar / Hapus</span>
+                      </button>
+                    )}
+                  </div>
+                ) : <div />}
+
+                {!isApproved && canValidateAllowed && (
+                  <button
+                    type="button"
+                    onClick={handleValidate}
+                    disabled={isPendingValidate}
+                    className="flex h-8 sm:h-8.5 items-center justify-center gap-1.5 rounded-lg bg-primary hover:bg-primary-hover active:scale-98 px-3 text-xs font-bold text-primary-foreground transition-all shadow-sm disabled:opacity-50 cursor-pointer ml-auto"
+                  >
+                    {isPendingValidate ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <>
+                        <ShieldCheck className="h-3.5 w-3.5" />
+                        <span>Validasi</span>
+                      </>
+                    )}
+                  </button>
+                )}
+              </div>
+            ) : currentChild.is_sekolah ? (
+              /* Di Komunitas Lain untuk Data Anak Bersekolah: Tidak Bisa Diedit (Read-Only) */
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 pt-2 border-t border-border/60">
+                <div className="inline-flex items-center gap-1.5 text-2xs font-bold text-teal-800 dark:text-teal-300 bg-teal-500/10 px-2.5 py-1 rounded-md border border-teal-500/20">
+                  <ShieldCheck className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400 shrink-0" />
+                  <span>Sumber Data: Satuan PAUD / PKBM / SKB (Data Terverifikasi Sekolah, Terkunci &amp; Tidak Dapat Diedit)</span>
+                </div>
+              </div>
+            ) : (
+              /* Di Komunitas Lain untuk Data Anak Belum Bersekolah: Hanya Admin/Kader yang memiliki wewenang edit/hapus */
+              (canEditAllowed || canDeleteAllowed) && (
+                <div className="flex items-center justify-between gap-1.5 pt-2 border-t border-border/60">
+                  <div className="flex items-center gap-1.5">
+                    {canEditAllowed && (
+                      <button
+                        type="button"
+                        onClick={() => setIsEditModalOpen(true)}
+                        className="flex h-8 items-center justify-center gap-1 rounded-lg bg-secondary/15 hover:bg-secondary/25 active:scale-98 border border-secondary/30 px-2.5 text-xs font-semibold text-amber-900 dark:text-amber-200 transition-all cursor-pointer"
+                      >
+                        <Pencil className="h-3.5 w-3.5 text-secondary" />
+                        <span>Edit Data Belum Sekolah</span>
+                      </button>
+                    )}
+
+                    {canDeleteAllowed && (
+                      <button
+                        type="button"
+                        onClick={() => setIsKeluarModalOpen(true)}
+                        className="flex h-8 items-center justify-center gap-1 rounded-lg bg-rose-50 hover:bg-rose-100 active:scale-98 border border-rose-200 px-2.5 text-xs font-semibold text-rose-700 transition-all cursor-pointer"
+                      >
+                        <LogOut className="h-3.5 w-3.5 text-rose-700" />
+                        <span>Hapus Data</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )
+            )}
+          </div>
+        )}
       </div>
 
       {/* Edit Data Anak Modal */}

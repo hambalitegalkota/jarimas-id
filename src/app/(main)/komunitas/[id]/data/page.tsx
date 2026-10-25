@@ -25,6 +25,8 @@ export default async function KomunitasDataAnakPage({
 
   const {
     data: komunitas,
+    currentUserId,
+    isAdminOrKader,
     isSuperAdmin,
     isAdminPusat,
     isSuperOrAdminPusat,
@@ -41,7 +43,11 @@ export default async function KomunitasDataAnakPage({
 
   // Ambil data rincian anak komunitas dan rekapitulasi kota secara paralel
   const [dataAnakResult, { data: rekapData }, authAccess] = await Promise.all([
-    getDataAnakByKomunitas(id, { preloadedKomunitas: komunitas }),
+    getDataAnakByKomunitas(id, {
+      preloadedKomunitas: komunitas,
+      isAdminOrKader,
+      currentUserMembership: komunitas.currentUserMembership,
+    }),
     getRekapDataAnakUsiaDiniAction(),
     checkUserRekapAdminAccess(),
   ]);

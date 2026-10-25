@@ -772,7 +772,7 @@ export function DataAnakClientView({
                   Akses Rincian Identitas Anak Terkunci
                 </h3>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  Sesuai ketentuan perlindungan privasi data, rincian identitas lengkap hanya dapat diakses oleh Admin di Komunitas Warga Kita, Admin PAUD, Admin Posyandu, dan Admin PKBM / SKB. Anda tetap dapat meninjau statistik pada tab <strong>Rekapitulasi &amp; Grafik Diagram</strong>.
+                  Sesuai ketentuan perlindungan privasi data anak, rincian identitas lengkap hanya dapat diakses oleh <strong>Admin Komunitas</strong> serta <strong>Pengguna yang telah bergabung</strong> dalam komunitas ini. Anda tetap dapat meninjau statistik pada tab <strong>Rekap, Grafik &amp; Diagram</strong>.
                 </p>
               </div>
 
@@ -804,14 +804,14 @@ export function DataAnakClientView({
                     <div className="flex items-start gap-2.5">
                       <AlertCircle className="h-4 w-4 text-secondary shrink-0 mt-0.5" />
                       <p className="text-xs text-foreground leading-relaxed">
-                        Status peran Anda saat ini di komunitas ini adalah <strong>{effectiveRole}</strong>. Rincian identitas individu anak hanya dapat diakses oleh Admin atau Pengurus Komunitas yang berwenang demi keamanan anak.
+                        Status peran Anda saat ini di komunitas ini adalah <strong>{effectiveRole}</strong>. Rincian identitas individu anak hanya dapat diakses oleh Admin Komunitas atau Pengguna yang telah bergabung dalam komunitas ini demi perlindungan privasi anak.
                       </p>
                     </div>
                     <Link
                       href={`/komunitas/${komunitas.id}`}
                       className="w-full inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-primary hover:bg-primary-hover text-primary-foreground text-xs font-bold shadow-xs transition-all active:scale-[0.98]"
                     >
-                      <span>Buka Halaman Komunitas &amp; Kelola Peran</span>
+                      <span>Buka Halaman Komunitas &amp; Gabung</span>
                       <ArrowRight className="h-3.5 w-3.5" />
                     </Link>
                   </div>
