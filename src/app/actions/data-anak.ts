@@ -363,6 +363,9 @@ export async function validateDataAnak(dataAnakId: string): Promise<{
         validated_by: user.id,
         validated_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
+        is_updated_by_paud: true,
+        terakhir_diperbarui_at: new Date().toISOString(),
+        diperbarui_oleh: user.id,
       })
       .eq("id", dataAnakId);
 
@@ -373,6 +376,7 @@ export async function validateDataAnak(dataAnakId: string): Promise<{
       };
     }
 
+    revalidatePath("/cek-progres");
     revalidatePath("/komunitas");
     revalidatePath("/data-anak");
     revalidatePath("/data-ats");
@@ -1277,6 +1281,7 @@ export async function updateDataAnak(
 
     revalidatePath(`/komunitas/${komunitasId}/data`);
     revalidatePath(`/komunitas/${komunitasId}`);
+    revalidatePath("/cek-progres");
     revalidatePath("/komunitas");
     revalidatePath("/data-anak");
     revalidatePath("/data-ats");

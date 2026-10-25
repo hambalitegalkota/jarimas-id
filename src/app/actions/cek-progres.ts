@@ -229,7 +229,7 @@ async function fetchProgresPaudFallback(
       .eq("status", "approved"),
     supabase
       .from("data_anak")
-      .select("komunitas_id, id, created_at, updated_at, is_updated_by_paud")
+      .select("komunitas_id, id, created_at, updated_at, status_approval, validated_at, is_updated_by_paud, diperbarui_oleh")
       .in("komunitas_id", allowedIds),
   ]);
 
@@ -244,9 +244,17 @@ async function fetchProgresPaudFallback(
       studentCountMap[c.komunitas_id] = { total: 0, updated: 0 };
     }
     studentCountMap[c.komunitas_id].total += 1;
+
+    // SYARAT 1: Lembaga PAUD HARUS memiliki akun guru/operator yang bergabung
+    const hasTeacher = (memberCountMap[c.komunitas_id] || 0) > 0;
+
+    // SYARAT 2: Murid tersebut secara nyata telah divalidasi (approved) ATAU diedit oleh akun pengguna terdaftar
     const isUpdated =
-      c.is_updated_by_paud === true ||
-      (c.updated_at && c.created_at && new Date(c.updated_at).getTime() > new Date(c.created_at).getTime());
+      hasTeacher &&
+      (c.status_approval === "approved" ||
+        c.validated_at != null ||
+        (c.is_updated_by_paud === true && c.diperbarui_oleh != null));
+
     if (isUpdated) {
       studentCountMap[c.komunitas_id].updated += 1;
     }
@@ -261,10 +269,14 @@ async function fetchProgresPaudFallback(
     let status: StatusPenyelesaianProgres = "BELUM_MULAI";
     if (totalStudents === 0) {
       status = "KOSONG";
-    } else if (totalUpdated >= totalStudents) {
+    } else if (memberCount === 0) {
+      status = "BELUM_MULAI";
+    } else if (totalUpdated >= totalStudents && totalStudents > 0) {
       status = "SELESAI";
     } else if (totalUpdated > 0) {
       status = "PROGRES";
+    } else {
+      status = "BELUM_MULAI";
     }
 
     // Deteksi tipe institusi dari nama (TK, KB, RA, PKBM, SKB, SPS/Pos PAUD, TPA)
@@ -292,15 +304,19 @@ async function fetchProgresPaudFallback(
       status_penyelesaian: status,
     };
   }).sort((a: ProgresPaudItem, b: ProgresPaudItem) => {
-    // Utamakan yang memiliki persentase tertinggi
+    // 1. Utamakan yang memiliki persentase tertinggi
     if (b.persentase_selesai !== a.persentase_selesai) {
       return b.persentase_selesai - a.persentase_selesai;
     }
-    // Lalu yang sudah memiliki anggota guru
+    // 2. Yang memiliki data murid terdaftar (aktif pendataan)
+    if (b.total_peserta_didik !== a.total_peserta_didik) {
+      return b.total_peserta_didik - a.total_peserta_didik;
+    }
+    // 3. Yang sudah memiliki akun guru
     if (b.jumlah_anggota !== a.jumlah_anggota) {
       return b.jumlah_anggota - a.jumlah_anggota;
     }
-    // Lalu abjad nama
+    // 4. Lalu abjad nama
     return a.nama_paud.localeCompare(b.nama_paud);
   });
 }

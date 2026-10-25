@@ -96,12 +96,12 @@ ADD COLUMN IF NOT EXISTS diperbarui_oleh UUID REFERENCES public.profiles(id) ON 
 CREATE INDEX IF NOT EXISTS idx_data_anak_paud_progress 
 ON public.data_anak (komunitas_id, is_updated_by_paud);
 
--- Backfill: tandai data anak yang sebelumnya pernah diedit (updated_at > created_at)
+-- Koreksi: Pastikan hanya data yang divalidasi atau diedit oleh user yang ditandai aktif
 UPDATE public.data_anak
-SET is_updated_by_paud = TRUE,
-    terakhir_diperbarui_at = updated_at
-WHERE updated_at > created_at 
-  AND is_updated_by_paud = FALSE;
+SET is_updated_by_paud = FALSE,
+    terakhir_diperbarui_at = NULL
+WHERE status_approval = 'pending' 
+  AND diperbarui_oleh IS NULL;
 
 -- 4. FUNGSI DATABASE RPC: get_cek_progres_paud
 -- Menghitung agregasi persentase progres Satuan PAUD dengan filter ketat hierarki RLS
@@ -193,8 +193,15 @@ BEGIN
     SELECT 
       da.komunitas_id,
       COUNT(da.id) AS student_count,
-      COUNT(CASE WHEN da.is_updated_by_paud = TRUE OR da.updated_at > da.created_at THEN 1 END) AS updated_count
+      COUNT(CASE 
+        WHEN COALESCE(pm.member_count, 0) > 0 AND (
+          da.status_approval = 'approved' 
+          OR da.validated_at IS NOT NULL 
+          OR (da.is_updated_by_paud = TRUE AND da.diperbarui_oleh IS NOT NULL)
+        ) THEN 1 
+      END) AS updated_count
     FROM public.data_anak da
+    LEFT JOIN paud_members pm ON pm.komunitas_id = da.komunitas_id
     GROUP BY da.komunitas_id
   )
   SELECT
@@ -222,7 +229,8 @@ BEGIN
     END AS persentase_selesai,
     CASE 
       WHEN COALESCE(ps.student_count, 0) = 0 THEN 'KOSONG'
-      WHEN COALESCE(ps.updated_count, 0) >= ps.student_count THEN 'SELESAI'
+      WHEN COALESCE(pm.member_count, 0) = 0 THEN 'BELUM_MULAI'
+      WHEN COALESCE(ps.updated_count, 0) >= ps.student_count AND ps.student_count > 0 THEN 'SELESAI'
       WHEN COALESCE(ps.updated_count, 0) > 0 THEN 'PROGRES'
       ELSE 'BELUM_MULAI'
     END AS status_penyelesaian
@@ -245,6 +253,7 @@ BEGIN
       WHEN COALESCE(ps.student_count, 0) = 0 THEN 0.0
       ELSE ROUND((COALESCE(ps.updated_count, 0)::NUMERIC / ps.student_count::NUMERIC) * 100, 1)
     END DESC,
+    COALESCE(ps.student_count, 0) DESC,
     COALESCE(pm.member_count, 0) DESC,
     k.nama ASC;
 END;
