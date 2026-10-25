@@ -1,7 +1,6 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { ShieldAlert, ArrowLeft, LogIn } from "lucide-react";
+import { ShieldAlert, ArrowLeft } from "lucide-react";
 import { getCekProgresPaudAction } from "@/app/actions/cek-progres";
 import { CekProgresClientView } from "@/components/cek-progres/cek-progres-client-view";
 
@@ -34,7 +33,7 @@ export default async function CekProgresPage({
     search: resolvedParams.search,
   });
 
-  // Jika tidak memiliki akses Admin
+  // Jika terjadi kendala sistem
   if (!result.authorized) {
     return (
       <div className="flex flex-col flex-1 items-center justify-center px-4 py-16 text-center max-w-lg mx-auto">
@@ -42,26 +41,18 @@ export default async function CekProgresPage({
           <ShieldAlert className="h-8 w-8" />
         </div>
         <h1 className="text-xl sm:text-2xl font-black text-foreground tracking-tight mb-2">
-          Akses Khusus Admin
+          Data Tidak Dapat Dimuat
         </h1>
         <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed mb-6">
-          {result.message ||
-            "Fitur Cek Progres hanya dapat diakses oleh Admin Kota, Admin Kecamatan, Admin Kelurahan, atau Pengurus/Guru Satuan PAUD terdaftar."}
+          {result.message || "Terjadi kesalahan saat memuat data Cek Progres."}
         </p>
         <div className="flex items-center gap-3">
           <Link
-            href="/profil"
+            href="/"
             className="inline-flex min-h-[44px] items-center gap-2 px-4 py-2 rounded-lg border border-border bg-card hover:bg-muted text-xs font-bold text-foreground transition-all shadow-xs"
           >
             <ArrowLeft className="h-4 w-4" />
-            <span>Ke Profil Saya</span>
-          </Link>
-          <Link
-            href="/login"
-            className="inline-flex min-h-[44px] items-center gap-2 px-4 py-2 rounded-lg bg-primary hover:bg-primary/90 text-xs font-bold text-primary-foreground transition-all shadow-xs"
-          >
-            <LogIn className="h-4 w-4" />
-            <span>Masuk Akun</span>
+            <span>Kembali ke Beranda</span>
           </Link>
         </div>
       </div>

@@ -135,51 +135,25 @@ DECLARE
   v_user_kelurahan TEXT := NULL;
   v_admin_komunitas_ids UUID[] := ARRAY[]::UUID[];
 BEGIN
-  -- 1. Evaluasi Peran Pengguna Aktif dari Profil
-  SELECT 
-    COALESCE(is_super_admin, FALSE), 
-    COALESCE(is_admin_pusat, FALSE)
-  INTO v_is_super_admin, v_is_admin_pusat
-  FROM public.profiles 
-  WHERE id = p_user_id;
+  -- 1. Evaluasi Peran Pengguna Aktif jika terautentikasi (Opsional)
+  IF p_user_id IS NOT NULL THEN
+    SELECT 
+      COALESCE(p.is_super_admin, FALSE), 
+      COALESCE(p.is_admin_pusat, FALSE)
+    INTO v_is_super_admin, v_is_admin_pusat
+    FROM public.profiles p
+    WHERE p.id = p_user_id;
 
-  -- 2. Jika bukan Super Admin / Admin Pusat, evaluasi hak akses komunitas/wilayah
-  IF NOT (v_is_super_admin OR v_is_admin_pusat) THEN
-    -- Ambil seluruh komunitas di mana user menjadi admin/pengurus yang disetujui
+    -- Ambil komunitas binaan jika ada
     SELECT ARRAY_AGG(ak.komunitas_id)
     INTO v_admin_komunitas_ids
     FROM public.anggota_komunitas ak
     WHERE ak.user_id = p_user_id 
-      AND ak.status = 'approved'
-      AND lower(ak.peran) SIMILAR TO '%(admin|pengurus|ketua|kepala|guru|tutor|pengelola|kader)%';
-
-    -- Jika tidak punya peran admin sama sekali, kembalikan kosong (Access Denied)
-    IF v_admin_komunitas_ids IS NULL OR array_length(v_admin_komunitas_ids, 1) = 0 THEN
-      RETURN;
-    END IF;
-
-    -- Periksa apakah user merupakan Admin Wilayah (Kecamatan atau Kelurahan)
-    SELECT 
-      k.kecamatan,
-      k.kelurahan
-    INTO v_user_kecamatan, v_user_kelurahan
-    FROM public.komunitas k
-    WHERE k.id = ANY(v_admin_komunitas_ids)
-      AND k.jenis = 'warga_kita'
-    ORDER BY 
-      CASE 
-        WHEN (k.kelurahan IS NULL OR k.kelurahan = '') AND (k.kecamatan IS NOT NULL AND k.kecamatan <> '') THEN 1
-        WHEN (k.kelurahan IS NOT NULL AND k.kelurahan <> '') THEN 2
-        ELSE 3
-      END ASC
-    LIMIT 1;
-
-    IF v_user_kecamatan IS NOT NULL THEN
-      v_is_admin_wilayah := TRUE;
-    END IF;
+      AND ak.status = 'approved';
   END IF;
 
-  -- 3. Eksekusi Query Agregasi Progres PAUD
+  -- 2. Eksekusi Query Agregasi Progres PAUD
+  -- Catatan: Hanya PKBM Star of Tomorrow dan SKB yang memiliki layanan PAUD yang disertakan.
   RETURN QUERY
   WITH paud_members AS (
     SELECT 
@@ -211,6 +185,10 @@ BEGIN
       )
     )
     WHERE k.jenis = 'satuan_paud'
+      AND (
+        k.nama NOT ILIKE '%PKBM%' 
+        OR k.nama ILIKE '%STAR OF TOMORROW%'
+      )
     GROUP BY k.id
   )
   SELECT
@@ -220,8 +198,8 @@ BEGIN
       WHEN k.nama ILIKE 'TK %' OR k.nama ILIKE 'TK-%' OR k.nama ILIKE '%Taman Kanak%' THEN 'TK'
       WHEN k.nama ILIKE 'KB %' OR k.nama ILIKE '%Kelompok Bermain%' THEN 'KB'
       WHEN k.nama ILIKE 'RA %' OR k.nama ILIKE '%Raudhatul%' THEN 'RA'
-      WHEN k.nama ILIKE 'PKBM %' OR k.nama ILIKE '%PKBM%' THEN 'PKBM'
       WHEN k.nama ILIKE '%SKB%' OR k.nama ILIKE '%Sanggar Kegiatan%' OR k.nama ILIKE '%SPNF%' THEN 'SKB'
+      WHEN k.nama ILIKE '%Star of Tomorrow%' OR k.nama ILIKE 'PKBM %' OR k.nama ILIKE '%PKBM%' THEN 'PKBM'
       WHEN k.nama ILIKE 'Pos PAUD %' OR k.nama ILIKE '%SPS%' THEN 'SPS / Pos PAUD'
       WHEN k.nama ILIKE 'TPA %' THEN 'TPA'
       ELSE 'PAUD'
@@ -247,12 +225,9 @@ BEGIN
   LEFT JOIN paud_members pm ON pm.komunitas_id = k.id
   LEFT JOIN paud_students ps ON ps.komunitas_id = k.id
   WHERE k.jenis = 'satuan_paud'
-    -- Filter Berjenjang RLS: Admin Kota/Pusat/Kecamatan/PAUD
     AND (
-      v_is_super_admin = TRUE 
-      OR v_is_admin_pusat = TRUE 
-      OR v_is_admin_wilayah = TRUE
-      OR ARRAY_LENGTH(v_admin_komunitas_ids, 1) > 0
+      k.nama NOT ILIKE '%PKBM%' 
+      OR k.nama ILIKE '%STAR OF TOMORROW%'
     )
     -- Filter opsional parameter pencarian/filter:
     AND (p_kecamatan IS NULL OR p_kecamatan = 'semua' OR k.kecamatan = p_kecamatan)
@@ -267,3 +242,5 @@ BEGIN
     k.nama ASC;
 END;
 $$;
+
+GRANT EXECUTE ON FUNCTION public.get_cek_progres_paud(UUID, TEXT, TEXT) TO authenticated, anon;

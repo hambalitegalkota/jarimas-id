@@ -40,8 +40,21 @@ const DEFAULT_KEGIATAN_PAUD: KegiatanAdministratif = {
 };
 
 /**
+ * Filter Satuan Pendidikan:
+ * Hanya menyertakan seluruh TK, KB, RA, SPS/Pos PAUD, TPA, SKB,
+ * dan HANYA PKBM Star of Tomorrow (PKBM umum lainnya dilepas).
+ */
+export function isAllowedPaudInstitution(nama: string): boolean {
+  const n = (nama || "").toUpperCase();
+  if (n.includes("PKBM")) {
+    return n.includes("STAR OF TOMORROW") || n.includes("STAR");
+  }
+  return true;
+}
+
+/**
  * Server Action: Mengambil data Cek Progres Satuan PAUD
- * Mendukung eksekusi via RPC get_cek_progres_paud dan fallback query langsung
+ * Terbuka untuk seluruh pengunjung publik maupun pengguna terdaftar.
  */
 export async function getCekProgresPaudAction(filters?: {
   kecamatan?: string;
@@ -53,54 +66,56 @@ export async function getCekProgresPaudAction(filters?: {
     const supabase = await createClient();
     const {
       data: { user },
-      error: authError,
     } = await supabase.auth.getUser();
 
-    if (authError || !user) {
-      return {
-        authorized: false,
-        items: [],
-        summary: getEmptySummary(),
-        message: "Silakan masuk terlebih dahulu untuk mengakses Cek Progres.",
-      };
-    }
+    let userRoleLabel = "Publik";
+    let adminScopeLabel = "Seluruh Kota Tegal";
+    let userTierLevel: string | null = null;
+    let isSuper = false;
+    let memberships: any[] = [];
 
-    // 1. Ambil Profil & Keanggotaan Komunitas User
-    const [{ data: profile }, { data: memberships }] = await Promise.all([
-      supabase
-        .from("profiles")
-        .select("id, is_super_admin, is_admin_pusat, nama_lengkap, email")
-        .eq("id", user.id)
-        .maybeSingle(),
-      supabase
-        .from("anggota_komunitas")
-        .select("id, komunitas_id, peran, status, komunitas(*)")
-        .eq("user_id", user.id)
-        .eq("status", "approved"),
-    ]);
+    // Jika pengunjung terautentikasi (login), ambil profil & keanggotaannya
+    if (user) {
+      const [{ data: profile }, { data: userMemberships }] = await Promise.all([
+        supabase
+          .from("profiles")
+          .select("id, is_super_admin, is_admin_pusat, nama_lengkap, email")
+          .eq("id", user.id)
+          .maybeSingle(),
+        supabase
+          .from("anggota_komunitas")
+          .select("id, komunitas_id, peran, status, komunitas(*)")
+          .eq("user_id", user.id)
+          .eq("status", "approved"),
+      ]);
 
-    const isSuper = isSuperOrAdminPusat({
-      ...profile,
-      id: user.id,
-      email: profile?.email || user.email,
-      nama_lengkap: profile?.nama_lengkap || user.user_metadata?.nama_lengkap,
-    });
+      memberships = userMemberships || [];
 
-    const adminInfo = getUserAdminInfo({
-      profile,
-      userCommunities: memberships || [],
-      currentUserId: user.id,
-    });
+      isSuper = isSuperOrAdminPusat({
+        ...profile,
+        id: user.id,
+        email: profile?.email || user.email,
+        nama_lengkap: profile?.nama_lengkap || user.user_metadata?.nama_lengkap,
+      });
 
-    // Validasi Otorisasi: Hanya Admin yang berhak mengakses
-    if (!isSuper && !adminInfo.isAdmin) {
-      return {
-        authorized: false,
-        items: [],
-        summary: getEmptySummary(),
-        message:
-          "Akses Terbatas: Fitur Cek Progres hanya dapat diakses oleh Admin berwenang.",
-      };
+      const adminInfo = getUserAdminInfo({
+        profile,
+        userCommunities: memberships,
+        currentUserId: user.id,
+      });
+
+      userTierLevel = adminInfo.tierLevel;
+
+      if (isSuper) {
+        userRoleLabel = "Super Admin";
+        adminScopeLabel = "Seluruh Kota Tegal";
+      } else if (adminInfo.isAdmin) {
+        userRoleLabel = adminInfo.tierBadgeLabel || "Admin";
+        adminScopeLabel = adminInfo.wilayahLabel || "Wilayah Binaan";
+      } else {
+        userRoleLabel = "Warga / Pengguna";
+        adminScopeLabel = "Seluruh Kota Tegal";
+      }
     }
 
     // 2. Ambil Informasi Kegiatan
@@ -123,13 +138,13 @@ export async function getCekProgresPaudAction(filters?: {
     const { data: rpcData, error: rpcError } = await supabase.rpc(
       "get_cek_progres_paud",
       {
-        p_user_id: user.id,
+        p_user_id: user?.id || null,
         p_kecamatan: filterKec,
         p_kelurahan: filterKel,
       }
     );
 
-    if (!rpcError && rpcData && Array.isArray(rpcData)) {
+    if (!rpcError && rpcData && Array.isArray(rpcData) && rpcData.length > 0) {
       rawItems = rpcData.map((item: any) => ({
         komunitas_id: item.komunitas_id,
         nama_paud: item.nama_paud,
@@ -145,8 +160,18 @@ export async function getCekProgresPaudAction(filters?: {
       }));
     } else {
       // Fallback Engine jika RPC belum dijalankan di Supabase SQL Editor
-      rawItems = await fetchProgresPaudFallback(supabase, user.id, isSuper, memberships || [], filterKec, filterKel);
+      rawItems = await fetchProgresPaudFallback(
+        supabase,
+        user?.id || null,
+        isSuper,
+        memberships,
+        filterKec,
+        filterKel
+      );
     }
+
+    // Saring institusi: Lepaskan seluruh PKBM KECUALI 'PKBM Star of Tomorrow' dan SKB
+    rawItems = rawItems.filter((it) => isAllowedPaudInstitution(it.nama_paud));
 
     // 4. Terapkan Filter Opsional (Pencarian Teks & Status)
     let filteredItems = rawItems;
@@ -170,9 +195,9 @@ export async function getCekProgresPaudAction(filters?: {
 
     return {
       authorized: true,
-      userRoleLabel: adminInfo.tierBadgeLabel || (isSuper ? "Super Admin" : "Admin"),
-      userTierLevel: adminInfo.tierLevel,
-      adminScopeLabel: adminInfo.wilayahLabel || (isSuper ? "Seluruh Kota Tegal" : "Wilayah Binaan"),
+      userRoleLabel,
+      userTierLevel,
+      adminScopeLabel,
       kegiatan,
       items: filteredItems,
       summary,
@@ -193,13 +218,13 @@ export async function getCekProgresPaudAction(filters?: {
  */
 async function fetchProgresPaudFallback(
   supabase: any,
-  userId: string,
+  userId: string | null,
   isSuper: boolean,
   memberships: any[],
   filterKec: string | null,
   filterKel: string | null
 ): Promise<ProgresPaudItem[]> {
-  // Ambil seluruh Satuan PAUD (termasuk PKBM & SKB yang berjenis 'satuan_paud')
+  // Ambil seluruh Satuan PAUD
   let paudQuery = supabase
     .from("komunitas")
     .select("id, nama, jenis, kecamatan, kelurahan")
@@ -212,11 +237,14 @@ async function fetchProgresPaudFallback(
     paudQuery = paudQuery.eq("kelurahan", filterKel);
   }
 
-  const { data: paudList, error: paudErr } = await paudQuery;
-  if (paudErr || !paudList || paudList.length === 0) {
+  const { data: rawPaudList, error: paudErr } = await paudQuery;
+  if (paudErr || !rawPaudList || rawPaudList.length === 0) {
     console.error("Error fetching paudList in fallback:", paudErr);
     return [];
   }
+
+  // Filter: Lepaskan seluruh PKBM KECUALI 'PKBM Star of Tomorrow' dan SKB
+  const paudList = rawPaudList.filter((p: any) => isAllowedPaudInstitution(p.nama));
 
   const allowedIds = paudList.map((p: any) => p.id);
 
