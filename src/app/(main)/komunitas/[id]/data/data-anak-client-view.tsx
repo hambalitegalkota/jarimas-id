@@ -27,6 +27,7 @@ import {
 import { CardDataAnak } from "@/components/data-anak/card-data-anak";
 import { FormDataAnak } from "@/components/data-anak/form-data-anak";
 import { KomunitasRekapGrafikView } from "@/components/data-anak/komunitas-rekap-grafik-view";
+import { PaudRekapGrafikView } from "@/components/data-anak/paud-rekap-grafik-view";
 import { isKomunitasLayananPaud } from "@/lib/data-anak-helpers";
 import {
   buildKomunitasScopedRekap,
@@ -317,14 +318,21 @@ export function DataAnakClientView({
       {/* 3. TAMPILAN UTAMA: TAB REKAPITULASI & GRAFIK DIAGRAM */}
       {mainViewTab === "rekap" && (
         <div className="space-y-6 animate-in fade-in duration-150">
-          <KomunitasRekapGrafikView
-            scopeRekapItem={rekapCalc.scopeRekapItem}
-            subTierItems={rekapCalc.subTierItems}
-            subTierTitle={rekapCalc.subTierTitle}
-            subTierColumnLabel={rekapCalc.subTierColumnLabel}
-            scopeType={rekapCalc.scopeType}
-            komunitasNama={komunitas.nama}
-          />
+          {isPaud ? (
+            <PaudRekapGrafikView
+              childrenList={childrenList}
+              komunitasNama={komunitas.nama}
+            />
+          ) : (
+            <KomunitasRekapGrafikView
+              scopeRekapItem={rekapCalc.scopeRekapItem}
+              subTierItems={rekapCalc.subTierItems}
+              subTierTitle={rekapCalc.subTierTitle}
+              subTierColumnLabel={rekapCalc.subTierColumnLabel}
+              scopeType={rekapCalc.scopeType}
+              komunitasNama={komunitas.nama}
+            />
+          )}
         </div>
       )}
 

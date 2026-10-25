@@ -54,6 +54,7 @@ import { ManageGrupMembersModal } from "@/components/kabar/manage-grup-members-m
 import { CardDataAnak } from "@/components/data-anak/card-data-anak";
 import { FormDataAnak } from "@/components/data-anak/form-data-anak";
 import { KomunitasRekapGrafikView } from "@/components/data-anak/komunitas-rekap-grafik-view";
+import { PaudRekapGrafikView } from "@/components/data-anak/paud-rekap-grafik-view";
 import { isKomunitasLayananPaud } from "@/lib/data-anak-helpers";
 import {
   buildKomunitasScopedRekap,
@@ -1715,14 +1716,21 @@ export function KomunitasDetailClientView({
         {/* TAB 2: REKAP, GRAFIK & DIAGRAM */}
         {activeMainTab === "rekap" && (
           <div className="space-y-6 animate-in fade-in duration-150 pb-8">
-            <KomunitasRekapGrafikView
-              scopeRekapItem={rekapPaudCalc.scopeRekapItem}
-              subTierItems={rekapPaudCalc.subTierItems}
-              subTierTitle={rekapPaudCalc.subTierTitle}
-              subTierColumnLabel={rekapPaudCalc.subTierColumnLabel}
-              scopeType={rekapPaudCalc.scopeType}
-              komunitasNama={komunitasData.nama}
-            />
+            {isPaudCommunity || isPaud ? (
+              <PaudRekapGrafikView
+                childrenList={dataAnakState}
+                komunitasNama={komunitasData.nama}
+              />
+            ) : (
+              <KomunitasRekapGrafikView
+                scopeRekapItem={rekapPaudCalc.scopeRekapItem}
+                subTierItems={rekapPaudCalc.subTierItems}
+                subTierTitle={rekapPaudCalc.subTierTitle}
+                subTierColumnLabel={rekapPaudCalc.subTierColumnLabel}
+                scopeType={rekapPaudCalc.scopeType}
+                komunitasNama={komunitasData.nama}
+              />
+            )}
           </div>
         )}
 
