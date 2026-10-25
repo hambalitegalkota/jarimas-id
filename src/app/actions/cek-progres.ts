@@ -44,7 +44,7 @@ const DEFAULT_KEGIATAN_PAUD: KegiatanAdministratif = {
  * Hanya menyertakan seluruh TK, KB, RA, SPS/Pos PAUD, TPA, SKB,
  * dan HANYA PKBM Star of Tomorrow (PKBM umum lainnya dilepas).
  */
-export function isAllowedPaudInstitution(nama: string): boolean {
+function isAllowedPaudInstitution(nama: string): boolean {
   const n = (nama || "").toUpperCase();
   if (n.includes("PKBM")) {
     return n.includes("STAR OF TOMORROW") || n.includes("STAR");
