@@ -31,6 +31,7 @@ import {
   HeartHandshake,
   UserPlus,
   Bell,
+  ClipboardCheck,
 } from "lucide-react";
 import { createClient } from "@/utils/supabase/server";
 import { getMarketProduk } from "@/app/actions/market";
@@ -333,7 +334,7 @@ export default async function HomePage() {
           <span className="text-[11px] font-medium text-primary">Akses Cepat</span>
         </div>
 
-        <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-9 gap-2.5 sm:gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-5 md:grid-cols-10 gap-2.5 sm:gap-3">
           {/* 1. Warga Kita */}
           <Link
             href="/komunitas?tab=warga_kita"
@@ -412,7 +413,20 @@ export default async function HomePage() {
             </span>
           </Link>
 
-          {/* 7. Perpustakaan Digital */}
+          {/* 7. Cek Progres */}
+          <Link
+            href="/cek-progres"
+            className="flex flex-col items-center gap-1.5 p-2 rounded-lg bg-card border border-border hover:border-blue-500/50 hover:bg-muted/50 transition-all text-center group active:scale-95 shadow-sm"
+          >
+            <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 border border-blue-200 dark:border-blue-800/60 group-hover:scale-105 transition-transform">
+              <ClipboardCheck className="h-5 w-5" />
+            </div>
+            <span className="text-[11px] sm:text-xs font-semibold text-foreground line-clamp-1">
+              Cek Progres
+            </span>
+          </Link>
+
+          {/* 8. Perpustakaan Digital */}
           <Link
             href="/perpustakaan"
             className="flex flex-col items-center gap-1.5 p-2 rounded-lg bg-card border border-border hover:border-teal-500/50 hover:bg-muted/50 transition-all text-center group active:scale-95 shadow-sm"
@@ -425,7 +439,7 @@ export default async function HomePage() {
             </span>
           </Link>
 
-          {/* 8. Jarimas Market */}
+          {/* 9. Jarimas Market */}
           <Link
             href="/market"
             className="flex flex-col items-center gap-1.5 p-2 rounded-lg bg-card border border-border hover:border-secondary/50 hover:bg-muted/50 transition-all text-center group active:scale-95 shadow-sm"
@@ -438,7 +452,7 @@ export default async function HomePage() {
             </span>
           </Link>
 
-          {/* 9. Kabar Warga */}
+          {/* 10. Kabar Warga */}
           <Link
             href="/kabar"
             className="flex flex-col items-center gap-1.5 p-2 rounded-lg bg-card border border-border hover:border-primary/50 hover:bg-muted/50 transition-all text-center group active:scale-95 shadow-sm"
