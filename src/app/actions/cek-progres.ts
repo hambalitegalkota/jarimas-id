@@ -220,18 +220,48 @@ async function fetchProgresPaudFallback(
 
   const allowedIds = paudList.map((p: any) => p.id);
 
-  // Ambil data anggota per PAUD & data anak per PAUD secara paralel
-  const [{ data: memberCounts }, { data: childrenData }] = await Promise.all([
+  // Ambil data anggota per PAUD & seluruh data anak bersekolah (termasuk hasil sinkronisasi Google Sheet)
+  const chunkRanges = [
+    [0, 999], [1000, 1999], [2000, 2999], [3000, 3999],
+    [4000, 4999], [5000, 5999], [6000, 6999], [7000, 7999]
+  ];
+
+  const [{ data: memberCounts }, ...childChunks] = await Promise.all([
     supabase
       .from("anggota_komunitas")
       .select("komunitas_id, id")
       .in("komunitas_id", allowedIds)
       .eq("status", "approved"),
-    supabase
-      .from("data_anak")
-      .select("komunitas_id, id, created_at, updated_at, status_approval, validated_at, is_updated_by_paud, diperbarui_oleh")
-      .in("komunitas_id", allowedIds),
+    ...chunkRanges.map(([start, end]) =>
+      supabase
+        .from("data_anak")
+        .select("id, nama_sekolah, komunitas_id, status_approval, validated_at, is_updated_by_paud, diperbarui_oleh")
+        .eq("is_sekolah", true)
+        .range(start, end)
+    ),
   ]);
+
+  let childrenData: any[] = [];
+  childChunks.forEach((chunkResult) => {
+    if (chunkResult.data && Array.isArray(chunkResult.data)) {
+      childrenData = childrenData.concat(chunkResult.data);
+    }
+  });
+
+  // Normalisasi helper untuk mencocokkan nama sekolah hasil sinkronisasi dengan nama lembaga PAUD
+  const cleanSchool = (s: string) =>
+    (s || "")
+      .toLowerCase()
+      .replace(/111/g, "iii")
+      .replace(/bina anak sholeh/g, "bina iman anak sholeh")
+      .replace(/[^a-z0-9]/g, "");
+
+  const paudByClean = new Map<string, any>();
+  const paudById = new Map<string, any>();
+  paudList.forEach((p: any) => {
+    paudById.set(p.id, p);
+    paudByClean.set(cleanSchool(p.nama), p);
+  });
 
   const memberCountMap: Record<string, number> = {};
   (memberCounts || []).forEach((m: any) => {
@@ -239,24 +269,41 @@ async function fetchProgresPaudFallback(
   });
 
   const studentCountMap: Record<string, { total: number; updated: number }> = {};
-  (childrenData || []).forEach((c: any) => {
-    if (!studentCountMap[c.komunitas_id]) {
-      studentCountMap[c.komunitas_id] = { total: 0, updated: 0 };
+  paudList.forEach((p: any) => {
+    studentCountMap[p.id] = { total: 0, updated: 0 };
+  });
+
+  childrenData.forEach((c: any) => {
+    // 1. Cari PAUD yang cocok: via ID langsung atau nama sekolah Google Sheet
+    let p = paudById.get(c.komunitas_id);
+    if (!p && c.nama_sekolah) {
+      const cName = cleanSchool(c.nama_sekolah);
+      p = paudByClean.get(cName);
+      if (!p) {
+        // Fallback substring matcher
+        p = paudList.find((x: any) => {
+          const cx = cleanSchool(x.nama);
+          return cx === cName || cx.includes(cName) || cName.includes(cx);
+        });
+      }
     }
-    studentCountMap[c.komunitas_id].total += 1;
 
-    // SYARAT 1: Lembaga PAUD HARUS memiliki akun guru/operator yang bergabung
-    const hasTeacher = (memberCountMap[c.komunitas_id] || 0) > 0;
+    if (p && studentCountMap[p.id]) {
+      studentCountMap[p.id].total += 1;
 
-    // SYARAT 2: Murid tersebut secara nyata telah divalidasi (approved) ATAU diedit oleh akun pengguna terdaftar
-    const isUpdated =
-      hasTeacher &&
-      (c.status_approval === "approved" ||
-        c.validated_at != null ||
-        (c.is_updated_by_paud === true && c.diperbarui_oleh != null));
+      // SYARAT 1: Lembaga PAUD HARUS memiliki akun guru/operator yang bergabung
+      const hasTeacher = (memberCountMap[p.id] || 0) > 0;
 
-    if (isUpdated) {
-      studentCountMap[c.komunitas_id].updated += 1;
+      // SYARAT 2: Murid tersebut secara nyata telah divalidasi (approved) ATAU diedit oleh akun pengguna terdaftar
+      const isUpdated =
+        hasTeacher &&
+        (c.status_approval === "approved" ||
+          c.validated_at != null ||
+          (c.is_updated_by_paud === true && c.diperbarui_oleh != null));
+
+      if (isUpdated) {
+        studentCountMap[p.id].updated += 1;
+      }
     }
   });
 

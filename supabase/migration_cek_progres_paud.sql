@@ -191,7 +191,7 @@ BEGIN
   ),
   paud_students AS (
     SELECT 
-      da.komunitas_id,
+      k.id AS komunitas_id,
       COUNT(da.id) AS student_count,
       COUNT(CASE 
         WHEN COALESCE(pm.member_count, 0) > 0 AND (
@@ -200,9 +200,18 @@ BEGIN
           OR (da.is_updated_by_paud = TRUE AND da.diperbarui_oleh IS NOT NULL)
         ) THEN 1 
       END) AS updated_count
-    FROM public.data_anak da
-    LEFT JOIN paud_members pm ON pm.komunitas_id = da.komunitas_id
-    GROUP BY da.komunitas_id
+    FROM public.komunitas k
+    LEFT JOIN paud_members pm ON pm.komunitas_id = k.id
+    LEFT JOIN public.data_anak da ON (
+      da.is_sekolah = TRUE AND (
+        da.komunitas_id = k.id 
+        OR LOWER(REGEXP_REPLACE(da.nama_sekolah, '[^a-zA-Z0-9]', '', 'g')) = LOWER(REGEXP_REPLACE(k.nama, '[^a-zA-Z0-9]', '', 'g'))
+        OR LOWER(REGEXP_REPLACE(da.nama_sekolah, '[^a-zA-Z0-9]', '', 'g')) LIKE '%' || LOWER(REGEXP_REPLACE(k.nama, '[^a-zA-Z0-9]', '', 'g')) || '%'
+        OR LOWER(REGEXP_REPLACE(k.nama, '[^a-zA-Z0-9]', '', 'g')) LIKE '%' || LOWER(REGEXP_REPLACE(da.nama_sekolah, '[^a-zA-Z0-9]', '', 'g')) || '%'
+      )
+    )
+    WHERE k.jenis = 'satuan_paud'
+    GROUP BY k.id
   )
   SELECT
     k.id AS komunitas_id,
