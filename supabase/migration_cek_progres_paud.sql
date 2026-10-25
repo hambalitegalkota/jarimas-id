@@ -200,7 +200,16 @@ BEGIN
   SELECT
     k.id AS komunitas_id,
     k.nama AS nama_paud,
-    COALESCE(NULLIF(k.jenis_institusi, ''), 'PAUD') AS jenis_institusi,
+    CASE 
+      WHEN k.nama ILIKE 'TK %' OR k.nama ILIKE 'TK-%' OR k.nama ILIKE '%Taman Kanak%' THEN 'TK'
+      WHEN k.nama ILIKE 'KB %' OR k.nama ILIKE '%Kelompok Bermain%' THEN 'KB'
+      WHEN k.nama ILIKE 'RA %' OR k.nama ILIKE '%Raudhatul%' THEN 'RA'
+      WHEN k.nama ILIKE 'PKBM %' OR k.nama ILIKE '%PKBM%' THEN 'PKBM'
+      WHEN k.nama ILIKE '%SKB%' OR k.nama ILIKE '%Sanggar Kegiatan%' OR k.nama ILIKE '%SPNF%' THEN 'SKB'
+      WHEN k.nama ILIKE 'Pos PAUD %' OR k.nama ILIKE '%SPS%' THEN 'SPS / Pos PAUD'
+      WHEN k.nama ILIKE 'TPA %' THEN 'TPA'
+      ELSE 'PAUD'
+    END AS jenis_institusi,
     COALESCE(NULLIF(k.kecamatan, ''), 'Kota Tegal') AS kecamatan,
     COALESCE(NULLIF(k.kelurahan, ''), '-') AS kelurahan,
     COALESCE(pm.member_count, 0) AS jumlah_anggota,
@@ -220,17 +229,13 @@ BEGIN
   FROM public.komunitas k
   LEFT JOIN paud_members pm ON pm.komunitas_id = k.id
   LEFT JOIN paud_students ps ON ps.komunitas_id = k.id
-  WHERE (k.jenis = 'satuan_paud' OR k.jenis_institusi IN ('TK', 'KB', 'RA', 'SPS', 'TPA'))
-    -- Filter Berjenjang RLS:
+  WHERE k.jenis = 'satuan_paud'
+    -- Filter Berjenjang RLS: Admin Kota/Pusat/Kecamatan/PAUD
     AND (
       v_is_super_admin = TRUE 
       OR v_is_admin_pusat = TRUE 
-      -- Admin Kecamatan: mencakup seluruh PAUD dalam kecamatannya
-      OR (v_is_admin_wilayah = TRUE AND v_user_kecamatan IS NOT NULL AND (v_user_kelurahan IS NULL OR v_user_kelurahan = '') AND k.kecamatan = v_user_kecamatan)
-      -- Admin Kelurahan: mencakup seluruh PAUD dalam kelurahannya
-      OR (v_is_admin_wilayah = TRUE AND v_user_kelurahan IS NOT NULL AND v_user_kelurahan <> '' AND k.kelurahan = v_user_kelurahan)
-      -- Admin PAUD mandiri: hanya melihat satuannya sendiri
-      OR k.id = ANY(v_admin_komunitas_ids)
+      OR v_is_admin_wilayah = TRUE
+      OR ARRAY_LENGTH(v_admin_komunitas_ids, 1) > 0
     )
     -- Filter opsional parameter pencarian/filter:
     AND (p_kecamatan IS NULL OR p_kecamatan = 'semua' OR k.kecamatan = p_kecamatan)
@@ -240,6 +245,7 @@ BEGIN
       WHEN COALESCE(ps.student_count, 0) = 0 THEN 0.0
       ELSE ROUND((COALESCE(ps.updated_count, 0)::NUMERIC / ps.student_count::NUMERIC) * 100, 1)
     END DESC,
+    COALESCE(pm.member_count, 0) DESC,
     k.nama ASC;
 END;
 $$;

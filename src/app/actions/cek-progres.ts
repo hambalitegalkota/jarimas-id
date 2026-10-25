@@ -199,54 +199,28 @@ async function fetchProgresPaudFallback(
   filterKec: string | null,
   filterKel: string | null
 ): Promise<ProgresPaudItem[]> {
-  // Evaluasi komunitas yang boleh diakses
-  const adminKomunitasIds = (memberships || [])
-    .filter((m) => isRoleAdmin(m.peran))
-    .map((m) => m.komunitas_id);
-
-  // Ambil seluruh Satuan PAUD
+  // Ambil seluruh Satuan PAUD (termasuk PKBM & SKB yang berjenis 'satuan_paud')
   let paudQuery = supabase
     .from("komunitas")
-    .select("id, nama, jenis, jenis_institusi, kecamatan, kelurahan")
+    .select("id, nama, jenis, kecamatan, kelurahan")
     .eq("jenis", "satuan_paud");
 
-  if (filterKec) {
+  if (filterKec && filterKec !== "semua") {
     paudQuery = paudQuery.eq("kecamatan", filterKec);
   }
-  if (filterKel) {
+  if (filterKel && filterKel !== "semua") {
     paudQuery = paudQuery.eq("kelurahan", filterKel);
   }
 
-  const { data: paudList } = await paudQuery;
-  if (!paudList || paudList.length === 0) return [];
-
-  // Filter berjenjang jika bukan super admin
-  let allowedPaud = paudList;
-  if (!isSuper) {
-    // Cari apakah admin kecamatan atau kelurahan
-    const adminWargaKom = (memberships || []).find(
-      (m) => m.komunitas?.jenis === "warga_kita" && isRoleAdmin(m.peran)
-    );
-
-    if (adminWargaKom) {
-      const meta = extractKomunitasMetadata(adminWargaKom.komunitas);
-      if (meta.rawKec && (!meta.rawKel || meta.rawKel === "Kota Tegal")) {
-        allowedPaud = paudList.filter((p: any) => p.kecamatan === meta.rawKec);
-      } else if (meta.rawKel) {
-        allowedPaud = paudList.filter((p: any) => p.kelurahan === meta.rawKel);
-      } else {
-        allowedPaud = paudList.filter((p: any) => adminKomunitasIds.includes(p.id));
-      }
-    } else {
-      allowedPaud = paudList.filter((p: any) => adminKomunitasIds.includes(p.id));
-    }
+  const { data: paudList, error: paudErr } = await paudQuery;
+  if (paudErr || !paudList || paudList.length === 0) {
+    console.error("Error fetching paudList in fallback:", paudErr);
+    return [];
   }
 
-  if (allowedPaud.length === 0) return [];
+  const allowedIds = paudList.map((p: any) => p.id);
 
-  const allowedIds = allowedPaud.map((p: any) => p.id);
-
-  // Ambil data anggota per PAUD & data anak per PAUD
+  // Ambil data anggota per PAUD & data anak per PAUD secara paralel
   const [{ data: memberCounts }, { data: childrenData }] = await Promise.all([
     supabase
       .from("anggota_komunitas")
@@ -278,7 +252,7 @@ async function fetchProgresPaudFallback(
     }
   });
 
-  return allowedPaud.map((p: any) => {
+  return paudList.map((p: any) => {
     const totalStudents = studentCountMap[p.id]?.total || 0;
     const totalUpdated = studentCountMap[p.id]?.updated || 0;
     const memberCount = memberCountMap[p.id] || 0;
@@ -293,10 +267,21 @@ async function fetchProgresPaudFallback(
       status = "PROGRES";
     }
 
+    // Deteksi tipe institusi dari nama (TK, KB, RA, PKBM, SKB, SPS/Pos PAUD, TPA)
+    let jenisInstitusi = "PAUD";
+    const n = (p.nama || "").toUpperCase();
+    if (n.startsWith("TK ") || n.startsWith("TK-") || n.includes("TAMAN KANAK")) jenisInstitusi = "TK";
+    else if (n.startsWith("KB ") || n.includes("KELOMPOK BERMAIN")) jenisInstitusi = "KB";
+    else if (n.startsWith("RA ") || n.startsWith("RAUDHATUL")) jenisInstitusi = "RA";
+    else if (n.startsWith("PKBM ") || n.includes("PKBM")) jenisInstitusi = "PKBM";
+    else if (n.includes("SKB") || n.includes("SANGGAR KEGIATAN") || n.includes("SPNF")) jenisInstitusi = "SKB";
+    else if (n.startsWith("POS PAUD") || n.includes("SPS")) jenisInstitusi = "SPS / Pos PAUD";
+    else if (n.startsWith("TPA")) jenisInstitusi = "TPA";
+
     return {
       komunitas_id: p.id,
       nama_paud: p.nama,
-      jenis_institusi: p.jenis_institusi || "PAUD",
+      jenis_institusi: jenisInstitusi,
       kecamatan: p.kecamatan || "Kota Tegal",
       kelurahan: p.kelurahan || "-",
       jumlah_anggota: memberCount,
@@ -306,7 +291,18 @@ async function fetchProgresPaudFallback(
       persentase_selesai: pct,
       status_penyelesaian: status,
     };
-  }).sort((a: ProgresPaudItem, b: ProgresPaudItem) => b.persentase_selesai - a.persentase_selesai);
+  }).sort((a: ProgresPaudItem, b: ProgresPaudItem) => {
+    // Utamakan yang memiliki persentase tertinggi
+    if (b.persentase_selesai !== a.persentase_selesai) {
+      return b.persentase_selesai - a.persentase_selesai;
+    }
+    // Lalu yang sudah memiliki anggota guru
+    if (b.jumlah_anggota !== a.jumlah_anggota) {
+      return b.jumlah_anggota - a.jumlah_anggota;
+    }
+    // Lalu abjad nama
+    return a.nama_paud.localeCompare(b.nama_paud);
+  });
 }
 
 function computeSummary(items: ProgresPaudItem[]): CekProgresPaudSummary {
