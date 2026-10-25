@@ -20,6 +20,7 @@ import {
   ShoppingBag,
 } from "lucide-react";
 import { formatRupiah } from "@/components/market/produk-card";
+import { PrintButton } from "@/components/ui/print-button";
 import { createPesanan } from "@/app/actions/market";
 import { KOTA_TEGAL_DATA } from "@/lib/constants/tegal-data";
 import type { MarketProduk, MetodePembayaran } from "@/types/database";
@@ -113,22 +114,25 @@ export function CheckoutClientView({
   return (
     <div className="flex flex-col flex-1 px-4 py-5 sm:px-6 md:px-8 max-w-5xl mx-auto w-full gap-5">
       {/* Header Back */}
-      <div className="flex items-center gap-3">
-        <Link
-          href={`/market/${produk.id}`}
-          className="inline-flex min-h-[44px] h-11 items-center gap-2 rounded-lg bg-card border border-border px-3.5 text-xs sm:text-sm font-semibold text-foreground transition-colors hover:bg-muted shadow-2xs"
-        >
-          <ArrowLeft className="h-4 w-4 text-primary" />
-          <span>Kembali</span>
-        </Link>
-        <div>
-          <h1 className="text-lg sm:text-xl font-bold tracking-tight text-foreground">
-            Checkout Pesanan
-          </h1>
-          <p className="text-2xs sm:text-xs text-muted-foreground">
-            Selesaikan pesanan logistik dan perlengkapan posyandu
-          </p>
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <Link
+            href={`/market/${produk.id}`}
+            className="inline-flex min-h-[44px] h-11 items-center gap-2 rounded-lg bg-card border border-border px-3.5 text-xs sm:text-sm font-semibold text-foreground transition-colors hover:bg-muted shadow-2xs"
+          >
+            <ArrowLeft className="h-4 w-4 text-primary" />
+            <span>Kembali</span>
+          </Link>
+          <div>
+            <h1 className="text-lg sm:text-xl font-bold tracking-tight text-foreground">
+              Checkout Pesanan
+            </h1>
+            <p className="text-2xs sm:text-xs text-muted-foreground">
+              Selesaikan pesanan logistik dan perlengkapan posyandu
+            </p>
+          </div>
         </div>
+        <PrintButton variant="outline" size="sm" className="min-h-[44px] h-11" hideTextOnMobile={true} />
       </div>
 
       <form onSubmit={handleFormSubmit}>

@@ -895,7 +895,7 @@ export function LaporanKaderSpmFormCard({
                             className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-blue-600 bg-blue-50 hover:bg-blue-100 text-blue-800 text-xs font-bold transition-all shadow-2xs cursor-pointer active:scale-95"
                           >
                             <Printer className="h-3.5 w-3.5 text-blue-700" />
-                            <span>Preview &amp; Cetak PDF</span>
+                            <span>Cetak / Simpan PDF</span>
                           </button>
 
                           {(isAdminOrKader || item.user_id === currentUserId) && (

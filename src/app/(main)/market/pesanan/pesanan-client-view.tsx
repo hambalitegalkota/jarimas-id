@@ -18,6 +18,7 @@ import {
   Info,
 } from "lucide-react";
 import { formatRupiah } from "@/components/market/produk-card";
+import { PrintButton } from "@/components/ui/print-button";
 import type { MarketPesanan, StatusPesanan } from "@/types/database";
 import { cn } from "@/lib/utils";
 
@@ -102,6 +103,7 @@ export function PesananClientView({
         </div>
 
         <div className="flex items-center gap-2">
+          <PrintButton variant="outline" size="sm" className="min-h-[44px] h-11" hideTextOnMobile={true} />
           <Link
             href="/market"
             className="inline-flex min-h-[44px] h-11 items-center gap-2 rounded-lg bg-card border border-border px-4 text-xs font-semibold text-foreground hover:bg-muted/70 hover:border-primary/40 transition-colors shadow-xs"

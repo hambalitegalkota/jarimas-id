@@ -37,6 +37,7 @@ import { getWargaHierarchyChain, findKecamatanByKelurahan, slugify } from "@/lib
 import { UserCheck, Users } from "lucide-react";
 import { type WargaTierItem } from "@/components/komunitas/unified-warga-card";
 import { ProfilKomunitasSection } from "@/components/profil/profil-komunitas-section";
+import { PrintButton } from "@/components/ui/print-button";
 import type { PendingApprovalItem, AnggotaKomunitas } from "@/types/database";
 
 export default async function ProfilePage() {
@@ -505,8 +506,9 @@ export default async function ProfilePage() {
     <div className="flex flex-col flex-1 px-4 sm:px-6 md:px-8 py-4 sm:py-6 gap-5 sm:gap-6 max-w-5xl xl:max-w-6xl mx-auto w-full pb-24 bg-background">
       {/* Header Profil Card - Super App Clean Card */}
       <section className="relative rounded-lg border border-border bg-card p-4 sm:p-6 shadow-sm">
-        {/* Tombol Keluar dari Akun di Pojok Kanan Atas */}
-        <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-10">
+        {/* Tombol Cetak & Keluar dari Akun di Pojok Kanan Atas */}
+        <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-10 flex items-center gap-2">
+          <PrintButton variant="outline" size="sm" hideTextOnMobile={true} className="min-h-[36px] h-9" />
           <form action={logoutUser}>
             <button
               type="submit"
@@ -520,7 +522,7 @@ export default async function ProfilePage() {
           </form>
         </div>
 
-        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-5 text-center sm:text-left pr-0 sm:pr-36">
+        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-5 text-center sm:text-left pr-0 sm:pr-48">
           {/* Avatar */}
           <div className="relative shrink-0">
             <div className="flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-lg border border-primary/20 bg-primary/10 text-primary font-bold shadow-xs">

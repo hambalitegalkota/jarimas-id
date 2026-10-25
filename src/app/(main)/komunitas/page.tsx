@@ -13,6 +13,7 @@ import {
 import { getKomunitasList } from "@/app/actions/komunitas";
 import { KomunitasFilter } from "@/components/komunitas/komunitas-filter";
 import { KomunitasCard } from "@/components/komunitas/komunitas-card";
+import { PrintButton } from "@/components/ui/print-button";
 import { cn } from "@/lib/utils";
 import type { JenisKomunitas } from "@/types/database";
 
@@ -195,16 +196,15 @@ export default async function KomunitasPage({
             </p>
           </div>
 
-          <div className="shrink-0">
-            <div className="flex items-center gap-2">
-              <div className="px-3.5 py-2 rounded-lg bg-white/15 border border-white/20 backdrop-blur-xs text-center">
-                <span className="text-base sm:text-lg font-black block font-mono text-amber-300">
-                  {totalDisplay}
-                </span>
-                <span className="text-[10px] text-teal-100 uppercase font-bold">
-                  {hasActiveFilter ? "Ditemukan" : "Komunitas"}
-                </span>
-              </div>
+          <div className="shrink-0 flex items-center gap-2">
+            <PrintButton variant="hero" size="sm" hideTextOnMobile={true} />
+            <div className="px-3.5 py-2 rounded-lg bg-white/15 border border-white/20 backdrop-blur-xs text-center">
+              <span className="text-base sm:text-lg font-black block font-mono text-amber-300">
+                {totalDisplay}
+              </span>
+              <span className="text-[10px] text-teal-100 uppercase font-bold">
+                {hasActiveFilter ? "Ditemukan" : "Komunitas"}
+              </span>
             </div>
           </div>
         </div>

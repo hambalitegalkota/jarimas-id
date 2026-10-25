@@ -19,6 +19,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { formatRupiah, ProdukCard } from "@/components/market/produk-card";
+import { PrintButton } from "@/components/ui/print-button";
 import { cn } from "@/lib/utils";
 import type { MarketProduk } from "@/types/database";
 
@@ -93,6 +94,8 @@ export function MarketClientView({
                 <ClipboardList className="h-4 w-4" />
                 <span>Riwayat Pesanan Saya</span>
               </Link>
+
+              <PrintButton variant="outline" size="sm" className="min-h-[44px] h-11" />
 
               {isSuperAdmin && (
                 <Link

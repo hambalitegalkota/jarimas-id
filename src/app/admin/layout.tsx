@@ -12,6 +12,7 @@ import {
   MessageSquare,
 } from "lucide-react";
 import { isSuperOrAdminPusat, isAdminPusat, isSuperAdmin } from "@/lib/utils";
+import { PrintButton } from "@/components/ui/print-button";
 
 export default async function AdminLayout({
   children,
@@ -73,6 +74,7 @@ export default async function AdminLayout({
           </div>
 
           <div className="flex items-center gap-2">
+            <PrintButton variant="outline" size="sm" hideTextOnMobile={true} className="min-h-[44px] h-11" />
             <Link
               href="/market"
               className="inline-flex min-h-[44px] h-11 items-center gap-1.5 rounded-lg border border-border bg-card px-3.5 text-xs font-semibold text-foreground hover:bg-muted hover:border-primary/40 transition-colors shadow-xs"

@@ -425,7 +425,7 @@ export function RekapLaporanKaderWilayahCard({
                         className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-blue-700 hover:bg-blue-800 text-white text-xs font-bold shadow-xs transition-all cursor-pointer active:scale-95"
                       >
                         <Printer className="h-3.5 w-3.5" />
-                        <span>Cetak / Print PDF</span>
+                        <span>Cetak / Simpan PDF</span>
                       </button>
                     </div>
                   </div>

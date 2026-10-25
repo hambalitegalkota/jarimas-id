@@ -7,6 +7,7 @@ import {
 } from "@/app/actions/komunitas";
 import { checkCanManageKomunitasAdminsAction } from "@/app/actions/admin";
 import { KelolaAnggotaClientView } from "./kelola-anggota-client-view";
+import { PrintButton } from "@/components/ui/print-button";
 
 interface KelolaAnggotaPageProps {
   params: Promise<{
@@ -83,7 +84,7 @@ export default async function KelolaAnggotaPage({
   return (
     <div className="flex flex-col flex-1 px-4 py-4 sm:px-6 md:px-8 gap-5 max-w-4xl mx-auto w-full pb-20">
       {/* Back Button */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3">
         <Link
           href={`/komunitas/${id}`}
           className="inline-flex h-9 items-center gap-2 rounded-md bg-card border border-border px-3.5 text-xs font-mono font-semibold text-foreground transition-all hover:bg-muted hover:border-primary/40 shadow-xs"
@@ -91,6 +92,7 @@ export default async function KelolaAnggotaPage({
           <ArrowLeft className="h-3.5 w-3.5 text-primary" />
           <span>Kembali ke Detail Komunitas</span>
         </Link>
+        <PrintButton variant="outline" size="sm" />
       </div>
 
       {/* Header Info */}

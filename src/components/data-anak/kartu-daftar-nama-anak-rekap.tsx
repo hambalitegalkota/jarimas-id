@@ -348,10 +348,10 @@ export function KartuDaftarNamaAnakRekap({
                 type="button"
                 onClick={handlePrint}
                 className="flex h-9 items-center gap-1.5 px-3 rounded-lg border border-border bg-muted/60 text-xs font-bold text-foreground hover:bg-muted transition-colors cursor-pointer"
-                title="Cetak Laporan Rekapitulasi Daftar Nama Anak (A4 Penuh)"
+                title="Cetak / Simpan PDF"
               >
                 <Printer className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">Cetak</span>
+                <span className="hidden sm:inline">Cetak / Simpan PDF</span>
               </button>
             </div>
           </div>

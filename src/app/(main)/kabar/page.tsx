@@ -24,6 +24,7 @@ import { PercakapanHubSection } from "@/components/kabar/percakapan-hub-section"
 import { DaftarWargaKabarSection } from "@/components/kabar/daftar-warga-kabar-section";
 import { CreateKabarModal } from "@/components/kabar/create-kabar-modal";
 import { WargaLockedCard } from "@/components/warga/warga-locked-card";
+import { PrintButton } from "@/components/ui/print-button";
 import { isSuperAdmin as checkIsSuperAdmin } from "@/lib/utils";
 import type { SortingKabar, VisibilitasKabar } from "@/types/database";
 
@@ -195,16 +196,15 @@ export default async function KabarPage({ searchParams }: KabarPageProps) {
             </p>
           </div>
 
-          <div className="shrink-0">
-            <div className="flex items-center gap-2">
-              <div className="px-3.5 py-2 rounded-lg bg-background border border-border text-center min-w-[76px] shadow-2xs">
-                <span className="text-base sm:text-lg font-black block font-mono text-primary">
-                  {feedItems.length}
-                </span>
-                <span className="text-[10px] text-muted-foreground uppercase font-semibold">
-                  Kabar Aktif
-                </span>
-              </div>
+          <div className="shrink-0 flex items-center gap-2">
+            <PrintButton variant="outline" size="sm" hideTextOnMobile={true} />
+            <div className="px-3.5 py-2 rounded-lg bg-background border border-border text-center min-w-[76px] shadow-2xs">
+              <span className="text-base sm:text-lg font-black block font-mono text-primary">
+                {feedItems.length}
+              </span>
+              <span className="text-[10px] text-muted-foreground uppercase font-semibold">
+                Kabar Aktif
+              </span>
             </div>
           </div>
         </div>

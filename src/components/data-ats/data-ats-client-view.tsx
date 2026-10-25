@@ -1001,7 +1001,7 @@ export function DataAtsClientView({
           className="w-full sm:w-auto flex min-h-[48px] h-12 items-center justify-center gap-2 rounded-xl bg-amber-600 hover:bg-amber-700 active:scale-98 text-white px-6 text-base font-bold shadow-xs transition-all shrink-0 cursor-pointer"
         >
           <Printer className="h-5 w-5" />
-          <span>CETAK PDF (A4)</span>
+          <span>Cetak / Simpan PDF</span>
         </button>
       </div>
 

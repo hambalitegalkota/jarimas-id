@@ -19,6 +19,7 @@ import {
   Share2,
 } from "lucide-react";
 import { formatRupiah } from "@/components/market/produk-card";
+import { PrintButton } from "@/components/ui/print-button";
 import type { MarketProduk } from "@/types/database";
 
 interface DetailProdukClientProps {
@@ -71,13 +72,16 @@ export function DetailProdukClient({ produk }: DetailProdukClientProps) {
           <span>Kembali ke Katalog</span>
         </Link>
 
-        <button
-          onClick={handleShare}
-          className="inline-flex min-h-[44px] h-11 items-center gap-2 rounded-lg bg-card border border-border px-3.5 text-xs sm:text-sm font-semibold text-foreground transition-colors hover:bg-muted shadow-2xs cursor-pointer"
-        >
-          <Share2 className="h-4 w-4" />
-          <span>{isCopied ? "Tersalin!" : "Bagikan"}</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <PrintButton variant="outline" size="sm" className="min-h-[44px] h-11" hideTextOnMobile={true} />
+          <button
+            onClick={handleShare}
+            className="inline-flex min-h-[44px] h-11 items-center gap-2 rounded-lg bg-card border border-border px-3.5 text-xs sm:text-sm font-semibold text-foreground transition-colors hover:bg-muted shadow-2xs cursor-pointer"
+          >
+            <Share2 className="h-4 w-4" />
+            <span>{isCopied ? "Tersalin!" : "Bagikan"}</span>
+          </button>
+        </div>
       </div>
 
       {/* Main Grid: Gambar & Info Produk */}

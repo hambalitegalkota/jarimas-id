@@ -28,6 +28,7 @@ import { toValidUUID } from "@/lib/utils";
 import { KabarCard } from "@/components/kabar/kabar-card";
 import { CreateKabarModal } from "@/components/kabar/create-kabar-modal";
 import { KomunitasDetailClientView } from "./detail-client-view";
+import { PrintButton } from "@/components/ui/print-button";
 import { getKomunitasFeatureCards } from "@/lib/admin-helpers";
 import { isKomunitasLayananPaud } from "@/lib/data-anak-helpers";
 import { buildKomunitasScopedRekap } from "@/lib/komunitas-rekap-calculator";
@@ -128,7 +129,7 @@ export default async function KomunitasDetailPage({
   return (
     <div className="flex flex-col flex-1 px-4 sm:px-6 md:px-8 py-4 sm:py-6 gap-5 sm:gap-6 max-w-5xl xl:max-w-6xl mx-auto w-full pb-24">
       {/* Back Navigation Bar */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3">
         <Link
           href="/komunitas"
           className="inline-flex h-9 items-center gap-2 rounded-md bg-card border border-border px-3.5 text-xs font-mono font-semibold text-foreground transition-all hover:bg-muted hover:border-primary/40 shadow-xs"
@@ -136,6 +137,7 @@ export default async function KomunitasDetailPage({
           <ArrowLeft className="h-3.5 w-3.5 text-primary" />
           <span>Kembali ke Komunitas</span>
         </Link>
+        <PrintButton variant="outline" size="sm" />
       </div>
 
       {/* Hero Header Card & Client View */}

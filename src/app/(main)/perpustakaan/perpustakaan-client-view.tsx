@@ -17,6 +17,7 @@ import {
 import { BukuCard } from "@/components/perpustakaan/buku-card";
 import { BukuDetailModal } from "@/components/perpustakaan/buku-detail-modal";
 import { TambahBukuModal } from "@/components/perpustakaan/tambah-buku-modal";
+import { PrintButton } from "@/components/ui/print-button";
 import type { BukuDigital } from "@/types/database";
 
 const DAFTAR_KATEGORI = [
@@ -94,9 +95,10 @@ export function PerpustakaanClientView({
             </p>
           </div>
 
-          {/* Action Button: Tambah Buku untuk Admin */}
-          {isSuperAdmin && (
-            <div className="shrink-0 pt-1">
+          {/* Action Buttons: Cetak & Tambah Buku */}
+          <div className="shrink-0 pt-1 flex items-center gap-2">
+            <PrintButton variant="hero" size="sm" />
+            {isSuperAdmin && (
               <button
                 type="button"
                 onClick={() => setIsTambahModalOpen(true)}
@@ -105,8 +107,8 @@ export function PerpustakaanClientView({
                 <Plus className="h-4 w-4" />
                 <span>Tambah Buku Baru</span>
               </button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </section>
 

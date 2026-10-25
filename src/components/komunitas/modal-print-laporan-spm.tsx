@@ -301,7 +301,7 @@ export function ModalPrintLaporanSpm({
               className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-700 hover:bg-blue-800 text-white text-xs font-bold shadow-xs transition-all active:scale-95"
             >
               <Printer className="h-4 w-4" />
-              <span>Cetak Dokumen</span>
+              <span>Cetak / Simpan PDF</span>
             </button>
           </div>
         </div>

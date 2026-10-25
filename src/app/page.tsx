@@ -40,6 +40,7 @@ import { WargaRekapitulasiSection } from "@/components/warga/warga-rekapitulasi-
 import { KabarCard } from "@/components/kabar/kabar-card";
 import { formatRupiah, isSuperAdmin as checkIsSuperAdmin } from "@/lib/utils";
 import { SHOW_MARKET_FEATURE } from "@/components/layout/bottom-nav";
+import { PrintButton } from "@/components/ui/print-button";
 import type { MarketProduk } from "@/types/database";
 
 // Fallback data produk katalog Jarimas Market
@@ -201,8 +202,9 @@ export default async function HomePage() {
           </div>
         </div>
 
-        {/* Right Action Icons: Notifikasi & Profil */}
+        {/* Right Action Icons: Cetak, Notifikasi & Profil */}
         <div className="flex items-center gap-2 shrink-0">
+          <PrintButton variant="outline" size="sm" hideTextOnMobile={true} />
           <Link
             href="/kabar"
             aria-label="Notifikasi Kabar Warga"
