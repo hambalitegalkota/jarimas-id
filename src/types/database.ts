@@ -802,3 +802,57 @@ export interface BukuDigitalFormData {
   sinopsis: string;
   url_baca: string;
 }
+
+// ==============================================================================
+// CEK PROGRES KEGIATAN ADMINISTRATIF
+// ==============================================================================
+
+export interface KegiatanAdministratif {
+  id: string;
+  kode: string;
+  judul: string;
+  deskripsi?: string | null;
+  target_entitas: string;
+  tanggal_mulai: string;
+  tanggal_selesai?: string | null;
+  status: "aktif" | "selesai" | "arsip";
+  created_at: string;
+  updated_at?: string;
+}
+
+export type StatusPenyelesaianProgres = "SELESAI" | "PROGRES" | "BELUM_MULAI" | "KOSONG";
+
+export interface ProgresPaudItem {
+  komunitas_id: string;
+  nama_paud: string;
+  jenis_institusi: string;
+  kecamatan: string;
+  kelurahan: string;
+  jumlah_anggota: number;
+  has_anggota: boolean;
+  total_peserta_didik: number;
+  total_diperbarui: number;
+  persentase_selesai: number;
+  status_penyelesaian: StatusPenyelesaianProgres;
+}
+
+export interface CekProgresPaudSummary {
+  totalPaud: number;
+  paudWithMembers: number;
+  paudWithoutMembers: number;
+  paudSelesai: number;
+  paudDalamProgres: number;
+  paudBelumMulai: number;
+  totalPesertaDidik: number;
+  totalDiperbarui: number;
+  persentaseTotal: number;
+  perKecamatan: Array<{
+    kecamatan: string;
+    totalPaud: number;
+    paudSelesai: number;
+    totalPesertaDidik: number;
+    totalDiperbarui: number;
+    persentase: number;
+  }>;
+}
+

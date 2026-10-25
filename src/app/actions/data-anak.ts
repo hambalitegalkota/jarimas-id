@@ -1242,7 +1242,7 @@ export async function updateDataAnak(
       };
     }
 
-    const updatePayload = {
+    const updatePayload: Record<string, any> = {
       nama_lengkap: namaLengkap,
       tanggal_lahir: tanggalLahir,
       jenis_kelamin: jenisKelamin,
@@ -1254,6 +1254,9 @@ export async function updateDataAnak(
       nama_sekolah: namaSekolah,
       alasan_sekolah: formattedAlasan,
       updated_at: new Date().toISOString(),
+      is_updated_by_paud: true,
+      terakhir_diperbarui_at: new Date().toISOString(),
+      diperbarui_oleh: user.id,
     };
 
     const { data: updatedChild, error: updateError } = await supabase

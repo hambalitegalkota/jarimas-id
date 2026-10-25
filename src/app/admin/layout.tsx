@@ -10,6 +10,7 @@ import {
   Store,
   Sparkles,
   MessageSquare,
+  BarChart3,
 } from "lucide-react";
 import { isSuperOrAdminPusat, isAdminPusat, isSuperAdmin } from "@/lib/utils";
 import { PrintButton } from "@/components/ui/print-button";
@@ -121,10 +122,18 @@ export default async function AdminLayout({
 
             <Link
               href="/kabar?tab=percakapan"
-              className="inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3.5 min-h-[44px] h-11 text-xs font-semibold text-primary bg-primary/10 border border-primary/20 transition-all hover:bg-primary/20"
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3.5 min-h-[44px] h-11 text-xs font-semibold text-muted-foreground transition-all hover:text-foreground hover:bg-muted border border-transparent hover:border-border"
             >
-              <MessageSquare className="h-4 w-4" />
+              <MessageSquare className="h-4 w-4 text-primary" />
               <span>[04] GRUP KEGIATAN &amp; CHAT</span>
+            </Link>
+
+            <Link
+              href="/cek-progres"
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3.5 min-h-[44px] h-11 text-xs font-semibold text-teal-700 dark:text-teal-300 bg-teal-500/10 border border-teal-500/20 transition-all hover:bg-teal-500/20"
+            >
+              <BarChart3 className="h-4 w-4" />
+              <span>[05] CEK PROGRES</span>
             </Link>
           </div>
         </div>
