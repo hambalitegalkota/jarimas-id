@@ -600,6 +600,11 @@ export default async function ProfilePage() {
             </span>
           </div>
 
+          {/* Monitoring Hierarki Wilayah (Kecamatan Accordion) untuk Super Admin & Admin Pusat - PALING ATAS */}
+          {(userAdminInfo.tierLevel === "super_admin" || userAdminInfo.tierLevel === "admin_pusat") && (
+            <KecamatanMonitoringAccordion initialItems={allHierarchyPendingApprovals} />
+          )}
+
           {/* Monitoring Warga Realtime: Ditampilkan untuk Super Admin, Admin Pusat, dan Admin Kota */}
           {(userAdminInfo.tierLevel === "super_admin" ||
             userAdminInfo.tierLevel === "admin_pusat" ||
@@ -631,11 +636,6 @@ export default async function ProfilePage() {
 
           {/* Pembersih Data Uji Coba: HANYA untuk Super Admin */}
           {userAdminInfo.tierLevel === "super_admin" && <CleanupTestDataTool />}
-
-          {/* Monitoring Hierarki Wilayah (Kecamatan Accordion) untuk Super Admin & Admin Pusat */}
-          {(userAdminInfo.tierLevel === "super_admin" || userAdminInfo.tierLevel === "admin_pusat") && (
-            <KecamatanMonitoringAccordion initialItems={allHierarchyPendingApprovals} />
-          )}
 
           {/* Daftar Permohonan Persetujuan Peran Berjenjang yang Sesuai Wewenang */}
           {pendingApprovals.length > 0 ? (
