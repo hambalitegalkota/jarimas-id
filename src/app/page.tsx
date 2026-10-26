@@ -103,90 +103,90 @@ const QUICK_ACCESS_FEATURES = [
     title: "Warga Kita",
     href: "/komunitas?tab=warga_kita",
     icon: Building2,
-    iconWrapperClass:
-      "bg-teal-50 dark:bg-teal-950/60 text-primary border border-primary/20",
-    hoverBorderClass: "hover:border-primary/50",
+    cardBgClass:
+      "bg-gradient-to-br from-white via-teal-50/90 to-teal-100/70 dark:from-teal-950/80 dark:via-teal-900/60 dark:to-slate-900/90 border-teal-200/90 dark:border-teal-700/60 text-teal-950 dark:text-teal-100 hover:border-teal-400 hover:shadow-teal-900/20",
+    iconWrapperClass: "bg-teal-500 text-white shadow-2xs",
   },
   {
     id: "posyandu",
     title: "Posyandu",
     href: "/komunitas?tab=posyandu",
     icon: HeartPulse,
-    iconWrapperClass:
-      "bg-rose-50 dark:bg-rose-950/60 text-rose-600 border border-rose-200 dark:border-rose-800/60",
-    hoverBorderClass: "hover:border-rose-400/50",
+    cardBgClass:
+      "bg-gradient-to-br from-white via-rose-50/90 to-rose-100/70 dark:from-rose-950/80 dark:via-rose-900/60 dark:to-slate-900/90 border-rose-200/90 dark:border-rose-700/60 text-rose-950 dark:text-rose-100 hover:border-rose-400 hover:shadow-rose-900/20",
+    iconWrapperClass: "bg-rose-500 text-white shadow-2xs",
   },
   {
     id: "satuan-paud",
     title: "Satuan PAUD",
     href: "/komunitas?tab=satuan_paud",
     icon: GraduationCap,
-    iconWrapperClass:
-      "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 border border-indigo-200 dark:border-indigo-800/60",
-    hoverBorderClass: "hover:border-indigo-400/50",
+    cardBgClass:
+      "bg-gradient-to-br from-white via-indigo-50/90 to-indigo-100/70 dark:from-indigo-950/80 dark:via-indigo-900/60 dark:to-slate-900/90 border-indigo-200/90 dark:border-indigo-700/60 text-indigo-950 dark:text-indigo-100 hover:border-indigo-400 hover:shadow-indigo-900/20",
+    iconWrapperClass: "bg-indigo-500 text-white shadow-2xs",
   },
   {
     id: "pkbm-skb",
     title: "PKBM & SKB",
     href: "/komunitas?tab=pkbm_skb",
     icon: School,
-    iconWrapperClass:
-      "bg-purple-50 dark:bg-purple-950/60 text-purple-600 border border-purple-200 dark:border-purple-800/60",
-    hoverBorderClass: "hover:border-purple-400/50",
+    cardBgClass:
+      "bg-gradient-to-br from-white via-purple-50/90 to-purple-100/70 dark:from-purple-950/80 dark:via-purple-900/60 dark:to-slate-900/90 border-purple-200/90 dark:border-purple-700/60 text-purple-950 dark:text-purple-100 hover:border-purple-400 hover:shadow-purple-900/20",
+    iconWrapperClass: "bg-purple-500 text-white shadow-2xs",
   },
   {
     id: "anak-0-6",
     title: "Anak 0-6 Tahun",
     href: "/data-anak",
     icon: Baby,
-    iconWrapperClass:
-      "bg-sky-50 dark:bg-sky-950/60 text-sky-600 border border-sky-200 dark:border-sky-800/60",
-    hoverBorderClass: "hover:border-sky-400/50",
+    cardBgClass:
+      "bg-gradient-to-br from-white via-sky-50/90 to-sky-100/70 dark:from-sky-950/80 dark:via-sky-900/60 dark:to-slate-900/90 border-sky-200/90 dark:border-sky-700/60 text-sky-950 dark:text-sky-100 hover:border-sky-400 hover:shadow-sky-900/20",
+    iconWrapperClass: "bg-sky-500 text-white shadow-2xs",
   },
   {
     id: "data-ats",
     title: "Data ATS",
     href: "/data-ats",
     icon: BookOpen,
-    iconWrapperClass:
-      "bg-amber-50 dark:bg-amber-950/60 text-amber-600 border border-amber-200 dark:border-amber-800/60",
-    hoverBorderClass: "hover:border-amber-400/50",
+    cardBgClass:
+      "bg-gradient-to-br from-white via-amber-50/90 to-amber-100/70 dark:from-amber-950/80 dark:via-amber-900/60 dark:to-slate-900/90 border-amber-200/90 dark:border-amber-700/60 text-amber-950 dark:text-amber-100 hover:border-amber-400 hover:shadow-amber-900/20",
+    iconWrapperClass: "bg-amber-500 text-white shadow-2xs",
   },
   {
     id: "cek-progres",
     title: "Cek Progres",
     href: "/cek-progres",
     icon: ClipboardCheck,
-    iconWrapperClass:
-      "bg-blue-50 dark:bg-blue-950/60 text-blue-600 border border-blue-200 dark:border-blue-800/60",
-    hoverBorderClass: "hover:border-blue-500/50",
+    cardBgClass:
+      "bg-gradient-to-br from-white via-blue-50/90 to-blue-100/70 dark:from-blue-950/80 dark:via-blue-900/60 dark:to-slate-900/90 border-blue-200/90 dark:border-blue-700/60 text-blue-950 dark:text-blue-100 hover:border-blue-400 hover:shadow-blue-900/20",
+    iconWrapperClass: "bg-blue-500 text-white shadow-2xs",
   },
   {
     id: "perpustakaan",
     title: "Perpustakaan",
     href: "/perpustakaan",
     icon: BookOpen,
-    iconWrapperClass:
-      "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 border border-emerald-200 dark:border-emerald-800/60",
-    hoverBorderClass: "hover:border-emerald-500/50",
+    cardBgClass:
+      "bg-gradient-to-br from-white via-emerald-50/90 to-emerald-100/70 dark:from-emerald-950/80 dark:via-emerald-900/60 dark:to-slate-900/90 border-emerald-200/90 dark:border-emerald-700/60 text-emerald-950 dark:text-emerald-100 hover:border-emerald-400 hover:shadow-emerald-900/20",
+    iconWrapperClass: "bg-emerald-500 text-white shadow-2xs",
   },
   {
     id: "market",
     title: "Market",
     href: "/market",
     icon: ShoppingBag,
-    iconWrapperClass:
-      "bg-yellow-50 dark:bg-yellow-950/60 text-secondary border border-secondary/30",
-    hoverBorderClass: "hover:border-secondary/50",
+    cardBgClass:
+      "bg-gradient-to-br from-white via-orange-50/90 to-orange-100/70 dark:from-orange-950/80 dark:via-orange-900/60 dark:to-slate-900/90 border-orange-200/90 dark:border-orange-700/60 text-orange-950 dark:text-orange-100 hover:border-orange-400 hover:shadow-orange-900/20",
+    iconWrapperClass: "bg-orange-500 text-white shadow-2xs",
   },
   {
     id: "kabar",
     title: "Kabar Warga",
     href: "/kabar",
     icon: MessageSquare,
-    iconWrapperClass:
-      "bg-cyan-50 dark:bg-cyan-950/60 text-cyan-600 border border-cyan-200 dark:border-cyan-800/60",
-    hoverBorderClass: "hover:border-cyan-400/50",
+    cardBgClass:
+      "bg-gradient-to-br from-white via-cyan-50/90 to-cyan-100/70 dark:from-cyan-950/80 dark:via-cyan-900/60 dark:to-slate-900/90 border-cyan-200/90 dark:border-cyan-700/60 text-cyan-950 dark:text-cyan-100 hover:border-cyan-400 hover:shadow-cyan-900/20",
+    iconWrapperClass: "bg-cyan-500 text-white shadow-2xs",
   },
 ];
 
@@ -375,8 +375,8 @@ export default async function HomePage() {
           </div>
 
           {/* Akses Cepat Layanan & Fitur Utama (2 Baris Rata Kiri-Kanan) */}
-          <div className="pt-2 sm:pt-3 border-t border-white/15 space-y-2">
-            <div className="flex items-center justify-between">
+          <div className="pt-2 sm:pt-2.5 border-t border-white/15 space-y-2">
+            <div className="flex items-center justify-between max-w-3xl sm:max-w-4xl mx-auto w-full px-0.5">
               <span className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-teal-200">
                 Layanan &amp; Fitur Utama
               </span>
@@ -385,11 +385,11 @@ export default async function HomePage() {
               </span>
             </div>
 
-            <div className="flex flex-col gap-2 sm:gap-2.5 w-full">
+            <div className="flex flex-col gap-1.5 sm:gap-2 max-w-3xl sm:max-w-4xl mx-auto w-full">
               {quickAccessRows.map((row, rowIndex) => (
                 <div
                   key={rowIndex}
-                  className="grid gap-2 sm:gap-2.5 w-full"
+                  className="grid gap-1.5 sm:gap-2.5 w-full"
                   style={{
                     gridTemplateColumns: `repeat(${row.length}, minmax(0, 1fr))`,
                   }}
@@ -400,14 +400,14 @@ export default async function HomePage() {
                       <Link
                         key={item.id}
                         href={item.href}
-                        className={`flex flex-col items-center justify-center gap-1.5 p-1.5 sm:p-2 rounded-xl bg-white/95 dark:bg-slate-900/90 hover:bg-white dark:hover:bg-slate-900 text-slate-800 dark:text-slate-100 shadow-sm border border-white/25 dark:border-slate-700/60 ${item.hoverBorderClass} transition-all text-center group active:scale-95 min-h-[78px] sm:min-h-[88px]`}
+                        className={`flex flex-col items-center justify-center gap-1 sm:gap-1.5 py-1.5 sm:py-2 px-1 sm:px-2 rounded-xl border shadow-xs hover:shadow-md transition-all text-center group active:scale-95 min-h-[62px] sm:min-h-[68px] ${item.cardBgClass}`}
                       >
                         <div
-                          className={`flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-lg ${item.iconWrapperClass} group-hover:scale-105 transition-transform shrink-0`}
+                          className={`flex h-6.5 w-6.5 sm:h-7.5 sm:w-7.5 items-center justify-center rounded-lg ${item.iconWrapperClass} group-hover:scale-105 transition-transform shrink-0`}
                         >
-                          <Icon className="h-4 w-4 sm:h-4.5 sm:w-4.5" />
+                          <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                         </div>
-                        <span className="text-[10px] sm:text-xs font-bold text-slate-800 dark:text-slate-100 leading-tight tracking-tight line-clamp-2">
+                        <span className="text-[10px] sm:text-[11px] font-bold leading-tight tracking-tight line-clamp-2">
                           {item.title}
                         </span>
                       </Link>
