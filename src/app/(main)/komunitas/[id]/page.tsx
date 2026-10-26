@@ -65,6 +65,7 @@ export default async function KomunitasDetailPage({
 
   const { canShowDataAnak, canShowDataAts } = getKomunitasFeatureCards(komunitas);
   const isPaud = isKomunitasLayananPaud(komunitas, komunitas.nama, komunitas.jenis);
+  const hasRootAccess = Boolean(isSuperOrAdminPusat || isSuperAdmin || isAdminPusat);
 
   // Ambil data anggota, data anak, data ATS, kabar, dan rekap secara paralel
   const [
@@ -154,12 +155,12 @@ export default async function KomunitasDetailPage({
         dataAnakList={dataAnakList || []}
         dataAtsList={dataAtsList || []}
         dataAnakStats={dataAnakRes?.stats}
-        canValidateDataAnak={dataAnakRes?.canValidate ?? false}
-        canCreateDataAnak={dataAnakRes?.canCreate ?? false}
-        canEditDataAnak={dataAnakRes?.canEdit ?? false}
-        canDeleteDataAnak={dataAnakRes?.canDelete ?? false}
-        isReadOnlyDataAnak={dataAnakRes?.isReadOnly ?? true}
-        canViewDetailDataAnak={dataAnakRes?.canViewDetail ?? false}
+        canValidateDataAnak={hasRootAccess ? true : (dataAnakRes?.canValidate ?? false)}
+        canCreateDataAnak={hasRootAccess ? true : (dataAnakRes?.canCreate ?? false)}
+        canEditDataAnak={hasRootAccess ? true : (dataAnakRes?.canEdit ?? false)}
+        canDeleteDataAnak={hasRootAccess ? true : (dataAnakRes?.canDelete ?? false)}
+        isReadOnlyDataAnak={hasRootAccess ? false : (dataAnakRes?.isReadOnly ?? true)}
+        canViewDetailDataAnak={hasRootAccess ? true : (dataAnakRes?.canViewDetail ?? false)}
         userRoleDataAnak={dataAnakRes?.userRole}
         scopedRekapResult={scopedRekapCalc}
       />

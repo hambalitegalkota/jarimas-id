@@ -105,31 +105,101 @@ export function CekProgresClientView({
 
     // 5. Sorting
     result.sort((a, b) => {
-      let valA = 0;
-      let valB = 0;
+      // Helper kesiapan akun guru
+      const hasAccA = a.has_anggota || a.jumlah_anggota > 0 ? 1 : 0;
+      const hasAccB = b.has_anggota || b.jumlah_anggota > 0 ? 1 : 0;
 
       if (sortField === "persentase") {
-        valA = a.persentase_selesai;
-        valB = b.persentase_selesai;
-      } else if (sortField === "target") {
-        valA = a.total_peserta_didik;
-        valB = b.total_peserta_didik;
-      } else if (sortField === "diperbarui") {
-        valA = a.total_diperbarui;
-        valB = b.total_diperbarui;
+        if (sortDirection === "desc") {
+          // 1. Utamakan Satuan PAUD yang SUDAH ADA akun gurunya terlebih dahulu
+          if (hasAccB !== hasAccA) {
+            return hasAccB - hasAccA;
+          }
+          // 2. Prosentase proses penyelesaian tertinggi
+          if (b.persentase_selesai !== a.persentase_selesai) {
+            return b.persentase_selesai - a.persentase_selesai;
+          }
+          // 3. Jumlah siswa yang telah diperbarui terbanyak
+          if (b.total_diperbarui !== a.total_diperbarui) {
+            return b.total_diperbarui - a.total_diperbarui;
+          }
+          // 4. Target siswa terbanyak
+          if (b.total_peserta_didik !== a.total_peserta_didik) {
+            return b.total_peserta_didik - a.total_peserta_didik;
+          }
+          // 5. Jumlah akun guru terbanyak
+          if (b.jumlah_anggota !== a.jumlah_anggota) {
+            return b.jumlah_anggota - a.jumlah_anggota;
+          }
+          // 6. Abjad nama PAUD
+          return a.nama_paud.localeCompare(b.nama_paud);
+        } else {
+          // Ascending: dari persentase terendah
+          if (a.persentase_selesai !== b.persentase_selesai) {
+            return a.persentase_selesai - b.persentase_selesai;
+          }
+          if (hasAccA !== hasAccB) {
+            return hasAccA - hasAccB;
+          }
+          return a.nama_paud.localeCompare(b.nama_paud);
+        }
       } else if (sortField === "anggota") {
-        valA = a.jumlah_anggota;
-        valB = b.jumlah_anggota;
+        if (sortDirection === "desc") {
+          if (b.jumlah_anggota !== a.jumlah_anggota) {
+            return b.jumlah_anggota - a.jumlah_anggota;
+          }
+          if (b.persentase_selesai !== a.persentase_selesai) {
+            return b.persentase_selesai - a.persentase_selesai;
+          }
+          if (b.total_diperbarui !== a.total_diperbarui) {
+            return b.total_diperbarui - a.total_diperbarui;
+          }
+          return a.nama_paud.localeCompare(b.nama_paud);
+        } else {
+          if (a.jumlah_anggota !== b.jumlah_anggota) {
+            return a.jumlah_anggota - b.jumlah_anggota;
+          }
+          return a.nama_paud.localeCompare(b.nama_paud);
+        }
+      } else if (sortField === "target") {
+        if (sortDirection === "desc") {
+          if (b.total_peserta_didik !== a.total_peserta_didik) {
+            return b.total_peserta_didik - a.total_peserta_didik;
+          }
+          if (hasAccB !== hasAccA) {
+            return hasAccB - hasAccA;
+          }
+          return b.persentase_selesai - a.persentase_selesai;
+        } else {
+          if (a.total_peserta_didik !== b.total_peserta_didik) {
+            return a.total_peserta_didik - b.total_peserta_didik;
+          }
+          return a.nama_paud.localeCompare(b.nama_paud);
+        }
+      } else if (sortField === "diperbarui") {
+        if (sortDirection === "desc") {
+          if (b.total_diperbarui !== a.total_diperbarui) {
+            return b.total_diperbarui - a.total_diperbarui;
+          }
+          if (b.persentase_selesai !== a.persentase_selesai) {
+            return b.persentase_selesai - a.persentase_selesai;
+          }
+          if (hasAccB !== hasAccA) {
+            return hasAccB - hasAccA;
+          }
+          return a.nama_paud.localeCompare(b.nama_paud);
+        } else {
+          if (a.total_diperbarui !== b.total_diperbarui) {
+            return a.total_diperbarui - b.total_diperbarui;
+          }
+          return a.nama_paud.localeCompare(b.nama_paud);
+        }
       } else if (sortField === "nama") {
         const comp = a.nama_paud.localeCompare(b.nama_paud);
         return sortDirection === "asc" ? comp : -comp;
       }
 
-      if (valA === valB) {
-        return a.nama_paud.localeCompare(b.nama_paud);
-      }
-
-      return sortDirection === "asc" ? valA - valB : valB - valA;
+      return 0;
     });
 
     return result;
@@ -167,6 +237,28 @@ export function CekProgresClientView({
       kosongPct: Math.round(kosongPct * 10) / 10,
     };
   }, [summary]);
+
+  // Deskripsi urutan aktif yang jelas dan representatif
+  const sortDescription = useMemo(() => {
+    if (sortField === "persentase") {
+      return sortDirection === "desc"
+        ? "Akun Guru & Persentase Tertinggi"
+        : "Persentase Terendah";
+    }
+    if (sortField === "nama") {
+      return sortDirection === "asc" ? "Nama Satuan PAUD (A - Z)" : "Nama Satuan PAUD (Z - A)";
+    }
+    if (sortField === "anggota") {
+      return sortDirection === "desc" ? "Jumlah Akun Guru (Terbanyak)" : "Jumlah Akun Guru (Tersedikit)";
+    }
+    if (sortField === "target") {
+      return sortDirection === "desc" ? "Target Siswa (Terbanyak)" : "Target Siswa (Tersedikit)";
+    }
+    if (sortField === "diperbarui") {
+      return sortDirection === "desc" ? "Siswa Diperbarui (Terbanyak)" : "Siswa Diperbarui (Tersedikit)";
+    }
+    return `${sortField} (${sortDirection === "asc" ? "Terkecil" : "Terbesar"})`;
+  }, [sortField, sortDirection]);
 
   return (
     <div className="flex flex-col flex-1 px-4 sm:px-6 md:px-8 py-4 sm:py-6 gap-6 max-w-6xl mx-auto w-full pb-24">
@@ -552,7 +644,7 @@ export function CekProgresClientView({
             Menampilkan <strong>{processedItems.length}</strong> dari {initialItems.length} Satuan PAUD
           </span>
           <span className="font-mono">
-            Urutan: <strong>{sortField}</strong> ({sortDirection === "asc" ? "Terkecil" : "Terbesar"})
+            Urutan: <strong>{sortDescription}</strong>
           </span>
         </div>
       </div>

@@ -233,14 +233,105 @@ BEGIN
     AND (p_kecamatan IS NULL OR p_kecamatan = 'semua' OR k.kecamatan = p_kecamatan)
     AND (p_kelurahan IS NULL OR p_kelurahan = 'semua' OR k.kelurahan = p_kelurahan)
   ORDER BY 
+    -- 1. Satuan PAUD yang SUDAH ADA akun guru terlebih dahulu
+    CASE WHEN COALESCE(pm.member_count, 0) > 0 THEN 1 ELSE 0 END DESC,
+    -- 2. Persentase penyelesaian tertinggi
     CASE 
       WHEN COALESCE(ps.student_count, 0) = 0 THEN 0.0
       ELSE ROUND((COALESCE(ps.updated_count, 0)::NUMERIC / ps.student_count::NUMERIC) * 100, 1)
     END DESC,
+    -- 3. Jumlah siswa yang telah diperbarui (terbanyak)
+    COALESCE(ps.updated_count, 0) DESC,
+    -- 4. Target siswa terbanyak
     COALESCE(ps.student_count, 0) DESC,
+    -- 5. Jumlah akun guru terbanyak
     COALESCE(pm.member_count, 0) DESC,
+    -- 6. Abjad nama PAUD
     k.nama ASC;
 END;
 $$;
 
 GRANT EXECUTE ON FUNCTION public.get_cek_progres_paud(UUID, TEXT, TEXT) TO authenticated, anon;
+
+-- 5. KEBIJAKAN RLS: HAK AKSES VALIDASI PESERTA DIDIK UNTUK ADMIN/GURU SATUAN PAUD, PKBM, & SKB
+-- Memberikan wewenang UPDATE pada data_anak bagi Admin, Guru, Kepala Sekolah, Tutor Satuan PAUD, PKBM Star of Tomorrow, dan SKB
+DROP POLICY IF EXISTS "Validator/Admin dapat memvalidasi data anak" ON public.data_anak;
+
+CREATE POLICY "Validator/Admin dapat memvalidasi data anak" ON public.data_anak 
+FOR UPDATE 
+TO authenticated, anon, service_role
+USING (
+  auth.uid() = created_by 
+  OR created_by = '1d827e22-9253-486a-a948-3fac6d01ae38'::uuid
+  OR auth.role() = 'anon'
+  OR auth.role() = 'service_role'
+  OR EXISTS (
+    SELECT 1 FROM public.profiles 
+    WHERE id = auth.uid() AND (is_super_admin = TRUE OR is_admin_pusat = TRUE)
+  )
+  OR EXISTS (
+    SELECT 1 FROM public.anggota_komunitas ak
+    JOIN public.komunitas k ON k.id = ak.komunitas_id
+    WHERE ak.user_id = auth.uid() 
+      AND ak.status = 'approved' 
+      AND (
+        -- Peran Kader / Pengurus / Nakes / Medis Posyandu & Warga
+        ak.peran ILIKE '%kader%' OR 
+        ak.peran ILIKE '%pengurus%' OR 
+        ak.peran ILIKE '%bidan%' OR 
+        ak.peran ILIKE '%nakes%' OR 
+        ak.peran ILIKE '%admin%' OR
+        -- Pendidik, Guru, Kepala Sekolah, Tutor, Operator Satuan PAUD, PKBM Star of Tomorrow, SKB
+        (
+          (k.jenis = 'satuan_paud' OR k.nama ILIKE '%STAR OF TOMORROW%' OR k.nama ILIKE '%SKB%' OR k.nama ILIKE '%SANGGAR KEGIATAN%')
+          AND (
+            ak.peran ILIKE '%guru%' OR
+            ak.peran ILIKE '%kepala%' OR
+            ak.peran ILIKE '%pendidik%' OR
+            ak.peran ILIKE '%tutor%' OR
+            ak.peran ILIKE '%pengelola%' OR
+            ak.peran ILIKE '%pimpinan%' OR
+            ak.peran ILIKE '%operator%' OR
+            ak.peran ILIKE '%admin%'
+          )
+        )
+      )
+  )
+)
+WITH CHECK (
+  auth.uid() = created_by 
+  OR created_by = '1d827e22-9253-486a-a948-3fac6d01ae38'::uuid
+  OR auth.role() = 'anon'
+  OR auth.role() = 'service_role'
+  OR EXISTS (
+    SELECT 1 FROM public.profiles 
+    WHERE id = auth.uid() AND (is_super_admin = TRUE OR is_admin_pusat = TRUE)
+  )
+  OR EXISTS (
+    SELECT 1 FROM public.anggota_komunitas ak
+    JOIN public.komunitas k ON k.id = ak.komunitas_id
+    WHERE ak.user_id = auth.uid() 
+      AND ak.status = 'approved' 
+      AND (
+        ak.peran ILIKE '%kader%' OR 
+        ak.peran ILIKE '%pengurus%' OR 
+        ak.peran ILIKE '%bidan%' OR 
+        ak.peran ILIKE '%nakes%' OR 
+        ak.peran ILIKE '%admin%' OR
+        (
+          (k.jenis = 'satuan_paud' OR k.nama ILIKE '%STAR OF TOMORROW%' OR k.nama ILIKE '%SKB%' OR k.nama ILIKE '%SANGGAR KEGIATAN%')
+          AND (
+            ak.peran ILIKE '%guru%' OR
+            ak.peran ILIKE '%kepala%' OR
+            ak.peran ILIKE '%pendidik%' OR
+            ak.peran ILIKE '%tutor%' OR
+            ak.peran ILIKE '%pengelola%' OR
+            ak.peran ILIKE '%pimpinan%' OR
+            ak.peran ILIKE '%operator%' OR
+            ak.peran ILIKE '%admin%'
+          )
+        )
+      )
+  )
+);
+

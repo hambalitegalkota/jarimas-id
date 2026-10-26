@@ -17,6 +17,7 @@ import {
   Check,
   FileText,
   Baby,
+  ShieldCheck,
 } from "lucide-react";
 import { updateDataAnak } from "@/app/actions/data-anak";
 import {
@@ -107,6 +108,9 @@ export function ModalEditDataAnak({
   const isPaud = isKomunitasLayananPaud(null, komunitasNama, String(jenisKomunitas));
   const [alasanSekolah, setAlasanSekolah] = useState(
     anak.alasan_sekolah || (isPaud ? ALASAN_SEKOLAH_PAUD[0] : ALASAN_BELUM_SEKOLAH[0])
+  );
+  const [isValidasiSekarang, setIsValidasiSekarang] = useState(
+    anak.status_approval === "approved" || isPaud
   );
 
   // Alamat Sesuai KK
@@ -242,6 +246,9 @@ export function ModalEditDataAnak({
       "alasanSekolah",
       alasanSekolah || (isPaud ? ALASAN_SEKOLAH_PAUD[0] : ALASAN_BELUM_SEKOLAH[0])
     );
+    if (isPaud && isValidasiSekarang) {
+      formData.append("validasiSekarang", "true");
+    }
 
     startTransition(async () => {
       const res = await updateDataAnak(anak.id, formData);
@@ -987,6 +994,29 @@ export function ModalEditDataAnak({
                   </select>
                 </div>
               </>
+            )}
+
+            {/* Opsi Validasi Otomatis Khusus Satuan PAUD / PKBM Star of Tomorrow / SKB */}
+            {isPaud && (
+              <div className="rounded-2xl border-2 border-emerald-200 bg-emerald-50/70 p-4 space-y-2">
+                <label className="flex items-start gap-3 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={isValidasiSekarang}
+                    onChange={(e) => setIsValidasiSekarang(e.target.checked)}
+                    className="mt-1 h-4.5 w-4.5 rounded border-emerald-400 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+                  />
+                  <div className="space-y-0.5">
+                    <span className="text-sm font-bold text-emerald-950 flex items-center gap-1.5">
+                      <ShieldCheck className="h-4 w-4 text-emerald-600 shrink-0" />
+                      <span>Validasi &amp; Konfirmasi Data Peserta Didik</span>
+                    </span>
+                    <p className="text-xs text-emerald-800 leading-relaxed font-medium">
+                      Tandai data peserta didik ini sah &amp; terverifikasi oleh pihak satuan PAUD agar langsung terhitung tuntas 100% pada pemantauan Cek Progres.
+                    </p>
+                  </div>
+                </label>
+              </div>
             )}
           </div>
 

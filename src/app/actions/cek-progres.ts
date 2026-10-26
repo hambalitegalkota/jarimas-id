@@ -190,6 +190,24 @@ export async function getCekProgresPaudAction(filters?: {
       filteredItems = filteredItems.filter((it) => it.status_penyelesaian === filters.status);
     }
 
+    // Urutkan Secara Default:
+    // 1) Satuan PAUD yang SUDAH ADA akun gurunya terlebih dahulu
+    // 2) Prosentase proses penyelesaian tertinggi
+    // 3) Jumlah siswa yang telah diperbarui terbanyak
+    // 4) Target peserta didik terbanyak
+    // 5) Jumlah akun guru terbanyak
+    // 6) Abjad nama PAUD
+    filteredItems.sort((a, b) => {
+      const hasAccA = a.has_anggota || a.jumlah_anggota > 0 ? 1 : 0;
+      const hasAccB = b.has_anggota || b.jumlah_anggota > 0 ? 1 : 0;
+      if (hasAccB !== hasAccA) return hasAccB - hasAccA;
+      if (b.persentase_selesai !== a.persentase_selesai) return b.persentase_selesai - a.persentase_selesai;
+      if (b.total_diperbarui !== a.total_diperbarui) return b.total_diperbarui - a.total_diperbarui;
+      if (b.total_peserta_didik !== a.total_peserta_didik) return b.total_peserta_didik - a.total_peserta_didik;
+      if (b.jumlah_anggota !== a.jumlah_anggota) return b.jumlah_anggota - a.jumlah_anggota;
+      return a.nama_paud.localeCompare(b.nama_paud);
+    });
+
     // 5. Hitung Ringkasan Statistik
     const summary = computeSummary(rawItems);
 
@@ -379,19 +397,29 @@ async function fetchProgresPaudFallback(
       status_penyelesaian: status,
     };
   }).sort((a: ProgresPaudItem, b: ProgresPaudItem) => {
-    // 1. Utamakan yang memiliki persentase tertinggi
+    // 1. Utamakan Satuan PAUD yang SUDAH ADA akun gurunya terlebih dahulu
+    const hasAccA = a.has_anggota || a.jumlah_anggota > 0 ? 1 : 0;
+    const hasAccB = b.has_anggota || b.jumlah_anggota > 0 ? 1 : 0;
+    if (hasAccB !== hasAccA) {
+      return hasAccB - hasAccA;
+    }
+    // 2. Prosentase proses penyelesaian tertinggi
     if (b.persentase_selesai !== a.persentase_selesai) {
       return b.persentase_selesai - a.persentase_selesai;
     }
-    // 2. Yang memiliki data murid terdaftar (aktif pendataan)
+    // 3. Jumlah siswa yang telah diperbarui terbanyak
+    if (b.total_diperbarui !== a.total_diperbarui) {
+      return b.total_diperbarui - a.total_diperbarui;
+    }
+    // 4. Target peserta didik terbanyak
     if (b.total_peserta_didik !== a.total_peserta_didik) {
       return b.total_peserta_didik - a.total_peserta_didik;
     }
-    // 3. Yang sudah memiliki akun guru
+    // 5. Jumlah akun guru terbanyak
     if (b.jumlah_anggota !== a.jumlah_anggota) {
       return b.jumlah_anggota - a.jumlah_anggota;
     }
-    // 4. Lalu abjad nama
+    // 6. Abjad nama PAUD
     return a.nama_paud.localeCompare(b.nama_paud);
   });
 }

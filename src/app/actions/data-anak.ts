@@ -330,19 +330,39 @@ export async function validateDataAnak(dataAnakId: string): Promise<{
     if (!isSuperOrPusat) {
       const { data: memberships } = await supabase
         .from("anggota_komunitas")
-        .select("peran, status")
+        .select("peran, status, komunitas_id, komunitas(id, nama, jenis, jenis_institusi)")
         .eq("user_id", user.id)
         .eq("status", "approved");
 
       const isAuthorizedValidator = (memberships || []).some((m: any) => {
         const role = (m.peran || "").toLowerCase();
+        const kom = m.komunitas;
+        const isPaudOrEquivalent = isKomunitasLayananPaud(kom, kom?.nama, kom?.jenis);
+
+        // Jika anggota satuan PAUD resmi, PKBM Star of Tomorrow, atau SKB:
+        if (isPaudOrEquivalent) {
+          return (
+            role.includes("admin") ||
+            role.includes("kepala") ||
+            role.includes("guru") ||
+            role.includes("pendidik") ||
+            role.includes("tutor") ||
+            role.includes("pengelola") ||
+            role.includes("pengurus") ||
+            role.includes("pimpinan") ||
+            role.includes("operator")
+          );
+        }
+
+        // Posyandu & Warga Kita
         return (
           role.includes("kader") ||
           role.includes("pengurus") ||
           role.includes("nakes") ||
           role.includes("medis") ||
           role.includes("bidan") ||
-          role.includes("admin")
+          role.includes("admin") ||
+          role.includes("ketua")
         );
       });
 
@@ -350,7 +370,7 @@ export async function validateDataAnak(dataAnakId: string): Promise<{
         return {
           success: false,
           message:
-            "Akses ditolak: Hanya Kader Posyandu atau Pengurus RT yang dapat memvalidasi data anak.",
+            "Akses ditolak: Hanya Admin/Guru Satuan PAUD, PKBM, SKB, Kader Posyandu, atau Pengurus RT yang dapat memvalidasi data anak.",
         };
       }
     }
@@ -895,6 +915,9 @@ export async function getDataAnakByKomunitas(
             status_approval: row.status_approval || "pending",
             validated_by: row.validated_by,
             validated_at: row.validated_at,
+            is_updated_by_paud: Boolean(row.is_updated_by_paud),
+            terakhir_diperbarui_at: row.terakhir_diperbarui_at,
+            diperbarui_oleh: row.diperbarui_oleh,
             created_by: row.created_by,
             created_at: row.created_at,
             latest_ddks: null,
@@ -986,6 +1009,9 @@ export async function getDataAnakByKomunitas(
           status_approval: row.status_approval || "pending",
           validated_by: canViewDetail ? row.validated_by : null,
           validated_at: canViewDetail ? row.validated_at : null,
+          is_updated_by_paud: Boolean(row.is_updated_by_paud),
+          terakhir_diperbarui_at: canViewDetail ? row.terakhir_diperbarui_at : null,
+          diperbarui_oleh: canViewDetail ? row.diperbarui_oleh : null,
           created_by: canViewDetail ? row.created_by : null,
           created_at: row.created_at,
           latest_ddks: canViewDetail ? (records[0] || null) : null,
@@ -1246,6 +1272,10 @@ export async function updateDataAnak(
       };
     }
 
+    const validasiSekarang =
+      formData.get("validasiSekarang")?.toString() === "true" ||
+      formData.get("validasiSekarang")?.toString() === "1";
+
     const updatePayload: Record<string, any> = {
       nama_lengkap: namaLengkap,
       tanggal_lahir: tanggalLahir,
@@ -1261,6 +1291,13 @@ export async function updateDataAnak(
       is_updated_by_paud: true,
       terakhir_diperbarui_at: new Date().toISOString(),
       diperbarui_oleh: user.id,
+      ...(validasiSekarang
+        ? {
+            status_approval: "approved",
+            validated_by: user.id,
+            validated_at: new Date().toISOString(),
+          }
+        : {}),
     };
 
     const { data: updatedChild, error: updateError } = await supabase
@@ -1292,7 +1329,9 @@ export async function updateDataAnak(
 
     return {
       success: true,
-      message: "Data anak berhasil diperbarui!",
+      message: validasiSekarang
+        ? "Data anak berhasil disimpan dan divalidasi!"
+        : "Data anak berhasil diperbarui!",
       data: {
         id: updatedChild.id,
         nama_lengkap: updatedChild.nama_lengkap,
@@ -1321,6 +1360,9 @@ export async function updateDataAnak(
         status_approval: updatedChild.status_approval || "pending",
         validated_by: updatedChild.validated_by,
         validated_at: updatedChild.validated_at,
+        is_updated_by_paud: Boolean(updatedChild.is_updated_by_paud),
+        terakhir_diperbarui_at: updatedChild.terakhir_diperbarui_at,
+        diperbarui_oleh: updatedChild.diperbarui_oleh,
         created_by: updatedChild.created_by,
         created_at: updatedChild.created_at,
       },

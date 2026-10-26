@@ -378,6 +378,9 @@ export interface DataAnakItem {
   status_approval: "pending" | "approved" | "rejected";
   validated_by?: string | null;
   validated_at?: string | null;
+  is_updated_by_paud?: boolean;
+  terakhir_diperbarui_at?: string | null;
+  diperbarui_oleh?: string | null;
   created_by?: string;
   created_at: string;
   updated_at?: string;
