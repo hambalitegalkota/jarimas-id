@@ -945,7 +945,7 @@ export const RAW_ALL_PAUD_PKBM_TEGAL: RawPaudItem[] = [
   },
 
   // ==========================================
-  // 2. KECAMATAN TEGAL BARAT (6 Kelurahan)
+  // 2. KECAMATAN TEGAL BARAT (7 Kelurahan)
   // ==========================================
   // Kemandungan (6 Lembaga)
   {
@@ -1589,21 +1589,21 @@ export const RAW_ALL_PAUD_PKBM_TEGAL: RawPaudItem[] = [
     deskripsi: "Lembaga PAUD & Pendidikan Kesetaraan (TK Pertiwi 25.8 Pesurungan Kidul) menyelenggarakan layanan stimulasi tumbuh kembang anak usia dini, kesiapan belajar, pendidikan kesetaraan Paket A/B/C, dan parenting keluarga.",
   },
 
-  // ==========================================
-  // 3. KECAMATAN TEGAL SELATAN (9 Kelurahan)
-  // ==========================================
   // Debong Lor (1 Lembaga)
   {
     id: "b6dc28f3-8980-4f28-8049-b34114fc4eb4",
     nama: "Pos PAUD Seruni Debong Lor",
     npsn: "69917960",
     jenis_institusi: "SPS",
-    kecamatan: "Tegal Selatan",
+    kecamatan: "Tegal Barat",
     kelurahan: "Debong Lor",
-    lokasi: "Debong Lor, Tegal Selatan, Kota Tegal",
+    lokasi: "Debong Lor, Tegal Barat, Kota Tegal",
     deskripsi: "Lembaga PAUD & Pendidikan Kesetaraan (Pos PAUD Seruni Debong Lor) menyelenggarakan layanan stimulasi tumbuh kembang anak usia dini, kesiapan belajar, pendidikan kesetaraan Paket A/B/C, dan parenting keluarga.",
   },
 
+  // ==========================================
+  // 3. KECAMATAN TEGAL SELATAN (8 Kelurahan)
+  // ==========================================
   // Bandung (3 Lembaga)
   {
     id: "f7ff695e-b2cd-4287-82de-8dad883f812a",

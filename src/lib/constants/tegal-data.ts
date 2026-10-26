@@ -371,6 +371,18 @@ export const KOTA_TEGAL_DATA: Record<string, KecamatanData> = {
           "TK Islam Al Azhar 66 Kota Tegal",
           "TK Pertiwi 25.8 Pesurungan Kidul"
         ]
+      },
+      "Debong Lor": {
+        "nama": "Debong Lor",
+        "posyandu": [
+          "Posyandu Mawar",
+          "Posyandu Sartika",
+          "Posyandu Seruni 1",
+          "Posyandu Seruni 2"
+        ],
+        "paud": [
+          "Pos PAUD Seruni Debong Lor"
+        ]
       }
     }
   },
@@ -390,18 +402,6 @@ export const KOTA_TEGAL_DATA: Record<string, KecamatanData> = {
           "Pos PAUD Sejahtera",
           "TK Aisyiyah Bustanul Athfal XIII",
           "TK Pertiwi 25.9 Bandung"
-        ]
-      },
-      "Debong Lor": {
-        "nama": "Debong Lor",
-        "posyandu": [
-          "Posyandu Mawar",
-          "Posyandu Sartika",
-          "Posyandu Seruni 1",
-          "Posyandu Seruni 2"
-        ],
-        "paud": [
-          "Pos PAUD Seruni Debong Lor"
         ]
       },
       "Debong Kidul": {
@@ -699,18 +699,18 @@ export const DATA_RW_PER_KELURAHAN: Record<string, number> = {
   "Sumurpanggang": 2,
   "Pesurungan Lor": 4,
 
-  // Kecamatan Tegal Barat (43 RW, 430 RT)
+  // Kecamatan Tegal Barat (46 RW, 460 RT)
   "Pesurungan Kidul": 6,
+  "Debong Lor": 3,
   "Kemandungan": 3,
   "Pekauman": 8,
   "Kraton": 9,
   "Tegalsari": 14,
   "Muarareja": 3,
 
-  // Kecamatan Tegal Selatan (45 RW, 437 RT)
+  // Kecamatan Tegal Selatan (42 RW, 420 RT)
   "Kalinyamat Wetan": 4,
   "Bandung": 5,
-  "Debong Lor": 3,
   "Debong Kidul": 4,
   "Tunon": 4,
   "Keturen": 3,
@@ -730,7 +730,7 @@ export const RT_PER_RW_DEFAULT = 10;
 export const RT_PER_RW_PANGGUNG = 13;
 
 /**
- * Ketentuan Khusus RT per RW di Kelurahan Debong Lor, Kecamatan Tegal Selatan:
+ * Ketentuan Khusus RT per RW di Kelurahan Debong Lor, Kecamatan Tegal Barat:
  * - RW 1: Jumlah RT 8
  * - RW 2: Jumlah RT 5
  * - RW 3: Jumlah RT 4

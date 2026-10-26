@@ -37,17 +37,17 @@ export const DAFTAR_27_KELURAHAN_TEGAL: Array<{
   { kelurahan: "Mintaragen", kecamatan: "Tegal Timur" },
   { kelurahan: "Mangkukusuman", kecamatan: "Tegal Timur" },
 
-  // Tegal Barat (6)
+  // Tegal Barat (7)
   { kelurahan: "Kraton", kecamatan: "Tegal Barat" },
   { kelurahan: "Tegalsari", kecamatan: "Tegal Barat" },
   { kelurahan: "Kemandungan", kecamatan: "Tegal Barat" },
   { kelurahan: "Pekauman", kecamatan: "Tegal Barat" },
   { kelurahan: "Muarareja", kecamatan: "Tegal Barat" },
   { kelurahan: "Pesurungan Kidul", kecamatan: "Tegal Barat" },
+  { kelurahan: "Debong Lor", kecamatan: "Tegal Barat" },
 
-  // Tegal Selatan (9)
+  // Tegal Selatan (8)
   { kelurahan: "Bandung", kecamatan: "Tegal Selatan" },
-  { kelurahan: "Debong Lor", kecamatan: "Tegal Selatan" },
   { kelurahan: "Debong Kidul", kecamatan: "Tegal Selatan" },
   { kelurahan: "Debong Kulon", kecamatan: "Tegal Selatan" },
   { kelurahan: "Debong Tengah", kecamatan: "Tegal Selatan" },
