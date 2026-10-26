@@ -684,6 +684,7 @@ export const DAFTAR_KECAMATAN_TEGAL = Object.keys(KOTA_TEGAL_DATA);
  */
 export const DATA_RW_PER_KELURAHAN: Record<string, number> = {
   "Debong Lor": 3,
+  "Pesurungan Lor": 4,
 };
 
 export const RT_PER_RW_DEFAULT = 15;
@@ -704,6 +705,25 @@ export const DATA_RT_PER_RW_DEBONG_LOR: Record<string, number> = {
   "3": 4,
 };
 
+/**
+ * Ketentuan Khusus RT per RW di Kelurahan Pesurungan Lor, Kecamatan Margadana:
+ * - RW 1: Jumlah RT 7
+ * - RW 2: Jumlah RT 7
+ * - RW 3: Jumlah RT 7
+ * - RW 4: Jumlah RT 7
+ * Total: 28 RT
+ */
+export const DATA_RT_PER_RW_PESURUNGAN_LOR: Record<string, number> = {
+  "01": 7,
+  "1": 7,
+  "02": 7,
+  "2": 7,
+  "03": 7,
+  "3": 7,
+  "04": 7,
+  "4": 7,
+};
+
 export const TOTAL_KOMUNITAS_RW_KOTA_TEGAL = 167;
 export const TOTAL_KOMUNITAS_RT_KOTA_TEGAL = 1712;
 
@@ -712,6 +732,9 @@ export function getJumlahRwByKelurahan(kelurahan?: string | null): number {
   const clean = kelurahan.replace(/^(kelurahan|kel\.)\s+/i, "").trim().toLowerCase();
   if (clean === "debong lor") {
     return 3;
+  }
+  if (clean === "pesurungan lor") {
+    return 4;
   }
   for (const [k, v] of Object.entries(DATA_RW_PER_KELURAHAN)) {
     if (k.toLowerCase() === clean) {
@@ -734,6 +757,9 @@ export function getJumlahRtPerRwByKelurahan(kelurahan?: string | null, rw?: stri
     }
     return 8; // Default max RT di RW 1 Debong Lor
   }
+  if (clean === "pesurungan lor") {
+    return 7; // RW 1, 2, 3, 4 masing-masing 7 RT
+  }
   return RT_PER_RW_DEFAULT; // Kondisi default sebelumnya: 15 RT per RW
 }
 
@@ -743,6 +769,10 @@ export function getTotalRtByKelurahan(kelurahan?: string | null): number {
   if (clean === "debong lor") {
     // RW 1: 8 RT, RW 2: 5 RT, RW 3: 4 RT -> Total 17 RT
     return 8 + 5 + 4;
+  }
+  if (clean === "pesurungan lor") {
+    // 4 RW x 7 RT -> Total 28 RT
+    return 4 * 7;
   }
   const rwCount = getJumlahRwByKelurahan(kelurahan);
   const rtPerRw = getJumlahRtPerRwByKelurahan(kelurahan);
@@ -757,6 +787,10 @@ export function getRwListByKelurahan(kelurahan?: string | null): string[] {
   const clean = kelurahan.replace(/^(kelurahan|kel\.)\s+/i, "").trim().toLowerCase();
   if (clean === "debong lor") {
     const list = Array.from({ length: 3 }, (_, i) => String(i + 1).padStart(2, "0"));
+    return [...list, "Belum Tahu"];
+  }
+  if (clean === "pesurungan lor") {
+    const list = Array.from({ length: 4 }, (_, i) => String(i + 1).padStart(2, "0"));
     return [...list, "Belum Tahu"];
   }
   const count = getJumlahRwByKelurahan(kelurahan);
@@ -780,6 +814,11 @@ export function getRtListByKelurahan(kelurahan?: string | null, rw?: string | nu
     }
     // Jika belum ada RW yang dipilih atau RW Belum Tahu, sediakan 8 RT dan Belum Tahu
     const list = Array.from({ length: 8 }, (_, i) => String(i + 1).padStart(2, "0"));
+    return [...list, "Belum Tahu"];
+  }
+  if (clean === "pesurungan lor") {
+    // 7 RT per RW (RW 1 s/d RW 4) + Belum Tahu
+    const list = Array.from({ length: 7 }, (_, i) => String(i + 1).padStart(2, "0"));
     return [...list, "Belum Tahu"];
   }
   const count = getJumlahRtPerRwByKelurahan(kelurahan, rw);
@@ -1080,8 +1119,8 @@ export function generateWargaKomunitasHierarchy({
       },
     ];
 
-    // Sertakan Komunitas RT di bawah RW ini (10 RT per RW, kecuali Panggung 13 RT)
-    const rtCountInRw = getJumlahRtPerRwByKelurahan(kelurahan);
+    // Sertakan Komunitas RT di bawah RW ini
+    const rtCountInRw = getJumlahRtPerRwByKelurahan(kelurahan, cleanRw);
     for (let i = 1; i <= rtCountInRw; i++) {
       const rtStr = String(i).padStart(2, "0");
       items.push({
@@ -1408,7 +1447,6 @@ export function findOrGenerateKomunitasSeed(
 
       // 3. Cocokkan Tingkat RW
       const maxRw = getJumlahRwByKelurahan(kelName);
-      const maxRt = getJumlahRtPerRwByKelurahan(kelName);
 
       for (let r = 1; r <= maxRw; r++) {
         const rwStr = String(r).padStart(2, "0");
@@ -1434,6 +1472,7 @@ export function findOrGenerateKomunitasSeed(
         }
 
         // 4. Cocokkan Tingkat RT
+        const maxRt = getJumlahRtPerRwByKelurahan(kelName, rwStr);
         for (let t = 1; t <= maxRt; t++) {
           const rtStr = String(t).padStart(2, "0");
           const rtId = `kom-warga-${kecSlug}-${kelSlug}-rw${rwStr}-rt${rtStr}`;

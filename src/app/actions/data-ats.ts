@@ -1549,10 +1549,17 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
 
           if (!matchKel || !matchKec) return false;
 
+          // Data dengan isian RW “Belum Tahu” tetap dialirkan ke seluruh Posyandu di wilayah kelurahan
+          if (isRwBelumTahu || !itemRw) {
+            return true;
+          }
+
           const cakupan = getPosyanduCakupanWilayah(targetKomunitas);
           const posyanduRw = cakupan?.rw || getPosyanduCakupanRw(targetKomunitas) || targetRw;
           if (posyanduRw) {
             if (itemRw !== posyanduRw) return false;
+            // Jika RT Belum Tahu, tetap lolos ke Posyandu yang sesuai RW tersebut
+            if (isRtBelumTahu || !itemRt) return true;
             if (cakupan?.rtList && cakupan.rtList.length > 0) {
               return Boolean(itemRt && cakupan.rtList.includes(itemRt));
             }

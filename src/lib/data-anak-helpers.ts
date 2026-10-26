@@ -772,6 +772,22 @@ export function getPosyanduCakupanWilayah(targetKomunitas: any): PosyanduCakupan
     }
   }
 
+  // Khusus Kelurahan Pesurungan Lor
+  if (kel.includes("pesurungan lor") || nama.includes("pesurungan lor")) {
+    if (nama.includes("melati")) {
+      return { rw: "01" };
+    }
+    if (nama.includes("mawar")) {
+      return { rw: "02" };
+    }
+    if (nama.includes("anggrek")) {
+      return { rw: "03" };
+    }
+    if (nama.includes("jaya samudra") || nama.includes("jaya samudera")) {
+      return { rw: "04" };
+    }
+  }
+
   // Posyandu umum berdasarkan kolom rw
   if (targetKomunitas.rw) {
     const rawRw = String(targetKomunitas.rw).replace(/^(rw|rt)\s*/i, "").trim();
@@ -887,6 +903,30 @@ export function isDataAnakMatchingKomunitas(
     const domKelMatch = isKelMatch(domKel) && isKecMatch(domKec);
     const kkKelMatch = isKelMatch(kkKel) && isKecMatch(kkKec);
 
+    if (!domKelMatch && !kkKelMatch && !paudKelMatch) {
+      return false;
+    }
+
+    // Helper cek apakah isian RW atau RT adalah "Belum Tahu" / kosong
+    const isDomRwBelumTahu =
+      !domRw ||
+      !item.domisili_rw ||
+      String(item.domisili_rw).toLowerCase().includes("belum") ||
+      item.domisili_rw === "-" ||
+      item.domisili_rw === "0";
+
+    const isKkRwBelumTahu =
+      !kkRw ||
+      !item.kk_rw ||
+      String(item.kk_rw).toLowerCase().includes("belum") ||
+      item.kk_rw === "-" ||
+      item.kk_rw === "0";
+
+    // Data dengan isian RW “Belum Tahu” dan RT “Belum Tahu” tetap dialirkan ke seluruh Posyandu di wilayah kelurahan
+    if ((domKelMatch && isDomRwBelumTahu) || (kkKelMatch && isKkRwBelumTahu)) {
+      return true;
+    }
+
     // Jika Posyandu memiliki target RW / cakupan RW spesifik
     if (posyanduRw) {
       let domRwMatch = domRw === posyanduRw && domKelMatch;
@@ -894,8 +934,22 @@ export function isDataAnakMatchingKomunitas(
 
       // Jika Posyandu memiliki cakupan RT spesifik (misal Seruni 1: RT 1,2,3,7,8 & Seruni 2: RT 4,5,6)
       if (cakupan?.rtList && cakupan.rtList.length > 0) {
-        const domRtMatch = Boolean(domRt && cakupan.rtList.includes(domRt));
-        const kkRtMatch = Boolean(kkRt && cakupan.rtList.includes(kkRt));
+        const isDomRtBelumTahu =
+          !domRt ||
+          !item.domisili_rt ||
+          String(item.domisili_rt).toLowerCase().includes("belum") ||
+          item.domisili_rt === "-" ||
+          item.domisili_rt === "0";
+
+        const isKkRtBelumTahu =
+          !kkRt ||
+          !item.kk_rt ||
+          String(item.kk_rt).toLowerCase().includes("belum") ||
+          item.kk_rt === "-" ||
+          item.kk_rt === "0";
+
+        const domRtMatch = Boolean((domRt && cakupan.rtList.includes(domRt)) || isDomRtBelumTahu);
+        const kkRtMatch = Boolean((kkRt && cakupan.rtList.includes(kkRt)) || isKkRtBelumTahu);
 
         domRwMatch = domRwMatch && domRtMatch;
         kkRwMatch = kkRwMatch && kkRtMatch;

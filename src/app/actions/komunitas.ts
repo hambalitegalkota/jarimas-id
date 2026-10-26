@@ -3260,9 +3260,9 @@ export async function seedWargaKitaToSupabase(options?: {
             updated_at: new Date().toISOString(),
           });
 
-          // 10 RT per RW (khusus Kelurahan Panggung 13 RT per RW)
+          // RT per RW sesuai ketentuan wilayah
           if (includeRt) {
-            const rtTotal = getJumlahRtPerRwByKelurahan(kelName);
+            const rtTotal = getJumlahRtPerRwByKelurahan(kelName, rwStr);
             for (let t = 1; t <= rtTotal; t++) {
               const rtStr = String(t).padStart(2, "0");
               const rtId = toValidUUID(`kom-warga-${kecSlug}-${kelSlug}-rw${rwStr}-rt${rtStr}`);
