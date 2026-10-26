@@ -788,6 +788,34 @@ export function getPosyanduCakupanWilayah(targetKomunitas: any): PosyanduCakupan
     }
   }
 
+  // Khusus Kelurahan Margadana
+  if (
+    kel === "margadana" ||
+    (kel.includes("margadana") && !kel.includes("pesurungan") && !kel.includes("cabawan") && !kel.includes("kaligangsa") && !kel.includes("krandon") && !kel.includes("sumurpanggang")) ||
+    nama.includes("margadana")
+  ) {
+    if (nama.includes("bougenville")) return { rw: "01" };
+    if (nama.includes("dahlia")) return { rw: "02" };
+    if (nama.includes("jagadipa")) return { rw: "03" };
+    if (nama.includes("kenanga")) return { rw: "04" };
+    if (
+      nama.includes("cempaka 1") ||
+      nama.includes("cempaka i") ||
+      (nama.includes("cempaka") && !nama.includes("cempaka 2") && !nama.includes("cempaka ii"))
+    ) {
+      return { rw: "05" };
+    }
+    if (nama.includes("cempaka 2") || nama.includes("cempaka ii")) return { rw: "05" };
+    if (nama.includes("anyelir")) return { rw: "06" };
+    if (nama.includes("sambisari") || nama.includes("kesambi sari") || nama.includes("kesambisari")) return { rw: "07" };
+    if (nama.includes("suplir") || nama.includes("suflir")) return { rw: "08" };
+    if (nama.includes("wijaya kusuma") || nama.includes("wijayakusuma")) return { rw: "09" };
+    if (nama.includes("sedap malam")) return { rw: "10" };
+    if (nama.includes("anggrek bulan")) return { rw: "11" };
+    if (nama.includes("lavender")) return { rw: "12" };
+    if (nama.includes("edelweis") || nama.includes("edelweiss")) return { rw: "13" };
+  }
+
   // Posyandu umum berdasarkan kolom rw
   if (targetKomunitas.rw) {
     const rawRw = String(targetKomunitas.rw).replace(/^(rw|rt)\s*/i, "").trim();

@@ -685,6 +685,7 @@ export const DAFTAR_KECAMATAN_TEGAL = Object.keys(KOTA_TEGAL_DATA);
 export const DATA_RW_PER_KELURAHAN: Record<string, number> = {
   "Debong Lor": 3,
   "Pesurungan Lor": 4,
+  "Margadana": 13,
 };
 
 export const RT_PER_RW_DEFAULT = 15;
@@ -724,6 +725,48 @@ export const DATA_RT_PER_RW_PESURUNGAN_LOR: Record<string, number> = {
   "4": 7,
 };
 
+/**
+ * Ketentuan Khusus RT per RW di Kelurahan Margadana, Kecamatan Margadana:
+ * - RW 1: Jumlah RT 4
+ * - RW 2: Jumlah RT 3
+ * - RW 3: Jumlah RT 3
+ * - RW 4: Jumlah RT 4
+ * - RW 5: Jumlah RT 8
+ * - RW 6: Jumlah RT 4
+ * - RW 7: Jumlah RT 8
+ * - RW 8: Jumlah RT 5
+ * - RW 9: Jumlah RT 5
+ * - RW 10: Jumlah RT 5
+ * - RW 11: Jumlah RT 6
+ * - RW 12: Jumlah RT 6
+ * - RW 13: Jumlah RT 7
+ * Total: 68 RT
+ */
+export const DATA_RT_PER_RW_MARGADANA: Record<string, number> = {
+  "01": 4,
+  "1": 4,
+  "02": 3,
+  "2": 3,
+  "03": 3,
+  "3": 3,
+  "04": 4,
+  "4": 4,
+  "05": 8,
+  "5": 8,
+  "06": 4,
+  "6": 4,
+  "07": 8,
+  "7": 8,
+  "08": 5,
+  "8": 5,
+  "09": 5,
+  "9": 5,
+  "10": 5,
+  "11": 6,
+  "12": 6,
+  "13": 7,
+};
+
 export const TOTAL_KOMUNITAS_RW_KOTA_TEGAL = 167;
 export const TOTAL_KOMUNITAS_RT_KOTA_TEGAL = 1712;
 
@@ -735,6 +778,9 @@ export function getJumlahRwByKelurahan(kelurahan?: string | null): number {
   }
   if (clean === "pesurungan lor") {
     return 4;
+  }
+  if (clean === "margadana") {
+    return 13;
   }
   for (const [k, v] of Object.entries(DATA_RW_PER_KELURAHAN)) {
     if (k.toLowerCase() === clean) {
@@ -760,6 +806,16 @@ export function getJumlahRtPerRwByKelurahan(kelurahan?: string | null, rw?: stri
   if (clean === "pesurungan lor") {
     return 7; // RW 1, 2, 3, 4 masing-masing 7 RT
   }
+  if (clean === "margadana") {
+    if (rw && rw !== "Belum Tahu") {
+      const cleanRw = rw.replace(/^(rw|rt)\s*/i, "").trim();
+      const normRw = String(parseInt(cleanRw, 10)).padStart(2, "0");
+      if (DATA_RT_PER_RW_MARGADANA[normRw]) {
+        return DATA_RT_PER_RW_MARGADANA[normRw];
+      }
+    }
+    return 8; // Default max RT di RW 5 & 7 Margadana
+  }
   return RT_PER_RW_DEFAULT; // Kondisi default sebelumnya: 15 RT per RW
 }
 
@@ -773,6 +829,10 @@ export function getTotalRtByKelurahan(kelurahan?: string | null): number {
   if (clean === "pesurungan lor") {
     // 4 RW x 7 RT -> Total 28 RT
     return 4 * 7;
+  }
+  if (clean === "margadana") {
+    // 4 + 3 + 3 + 4 + 8 + 4 + 8 + 5 + 5 + 5 + 6 + 6 + 7 = 68 RT
+    return 68;
   }
   const rwCount = getJumlahRwByKelurahan(kelurahan);
   const rtPerRw = getJumlahRtPerRwByKelurahan(kelurahan);
@@ -791,6 +851,10 @@ export function getRwListByKelurahan(kelurahan?: string | null): string[] {
   }
   if (clean === "pesurungan lor") {
     const list = Array.from({ length: 4 }, (_, i) => String(i + 1).padStart(2, "0"));
+    return [...list, "Belum Tahu"];
+  }
+  if (clean === "margadana") {
+    const list = Array.from({ length: 13 }, (_, i) => String(i + 1).padStart(2, "0"));
     return [...list, "Belum Tahu"];
   }
   const count = getJumlahRwByKelurahan(kelurahan);
@@ -819,6 +883,17 @@ export function getRtListByKelurahan(kelurahan?: string | null, rw?: string | nu
   if (clean === "pesurungan lor") {
     // 7 RT per RW (RW 1 s/d RW 4) + Belum Tahu
     const list = Array.from({ length: 7 }, (_, i) => String(i + 1).padStart(2, "0"));
+    return [...list, "Belum Tahu"];
+  }
+  if (clean === "margadana") {
+    if (rw && rw !== "Belum Tahu") {
+      const cleanRw = rw.replace(/^(rw|rt)\s*/i, "").trim();
+      const normRw = String(parseInt(cleanRw, 10)).padStart(2, "0");
+      const count = DATA_RT_PER_RW_MARGADANA[normRw] || 8;
+      const list = Array.from({ length: count }, (_, i) => String(i + 1).padStart(2, "0"));
+      return [...list, "Belum Tahu"];
+    }
+    const list = Array.from({ length: 8 }, (_, i) => String(i + 1).padStart(2, "0"));
     return [...list, "Belum Tahu"];
   }
   const count = getJumlahRtPerRwByKelurahan(kelurahan, rw);
