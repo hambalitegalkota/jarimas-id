@@ -96,6 +96,101 @@ const FALLBACK_SHOWCASE_PRODUCTS: MarketProduk[] = [
   },
 ];
 
+// Daftar Layanan & Fitur Utama Akses Cepat
+// Konfigurasi dinamis: setiap penambahan item baru di sini otomatis tertata menjadi 2 baris rata kiri-kanan
+const QUICK_ACCESS_FEATURES = [
+  {
+    id: "warga-kita",
+    title: "Warga Kita",
+    href: "/komunitas?tab=warga_kita",
+    icon: Building2,
+    iconWrapperClass:
+      "bg-teal-50 dark:bg-teal-950/60 text-primary border border-primary/20",
+    hoverBorderClass: "hover:border-primary/50",
+  },
+  {
+    id: "posyandu",
+    title: "Posyandu",
+    href: "/komunitas?tab=posyandu",
+    icon: HeartPulse,
+    iconWrapperClass:
+      "bg-rose-50 dark:bg-rose-950/60 text-rose-600 border border-rose-200 dark:border-rose-800/60",
+    hoverBorderClass: "hover:border-rose-400/50",
+  },
+  {
+    id: "satuan-paud",
+    title: "Satuan PAUD",
+    href: "/komunitas?tab=satuan_paud",
+    icon: GraduationCap,
+    iconWrapperClass:
+      "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 border border-indigo-200 dark:border-indigo-800/60",
+    hoverBorderClass: "hover:border-indigo-400/50",
+  },
+  {
+    id: "pkbm-skb",
+    title: "PKBM & SKB",
+    href: "/komunitas?tab=pkbm_skb",
+    icon: School,
+    iconWrapperClass:
+      "bg-purple-50 dark:bg-purple-950/60 text-purple-600 border border-purple-200 dark:border-purple-800/60",
+    hoverBorderClass: "hover:border-purple-400/50",
+  },
+  {
+    id: "anak-0-6",
+    title: "Anak 0-6 Tahun",
+    href: "/data-anak",
+    icon: Baby,
+    iconWrapperClass:
+      "bg-sky-50 dark:bg-sky-950/60 text-sky-600 border border-sky-200 dark:border-sky-800/60",
+    hoverBorderClass: "hover:border-sky-400/50",
+  },
+  {
+    id: "data-ats",
+    title: "Data ATS",
+    href: "/data-ats",
+    icon: BookOpen,
+    iconWrapperClass:
+      "bg-amber-50 dark:bg-amber-950/60 text-amber-600 border border-amber-200 dark:border-amber-800/60",
+    hoverBorderClass: "hover:border-amber-400/50",
+  },
+  {
+    id: "cek-progres",
+    title: "Cek Progres",
+    href: "/cek-progres",
+    icon: ClipboardCheck,
+    iconWrapperClass:
+      "bg-blue-50 dark:bg-blue-950/60 text-blue-600 border border-blue-200 dark:border-blue-800/60",
+    hoverBorderClass: "hover:border-blue-500/50",
+  },
+  {
+    id: "perpustakaan",
+    title: "Perpustakaan",
+    href: "/perpustakaan",
+    icon: BookOpen,
+    iconWrapperClass:
+      "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 border border-emerald-200 dark:border-emerald-800/60",
+    hoverBorderClass: "hover:border-emerald-500/50",
+  },
+  {
+    id: "market",
+    title: "Market",
+    href: "/market",
+    icon: ShoppingBag,
+    iconWrapperClass:
+      "bg-yellow-50 dark:bg-yellow-950/60 text-secondary border border-secondary/30",
+    hoverBorderClass: "hover:border-secondary/50",
+  },
+  {
+    id: "kabar",
+    title: "Kabar Warga",
+    href: "/kabar",
+    icon: MessageSquare,
+    iconWrapperClass:
+      "bg-cyan-50 dark:bg-cyan-950/60 text-cyan-600 border border-cyan-200 dark:border-cyan-800/60",
+    hoverBorderClass: "hover:border-cyan-400/50",
+  },
+];
+
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
@@ -334,136 +429,37 @@ export default async function HomePage() {
           <span className="text-[11px] font-medium text-primary">Akses Cepat</span>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-5 md:grid-cols-10 gap-2.5 sm:gap-3">
-          {/* 1. Warga Kita */}
-          <Link
-            href="/komunitas?tab=warga_kita"
-            className="flex flex-col items-center gap-1.5 p-2 rounded-lg bg-card border border-border hover:border-primary/50 hover:bg-muted/50 transition-all text-center group active:scale-95 shadow-sm"
-          >
-            <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-teal-50 dark:bg-teal-950/60 text-primary border border-primary/20 group-hover:scale-105 transition-transform">
-              <Building2 className="h-5 w-5" />
-            </div>
-            <span className="text-[11px] sm:text-xs font-semibold text-foreground line-clamp-1">
-              Warga Kita
-            </span>
-          </Link>
-
-          {/* 2. Posyandu */}
-          <Link
-            href="/komunitas?tab=posyandu"
-            className="flex flex-col items-center gap-1.5 p-2 rounded-lg bg-card border border-border hover:border-primary/50 hover:bg-muted/50 transition-all text-center group active:scale-95 shadow-sm"
-          >
-            <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-rose-50 dark:bg-rose-950/60 text-rose-600 border border-rose-200 dark:border-rose-800/60 group-hover:scale-105 transition-transform">
-              <HeartPulse className="h-5 w-5" />
-            </div>
-            <span className="text-[11px] sm:text-xs font-semibold text-foreground line-clamp-1">
-              Posyandu
-            </span>
-          </Link>
-
-          {/* 3. Satuan PAUD */}
-          <Link
-            href="/komunitas?tab=satuan_paud"
-            className="flex flex-col items-center gap-1.5 p-2 rounded-lg bg-card border border-border hover:border-primary/50 hover:bg-muted/50 transition-all text-center group active:scale-95 shadow-sm"
-          >
-            <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 border border-indigo-200 dark:border-indigo-800/60 group-hover:scale-105 transition-transform">
-              <GraduationCap className="h-5 w-5" />
-            </div>
-            <span className="text-[11px] sm:text-xs font-semibold text-foreground line-clamp-1">
-              Satuan PAUD
-            </span>
-          </Link>
-
-          {/* 4. PKBM & SKB */}
-          <Link
-            href="/komunitas?tab=pkbm_skb"
-            className="flex flex-col items-center gap-1.5 p-2 rounded-lg bg-card border border-border hover:border-primary/50 hover:bg-muted/50 transition-all text-center group active:scale-95 shadow-sm"
-          >
-            <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-purple-50 dark:bg-purple-950/60 text-purple-600 border border-purple-200 dark:border-purple-800/60 group-hover:scale-105 transition-transform">
-              <School className="h-5 w-5" />
-            </div>
-            <span className="text-[11px] sm:text-xs font-semibold text-foreground line-clamp-1">
-              PKBM &amp; SKB
-            </span>
-          </Link>
-
-          {/* 5. Anak 0-6 Tahun */}
-          <Link
-            href="/data-anak"
-            className="flex flex-col items-center gap-1.5 p-2 rounded-lg bg-card border border-border hover:border-primary/50 hover:bg-muted/50 transition-all text-center group active:scale-95 shadow-sm"
-          >
-            <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-sky-50 dark:bg-sky-950/60 text-sky-600 border border-sky-200 dark:border-sky-800/60 group-hover:scale-105 transition-transform">
-              <Baby className="h-5 w-5" />
-            </div>
-            <span className="text-[11px] sm:text-xs font-semibold text-foreground line-clamp-1">
-              Anak 0-6 Tahun
-            </span>
-          </Link>
-
-          {/* 6. Cek ATS */}
-          <Link
-            href="/data-ats"
-            className="flex flex-col items-center gap-1.5 p-2 rounded-lg bg-card border border-border hover:border-primary/50 hover:bg-muted/50 transition-all text-center group active:scale-95 shadow-sm"
-          >
-            <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-amber-50 dark:bg-amber-950/60 text-amber-600 border border-amber-200 dark:border-amber-800/60 group-hover:scale-105 transition-transform">
-              <BookOpen className="h-5 w-5" />
-            </div>
-            <span className="text-[11px] sm:text-xs font-semibold text-foreground line-clamp-1">
-              Data ATS
-            </span>
-          </Link>
-
-          {/* 7. Cek Progres */}
-          <Link
-            href="/cek-progres"
-            className="flex flex-col items-center gap-1.5 p-2 rounded-lg bg-card border border-border hover:border-blue-500/50 hover:bg-muted/50 transition-all text-center group active:scale-95 shadow-sm"
-          >
-            <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 border border-blue-200 dark:border-blue-800/60 group-hover:scale-105 transition-transform">
-              <ClipboardCheck className="h-5 w-5" />
-            </div>
-            <span className="text-[11px] sm:text-xs font-semibold text-foreground line-clamp-1">
-              Cek Progres
-            </span>
-          </Link>
-
-          {/* 8. Perpustakaan Digital */}
-          <Link
-            href="/perpustakaan"
-            className="flex flex-col items-center gap-1.5 p-2 rounded-lg bg-card border border-border hover:border-teal-500/50 hover:bg-muted/50 transition-all text-center group active:scale-95 shadow-sm"
-          >
-            <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 border border-emerald-200 dark:border-emerald-800/60 group-hover:scale-105 transition-transform">
-              <BookOpen className="h-5 w-5" />
-            </div>
-            <span className="text-[11px] sm:text-xs font-semibold text-foreground line-clamp-1">
-              Perpustakaan
-            </span>
-          </Link>
-
-          {/* 9. Jarimas Market */}
-          <Link
-            href="/market"
-            className="flex flex-col items-center gap-1.5 p-2 rounded-lg bg-card border border-border hover:border-secondary/50 hover:bg-muted/50 transition-all text-center group active:scale-95 shadow-sm"
-          >
-            <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-yellow-50 dark:bg-yellow-950/60 text-secondary border border-secondary/30 group-hover:scale-105 transition-transform">
-              <ShoppingBag className="h-5 w-5" />
-            </div>
-            <span className="text-[11px] sm:text-xs font-semibold text-foreground line-clamp-1">
-              Market
-            </span>
-          </Link>
-
-          {/* 10. Kabar Warga */}
-          <Link
-            href="/kabar"
-            className="flex flex-col items-center gap-1.5 p-2 rounded-lg bg-card border border-border hover:border-primary/50 hover:bg-muted/50 transition-all text-center group active:scale-95 shadow-sm"
-          >
-            <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-cyan-50 dark:bg-cyan-950/60 text-cyan-600 border border-cyan-200 dark:border-cyan-800/60 group-hover:scale-105 transition-transform">
-              <MessageSquare className="h-5 w-5" />
-            </div>
-            <span className="text-[11px] sm:text-xs font-semibold text-foreground line-clamp-1">
-              Kabar Warga
-            </span>
-          </Link>
+        {/* 
+          Aturan Layout: Selalu 2 baris rata kiri-kanan.
+          Jumlah kolom otomatis dihitung: Math.ceil(QUICK_ACCESS_FEATURES.length / 2).
+          Setiap ada penambahan fitur baru di array QUICK_ACCESS_FEATURES,
+          tampilan otomatis terbagi rapi menjadi 2 baris simetris rata kiri-kanan.
+        */}
+        <div
+          className="grid gap-2 sm:gap-3 w-full"
+          style={{
+            gridTemplateColumns: `repeat(${Math.ceil(QUICK_ACCESS_FEATURES.length / 2)}, minmax(0, 1fr))`,
+          }}
+        >
+          {QUICK_ACCESS_FEATURES.map((item) => {
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.id}
+                href={item.href}
+                className={`flex flex-col items-center justify-center gap-1.5 p-2 sm:p-2.5 rounded-xl bg-card border border-border ${item.hoverBorderClass} hover:bg-muted/50 transition-all text-center group active:scale-95 shadow-2xs hover:shadow-xs min-h-[84px] sm:min-h-[94px]`}
+              >
+                <div
+                  className={`flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-xl ${item.iconWrapperClass} group-hover:scale-105 transition-transform shadow-2xs`}
+                >
+                  <Icon className="h-5 w-5" />
+                </div>
+                <span className="text-[11px] sm:text-xs font-semibold text-foreground leading-tight line-clamp-2">
+                  {item.title}
+                </span>
+              </Link>
+            );
+          })}
         </div>
       </section>
 
