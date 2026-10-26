@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/utils/supabase/server";
 import { DataAtsSchema } from "@/lib/zod-schemas";
 import { toValidUUID, isSuperAdmin as checkIsSuperAdmin, isAdminPusat as checkIsAdminPusat, isSuperOrAdminPusat, isRoleAdmin } from "@/lib/utils";
-import { normalizeKeinginanSekolah, serializeDataAtsAlasan, isDataAtsRecord } from "@/lib/data-anak-helpers";
+import { normalizeKeinginanSekolah, serializeDataAtsAlasan, isDataAtsRecord, getPosyanduCakupanRw, getPosyanduCakupanWilayah } from "@/lib/data-anak-helpers";
 import { extractKomunitasMetadata } from "@/lib/admin-helpers";
 import { findOrGenerateKomunitasSeed, RAW_PKBM_SKB_TEGAL } from "@/lib/constants/tegal-data";
 import { getKomunitasDetail } from "./komunitas";
@@ -1533,7 +1533,7 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
           return true;
         }
 
-        // 0. Komunitas Posyandu: Tampilkan seluruh data Anak ATS di Kelurahan tempat Posyandu berada
+        // 0. Komunitas Posyandu: Tampilkan data Anak ATS yang sesuai cakupan wilayah Posyandu
         if (meta.jenis === "posyandu" || targetKomunitas?.jenis === "posyandu") {
           const matchKel =
             !targetKel ||
@@ -1547,7 +1547,19 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
             itemKec.includes(targetKec) ||
             targetKec.includes(itemKec);
 
-          return matchKel && matchKec;
+          if (!matchKel || !matchKec) return false;
+
+          const cakupan = getPosyanduCakupanWilayah(targetKomunitas);
+          const posyanduRw = cakupan?.rw || getPosyanduCakupanRw(targetKomunitas) || targetRw;
+          if (posyanduRw) {
+            if (itemRw !== posyanduRw) return false;
+            if (cakupan?.rtList && cakupan.rtList.length > 0) {
+              return Boolean(itemRt && cakupan.rtList.includes(itemRt));
+            }
+            return true;
+          }
+
+          return true;
         }
 
         // 1. Komunitas RT: Tampilkan data jika RT cocok, ATAU jika RW/RT Belum Tahu di Kelurahan yang sama

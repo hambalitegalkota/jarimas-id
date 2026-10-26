@@ -43,6 +43,7 @@ interface ModalEditDataAnakProps {
   komunitasId: string;
   komunitasNama?: string;
   jenisKomunitas?: JenisKomunitas | string;
+  canValidate?: boolean;
   onClose: () => void;
   onSuccess: (updatedChild: DataAnakItem) => void;
 }
@@ -82,10 +83,12 @@ export function ModalEditDataAnak({
   komunitasId,
   komunitasNama = "Satuan PAUD",
   jenisKomunitas = "satuan_paud",
+  canValidate = false,
   onClose,
   onSuccess,
 }: ModalEditDataAnakProps) {
   const [isPending, startTransition] = useTransition();
+  const [submittingMode, setSubmittingMode] = useState<"save" | "validate" | null>(null);
   const [feedback, setFeedback] = useState<{
     type: "success" | "error";
     message: string;
@@ -109,8 +112,10 @@ export function ModalEditDataAnak({
   const [alasanSekolah, setAlasanSekolah] = useState(
     anak.alasan_sekolah || (isPaud ? ALASAN_SEKOLAH_PAUD[0] : ALASAN_BELUM_SEKOLAH[0])
   );
-  const [isValidasiSekarang, setIsValidasiSekarang] = useState(
-    anak.status_approval === "approved" || isPaud
+  // Ceklis konfirmasi bahwa data sudah benar & valid.
+  // Default false jika anak belum approved, agar admin wajib mencentang secara sadar sebelum memvalidasi.
+  const [isCheckedValid, setIsCheckedValid] = useState(
+    anak.status_approval === "approved"
   );
 
   // Alamat Sesuai KK
@@ -187,9 +192,17 @@ export function ModalEditDataAnak({
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleProcessSubmit = (shouldValidate: boolean) => {
+    if (shouldValidate && !isCheckedValid) {
+      setFeedback({
+        type: "error",
+        message: "Harap centang ceklis konfirmasi bahwa data sudah benar & valid terlebih dahulu.",
+      });
+      return;
+    }
+
     setFeedback(null);
+    setSubmittingMode(shouldValidate ? "validate" : "save");
 
     const formData = new FormData();
     formData.append("komunitasId", komunitasId);
@@ -239,34 +252,37 @@ export function ModalEditDataAnak({
       formData.append("domisiliJalan", isDomLuar ? "" : domisiliJalan);
     }
 
-    const isPaud = isKomunitasLayananPaud(null, komunitasNama, String(jenisKomunitas));
-    formData.append("isSekolah", isPaud ? "true" : "false");
-    formData.append("namaSekolah", isPaud ? (komunitasNama || "Satuan PAUD") : "Belum Sekolah");
+    const isPaudKomunitas = isKomunitasLayananPaud(null, komunitasNama, String(jenisKomunitas));
+    formData.append("isSekolah", isPaudKomunitas ? "true" : "false");
+    formData.append("namaSekolah", isPaudKomunitas ? (komunitasNama || "Satuan PAUD") : "Belum Sekolah");
     formData.append(
       "alasanSekolah",
-      alasanSekolah || (isPaud ? ALASAN_SEKOLAH_PAUD[0] : ALASAN_BELUM_SEKOLAH[0])
+      alasanSekolah || (isPaudKomunitas ? ALASAN_SEKOLAH_PAUD[0] : ALASAN_BELUM_SEKOLAH[0])
     );
-    if (isPaud && isValidasiSekarang) {
-      formData.append("validasiSekarang", "true");
-    }
+
+    // Parameter validasiSekarang dikirim true hanya jika tombol Validasi yang ditekan
+    formData.append("validasiSekarang", shouldValidate ? "true" : "false");
 
     startTransition(async () => {
       const res = await updateDataAnak(anak.id, formData);
       if (res.success && res.data) {
         setFeedback({
           type: "success",
-          message: res.message,
+          message: shouldValidate
+            ? "Data peserta didik berhasil disimpan dan divalidasi!"
+            : "Data peserta didik berhasil disimpan (belum divalidasi).",
         });
         setTimeout(() => {
           onSuccess(res.data!);
           onClose();
-        }, 800);
+        }, 700);
       } else {
         setFeedback({
           type: "error",
           message: res.message || "Gagal memperbarui data anak.",
         });
       }
+      setSubmittingMode(null);
     });
   };
 
@@ -309,7 +325,9 @@ export function ModalEditDataAnak({
 
         {/* Form Body */}
         <form
-          onSubmit={handleSubmit}
+          onSubmit={(e) => {
+            e.preventDefault();
+          }}
           className="p-4 sm:p-6 pb-10 overflow-y-auto flex-1 space-y-5 overscroll-contain bg-slate-50/50"
         >
           {/* Toast Feedback */}
@@ -642,7 +660,7 @@ export function ModalEditDataAnak({
                     >
                       {getRwListByKelurahan(kkKelurahan).map((rw) => (
                         <option key={rw} value={rw}>
-                          RW {rw}
+                          {rw.includes("Belum") ? rw : `RW ${rw}`}
                         </option>
                       ))}
                     </select>
@@ -659,7 +677,7 @@ export function ModalEditDataAnak({
                     >
                       {getRtListByKelurahan(kkKelurahan, kkRw).map((rt) => (
                         <option key={rt} value={rt}>
-                          RT {rt}
+                          {rt.includes("Belum") ? rt : `RT ${rt}`}
                         </option>
                       ))}
                     </select>
@@ -844,7 +862,7 @@ export function ModalEditDataAnak({
                         >
                           {getRwListByKelurahan(domisiliKelurahan).map((rw) => (
                             <option key={rw} value={rw}>
-                              RW {rw}
+                              {rw.includes("Belum") ? rw : `RW ${rw}`}
                             </option>
                           ))}
                         </select>
@@ -861,7 +879,7 @@ export function ModalEditDataAnak({
                         >
                           {getRtListByKelurahan(domisiliKelurahan, domisiliRw).map((rt) => (
                             <option key={rt} value={rt}>
-                              RT {rt}
+                              {rt.includes("Belum") ? rt : `RT ${rt}`}
                             </option>
                           ))}
                         </select>
@@ -996,23 +1014,40 @@ export function ModalEditDataAnak({
               </>
             )}
 
-            {/* Opsi Validasi Otomatis Khusus Satuan PAUD / PKBM Star of Tomorrow / SKB */}
+            {/* Bagian Ceklis Validasi Khusus Satuan PAUD / PKBM Star of Tomorrow / SKB */}
             {isPaud && (
-              <div className="rounded-2xl border-2 border-emerald-200 bg-emerald-50/70 p-4 space-y-2">
+              <div
+                className={cn(
+                  "rounded-2xl border-2 p-3.5 sm:p-4 space-y-2 transition-all",
+                  isCheckedValid
+                    ? "border-emerald-500 bg-emerald-50/90 shadow-xs"
+                    : "border-slate-300 bg-slate-50/80 hover:border-slate-400"
+                )}
+              >
                 <label className="flex items-start gap-3 cursor-pointer select-none">
                   <input
                     type="checkbox"
-                    checked={isValidasiSekarang}
-                    onChange={(e) => setIsValidasiSekarang(e.target.checked)}
-                    className="mt-1 h-4.5 w-4.5 rounded border-emerald-400 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+                    checked={isCheckedValid}
+                    onChange={(e) => setIsCheckedValid(e.target.checked)}
+                    className="mt-0.5 h-5 w-5 rounded border-2 border-slate-400 text-emerald-600 focus:ring-emerald-500 cursor-pointer shrink-0"
                   />
-                  <div className="space-y-0.5">
-                    <span className="text-sm font-bold text-emerald-950 flex items-center gap-1.5">
-                      <ShieldCheck className="h-4 w-4 text-emerald-600 shrink-0" />
-                      <span>Validasi &amp; Konfirmasi Data Peserta Didik</span>
+                  <div className="space-y-1 min-w-0">
+                    <span
+                      className={cn(
+                        "text-xs sm:text-sm font-bold flex items-center gap-1.5",
+                        isCheckedValid ? "text-emerald-950" : "text-slate-800"
+                      )}
+                    >
+                      <ShieldCheck
+                        className={cn(
+                          "h-4.5 w-4.5 shrink-0",
+                          isCheckedValid ? "text-emerald-600" : "text-slate-500"
+                        )}
+                      />
+                      <span>Ceklis Konfirmasi: Data Peserta Didik Sudah Benar &amp; VALID</span>
                     </span>
-                    <p className="text-xs text-emerald-800 leading-relaxed font-medium">
-                      Tandai data peserta didik ini sah &amp; terverifikasi oleh pihak satuan PAUD agar langsung terhitung tuntas 100% pada pemantauan Cek Progres.
+                    <p className="text-2xs sm:text-xs text-slate-600 leading-relaxed font-medium">
+                      Centang ceklis ini jika Anda sudah yakin semua data peserta didik telah valid. Setelah dicentang, tombol <strong className="text-emerald-700 font-bold">"Validasi Data"</strong> di bawah akan aktif untuk memvalidasi peserta didik.
                     </p>
                   </div>
                 </label>
@@ -1020,33 +1055,71 @@ export function ModalEditDataAnak({
             )}
           </div>
 
-          {/* Actions */}
-          <div className="pt-2 flex items-center justify-end gap-3">
+          {/* Actions Footer */}
+          <div className="pt-3 border-t-2 border-slate-100 flex flex-col-reverse sm:flex-row sm:items-center justify-between gap-2.5">
             <button
               type="button"
               onClick={onClose}
               disabled={isPending}
-              className="min-h-[46px] h-11 px-5 rounded-xl border-2 border-slate-200 bg-white hover:bg-slate-100 text-sm font-bold text-slate-700 transition-all cursor-pointer"
+              className="min-h-[44px] h-10 px-4 rounded-xl border-2 border-slate-200 bg-white hover:bg-slate-100 text-xs sm:text-sm font-bold text-slate-700 transition-all cursor-pointer disabled:opacity-50"
             >
               Batal
             </button>
-            <button
-              type="submit"
-              disabled={isPending}
-              className="flex min-h-[46px] h-11 items-center justify-center gap-2 rounded-xl bg-blue-700 hover:bg-blue-800 active:scale-[0.98] text-white px-6 text-sm font-bold shadow-md transition-all disabled:opacity-50 cursor-pointer"
-            >
-              {isPending ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  <span>Menyimpan...</span>
-                </>
-              ) : (
-                <>
-                  <Save className="h-4 w-4" />
-                  <span>Simpan Perubahan</span>
-                </>
+
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+              {/* Tombol 1: Simpan (Ketika belum yakin data valid, hanya simpan perubahan) */}
+              <button
+                type="button"
+                onClick={() => handleProcessSubmit(false)}
+                disabled={isPending}
+                className="flex min-h-[44px] h-10 items-center justify-center gap-1.5 rounded-xl border-2 border-blue-600/30 bg-blue-50 hover:bg-blue-100 active:scale-[0.98] text-blue-900 px-4 text-xs sm:text-sm font-bold transition-all disabled:opacity-50 cursor-pointer shadow-xs"
+                title="Simpan perubahan data (status tetap menunggu / belum divalidasi)"
+              >
+                {isPending && submittingMode === "save" ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin text-blue-700" />
+                    <span>Menyimpan...</span>
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4 text-blue-700" />
+                    <span>Simpan Data</span>
+                  </>
+                )}
+              </button>
+
+              {/* Tombol 2: Validasi (Hanya aktif jika sudah mencentang ceklis data valid) */}
+              {isPaud && (
+                <button
+                  type="button"
+                  onClick={() => handleProcessSubmit(true)}
+                  disabled={isPending || !isCheckedValid}
+                  className={cn(
+                    "flex min-h-[44px] h-10 items-center justify-center gap-1.5 rounded-xl px-5 text-xs sm:text-sm font-bold transition-all shadow-md cursor-pointer",
+                    isCheckedValid && !isPending
+                      ? "bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white"
+                      : "bg-slate-100 text-slate-400 border-2 border-slate-200 cursor-not-allowed shadow-none"
+                  )}
+                  title={
+                    !isCheckedValid
+                      ? "Harap centang ceklis 'Data Valid' di atas terlebih dahulu untuk mengaktifkan validasi"
+                      : "Simpan dan tetapkan data peserta didik ini sebagai VALID"
+                  }
+                >
+                  {isPending && submittingMode === "validate" ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin text-white" />
+                      <span>Memvalidasi...</span>
+                    </>
+                  ) : (
+                    <>
+                      <ShieldCheck className="h-4 w-4" />
+                      <span>Validasi Data</span>
+                    </>
+                  )}
+                </button>
               )}
-            </button>
+            </div>
           </div>
         </form>
       </div>

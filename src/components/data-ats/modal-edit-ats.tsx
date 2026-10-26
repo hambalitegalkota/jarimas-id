@@ -562,10 +562,9 @@ export function ModalEditAts({
                     onChange={(e) => setRw(e.target.value)}
                     className="w-full h-9 rounded-md border border-border bg-card px-3 text-xs font-medium text-foreground focus:border-amber-500 focus:outline-hidden cursor-pointer"
                   >
-                    <option value="Belum Tahu">Belum Tahu</option>
                     {getRwListByKelurahan(kelurahan).map((r) => (
                       <option key={r} value={r}>
-                        RW {r}
+                        {r.includes("Belum") ? r : `RW ${r}`}
                       </option>
                     ))}
                   </select>
@@ -580,10 +579,9 @@ export function ModalEditAts({
                     onChange={(e) => setRt(e.target.value)}
                     className="w-full h-9 rounded-md border border-border bg-card px-3 text-xs font-medium text-foreground focus:border-amber-500 focus:outline-hidden cursor-pointer"
                   >
-                    <option value="Belum Tahu">Belum Tahu</option>
                     {getRtListByKelurahan(kelurahan, rw).map((t) => (
                       <option key={t} value={t}>
-                        RT {t}
+                        {t.includes("Belum") ? t : `RT ${t}`}
                       </option>
                     ))}
                   </select>

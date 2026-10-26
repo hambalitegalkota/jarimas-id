@@ -372,29 +372,13 @@ export function CardDataAnak({
                   </div>
                 ) : <div />}
 
-                {!isApproved && canValidateAllowed && (
-                  <div className="flex items-center gap-2 ml-auto">
-                    {currentChild.is_updated_by_paud && (
-                      <span className="inline-flex items-center gap-1 rounded-md bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 text-2xs font-semibold text-amber-700 dark:text-amber-300">
-                        <CheckCircle2 className="h-3 w-3 text-amber-600 shrink-0" />
-                        <span>Sudah Diedit</span>
-                      </span>
-                    )}
-                    <button
-                      type="button"
-                      onClick={handleValidate}
-                      disabled={isPendingValidate}
-                      className="flex h-8 sm:h-8.5 items-center justify-center gap-1.5 rounded-lg bg-primary hover:bg-primary-hover active:scale-98 px-3 text-xs font-bold text-primary-foreground transition-all shadow-sm disabled:opacity-50 cursor-pointer"
-                    >
-                      {isPendingValidate ? (
-                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                      ) : (
-                        <>
-                          <ShieldCheck className="h-3.5 w-3.5" />
-                          <span>Validasi Peserta Didik</span>
-                        </>
-                      )}
-                    </button>
+                {/* Badge Indikator Status Jika Sudah Pernah Diedit namun Belum Divalidasi */}
+                {!isApproved && currentChild.is_updated_by_paud && (
+                  <div className="flex items-center gap-1.5 ml-auto">
+                    <span className="inline-flex items-center gap-1 rounded-md bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 text-2xs font-semibold text-amber-700 dark:text-amber-300">
+                      <CheckCircle2 className="h-3 w-3 text-amber-600 shrink-0" />
+                      <span>Sudah Diedit (Belum Valid)</span>
+                    </span>
                   </div>
                 )}
               </div>
@@ -448,6 +432,7 @@ export function CardDataAnak({
           komunitasId={komunitas?.id || currentChild.komunitas_id}
           komunitasNama={komunitas?.nama || formatNamaSekolahDisplay(currentChild.nama_sekolah) || "Satuan PAUD"}
           jenisKomunitas={komunitas?.jenis || (currentChild.is_sekolah ? "satuan_paud" : "warga_kita")}
+          canValidate={canValidateAllowed}
           onClose={() => setIsEditModalOpen(false)}
           onSuccess={handleChildUpdated}
         />

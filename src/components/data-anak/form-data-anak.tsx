@@ -20,7 +20,7 @@ import {
 import { createDataAnak } from "@/app/actions/data-anak";
 import { type JenisKomunitas } from "@/types/database";
 import { extractKomunitasMetadata } from "@/lib/admin-helpers";
-import { findPaudLocation, isKomunitasLayananPaud } from "@/lib/data-anak-helpers";
+import { findPaudLocation, isKomunitasLayananPaud, getPosyanduCakupanRw } from "@/lib/data-anak-helpers";
 import {
   DAFTAR_KECAMATAN_TEGAL,
   DAFTAR_RW_TEGAL,
@@ -101,7 +101,8 @@ export function FormDataAnak({
     getKelurahanByKecamatan(initialKec)[0] ||
     "Kejambon";
 
-  const initialRw = meta.rawRw || "01";
+  const posyanduCakupanRw = getPosyanduCakupanRw(komunitas);
+  const initialRw = posyanduCakupanRw || meta.rawRw || "01";
   const initialRt = meta.rawRt || "01";
 
   // Identitas Dasar Anak
@@ -624,7 +625,7 @@ export function FormDataAnak({
                   >
                     {getRwListByKelurahan(kkKelurahan).map((rw) => (
                       <option key={rw} value={rw}>
-                        RW {rw}
+                        {rw.includes("Belum") ? rw : `RW ${rw}`}
                       </option>
                     ))}
                   </select>
@@ -641,7 +642,7 @@ export function FormDataAnak({
                   >
                     {getRtListByKelurahan(kkKelurahan, kkRw).map((rt) => (
                       <option key={rt} value={rt}>
-                        RT {rt}
+                        {rt.includes("Belum") ? rt : `RT ${rt}`}
                       </option>
                     ))}
                   </select>
@@ -829,7 +830,7 @@ export function FormDataAnak({
                       >
                         {getRwListByKelurahan(domisiliKelurahan).map((rw) => (
                           <option key={rw} value={rw}>
-                            RW {rw}
+                            {rw.includes("Belum") ? rw : `RW ${rw}`}
                           </option>
                         ))}
                       </select>
@@ -846,7 +847,7 @@ export function FormDataAnak({
                       >
                         {getRtListByKelurahan(domisiliKelurahan, domisiliRw).map((rt) => (
                           <option key={rt} value={rt}>
-                            RT {rt}
+                            {rt.includes("Belum") ? rt : `RT ${rt}`}
                           </option>
                         ))}
                       </select>

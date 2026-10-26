@@ -32,6 +32,7 @@ import { PrintButton } from "@/components/ui/print-button";
 import { getKomunitasFeatureCards } from "@/lib/admin-helpers";
 import { isKomunitasLayananPaud } from "@/lib/data-anak-helpers";
 import { buildKomunitasScopedRekap } from "@/lib/komunitas-rekap-calculator";
+import { checkCanManageKomunitasAdminsAction } from "@/app/actions/admin";
 
 interface KomunitasDetailPageProps {
   params: Promise<{
@@ -67,13 +68,14 @@ export default async function KomunitasDetailPage({
   const isPaud = isKomunitasLayananPaud(komunitas, komunitas.nama, komunitas.jenis);
   const hasRootAccess = Boolean(isSuperOrAdminPusat || isSuperAdmin || isAdminPusat);
 
-  // Ambil data anggota, data anak, data ATS, kabar, dan rekap secara paralel
+  // Ambil data anggota, data anak, data ATS, kabar, rekap, dan kewenangan pengangkatan admin secara paralel
   const [
     { data: anggotaList },
     dataAnakRes,
     dataAtsRes,
     { data: allKabar },
     rekapDataRes,
+    canManageAdminsRes,
   ] = await Promise.all([
     getAnggotaKomunitas(id),
     canShowDataAnak
@@ -99,8 +101,10 @@ export default async function KomunitasDetailPage({
     canShowDataAts ? getDataAtsByKomunitas(id) : Promise.resolve({ data: [] }),
     getKabarFeed({ filterVisibilitas: "semua", limit: 20 }),
     canShowDataAnak ? getRekapDataAnakUsiaDiniAction() : Promise.resolve({ data: null }),
+    currentUserId ? checkCanManageKomunitasAdminsAction(id) : Promise.resolve(false),
   ]);
 
+  const canAssignAdmin = hasRootAccess ? true : Boolean(canManageAdminsRes);
   const dataAnakList = dataAnakRes?.data || [];
   const dataAtsList = dataAtsRes?.data || [];
   const dbKomunitasId = toValidUUID(id);
@@ -163,6 +167,7 @@ export default async function KomunitasDetailPage({
         canViewDetailDataAnak={hasRootAccess ? true : (dataAnakRes?.canViewDetail ?? false)}
         userRoleDataAnak={dataAnakRes?.userRole}
         scopedRekapResult={scopedRekapCalc}
+        canAssignAdmin={canAssignAdmin}
       />
     </div>
   );

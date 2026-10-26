@@ -42,8 +42,8 @@ import { cn, hasFullProfilDataAccess, isRoleAdmin } from "@/lib/utils";
 const KECAMATAN_LIST = ["Tegal Timur", "Tegal Barat", "Tegal Selatan", "Margadana"];
 const KELURAHAN_BY_KEC: Record<string, string[]> = {
   "Tegal Timur": ["Kejambon", "Mangkukusuman", "Mintaragen", "Panggung", "Slerok"],
-  "Tegal Barat": ["Kraton", "Pekauman", "Pesurungan Kidul", "Tegalsari", "Kembarongan", "Muarareja", "Debong Lor"],
-  "Tegal Selatan": ["Bandung", "Debong Kulon", "Debong Tengah", "Debong Kidul", "Kalinyamat Wetan", "Kalinyamat Kulon", "Randugunting", "Keturen"],
+  "Tegal Barat": ["Kraton", "Pekauman", "Pesurungan Kidul", "Tegalsari", "Kembarongan", "Muarareja"],
+  "Tegal Selatan": ["Bandung", "Debong Lor", "Debong Kulon", "Debong Tengah", "Debong Kidul", "Kalinyamat Wetan", "Kalinyamat Kulon", "Randugunting", "Keturen"],
   "Margadana": ["Cabawan", "Kaligangsa", "Kalinyamat", "Kragan", "Margadana", "Pesurungan Lor", "Sumurpanggang"],
 };
 

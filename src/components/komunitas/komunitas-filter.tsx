@@ -67,13 +67,13 @@ export function KomunitasFilter({
       ? getKelurahanByKecamatan(currentKecamatan)
       : [];
 
-  // Daftar RW dan RT dinamis sesuai kelurahan terpilih
+  // Daftar RW dan RT dinamis sesuai kelurahan terpilih (hanya RW & RT bernomor untuk komunitas Warga Kita)
   const availableRwList = useMemo(() => {
-    return getRwListByKelurahan(currentKelurahan);
+    return getRwListByKelurahan(currentKelurahan).filter((rw) => rw !== "Belum Tahu");
   }, [currentKelurahan]);
 
   const availableRtList = useMemo(() => {
-    return getRtListByKelurahan(currentKelurahan, currentRw);
+    return getRtListByKelurahan(currentKelurahan, currentRw).filter((rt) => rt !== "Belum Tahu");
   }, [currentKelurahan, currentRw]);
 
   const updateUrlParams = (updater: (params: URLSearchParams) => void) => {

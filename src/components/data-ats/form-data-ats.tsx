@@ -36,6 +36,7 @@ import {
   getRtListByKelurahan,
 } from "@/lib/constants/tegal-data";
 import { extractKomunitasMetadata } from "@/lib/admin-helpers";
+import { getPosyanduCakupanRw } from "@/lib/data-anak-helpers";
 import type {
   KomunitasWithMembership,
   DataAtsItem,
@@ -91,7 +92,8 @@ export function FormDataAts({
     meta.rawKel && meta.rawKel !== "Semua Kelurahan" && meta.rawKel !== "Semua"
       ? meta.rawKel
       : (getKelurahanByKecamatan(initialKecamatan)[0] || "Randugunting");
-  const initialRw = meta.rawRw || "Belum Tahu";
+  const posyanduCakupanRw = getPosyanduCakupanRw(komunitas);
+  const initialRw = posyanduCakupanRw || meta.rawRw || "Belum Tahu";
   const initialRt = meta.rawRt || "Belum Tahu";
 
   // Status Terkunci Sesuai Wilayah Komunitas (Hanya Kecamatan & Kelurahan yang terkunci sesuai wilayah komunitas, RW & RT selalu terbuka untuk pendataan ATS)
@@ -496,10 +498,9 @@ export function FormDataAts({
               onChange={(e) => setRw(e.target.value)}
               className="w-full min-h-[44px] h-11 rounded-lg border border-border bg-background px-3 text-xs sm:text-sm font-mono font-semibold text-foreground focus:border-primary focus:outline-none cursor-pointer"
             >
-              <option value="Belum Tahu">Belum Tahu</option>
               {getRwListByKelurahan(kelurahan).map((r) => (
                 <option key={r} value={r}>
-                  RW {r}
+                  {r.includes("Belum") ? r : `RW ${r}`}
                 </option>
               ))}
             </select>
@@ -514,10 +515,9 @@ export function FormDataAts({
               onChange={(e) => setRt(e.target.value)}
               className="w-full min-h-[44px] h-11 rounded-lg border border-border bg-background px-3 text-xs sm:text-sm font-mono font-semibold text-foreground focus:border-primary focus:outline-none cursor-pointer"
             >
-              <option value="Belum Tahu">Belum Tahu</option>
               {getRtListByKelurahan(kelurahan, rw).map((t) => (
                 <option key={t} value={t}>
-                  RT {t}
+                  {t.includes("Belum") ? t : `RT ${t}`}
                 </option>
               ))}
             </select>

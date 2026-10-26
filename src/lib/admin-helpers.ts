@@ -1036,4 +1036,82 @@ export function getUserAdminInfo({
   return candidateTiers[0];
 }
 
+/**
+ * Menentukan peran admin default berdasarkan jenis komunitas
+ */
+export function getDefaultAdminRole(jenis?: string): string {
+  switch (jenis) {
+    case "warga_kita":
+      return "Pengurus";
+    case "posyandu":
+      return "Kader";
+    case "satuan_paud":
+      return "Admin PAUD";
+    case "pkbm_skb":
+      return "Admin PKBM";
+    default:
+      return "Pengurus";
+  }
+}
+
+/**
+ * Menentukan apakah peran seorang anggota merupakan peran Admin resmi pengelola komunitas
+ * Catatan: Guru PAUD / Tutor / Pendidik adalah peran pengajar, BUKAN Admin Komunitas
+ */
+export function isOfficialAdminKomunitas(
+  peran?: string | null,
+  jenisKomunitas?: string
+): boolean {
+  if (!peran) return false;
+  const p = peran.toLowerCase().trim();
+
+  // Peran non-admin yang jelas
+  if (
+    p === "anggota" ||
+    p === "warga" ||
+    p === "penduduk" ||
+    p === "wali murid" ||
+    p === "orang tua" ||
+    p === "warga belajar" ||
+    p === "siswa" ||
+    p === "peserta didik" ||
+    p === "tutor" ||
+    p === "instruktur" ||
+    p === "pamong" ||
+    p.includes("pendatang") ||
+    p.includes("pengunjung") ||
+    p.includes("mitra") ||
+    p.includes("pendamping")
+  ) {
+    return false;
+  }
+
+  // Khusus PAUD: Guru PAUD / Pendidik PAUD adalah Guru/Pendidik, BUKAN Admin PAUD
+  if (
+    p === "guru" ||
+    p === "guru paud" ||
+    p === "pendidik" ||
+    p === "pendidik paud" ||
+    p === "tenaga kependidikan"
+  ) {
+    return false;
+  }
+
+  // Khusus PKBM & SKB: Pendidik Kesetaraan / Tutor bukan Admin PKBM
+  if (p.includes("pendidik kesetaraan") || p.includes("tutor")) {
+    return false;
+  }
+
+  // Peran yang sah sebagai Admin Komunitas
+  return (
+    p.includes("admin") ||
+    p.includes("pengurus") ||
+    p.includes("kader") ||
+    p.includes("ketua") ||
+    p.includes("kepala") ||
+    p.includes("pengelola") ||
+    p.includes("pimpinan")
+  );
+}
+
 

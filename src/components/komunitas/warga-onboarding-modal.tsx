@@ -384,7 +384,7 @@ export function WargaOnboardingModal({
                     >
                       {kkRwOptions.map((rwNum) => (
                         <option key={rwNum} value={rwNum}>
-                          RW {rwNum}
+                          {rwNum.includes("Belum") ? rwNum : `RW ${rwNum}`}
                         </option>
                       ))}
                     </select>
@@ -401,7 +401,7 @@ export function WargaOnboardingModal({
                     >
                       {kkRtOptions.map((rtNum) => (
                         <option key={rtNum} value={rtNum}>
-                          RT {rtNum}
+                          {rtNum.includes("Belum") ? rtNum : `RT ${rtNum}`}
                         </option>
                       ))}
                     </select>
@@ -649,7 +649,7 @@ export function WargaOnboardingModal({
                         >
                           {domisiliRwOptions.map((rwNum) => (
                             <option key={rwNum} value={rwNum}>
-                              RW {rwNum}
+                              {rwNum.includes("Belum") ? rwNum : `RW ${rwNum}`}
                             </option>
                           ))}
                         </select>
@@ -666,7 +666,7 @@ export function WargaOnboardingModal({
                         >
                           {domisiliRtOptions.map((rtNum) => (
                             <option key={rtNum} value={rtNum}>
-                              RT {rtNum}
+                              {rtNum.includes("Belum") ? rtNum : `RT ${rtNum}`}
                             </option>
                           ))}
                         </select>

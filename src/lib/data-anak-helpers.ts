@@ -724,6 +724,70 @@ export function isSchoolNameMatching(
   return false;
 }
 
+export interface PosyanduCakupanWilayah {
+  rw: string;
+  rtList?: string[];
+}
+
+/**
+ * Helper untuk menentukan cakupan sinkronisasi wilayah suatu Posyandu.
+ * Ketentuan khusus Kelurahan Debong Lor:
+ * - Posyandu Seruni 1: cakupan sinkronisasi dengan RW 1 RT 1, 2, 3, 7 dan 8
+ * - Posyandu Seruni 2: cakupan sinkronisasi dengan RW 1 RT 4, 5 dan 6
+ * - Posyandu Sartika: cakupan sinkronisasi dengan RW 2 (RT 01 s/d RT 05)
+ * - Posyandu Mawar: cakupan sinkronisasi dengan RW 3 (RT 01 s/d RT 04)
+ */
+export function getPosyanduCakupanWilayah(targetKomunitas: any): PosyanduCakupanWilayah | null {
+  if (!targetKomunitas) return null;
+  const nama = (targetKomunitas.nama || "").toLowerCase();
+  const kel = (targetKomunitas.kelurahan || "").toLowerCase();
+
+  // Khusus Kelurahan Debong Lor
+  if (kel.includes("debong lor") || nama.includes("debong lor")) {
+    if (
+      nama.includes("seruni 1") ||
+      nama.includes("seruni i") ||
+      (nama.includes("seruni") && !nama.includes("seruni 2") && !nama.includes("seruni ii"))
+    ) {
+      return {
+        rw: "01",
+        rtList: ["01", "02", "03", "07", "08", "1", "2", "3", "7", "8"],
+      };
+    }
+    if (nama.includes("seruni 2") || nama.includes("seruni ii")) {
+      return {
+        rw: "01",
+        rtList: ["04", "05", "06", "4", "5", "6"],
+      };
+    }
+    if (nama.includes("sartika")) {
+      return {
+        rw: "02",
+      };
+    }
+    if (nama.includes("mawar")) {
+      return {
+        rw: "03",
+      };
+    }
+  }
+
+  // Posyandu umum berdasarkan kolom rw
+  if (targetKomunitas.rw) {
+    const rawRw = String(targetKomunitas.rw).replace(/^(rw|rt)\s*/i, "").trim();
+    const num = parseInt(rawRw, 10);
+    if (!isNaN(num) && num > 0) {
+      return { rw: String(num).padStart(2, "0") };
+    }
+  }
+
+  return null;
+}
+
+export function getPosyanduCakupanRw(targetKomunitas: any): string | null {
+  return getPosyanduCakupanWilayah(targetKomunitas)?.rw || null;
+}
+
 /**
  * Filter logika hierarkis: Apakah data anak sesuai dan harus muncul di komunitas target?
  * Mencakup Komunitas PAUD, Posyandu, RT, RW, Kelurahan, Kecamatan, dan Kabupaten/Kota.
@@ -816,19 +880,32 @@ export function isDataAnakMatchingKomunitas(
   const paudKelMatch = Boolean(paudLoc && isKelMatch(paudKel) && isKecMatch(paudKec));
   const paudKecMatch = Boolean(paudLoc && isKecMatch(paudKec));
 
-  // 3. Komunitas Posyandu: Tampilkan anak yang berdomisili/ber-KK di Kelurahan Posyandu berada ATAU terdaftar di PAUD wilayah Kelurahan tersebut
+  // 3. Komunitas Posyandu: Hanya tampilkan data anak yang sesuai dengan cakupan wilayahnya
   if (targetKomunitas?.jenis === "posyandu" || targetMeta?.jenis === "posyandu") {
+    const cakupan = getPosyanduCakupanWilayah(targetKomunitas);
+    const posyanduRw = cakupan?.rw || getPosyanduCakupanRw(targetKomunitas) || targetRw;
     const domKelMatch = isKelMatch(domKel) && isKecMatch(domKec);
     const kkKelMatch = isKelMatch(kkKel) && isKecMatch(kkKec);
 
-    // Jika Posyandu memiliki target RW spesifik
-    if (targetRw) {
-      const domRwMatch = domRw === targetRw && domKelMatch;
-      const kkRwMatch = kkRw === targetRw && kkKelMatch;
-      return domRwMatch || kkRwMatch || domKelMatch || kkKelMatch || paudKelMatch;
+    // Jika Posyandu memiliki target RW / cakupan RW spesifik
+    if (posyanduRw) {
+      let domRwMatch = domRw === posyanduRw && domKelMatch;
+      let kkRwMatch = kkRw === posyanduRw && kkKelMatch;
+
+      // Jika Posyandu memiliki cakupan RT spesifik (misal Seruni 1: RT 1,2,3,7,8 & Seruni 2: RT 4,5,6)
+      if (cakupan?.rtList && cakupan.rtList.length > 0) {
+        const domRtMatch = Boolean(domRt && cakupan.rtList.includes(domRt));
+        const kkRtMatch = Boolean(kkRt && cakupan.rtList.includes(kkRt));
+
+        domRwMatch = domRwMatch && domRtMatch;
+        kkRwMatch = kkRwMatch && kkRtMatch;
+      }
+
+      return Boolean(domRwMatch || kkRwMatch);
     }
 
-    return domKelMatch || kkKelMatch || paudKelMatch;
+    // Posyandu tanpa cakupan RW spesifik (tingkat kelurahan)
+    return Boolean(domKelMatch || kkKelMatch || paudKelMatch);
   }
 
   // 4. Komunitas RT (Tingkat RT: hasRt && hasRw)

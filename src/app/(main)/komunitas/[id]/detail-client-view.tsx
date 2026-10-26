@@ -41,6 +41,7 @@ import {
   Search,
   AlertCircle,
   Edit3,
+  ShieldPlus,
 } from "lucide-react";
 import { JoinKomunitasModal } from "@/components/komunitas/join-komunitas-modal";
 import { WargaOnboardingModal } from "@/components/komunitas/warga-onboarding-modal";
@@ -68,6 +69,7 @@ import {
   kickMemberByAdmin,
   toggleKomunitasKartuLayananAction,
 } from "@/app/actions/komunitas";
+import { assignOrRevokeKomunitasAdminAction } from "@/app/actions/admin";
 import type {
   KomunitasWithMembership,
   AnggotaKomunitasDetail,
@@ -86,7 +88,13 @@ import {
   isRoleAdmin,
   isSuperAdmin,
 } from "@/lib/utils";
-import { extractKomunitasMetadata, getKomunitasFeatureCards, cleanDeskripsiDisplay } from "@/lib/admin-helpers";
+import {
+  extractKomunitasMetadata,
+  getKomunitasFeatureCards,
+  cleanDeskripsiDisplay,
+  getDefaultAdminRole,
+  isOfficialAdminKomunitas,
+} from "@/lib/admin-helpers";
 
 interface KomunitasDetailClientViewProps {
   komunitas: KomunitasWithMembership;
@@ -113,6 +121,7 @@ interface KomunitasDetailClientViewProps {
   canViewDetailDataAnak?: boolean;
   userRoleDataAnak?: string;
   scopedRekapResult?: KomunitasScopedRekapResult | null;
+  canAssignAdmin?: boolean;
 }
 
 export function KomunitasDetailClientView({
@@ -136,6 +145,7 @@ export function KomunitasDetailClientView({
   canViewDetailDataAnak,
   userRoleDataAnak,
   scopedRekapResult,
+  canAssignAdmin = false,
 }: KomunitasDetailClientViewProps) {
   const [komunitasData, setKomunitasData] = useState(komunitas);
 
@@ -143,11 +153,8 @@ export function KomunitasDetailClientView({
     if (!currentSubtab || currentSubtab === "data") {
       return null;
     }
-    if (!currentUserId && currentSubtab === "anggota") {
-      return null;
-    }
     return currentSubtab;
-  }, [currentUserId, currentSubtab]);
+  }, [currentSubtab]);
   const [activeTab, setActiveTab] = useState<string | null>(initialActiveTab);
 
   // State untuk data anak & ATS komunitas
@@ -354,6 +361,8 @@ export function KomunitasDetailClientView({
   const [isResignModalOpen, setIsResignModalOpen] = useState(false);
   const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
   const [kickTargetMember, setKickTargetMember] = useState<AnggotaKomunitasDetail | null>(null);
+  const [promoteTargetMember, setPromoteTargetMember] = useState<AnggotaKomunitasDetail | null>(null);
+  const [isPromoting, setIsPromoting] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [actionFeedback, setActionFeedback] = useState<{
     type: "success" | "error";
@@ -492,34 +501,83 @@ export function KomunitasDetailClientView({
     return me?.profiles?.nama_lengkap || "Kader Posyandu";
   }, [anggotaState, currentUserId]);
 
+  const defaultAdminRole = getDefaultAdminRole(komunitas.jenis);
+  const approvedMembers = anggotaState.filter((m) => m.status === "approved");
+
+  // Filter anggota yang memegang peran Admin resmi pengelola komunitas
+  const adminMembers = useMemo(() => {
+    return approvedMembers.filter((m) =>
+      isOfficialAdminKomunitas(m.peran, komunitas.jenis)
+    );
+  }, [approvedMembers, komunitas.jenis]);
+
+  const hasAdmin = adminMembers.length > 0;
+
   // Cek apakah komunitas sudah memiliki admin terverifikasi/disetujui,
   // baik dari payload server (komunitas.hasAdmin) maupun dari daftar anggota approved
-  const adminMemberFromList = useMemo(() => {
-    return anggotaState.find(
-      (m) => m.status === "approved" && isRoleAdmin(m.peran)
-    );
-  }, [anggotaState]);
+  const adminMemberFromList = adminMembers[0] || null;
 
   const hasCommunityAdmin = Boolean(
-    komunitas.hasAdmin || adminMemberFromList
+    hasAdmin || (komunitas.hasAdmin && komunitas.adminName)
   );
 
   const effectiveAdminName =
-    komunitas.adminName ||
     adminMemberFromList?.profiles?.nama_lengkap ||
+    komunitas.adminName ||
     "Pengurus Komunitas";
 
   const effectiveAdminRole =
-    komunitas.adminRole ||
-    (adminMemberFromList ? formatPeranDisplay(adminMemberFromList.peran) : "Pengurus");
+    adminMemberFromList
+      ? formatPeranDisplay(adminMemberFromList.peran)
+      : komunitas.adminRole || defaultAdminRole;
 
   const effectiveAdminHp =
-    komunitas.adminHp ||
     adminMemberFromList?.profiles?.nomor_hp ||
+    komunitas.adminHp ||
     parsedKontak.utama ||
     null;
 
-  const approvedMembers = anggotaState.filter((m) => m.status === "approved");
+  const handleConfirmPromoteAdmin = async () => {
+    if (!promoteTargetMember) return;
+    setIsPromoting(true);
+    setActionFeedback(null);
+    try {
+      const res = await assignOrRevokeKomunitasAdminAction({
+        anggotaId: promoteTargetMember.id,
+        newRole: defaultAdminRole,
+        komunitasId: komunitas.id,
+      });
+
+      if (res.success) {
+        setAnggotaState((prev) =>
+          prev.map((m) =>
+            m.id === promoteTargetMember.id
+              ? { ...m, peran: defaultAdminRole }
+              : m
+          )
+        );
+        setActionFeedback({
+          type: "success",
+          message:
+            res.message ||
+            `Berhasil mengangkat ${promoteTargetMember.profiles?.nama_lengkap || "anggota"} sebagai ${defaultAdminRole}!`,
+        });
+        setPromoteTargetMember(null);
+      } else {
+        setActionFeedback({
+          type: "error",
+          message: res.message || "Gagal mengangkat admin komunitas.",
+        });
+      }
+    } catch (err: any) {
+      setActionFeedback({
+        type: "error",
+        message: err?.message || "Terjadi kesalahan saat memproses pengangkatan admin.",
+      });
+    } finally {
+      setIsPromoting(false);
+    }
+  };
 
   const handleLeave = async () => {
     setActionLoading(true);
@@ -1934,6 +1992,146 @@ export function KomunitasDetailClientView({
               </div>
             </div>
 
+            {/* Alert Feedback Aksi Anggota / Admin */}
+            {actionFeedback && (
+              <div
+                className={cn(
+                  "flex items-center justify-between gap-2 rounded-xl p-3 text-xs font-medium border shadow-2xs animate-in fade-in",
+                  actionFeedback.type === "success"
+                    ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-900 dark:text-emerald-200"
+                    : "border-rose-500/30 bg-rose-500/10 text-rose-900 dark:text-rose-200"
+                )}
+              >
+                <div className="flex items-center gap-2">
+                  {actionFeedback.type === "success" ? (
+                    <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                  ) : (
+                    <AlertCircle className="h-4 w-4 shrink-0 text-rose-600 dark:text-rose-400" />
+                  )}
+                  <span>{actionFeedback.message}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setActionFeedback(null)}
+                  className="p-1 rounded-md hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer text-muted-foreground"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            )}
+
+            {/* SECTION: TAMPILAN ADMIN KOMUNITAS (DILIHAT OLEH SELURUH PENGGUNA) */}
+            {hasAdmin ? (
+              <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-3.5 sm:p-4 space-y-3 shadow-2xs">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-emerald-500/20 pb-2.5">
+                  <div className="flex items-center gap-2">
+                    <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-500/20 text-emerald-700 dark:text-emerald-300">
+                      <ShieldCheck className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs sm:text-sm font-bold text-foreground flex items-center gap-2">
+                        <span>Admin &amp; Pengelola Resmi Komunitas</span>
+                        <span className="text-[10px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-emerald-600 text-white shadow-2xs">
+                          {adminMembers.length} Admin
+                        </span>
+                      </h4>
+                      <p className="text-2xs text-muted-foreground">
+                        Pengelola aktif yang bertanggung jawab atas kegiatan, layanan, dan validasi data di komunitas ini.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+                  {adminMembers.map((admin) => {
+                    const adminName = admin.profiles?.nama_lengkap || "Pengurus Komunitas";
+                    const initial = adminName.charAt(0).toUpperCase();
+                    const hp = admin.profiles?.nomor_hp;
+                    const email = admin.profiles?.email;
+                    const role = formatPeranDisplay(admin.peran);
+
+                    return (
+                      <div
+                        key={admin.id}
+                        className="flex items-start justify-between gap-3 p-3 rounded-xl bg-card border border-border shadow-2xs hover:border-emerald-500/40 transition-all"
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 font-bold text-base shadow-2xs">
+                            {initial}
+                          </div>
+                          <div className="min-w-0 space-y-0.5">
+                            <div className="flex items-center gap-1.5">
+                              <p className="text-xs sm:text-sm font-bold text-foreground truncate">
+                                {adminName}
+                              </p>
+                              <span className="text-[9px] font-extrabold px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-950 dark:bg-emerald-950 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-700">
+                                {role}
+                              </span>
+                            </div>
+                            <p className="text-2xs text-muted-foreground truncate">
+                              {email || "-"}
+                            </p>
+                            {hp && (
+                              <div className="pt-0.5">
+                                <a
+                                  href={formatWhatsAppUrl(hp, `Halo Admin ${komunitasData.nama}...`) || "#"}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 text-[11px] font-mono font-bold text-emerald-700 dark:text-emerald-300 hover:underline bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800"
+                                >
+                                  <Phone className="h-3 w-3" />
+                                  <span>WA: {hp}</span>
+                                </a>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : (
+              <div className="rounded-xl border border-amber-300/80 dark:border-amber-700/50 bg-amber-500/10 p-3.5 sm:p-4 space-y-3 shadow-2xs">
+                <div className="flex items-start gap-2.5">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-500/20 text-amber-700 dark:text-amber-300 mt-0.5">
+                    <ShieldAlert className="h-4.5 w-4.5" />
+                  </div>
+                  <div className="space-y-1 min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <h4 className="text-xs sm:text-sm font-bold text-amber-950 dark:text-amber-200">
+                        Belum Ada Admin Komunitas Terdaftar
+                      </h4>
+                      <span className="text-[10px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-amber-500 text-white shadow-2xs">
+                        Perlu Ditentukan
+                      </span>
+                    </div>
+                    <p className="text-2xs text-amber-900/80 dark:text-amber-200/80 leading-relaxed">
+                      Komunitas ini saat ini belum memiliki pengelola yang berstatus sebagai Admin resmi. Seluruh pengguna dapat melihat informasi status ini. Pelayanan administratif dan validasi data dapat dikoordinasikan melalui pembina wilayah di atasnya.
+                    </p>
+
+                    {/* NOTICE KHUSUS: HANYA DILIHAT OLEH ADMIN DI ATASNYA */}
+                    {canAssignAdmin && (
+                      <div className="mt-2.5 rounded-lg border border-primary/30 bg-primary/10 p-2.5 sm:p-3 text-2xs space-y-1.5">
+                        <div className="flex items-center gap-1.5 font-bold text-primary">
+                          <ShieldPlus className="h-4 w-4" />
+                          <span>Kewenangan Pembina Wilayah / Admin di Atasnya</span>
+                        </div>
+                        <p className="text-muted-foreground leading-relaxed">
+                          Sebagai Admin di atas komunitas ini, Anda berwenang mengangkat salah satu anggota aktif di bawah menjadi <strong className="text-foreground">{defaultAdminRole}</strong>.
+                          {approvedMembers.length > 0 ? (
+                            <span> Silakan tentukan anggota pada daftar di bawah dan tekan tombol <strong className="text-emerald-700 dark:text-emerald-300">"Angkat Jadi Admin"</strong>.</span>
+                          ) : (
+                            <span> Belum ada anggota terdaftar. Anggota perlu bergabung terlebih dahulu sebelum dapat diangkat sebagai Admin.</span>
+                          )}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Khusus Posyandu: Struktur Rincian Kontak 6 Bidang Kader SPM */}
             {isPosyandu && (
               <div className="rounded-xl border border-emerald-500/25 bg-emerald-500/10 p-3 sm:p-4 space-y-3">
@@ -2136,8 +2334,8 @@ export function KomunitasDetailClientView({
                         <span
                           className={cn(
                             "rounded-lg px-2.5 py-1 text-2xs font-bold border",
-                            isRoleAdmin(member.peran)
-                              ? "bg-emerald-100 text-emerald-950 dark:bg-emerald-950/60 dark:text-emerald-200 border-emerald-300 font-black"
+                            isOfficialAdminKomunitas(member.peran, komunitas.jenis)
+                              ? "bg-emerald-100 text-emerald-950 dark:bg-emerald-950/60 dark:text-emerald-200 border-emerald-300 font-black shadow-2xs"
                               : "bg-muted text-foreground border-border"
                           )}
                         >
@@ -2147,6 +2345,20 @@ export function KomunitasDetailClientView({
                           <span className="rounded-lg bg-amber-50 dark:bg-amber-950/50 px-2 py-0.5 text-2xs font-bold text-amber-900 dark:text-amber-200 border border-amber-200">
                             Diajukan: {formatPeranDisplay(member.peran_diajukan)}
                           </span>
+                        )}
+
+                        {/* TOMBOL ANGKAT SEBAGAI ADMIN (HANYA DILIHAT OLEH ADMIN DI ATASNYA JIKA BELUM ADA ADMIN) */}
+                        {!hasAdmin && canAssignAdmin && !isOfficialAdminKomunitas(member.peran, komunitas.jenis) && (
+                          <button
+                            type="button"
+                            disabled={isPromoting}
+                            onClick={() => setPromoteTargetMember(member)}
+                            className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-500/40 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:hover:bg-emerald-950/70 dark:text-emerald-300 dark:border-emerald-700/60 px-2.5 py-1 text-2xs font-bold shadow-2xs transition-all active:scale-95 cursor-pointer disabled:opacity-50"
+                            title={`Angkat ${name} menjadi Admin (${defaultAdminRole})`}
+                          >
+                            <ShieldPlus className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                            <span>Angkat Jadi Admin</span>
+                          </button>
                         )}
 
                         {isMe && (
@@ -2772,6 +2984,102 @@ export function KomunitasDetailClientView({
             window.location.reload();
           }}
         />
+      )}
+
+      {/* 12. Modal Konfirmasi Angkat Admin oleh Admin di Atasnya */}
+      {promoteTargetMember && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-150">
+          <div className="relative w-full max-w-md rounded-2xl border border-border bg-card p-5 sm:p-6 shadow-xl space-y-4 animate-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between border-b border-border/60 pb-3">
+              <div className="flex items-center gap-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/20 text-emerald-600">
+                  <ShieldCheck className="h-4.5 w-4.5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-foreground">
+                    Angkat Menjadi Admin Komunitas
+                  </h3>
+                  <p className="text-2xs text-muted-foreground">
+                    Penetapan Pengelola Resmi Komunitas
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => !isPromoting && setPromoteTargetMember(null)}
+                className="rounded-lg p-1 text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs leading-relaxed">
+              <p className="text-muted-foreground">
+                Sebagai Admin di atasnya, Anda akan mengangkat anggota berikut menjadi <strong className="text-foreground">{defaultAdminRole}</strong> untuk mengelola komunitas <strong className="text-foreground">{komunitasData.nama}</strong>:
+              </p>
+
+              <div className="rounded-xl border border-border bg-muted/40 p-3 space-y-1.5">
+                <div className="flex justify-between items-center text-2xs">
+                  <span className="text-muted-foreground">Nama Anggota:</span>
+                  <span className="font-bold text-foreground">
+                    {promoteTargetMember.profiles?.nama_lengkap || "Warga Komunitas"}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center text-2xs">
+                  <span className="text-muted-foreground">Email:</span>
+                  <span className="font-mono text-muted-foreground">
+                    {promoteTargetMember.profiles?.email || "-"}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center text-2xs">
+                  <span className="text-muted-foreground">Peran Saat Ini:</span>
+                  <span className="font-bold text-muted-foreground">
+                    {formatPeranDisplay(promoteTargetMember.peran)}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center text-2xs border-t border-border/60 pt-1.5">
+                  <span className="text-emerald-700 dark:text-emerald-400 font-semibold">Peran Baru (Admin):</span>
+                  <span className="font-extrabold text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-300 dark:border-emerald-700">
+                    {defaultAdminRole}
+                  </span>
+                </div>
+              </div>
+
+              <p className="text-2xs text-muted-foreground bg-primary/5 border border-primary/15 rounded-lg p-2.5">
+                ℹ️ Setelah diangkat, anggota ini akan memiliki wewenang penuh sebagai Admin pengelola komunitas, termasuk memperbarui informasi operasional, mengelola anggota, dan memvalidasi data anak.
+              </p>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-border/60">
+              <button
+                type="button"
+                disabled={isPromoting}
+                onClick={() => setPromoteTargetMember(null)}
+                className="rounded-lg border border-border bg-card hover:bg-muted px-3.5 py-2 text-xs font-bold text-foreground transition-all cursor-pointer disabled:opacity-50"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                disabled={isPromoting}
+                onClick={handleConfirmPromoteAdmin}
+                className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 text-xs font-bold shadow-2xs transition-all active:scale-95 cursor-pointer disabled:opacity-50"
+              >
+                {isPromoting ? (
+                  <>
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    <span>Memproses...</span>
+                  </>
+                ) : (
+                  <>
+                    <ShieldCheck className="h-3.5 w-3.5" />
+                    <span>Ya, Angkat Jadi Admin</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
