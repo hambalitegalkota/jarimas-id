@@ -93,6 +93,12 @@ export async function registerUser(
           "Email ini sudah terdaftar. Silakan gunakan email lain atau masuk.";
       } else if (errorMsg.includes("Password")) {
         errorMessage = "Format kata sandi tidak memenuhi kriteria keamanan.";
+      } else if (
+        errorMsg.toLowerCase().includes("rate limit") ||
+        authError.status === 429
+      ) {
+        errorMessage =
+          "Batas pengiriman email verifikasi Supabase telah tercapai (maksimal 3-4 email per jam pada layanan bawaan). Silakan tunggu beberapa saat, atau nonaktifkan 'Confirm email' di Dashboard Supabase agar pendaftaran langsung aktif.";
       } else {
         errorMessage = errorMsg;
       }

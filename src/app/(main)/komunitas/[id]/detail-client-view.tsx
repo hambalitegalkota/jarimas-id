@@ -501,7 +501,7 @@ export function KomunitasDetailClientView({
     return me?.profiles?.nama_lengkap || "Kader Posyandu";
   }, [anggotaState, currentUserId]);
 
-  const defaultAdminRole = getDefaultAdminRole(komunitas.jenis);
+  const defaultAdminRole = getDefaultAdminRole(komunitas.jenis, komunitas);
   const approvedMembers = anggotaState.filter((m) => m.status === "approved");
 
   // Filter anggota yang memegang peran Admin resmi pengelola komunitas
@@ -552,10 +552,22 @@ export function KomunitasDetailClientView({
         setAnggotaState((prev) =>
           prev.map((m) =>
             m.id === promoteTargetMember.id
-              ? { ...m, peran: defaultAdminRole }
+              ? {
+                  ...m,
+                  peran: defaultAdminRole,
+                  status: "approved",
+                  peran_diajukan: null,
+                }
               : m
           )
         );
+        setKomunitasData((prev) => ({
+          ...prev,
+          hasAdmin: true,
+          adminName: promoteTargetMember.profiles?.nama_lengkap || "Pengurus Komunitas",
+          adminRole: defaultAdminRole,
+          adminHp: promoteTargetMember.profiles?.nomor_hp || prev.adminHp,
+        }));
         setActionFeedback({
           type: "success",
           message:
@@ -563,6 +575,9 @@ export function KomunitasDetailClientView({
             `Berhasil mengangkat ${promoteTargetMember.profiles?.nama_lengkap || "anggota"} sebagai ${defaultAdminRole}!`,
         });
         setPromoteTargetMember(null);
+        setTimeout(() => {
+          window.location.reload();
+        }, 1200);
       } else {
         setActionFeedback({
           type: "error",

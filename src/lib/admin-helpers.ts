@@ -1039,7 +1039,15 @@ export function getUserAdminInfo({
 /**
  * Menentukan peran admin default berdasarkan jenis komunitas
  */
-export function getDefaultAdminRole(jenis?: string): string {
+export function getDefaultAdminRole(jenis?: string, kom?: any): string {
+  if (kom && (jenis === "warga_kita" || kom.jenis === "warga_kita")) {
+    const meta = extractKomunitasMetadata(kom);
+    if (meta.hasRt) return `Admin RT ${meta.rt}`;
+    if (meta.hasRw) return `Admin RW ${meta.rw}`;
+    if (meta.hasKel) return `Admin Kelurahan ${meta.rawKel || ""}`.trim();
+    if (meta.rawKec && meta.rawKec !== "Kota Tegal") return `Admin Kecamatan ${meta.rawKec}`;
+    return "Admin Kota Tegal";
+  }
   switch (jenis) {
     case "warga_kita":
       return "Pengurus";

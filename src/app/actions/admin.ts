@@ -1450,22 +1450,71 @@ export async function assignOrRevokeKomunitasAdminAction({
       };
     }
 
-    // Ambil data anggota komunitas target
-    const { data: memberTarget, error: memberErr } = await supabase
+    const adminClient = createAdminClient() || supabase;
+    const validKomId = toValidUUID(komunitasId);
+    let memberTarget: any = null;
+
+    // 1. Cari data anggota berdasarkan ID tabel anggota_komunitas
+    const { data: byId, error: errById } = await adminClient
       .from("anggota_komunitas")
-      .select("id, user_id, komunitas_id, peran, status, profiles(id, nama_lengkap, email, is_super_admin)")
+      .select("id, user_id, komunitas_id, peran, status")
       .eq("id", anggotaId)
       .maybeSingle();
 
-    if (memberErr || !memberTarget) {
+    if (errById) {
+      console.warn("Query anggota_komunitas by id error:", errById.message);
+    }
+    memberTarget = byId;
+
+    // 2. Jika tidak ditemukan (misal caller mengirimkan user_id), cari berdasarkan user_id di komunitas tersebut
+    if (!memberTarget) {
+      const { data: byUser, error: errByUser } = await adminClient
+        .from("anggota_komunitas")
+        .select("id, user_id, komunitas_id, peran, status")
+        .eq("komunitas_id", validKomId)
+        .eq("user_id", anggotaId)
+        .maybeSingle();
+
+      if (errByUser) {
+        console.warn("Query anggota_komunitas by user_id error:", errByUser.message);
+      }
+      memberTarget = byUser;
+    }
+
+    // 3. Fallback jika komunitasId merupakan ID seed/slug dan tersimpan di database dengan format string aslinya
+    if (!memberTarget && komunitasId !== validKomId) {
+      const { data: bySeedUser } = await adminClient
+        .from("anggota_komunitas")
+        .select("id, user_id, komunitas_id, peran, status")
+        .eq("komunitas_id", komunitasId)
+        .eq("user_id", anggotaId)
+        .maybeSingle();
+      memberTarget = bySeedUser;
+    }
+
+    if (!memberTarget) {
       return {
         success: false,
-        message: "Data keanggotaan tidak ditemukan.",
+        message: "Data keanggotaan tidak ditemukan di komunitas ini.",
       };
     }
 
+    // Ambil profil target secara terpisah agar terhindar dari konflik relasi ganda (user_id & approved_by) di PostgREST
+    let targetProf: any = null;
+    if (memberTarget.user_id) {
+      const { data: profData, error: profErr } = await adminClient
+        .from("profiles")
+        .select("id, nama_lengkap, email, is_super_admin")
+        .eq("id", memberTarget.user_id)
+        .maybeSingle();
+
+      if (profErr) {
+        console.warn("Query target profile error:", profErr.message);
+      }
+      targetProf = profData;
+    }
+
     // Proteksi Imunitas Super Admin: Jika target adalah Super Admin dan perannya hendak dicabut/diturunkan
-    const targetProf = (memberTarget as any).profiles;
     if (isProtectedSuperAdmin(targetProf) && !isRoleAdmin(newRole)) {
       return {
         success: false,
@@ -1475,10 +1524,10 @@ export async function assignOrRevokeKomunitasAdminAction({
     }
 
     // Ambil data komunitas target
-    const { data: komDb } = await supabase
+    const { data: komDb } = await adminClient
       .from("komunitas")
       .select("id, nama, jenis, kecamatan, kelurahan, rw, rt")
-      .eq("id", toValidUUID(komunitasId))
+      .eq("id", validKomId)
       .maybeSingle();
 
     const targetKomunitas = komDb || findOrGenerateKomunitasSeed(komunitasId);
@@ -1499,18 +1548,20 @@ export async function assignOrRevokeKomunitasAdminAction({
       };
     }
 
-    const adminClient = createAdminClient() || supabase;
+    // Eksekusi update peran & status anggota menjadi approved
     const { error: updateErr } = await adminClient
       .from("anggota_komunitas")
       .update({
         peran: newRole,
         peran_diajukan: null,
         status: "approved",
+        approved_by: currentUserId,
         updated_at: new Date().toISOString(),
       })
-      .eq("id", anggotaId);
+      .eq("id", memberTarget.id);
 
     if (updateErr) {
+      console.error("Update anggota_komunitas error:", updateErr);
       throw updateErr;
     }
 
@@ -1520,8 +1571,16 @@ export async function assignOrRevokeKomunitasAdminAction({
       : `berhasil diubah status perannya menjadi ${newRole}`;
 
     revalidatePath(`/komunitas/${komunitasId}`);
+    if (validKomId !== komunitasId) {
+      revalidatePath(`/komunitas/${validKomId}`);
+    }
     revalidatePath(`/komunitas/${komunitasId}/anggota`);
+    if (validKomId !== komunitasId) {
+      revalidatePath(`/komunitas/${validKomId}/anggota`);
+    }
+    revalidatePath("/komunitas");
     revalidatePath("/profil");
+    revalidatePath("/admin");
 
     return {
       success: true,
@@ -1549,7 +1608,8 @@ export async function checkCanManageKomunitasAdminsAction(
 
     if (isSuperAdmin || isAdminPusat) return true;
 
-    const { data: komDb } = await supabase
+    const adminClient = createAdminClient() || supabase;
+    const { data: komDb } = await adminClient
       .from("komunitas")
       .select("id, nama, jenis, kecamatan, kelurahan, rw, rt")
       .eq("id", toValidUUID(komunitasId))
