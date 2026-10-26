@@ -10,7 +10,6 @@ import {
   ArrowRight,
   ShieldCheck,
   User,
-  Users,
   MapPin,
   CheckCircle2,
   Clock,
@@ -375,102 +374,49 @@ export default async function HomePage() {
             </p>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 pt-1">
-            <Link
-              href="/komunitas"
-              className="inline-flex min-h-[42px] items-center justify-center gap-2 rounded-lg bg-secondary hover:brightness-95 px-5 text-xs sm:text-sm font-bold text-secondary-foreground transition-all shadow-sm active:scale-95"
-            >
-              <Users className="h-4 w-4" />
-              <span>Jelajahi Komunitas Warga</span>
-              <ArrowRight className="h-4 w-4" />
-            </Link>
+          {/* Akses Cepat Layanan & Fitur Utama (2 Baris Rata Kiri-Kanan) */}
+          <div className="pt-2 sm:pt-3 border-t border-white/15 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-teal-200">
+                Layanan &amp; Fitur Utama
+              </span>
+              <span className="text-[11px] font-semibold text-amber-300">
+                Akses Cepat
+              </span>
+            </div>
 
-            <Link
-              href="/data-anak"
-              className="inline-flex min-h-[42px] items-center justify-center gap-2 rounded-lg bg-white/15 hover:bg-white/25 border border-white/20 px-4 text-xs sm:text-sm font-semibold text-white transition-all backdrop-blur-xs active:scale-95"
-            >
-              <Baby className="h-4 w-4 text-amber-300" />
-              <span>Pantau Data Anak (0-6 Th)</span>
-            </Link>
-          </div>
-
-          {/* Mini Statistics Bar */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-3 border-t border-white/15">
-            <div className="p-2.5 rounded-md bg-white/5 border border-white/10">
-              <span className="text-base sm:text-lg font-black text-amber-300 block font-mono">
-                4 Kecamatan
-              </span>
-              <span className="text-[11px] text-teal-100/80">Kota Tegal</span>
-            </div>
-            <div className="p-2.5 rounded-md bg-white/5 border border-white/10">
-              <span className="text-base sm:text-lg font-black text-teal-200 block font-mono">
-                27 Kelurahan
-              </span>
-              <span className="text-[11px] text-teal-100/80">Terhubung</span>
-            </div>
-            <div className="p-2.5 rounded-md bg-white/5 border border-white/10">
-              <span className="text-base sm:text-lg font-black text-amber-300 block font-mono">
-                209 Posyandu
-              </span>
-              <span className="text-[11px] text-teal-100/80">Layanan Posyandu</span>
-            </div>
-            <div className="p-2.5 rounded-md bg-white/5 border border-white/10">
-              <span className="text-base sm:text-lg font-black text-teal-200 block font-mono">
-                219 PAUD/PKBM
-              </span>
-              <span className="text-[11px] text-teal-100/80">Pendidikan Dini</span>
+            <div className="flex flex-col gap-2 sm:gap-2.5 w-full">
+              {quickAccessRows.map((row, rowIndex) => (
+                <div
+                  key={rowIndex}
+                  className="grid gap-2 sm:gap-2.5 w-full"
+                  style={{
+                    gridTemplateColumns: `repeat(${row.length}, minmax(0, 1fr))`,
+                  }}
+                >
+                  {row.map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <Link
+                        key={item.id}
+                        href={item.href}
+                        className={`flex flex-col items-center justify-center gap-1.5 p-1.5 sm:p-2 rounded-xl bg-white/95 dark:bg-slate-900/90 hover:bg-white dark:hover:bg-slate-900 text-slate-800 dark:text-slate-100 shadow-sm border border-white/25 dark:border-slate-700/60 ${item.hoverBorderClass} transition-all text-center group active:scale-95 min-h-[78px] sm:min-h-[88px]`}
+                      >
+                        <div
+                          className={`flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-lg ${item.iconWrapperClass} group-hover:scale-105 transition-transform shrink-0`}
+                        >
+                          <Icon className="h-4 w-4 sm:h-4.5 sm:w-4.5" />
+                        </div>
+                        <span className="text-[10px] sm:text-xs font-bold text-slate-800 dark:text-slate-100 leading-tight tracking-tight line-clamp-2">
+                          {item.title}
+                        </span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              ))}
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* ========================================================= */}
-      {/* 3. SUPER APP SERVICE GRID (8 IKON MENU CEPAT LAYANAN)     */}
-      {/* ========================================================= */}
-      <section className="space-y-2.5">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-muted-foreground">
-            Layanan &amp; Fitur Utama
-          </h2>
-          <span className="text-[11px] font-medium text-primary">Akses Cepat</span>
-        </div>
-
-        {/* 
-          Aturan Layout: Selalu 2 baris rata kiri-kanan.
-          Setiap ada penambahan fitur baru di array QUICK_ACCESS_FEATURES,
-          tampilan otomatis terbagi rapi menjadi 2 baris rata kiri-kanan (full-width).
-        */}
-        <div className="flex flex-col gap-2 sm:gap-3 w-full">
-          {quickAccessRows.map((row, rowIndex) => (
-            <div
-              key={rowIndex}
-              className="grid gap-2 sm:gap-3 w-full"
-              style={{
-                gridTemplateColumns: `repeat(${row.length}, minmax(0, 1fr))`,
-              }}
-            >
-              {row.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <Link
-                    key={item.id}
-                    href={item.href}
-                    className={`flex flex-col items-center justify-center gap-1.5 p-1.5 sm:p-2.5 rounded-xl bg-card border border-border ${item.hoverBorderClass} hover:bg-muted/50 transition-all text-center group active:scale-95 shadow-2xs hover:shadow-xs min-h-[82px] sm:min-h-[94px]`}
-                  >
-                    <div
-                      className={`flex h-9 w-9 sm:h-11 sm:w-11 items-center justify-center rounded-xl ${item.iconWrapperClass} group-hover:scale-105 transition-transform shadow-2xs shrink-0`}
-                    >
-                      <Icon className="h-4.5 w-4.5 sm:h-5 sm:w-5" />
-                    </div>
-                    <span className="text-[10px] sm:text-xs font-semibold text-foreground leading-tight tracking-tight line-clamp-2">
-                      {item.title}
-                    </span>
-                  </Link>
-                );
-              })}
-            </div>
-          ))}
         </div>
       </section>
 
