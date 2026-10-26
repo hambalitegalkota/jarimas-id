@@ -551,10 +551,10 @@ export const KOTA_TEGAL_DATA: Record<string, KecamatanData> = {
           "Posyandu Edelweis",
           "Posyandu Jagadipa",
           "Posyandu Kenanga",
-          "Posyandu Kesambi Sari",
+          "Posyandu Sambisari",
           "Posyandu Lavender",
           "Posyandu Sedap Malam",
-          "Posyandu Suflir",
+          "Posyandu Suplir",
           "Posyandu Wijaya Kusuma"
         ],
         "paud": [

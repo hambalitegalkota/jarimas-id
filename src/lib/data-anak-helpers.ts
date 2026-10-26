@@ -843,7 +843,9 @@ export function isDataAnakMatchingKomunitas(
   targetKomId: string
 ): boolean {
   // 1. Cocok langsung dengan ID komunitas pembuat / tempat pendaftaran
-  if (item.komunitas_id === targetKomId || item.komunitas_id === targetKomunitas?.id) {
+  // Kecualikan Posyandu! Posyandu HANYA menampilkan data yang sesuai dengan cakupan wilayahnya (atau RW/RT "Belum Tahu")
+  const isTargetPosyandu = targetKomunitas?.jenis === "posyandu" || targetMeta?.jenis === "posyandu";
+  if (!isTargetPosyandu && (item.komunitas_id === targetKomId || item.komunitas_id === targetKomunitas?.id)) {
     return true;
   }
 

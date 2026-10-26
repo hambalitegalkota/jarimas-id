@@ -289,9 +289,26 @@ SET
 WHERE id = '51757092-2514-4384-84a9-0dd13255d4ce'
    OR (jenis = 'posyandu' AND lower(trim(kelurahan)) = 'margadana' AND (lower(nama) LIKE '%edelweis%' OR lower(nama) LIKE '%edelweiss%'));
 
--- 4. Verifikasi hasil pembersihan dan sinkronisasi
-SELECT jenis, kecamatan, kelurahan, rw, rt, count(*) as jumlah
+-- 4. Mapping kembali data anak yang tidak sesuai batas RT resmi:
+-- Anak ID '7e98cc74-113d-4693-a000-1ba597e477c2' (NAZALIA ASRI ZANJABILA) di RW 12 yang tercatat RT 07 (melebihi batas max RT 6)
+-- diremapping ke RT 'Belum Tahu' agar tetap valid dan tersinkronisasi ke Posyandu Lavender (RW 12).
+UPDATE public.data_anak
+SET 
+  alasan_sekolah = replace(replace(alasan_sekolah, '[KK_RT:07]', '[KK_RT:Belum Tahu]'), '[DOM_RT:07]', '[DOM_RT:Belum Tahu]'),
+  updated_at = now()
+WHERE id = '7e98cc74-113d-4693-a000-1ba597e477c2';
+
+-- 5. Verifikasi hasil pembersihan dan sinkronisasi
+-- Cek 14 Posyandu di Margadana beserta RW cakupan wilayahnya:
+SELECT id, nama, jenis, kecamatan, kelurahan, rw, rt
+FROM public.komunitas
+WHERE jenis = 'posyandu' AND lower(trim(kelurahan)) = 'margadana'
+ORDER BY rw, nama;
+
+-- Cek jumlah komunitas per RW di Kelurahan Margadana (harus hanya RW 01 s/d 13):
+SELECT rw, count(*) as jumlah_komunitas
 FROM public.komunitas
 WHERE lower(trim(kelurahan)) = 'margadana'
-GROUP BY jenis, kecamatan, kelurahan, rw, rt
-ORDER BY jenis, rw, rt;
+GROUP BY rw
+ORDER BY rw;
+

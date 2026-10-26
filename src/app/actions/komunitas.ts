@@ -26,7 +26,12 @@ import {
   MASTER_KOMUNITAS_SEED,
   getJumlahRwByKelurahan,
   getJumlahRtPerRwByKelurahan,
+  DATA_RT_PER_RW_MARGADANA,
 } from "@/lib/constants/tegal-data";
+import {
+  getPosyanduCakupanRw,
+  getPosyanduCakupanWilayah,
+} from "@/lib/data-anak-helpers";
 import {
   toValidUUID,
   normalizeRoleForDb,
@@ -88,6 +93,36 @@ export interface GetKomunitasListResult {
     totalPages: number;
     hasMore: boolean;
   };
+}
+
+/**
+ * Helper validasi defensif khusus Kelurahan Margadana:
+ * Memastikan RW hanya 1..13 dan RT tidak melebihi batas resmi per RW.
+ * "Belum Tahu" tetap valid dan dipertahankan.
+ */
+function isInvalidMargadanaWarga(item: { kelurahan?: string | null; rw?: string | null; rt?: string | null }): boolean {
+  const kel = (item.kelurahan || "").toLowerCase().trim();
+  if (kel !== "margadana") return false;
+
+  const rawRw = item.rw;
+  if (!rawRw || String(rawRw).toLowerCase().includes("belum")) return false;
+
+  const rwNum = parseInt(String(rawRw).replace(/\D/g, ""), 10);
+  if (isNaN(rwNum) || rwNum === 0) return false;
+  // Margadana strictly has RW 1 to 13
+  if (rwNum > 13) return true;
+
+  const rawRt = item.rt;
+  if (!rawRt || String(rawRt).toLowerCase().includes("belum")) return false;
+
+  const rtNum = parseInt(String(rawRt).replace(/\D/g, ""), 10);
+  if (isNaN(rtNum) || rtNum === 0) return false;
+
+  const normRw = String(rwNum).padStart(2, "0");
+  const maxRt = DATA_RT_PER_RW_MARGADANA[normRw] || 8;
+  if (rtNum > maxRt) return true;
+
+  return false;
 }
 
 /**
@@ -229,6 +264,7 @@ export async function getKomunitasList(
       if (dbWargaList && dbWargaList.length > 0) {
         const hierarchyIdSet = new Set(filteredWarga.flatMap((w) => [w.id, toValidUUID(w.id)]));
         for (const w of dbWargaList) {
+          if (isInvalidMargadanaWarga(w)) continue;
           if (!hierarchyIdSet.has(w.id) && !hierarchyIdSet.has(toValidUUID(w.id))) {
             filteredWarga.push({
               id: w.id,
@@ -431,7 +467,10 @@ export async function getKomunitasList(
     allInvalidIds.forEach((id) => invalidIdsSet.add(id));
 
     const validDbItems = (dbKomunitasRaw || []).filter(
-      (item) => !invalidIdsSet.has(item.id) && !invalidIdsSet.has(toValidUUID(item.id))
+      (item) =>
+        !invalidIdsSet.has(item.id) &&
+        !invalidIdsSet.has(toValidUUID(item.id)) &&
+        !isInvalidMargadanaWarga(item)
     );
 
     const mergedList: any[] = baseList.map((item) => ({ ...item }));
@@ -484,7 +523,16 @@ export async function getKomunitasList(
         if (dbItem.deskripsi) matched.deskripsi = dbItem.deskripsi;
         if (dbItem.kontak) matched.kontak = dbItem.kontak;
         if (dbItem.jadwal) matched.jadwal = dbItem.jadwal;
-        if (dbItem.rw !== undefined && dbItem.rw !== null && dbItem.rw !== "") matched.rw = dbItem.rw;
+        if (itemJenis === "posyandu") {
+          const canonicalRw = getPosyanduCakupanRw(matched) || getPosyanduCakupanRw(dbItem);
+          if (canonicalRw) {
+            matched.rw = canonicalRw;
+          } else if (dbItem.rw !== undefined && dbItem.rw !== null && dbItem.rw !== "") {
+            matched.rw = dbItem.rw;
+          }
+        } else {
+          if (dbItem.rw !== undefined && dbItem.rw !== null && dbItem.rw !== "") matched.rw = dbItem.rw;
+        }
         if (dbItem.rt !== undefined && dbItem.rt !== null && dbItem.rt !== "") matched.rt = dbItem.rt;
         if (dbItem.created_at) matched.created_at = dbItem.created_at;
       } else {
@@ -591,11 +639,16 @@ export async function getKomunitasList(
 
       let itemNama = item.nama;
       let itemDeskripsi = item.deskripsi;
+      let itemRw = item.rw;
       if (item.jenis === "posyandu") {
         const coreName = extractCorePosyanduName(item.nama);
         itemNama = coreName ? `Posyandu ${coreName}` : "Posyandu";
         if (itemDeskripsi) {
           itemDeskripsi = itemDeskripsi.replace(/Posyandu\s+Posyandu/gi, "Posyandu");
+        }
+        const canonicalRw = getPosyanduCakupanRw(item);
+        if (canonicalRw) {
+          itemRw = canonicalRw;
         }
       }
 
@@ -608,7 +661,7 @@ export async function getKomunitasList(
         kecamatan: item.kecamatan,
         kelurahan: item.kelurahan,
         rt: item.rt,
-        rw: item.rw,
+        rw: itemRw,
         lokasi: item.lokasi,
         deskripsi: itemDeskripsi,
         logo_url: item.logo_url || null,
@@ -944,9 +997,11 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
       jenis = "pkbm_skb";
     }
 
+    let posyanduCanonicalRw: string | null = null;
     if (jenis === "posyandu") {
       const coreName = extractCorePosyanduName(nama);
       nama = coreName ? `Posyandu ${coreName}` : "Posyandu";
+      posyanduCanonicalRw = getPosyanduCakupanRw({ ...komunitas, nama });
     }
     const lokasi =
       komunitas.lokasi ||
@@ -1394,7 +1449,7 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
       kecamatan: komunitas.kecamatan,
       kelurahan: komunitas.kelurahan,
       rt: komunitas.rt || seedItem?.rt,
-      rw: komunitas.rw || seedItem?.rw,
+      rw: posyanduCanonicalRw || komunitas.rw || seedItem?.rw,
       lokasi,
       deskripsi,
       logo_url: komunitas.logo_url || null,
@@ -3543,25 +3598,30 @@ export async function getKomunitasAdminListAction(params: GetKomunitasAdminListP
         }
       }
 
-      const allItems: KomunitasWithMembership[] = (allRawKoms || []).map((item) => {
-        const meta = extractKomunitasMetadata(item);
-        let itemNama = item.nama || "Komunitas Tanpa Nama";
-        let itemDeskripsi = item.deskripsi;
-        if (item.jenis === "posyandu") {
-          const coreName = extractCorePosyanduName(itemNama);
-          itemNama = coreName ? `Posyandu ${coreName}` : "Posyandu";
-          if (itemDeskripsi) {
-            itemDeskripsi = itemDeskripsi.replace(/Posyandu\s+Posyandu/gi, "Posyandu");
+      const allItems: KomunitasWithMembership[] = (allRawKoms || [])
+        .filter((item) => !isInvalidMargadanaWarga(item))
+        .map((item) => {
+          const meta = extractKomunitasMetadata(item);
+          let itemNama = item.nama || "Komunitas Tanpa Nama";
+          let itemDeskripsi = item.deskripsi;
+          let itemRw = item.rw;
+          if (item.jenis === "posyandu") {
+            const coreName = extractCorePosyanduName(itemNama);
+            itemNama = coreName ? `Posyandu ${coreName}` : "Posyandu";
+            if (itemDeskripsi) {
+              itemDeskripsi = itemDeskripsi.replace(/Posyandu\s+Posyandu/gi, "Posyandu");
+            }
+            const canonicalRw = getPosyanduCakupanRw(item);
+            if (canonicalRw) itemRw = canonicalRw;
           }
-        }
 
-        return {
-          id: item.id,
-          nama: itemNama,
-          jenis: item.jenis,
-          kecamatan: meta.kecamatan || item.kecamatan,
-          kelurahan: meta.kelurahan || item.kelurahan,
-          rw: item.rw,
+          return {
+            id: item.id,
+            nama: itemNama,
+            jenis: item.jenis,
+            kecamatan: meta.kecamatan || item.kecamatan,
+            kelurahan: meta.kelurahan || item.kelurahan,
+            rw: itemRw,
           rt: item.rt,
           lokasi: item.lokasi || "Kota Tegal",
           deskripsi: itemDeskripsi,
@@ -3634,25 +3694,30 @@ export async function getKomunitasAdminListAction(params: GetKomunitasAdminListP
         }
       }
 
-      const items: KomunitasWithMembership[] = (rawKoms || []).map((item) => {
-        const meta = extractKomunitasMetadata(item);
-        let itemNama = item.nama || "Komunitas Tanpa Nama";
-        let itemDeskripsi = item.deskripsi;
-        if (item.jenis === "posyandu") {
-          const coreName = extractCorePosyanduName(itemNama);
-          itemNama = coreName ? `Posyandu ${coreName}` : "Posyandu";
-          if (itemDeskripsi) {
-            itemDeskripsi = itemDeskripsi.replace(/Posyandu\s+Posyandu/gi, "Posyandu");
+      const items: KomunitasWithMembership[] = (rawKoms || [])
+        .filter((item) => !isInvalidMargadanaWarga(item))
+        .map((item) => {
+          const meta = extractKomunitasMetadata(item);
+          let itemNama = item.nama || "Komunitas Tanpa Nama";
+          let itemDeskripsi = item.deskripsi;
+          let itemRw = item.rw;
+          if (item.jenis === "posyandu") {
+            const coreName = extractCorePosyanduName(itemNama);
+            itemNama = coreName ? `Posyandu ${coreName}` : "Posyandu";
+            if (itemDeskripsi) {
+              itemDeskripsi = itemDeskripsi.replace(/Posyandu\s+Posyandu/gi, "Posyandu");
+            }
+            const canonicalRw = getPosyanduCakupanRw(item);
+            if (canonicalRw) itemRw = canonicalRw;
           }
-        }
 
-        return {
-          id: item.id,
-          nama: itemNama,
-          jenis: item.jenis,
-          kecamatan: meta.kecamatan || item.kecamatan,
-          kelurahan: meta.kelurahan || item.kelurahan,
-          rw: item.rw,
+          return {
+            id: item.id,
+            nama: itemNama,
+            jenis: item.jenis,
+            kecamatan: meta.kecamatan || item.kecamatan,
+            kelurahan: meta.kelurahan || item.kelurahan,
+            rw: itemRw,
           rt: item.rt,
           lokasi: item.lokasi || "Kota Tegal",
           deskripsi: itemDeskripsi,
