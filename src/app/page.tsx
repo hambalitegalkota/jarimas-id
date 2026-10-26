@@ -262,6 +262,13 @@ export default async function HomePage() {
     ? `Kel. ${profile.kelurahan}${profile.kecamatan ? `, ${profile.kecamatan}` : ""}`
     : "Kota Tegal";
 
+  // Pisahkan fitur menjadi 2 baris rata kiri-kanan secara otomatis
+  const quickAccessMid = Math.ceil(QUICK_ACCESS_FEATURES.length / 2);
+  const quickAccessRows = [
+    QUICK_ACCESS_FEATURES.slice(0, quickAccessMid),
+    QUICK_ACCESS_FEATURES.slice(quickAccessMid),
+  ];
+
   return (
     <div className="flex flex-col flex-1 px-3.5 sm:px-6 md:px-8 py-3 sm:py-5 gap-5 sm:gap-7 max-w-5xl xl:max-w-6xl mx-auto w-full pb-24">
       {/* ========================================================= */}
@@ -431,35 +438,39 @@ export default async function HomePage() {
 
         {/* 
           Aturan Layout: Selalu 2 baris rata kiri-kanan.
-          Jumlah kolom otomatis dihitung: Math.ceil(QUICK_ACCESS_FEATURES.length / 2).
           Setiap ada penambahan fitur baru di array QUICK_ACCESS_FEATURES,
-          tampilan otomatis terbagi rapi menjadi 2 baris simetris rata kiri-kanan.
+          tampilan otomatis terbagi rapi menjadi 2 baris rata kiri-kanan (full-width).
         */}
-        <div
-          className="grid gap-2 sm:gap-3 w-full"
-          style={{
-            gridTemplateColumns: `repeat(${Math.ceil(QUICK_ACCESS_FEATURES.length / 2)}, minmax(0, 1fr))`,
-          }}
-        >
-          {QUICK_ACCESS_FEATURES.map((item) => {
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.id}
-                href={item.href}
-                className={`flex flex-col items-center justify-center gap-1.5 p-2 sm:p-2.5 rounded-xl bg-card border border-border ${item.hoverBorderClass} hover:bg-muted/50 transition-all text-center group active:scale-95 shadow-2xs hover:shadow-xs min-h-[84px] sm:min-h-[94px]`}
-              >
-                <div
-                  className={`flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-xl ${item.iconWrapperClass} group-hover:scale-105 transition-transform shadow-2xs`}
-                >
-                  <Icon className="h-5 w-5" />
-                </div>
-                <span className="text-[11px] sm:text-xs font-semibold text-foreground leading-tight line-clamp-2">
-                  {item.title}
-                </span>
-              </Link>
-            );
-          })}
+        <div className="flex flex-col gap-2 sm:gap-3 w-full">
+          {quickAccessRows.map((row, rowIndex) => (
+            <div
+              key={rowIndex}
+              className="grid gap-2 sm:gap-3 w-full"
+              style={{
+                gridTemplateColumns: `repeat(${row.length}, minmax(0, 1fr))`,
+              }}
+            >
+              {row.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <Link
+                    key={item.id}
+                    href={item.href}
+                    className={`flex flex-col items-center justify-center gap-1.5 p-1.5 sm:p-2.5 rounded-xl bg-card border border-border ${item.hoverBorderClass} hover:bg-muted/50 transition-all text-center group active:scale-95 shadow-2xs hover:shadow-xs min-h-[82px] sm:min-h-[94px]`}
+                  >
+                    <div
+                      className={`flex h-9 w-9 sm:h-11 sm:w-11 items-center justify-center rounded-xl ${item.iconWrapperClass} group-hover:scale-105 transition-transform shadow-2xs shrink-0`}
+                    >
+                      <Icon className="h-4.5 w-4.5 sm:h-5 sm:w-5" />
+                    </div>
+                    <span className="text-[10px] sm:text-xs font-semibold text-foreground leading-tight tracking-tight line-clamp-2">
+                      {item.title}
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
+          ))}
         </div>
       </section>
 
