@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/utils/supabase/server";
+import { createClient, createAdminClient } from "@/utils/supabase/server";
 import {
   RegisterSchema,
   LoginSchema,
@@ -109,11 +109,12 @@ export async function registerUser(
       };
     }
 
-    // Jika user berhasil dibuat dan Supabase session aktif
+    // Jika user berhasil dibuat, sinkronkan profil pengguna menggunakan adminClient
     if (authData.user) {
       try {
         const isSuper = checkIsSuperAdmin({ email, nama_lengkap: namaLengkap, id: authData.user.id });
-        await supabase.from("profiles").upsert(
+        const adminClient = createAdminClient() || supabase;
+        await adminClient.from("profiles").upsert(
           {
             id: authData.user.id,
             nama_lengkap: namaLengkap,
@@ -128,10 +129,12 @@ export async function registerUser(
       }
     }
 
+    const isAutoConfirmed = Boolean(authData.session || authData.user?.email_confirmed_at);
     return {
       success: true,
-      message:
-        "Pendaftaran berhasil! Silakan periksa email Anda untuk melakukan konfirmasi akun.",
+      message: isAutoConfirmed
+        ? "Pendaftaran berhasil! Akun Anda telah aktif dan siap digunakan. Silakan masuk."
+        : "Pendaftaran berhasil! Akun Anda telah dibuat. Silakan masuk ke halaman login.",
     };
   } catch (err: any) {
     console.error("Error pada registerUser:", err);

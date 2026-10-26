@@ -57,7 +57,7 @@ export default function RegisterPage() {
               <h3 className="font-bold text-base text-foreground">Pendaftaran Berhasil!</h3>
               <p className="text-xs text-muted-foreground leading-relaxed">
                 {state.message ||
-                  "Pendaftaran berhasil! Silakan periksa email Anda untuk melakukan konfirmasi akun."}
+                  "Pendaftaran berhasil! Akun Anda telah aktif, silakan masuk ke halaman login."}
               </p>
             </div>
             <div className="pt-2">
