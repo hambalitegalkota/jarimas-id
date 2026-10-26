@@ -4,6 +4,7 @@ import "./globals.css";
 import { BottomNav } from "@/components/layout/bottom-nav";
 import { ThemeProvider } from "@/components/theme-provider";
 import { GlobalMessageNotificationProvider } from "@/components/notifications/global-message-notification-provider";
+import { ChunkErrorRecovery } from "@/components/chunk-error-recovery";
 
 const inter = Inter({
   variable: "--font-sans",
@@ -77,6 +78,7 @@ export default function RootLayout({
           enableSystem={false}
           disableTransitionOnChange
         >
+          <ChunkErrorRecovery />
           <GlobalMessageNotificationProvider>
             <main className="flex-1 w-full flex flex-col print:max-w-none print:w-full print:m-0 print:p-0">
               {children}
