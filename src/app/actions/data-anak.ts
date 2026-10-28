@@ -742,8 +742,10 @@ export async function getDataAnakByKomunitas(
 
       // Variasi tanpa kata "Iman" (misal: "Bina Iman Anak Sholeh" vs "Bina Anak Sholeh")
       if (cleanPrefix.toLowerCase().includes("iman")) {
-        const noIman = cleanPrefix.replace(/\biman\b/gi, "").replace(/\s+/g, " ").trim();
-        if (noIman.length > 2) searchPhrases.add(noIman);
+        const noImanClean = cleanPrefix.replace(/\biman\b/gi, "").replace(/\s+/g, " ").trim();
+        const noImanRaw = rawPaudName.replace(/\biman\b/gi, "").replace(/\s+/g, " ").trim();
+        if (noImanClean.length > 2) searchPhrases.add(noImanClean);
+        if (noImanRaw.length > 2) searchPhrases.add(noImanRaw);
       }
 
       // Variasi angka Romawi III <-> 111 (misal: "TK Kartika III-28" vs "TK Kartika 111-28")
@@ -751,16 +753,28 @@ export async function getDataAnakByKomunitas(
         searchPhrases.add(cleanPrefix.replace(/\biii\b/gi, "111"));
       }
 
-      const locTokens = [targetKomunitas?.kelurahan, targetKomunitas?.kecamatan].filter(
-        (loc) => loc && loc !== "semua" && loc !== "Semua Kelurahan" && loc !== "Kota Tegal"
-      ) as string[];
+      // Variasi tanpa nama kelurahan jika tertera di nama komunitas (misal: "TK Nurul Huda Muarareja" -> "TK Nurul Huda")
+      // CATATAN PENTING: Hanya kelurahan (BUKAN kecamatan, karena kecamatan sering menjadi nama resmi sekolah misal "KB Aisyiyah Tegal Barat")
+      const kel = targetKomunitas?.kelurahan;
+      if (kel && kel !== "semua" && kel !== "Semua Kelurahan" && kel !== "Kota Tegal") {
+        const kelRegex = new RegExp(`\\b${kel}\\b`, "gi");
+        const rawNoLoc = rawPaudName.replace(kelRegex, "").replace(/\s+/g, " ").trim();
+        const cleanNoLoc = cleanPrefix.replace(kelRegex, "").replace(/\s+/g, " ").trim();
 
-      for (const loc of locTokens) {
-        const locRegex = new RegExp(`\\b${loc}\\b`, "gi");
-        const rawNoLoc = rawPaudName.replace(locRegex, "").replace(/\s+/g, " ").trim();
-        const cleanNoLoc = cleanPrefix.replace(locRegex, "").replace(/\s+/g, " ").trim();
-        if (rawNoLoc && rawNoLoc.length > 2) searchPhrases.add(rawNoLoc);
-        if (cleanNoLoc && cleanNoLoc.length > 2) searchPhrases.add(cleanNoLoc);
+        // Jangan izinkan frasa 1 kata yang terlalu umum sebagai wildcard bebas agar tidak menenggelamkan sekolah spesifik
+        const genericOneWords = new Set([
+          "aisyiyah", "pertiwi", "masyithoh", "ihsaniyah", "pembina", "kartini", "bina", "tunas", "harapan", "islam", "terpadu"
+        ]);
+
+        if (rawNoLoc && rawNoLoc.length > 3) {
+          searchPhrases.add(rawNoLoc);
+        }
+        if (cleanNoLoc && cleanNoLoc.length > 3) {
+          const words = cleanNoLoc.split(/\s+/).filter(Boolean);
+          if (words.length >= 2 || !genericOneWords.has(cleanNoLoc.toLowerCase())) {
+            searchPhrases.add(cleanNoLoc);
+          }
+        }
       }
 
       // Variasi toleransi tanda baca (petik satu/dua, backtick, kurung yang mengganggu PostgREST)
@@ -845,7 +859,7 @@ export async function getDataAnakByKomunitas(
         query = query.eq("komunitas_id", validKomId);
       }
 
-      const { data: paudDirect, error: paudDirectError } = await query.limit(500);
+      const { data: paudDirect, error: paudDirectError } = await query.limit(3000);
 
       if (paudDirectError) {
         childError = paudDirectError;
