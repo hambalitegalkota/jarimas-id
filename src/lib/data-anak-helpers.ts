@@ -896,7 +896,11 @@ export function isDataAnakMatchingKomunitas(
   }
 
   // 2. Komunitas Satuan PAUD: Tampilkan anak yang terdaftar di PAUD ini
-  if (targetKomunitas?.jenis === "satuan_paud" || targetMeta?.jenis === "satuan_paud") {
+  if (
+    targetKomunitas?.jenis === "satuan_paud" ||
+    targetMeta?.jenis === "satuan_paud" ||
+    isKomunitasLayananPaud(targetKomunitas, targetKomunitas?.nama, targetKomunitas?.jenis)
+  ) {
     if (
       item.nama_sekolah &&
       targetKomunitas?.nama &&

@@ -725,11 +725,44 @@ export async function getDataAnakByKomunitas(
 
     if (isKomunitasLayananPaud(targetKomunitas, targetKomunitas?.nama, targetJenis) || isPkbmOrSkbTarget) {
       const rawPaudName = (targetKomunitas?.nama || "").trim();
-      const cleanPaudName = rawPaudName
-        .replace(/^(KB|TK|TPA|SPS|RA|PKBM|SKB|POS PAUD)\s+/i, "")
-        .trim();
-
       const numToken = extractSchoolNumberToken(rawPaudName);
+
+      // Kumpulkan variasi frasa pencarian nama sekolah dari nama komunitas PAUD:
+      // 1. Nama asli & tanpa prefix jenjang (KB, TK, PAUD TPQ, POS PAUD, SPS, TPA, RA, PKBM, SKB)
+      // 2. Tanpa nama kelurahan / kecamatan jika tertera di nama komunitas (misal: "TK Nurul Huda Muarareja" -> "Nurul Huda")
+      // 3. Toleransi tanda baca (petik satu/dua, backtick, titik, spasi)
+      const searchPhrases = new Set<string>();
+      if (rawPaudName) searchPhrases.add(rawPaudName);
+
+      const prefixRegex = /^(KB|TK|TPA|SPS|RA|PKBM|SKB|POS PAUD|PAUD TPQ|PAUD|TPQ)[\s.]+/i;
+      const cleanPrefix = rawPaudName.replace(prefixRegex, "").trim();
+      if (cleanPrefix && cleanPrefix.length > 2) {
+        searchPhrases.add(cleanPrefix);
+      }
+
+      const locTokens = [targetKomunitas?.kelurahan, targetKomunitas?.kecamatan].filter(
+        (loc) => loc && loc !== "semua" && loc !== "Semua Kelurahan" && loc !== "Kota Tegal"
+      ) as string[];
+
+      for (const loc of locTokens) {
+        const locRegex = new RegExp(`\\b${loc}\\b`, "gi");
+        const rawNoLoc = rawPaudName.replace(locRegex, "").replace(/\s+/g, " ").trim();
+        const cleanNoLoc = cleanPrefix.replace(locRegex, "").replace(/\s+/g, " ").trim();
+        if (rawNoLoc && rawNoLoc.length > 2) searchPhrases.add(rawNoLoc);
+        if (cleanNoLoc && cleanNoLoc.length > 2) searchPhrases.add(cleanNoLoc);
+      }
+
+      // Variasi toleransi tanda baca (misal apostrof pada Qurrota A'yun atau backtick pada Fahmal Qur`an)
+      const initialPhrases = Array.from(searchPhrases);
+      for (const phrase of initialPhrases) {
+        if (/[`'’]/.test(phrase)) {
+          searchPhrases.add(phrase.replace(/[`'’]/g, " ").replace(/\s+/g, " ").trim());
+          searchPhrases.add(phrase.replace(/[`'’]/g, "%"));
+          searchPhrases.add(phrase.replace(/[`'’]/g, ""));
+        }
+      }
+
+      const validPhrases = Array.from(searchPhrases).filter((p) => p.length >= 3);
 
       const orConditions: string[] = [
         `komunitas_id.eq.${validKomId}`,
@@ -752,40 +785,33 @@ export async function getDataAnakByKomunitas(
         const arabNum = romanToArabic[numTokenLower];
         const romanNum = arabicToRoman[numTokenLower];
 
-        // 1. Variasi Nama Asli (persis atau tanpa awalan TK/KB)
-        if (rawPaudName) {
-          orConditions.push(`nama_sekolah.ilike.${rawPaudName}`);
-        }
-        if (cleanPaudName) {
-          orConditions.push(`nama_sekolah.ilike.%${cleanPaudName}`);
-          orConditions.push(`nama_sekolah.ilike.%${cleanPaudName} %`);
-        }
+        for (const phrase of validPhrases) {
+          if (extractSchoolNumberToken(phrase)) {
+            orConditions.push(`nama_sekolah.ilike.${phrase}`);
+            orConditions.push(`nama_sekolah.ilike.%${phrase}`);
+            orConditions.push(`nama_sekolah.ilike.%${phrase} %`);
 
-        // 2. Variasi Angka Arab jika tokennya Romawi
-        if (arabNum) {
-          const rawArab = rawPaudName.replace(new RegExp(`\\b${numToken}\\b`, "i"), arabNum);
-          const cleanArab = cleanPaudName.replace(new RegExp(`\\b${numToken}\\b`, "i"), arabNum);
-          if (rawArab) orConditions.push(`nama_sekolah.ilike.${rawArab}`);
-          if (cleanArab) {
-            orConditions.push(`nama_sekolah.ilike.%${cleanArab}`);
-            orConditions.push(`nama_sekolah.ilike.%${cleanArab} %`);
-          }
-        }
-
-        // 3. Variasi Angka Romawi jika tokennya Arab
-        if (romanNum) {
-          const rawRoman = rawPaudName.replace(new RegExp(`\\b${numToken}\\b`, "i"), romanNum);
-          const cleanRoman = cleanPaudName.replace(new RegExp(`\\b${numToken}\\b`, "i"), romanNum);
-          if (rawRoman) orConditions.push(`nama_sekolah.ilike.${rawRoman}`);
-          if (cleanRoman) {
-            orConditions.push(`nama_sekolah.ilike.%${cleanRoman}`);
-            orConditions.push(`nama_sekolah.ilike.%${cleanRoman} %`);
+            if (arabNum) {
+              const phraseArab = phrase.replace(new RegExp(`\\b${numToken}\\b`, "i"), arabNum);
+              orConditions.push(`nama_sekolah.ilike.${phraseArab}`);
+              orConditions.push(`nama_sekolah.ilike.%${phraseArab}`);
+              orConditions.push(`nama_sekolah.ilike.%${phraseArab} %`);
+            }
+            if (romanNum) {
+              const phraseRoman = phrase.replace(new RegExp(`\\b${numToken}\\b`, "i"), romanNum);
+              orConditions.push(`nama_sekolah.ilike.${phraseRoman}`);
+              orConditions.push(`nama_sekolah.ilike.%${phraseRoman}`);
+              orConditions.push(`nama_sekolah.ilike.%${phraseRoman} %`);
+            }
+          } else {
+            // Frasa tanpa nomor cabang (misal nama dasar tanpa kelurahan)
+            orConditions.push(`nama_sekolah.ilike.%${phrase}%`);
           }
         }
       } else {
         // Sekolah tanpa nomor cabang (misal: "TK Pembina", "KB Kartini", dsb.)
-        if (cleanPaudName) {
-          orConditions.push(`nama_sekolah.ilike.%${cleanPaudName}%`);
+        for (const phrase of validPhrases) {
+          orConditions.push(`nama_sekolah.ilike.%${phrase}%`);
         }
       }
 
@@ -800,7 +826,7 @@ export async function getDataAnakByKomunitas(
         query = query.eq("komunitas_id", validKomId);
       }
 
-      const { data: paudDirect, error: paudDirectError } = await query.limit(300);
+      const { data: paudDirect, error: paudDirectError } = await query.limit(500);
 
       if (paudDirectError) {
         childError = paudDirectError;
