@@ -531,6 +531,30 @@ export function cleanDeskripsiDisplay(rawDesc?: string | null): string {
     .trim();
 }
 
+export const THE_ORBIT_SIXTY_ID = "6b73e2b8-e708-4d31-a467-333b068b4fd8";
+
+/**
+ * Memeriksa apakah suatu entitas komunitas atau ID merujuk pada Komunitas "The Orbit Sixty"
+ */
+export function isTheOrbitSixtyCommunity(komunitasOrId: any): boolean {
+  if (!komunitasOrId) return false;
+  if (typeof komunitasOrId === "string") {
+    const clean = komunitasOrId.toLowerCase().trim();
+    return (
+      clean === THE_ORBIT_SIXTY_ID ||
+      clean.includes("the orbit sixty") ||
+      clean.includes("orbit sixty")
+    );
+  }
+  const id = (komunitasOrId.id || komunitasOrId.komunitas_id || "").toLowerCase().trim();
+  const nama = (komunitasOrId.nama || komunitasOrId.nama_komunitas || "").toLowerCase().trim();
+  return (
+    id === THE_ORBIT_SIXTY_ID ||
+    nama.includes("the orbit sixty") ||
+    nama.includes("orbit sixty")
+  );
+}
+
 /**
  * Menentukan hak visibilitas kartu layanan (Data Anak dan Data ATS) di komunitas:
  * 1. Komunitas The Orbit Sixty: Kartu Data Anak dan Data ATS tidak ditampilkan.
@@ -556,10 +580,7 @@ export function getKomunitasFeatureCards(komunitas: any) {
   const jenis = (komunitas.jenis || komunitas.jenis_komunitas || "").toLowerCase().trim();
 
   // 1. Cek spesifik Komunitas "The Orbit Sixty"
-  const isTheOrbitSixty =
-    komunitas.id === "6b73e2b8-e708-4d31-a467-333b068b4fd8" ||
-    cleanNama.includes("the orbit sixty") ||
-    cleanNama.includes("orbit sixty");
+  const isTheOrbitSixty = isTheOrbitSixtyCommunity(komunitas);
 
   // Tag kustom yang diaktifkan oleh Super Admin / Admin Pusat
   const hasCustomDataAnak =

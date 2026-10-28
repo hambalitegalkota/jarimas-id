@@ -29,7 +29,7 @@ import { KabarCard } from "@/components/kabar/kabar-card";
 import { CreateKabarModal } from "@/components/kabar/create-kabar-modal";
 import { KomunitasDetailClientView } from "./detail-client-view";
 import { PrintButton } from "@/components/ui/print-button";
-import { getKomunitasFeatureCards } from "@/lib/admin-helpers";
+import { getKomunitasFeatureCards, isTheOrbitSixtyCommunity } from "@/lib/admin-helpers";
 import { isKomunitasLayananPaud } from "@/lib/data-anak-helpers";
 import { buildKomunitasScopedRekap } from "@/lib/komunitas-rekap-calculator";
 import { checkCanManageKomunitasAdminsAction } from "@/app/actions/admin";
@@ -109,22 +109,28 @@ export default async function KomunitasDetailPage({
   const dataAtsList = dataAtsRes?.data || [];
   const dbKomunitasId = toValidUUID(id);
   const cleanNama = (komunitas.nama || "").toLowerCase().trim();
+  const isOrbitSixty = isTheOrbitSixtyCommunity(komunitas);
+  const isApprovedMember = komunitas.currentUserMembership?.status === "approved";
+  const canViewOrbitSixtyKabar = hasRootAccess || isApprovedMember;
 
-  const kabarKomunitas = (allKabar || []).filter((k) => {
-    // 1. Cocok langsung dengan ID komunitas
-    if (k.komunitas_id === id || k.komunitas_id === dbKomunitasId) {
-      return true;
-    }
-    // 2. Konten secara spesifik menyebutkan nama komunitas
-    if (
-      cleanNama.length > 3 &&
-      k.konten &&
-      k.konten.toLowerCase().includes(cleanNama)
-    ) {
-      return true;
-    }
-    return false;
-  });
+  const kabarKomunitas =
+    isOrbitSixty && !canViewOrbitSixtyKabar
+      ? []
+      : (allKabar || []).filter((k) => {
+          // 1. Cocok langsung dengan ID komunitas
+          if (k.komunitas_id === id || k.komunitas_id === dbKomunitasId) {
+            return true;
+          }
+          // 2. Konten secara spesifik menyebutkan nama komunitas
+          if (
+            cleanNama.length > 3 &&
+            k.konten &&
+            k.konten.toLowerCase().includes(cleanNama)
+          ) {
+            return true;
+          }
+          return false;
+        });
 
   // Hitung rekap dinamis untuk seluruh jenis Komunitas (PAUD, Posyandu, Warga Kita, PKBM/SKB)
   const scopedRekapCalc = canShowDataAnak

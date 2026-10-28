@@ -12,10 +12,12 @@ import {
   Sparkles,
   AlertCircle,
   MessageSquareOff,
+  Lock,
 } from "lucide-react";
 import { createKabar } from "@/app/actions/kabar";
 import type { VisibilitasKabar } from "@/types/database";
 import { cn } from "@/lib/utils";
+import { isTheOrbitSixtyCommunity } from "@/lib/admin-helpers";
 import { LoginPromptModal } from "@/components/kabar/login-prompt-modal";
 
 interface CreateKabarModalProps {
@@ -29,11 +31,12 @@ export function CreateKabarModal({
   komunitasId,
   komunitasNama,
 }: CreateKabarModalProps) {
+  const isOrbitSixty = isTheOrbitSixtyCommunity(komunitasId || komunitasNama);
   const [isOpen, setIsOpen] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [konten, setKonten] = useState("");
   const [visibilitas, setVisibilitas] = useState<VisibilitasKabar>(
-    komunitasId ? "komunitas" : "publik"
+    isOrbitSixty || Boolean(komunitasId) ? "komunitas" : "publik"
   );
   const [komentarDinonaktifkan, setKomentarDinonaktifkan] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -50,7 +53,7 @@ export function CreateKabarModal({
 
     const formData = new FormData();
     formData.append("konten", konten);
-    formData.append("visibilitas", visibilitas);
+    formData.append("visibilitas", isOrbitSixty ? "komunitas" : visibilitas);
     if (komunitasId) {
       formData.append("komunitas_id", komunitasId);
     }
@@ -63,7 +66,7 @@ export function CreateKabarModal({
       const res = await createKabar(formData);
       if (res.success) {
         setKonten("");
-        setVisibilitas(komunitasId ? "komunitas" : "publik");
+        setVisibilitas(isOrbitSixty || Boolean(komunitasId) ? "komunitas" : "publik");
         setKomentarDinonaktifkan(false);
         setIsOpen(false);
       } else {
@@ -176,49 +179,61 @@ export function CreateKabarModal({
                   <label className="text-xs sm:text-sm font-bold text-foreground block">
                     Visibilitas Postingan
                   </label>
-                  <div className="grid grid-cols-3 gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setVisibilitas("publik")}
-                      className={cn(
-                        "flex min-h-[44px] flex-col items-center justify-center gap-0.5 rounded-lg border p-2 text-xs font-semibold transition-all cursor-pointer",
-                        visibilitas === "publik"
-                          ? "border-primary bg-primary/10 text-primary font-bold shadow-2xs"
-                          : "border-border bg-card text-muted-foreground hover:bg-muted"
-                      )}
-                    >
-                      <Globe className="h-3.5 w-3.5 text-primary" />
-                      <span>Publik</span>
-                    </button>
+                  {isOrbitSixty ? (
+                    <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 space-y-1">
+                      <div className="flex items-center gap-2 text-primary font-bold text-xs">
+                        <Lock className="h-4 w-4 shrink-0" />
+                        <span>Khusus Anggota Komunitas The Orbit Sixty</span>
+                      </div>
+                      <p className="text-2xs text-muted-foreground leading-relaxed">
+                        Kabar komunitas The Orbit Sixty tertutup dari publik dan hanya dapat dibaca oleh sesama anggota yang telah bergabung.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-3 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setVisibilitas("publik")}
+                        className={cn(
+                          "flex min-h-[44px] flex-col items-center justify-center gap-0.5 rounded-lg border p-2 text-xs font-semibold transition-all cursor-pointer",
+                          visibilitas === "publik"
+                            ? "border-primary bg-primary/10 text-primary font-bold shadow-2xs"
+                            : "border-border bg-card text-muted-foreground hover:bg-muted"
+                        )}
+                      >
+                        <Globe className="h-3.5 w-3.5 text-primary" />
+                        <span>Publik</span>
+                      </button>
 
-                    <button
-                      type="button"
-                      onClick={() => setVisibilitas("teman")}
-                      className={cn(
-                        "flex min-h-[44px] flex-col items-center justify-center gap-0.5 rounded-lg border p-2 text-xs font-semibold transition-all cursor-pointer",
-                        visibilitas === "teman"
-                          ? "border-primary bg-primary/10 text-primary font-bold shadow-2xs"
-                          : "border-border bg-card text-muted-foreground hover:bg-muted"
-                      )}
-                    >
-                      <Users className="h-3.5 w-3.5 text-primary" />
-                      <span>Teman</span>
-                    </button>
+                      <button
+                        type="button"
+                        onClick={() => setVisibilitas("teman")}
+                        className={cn(
+                          "flex min-h-[44px] flex-col items-center justify-center gap-0.5 rounded-lg border p-2 text-xs font-semibold transition-all cursor-pointer",
+                          visibilitas === "teman"
+                            ? "border-primary bg-primary/10 text-primary font-bold shadow-2xs"
+                            : "border-border bg-card text-muted-foreground hover:bg-muted"
+                        )}
+                      >
+                        <Users className="h-3.5 w-3.5 text-primary" />
+                        <span>Teman</span>
+                      </button>
 
-                    <button
-                      type="button"
-                      onClick={() => setVisibilitas("komunitas")}
-                      className={cn(
-                        "flex min-h-[44px] flex-col items-center justify-center gap-0.5 rounded-lg border p-2 text-xs font-semibold transition-all cursor-pointer",
-                        visibilitas === "komunitas"
-                          ? "border-primary bg-primary/10 text-primary font-bold shadow-2xs"
-                          : "border-border bg-card text-muted-foreground hover:bg-muted"
-                      )}
-                    >
-                      <Building2 className="h-3.5 w-3.5 text-primary" />
-                      <span>Komunitas</span>
-                    </button>
-                  </div>
+                      <button
+                        type="button"
+                        onClick={() => setVisibilitas("komunitas")}
+                        className={cn(
+                          "flex min-h-[44px] flex-col items-center justify-center gap-0.5 rounded-lg border p-2 text-xs font-semibold transition-all cursor-pointer",
+                          visibilitas === "komunitas"
+                            ? "border-primary bg-primary/10 text-primary font-bold shadow-2xs"
+                            : "border-border bg-card text-muted-foreground hover:bg-muted"
+                        )}
+                      >
+                        <Building2 className="h-3.5 w-3.5 text-primary" />
+                        <span>Komunitas</span>
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 {/* Opsi Nonaktifkan Komentar */}

@@ -772,6 +772,52 @@ export function getPosyanduCakupanWilayah(targetKomunitas: any): PosyanduCakupan
     }
   }
 
+  // Khusus Kelurahan Debong Kidul (Kecamatan Tegal Selatan)
+  if (
+    kel.includes("debong kidul") ||
+    nama.includes("debong kidul") ||
+    targetKomunitas?.id === "69759427-9ff6-42a9-80d4-36a91e42c627" ||
+    targetKomunitas?.id === "8ecf2714-9ff6-42a9-8c45-a4119856fbbc" ||
+    targetKomunitas?.id === "9947ded5-9cb9-40c9-8da8-b92d1324eb04" ||
+    targetKomunitas?.id === "377f5886-9cb9-40c9-8ffd-01655ddacd41"
+  ) {
+    if (
+      targetKomunitas?.id === "69759427-9ff6-42a9-80d4-36a91e42c627" ||
+      nama.includes("seruni 1") ||
+      nama.includes("seruni i") ||
+      (nama.includes("seruni") &&
+        !nama.includes("seruni 2") &&
+        !nama.includes("seruni ii") &&
+        !nama.includes("seruni 3") &&
+        !nama.includes("seruni iii") &&
+        !nama.includes("seruni 4") &&
+        !nama.includes("seruni iv"))
+    ) {
+      return { rw: "01" };
+    }
+    if (
+      targetKomunitas?.id === "8ecf2714-9ff6-42a9-8c45-a4119856fbbc" ||
+      nama.includes("seruni 2") ||
+      nama.includes("seruni ii")
+    ) {
+      return { rw: "02" };
+    }
+    if (
+      targetKomunitas?.id === "9947ded5-9cb9-40c9-8da8-b92d1324eb04" ||
+      nama.includes("seruni 3") ||
+      nama.includes("seruni iii")
+    ) {
+      return { rw: "03" };
+    }
+    if (
+      targetKomunitas?.id === "377f5886-9cb9-40c9-8ffd-01655ddacd41" ||
+      nama.includes("seruni 4") ||
+      nama.includes("seruni iv")
+    ) {
+      return { rw: "04" };
+    }
+  }
+
   // Khusus Kelurahan Pesurungan Lor
   if (kel.includes("pesurungan lor") || nama.includes("pesurungan lor")) {
     if (nama.includes("melati")) {

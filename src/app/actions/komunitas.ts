@@ -27,6 +27,7 @@ import {
   getJumlahRwByKelurahan,
   getJumlahRtPerRwByKelurahan,
   DATA_RT_PER_RW_MARGADANA,
+  DATA_RT_PER_RW_DEBONG_KIDUL,
 } from "@/lib/constants/tegal-data";
 import {
   getPosyanduCakupanRw,
@@ -123,6 +124,39 @@ function isInvalidMargadanaWarga(item: { kelurahan?: string | null; rw?: string 
   if (rtNum > maxRt) return true;
 
   return false;
+}
+
+/**
+ * Helper validasi defensif khusus Kelurahan Debong Kidul:
+ * Memastikan RW hanya 1..4 dan RT tidak melebihi batas resmi (maksimal 5 RT per RW).
+ * "Belum Tahu" tetap valid dan dipertahankan.
+ */
+function isInvalidDebongKidulWarga(item: { kelurahan?: string | null; rw?: string | null; rt?: string | null }): boolean {
+  const kel = (item.kelurahan || "").toLowerCase().trim();
+  if (!kel.includes("debong kidul")) return false;
+
+  const rawRw = item.rw;
+  if (!rawRw || String(rawRw).toLowerCase().includes("belum")) return false;
+
+  const rwNum = parseInt(String(rawRw).replace(/\D/g, ""), 10);
+  if (isNaN(rwNum) || rwNum === 0) return false;
+  // Debong Kidul strictly has RW 1 to 4
+  if (rwNum > 4) return true;
+
+  const rawRt = item.rt;
+  if (!rawRt || String(rawRt).toLowerCase().includes("belum")) return false;
+
+  const rtNum = parseInt(String(rawRt).replace(/\D/g, ""), 10);
+  if (isNaN(rtNum) || rtNum === 0) return false;
+
+  // Each RW has max 5 RT
+  if (rtNum > 5) return true;
+
+  return false;
+}
+
+function isInvalidWargaCommunity(item: { kelurahan?: string | null; rw?: string | null; rt?: string | null }): boolean {
+  return isInvalidMargadanaWarga(item) || isInvalidDebongKidulWarga(item);
 }
 
 /**
@@ -264,7 +298,7 @@ export async function getKomunitasList(
       if (dbWargaList && dbWargaList.length > 0) {
         const hierarchyIdSet = new Set(filteredWarga.flatMap((w) => [w.id, toValidUUID(w.id)]));
         for (const w of dbWargaList) {
-          if (isInvalidMargadanaWarga(w)) continue;
+          if (isInvalidWargaCommunity(w)) continue;
           if (!hierarchyIdSet.has(w.id) && !hierarchyIdSet.has(toValidUUID(w.id))) {
             filteredWarga.push({
               id: w.id,
@@ -470,7 +504,7 @@ export async function getKomunitasList(
       (item) =>
         !invalidIdsSet.has(item.id) &&
         !invalidIdsSet.has(toValidUUID(item.id)) &&
-        !isInvalidMargadanaWarga(item)
+        !isInvalidWargaCommunity(item)
     );
 
     const mergedList: any[] = baseList.map((item) => ({ ...item }));
@@ -3599,7 +3633,7 @@ export async function getKomunitasAdminListAction(params: GetKomunitasAdminListP
       }
 
       const allItems: KomunitasWithMembership[] = (allRawKoms || [])
-        .filter((item) => !isInvalidMargadanaWarga(item))
+        .filter((item) => !isInvalidWargaCommunity(item))
         .map((item) => {
           const meta = extractKomunitasMetadata(item);
           let itemNama = item.nama || "Komunitas Tanpa Nama";
@@ -3695,7 +3729,7 @@ export async function getKomunitasAdminListAction(params: GetKomunitasAdminListP
       }
 
       const items: KomunitasWithMembership[] = (rawKoms || [])
-        .filter((item) => !isInvalidMargadanaWarga(item))
+        .filter((item) => !isInvalidWargaCommunity(item))
         .map((item) => {
           const meta = extractKomunitasMetadata(item);
           let itemNama = item.nama || "Komunitas Tanpa Nama";

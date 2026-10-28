@@ -176,6 +176,7 @@ export function KomunitasDetailClientView({
   );
   const canShowDataAnakCard = featureCards.canShowDataAnak;
   const canShowDataAtsCard = featureCards.canShowDataAts;
+  const isTheOrbitSixty = featureCards.isTheOrbitSixty;
 
   const cleanKomNama = (komunitasData.nama || "").toLowerCase().trim();
   const isSkb =
@@ -839,8 +840,13 @@ export function KomunitasDetailClientView({
     {
       id: "kabar",
       title: "Kabar Komunitas",
-      subtitle: "Pengumuman dan diskusi interaktif anggota komunitas",
-      badgeText: `${kabarKomunitas.length} Kabar`,
+      subtitle: isTheOrbitSixty
+        ? "Pengumuman dan diskusi internal khusus anggota The Orbit Sixty"
+        : "Pengumuman dan diskusi interaktif anggota komunitas",
+      badgeText:
+        isTheOrbitSixty && !isApprovedMember && !isSuperOrPusat
+          ? "Khusus Anggota"
+          : `${kabarKomunitas.length} Kabar`,
       icon: MessageSquare,
       activeColorBg: "bg-primary text-primary-foreground",
       badgeColor: "bg-primary-foreground/20 text-primary-foreground border-primary-foreground/30",
@@ -2422,7 +2428,38 @@ export function KomunitasDetailClientView({
               </div>
             </div>
 
-            {kabarKomunitas.length === 0 ? (
+            {isTheOrbitSixty && !isApprovedMember && !isSuperOrPusat ? (
+              <div className="flex flex-col items-center justify-center rounded-xl border border-amber-200 dark:border-amber-900/50 bg-amber-50/50 dark:bg-amber-950/20 p-8 sm:p-10 text-center space-y-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300">
+                  <Lock className="h-6 w-6" />
+                </div>
+                <div className="space-y-1.5 max-w-md">
+                  <h4 className="text-sm font-bold text-foreground">
+                    Kabar Komunitas Khusus Anggota
+                  </h4>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    Kabar dan pengumuman komunitas The Orbit Sixty bersifat tertutup khusus untuk anggota komunitas yang telah bergabung.
+                  </p>
+                </div>
+                {!currentUserId ? (
+                  <Link
+                    href="/login"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white text-xs font-semibold hover:bg-primary-hover shadow-xs transition-colors"
+                  >
+                    <LogIn className="h-4 w-4" />
+                    <span>Masuk untuk Bergabung</span>
+                  </Link>
+                ) : (
+                  <button
+                    onClick={() => setIsJoinModalOpen(true)}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white text-xs font-semibold hover:bg-primary-hover shadow-xs transition-colors cursor-pointer"
+                  >
+                    <UserPlus className="h-4 w-4" />
+                    <span>Ajukan Gabung Komunitas</span>
+                  </button>
+                )}
+              </div>
+            ) : kabarKomunitas.length === 0 ? (
               <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-card p-10 text-center space-y-3">
                 <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 border border-primary/20 text-primary">
                   <MessageSquare className="h-6 w-6" />
@@ -2447,11 +2484,14 @@ export function KomunitasDetailClientView({
               ))
             )}
 
-            <CreateKabarModal
-              currentUserId={currentUserId}
-              komunitasId={komunitas.id}
-              komunitasNama={komunitasData.nama}
-            />
+            {/* Tombol Buat Kabar hanya jika anggota disetujui atau admin */}
+            {(!isTheOrbitSixty || isApprovedMember || isSuperOrPusat) && (
+              <CreateKabarModal
+                currentUserId={currentUserId}
+                komunitasId={komunitas.id}
+                komunitasNama={komunitasData.nama}
+              />
+            )}
           </div>
         )}
 

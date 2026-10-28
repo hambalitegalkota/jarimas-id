@@ -39,6 +39,7 @@ import { getRekapitulasiWargaKomunitas } from "@/app/actions/pertemanan";
 import { WargaRekapitulasiSection } from "@/components/warga/warga-rekapitulasi-section";
 import { KabarCard } from "@/components/kabar/kabar-card";
 import { formatRupiah, isSuperAdmin as checkIsSuperAdmin } from "@/lib/utils";
+import { isTheOrbitSixtyCommunity } from "@/lib/admin-helpers";
 import { SHOW_MARKET_FEATURE } from "@/components/layout/bottom-nav";
 import { PrintButton } from "@/components/ui/print-button";
 import type { MarketProduk } from "@/types/database";
@@ -238,7 +239,12 @@ export default async function HomePage() {
       : FALLBACK_SHOWCASE_PRODUCTS;
 
   // Ambil cukup 1 kabar unggulan untuk beranda: utamakan yang terpopuler (interaksi tinggi) atau terbaru
-  const allKabar = recentKabar || [];
+  // Beranda adalah etalase publik warga se-Kota Tegal. Kabar The Orbit Sixty & kabar khusus komunitas tertutup tidak disorot ke publik.
+  const allKabar = (recentKabar || []).filter((k) => {
+    if (isTheOrbitSixtyCommunity(k.komunitas_id || k.komunitas)) return false;
+    if (k.visibilitas === "komunitas") return false;
+    return true;
+  });
   const topKabarItem =
     allKabar.length > 0
       ? [...allKabar].sort((a, b) => {

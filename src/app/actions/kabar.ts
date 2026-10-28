@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/utils/supabase/server";
 import { KabarSchema, KomentarSchema } from "@/lib/zod-schemas";
 import { toValidUUID, isSuperOrAdminPusat } from "@/lib/utils";
+import { isTheOrbitSixtyCommunity } from "@/lib/admin-helpers";
 import type {
   KabarItem,
   KomentarKabar,
@@ -59,7 +60,52 @@ export async function getKabarFeed(
       // User mungkin belum login (tamu)
     }
 
-    // 2. Siapkan query dasar kabar_jarimas
+    // 2. Evaluasi keanggotaan user pada komunitas (khususnya The Orbit Sixty & grup privat)
+    const userApprovedKomunitasIds = new Set<string>();
+    let isUserInOrbitSixty = false;
+
+    if (currentUserId) {
+      if (isSuperAdmin) {
+        isUserInOrbitSixty = true;
+      } else {
+        try {
+          const { data: memberRows } = await supabase
+            .from("anggota_komunitas")
+            .select("komunitas_id, status, komunitas(id, nama)")
+            .eq("user_id", currentUserId)
+            .eq("status", "approved");
+
+          if (memberRows) {
+            memberRows.forEach((m: any) => {
+              if (m.komunitas_id) userApprovedKomunitasIds.add(m.komunitas_id);
+              if (m.komunitas?.id) userApprovedKomunitasIds.add(m.komunitas.id);
+              if (
+                isTheOrbitSixtyCommunity(m.komunitas_id) ||
+                isTheOrbitSixtyCommunity(m.komunitas)
+              ) {
+                isUserInOrbitSixty = true;
+              }
+            });
+          }
+        } catch (mErr) {
+          console.warn("Gagal memeriksa keanggotaan komunitas:", mErr);
+        }
+      }
+    }
+
+    // Jika secara spesifik meminta feed The Orbit Sixty, namun pengunjung bukan anggota/admin:
+    if (params.komunitasId && isTheOrbitSixtyCommunity(params.komunitasId)) {
+      if (!isSuperAdmin && !isUserInOrbitSixty) {
+        return {
+          success: true,
+          data: [],
+          currentUserId,
+          isSuperAdmin,
+        };
+      }
+    }
+
+    // 3. Siapkan query dasar kabar_jarimas
     let query = supabase
       .from("kabar_jarimas")
       .select(`
@@ -94,7 +140,7 @@ export async function getKabarFeed(
         )
       `);
 
-    // Filter visibilitas
+    // Filter visibilitas jika dispesifikasikan eksplisit
     if (params.filterVisibilitas && params.filterVisibilitas !== "semua") {
       query = query.eq("visibilitas", params.filterVisibilitas);
     }
@@ -123,8 +169,35 @@ export async function getKabarFeed(
       };
     }
 
-    // 3. Transformasi dan kalkulasi reaksi/komentar per post
-    const items: KabarItem[] = (data || []).map((row: any) => {
+    // 4. Filter privasi ketat: Sembunyikan kabar The Orbit Sixty dari publik & non-anggota
+    const filteredRows = (data || []).filter((row: any) => {
+      const isOrbitSixtyPost =
+        isTheOrbitSixtyCommunity(row.komunitas_id) ||
+        isTheOrbitSixtyCommunity(row.komunitas);
+      const isAuthor = Boolean(currentUserId && row.user_id === currentUserId);
+
+      // Postingan The Orbit Sixty: KHUSUS untuk anggota komunitas The Orbit Sixty
+      // Sembunyikan dari publik (tamu belum login) dan user yang bukan anggota The Orbit Sixty.
+      if (isOrbitSixtyPost) {
+        if (!isSuperAdmin && !isAuthor && !isUserInOrbitSixty) {
+          return false;
+        }
+      }
+
+      // Postingan dengan visibilitas "komunitas" secara umum:
+      // Hanya dapat diakses oleh anggota komunitas terkait, author, atau Super Admin.
+      if (row.visibilitas === "komunitas" && !isSuperAdmin && !isAuthor) {
+        const targetKomId = row.komunitas_id || row.komunitas?.id;
+        if (!targetKomId || !userApprovedKomunitasIds.has(targetKomId)) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+
+    // 5. Transformasi dan kalkulasi reaksi/komentar per post
+    const items: KabarItem[] = filteredRows.map((row: any) => {
       const reaksiList: any[] = row.reaksi_kabar || [];
       const komentarListRaw: any[] = row.komentar_kabar || [];
 
@@ -257,13 +330,52 @@ export async function createKabar(formData: FormData): Promise<{
     }
 
     const konten = formData.get("konten")?.toString()?.trim() || "";
-    const visibilitas = (formData.get("visibilitas")?.toString() as any) || "publik";
+    let visibilitas = (formData.get("visibilitas")?.toString() as any) || "publik";
     const komentarDinonaktifkan = formData.get("komentar_dinonaktifkan") === "true";
     const rawKomunitasId =
       formData.get("komunitas_id")?.toString() ||
       formData.get("komunitasId")?.toString() ||
       null;
     const komunitasId = rawKomunitasId ? toValidUUID(rawKomunitasId) : null;
+
+    // Komunitas The Orbit Sixty: Visibilitas WAJIB selalu dikunci ke "komunitas"
+    const isOrbitSixty = komunitasId ? isTheOrbitSixtyCommunity(komunitasId) : false;
+    if (isOrbitSixty) {
+      visibilitas = "komunitas";
+    }
+
+    // Jika kabar ditujukan untuk The Orbit Sixty, pastikan pembuat adalah anggota yang disetujui / Admin
+    if (isOrbitSixty) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("id, is_super_admin, is_admin_pusat, nama_lengkap, email")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      const isSuper = isSuperOrAdminPusat({
+        ...profile,
+        id: user.id,
+        email: profile?.email || user.email,
+        nama_lengkap: profile?.nama_lengkap || user.user_metadata?.nama_lengkap,
+      });
+
+      if (!isSuper) {
+        const { data: membership } = await supabase
+          .from("anggota_komunitas")
+          .select("id, status")
+          .eq("user_id", user.id)
+          .eq("komunitas_id", komunitasId)
+          .eq("status", "approved")
+          .maybeSingle();
+
+        if (!membership) {
+          return {
+            success: false,
+            message: "Hanya anggota resmi The Orbit Sixty yang dapat membagikan kabar di komunitas ini.",
+          };
+        }
+      }
+    }
 
     const validation = KabarSchema.safeParse({
       konten,
@@ -418,6 +530,49 @@ export async function toggleReaksiKabar(
       );
     }
 
+    // Periksa hak akses jika postingan target adalah milik The Orbit Sixty
+    const { data: targetKabar } = await supabase
+      .from("kabar_jarimas")
+      .select("id, user_id, komunitas_id, komunitas(id, nama)")
+      .eq("id", kabarId)
+      .maybeSingle();
+
+    if (
+      targetKabar &&
+      (isTheOrbitSixtyCommunity(targetKabar.komunitas_id) ||
+        isTheOrbitSixtyCommunity(targetKabar.komunitas))
+    ) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("id, is_super_admin, is_admin_pusat, nama_lengkap, email")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      const isSuper = isSuperOrAdminPusat({
+        ...profile,
+        id: user.id,
+        email: profile?.email || user.email,
+        nama_lengkap: profile?.nama_lengkap || user.user_metadata?.nama_lengkap,
+      });
+
+      if (!isSuper && targetKabar.user_id !== user.id) {
+        const { data: membership } = await supabase
+          .from("anggota_komunitas")
+          .select("id, status")
+          .eq("user_id", user.id)
+          .eq("komunitas_id", targetKabar.komunitas_id)
+          .eq("status", "approved")
+          .maybeSingle();
+
+        if (!membership) {
+          return {
+            success: false,
+            message: "Reaksi hanya dapat diberikan oleh anggota komunitas The Orbit Sixty.",
+          };
+        }
+      }
+    }
+
     // Periksa apakah user sudah pernah bereaksi pada postingan ini
     const { data: existingReaction, error: fetchError } = await supabase
       .from("reaksi_kabar")
@@ -563,12 +718,55 @@ export async function addKomentarKabar(
       profileName = existingProfile.nama_lengkap;
     }
 
-    // 2. Periksa apakah komentar dinonaktifkan pada kabar ini
+    // 2. Periksa apakah komentar dinonaktifkan pada kabar ini dan cek hak akses The Orbit Sixty
     const { data: targetKabar } = await supabase
       .from("kabar_jarimas")
-      .select("user_id, konten, komentar_dinonaktifkan")
+      .select("user_id, konten, komentar_dinonaktifkan, komunitas_id, komunitas(id, nama)")
       .eq("id", kabarId)
       .maybeSingle();
+
+    if (!targetKabar) {
+      return {
+        success: false,
+        message: "Postingan kabar tidak ditemukan.",
+      };
+    }
+
+    // Proteksi privasi The Orbit Sixty: hanya anggota resmi, author, atau Super Admin yang dapat berkomentar
+    if (
+      isTheOrbitSixtyCommunity(targetKabar.komunitas_id) ||
+      isTheOrbitSixtyCommunity(targetKabar.komunitas)
+    ) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("id, is_super_admin, is_admin_pusat, nama_lengkap, email")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      const isSuper = isSuperOrAdminPusat({
+        ...profile,
+        id: user.id,
+        email: profile?.email || user.email,
+        nama_lengkap: profile?.nama_lengkap || user.user_metadata?.nama_lengkap,
+      });
+
+      if (!isSuper && targetKabar.user_id !== user.id) {
+        const { data: membership } = await supabase
+          .from("anggota_komunitas")
+          .select("id, status")
+          .eq("user_id", user.id)
+          .eq("komunitas_id", targetKabar.komunitas_id)
+          .eq("status", "approved")
+          .maybeSingle();
+
+        if (!membership) {
+          return {
+            success: false,
+            message: "Komentar pada postingan ini khusus untuk anggota komunitas The Orbit Sixty.",
+          };
+        }
+      }
+    }
 
     const isCommentsDisabled =
       Boolean(targetKabar?.komentar_dinonaktifkan) ||
