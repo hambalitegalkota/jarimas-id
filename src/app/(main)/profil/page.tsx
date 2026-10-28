@@ -184,7 +184,7 @@ export default async function ProfilePage() {
     supabase
       .from("komunitas")
       .select("id, nama, jenis, kecamatan, kelurahan, rw, rt, lokasi, deskripsi, created_by")
-      .or(`created_by.eq.${user.id},id.eq.6b73e2b8-e708-4d31-a467-333b068b4fd8`),
+      .eq("created_by", user.id),
   ]);
 
   const pendingApprovals: PendingApprovalItem[] = pendingApprovalsResult.data || [];
@@ -192,7 +192,7 @@ export default async function ProfilePage() {
     pendingApprovalsResult.allHierarchyItems || [];
   const rawUserCommunities = [...(userJoinedResult.data || [])];
 
-  // Pastikan komunitas yang dibuat oleh admin atau The Orbit Sixty tercakup
+  // Pastikan komunitas yang dibuat oleh user tercakup
   const existingKomIdSet = new Set(rawUserCommunities.map((r: any) => r.komunitas_id));
   for (const createdKom of createdKomunitasResult.data || []) {
     if (!existingKomIdSet.has(createdKom.id)) {

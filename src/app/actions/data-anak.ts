@@ -740,6 +740,17 @@ export async function getDataAnakByKomunitas(
         searchPhrases.add(cleanPrefix);
       }
 
+      // Variasi tanpa kata "Iman" (misal: "Bina Iman Anak Sholeh" vs "Bina Anak Sholeh")
+      if (cleanPrefix.toLowerCase().includes("iman")) {
+        const noIman = cleanPrefix.replace(/\biman\b/gi, "").replace(/\s+/g, " ").trim();
+        if (noIman.length > 2) searchPhrases.add(noIman);
+      }
+
+      // Variasi angka Romawi III <-> 111 (misal: "TK Kartika III-28" vs "TK Kartika 111-28")
+      if (/\biii\b/i.test(cleanPrefix)) {
+        searchPhrases.add(cleanPrefix.replace(/\biii\b/gi, "111"));
+      }
+
       const locTokens = [targetKomunitas?.kelurahan, targetKomunitas?.kecamatan].filter(
         (loc) => loc && loc !== "semua" && loc !== "Semua Kelurahan" && loc !== "Kota Tegal"
       ) as string[];
@@ -752,17 +763,25 @@ export async function getDataAnakByKomunitas(
         if (cleanNoLoc && cleanNoLoc.length > 2) searchPhrases.add(cleanNoLoc);
       }
 
-      // Variasi toleransi tanda baca (misal apostrof pada Qurrota A'yun atau backtick pada Fahmal Qur`an)
+      // Variasi toleransi tanda baca (petik satu/dua, backtick, kurung yang mengganggu PostgREST)
       const initialPhrases = Array.from(searchPhrases);
       for (const phrase of initialPhrases) {
-        if (/[`'’]/.test(phrase)) {
-          searchPhrases.add(phrase.replace(/[`'’]/g, " ").replace(/\s+/g, " ").trim());
-          searchPhrases.add(phrase.replace(/[`'’]/g, "%"));
-          searchPhrases.add(phrase.replace(/[`'’]/g, ""));
+        if (/[\`'’]/.test(phrase)) {
+          searchPhrases.add(phrase.replace(/[\`'’]/g, " ").replace(/\s+/g, " ").trim());
+          searchPhrases.add(phrase.replace(/[\`'’]/g, "%"));
+          searchPhrases.add(phrase.replace(/[\`'’]/g, ""));
+        }
+        if (/[()]/.test(phrase)) {
+          searchPhrases.add(phrase.replace(/[()]/g, " ").replace(/\s+/g, " ").trim());
+          searchPhrases.add(phrase.replace(/[()]/g, "%"));
+          searchPhrases.add(phrase.replace(/[()]/g, ""));
         }
       }
 
-      const validPhrases = Array.from(searchPhrases).filter((p) => p.length >= 3);
+      // Bersihkan karakter pembatas sintaks PostgREST (.or() terganggu jika ada kurung atau koma)
+      const validPhrases = Array.from(searchPhrases)
+        .map((p) => p.replace(/[(),]/g, "%").replace(/%+/g, "%").trim())
+        .filter((p) => p.replace(/%/g, "").length >= 3);
 
       const orConditions: string[] = [
         `komunitas_id.eq.${validKomId}`,
