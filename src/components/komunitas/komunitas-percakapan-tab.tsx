@@ -319,30 +319,30 @@ export function KomunitasPercakapanTab({
   return (
     <div className="space-y-4">
       {/* 1. HEADER INFO RUANG PERCAKAPAN */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-gradient-to-r from-slate-900 via-slate-800 to-teal-950 text-white shadow-xs border border-slate-700/50">
-        <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-teal-500/20 text-teal-300 border border-teal-400/30">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 p-3 sm:p-3.5 rounded-xl bg-gradient-to-r from-slate-900 via-slate-800 to-teal-950 text-white shadow-xs border border-slate-700/50">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-teal-500/20 text-teal-300 border border-teal-400/30">
             {komunitas.jenis === "posyandu" ? (
-              <HeartPulse className="h-6 w-6" />
+              <HeartPulse className="h-4.5 w-4.5" />
             ) : komunitas.jenis === "satuan_paud" ? (
-              <GraduationCap className="h-6 w-6" />
+              <GraduationCap className="h-4.5 w-4.5" />
             ) : komunitas.jenis === "pkbm_skb" ? (
-              <BookOpen className="h-6 w-6" />
+              <BookOpen className="h-4.5 w-4.5" />
             ) : (
-              <Building2 className="h-6 w-6" />
+              <Building2 className="h-4.5 w-4.5" />
             )}
           </div>
-          <div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <h3 className="text-base font-black tracking-tight text-white">
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <h3 className="text-xs sm:text-sm font-bold tracking-tight text-white truncate">
                 Ruang Percakapan Komunitas
               </h3>
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 text-2xs font-extrabold">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 text-[10px] font-bold">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
                 Live Real-Time
               </span>
             </div>
-            <p className="text-xs text-slate-300 font-medium line-clamp-1">
+            <p className="text-2xs text-slate-300 font-medium truncate">
               {komunitas.nama} • Koordinasi terbuka seluruh anggota terdaftar
             </p>
           </div>
@@ -350,7 +350,7 @@ export function KomunitasPercakapanTab({
 
         {/* Info Status Keanggotaan User */}
         {currentUserId ? (
-          <div className="flex items-center gap-2 self-start sm:self-auto bg-white/10 backdrop-blur-xs px-3 py-1.5 rounded-xl border border-white/10 text-2xs">
+          <div className="flex items-center gap-1.5 self-start sm:self-auto bg-white/10 backdrop-blur-xs px-2.5 py-1 rounded-lg border border-white/10 text-2xs shrink-0">
             <span className="text-slate-300">Status Anda:</span>
             <span className="font-bold text-teal-300">
               {isApprovedMember ? formatPeranDisplay(userPeran) : "Pengunjung"}
@@ -364,7 +364,7 @@ export function KomunitasPercakapanTab({
         ) : (
           <Link
             href="/login"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold transition-colors shadow-xs"
+            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold transition-colors shadow-xs shrink-0"
           >
             Masuk untuk Berbicara
           </Link>

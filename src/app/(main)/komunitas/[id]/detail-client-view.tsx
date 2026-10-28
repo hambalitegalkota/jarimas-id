@@ -1271,184 +1271,259 @@ export function KomunitasDetailClientView({
       {/* 2. TAB NAVIGASI UTAMA KOMUNITAS TERPADU */}
       <div className="space-y-4">
         {/* Tab Bar Horizontal */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 border-b border-border/80">
-          {/* Tab 1: Data Anak (0-6 Thn) / Balita / Siswa */}
-          {canShowDataAnakCard && (
-            <button
-              type="button"
-              onClick={() => setActiveMainTab("anak")}
+        {(() => {
+          const canShowSpmTab = Boolean(
+            isPosyandu ||
+              (isWargaKita &&
+                (isAdminOrKader || isSuperOrPusat) &&
+                (meta.hasKel || Boolean(meta.rawKec) || (!meta.hasRt && !meta.hasRw)))
+          );
+          const totalTabs =
+            (canShowDataAnakCard ? 2 : 0) +
+            (canShowDataAtsCard ? 1 : 0) +
+            (canShowSpmTab ? 1 : 0) +
+            3;
+          const isGrid3 = totalTabs === 3;
+          const isGrid4 = totalTabs === 4;
+
+          return (
+            <div
               className={cn(
-                "flex items-center gap-2 px-3.5 py-2.5 rounded-lg text-xs font-bold transition-all cursor-pointer border shrink-0",
-                activeMainTab === "anak"
-                  ? "bg-primary text-primary-foreground border-primary shadow-xs font-black"
-                  : "bg-card text-muted-foreground border-border hover:bg-muted hover:text-foreground"
+                "pb-1 border-b border-border/80",
+                isGrid3
+                  ? "grid grid-cols-3 gap-1.5 sm:flex sm:items-center sm:gap-2"
+                  : isGrid4
+                  ? "grid grid-cols-4 gap-1 sm:flex sm:items-center sm:gap-2"
+                  : "flex items-center gap-1.5 sm:gap-2 overflow-x-auto scrollbar-none pb-1.5"
               )}
             >
-              <Baby className="h-4 w-4" />
-              <span>
-                {isPaudCommunity
-                  ? "Daftar Siswa"
-                  : isPosyandu
-                  ? "Data Anak & Balita"
-                  : isWargaKita
-                  ? "Data Anak (0–6 Thn)"
-                  : "Data Siswa"}
-              </span>
-              <span
+              {/* Tab 1: Data Anak (0-6 Thn) / Balita / Siswa */}
+              {canShowDataAnakCard && (
+                <button
+                  type="button"
+                  onClick={() => setActiveMainTab("anak")}
+                  className={cn(
+                    "flex items-center justify-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-2xs sm:text-xs font-semibold transition-all cursor-pointer border",
+                    isGrid3 || isGrid4 ? "w-full sm:w-auto" : "shrink-0",
+                    activeMainTab === "anak"
+                      ? "bg-primary text-primary-foreground border-primary shadow-xs font-bold"
+                      : "bg-card text-muted-foreground border-border hover:bg-muted hover:text-foreground"
+                  )}
+                >
+                  <Baby className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+                  <span>
+                    {isPaudCommunity ? (
+                      <>
+                        <span className="hidden sm:inline">Daftar </span>Siswa
+                      </>
+                    ) : isPosyandu ? (
+                      <>
+                        <span className="sm:hidden">Balita</span>
+                        <span className="hidden sm:inline">Data Balita</span>
+                      </>
+                    ) : isWargaKita ? (
+                      <>
+                        <span className="sm:hidden">Anak</span>
+                        <span className="hidden sm:inline">Data Anak (0–6 Thn)</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="hidden sm:inline">Data </span>Siswa
+                      </>
+                    )}
+                  </span>
+                  <span
+                    className={cn(
+                      "px-1.5 py-0.5 rounded-full font-mono text-2xs font-bold leading-none shrink-0",
+                      activeMainTab === "anak"
+                        ? "bg-white/25 text-white"
+                        : "bg-muted text-muted-foreground"
+                    )}
+                  >
+                    {totalChildren}
+                  </span>
+                </button>
+              )}
+
+              {/* Tab 2: Rekap, Grafik & Diagram */}
+              {canShowDataAnakCard && (
+                <button
+                  type="button"
+                  onClick={() => setActiveMainTab("rekap")}
+                  className={cn(
+                    "flex items-center justify-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-2xs sm:text-xs font-semibold transition-all cursor-pointer border",
+                    isGrid3 || isGrid4 ? "w-full sm:w-auto" : "shrink-0",
+                    activeMainTab === "rekap"
+                      ? "bg-primary text-primary-foreground border-primary shadow-xs font-bold"
+                      : "bg-card text-muted-foreground border-border hover:bg-muted hover:text-foreground"
+                  )}
+                >
+                  <BarChart3 className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+                  <span>
+                    <span className="sm:hidden">Grafik</span>
+                    <span className="hidden sm:inline">Rekap &amp; Grafik</span>
+                  </span>
+                </button>
+              )}
+
+              {/* Tab 3: Data ATS (Anak Tidak Sekolah) */}
+              {canShowDataAtsCard && (
+                <button
+                  type="button"
+                  onClick={() => setActiveMainTab("ats")}
+                  className={cn(
+                    "flex items-center justify-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-2xs sm:text-xs font-semibold transition-all cursor-pointer border",
+                    isGrid3 || isGrid4 ? "w-full sm:w-auto" : "shrink-0",
+                    activeMainTab === "ats"
+                      ? "bg-secondary text-secondary-foreground border-secondary shadow-xs font-bold"
+                      : "bg-card text-muted-foreground border-border hover:bg-muted hover:text-foreground"
+                  )}
+                >
+                  <GraduationCap className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+                  <span>
+                    <span className="sm:hidden">ATS</span>
+                    <span className="hidden sm:inline">Data ATS</span>
+                  </span>
+                  <span
+                    className={cn(
+                      "px-1.5 py-0.5 rounded-full font-mono text-2xs font-bold leading-none shrink-0",
+                      activeMainTab === "ats"
+                        ? "bg-white/25 text-white"
+                        : "bg-muted text-muted-foreground"
+                    )}
+                  >
+                    {dataAtsState.length}
+                  </span>
+                </button>
+              )}
+
+              {/* Tab 4: Laporan Kader SPM (Khusus Posyandu & Wilayah Kel/Kec/Kota) */}
+              {canShowSpmTab && (
+                <button
+                  type="button"
+                  onClick={() => setActiveMainTab("laporan_spm")}
+                  className={cn(
+                    "flex items-center justify-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-2xs sm:text-xs font-semibold transition-all cursor-pointer border",
+                    isGrid3 || isGrid4 ? "w-full sm:w-auto" : "shrink-0",
+                    activeMainTab === "laporan_spm"
+                      ? "bg-teal-600 text-white border-teal-600 shadow-xs font-bold"
+                      : "bg-card text-muted-foreground border-border hover:bg-muted hover:text-foreground"
+                  )}
+                >
+                  <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+                  <span>
+                    <span className="sm:hidden">SPM</span>
+                    <span className="hidden sm:inline">
+                      {isPosyandu ? "Laporan SPM" : "SPM Wilayah"}
+                    </span>
+                  </span>
+                </button>
+              )}
+
+              {/* Tab 5: Daftar Anggota / Kader / Warga */}
+              <button
+                type="button"
+                onClick={() => setActiveMainTab("anggota")}
                 className={cn(
-                  "px-1.5 py-0.2 rounded-md font-mono text-2xs",
-                  activeMainTab === "anak"
-                    ? "bg-white/20 text-white"
-                    : "bg-muted text-muted-foreground"
+                  "flex items-center justify-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-2xs sm:text-xs font-semibold transition-all cursor-pointer border",
+                  isGrid3 || isGrid4 ? "w-full sm:w-auto" : "shrink-0",
+                  activeMainTab === "anggota"
+                    ? "bg-primary text-primary-foreground border-primary shadow-xs font-bold"
+                    : "bg-card text-muted-foreground border-border hover:bg-muted hover:text-foreground"
                 )}
               >
-                {totalChildren}
-              </span>
-            </button>
-          )}
+                <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+                <span>
+                  {isPosyandu ? (
+                    <>
+                      <span className="sm:hidden">Kader</span>
+                      <span className="hidden sm:inline">Daftar Kader</span>
+                    </>
+                  ) : isWargaKita ? (
+                    <>
+                      <span className="sm:hidden">Warga</span>
+                      <span className="hidden sm:inline">Daftar Warga</span>
+                    </>
+                  ) : isPaudCommunity ? (
+                    <>
+                      <span className="sm:hidden">Anggota</span>
+                      <span className="hidden sm:inline">Anggota &amp; Pendidik</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="sm:hidden">Anggota</span>
+                      <span className="hidden sm:inline">Daftar Anggota</span>
+                    </>
+                  )}
+                </span>
+                <span
+                  className={cn(
+                    "px-1.5 py-0.5 rounded-full font-mono text-2xs font-bold leading-none shrink-0",
+                    activeMainTab === "anggota"
+                      ? "bg-white/25 text-white"
+                      : "bg-muted text-muted-foreground"
+                  )}
+                >
+                  {approvedMembers.length}
+                </span>
+              </button>
 
-          {/* Tab 2: Rekap, Grafik & Diagram */}
-          {canShowDataAnakCard && (
-            <button
-              type="button"
-              onClick={() => setActiveMainTab("rekap")}
-              className={cn(
-                "flex items-center gap-2 px-3.5 py-2.5 rounded-lg text-xs font-bold transition-all cursor-pointer border shrink-0",
-                activeMainTab === "rekap"
-                  ? "bg-primary text-primary-foreground border-primary shadow-xs font-black"
-                  : "bg-card text-muted-foreground border-border hover:bg-muted hover:text-foreground"
-              )}
-            >
-              <BarChart3 className="h-4 w-4" />
-              <span>Rekap, Grafik &amp; Diagram</span>
-            </button>
-          )}
-
-          {/* Tab 3: Data ATS (Anak Tidak Sekolah) */}
-          {canShowDataAtsCard && (
-            <button
-              type="button"
-              onClick={() => setActiveMainTab("ats")}
-              className={cn(
-                "flex items-center gap-2 px-3.5 py-2.5 rounded-lg text-xs font-bold transition-all cursor-pointer border shrink-0",
-                activeMainTab === "ats"
-                  ? "bg-secondary text-secondary-foreground border-secondary shadow-xs font-black"
-                  : "bg-card text-muted-foreground border-border hover:bg-muted hover:text-foreground"
-              )}
-            >
-              <GraduationCap className="h-4 w-4" />
-              <span>Data ATS</span>
-              <span
+              {/* Tab 6: Kabar Komunitas */}
+              <button
+                type="button"
+                onClick={() => setActiveMainTab("kabar")}
                 className={cn(
-                  "px-1.5 py-0.2 rounded-md font-mono text-2xs",
-                  activeMainTab === "ats"
-                    ? "bg-white/20 text-white"
-                    : "bg-muted text-muted-foreground"
+                  "flex items-center justify-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-2xs sm:text-xs font-semibold transition-all cursor-pointer border",
+                  isGrid3 || isGrid4 ? "w-full sm:w-auto" : "shrink-0",
+                  activeMainTab === "kabar"
+                    ? "bg-primary text-primary-foreground border-primary shadow-xs font-bold"
+                    : "bg-card text-muted-foreground border-border hover:bg-muted hover:text-foreground"
                 )}
               >
-                {dataAtsState.length}
-              </span>
-            </button>
-          )}
+                <MessageSquare className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+                <span>
+                  Kabar<span className="hidden sm:inline"> Komunitas</span>
+                </span>
+                <span
+                  className={cn(
+                    "px-1.5 py-0.5 rounded-full font-mono text-2xs font-bold leading-none shrink-0",
+                    activeMainTab === "kabar"
+                      ? "bg-white/25 text-white"
+                      : "bg-muted text-muted-foreground"
+                  )}
+                >
+                  {kabarKomunitas.length}
+                </span>
+              </button>
 
-          {/* Tab 4: Laporan Kader SPM (Khusus Posyandu & Wilayah Kel/Kec/Kota) */}
-          {(isPosyandu || (isWargaKita && (isAdminOrKader || isSuperOrPusat) && (meta.hasKel || Boolean(meta.rawKec) || (!meta.hasRt && !meta.hasRw)))) && (
-            <button
-              type="button"
-              onClick={() => setActiveMainTab("laporan_spm")}
-              className={cn(
-                "flex items-center gap-2 px-3.5 py-2.5 rounded-lg text-xs font-bold transition-all cursor-pointer border shrink-0",
-                activeMainTab === "laporan_spm"
-                  ? "bg-teal-600 text-white border-teal-600 shadow-xs font-black"
-                  : "bg-card text-muted-foreground border-border hover:bg-muted hover:text-foreground"
-              )}
-            >
-              <Sparkles className="h-4 w-4" />
-              <span>{isPosyandu ? "Laporan Kader SPM" : "Rekap SPM Wilayah"}</span>
-            </button>
-          )}
-
-          {/* Tab 5: Daftar Anggota / Kader / Warga */}
-          <button
-            type="button"
-            onClick={() => setActiveMainTab("anggota")}
-            className={cn(
-              "flex items-center gap-2 px-3.5 py-2.5 rounded-lg text-xs font-bold transition-all cursor-pointer border shrink-0",
-              activeMainTab === "anggota"
-                ? "bg-primary text-primary-foreground border-primary shadow-xs font-black"
-                : "bg-card text-muted-foreground border-border hover:bg-muted hover:text-foreground"
-            )}
-          >
-            <Users className="h-4 w-4" />
-            <span>
-              {isPosyandu
-                ? "Daftar Kader & Anggota"
-                : isWargaKita
-                ? "Daftar Warga"
-                : isPaudCommunity
-                ? "Daftar Anggota & Pendidik"
-                : "Daftar Anggota"}
-            </span>
-            <span
-              className={cn(
-                "px-1.5 py-0.2 rounded-md font-mono text-2xs",
-                activeMainTab === "anggota"
-                  ? "bg-white/20 text-white"
-                  : "bg-muted text-muted-foreground"
-              )}
-            >
-              {approvedMembers.length}
-            </span>
-          </button>
-
-          {/* Tab 6: Kabar Komunitas */}
-          <button
-            type="button"
-            onClick={() => setActiveMainTab("kabar")}
-            className={cn(
-              "flex items-center gap-2 px-3.5 py-2.5 rounded-lg text-xs font-bold transition-all cursor-pointer border shrink-0",
-              activeMainTab === "kabar"
-                ? "bg-primary text-primary-foreground border-primary shadow-xs font-black"
-                : "bg-card text-muted-foreground border-border hover:bg-muted hover:text-foreground"
-            )}
-          >
-            <MessageSquare className="h-4 w-4" />
-            <span>Kabar Komunitas</span>
-            <span
-              className={cn(
-                "px-1.5 py-0.2 rounded-md font-mono text-2xs",
-                activeMainTab === "kabar"
-                  ? "bg-white/20 text-white"
-                  : "bg-muted text-muted-foreground"
-              )}
-            >
-              {kabarKomunitas.length}
-            </span>
-          </button>
-
-          {/* Tab 7: Percakapan Komunitas */}
-          <button
-            type="button"
-            onClick={() => {
-              setActiveMainTab("percakapan");
-              markGroupAsRead(komunitasData.id);
-            }}
-            className={cn(
-              "flex items-center gap-2 px-3.5 py-2.5 rounded-lg text-xs font-bold transition-all cursor-pointer border shrink-0",
-              activeMainTab === "percakapan"
-                ? "bg-primary text-primary-foreground border-primary shadow-xs font-black"
-                : "bg-card text-muted-foreground border-border hover:bg-muted hover:text-foreground"
-            )}
-          >
-            <MessageCircle className="h-4 w-4" />
-            <span>Percakapan Komunitas</span>
-            {communityUnreadCount > 0 && (
-              <span className="px-1.5 py-0.2 rounded-md font-mono text-2xs bg-rose-500 text-white font-bold animate-pulse">
-                {communityUnreadCount}
-              </span>
-            )}
-          </button>
-        </div>
+              {/* Tab 7: Percakapan Komunitas */}
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveMainTab("percakapan");
+                  markGroupAsRead(komunitasData.id);
+                }}
+                className={cn(
+                  "flex items-center justify-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-2xs sm:text-xs font-semibold transition-all cursor-pointer border",
+                  isGrid3 || isGrid4 ? "w-full sm:w-auto" : "shrink-0",
+                  activeMainTab === "percakapan"
+                    ? "bg-primary text-primary-foreground border-primary shadow-xs font-bold"
+                    : "bg-card text-muted-foreground border-border hover:bg-muted hover:text-foreground"
+                )}
+              >
+                <MessageCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+                <span>
+                  Percakapan<span className="hidden sm:inline"> Komunitas</span>
+                </span>
+                {communityUnreadCount > 0 && (
+                  <span className="px-1.5 py-0.5 rounded-full font-mono text-2xs bg-rose-500 text-white font-bold animate-pulse leading-none shrink-0">
+                    {communityUnreadCount}
+                  </span>
+                )}
+              </button>
+            </div>
+          );
+        })()}
 
         {/* 3. KONTEN TAB AKTIF TERPADU */}
         {/* TAB 1: DATA ANAK (0-6 TAHUN) / BALITA / SISWA */}
