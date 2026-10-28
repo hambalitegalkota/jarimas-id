@@ -60,7 +60,14 @@ export function PercakapanHubSection({
   initialGroupId = null,
 }: PercakapanHubSectionProps) {
   const router = useRouter();
-  const { onlineUserIds, isUserOnline } = useGlobalMessageNotification();
+  const {
+    onlineUserIds,
+    isUserOnline,
+    totalUnreadDirect: ctxUnreadDirect,
+    totalUnreadGroup: ctxUnreadGroup,
+    groupUnreadCounts,
+    markGroupAsRead,
+  } = useGlobalMessageNotification();
   const [subTab, setSubTab] = useState<"pribadi" | "grup">("pribadi");
   const [grupFilterTab, setGrupFilterTab] = useState<"semua" | "kegiatan" | "komunitas">("semua");
   const [searchQuery, setSearchQuery] = useState("");
@@ -78,8 +85,9 @@ export function PercakapanHubSection({
   const kegiatanRoomsCount = rooms.filter((r) => r.is_kegiatan || r.jenis === "kegiatan").length;
   const komunitasRoomsCount = rooms.filter((r) => !r.is_kegiatan && r.jenis !== "kegiatan").length;
 
-  // Total unread pesan pribadi
-  const totalUnreadDirect = conversations.reduce((acc, c) => acc + c.unreadCount, 0);
+  // Total unread pesan pribadi & pesan grup
+  const totalUnreadDirect = ctxUnreadDirect > 0 ? ctxUnreadDirect : conversations.reduce((acc, c) => acc + c.unreadCount, 0);
+  const totalUnreadGroup = ctxUnreadGroup;
 
   // Filter 1-on-1 Conversations
   const filteredConversations = conversations.filter((c) => {
@@ -332,11 +340,15 @@ export function PercakapanHubSection({
           >
             <Users className="h-3.5 w-3.5" />
             <span>Percakapan Grup</span>
-            {kegiatanRoomsCount > 0 && (
+            {totalUnreadGroup > 0 ? (
+              <span className="rounded-full bg-secondary text-secondary-foreground px-1.5 py-0.2 text-[10px] font-mono font-bold animate-pulse">
+                {totalUnreadGroup}
+              </span>
+            ) : rooms.length > 0 ? (
               <span className="rounded-full bg-primary-foreground/20 text-primary-foreground px-1.5 py-0.2 text-[10px] font-mono font-bold">
                 {rooms.length}
               </span>
-            )}
+            ) : null}
           </button>
         </div>
 
@@ -675,7 +687,10 @@ export function PercakapanHubSection({
                 return (
                   <div
                     key={room.id}
-                    onClick={() => setSelectedGroupRoom(room)}
+                    onClick={() => {
+                      setSelectedGroupRoom(room);
+                      markGroupAsRead(room.id);
+                    }}
                     className="flex flex-col justify-between p-3.5 rounded-lg border border-border bg-card hover:border-primary/40 hover:bg-muted/30 transition-all cursor-pointer text-left shadow-2xs group relative"
                   >
                     <div className="space-y-2.5 w-full">
@@ -696,6 +711,12 @@ export function PercakapanHubSection({
                           {room.is_member && (
                             <span className="rounded-md bg-primary/10 border border-primary/20 px-1.5 py-0.5 text-2xs font-bold text-primary">
                               Tergabung
+                            </span>
+                          )}
+
+                          {(groupUnreadCounts[room.id] || 0) > 0 && (
+                            <span className="inline-flex items-center gap-1 rounded-md bg-rose-500 text-white px-2 py-0.5 text-2xs font-bold font-mono shadow-xs animate-pulse">
+                              <span>{groupUnreadCounts[room.id]} Pesan Baru</span>
                             </span>
                           )}
                         </div>

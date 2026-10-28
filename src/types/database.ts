@@ -714,8 +714,10 @@ export interface GrupChatRoom {
   last_message?: {
     pesan: string;
     sender_name: string;
+    sender_id?: string;
     created_at: string;
   } | null;
+  unread_count?: number;
   is_member?: boolean;
   created_by?: string | null;
   creator_name?: string | null;
@@ -764,6 +766,10 @@ export interface IncomingMessageNotificationItem {
   pesan: string;
   createdAt: string;
   partnerUser?: RegisteredUserItem | null;
+  isGroup?: boolean;
+  groupId?: string;
+  groupName?: string;
+  groupType?: string;
 }
 
 export interface RekapitulasiWargaKomunitasResult {

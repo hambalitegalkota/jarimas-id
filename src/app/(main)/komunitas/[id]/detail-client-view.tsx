@@ -51,6 +51,7 @@ import { CreateKabarModal } from "@/components/kabar/create-kabar-modal";
 import { LaporanKaderSpmFormCard } from "@/components/komunitas/laporan-kader-spm-form-card";
 import { RekapLaporanKaderWilayahCard } from "@/components/komunitas/rekap-laporan-kader-wilayah-card";
 import { KomunitasPercakapanTab } from "@/components/komunitas/komunitas-percakapan-tab";
+import { useGlobalMessageNotification } from "@/components/notifications/global-message-notification-provider";
 import { AjukanPerubahanPeranModal } from "@/components/komunitas/ajukan-perubahan-peran-modal";
 import { ManageGrupMembersModal } from "@/components/kabar/manage-grup-members-modal";
 import { CardDataAnak } from "@/components/data-anak/card-data-anak";
@@ -156,6 +157,8 @@ export function KomunitasDetailClientView({
     return currentSubtab;
   }, [currentSubtab]);
   const [activeTab, setActiveTab] = useState<string | null>(initialActiveTab);
+  const { groupUnreadCounts, markGroupAsRead } = useGlobalMessageNotification();
+  const communityUnreadCount = groupUnreadCounts[komunitasData.id] || 0;
 
   // State untuk data anak & ATS komunitas
   const [dataAnakState, setDataAnakState] = useState<DataAnakItem[]>(dataAnakList);
@@ -221,6 +224,12 @@ export function KomunitasDetailClientView({
     if (canShowDataAtsCard) return "ats";
     return "kabar";
   });
+
+  useEffect(() => {
+    if (activeMainTab === "percakapan") {
+      markGroupAsRead(komunitasData.id);
+    }
+  }, [activeMainTab, komunitasData.id, markGroupAsRead]);
 
   const [paudStatusFilter, setPaudStatusFilter] = useState<"semua" | "approved" | "pending">("semua");
   const [dataAnakFilterSubTab, setDataAnakFilterSubTab] = useState<
@@ -1420,7 +1429,10 @@ export function KomunitasDetailClientView({
           {/* Tab 7: Percakapan Komunitas */}
           <button
             type="button"
-            onClick={() => setActiveMainTab("percakapan")}
+            onClick={() => {
+              setActiveMainTab("percakapan");
+              markGroupAsRead(komunitasData.id);
+            }}
             className={cn(
               "flex items-center gap-2 px-3.5 py-2.5 rounded-lg text-xs font-bold transition-all cursor-pointer border shrink-0",
               activeMainTab === "percakapan"
@@ -1430,6 +1442,11 @@ export function KomunitasDetailClientView({
           >
             <MessageCircle className="h-4 w-4" />
             <span>Percakapan Komunitas</span>
+            {communityUnreadCount > 0 && (
+              <span className="px-1.5 py-0.2 rounded-md font-mono text-2xs bg-rose-500 text-white font-bold animate-pulse">
+                {communityUnreadCount}
+              </span>
+            )}
           </button>
         </div>
 

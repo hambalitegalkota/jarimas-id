@@ -1453,12 +1453,13 @@ export async function getGroupChatRooms(): Promise<{
     }
 
     // 5. Ambil pesan terakhir dari grup
-    const lastMsgMap: Record<string, { pesan: string; sender_name: string; created_at: string }> = {};
+    const lastMsgMap: Record<string, { pesan: string; sender_name: string; sender_id?: string; created_at: string }> = {};
     try {
       const { data: lastMessages } = await clientToUse
         .from("pesan_grup")
         .select(`
           komunitas_id,
+          user_id,
           pesan,
           created_at,
           profiles (
@@ -1473,6 +1474,7 @@ export async function getGroupChatRooms(): Promise<{
             lastMsgMap[lm.komunitas_id] = {
               pesan: lm.pesan,
               sender_name: lm.profiles?.nama_lengkap || "Warga",
+              sender_id: lm.user_id,
               created_at: lm.created_at,
             };
           }
@@ -1782,9 +1784,102 @@ export async function sendGroupMessage(params: {
 /**
  * Server Action: Mengambil ringkasan pesan masuk belum terbaca untuk Global Notification System
  */
-export async function getUnreadMessagesSummary(): Promise<{
+/**
+ * Mengambil detail pesan grup & profil pengirim untuk notifikasi realtime
+ */
+export async function getGroupMessageNotificationInfo(
+  komunitasId: string,
+  senderId: string
+): Promise<{
+  success: boolean;
+  isMember: boolean;
+  groupName?: string;
+  groupJenis?: string;
+  senderName?: string;
+  senderAvatar?: string | null;
+  senderRole?: string;
+}> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { success: false, isMember: false };
+    }
+
+    const cUuid = toValidUUID(komunitasId);
+
+    // Ambil info grup komunitas / kegiatan
+    const { data: kom } = await supabase
+      .from("komunitas")
+      .select("id, nama, jenis, created_by")
+      .eq("id", cUuid)
+      .maybeSingle();
+
+    if (!kom) {
+      return { success: false, isMember: false };
+    }
+
+    // Periksa keanggotaan user saat ini di grup
+    const isCreator = Boolean(kom.created_by && kom.created_by === user.id);
+    let isMember = isCreator;
+
+    if (!isMember) {
+      const { data: membership } = await supabase
+        .from("anggota_komunitas")
+        .select("status")
+        .eq("komunitas_id", cUuid)
+        .eq("user_id", user.id)
+        .eq("status", "approved")
+        .maybeSingle();
+
+      isMember = Boolean(membership);
+    }
+
+    if (!isMember) {
+      // Cek apakah user adalah Super Admin / Admin Pusat
+      const { data: prof } = await supabase
+        .from("profiles")
+        .select("is_super_admin, is_admin_pusat")
+        .eq("id", user.id)
+        .maybeSingle();
+      if (prof?.is_super_admin || prof?.is_admin_pusat) {
+        isMember = true;
+      }
+    }
+
+    // Ambil info profil pengirim
+    const { data: senderProf } = await supabase
+      .from("profiles")
+      .select("nama_lengkap, avatar_url")
+      .eq("id", senderId)
+      .maybeSingle();
+
+    return {
+      success: true,
+      isMember,
+      groupName: kom.nama,
+      groupJenis: kom.jenis,
+      senderName: senderProf?.nama_lengkap || "Warga Jarimas",
+      senderAvatar: senderProf?.avatar_url || null,
+      senderRole: kom.jenis === "kegiatan" ? "Anggota Kegiatan" : "Warga Komunitas",
+    };
+  } catch (err: any) {
+    console.error("Error getGroupMessageNotificationInfo:", err);
+    return { success: false, isMember: false };
+  }
+}
+
+export async function getUnreadMessagesSummary(
+  lastReadGroupMap?: Record<string, string>
+): Promise<{
   success: boolean;
   totalUnread: number;
+  totalUnreadDirect: number;
+  totalUnreadGroup: number;
+  groupUnreadCounts: Record<string, number>;
   currentUserId?: string | null;
   unreadList: IncomingMessageNotificationItem[];
 }> {
@@ -1798,6 +1893,9 @@ export async function getUnreadMessagesSummary(): Promise<{
       return {
         success: true,
         totalUnread: 0,
+        totalUnreadDirect: 0,
+        totalUnreadGroup: 0,
+        groupUnreadCounts: {},
         currentUserId: null,
         unreadList: [],
       };
@@ -1805,7 +1903,7 @@ export async function getUnreadMessagesSummary(): Promise<{
 
     const currentUserId = user.id;
 
-    // Ambil pesan pribadi yang belum dibaca (is_read = false) untuk user saat ini
+    // 1. Ambil pesan pribadi yang belum dibaca (is_read = false) untuk user saat ini
     const { data: unreadRows, error } = await supabase
       .from("pesan_pribadi")
       .select("id, sender_id, receiver_id, pesan, created_at, is_read")
@@ -1814,23 +1912,16 @@ export async function getUnreadMessagesSummary(): Promise<{
       .order("created_at", { ascending: false })
       .limit(30);
 
-    if (error || !unreadRows || unreadRows.length === 0) {
-      return {
-        success: true,
-        totalUnread: 0,
-        currentUserId,
-        unreadList: [],
-      };
-    }
-
-    const totalUnread = unreadRows.length;
-    const senderIds = Array.from(new Set(unreadRows.map((r) => r.sender_id)));
+    const directUnreadCount = unreadRows?.length || 0;
+    const senderIds = Array.from(new Set((unreadRows || []).map((r) => r.sender_id)));
 
     // Fetch sender profiles
-    const { data: profiles } = await supabase
-      .from("profiles")
-      .select("id, nama_lengkap, email, nomor_hp, avatar_url, is_super_admin")
-      .in("id", senderIds);
+    const { data: profiles } = senderIds.length > 0
+      ? await supabase
+          .from("profiles")
+          .select("id, nama_lengkap, email, nomor_hp, avatar_url, is_super_admin")
+          .in("id", senderIds)
+      : { data: [] };
 
     const profileMap: Record<string, any> = {};
     if (profiles) {
@@ -1851,19 +1942,21 @@ export async function getUnreadMessagesSummary(): Promise<{
     }
 
     // Fetch affiliations for senders
-    const { data: affiliations } = await supabase
-      .from("anggota_komunitas")
-      .select(`
-        user_id,
-        peran,
-        komunitas (
-          id,
-          nama,
-          jenis
-        )
-      `)
-      .in("user_id", senderIds)
-      .eq("status", "approved");
+    const { data: affiliations } = senderIds.length > 0
+      ? await supabase
+          .from("anggota_komunitas")
+          .select(`
+            user_id,
+            peran,
+            komunitas (
+              id,
+              nama,
+              jenis
+            )
+          `)
+          .in("user_id", senderIds)
+          .eq("status", "approved")
+      : { data: [] };
 
     const affMap: Record<string, string> = {};
     if (affiliations) {
@@ -1874,7 +1967,7 @@ export async function getUnreadMessagesSummary(): Promise<{
       });
     }
 
-    const unreadList: IncomingMessageNotificationItem[] = unreadRows.map((row) => {
+    const directUnreadList: IncomingMessageNotificationItem[] = (unreadRows || []).map((row) => {
       const isBot = row.sender_id === JARIMAS_BOT_ID;
       const prof = profileMap[row.sender_id];
       const senderName = isBot
@@ -1893,6 +1986,7 @@ export async function getUnreadMessagesSummary(): Promise<{
         senderCommunity: isBot ? "Pusat Bantuan & Notifikasi Warga" : affMap[row.sender_id],
         pesan: row.pesan,
         createdAt: row.created_at,
+        isGroup: false,
         partnerUser: {
           id: row.sender_id,
           nama_lengkap: senderName,
@@ -1906,9 +2000,95 @@ export async function getUnreadMessagesSummary(): Promise<{
       };
     });
 
+    // 2. Ambil grup/komunitas yang diikuti oleh user saat ini
+    const { data: myMemberships } = await supabase
+      .from("anggota_komunitas")
+      .select("komunitas_id")
+      .eq("user_id", currentUserId)
+      .eq("status", "approved");
+
+    const { data: myCreatedKom } = await supabase
+      .from("komunitas")
+      .select("id")
+      .eq("created_by", currentUserId);
+
+    const relevantGroupIds = Array.from(
+      new Set([
+        ...(myMemberships || []).map((m: any) => m.komunitas_id),
+        ...(myCreatedKom || []).map((k: any) => k.id),
+      ].filter(Boolean))
+    );
+
+    const groupUnreadCounts: Record<string, number> = {};
+    const groupUnreadList: IncomingMessageNotificationItem[] = [];
+
+    if (relevantGroupIds.length > 0) {
+      const { data: groupMsgs } = await supabase
+        .from("pesan_grup")
+        .select(`
+          id,
+          komunitas_id,
+          user_id,
+          pesan,
+          created_at,
+          profiles (
+            id,
+            nama_lengkap,
+            avatar_url
+          ),
+          komunitas (
+            id,
+            nama,
+            jenis
+          )
+        `)
+        .in("komunitas_id", relevantGroupIds)
+        .neq("user_id", currentUserId)
+        .order("created_at", { ascending: false })
+        .limit(100);
+
+      if (groupMsgs) {
+        groupMsgs.forEach((gm: any) => {
+          const komId = gm.komunitas_id;
+          const lastRead = lastReadGroupMap?.[komId];
+          const isUnread = lastRead
+            ? new Date(gm.created_at).getTime() > new Date(lastRead).getTime()
+            : new Date(gm.created_at).getTime() > Date.now() - 7 * 24 * 60 * 60 * 1000;
+
+          if (isUnread) {
+            groupUnreadCounts[komId] = (groupUnreadCounts[komId] || 0) + 1;
+            groupUnreadList.push({
+              id: gm.id,
+              senderId: gm.user_id,
+              senderName: gm.profiles?.nama_lengkap || "Warga",
+              senderAvatar: gm.profiles?.avatar_url || null,
+              senderRole: "Anggota Grup",
+              senderCommunity: gm.komunitas?.nama || "Grup Komunitas",
+              pesan: gm.pesan,
+              createdAt: gm.created_at,
+              isGroup: true,
+              groupId: komId,
+              groupName: gm.komunitas?.nama || "Grup",
+              groupType: gm.komunitas?.jenis || "kegiatan",
+            });
+          }
+        });
+      }
+    }
+
+    const totalUnreadGroup = Object.values(groupUnreadCounts).reduce((a, b) => a + b, 0);
+    const totalUnread = directUnreadCount + totalUnreadGroup;
+
+    const unreadList = [...directUnreadList, ...groupUnreadList].sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+
     return {
       success: true,
       totalUnread,
+      totalUnreadDirect: directUnreadCount,
+      totalUnreadGroup,
+      groupUnreadCounts,
       currentUserId,
       unreadList,
     };
@@ -1917,6 +2097,9 @@ export async function getUnreadMessagesSummary(): Promise<{
     return {
       success: false,
       totalUnread: 0,
+      totalUnreadDirect: 0,
+      totalUnreadGroup: 0,
+      groupUnreadCounts: {},
       unreadList: [],
     };
   }

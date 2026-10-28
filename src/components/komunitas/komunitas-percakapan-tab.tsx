@@ -25,6 +25,7 @@ import { getGroupMessages, sendGroupMessage } from "@/app/actions/pertemanan";
 import { createClient } from "@/utils/supabase/client";
 import type { KomunitasWithMembership, PesanGrup } from "@/types/database";
 import { formatPeranDisplay, isRoleAdmin, cn, isAdminPusat, isSuperAdmin } from "@/lib/utils";
+import { useGlobalMessageNotification } from "@/components/notifications/global-message-notification-provider";
 
 interface KomunitasPercakapanTabProps {
   komunitas: KomunitasWithMembership;
@@ -72,6 +73,7 @@ export function KomunitasPercakapanTab({
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const { markGroupAsRead } = useGlobalMessageNotification();
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -123,6 +125,7 @@ export function KomunitasPercakapanTab({
     }
 
     loadMessages();
+    markGroupAsRead(komunitas.id);
 
     // 1. Supabase Realtime Subscription
     let channel: any = null;
@@ -143,6 +146,7 @@ export function KomunitasPercakapanTab({
             const res = await getGroupMessages(komunitas.id);
             if (isMounted && res.success && res.messages) {
               setMessages(res.messages);
+              markGroupAsRead(komunitas.id);
               setTimeout(() => scrollToBottom("smooth"), 100);
             }
           }

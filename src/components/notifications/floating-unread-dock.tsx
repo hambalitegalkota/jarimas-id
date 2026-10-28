@@ -48,11 +48,13 @@ export function FloatingUnreadDock({
             <div className="flex items-center gap-1.5">
               <span className="text-xs font-black text-emerald-400 flex items-center gap-1">
                 <Sparkles className="h-3 w-3" />
-                {unreadCount} Pesan Menunggu
+                {unreadCount} Pesan Belum Dibaca
               </span>
             </div>
             <span className="text-[11px] font-medium text-slate-300 line-clamp-1 max-w-[170px] sm:max-w-[220px]">
-              Tanggapi {senderFirstName}...
+              {latestUnread?.isGroup
+                ? `${latestUnread.groupName || "Grup"}: ${senderFirstName}...`
+                : `Tanggapi ${senderFirstName}...`}
             </span>
           </div>
 

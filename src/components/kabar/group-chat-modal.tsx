@@ -22,6 +22,7 @@ import { deleteGrupKegiatan } from "@/app/actions/grup-kegiatan";
 import { createClient } from "@/utils/supabase/client";
 import type { PesanGrup, GrupChatRoom, RegisteredUserItem } from "@/types/database";
 import { ManageGrupMembersModal } from "./manage-grup-members-modal";
+import { useGlobalMessageNotification } from "@/components/notifications/global-message-notification-provider";
 
 interface GroupChatModalProps {
   isOpen: boolean;
@@ -60,6 +61,7 @@ export function GroupChatModal({
   const [isLoading, setIsLoading] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [showMembersModal, setShowMembersModal] = useState(false);
+  const { markGroupAsRead } = useGlobalMessageNotification();
 
   const isCreatorOrAdmin =
     Boolean(canManage) ||
@@ -120,6 +122,7 @@ export function GroupChatModal({
     }
 
     loadMessages();
+    if (room?.id) markGroupAsRead(room.id);
 
     setTimeout(() => {
       inputRef.current?.focus();
@@ -145,6 +148,7 @@ export function GroupChatModal({
             const res = await getGroupMessages(room.id);
             if (isMounted && res.success && res.messages) {
               setMessages(res.messages);
+              if (room?.id) markGroupAsRead(room.id);
               setTimeout(() => scrollToBottom("smooth"), 100);
             }
           }

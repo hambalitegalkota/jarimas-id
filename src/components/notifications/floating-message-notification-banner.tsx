@@ -161,12 +161,20 @@ export function FloatingMessageNotificationBanner({
                 <div className="flex items-center gap-1.5">
                   <span className="text-[11px] font-black uppercase tracking-wider text-emerald-400 flex items-center gap-1">
                     <Sparkles className="h-3 w-3 animate-spin duration-1000" />
-                    {isGroupInvite ? "Undangan Grup Kegiatan" : "Pesan Baru Masuk"}
+                    {notification.isGroup
+                      ? `Grup: ${notification.groupName || "Obrolan Grup"}`
+                      : isGroupInvite
+                      ? "Undangan Grup Kegiatan"
+                      : "Pesan Baru Masuk"}
                   </span>
                 </div>
                 <span className="text-[10px] text-slate-400 flex items-center gap-1 font-medium">
                   <Clock className="h-2.5 w-2.5 text-emerald-400" />
-                  {isGroupInvite ? "Anda otomatis tergabung di obrolan grup" : "Menunggu tanggapan Anda"}
+                  {notification.isGroup
+                    ? `Pesan baru dari ${notification.senderName}`
+                    : isGroupInvite
+                    ? "Anda otomatis tergabung di obrolan grup"
+                    : "Menunggu tanggapan Anda"}
                 </span>
               </div>
             </div>
@@ -273,7 +281,11 @@ export function FloatingMessageNotificationBanner({
                 type="text"
                 value={replyText}
                 onChange={(e) => setReplyText(e.target.value)}
-                placeholder={`Tulis balasan untuk ${notification.senderName.split(" ")[0]}...`}
+                placeholder={
+                notification.isGroup
+                  ? `Tulis balasan di ${notification.groupName || "grup"}...`
+                  : `Tulis balasan untuk ${notification.senderName.split(" ")[0]}...`
+              }
                 disabled={isSending || sendSuccess}
                 className="w-full rounded-xl bg-slate-950/80 border border-slate-700/80 focus:border-emerald-400 px-3 py-2 text-xs sm:text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 transition-all"
               />
@@ -308,7 +320,19 @@ export function FloatingMessageNotificationBanner({
           )}
 
           {/* Action Footer: Direct Group Join or Open Full Chat */}
-          {groupLinkMatch ? (
+          {notification.isGroup ? (
+            <div className="pt-1 flex items-center justify-between gap-2 border-t border-slate-800/80">
+              <button
+                type="button"
+                onClick={onOpenFullChat}
+                className="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold px-3 py-2.5 text-xs shadow-lg shadow-emerald-950/60 transition-all cursor-pointer group active:scale-98"
+              >
+                <MessageCircle className="h-4 w-4 text-amber-300 animate-pulse" />
+                <span>Buka Percakapan Grup ({notification.groupName || "Grup"})</span>
+                <ArrowRight className="h-4 w-4 ml-auto group-hover:translate-x-1 transition-transform" />
+              </button>
+            </div>
+          ) : groupLinkMatch ? (
             <div className="pt-1 flex flex-col gap-2 border-t border-slate-800/80">
               <button
                 type="button"

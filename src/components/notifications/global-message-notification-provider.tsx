@@ -14,6 +14,8 @@ import {
   getUserProfileForChat,
   sendPrivateMessage,
   markConversationAsRead,
+  getGroupMessageNotificationInfo,
+  sendGroupMessage,
 } from "@/app/actions/pertemanan";
 import {
   playNotificationChime,
@@ -25,26 +27,37 @@ import type {
   IncomingMessageNotificationItem,
   RegisteredUserItem,
   PesanPribadi,
+  PesanGrup,
+  GrupChatRoom,
 } from "@/types/database";
 import { JARIMAS_BOT_ID } from "@/types/database";
 import { FloatingMessageNotificationBanner } from "./floating-message-notification-banner";
 import { FloatingUnreadDock } from "./floating-unread-dock";
 import { ChatDrawerModal } from "@/components/warga/chat-drawer-modal";
+import { GroupChatModal } from "@/components/kabar/group-chat-modal";
 
 interface GlobalMessageNotificationContextType {
   currentUserId: string | null;
   totalUnreadCount: number;
+  totalUnreadDirect: number;
+  totalUnreadGroup: number;
+  groupUnreadCounts: Record<string, number>;
   activeNotification: IncomingMessageNotificationItem | null;
   unreadList: IncomingMessageNotificationItem[];
   isMuted: boolean;
   isPillDismissed: boolean;
   isChatDrawerOpen: boolean;
   activeChatTarget: RegisteredUserItem | null;
+  isGroupChatOpen: boolean;
+  activeGroupRoom: GrupChatRoom | null;
   onlineUserIds: Set<string>;
   totalOnlineCount: number;
   isUserOnline: (userId: string) => boolean;
   openChatWithUser: (userOrId: RegisteredUserItem | string) => Promise<void>;
   closeChatDrawer: () => void;
+  openGroupChat: (roomOrId: GrupChatRoom | string) => Promise<void>;
+  closeGroupChat: () => void;
+  markGroupAsRead: (groupId: string) => void;
   dismissActiveNotification: () => void;
   quickReplyToActive: (replyText: string) => Promise<{ success: boolean; message?: string }>;
   toggleMute: () => void;
@@ -66,6 +79,23 @@ export function useGlobalMessageNotification() {
   return context;
 }
 
+function getStoredGroupLastRead(userId: string): Record<string, string> {
+  if (typeof window === "undefined" || !userId) return {};
+  const map: Record<string, string> = {};
+  try {
+    const prefix = `jarimas_group_last_read_${userId}_`;
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith(prefix)) {
+        const groupId = key.slice(prefix.length);
+        const val = localStorage.getItem(key);
+        if (val) map[groupId] = val;
+      }
+    }
+  } catch {}
+  return map;
+}
+
 export function GlobalMessageNotificationProvider({
   children,
 }: {
@@ -73,6 +103,9 @@ export function GlobalMessageNotificationProvider({
 }) {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [totalUnreadCount, setTotalUnreadCount] = useState<number>(0);
+  const [totalUnreadDirect, setTotalUnreadDirect] = useState<number>(0);
+  const [totalUnreadGroup, setTotalUnreadGroup] = useState<number>(0);
+  const [groupUnreadCounts, setGroupUnreadCounts] = useState<Record<string, number>>({});
   const [unreadList, setUnreadList] = useState<IncomingMessageNotificationItem[]>([]);
   const [activeNotification, setActiveNotification] =
     useState<IncomingMessageNotificationItem | null>(null);
@@ -82,16 +115,24 @@ export function GlobalMessageNotificationProvider({
   // Realtime Active Online Users State
   const [onlineUserIds, setOnlineUserIds] = useState<Set<string>>(new Set());
 
-  // Global Chat Modal State
+  // Global Chat Modal State (Direct 1-on-1)
   const [isChatDrawerOpen, setIsChatDrawerOpen] = useState(false);
-  const [activeChatTarget, setActiveChatTarget] = useState<RegisteredUserItem | null>(
-    null
-  );
+  const [activeChatTarget, setActiveChatTarget] = useState<RegisteredUserItem | null>(null);
+
+  // Global Group Chat Modal State
+  const [isGroupChatOpen, setIsGroupChatOpen] = useState(false);
+  const [activeGroupRoom, setActiveGroupRoom] = useState<GrupChatRoom | null>(null);
 
   const activeChatTargetRef = useRef<RegisteredUserItem | null>(null);
   const isChatDrawerOpenRef = useRef<boolean>(false);
+  const activeGroupRoomRef = useRef<GrupChatRoom | null>(null);
+  const isGroupChatOpenRef = useRef<boolean>(false);
+  const broadcastChannelRef = useRef<BroadcastChannel | null>(null);
+
   activeChatTargetRef.current = activeChatTarget;
   isChatDrawerOpenRef.current = isChatDrawerOpen;
+  activeGroupRoomRef.current = activeGroupRoom;
+  isGroupChatOpenRef.current = isGroupChatOpen;
 
   // Load mute preference from localStorage
   useEffect(() => {
@@ -113,12 +154,16 @@ export function GlobalMessageNotificationProvider({
     });
   }, []);
 
-  // Fetch unread messages summary from server
+  // Fetch unread messages summary from server (Direct + Group)
   const refreshUnreadCount = useCallback(async () => {
     try {
-      const res = await getUnreadMessagesSummary();
+      const lastReadMap = currentUserId ? getStoredGroupLastRead(currentUserId) : {};
+      const res = await getUnreadMessagesSummary(lastReadMap);
       if (res.success) {
         setTotalUnreadCount(res.totalUnread);
+        setTotalUnreadDirect(res.totalUnreadDirect || 0);
+        setTotalUnreadGroup(res.totalUnreadGroup || 0);
+        setGroupUnreadCounts(res.groupUnreadCounts || {});
         setUnreadList(res.unreadList || []);
         if (res.currentUserId) {
           setCurrentUserId(res.currentUserId);
@@ -130,9 +175,36 @@ export function GlobalMessageNotificationProvider({
     } catch (err) {
       console.warn("Gagal merefresh notifikasi pesan:", err);
     }
-  }, []);
+  }, [currentUserId]);
 
-  // Handle incoming message trigger
+  // Mark a group's messages as read
+  const markGroupAsRead = useCallback(
+    (groupId: string) => {
+      if (!groupId || !currentUserId) return;
+      if (typeof window !== "undefined") {
+        localStorage.setItem(`jarimas_group_last_read_${currentUserId}_${groupId}`, new Date().toISOString());
+      }
+      setGroupUnreadCounts((prev) => {
+        const count = prev[groupId] || 0;
+        if (count <= 0) return prev;
+        const next = { ...prev };
+        delete next[groupId];
+        setTotalUnreadGroup((g) => Math.max(0, g - count));
+        setTotalUnreadCount((t) => Math.max(0, t - count));
+        setUnreadList((list) => list.filter((item) => !(item.isGroup && item.groupId === groupId)));
+        return next;
+      });
+
+      if (broadcastChannelRef.current) {
+        try {
+          broadcastChannelRef.current.postMessage({ type: "REFRESH_UNREAD" });
+        } catch {}
+      }
+    },
+    [currentUserId]
+  );
+
+  // Handle incoming private message trigger
   const handleIncomingMessage = useCallback(
     async (newMsg: PesanPribadi) => {
       // Ignore if sent by self
@@ -184,6 +256,7 @@ export function GlobalMessageNotificationProvider({
         senderCommunity: senderInfo?.komunitas_list?.[0]?.nama,
         pesan: newMsg.pesan,
         createdAt: newMsg.created_at || new Date().toISOString(),
+        isGroup: false,
         partnerUser: senderInfo || {
           id: newMsg.sender_id,
           nama_lengkap: senderName,
@@ -196,12 +269,76 @@ export function GlobalMessageNotificationProvider({
       setActiveNotification(notifItem);
       setIsPillDismissed(false);
       setTotalUnreadCount((prev) => prev + 1);
+      setTotalUnreadDirect((prev) => prev + 1);
       setUnreadList((prev) => [notifItem, ...prev]);
 
       // Flash browser tab title to alert user
       startTabTitleFlash(senderName, totalUnreadCount + 1);
     },
     [currentUserId, isMuted, totalUnreadCount, refreshUnreadCount]
+  );
+
+  // Handle incoming group message trigger
+  const handleIncomingGroupMessage = useCallback(
+    async (newMsg: PesanGrup) => {
+      // Ignore if sent by self
+      if (newMsg.user_id === currentUserId) return;
+
+      // If user is currently looking at this specific group modal, don't show floating banner
+      if (
+        isGroupChatOpenRef.current &&
+        activeGroupRoomRef.current?.id === newMsg.komunitas_id
+      ) {
+        markGroupAsRead(newMsg.komunitas_id);
+        return;
+      }
+
+      // Fetch group details & verify membership
+      let info: any = null;
+      try {
+        const infoRes = await getGroupMessageNotificationInfo(newMsg.komunitas_id, newMsg.user_id);
+        if (infoRes.success && infoRes.isMember) {
+          info = infoRes;
+        }
+      } catch (err) {
+        console.warn("Gagal memuat info grup:", err);
+      }
+
+      if (!info) return; // Not member of this group
+
+      // Play alert chime and haptics
+      playNotificationChime(isMuted);
+      triggerNotificationHaptics();
+
+      const notifItem: IncomingMessageNotificationItem = {
+        id: newMsg.id,
+        senderId: newMsg.user_id,
+        senderName: info.senderName,
+        senderAvatar: info.senderAvatar,
+        senderRole: info.senderRole,
+        senderCommunity: info.groupName,
+        pesan: newMsg.pesan,
+        createdAt: newMsg.created_at || new Date().toISOString(),
+        isGroup: true,
+        groupId: newMsg.komunitas_id,
+        groupName: info.groupName,
+        groupType: info.groupJenis,
+      };
+
+      setActiveNotification(notifItem);
+      setIsPillDismissed(false);
+      setTotalUnreadCount((prev) => prev + 1);
+      setTotalUnreadGroup((prev) => prev + 1);
+      setGroupUnreadCounts((prev) => ({
+        ...prev,
+        [newMsg.komunitas_id]: (prev[newMsg.komunitas_id] || 0) + 1,
+      }));
+      setUnreadList((prev) => [notifItem, ...prev]);
+
+      // Flash browser tab title to alert user
+      startTabTitleFlash(info.groupName || info.senderName, totalUnreadCount + 1);
+    },
+    [currentUserId, isMuted, totalUnreadCount, markGroupAsRead]
   );
 
   // Inisialisasi Auth & Supabase Realtime Listener
@@ -227,6 +364,9 @@ export function GlobalMessageNotificationProvider({
           } else {
             setCurrentUserId(null);
             setTotalUnreadCount(0);
+            setTotalUnreadDirect(0);
+            setTotalUnreadGroup(0);
+            setGroupUnreadCounts({});
             setUnreadList([]);
             setActiveNotification(null);
             setOnlineUserIds(new Set());
@@ -243,6 +383,9 @@ export function GlobalMessageNotificationProvider({
             } else {
               setCurrentUserId(null);
               setTotalUnreadCount(0);
+              setTotalUnreadDirect(0);
+              setTotalUnreadGroup(0);
+              setGroupUnreadCounts({});
               setUnreadList([]);
               setActiveNotification(null);
               setOnlineUserIds(new Set());
@@ -252,7 +395,7 @@ export function GlobalMessageNotificationProvider({
         );
         authSub = authListener.data.subscription;
 
-        // 3. Supabase Realtime Subscription untuk pesan pribadi masuk & perubahan status pesan
+        // 3. Supabase Realtime Subscription untuk pesan pribadi & pesan grup
         if (user) {
           channel = supabase
             .channel(`global_message_notifications_${user.id}`)
@@ -305,8 +448,11 @@ export function GlobalMessageNotificationProvider({
                 schema: "public",
                 table: "pesan_grup",
               },
-              () => {
-                refreshUnreadCount();
+              (payload: any) => {
+                const newGroupMsg = payload.new as PesanGrup;
+                if (newGroupMsg) {
+                  handleIncomingGroupMessage(newGroupMsg);
+                }
               }
             )
             .subscribe();
@@ -365,7 +511,7 @@ export function GlobalMessageNotificationProvider({
 
     init();
 
-    // 5. Polling sinkronisasi cadangan saat tab aktif (60 detik, andalkan Realtime Supabase utama)
+    // 5. Polling sinkronisasi cadangan saat tab aktif (60 detik)
     const interval = setInterval(() => {
       if (typeof document !== "undefined" && !document.hidden && currentUserId) {
         refreshUnreadCount();
@@ -377,6 +523,7 @@ export function GlobalMessageNotificationProvider({
     if (typeof window !== "undefined" && "BroadcastChannel" in window) {
       try {
         broadcastChannel = new BroadcastChannel("jarimas_unread_sync");
+        broadcastChannelRef.current = broadcastChannel;
         broadcastChannel.onmessage = (event) => {
           if (event.data?.type === "REFRESH_UNREAD") {
             refreshUnreadCount();
@@ -399,90 +546,64 @@ export function GlobalMessageNotificationProvider({
       isMounted = false;
       clearInterval(interval);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
-      if (broadcastChannel) {
-        try {
-          broadcastChannel.close();
-        } catch {
-          // Cleanup
-        }
-      }
       if (authSub) authSub.unsubscribe();
-      if (channel) {
-        try {
-          const supabase = createClient();
-          supabase.removeChannel(channel);
-        } catch {
-          // Cleanup
-        }
-      }
-      if (presenceChannel) {
-        try {
-          const supabase = createClient();
-          supabase.removeChannel(presenceChannel);
-        } catch {
-          // Cleanup
-        }
-      }
+      if (channel) channel.unsubscribe();
+      if (presenceChannel) presenceChannel.unsubscribe();
+      if (broadcastChannel) broadcastChannel.close();
     };
-  }, [currentUserId, handleIncomingMessage, refreshUnreadCount]);
+  }, [handleIncomingMessage, handleIncomingGroupMessage, refreshUnreadCount, currentUserId]);
 
-  // Online status helper
+  const dismissActiveNotification = useCallback(() => {
+    setActiveNotification(null);
+  }, []);
+
+  // Quick reply from floating notification banner (Direct or Group)
+  const quickReplyToActive = useCallback(
+    async (replyText: string) => {
+      if (!activeNotification || !replyText.trim()) {
+        return { success: false, message: "Pesan tidak boleh kosong." };
+      }
+
+      if (activeNotification.isGroup && activeNotification.groupId) {
+        const res = await sendGroupMessage({
+          komunitasId: activeNotification.groupId,
+          pesan: replyText.trim(),
+        });
+        if (res.success) {
+          markGroupAsRead(activeNotification.groupId);
+          refreshUnreadCount();
+        }
+        return res;
+      } else {
+        const res = await sendPrivateMessage({
+          receiverId: activeNotification.senderId,
+          pesan: replyText.trim(),
+        });
+        if (res.success) {
+          markConversationAsRead(activeNotification.senderId);
+          refreshUnreadCount();
+        }
+        return res;
+      }
+    },
+    [activeNotification, markGroupAsRead, refreshUnreadCount]
+  );
+
+  const totalOnlineCount = onlineUserIds.size;
+
   const isUserOnline = useCallback(
     (userId: string) => {
       if (!userId) return false;
-      if (userId === JARIMAS_BOT_ID) return true; // Bot 24/7 selalu online
+      if (userId === JARIMAS_BOT_ID) return true;
       return onlineUserIds.has(userId);
     },
     [onlineUserIds]
   );
 
-  const totalOnlineCount = onlineUserIds.size;
-
-  // Dismiss floating banner
-  const dismissActiveNotification = useCallback(() => {
-    setActiveNotification(null);
-    stopTabTitleFlash();
-  }, []);
-
-  // Quick Reply handler right from notification
-  const quickReplyToActive = useCallback(
-    async (replyText: string) => {
-      if (!activeNotification || !replyText.trim()) {
-        return { success: false, message: "Pesan balasan tidak boleh kosong." };
-      }
-
-      try {
-        const senderId = activeNotification.senderId;
-        const res = await sendPrivateMessage({
-          receiverId: senderId,
-          pesan: replyText.trim(),
-        });
-
-        if (res.success) {
-          // Tandai obrolan sebagai telah dibaca
-          await markConversationAsRead(senderId);
-          setActiveNotification(null);
-          stopTabTitleFlash();
-          refreshUnreadCount();
-          return { success: true, message: "Balasan berhasil terkirim!" };
-        } else {
-          return { success: false, message: res.message || "Gagal mengirim balasan." };
-        }
-      } catch (err: any) {
-        return {
-          success: false,
-          message: err?.message || "Terjadi kesalahan saat membalas.",
-        };
-      }
-    },
-    [activeNotification, refreshUnreadCount]
-  );
-
-  // Open full chat modal from any page
+  // Direct chat opener
   const openChatWithUser = useCallback(
     async (userOrId: RegisteredUserItem | string) => {
       dismissActiveNotification();
-      stopTabTitleFlash();
 
       if (typeof userOrId === "string") {
         try {
@@ -494,7 +615,7 @@ export function GlobalMessageNotificationProvider({
             refreshUnreadCount();
           }
         } catch (err) {
-          console.error("Gagal membuka chat modal:", err);
+          console.warn("Gagal membuka chat drawer:", err);
         }
       } else {
         setActiveChatTarget(userOrId);
@@ -514,6 +635,62 @@ export function GlobalMessageNotificationProvider({
     refreshUnreadCount();
   }, [refreshUnreadCount]);
 
+  // Group chat opener
+  const openGroupChat = useCallback(
+    async (roomOrId: GrupChatRoom | string) => {
+      dismissActiveNotification();
+
+      try {
+        let room: GrupChatRoom | null = null;
+        if (typeof roomOrId === "string") {
+          const supabase = createClient();
+          const { data: dbKom } = await supabase
+            .from("komunitas")
+            .select("*")
+            .eq("id", roomOrId)
+            .maybeSingle();
+
+          if (dbKom) {
+            room = {
+              id: dbKom.id,
+              nama: dbKom.nama,
+              jenis: dbKom.jenis,
+              deskripsi: dbKom.deskripsi,
+              logo_url: dbKom.logo_url,
+              kecamatan: dbKom.kecamatan,
+              kelurahan: dbKom.kelurahan,
+              rw: dbKom.rw,
+              rt: dbKom.rt,
+              jumlah_anggota: 1,
+              is_kegiatan: dbKom.jenis === "kegiatan",
+              created_by: dbKom.created_by,
+            };
+          }
+        } else {
+          room = roomOrId;
+        }
+
+        if (room) {
+          setActiveGroupRoom(room);
+          setIsGroupChatOpen(true);
+          markGroupAsRead(room.id);
+        }
+      } catch (err) {
+        console.warn("Gagal membuka grup chat:", err);
+      }
+    },
+    [dismissActiveNotification, markGroupAsRead]
+  );
+
+  const closeGroupChat = useCallback(() => {
+    if (activeGroupRoom) {
+      markGroupAsRead(activeGroupRoom.id);
+    }
+    setIsGroupChatOpen(false);
+    setActiveGroupRoom(null);
+    refreshUnreadCount();
+  }, [activeGroupRoom, markGroupAsRead, refreshUnreadCount]);
+
   const restoreBannerFromPill = useCallback(() => {
     if (unreadList.length > 0) {
       setActiveNotification(unreadList[0]);
@@ -530,17 +707,25 @@ export function GlobalMessageNotificationProvider({
       value={{
         currentUserId,
         totalUnreadCount,
+        totalUnreadDirect,
+        totalUnreadGroup,
+        groupUnreadCounts,
         activeNotification,
         unreadList,
         isMuted,
         isPillDismissed,
         isChatDrawerOpen,
         activeChatTarget,
+        isGroupChatOpen,
+        activeGroupRoom,
         onlineUserIds,
         totalOnlineCount,
         isUserOnline,
         openChatWithUser,
         closeChatDrawer,
+        openGroupChat,
+        closeGroupChat,
+        markGroupAsRead,
         dismissActiveNotification,
         quickReplyToActive,
         toggleMute,
@@ -551,7 +736,7 @@ export function GlobalMessageNotificationProvider({
     >
       {children}
 
-      {/* 1. Global Floating Incoming Message Banner */}
+      {/* 1. Global Floating Incoming Message Banner (Direct or Group) */}
       {activeNotification && (
         <FloatingMessageNotificationBanner
           notification={activeNotification}
@@ -559,7 +744,9 @@ export function GlobalMessageNotificationProvider({
           onDismiss={dismissActiveNotification}
           onQuickReply={quickReplyToActive}
           onOpenFullChat={() => {
-            if (activeNotification.partnerUser) {
+            if (activeNotification.isGroup && activeNotification.groupId) {
+              openGroupChat(activeNotification.groupId);
+            } else if (activeNotification.partnerUser) {
               openChatWithUser(activeNotification.partnerUser);
             } else {
               openChatWithUser(activeNotification.senderId);
@@ -575,10 +762,13 @@ export function GlobalMessageNotificationProvider({
           unreadCount={totalUnreadCount}
           latestUnread={unreadList[0]}
           onClick={() => {
-            if (unreadList[0]?.partnerUser) {
-              openChatWithUser(unreadList[0].partnerUser);
-            } else if (unreadList[0]?.senderId) {
-              openChatWithUser(unreadList[0].senderId);
+            const first = unreadList[0];
+            if (first?.isGroup && first.groupId) {
+              openGroupChat(first.groupId);
+            } else if (first?.partnerUser) {
+              openChatWithUser(first.partnerUser);
+            } else if (first?.senderId) {
+              openChatWithUser(first.senderId);
             } else {
               restoreBannerFromPill();
             }
@@ -587,12 +777,22 @@ export function GlobalMessageNotificationProvider({
         />
       )}
 
-      {/* 3. Global Integrated Chat Modal (Accessible from any page!) */}
+      {/* 3. Global Integrated Chat Modal (Direct 1-on-1, Accessible from any page!) */}
       {isChatDrawerOpen && activeChatTarget && (
         <ChatDrawerModal
           isOpen={isChatDrawerOpen}
           onClose={closeChatDrawer}
           targetUser={activeChatTarget}
+          currentUserId={currentUserId}
+        />
+      )}
+
+      {/* 4. Global Integrated Group Chat Modal (Accessible from any page!) */}
+      {isGroupChatOpen && activeGroupRoom && (
+        <GroupChatModal
+          isOpen={isGroupChatOpen}
+          onClose={closeGroupChat}
+          room={activeGroupRoom}
           currentUserId={currentUserId}
         />
       )}
