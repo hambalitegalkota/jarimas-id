@@ -8,6 +8,7 @@ import {
   isDummyDataAnak,
   normalizeWilayah,
   formatNamaSekolahDisplay,
+  isValidKeturenRtRw,
 } from "@/lib/data-anak-helpers";
 import { isAdminPusat, isSuperAdmin as checkIsSuperAdmin } from "@/lib/utils";
 
@@ -87,10 +88,16 @@ export async function getRekapDataAnakUsiaDiniAction(): Promise<{
     const chunkResults = await Promise.all(chunkPromises);
     const dbChildren: any[] = chunkResults.flatMap((res) => res.data || []);
 
-    // Filter ketat: Hanya data anak balita / PAUD riil (BUKAN data ATS dan BUKAN data dummy uji coba)
-    const validLiveChildren = (dbChildren || []).filter(
-      (c) => !isDataAtsRecord(c) && !isDummyDataAnak(c)
-    );
+    // Filter ketat: Hanya data anak balita / PAUD riil (BUKAN data ATS, BUKAN data dummy, dan memenuhi ketentuan wilayah Keturen)
+    const validLiveChildren = (dbChildren || []).filter((c) => {
+      if (isDataAtsRecord(c) || isDummyDataAnak(c)) return false;
+      const parsed = parseDataAnakDetails(c.alasan_sekolah);
+      const kel = parsed.domisiliKelurahan || parsed.kkKelurahan;
+      const rw = parsed.domisiliRw || parsed.kkRw;
+      const rt = parsed.domisiliRt || parsed.kkRt;
+      if (!isValidKeturenRtRw(kel, rw, rt)) return false;
+      return true;
+    });
     const totalLiveRecords = validLiveChildren.length;
 
     // 2. Inisialisasi seluruh 27 Kelurahan resmi Kota Tegal

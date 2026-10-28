@@ -36,7 +36,12 @@ import {
   getRtListByKelurahan,
 } from "@/lib/constants/tegal-data";
 import { extractKomunitasMetadata } from "@/lib/admin-helpers";
-import { getPosyanduCakupanRw } from "@/lib/data-anak-helpers";
+import {
+  getPosyanduCakupanRw,
+  getPosyanduCakupanWilayah,
+  normalizeWilayah,
+  normalizeRtRwNum,
+} from "@/lib/data-anak-helpers";
 import type {
   KomunitasWithMembership,
   DataAtsItem,
@@ -92,9 +97,26 @@ export function FormDataAts({
     meta.rawKel && meta.rawKel !== "Semua Kelurahan" && meta.rawKel !== "Semua"
       ? meta.rawKel
       : (getKelurahanByKecamatan(initialKecamatan)[0] || "Randugunting");
-  const posyanduCakupanRw = getPosyanduCakupanRw(komunitas);
+  const isPosyandu = komunitas?.jenis === "posyandu";
+  const posyanduCakupan = getPosyanduCakupanWilayah(komunitas);
+  const posyanduCakupanRw = posyanduCakupan?.rw || getPosyanduCakupanRw(komunitas);
   const initialRw = posyanduCakupanRw || meta.rawRw || "Belum Tahu";
-  const initialRt = meta.rawRt || "Belum Tahu";
+  const initialRt =
+    (posyanduCakupan?.rtList?.[0] ? posyanduCakupan.rtList[0].padStart(2, "0") : null) ||
+    meta.rawRt ||
+    "Belum Tahu";
+
+  const getAvailableRtOptions = (kel: string, rwVal: string) => {
+    if (isPosyandu && posyanduCakupan?.rtList && posyanduCakupan.rtList.length > 0) {
+      const isSameKel = normalizeWilayah(kel) === normalizeWilayah(initialKelurahan);
+      const isSameRw = normalizeRtRwNum(rwVal) === normalizeRtRwNum(posyanduCakupan.rw);
+      if (isSameKel && isSameRw) {
+        const uniqueRts = [...new Set(posyanduCakupan.rtList.map((r) => r.padStart(2, "0")))];
+        return [...uniqueRts, "Belum Tahu"];
+      }
+    }
+    return getRtListByKelurahan(kel, rwVal);
+  };
 
   // Status Terkunci Sesuai Wilayah Komunitas (Hanya Kecamatan & Kelurahan yang terkunci sesuai wilayah komunitas, RW & RT selalu terbuka untuk pendataan ATS)
   const isLockedKecamatan = Boolean(
@@ -515,7 +537,7 @@ export function FormDataAts({
               onChange={(e) => setRt(e.target.value)}
               className="w-full min-h-[44px] h-11 rounded-lg border border-border bg-background px-3 text-xs sm:text-sm font-mono font-semibold text-foreground focus:border-primary focus:outline-none cursor-pointer"
             >
-              {getRtListByKelurahan(kelurahan, rw).map((t) => (
+              {getAvailableRtOptions(kelurahan, rw).map((t) => (
                 <option key={t} value={t}>
                   {t.includes("Belum") ? t : `RT ${t}`}
                 </option>

@@ -7,6 +7,7 @@ import {
   normalizeWilayah,
   parseAtsDetails,
   normalizeKeinginanSekolah,
+  isValidKeturenRtRw,
 } from "@/lib/data-anak-helpers";
 import { DAFTAR_15_KELAS_ATS, classifyKelasAts } from "@/lib/ats-helpers";
 import { checkUserRekapAdminAccess } from "@/app/actions/rekap-data-anak";
@@ -406,8 +407,13 @@ export async function getRekapDataAtsAction(): Promise<{
       console.warn("Rekap ATS fetch warning:", fetchErr.message);
     }
 
-    // Filter ketat: Hanya data yang merupakan data ATS riil
-    const validLiveAtsRecords = (dbChildren || []).filter((c) => isDataAtsRecord(c));
+    // Filter ketat: Hanya data yang merupakan data ATS riil dan valid sesuai ketentuan Keturen
+    const validLiveAtsRecords = (dbChildren || []).filter((c) => {
+      if (!isDataAtsRecord(c)) return false;
+      const parsed = parseAtsDetails(c.alasan_sekolah);
+      if (!isValidKeturenRtRw(parsed.kelurahan, parsed.rw, parsed.rt)) return false;
+      return true;
+    });
     const totalLiveRecords = validLiveAtsRecords.length;
 
     // 2. Inisialisasi seluruh 27 Kelurahan resmi Kota Tegal (0 data awal)

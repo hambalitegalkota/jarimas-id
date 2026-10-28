@@ -4,7 +4,14 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/utils/supabase/server";
 import { DataAtsSchema } from "@/lib/zod-schemas";
 import { toValidUUID, isSuperAdmin as checkIsSuperAdmin, isAdminPusat as checkIsAdminPusat, isSuperOrAdminPusat, isRoleAdmin } from "@/lib/utils";
-import { normalizeKeinginanSekolah, serializeDataAtsAlasan, isDataAtsRecord, getPosyanduCakupanRw, getPosyanduCakupanWilayah } from "@/lib/data-anak-helpers";
+import {
+  normalizeKeinginanSekolah,
+  serializeDataAtsAlasan,
+  isDataAtsRecord,
+  getPosyanduCakupanRw,
+  getPosyanduCakupanWilayah,
+  isValidKeturenRtRw,
+} from "@/lib/data-anak-helpers";
 import { extractKomunitasMetadata } from "@/lib/admin-helpers";
 import { findOrGenerateKomunitasSeed, RAW_PKBM_SKB_TEGAL } from "@/lib/constants/tegal-data";
 import { getKomunitasDetail } from "./komunitas";
@@ -1528,6 +1535,11 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
           rawItemRt === "0" ||
           rawItemRt === "00";
 
+        // Ketentuan Khusus Kelurahan Keturen: Hapus/abaikan data yang tidak sesuai ketentuan resmi RW & RT Keturen
+        if (!isValidKeturenRtRw(itemKel, itemRw, itemRt)) {
+          return false;
+        }
+
         // -1. Komunitas PKBM dan SKB Kota Tegal: Tampilkan seluruh data Anak ATS se-Kota Tegal tanpa memisah-misahkan menurut alamat
         if (isPkbmOrSkb) {
           return true;
@@ -1556,12 +1568,16 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
 
           const cakupan = getPosyanduCakupanWilayah(targetKomunitas);
           const posyanduRw = cakupan?.rw || getPosyanduCakupanRw(targetKomunitas) || targetRw;
+          const normPosyanduRw = normalizeRtRwNum(posyanduRw);
           if (posyanduRw) {
-            if (itemRw !== posyanduRw) return false;
+            if (itemRw !== posyanduRw && itemRw !== normPosyanduRw) return false;
             // Jika RT Belum Tahu, tetap lolos ke Posyandu yang sesuai RW tersebut
             if (isRtBelumTahu || !itemRt) return true;
             if (cakupan?.rtList && cakupan.rtList.length > 0) {
-              return Boolean(itemRt && cakupan.rtList.includes(itemRt));
+              const normRtList = cakupan.rtList.map((r) => normalizeRtRwNum(r));
+              return Boolean(
+                itemRt && (cakupan.rtList.includes(itemRt) || normRtList.includes(itemRt))
+              );
             }
             return true;
           }

@@ -862,6 +862,61 @@ export function getPosyanduCakupanWilayah(targetKomunitas: any): PosyanduCakupan
     if (nama.includes("edelweis") || nama.includes("edelweiss")) return { rw: "13" };
   }
 
+  // Khusus Kelurahan Keturen (Kecamatan Tegal Selatan)
+  // 1. Posyandu Kemuning I: cakupan sinkronisasi dengan RW 1 (RT 01 s/d RT 06)
+  // 2. Posyandu Kemuning II: cakupan sinkronisasi dengan RW 2 (RT 01 s/d RT 07)
+  // 3. Posyandu Kemuning III Selatan: cakupan sinkronisasi dengan RW 3 RT 1, 5
+  // 4. Posyandu Kemuning III Utara: cakupan sinkronisasi dengan RW 3 RT 2, 3, 4
+  const isKeturenPosyandu =
+    kel.includes("keturen") ||
+    nama.includes("keturen") ||
+    targetKomunitas?.id === "f4ee9ad6-e43a-44a1-8e5d-c701d09f0dee" ||
+    targetKomunitas?.id === "713452f1-ed3a-45cc-8d36-13c56b2c418b" ||
+    targetKomunitas?.id === "d704a3cb-88eb-49b2-8a7c-fa211f69f50c" ||
+    targetKomunitas?.id === "a5582b58-4c94-4bf6-885e-f371256ae4b0";
+
+  if (isKeturenPosyandu) {
+    if (
+      targetKomunitas?.id === "d704a3cb-88eb-49b2-8a7c-fa211f69f50c" ||
+      (nama.includes("kemuning") && (nama.includes("selatan") || nama.includes("iii selatan") || nama.includes("3 selatan")))
+    ) {
+      return {
+        rw: "03",
+        rtList: ["01", "05", "1", "5"],
+      };
+    }
+    if (
+      targetKomunitas?.id === "a5582b58-4c94-4bf6-885e-f371256ae4b0" ||
+      (nama.includes("kemuning") && (nama.includes("utara") || nama.includes("iii utara") || nama.includes("3 utara")))
+    ) {
+      return {
+        rw: "03",
+        rtList: ["02", "03", "04", "2", "3", "4"],
+      };
+    }
+    if (
+      targetKomunitas?.id === "713452f1-ed3a-45cc-8d36-13c56b2c418b" ||
+      /\bkemuning\s+(2|ii)\b/i.test(nama)
+    ) {
+      return {
+        rw: "02",
+      };
+    }
+    if (
+      targetKomunitas?.id === "f4ee9ad6-e43a-44a1-8e5d-c701d09f0dee" ||
+      /\bkemuning\s+(1|i)\b/i.test(nama) ||
+      (nama.includes("kemuning") &&
+        !nama.includes("ii") &&
+        !nama.includes("2") &&
+        !nama.includes("iii") &&
+        !nama.includes("3"))
+    ) {
+      return {
+        rw: "01",
+      };
+    }
+  }
+
   // Posyandu umum berdasarkan kolom rw
   if (targetKomunitas.rw) {
     const rawRw = String(targetKomunitas.rw).replace(/^(rw|rt)\s*/i, "").trim();
@@ -879,6 +934,57 @@ export function getPosyanduCakupanRw(targetKomunitas: any): string | null {
 }
 
 /**
+ * Validasi ketentuan khusus RW & RT di Kelurahan Keturen, Kecamatan Tegal Selatan:
+ * - Jumlah RW ada 4 (RW 1 s/d 4)
+ * - RW 1 Jumlah RT 6 (RT 1 s/d 6)
+ * - RW 2 Jumlah RT 7 (RT 1 s/d 7)
+ * - RW 3 Jumlah RT 5 (RT 1 s/d 5)
+ * - RW 4 Jumlah RT 5 (default jika dipilih)
+ * - Tetap mempertahankan RW "Belum Tahu" dan RT "Belum Tahu"
+ */
+export function isValidKeturenRtRw(
+  kel?: string | null,
+  rw?: string | null,
+  rt?: string | null
+): boolean {
+  if (!kel) return true;
+  const cleanKel = normalizeWilayah(kel);
+  if (!cleanKel.includes("keturen")) return true;
+
+  const rawRw = (rw || "").trim().toLowerCase();
+  const rawRt = (rt || "").trim().toLowerCase();
+
+  const isRwBelumTahu =
+    !rawRw ||
+    rawRw.includes("belum") ||
+    rawRw === "-" ||
+    rawRw === "0" ||
+    rawRw === "00";
+  if (isRwBelumTahu) return true;
+
+  const rwNum = parseInt(rawRw.replace(/\D/g, ""), 10);
+  if (isNaN(rwNum) || rwNum < 1 || rwNum > 4) return false;
+
+  const isRtBelumTahu =
+    !rawRt ||
+    rawRt.includes("belum") ||
+    rawRt === "-" ||
+    rawRt === "0" ||
+    rawRt === "00";
+  if (isRtBelumTahu) return true;
+
+  const rtNum = parseInt(rawRt.replace(/\D/g, ""), 10);
+  if (isNaN(rtNum)) return false;
+
+  if (rwNum === 1 && (rtNum < 1 || rtNum > 6)) return false;
+  if (rwNum === 2 && (rtNum < 1 || rtNum > 7)) return false;
+  if (rwNum === 3 && (rtNum < 1 || rtNum > 5)) return false;
+  if (rwNum === 4 && (rtNum < 1 || rtNum > 5)) return false;
+
+  return true;
+}
+
+/**
  * Filter logika hierarkis: Apakah data anak sesuai dan harus muncul di komunitas target?
  * Mencakup Komunitas PAUD, Posyandu, RT, RW, Kelurahan, Kecamatan, dan Kabupaten/Kota.
  */
@@ -888,6 +994,13 @@ export function isDataAnakMatchingKomunitas(
   targetMeta: any,
   targetKomId: string
 ): boolean {
+  // Ketentuan Khusus Kelurahan Keturen: Hapus/abaikan data yang tidak sesuai ketentuan resmi RW & RT Keturen
+  if (
+    !isValidKeturenRtRw(item.domisili_kelurahan, item.domisili_rw, item.domisili_rt) &&
+    !isValidKeturenRtRw(item.kk_kelurahan, item.kk_rw, item.kk_rt)
+  ) {
+    return false;
+  }
   // 1. Cocok langsung dengan ID komunitas pembuat / tempat pendaftaran
   // Kecualikan Posyandu! Posyandu HANYA menampilkan data yang sesuai dengan cakupan wilayahnya (atau RW/RT "Belum Tahu")
   const isTargetPosyandu = targetKomunitas?.jenis === "posyandu" || targetMeta?.jenis === "posyandu";
@@ -1009,10 +1122,11 @@ export function isDataAnakMatchingKomunitas(
 
     // Jika Posyandu memiliki target RW / cakupan RW spesifik
     if (posyanduRw) {
-      let domRwMatch = domRw === posyanduRw && domKelMatch;
-      let kkRwMatch = kkRw === posyanduRw && kkKelMatch;
+      const normPosyanduRw = normalizeRtRwNum(posyanduRw);
+      let domRwMatch = (domRw === posyanduRw || domRw === normPosyanduRw) && domKelMatch;
+      let kkRwMatch = (kkRw === posyanduRw || kkRw === normPosyanduRw) && kkKelMatch;
 
-      // Jika Posyandu memiliki cakupan RT spesifik (misal Seruni 1: RT 1,2,3,7,8 & Seruni 2: RT 4,5,6)
+      // Jika Posyandu memiliki cakupan RT spesifik (misal Seruni 1: RT 1,2,3,7,8 & Seruni 2: RT 4,5,6, Kemuning III: RT 1,5 dll)
       if (cakupan?.rtList && cakupan.rtList.length > 0) {
         const isDomRtBelumTahu =
           !domRt ||
@@ -1028,8 +1142,13 @@ export function isDataAnakMatchingKomunitas(
           item.kk_rt === "-" ||
           item.kk_rt === "0";
 
-        const domRtMatch = Boolean((domRt && cakupan.rtList.includes(domRt)) || isDomRtBelumTahu);
-        const kkRtMatch = Boolean((kkRt && cakupan.rtList.includes(kkRt)) || isKkRtBelumTahu);
+        const normRtList = cakupan.rtList.map((r) => normalizeRtRwNum(r));
+        const domRtMatch = Boolean(
+          (domRt && (cakupan.rtList.includes(domRt) || normRtList.includes(domRt))) || isDomRtBelumTahu
+        );
+        const kkRtMatch = Boolean(
+          (kkRt && (cakupan.rtList.includes(kkRt) || normRtList.includes(kkRt))) || isKkRtBelumTahu
+        );
 
         domRwMatch = domRwMatch && domRtMatch;
         kkRwMatch = kkRwMatch && kkRtMatch;
