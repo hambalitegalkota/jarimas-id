@@ -615,11 +615,17 @@ export function parseDataAnakDetails(
  */
 export function extractSchoolNumberToken(str?: string | null): string | null {
   if (!str) return null;
-  const norm = str
+  let norm = str
     .toLowerCase()
     .replace(/[`'’]/g, "")
     .replace(/[.,\/#!$%\^&\*;:{}=\-_~()]/g, " ")
     .replace(/\b111\b/g, "iii")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  // Bersihkan penanda RW/RT beserta angkanya (misal "RW. VI", "RW 06", "RT 02") agar tidak disalahartikan sebagai nomor cabang sekolah
+  norm = norm
+    .replace(/\b(rw|rt)\s*(\d+|xiii|xii|xi|x|ix|viii|vii|vi|v|iv|iii|ii|i)\b/gi, "")
     .replace(/\s+/g, " ")
     .trim();
 
@@ -670,6 +676,13 @@ export function cleanBaseSchoolName(str?: string | null): string {
     .replace(/[.,\/#!$%\^&\*;:{}=\-_~()]/g, " ")
     .replace(/\b111\b/g, "iii")
     .replace(/\biman\b/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  // Bersihkan penanda RW/RT beserta angkanya atau kata rw/rt itu sendiri
+  s = s
+    .replace(/\b(rw|rt)\s*(\d+|xiii|xii|xi|x|ix|viii|vii|vi|v|iv|iii|ii|i)\b/gi, "")
+    .replace(/\b(rw|rt)\b/gi, "")
     .replace(/\s+/g, " ")
     .trim();
 

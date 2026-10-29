@@ -775,6 +775,13 @@ export async function getDataAnakByKomunitas(
             searchPhrases.add(cleanNoLoc);
           }
         }
+        // Variasi frasa nama sekolah + kelurahan dengan wildcard perantara (misal "POS PAUD KARTINI RW. VI SLEROK" vs "Pos PAUD Kartini Slerok")
+        if (cleanNoLoc && cleanNoLoc.length > 2) {
+          searchPhrases.add(`${cleanNoLoc}%${kel}`);
+        }
+        if (rawNoLoc && rawNoLoc.length > 2) {
+          searchPhrases.add(`${rawNoLoc}%${kel}`);
+        }
       }
 
       // Variasi toleransi tanda baca (petik satu/dua, backtick, kurung yang mengganggu PostgREST)

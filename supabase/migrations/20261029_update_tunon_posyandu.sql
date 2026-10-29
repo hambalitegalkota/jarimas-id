@@ -39,3 +39,4 @@ WHERE id = '73857d1e-31fe-4277-8ad6-4139a5a87ed1';
 -- 5. Hapus data anomali yang tidak sesuai dengan ketentuan (RW 5 di Tunon)
 DELETE FROM public.data_anak
 WHERE id = '27619591-4d7c-4219-b32d-82b43d5f2258';
+
