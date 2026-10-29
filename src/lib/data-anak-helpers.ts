@@ -1320,6 +1320,202 @@ export function getPosyanduCakupanWilayah(targetKomunitas: any): PosyanduCakupan
     }
   }
 
+  // Khusus Kelurahan Tegalsari (Kecamatan Tegal Barat)
+  // 1. Posyandu Tunas Bahari: RW 1
+  // 2. Posyandu Minasari: RW 2 RT 1, 2, 3, 4, 5, 6, 7
+  // 3. Posyandu Mina Bahari: RW 2 RT 8, 9, 10
+  // 4. Posyandu Melatisari 1: RW 3 RT 1, 2, 3, 4, 5, 6
+  // 5. Posyandu Melatisari 2: RW 3 RT 7, 8, 9, 10
+  // 6. Posyandu Sejahtera 1: RW 4 RT 1, 6, 7, 8, 9, 10
+  // 7. Posyandu Sejahtera 2: RW 4 RT 2, 3, 4, 5
+  // 8. Posyandu Mawar Merah: RW 5
+  // 9. Posyandu Kuncup Mekar: RW 6
+  // 10. Posyandu Bougenville: RW 7
+  // 11. Posyandu Kamboja: RW 8
+  // 12. Posyandu Layangsari A: RW 9 RT 1, 2, 3, 4
+  // 13. Posyandu Layangsari B: RW 9 RT 5, 6, 7, 8, 9, 10
+  // 14. Posyandu Wijayakusuma 1: RW 10 RT 3, 4, 5, 6, 7, 8, 9
+  // 15. Posyandu Wijayakusuma 2: RW 10 RT 1, 2, 10
+  // 16. Posyandu Kenanga A: RW 11 RT 3, 4, 5
+  // 17. Posyandu Kenanga B: RW 11 RT 1, 2
+  // 18. Posyandu Anggrek Ungu: RW 12 dan RW 31
+  const isTegalsariPosyandu =
+    kel.includes("tegalsari") ||
+    nama.includes("tegalsari") ||
+    targetKomunitas?.id === "cd1adf7b-5be1-4c26-8f3f-99b1c2242d80" ||
+    targetKomunitas?.id === "f6013505-8603-4059-803c-04855b1a6e07" ||
+    targetKomunitas?.id === "9438aeb6-8603-4059-8de7-bc4de1063872" ||
+    targetKomunitas?.id === "376225ad-69fc-44af-82dc-5f21b6ea2f72" ||
+    targetKomunitas?.id === "5a8a8e3b-9a2c-44aa-8596-d0a1c012b628" ||
+    targetKomunitas?.id === "af0feea0-fbca-44c4-8000-d4ed7a0eeeb0" ||
+    targetKomunitas?.id === "66aaf1ce-76c3-4363-8f2a-fc2d2749b062" ||
+    targetKomunitas?.id === "c0b56c95-1bd4-4d71-8e2c-35cda656c2c8" ||
+    targetKomunitas?.id === "1f4e2ab6-ab04-4639-86c1-b995731ae82d" ||
+    targetKomunitas?.id === "df44de8c-b56b-4b87-8895-35b9e0ba5fa7" ||
+    targetKomunitas?.id === "6b1baada-093a-403e-86eb-50d54599d1f9" ||
+    targetKomunitas?.id === "e16878e7-303e-46fd-89b6-d3e179ff87c0" ||
+    targetKomunitas?.id === "78b19802-31d2-4ba4-8c3d-cd09b902bf9d" ||
+    targetKomunitas?.id === "2de41990-112e-4bf0-8652-c171103f35b4" ||
+    targetKomunitas?.id === "040db058-8448-4ca2-8010-569131f57218" ||
+    targetKomunitas?.id === "88b855cf-e73c-4cf7-8d6c-6751c1702e6c" ||
+    targetKomunitas?.id === "ae11e8bc-e73c-4cf7-81fa-f9e9475bf8d7" ||
+    targetKomunitas?.id === "b9eb4b9f-b56b-4b87-8640-ed815ace953c";
+
+  if (isTegalsariPosyandu) {
+    if (
+      targetKomunitas?.id === "cd1adf7b-5be1-4c26-8f3f-99b1c2242d80" ||
+      nama.includes("tunas bahari")
+    ) {
+      return { rw: "01" };
+    }
+    if (
+      targetKomunitas?.id === "f6013505-8603-4059-803c-04855b1a6e07" ||
+      (nama.includes("minasari") && !nama.includes("paud"))
+    ) {
+      return {
+        rw: "02",
+        rtList: ["01", "02", "03", "04", "05", "06", "07", "1", "2", "3", "4", "5", "6", "7"],
+      };
+    }
+    if (
+      targetKomunitas?.id === "9438aeb6-8603-4059-8de7-bc4de1063872" ||
+      nama.includes("mina bahari")
+    ) {
+      return {
+        rw: "02",
+        rtList: ["08", "09", "10", "8", "9", "10"],
+      };
+    }
+    if (
+      targetKomunitas?.id === "376225ad-69fc-44af-82dc-5f21b6ea2f72" ||
+      nama.includes("melatisari 1") ||
+      nama.includes("melatisari a")
+    ) {
+      return {
+        rw: "03",
+        rtList: ["01", "02", "03", "04", "05", "06", "1", "2", "3", "4", "5", "6"],
+      };
+    }
+    if (
+      targetKomunitas?.id === "5a8a8e3b-9a2c-44aa-8596-d0a1c012b628" ||
+      nama.includes("melatisari 2") ||
+      nama.includes("melatisari b")
+    ) {
+      return {
+        rw: "03",
+        rtList: ["07", "08", "09", "10", "7", "8", "9", "10"],
+      };
+    }
+    if (
+      targetKomunitas?.id === "af0feea0-fbca-44c4-8000-d4ed7a0eeeb0" ||
+      nama.includes("sejahtera 1")
+    ) {
+      return {
+        rw: "04",
+        rtList: ["01", "06", "07", "08", "09", "10", "1", "6", "7", "8", "9", "10"],
+      };
+    }
+    if (
+      targetKomunitas?.id === "66aaf1ce-76c3-4363-8f2a-fc2d2749b062" ||
+      nama.includes("sejahtera 2")
+    ) {
+      return {
+        rw: "04",
+        rtList: ["02", "03", "04", "05", "2", "3", "4", "5"],
+      };
+    }
+    if (
+      targetKomunitas?.id === "c0b56c95-1bd4-4d71-8e2c-35cda656c2c8" ||
+      nama.includes("mawar merah")
+    ) {
+      return { rw: "05" };
+    }
+    if (
+      targetKomunitas?.id === "1f4e2ab6-ab04-4639-86c1-b995731ae82d" ||
+      nama.includes("kuncup mekar")
+    ) {
+      return { rw: "06" };
+    }
+    if (
+      targetKomunitas?.id === "df44de8c-b56b-4b87-8895-35b9e0ba5fa7" ||
+      (nama.includes("bougenville") && !nama.includes("paud"))
+    ) {
+      return { rw: "07" };
+    }
+    if (
+      targetKomunitas?.id === "6b1baada-093a-403e-86eb-50d54599d1f9" ||
+      nama.includes("kamboja")
+    ) {
+      return { rw: "08" };
+    }
+    if (
+      targetKomunitas?.id === "e16878e7-303e-46fd-89b6-d3e179ff87c0" ||
+      nama.includes("layangsari a")
+    ) {
+      return {
+        rw: "09",
+        rtList: ["01", "02", "03", "04", "1", "2", "3", "4"],
+      };
+    }
+    if (
+      targetKomunitas?.id === "78b19802-31d2-4ba4-8c3d-cd09b902bf9d" ||
+      nama.includes("layangsari b")
+    ) {
+      return {
+        rw: "09",
+        rtList: ["05", "06", "07", "08", "09", "10", "5", "6", "7", "8", "9", "10"],
+      };
+    }
+    if (
+      targetKomunitas?.id === "2de41990-112e-4bf0-8652-c171103f35b4" ||
+      nama.includes("wijayakusuma 1") ||
+      nama.includes("wijayakusuma a")
+    ) {
+      return {
+        rw: "10",
+        rtList: ["03", "04", "05", "06", "07", "08", "09", "3", "4", "5", "6", "7", "8", "9"],
+      };
+    }
+    if (
+      targetKomunitas?.id === "040db058-8448-4ca2-8010-569131f57218" ||
+      nama.includes("wijayakusuma 2") ||
+      nama.includes("wijayakusuma b")
+    ) {
+      return {
+        rw: "10",
+        rtList: ["01", "02", "10", "1", "2", "10"],
+      };
+    }
+    if (
+      targetKomunitas?.id === "88b855cf-e73c-4cf7-8d6c-6751c1702e6c" ||
+      nama.includes("kenanga a")
+    ) {
+      return {
+        rw: "11",
+        rtList: ["03", "04", "05", "3", "4", "5"],
+      };
+    }
+    if (
+      targetKomunitas?.id === "ae11e8bc-e73c-4cf7-81fa-f9e9475bf8d7" ||
+      nama.includes("kenanga b")
+    ) {
+      return {
+        rw: "11",
+        rtList: ["01", "02", "1", "2"],
+      };
+    }
+    if (
+      targetKomunitas?.id === "b9eb4b9f-b56b-4b87-8640-ed815ace953c" ||
+      nama.includes("anggrek ungu") ||
+      nama.includes("anggrek unggu")
+    ) {
+      return {
+        rw: "12",
+        rwList: ["12", "13", "31", "02"],
+      };
+    }
+  }
+
   // Posyandu umum berdasarkan kolom rw
   if (targetKomunitas.rw) {
     const rawRw = String(targetKomunitas.rw).replace(/^(rw|rt)\s*/i, "").trim();
@@ -1577,6 +1773,75 @@ export function isValidPanggungRtRw(
   return true;
 }
 
+/**
+ * Validasi ketentuan khusus RW & RT di Kelurahan Tegalsari, Kecamatan Tegal Barat:
+ * - Jumlah RW ada 13 (RW 1 s/d 13, serta varian 31)
+ * - RW 1 Jumlah RT 6 (RT 1 s/d 6)
+ * - RW 2 Jumlah RT 10 (RT 1 s/d 10)
+ * - RW 3 Jumlah RT 10 (RT 1 s/d 10)
+ * - RW 4 Jumlah RT 10 (RT 1 s/d 10)
+ * - RW 5 Jumlah RT 6 (RT 1 s/d 6)
+ * - RW 6 Jumlah RT 6 (RT 1 s/d 6)
+ * - RW 7 Jumlah RT 4 (RT 1 s/d 4)
+ * - RW 8 Jumlah RT 5 (RT 1 s/d 5)
+ * - RW 9 Jumlah RT 10 (RT 1 s/d 10)
+ * - RW 10 Jumlah RT 10 (RT 1 s/d 10)
+ * - RW 11 Jumlah RT 5 (RT 1 s/d 5)
+ * - RW 12 Jumlah RT 5 (RT 1 s/d 5)
+ * - RW 13 / RW 31 Jumlah RT 5 (RT 1 s/d 5)
+ * - Tetap mempertahankan RW "Belum Tahu" dan RT "Belum Tahu"
+ */
+export function isValidTegalsariRtRw(
+  kel?: string | null,
+  rw?: string | null,
+  rt?: string | null
+): boolean {
+  if (!kel) return true;
+  const cleanKel = normalizeWilayah(kel);
+  if (!cleanKel.includes("tegalsari")) return true;
+
+  const rawRw = (rw || "").trim().toLowerCase();
+  const rawRt = (rt || "").trim().toLowerCase();
+
+  const isRwBelumTahu =
+    !rawRw ||
+    rawRw.includes("belum") ||
+    rawRw === "-" ||
+    rawRw === "0" ||
+    rawRw === "00";
+  if (isRwBelumTahu) return true;
+
+  const rwNum = parseInt(rawRw.replace(/\D/g, ""), 10);
+  if (isNaN(rwNum) || (rwNum < 1 || (rwNum > 13 && rwNum !== 31))) return false;
+
+  const isRtBelumTahu =
+    !rawRt ||
+    rawRt.includes("belum") ||
+    rawRt === "-" ||
+    rawRt === "0" ||
+    rawRt === "00";
+  if (isRtBelumTahu) return true;
+
+  const rtNum = parseInt(rawRt.replace(/\D/g, ""), 10);
+  if (isNaN(rtNum)) return false;
+
+  if (rwNum === 1 && (rtNum < 1 || rtNum > 6)) return false;
+  if (rwNum === 2 && (rtNum < 1 || rtNum > 10)) return false;
+  if (rwNum === 3 && (rtNum < 1 || rtNum > 10)) return false;
+  if (rwNum === 4 && (rtNum < 1 || rtNum > 10)) return false;
+  if (rwNum === 5 && (rtNum < 1 || rtNum > 6)) return false;
+  if (rwNum === 6 && (rtNum < 1 || rtNum > 6)) return false;
+  if (rwNum === 7 && (rtNum < 1 || rtNum > 4)) return false;
+  if (rwNum === 8 && (rtNum < 1 || rtNum > 5)) return false;
+  if (rwNum === 9 && (rtNum < 1 || rtNum > 10)) return false;
+  if (rwNum === 10 && (rtNum < 1 || rtNum > 10)) return false;
+  if (rwNum === 11 && (rtNum < 1 || rtNum > 5)) return false;
+  if (rwNum === 12 && (rtNum < 1 || rtNum > 5)) return false;
+  if ((rwNum === 13 || rwNum === 31) && (rtNum < 1 || rtNum > 5)) return false;
+
+  return true;
+}
+
 export function isValidTunonRtRw(
   kel?: string | null,
   rw?: string | null,
@@ -1661,6 +1926,13 @@ export function isDataAnakMatchingKomunitas(
   if (
     !isValidPanggungRtRw(item.domisili_kelurahan, item.domisili_rw, item.domisili_rt) &&
     !isValidPanggungRtRw(item.kk_kelurahan, item.kk_rw, item.kk_rt)
+  ) {
+    return false;
+  }
+  // Ketentuan Khusus Kelurahan Tegalsari: Hapus/abaikan data yang tidak sesuai ketentuan resmi RW & RT Tegalsari
+  if (
+    !isValidTegalsariRtRw(item.domisili_kelurahan, item.domisili_rw, item.domisili_rt) &&
+    !isValidTegalsariRtRw(item.kk_kelurahan, item.kk_rw, item.kk_rt)
   ) {
     return false;
   }

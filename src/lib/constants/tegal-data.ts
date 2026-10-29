@@ -252,7 +252,7 @@ export const KOTA_TEGAL_DATA: Record<string, KecamatanData> = {
       "Tegalsari": {
         "nama": "Tegalsari",
         "posyandu": [
-          "Posyandu Anggrek Unggu",
+          "Posyandu Anggrek Ungu",
           "Posyandu Bougenville",
           "Posyandu Kamboja",
           "Posyandu Kenanga A",
@@ -260,17 +260,16 @@ export const KOTA_TEGAL_DATA: Record<string, KecamatanData> = {
           "Posyandu Kuncup Mekar",
           "Posyandu Layangsari A",
           "Posyandu Layangsari B",
-          "Posyandu Mawar  Merah",
-          "Posyandu Mekarsari",
-          "Posyandu Melatisari A",
-          "Posyandu Melatisari B",
+          "Posyandu Mawar Merah",
+          "Posyandu Melatisari 1",
+          "Posyandu Melatisari 2",
           "Posyandu Mina Bahari",
           "Posyandu Minasari",
           "Posyandu Sejahtera 1",
           "Posyandu Sejahtera 2",
           "Posyandu Tunas Bahari",
-          "Posyandu Wijayakusuma A",
-          "Posyandu Wijayakusuma B"
+          "Posyandu Wijayakusuma 1",
+          "Posyandu Wijayakusuma 2"
         ],
         "paud": [
           "KB Insan Mandiri",
@@ -694,9 +693,54 @@ export const DATA_RW_PER_KELURAHAN: Record<string, number> = {
   "Tunon": 4,
   "Pekauman": 8,
   "Panggung": 14,
+  "Tegalsari": 13,
 };
 
 export const RT_PER_RW_DEFAULT = 15;
+
+/**
+ * Ketentuan Khusus RT per RW di Kelurahan Tegalsari, Kecamatan Tegal Barat:
+ * - RW 1: Jumlah RT 6 (Posyandu Tunas Bahari)
+ * - RW 2: Jumlah RT 10 (Posyandu Minasari [RT 1-7] & Posyandu Mina Bahari [RT 8-10])
+ * - RW 3: Jumlah RT 10 (Posyandu Melatisari 1 [RT 1-6] & Posyandu Melatisari 2 [RT 7-10])
+ * - RW 4: Jumlah RT 10 (Posyandu Sejahtera 1 [RT 1, 6-10] & Posyandu Sejahtera 2 [RT 2-5])
+ * - RW 5: Jumlah RT 6 (Posyandu Mawar Merah)
+ * - RW 6: Jumlah RT 6 (Posyandu Kuncup Mekar)
+ * - RW 7: Jumlah RT 4 (Posyandu Bougenville)
+ * - RW 8: Jumlah RT 5 (Posyandu Kamboja)
+ * - RW 9: Jumlah RT 10 (Posyandu Layangsari A [RT 1-4] & Posyandu Layangsari B [RT 5-10])
+ * - RW 10: Jumlah RT 10 (Posyandu Wijayakusuma 1 [RT 3-9] & Posyandu Wijayakusuma 2 [RT 1, 2, 10])
+ * - RW 11: Jumlah RT 5 (Posyandu Kenanga A [RT 3-5] & Posyandu Kenanga B [RT 1-2])
+ * - RW 12: Jumlah RT 5 (Posyandu Anggrek Ungu)
+ * - RW 13 / RW 31: Jumlah RT 5 (Posyandu Anggrek Ungu)
+ * Total RW resmi: 13 RW, Total RT: 92 RT (6 + 10 + 10 + 10 + 6 + 6 + 4 + 5 + 10 + 10 + 5 + 5 + 5)
+ * Tetap pertahankan pilihan "Belum Tahu" untuk RW dan RT
+ */
+export const DATA_RT_PER_RW_TEGALSARI: Record<string, number> = {
+  "01": 6,
+  "1": 6,
+  "02": 10,
+  "2": 10,
+  "03": 10,
+  "3": 10,
+  "04": 10,
+  "4": 10,
+  "05": 6,
+  "5": 6,
+  "06": 6,
+  "6": 6,
+  "07": 4,
+  "7": 4,
+  "08": 5,
+  "8": 5,
+  "09": 10,
+  "9": 10,
+  "10": 10,
+  "11": 5,
+  "12": 5,
+  "13": 5,
+  "31": 5,
+};
 
 /**
  * Ketentuan Khusus RT per RW di Kelurahan Panggung, Kecamatan Tegal Timur:
@@ -955,6 +999,9 @@ export function getJumlahRwByKelurahan(kelurahan?: string | null): number {
   if (clean === "panggung") {
     return 14;
   }
+  if (clean === "tegalsari") {
+    return 13;
+  }
   for (const [k, v] of Object.entries(DATA_RW_PER_KELURAHAN)) {
     if (k.toLowerCase() === clean) {
       return v;
@@ -1032,6 +1079,16 @@ export function getJumlahRtPerRwByKelurahan(kelurahan?: string | null, rw?: stri
     }
     return 20; // Default max RT di RW 9 Panggung
   }
+  if (clean === "tegalsari") {
+    if (rw && rw !== "Belum Tahu") {
+      const cleanRw = rw.replace(/^(rw|rt)\s*/i, "").trim();
+      const normRw = String(parseInt(cleanRw, 10)).padStart(2, "0");
+      if (DATA_RT_PER_RW_TEGALSARI[normRw] || DATA_RT_PER_RW_TEGALSARI[cleanRw]) {
+        return DATA_RT_PER_RW_TEGALSARI[normRw] || DATA_RT_PER_RW_TEGALSARI[cleanRw];
+      }
+    }
+    return 10; // Default max RT di Tegalsari (RW 2, 3, 4, 9, 10 memiliki 10 RT)
+  }
   return RT_PER_RW_DEFAULT; // Kondisi default sebelumnya: 15 RT per RW
 }
 
@@ -1069,6 +1126,10 @@ export function getTotalRtByKelurahan(kelurahan?: string | null): number {
   if (clean === "panggung") {
     // 9 + 11 + 9 + 9 + 9 + 10 + 19 + 6 + 20 + 11 + 5 + 13 + 7 + 5 = 143 RT
     return 143;
+  }
+  if (clean === "tegalsari") {
+    // RW 1: 6, RW 2: 10, RW 3: 10, RW 4: 10, RW 5: 6, RW 6: 6, RW 7: 4, RW 8: 5, RW 9: 10, RW 10: 10, RW 11: 5, RW 12: 5, RW 13/31: 5 = 92 RT
+    return 92;
   }
   const rwCount = getJumlahRwByKelurahan(kelurahan);
   const rtPerRw = getJumlahRtPerRwByKelurahan(kelurahan);
@@ -1116,6 +1177,11 @@ export function getRwListByKelurahan(kelurahan?: string | null): string[] {
   }
   if (clean === "panggung") {
     const list = Array.from({ length: 14 }, (_, i) => String(i + 1).padStart(2, "0"));
+    return [...list, "Belum Tahu"];
+  }
+  if (clean === "tegalsari") {
+    const list = Array.from({ length: 13 }, (_, i) => String(i + 1).padStart(2, "0"));
+    if (!list.includes("31")) list.push("31");
     return [...list, "Belum Tahu"];
   }
   const count = getJumlahRwByKelurahan(kelurahan);
@@ -1225,6 +1291,18 @@ export function getRtListByKelurahan(kelurahan?: string | null, rw?: string | nu
       return [...list, "Belum Tahu"];
     }
     const list = Array.from({ length: 20 }, (_, i) => String(i + 1).padStart(2, "0"));
+    return [...list, "Belum Tahu"];
+  }
+
+  if (clean === "tegalsari") {
+    if (rw && rw !== "Belum Tahu") {
+      const cleanRw = rw.replace(/^(rw|rt)\s*/i, "").trim();
+      const normRw = String(parseInt(cleanRw, 10)).padStart(2, "0");
+      const count = DATA_RT_PER_RW_TEGALSARI[normRw] || DATA_RT_PER_RW_TEGALSARI[cleanRw] || 10;
+      const list = Array.from({ length: count }, (_, i) => String(i + 1).padStart(2, "0"));
+      return [...list, "Belum Tahu"];
+    }
+    const list = Array.from({ length: 10 }, (_, i) => String(i + 1).padStart(2, "0"));
     return [...list, "Belum Tahu"];
   }
   const count = getJumlahRtPerRwByKelurahan(kelurahan, rw);

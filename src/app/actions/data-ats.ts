@@ -15,6 +15,7 @@ import {
   isValidTunonRtRw,
   isValidPekaumanRtRw,
   isValidPanggungRtRw,
+  isValidTegalsariRtRw,
 } from "@/lib/data-anak-helpers";
 import { extractKomunitasMetadata } from "@/lib/admin-helpers";
 import { findOrGenerateKomunitasSeed, RAW_PKBM_SKB_TEGAL } from "@/lib/constants/tegal-data";
@@ -1558,6 +1559,11 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
 
         // Ketentuan Khusus Kelurahan Panggung: Hapus/abaikan data yang tidak sesuai ketentuan resmi RW & RT Panggung
         if (!isValidPanggungRtRw(itemKel, itemRw, itemRt)) {
+          return false;
+        }
+
+        // Ketentuan Khusus Kelurahan Tegalsari: Hapus/abaikan data yang tidak sesuai ketentuan resmi RW & RT Tegalsari
+        if (!isValidTegalsariRtRw(itemKel, itemRw, itemRt)) {
           return false;
         }
 

@@ -12,6 +12,7 @@ import {
   isValidTunonRtRw,
   isValidPekaumanRtRw,
   isValidPanggungRtRw,
+  isValidTegalsariRtRw,
 } from "@/lib/data-anak-helpers";
 import { DAFTAR_15_KELAS_ATS, classifyKelasAts } from "@/lib/ats-helpers";
 import { checkUserRekapAdminAccess } from "@/app/actions/rekap-data-anak";
@@ -420,6 +421,7 @@ export async function getRekapDataAtsAction(): Promise<{
       if (!isValidTunonRtRw(parsed.kelurahan, parsed.rw, parsed.rt)) return false;
       if (!isValidPekaumanRtRw(parsed.kelurahan, parsed.rw, parsed.rt)) return false;
       if (!isValidPanggungRtRw(parsed.kelurahan, parsed.rw, parsed.rt)) return false;
+      if (!isValidTegalsariRtRw(parsed.kelurahan, parsed.rw, parsed.rt)) return false;
       return true;
     });
     const totalLiveRecords = validLiveAtsRecords.length;
