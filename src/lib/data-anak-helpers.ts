@@ -1123,6 +1123,203 @@ export function getPosyanduCakupanWilayah(targetKomunitas: any): PosyanduCakupan
     }
   }
 
+  // Khusus Kelurahan Panggung (Kecamatan Tegal Timur)
+  // 1. Posyandu Dahlia: RW 1
+  // 2. Posyandu Anyelir: RW 2
+  // 3. Posyandu Jaya Abadi: RW 3
+  // 4. Posyandu Harapan: RW 4
+  // 5. Posyandu Mekarsari: RW 5
+  // 6. Posyandu Seruni: RW 6
+  // 7. Posyandu Anggrek 1: RW 7 RT 1, 2, 3, 4, 5, 6, 17, 18
+  // 8. Posyandu Anggrek 2: RW 7 RT 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 20
+  // 9. Posyandu Bahtera Serayu: RW 8
+  // 10. Posyandu Nusa Indah A: RW 9 RT 4, 5, 6, 7, 8, 9, 10, 11, 14, 15, 20
+  // 11. Posyandu Nusa Indah B: RW 9 RT 1, 2, 3, 12, 13, 16, 17, 18, 19
+  // 12. Posyandu Melati 10A: RW 10 RT 1, 2, 3, 6, 8, 9, 10, 11
+  // 13. Posyandu Kuntum Melati 10B: RW 10 RT 4, 5, 7
+  // 14. Posyandu Dewi Shinta: RW 11
+  // 15. Posyandu Bahtera A: RW 12 RT 1, 2, 3, 4, 5, 6, 7, 8
+  // 16. Posyandu Bahtera B: RW 12 RT 9, 10, 11, 12, 13
+  // 17. Posyandu Tulip: RW 13
+  // 18. Posyandu Teratai Putih: RW 14
+  const isPanggungPosyandu =
+    kel.includes("panggung") ||
+    (nama.includes("panggung") && !kel.includes("sumurpanggang")) ||
+    targetKomunitas?.id === "2fc50ff0-9d53-42bc-8b1b-e4ad73e274a8" ||
+    targetKomunitas?.id === "cd56796d-8dee-4007-8730-02b14bce06aa" ||
+    targetKomunitas?.id === "ffadd058-40be-47a6-8ff2-19eddce9c530" ||
+    targetKomunitas?.id === "9ebc29ec-a5e5-4aff-8b13-12190735836b" ||
+    targetKomunitas?.id === "9a8a12f0-0a2a-4680-84bf-ce21a26b6830" ||
+    targetKomunitas?.id === "87d14abf-fee3-4e2f-8c91-e115debc0a75" ||
+    targetKomunitas?.id === "b02a2aa6-c19a-4e35-8e61-07e189d39062" ||
+    targetKomunitas?.id === "11f2b0f5-c19a-4e35-80b5-50190fbf5acd" ||
+    targetKomunitas?.id === "be4e95a4-fd43-4e21-863d-419d649de22c" ||
+    targetKomunitas?.id === "e6cd570b-74d9-4cd6-8b08-ed5dce09561e" ||
+    targetKomunitas?.id === "0c26e9f8-74d9-4cd6-8f97-7ff5306e6207" ||
+    targetKomunitas?.id === "3ad8d111-ff02-47b8-8882-be25c8aba197" ||
+    targetKomunitas?.id === "2f857e20-5dc1-4f78-8784-3991b875fdf8" ||
+    targetKomunitas?.id === "354459e2-bba6-4af4-81bc-ace901825749" ||
+    targetKomunitas?.id === "3f81947c-cd1a-49d7-8018-5091b1208ed0" ||
+    targetKomunitas?.id === "1a28018f-cd1a-49d7-84a6-e329370c593b" ||
+    targetKomunitas?.id === "3099b01d-e5e2-49e7-885f-94b9b4f18209" ||
+    targetKomunitas?.id === "3898c3f2-0122-4ddf-833d-99bfd5fb682c";
+
+  if (isPanggungPosyandu) {
+    if (
+      targetKomunitas?.id === "2fc50ff0-9d53-42bc-8b1b-e4ad73e274a8" ||
+      (nama.includes("dahlia") && !nama.includes("paud"))
+    ) {
+      return { rw: "01" };
+    }
+    if (
+      targetKomunitas?.id === "cd56796d-8dee-4007-8730-02b14bce06aa" ||
+      (nama.includes("anyelir") && !nama.includes("paud"))
+    ) {
+      return { rw: "02" };
+    }
+    if (
+      targetKomunitas?.id === "ffadd058-40be-47a6-8ff2-19eddce9c530" ||
+      nama.includes("jaya abadi")
+    ) {
+      return { rw: "03" };
+    }
+    if (
+      targetKomunitas?.id === "9ebc29ec-a5e5-4aff-8b13-12190735836b" ||
+      (nama.includes("harapan") && !nama.includes("paud"))
+    ) {
+      return { rw: "04" };
+    }
+    if (
+      targetKomunitas?.id === "9a8a12f0-0a2a-4680-84bf-ce21a26b6830" ||
+      nama.includes("mekarsari")
+    ) {
+      return { rw: "05" };
+    }
+    if (
+      targetKomunitas?.id === "87d14abf-fee3-4e2f-8c91-e115debc0a75" ||
+      (nama.includes("seruni") && !nama.includes("paud"))
+    ) {
+      return { rw: "06" };
+    }
+    if (
+      targetKomunitas?.id === "b02a2aa6-c19a-4e35-8e61-07e189d39062" ||
+      /\banggrek\s+(1|i)\b/i.test(nama)
+    ) {
+      return {
+        rw: "07",
+        rtList: [
+          "01", "02", "03", "04", "05", "06", "17", "18",
+          "1", "2", "3", "4", "5", "6"
+        ],
+      };
+    }
+    if (
+      targetKomunitas?.id === "11f2b0f5-c19a-4e35-80b5-50190fbf5acd" ||
+      /\banggrek\s+(2|ii)\b/i.test(nama)
+    ) {
+      return {
+        rw: "07",
+        rtList: [
+          "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "20",
+          "7", "8", "9"
+        ],
+      };
+    }
+    if (
+      targetKomunitas?.id === "be4e95a4-fd43-4e21-863d-419d649de22c" ||
+      nama.includes("bahtera serayu")
+    ) {
+      return { rw: "08" };
+    }
+    if (
+      targetKomunitas?.id === "e6cd570b-74d9-4cd6-8b08-ed5dce09561e" ||
+      nama.includes("nusa indah a") ||
+      nama.includes("nusa indah 1")
+    ) {
+      return {
+        rw: "09",
+        rtList: [
+          "04", "05", "06", "07", "08", "09", "10", "11", "14", "15", "20",
+          "4", "5", "6", "7", "8", "9"
+        ],
+      };
+    }
+    if (
+      targetKomunitas?.id === "0c26e9f8-74d9-4cd6-8f97-7ff5306e6207" ||
+      nama.includes("nusa indah b") ||
+      nama.includes("nusa indah 2")
+    ) {
+      return {
+        rw: "09",
+        rtList: [
+          "01", "02", "03", "12", "13", "16", "17", "18", "19",
+          "1", "2", "3"
+        ],
+      };
+    }
+    if (
+      targetKomunitas?.id === "3ad8d111-ff02-47b8-8882-be25c8aba197" ||
+      nama.includes("melati 10a") ||
+      (nama.includes("melati") && !nama.includes("kuntum") && !nama.includes("paud"))
+    ) {
+      return {
+        rw: "10",
+        rtList: [
+          "01", "02", "03", "06", "08", "09", "10", "11",
+          "1", "2", "3", "6", "8", "9"
+        ],
+      };
+    }
+    if (
+      targetKomunitas?.id === "2f857e20-5dc1-4f78-8784-3991b875fdf8" ||
+      nama.includes("kuntum melati")
+    ) {
+      return {
+        rw: "10",
+        rtList: ["04", "05", "07", "4", "5", "7"],
+      };
+    }
+    if (
+      targetKomunitas?.id === "354459e2-bba6-4af4-81bc-ace901825749" ||
+      nama.includes("dewi shinta")
+    ) {
+      return { rw: "11" };
+    }
+    if (
+      targetKomunitas?.id === "3f81947c-cd1a-49d7-8018-5091b1208ed0" ||
+      nama.includes("bahtera a")
+    ) {
+      return {
+        rw: "12",
+        rtList: [
+          "01", "02", "03", "04", "05", "06", "07", "08",
+          "1", "2", "3", "4", "5", "6", "7", "8"
+        ],
+      };
+    }
+    if (
+      targetKomunitas?.id === "1a28018f-cd1a-49d7-84a6-e329370c593b" ||
+      nama.includes("bahtera b")
+    ) {
+      return {
+        rw: "12",
+        rtList: ["09", "10", "11", "12", "13", "9"],
+      };
+    }
+    if (
+      targetKomunitas?.id === "3099b01d-e5e2-49e7-885f-94b9b4f18209" ||
+      (nama.includes("tulip") && !nama.includes("paud"))
+    ) {
+      return { rw: "13" };
+    }
+    if (
+      targetKomunitas?.id === "3898c3f2-0122-4ddf-833d-99bfd5fb682c" ||
+      nama.includes("teratai putih")
+    ) {
+      return { rw: "14" };
+    }
+  }
+
   // Posyandu umum berdasarkan kolom rw
   if (targetKomunitas.rw) {
     const rawRw = String(targetKomunitas.rw).replace(/^(rw|rt)\s*/i, "").trim();
@@ -1309,6 +1506,77 @@ export function isValidPekaumanRtRw(
   return true;
 }
 
+/**
+ * Validasi ketentuan khusus RW & RT di Kelurahan Panggung, Kecamatan Tegal Timur:
+ * - Jumlah RW ada 14 (RW 1 s/d 14)
+ * - RW 1 Jumlah RT 9 (RT 1 s/d 9)
+ * - RW 2 Jumlah RT 11 (RT 1 s/d 11)
+ * - RW 3 Jumlah RT 9 (RT 1 s/d 9)
+ * - RW 4 Jumlah RT 9 (RT 1 s/d 9)
+ * - RW 5 Jumlah RT 9 (RT 1 s/d 9)
+ * - RW 6 Jumlah RT 10 (RT 1 s/d 10)
+ * - RW 7 Jumlah RT 19 (RT 1 s/d 20)
+ * - RW 8 Jumlah RT 6 (RT 1 s/d 6)
+ * - RW 9 Jumlah RT 20 (RT 1 s/d 20)
+ * - RW 10 Jumlah RT 11 (RT 1 s/d 11)
+ * - RW 11 Jumlah RT 5 (RT 1 s/d 5)
+ * - RW 12 Jumlah RT 13 (RT 1 s/d 13)
+ * - RW 13 Jumlah RT 7 (RT 1 s/d 7)
+ * - RW 14 Jumlah RT 5 (RT 1 s/d 5)
+ * - Tetap mempertahankan RW "Belum Tahu" dan RT "Belum Tahu"
+ */
+export function isValidPanggungRtRw(
+  kel?: string | null,
+  rw?: string | null,
+  rt?: string | null
+): boolean {
+  if (!kel) return true;
+  const cleanKel = normalizeWilayah(kel);
+  if (!cleanKel.includes("panggung") || cleanKel.includes("sumurpanggang")) return true;
+
+  const rawRw = (rw || "").trim().toLowerCase();
+  const rawRt = (rt || "").trim().toLowerCase();
+
+  const isRwBelumTahu =
+    !rawRw ||
+    rawRw.includes("belum") ||
+    rawRw === "-" ||
+    rawRw === "0" ||
+    rawRw === "00";
+  if (isRwBelumTahu) return true;
+
+  const rwNum = parseInt(rawRw.replace(/\D/g, ""), 10);
+  if (isNaN(rwNum) || rwNum < 1 || rwNum > 14) return false;
+
+  const isRtBelumTahu =
+    !rawRt ||
+    rawRt.includes("belum") ||
+    rawRt === "-" ||
+    rawRt === "0" ||
+    rawRt === "00";
+  if (isRtBelumTahu) return true;
+
+  const rtNum = parseInt(rawRt.replace(/\D/g, ""), 10);
+  if (isNaN(rtNum)) return false;
+
+  if (rwNum === 1 && (rtNum < 1 || rtNum > 9)) return false;
+  if (rwNum === 2 && (rtNum < 1 || rtNum > 11)) return false;
+  if (rwNum === 3 && (rtNum < 1 || rtNum > 9)) return false;
+  if (rwNum === 4 && (rtNum < 1 || rtNum > 9)) return false;
+  if (rwNum === 5 && (rtNum < 1 || rtNum > 9)) return false;
+  if (rwNum === 6 && (rtNum < 1 || rtNum > 10)) return false;
+  if (rwNum === 7 && (rtNum < 1 || rtNum > 20)) return false;
+  if (rwNum === 8 && (rtNum < 1 || rtNum > 6)) return false;
+  if (rwNum === 9 && (rtNum < 1 || rtNum > 20)) return false;
+  if (rwNum === 10 && (rtNum < 1 || rtNum > 11)) return false;
+  if (rwNum === 11 && (rtNum < 1 || rtNum > 5)) return false;
+  if (rwNum === 12 && (rtNum < 1 || rtNum > 13)) return false;
+  if (rwNum === 13 && (rtNum < 1 || rtNum > 7)) return false;
+  if (rwNum === 14 && (rtNum < 1 || rtNum > 5)) return false;
+
+  return true;
+}
+
 export function isValidTunonRtRw(
   kel?: string | null,
   rw?: string | null,
@@ -1386,6 +1654,13 @@ export function isDataAnakMatchingKomunitas(
   if (
     !isValidPekaumanRtRw(item.domisili_kelurahan, item.domisili_rw, item.domisili_rt) &&
     !isValidPekaumanRtRw(item.kk_kelurahan, item.kk_rw, item.kk_rt)
+  ) {
+    return false;
+  }
+  // Ketentuan Khusus Kelurahan Panggung: Hapus/abaikan data yang tidak sesuai ketentuan resmi RW & RT Panggung
+  if (
+    !isValidPanggungRtRw(item.domisili_kelurahan, item.domisili_rw, item.domisili_rt) &&
+    !isValidPanggungRtRw(item.kk_kelurahan, item.kk_rw, item.kk_rt)
   ) {
     return false;
   }

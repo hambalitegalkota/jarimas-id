@@ -82,12 +82,13 @@ export const KOTA_TEGAL_DATA: Record<string, KecamatanData> = {
           "Posyandu Dewi Shinta",
           "Posyandu Harapan",
           "Posyandu Jaya Abadi",
-          "Posyandu Kuntum Melati",
+          "Posyandu Kuntum Melati 10B",
           "Posyandu Mekarsari",
-          "Posyandu Melati",
-          "Posyandu Nusa Indah 1",
-          "Posyandu Nusa Indah 2",
+          "Posyandu Melati 10A",
+          "Posyandu Nusa Indah A",
+          "Posyandu Nusa Indah B",
           "Posyandu Seruni",
+          "Posyandu Teratai Putih",
           "Posyandu Tulip"
         ],
         "paud": [
@@ -692,9 +693,55 @@ export const DATA_RW_PER_KELURAHAN: Record<string, number> = {
   "Keturen": 4,
   "Tunon": 4,
   "Pekauman": 8,
+  "Panggung": 14,
 };
 
 export const RT_PER_RW_DEFAULT = 15;
+
+/**
+ * Ketentuan Khusus RT per RW di Kelurahan Panggung, Kecamatan Tegal Timur:
+ * - RW 1: Jumlah RT 9 (Posyandu Dahlia)
+ * - RW 2: Jumlah RT 11 (Posyandu Anyelir)
+ * - RW 3: Jumlah RT 9 (Posyandu Jaya Abadi)
+ * - RW 4: Jumlah RT 9 (Posyandu Harapan)
+ * - RW 5: Jumlah RT 9 (Posyandu Mekarsari)
+ * - RW 6: Jumlah RT 10 (Posyandu Seruni)
+ * - RW 7: Jumlah RT 19 (Posyandu Anggrek 1 [RT 1-6, 17, 18] & Posyandu Anggrek 2 [RT 7-16, 20])
+ * - RW 8: Jumlah RT 6 (Posyandu Bahtera Serayu)
+ * - RW 9: Jumlah RT 20 (Posyandu Nusa Indah A [RT 4-11, 14, 15, 20] & Posyandu Nusa Indah B [RT 1-3, 12, 13, 16-19])
+ * - RW 10: Jumlah RT 11 (Posyandu Melati 10A [RT 1-3, 6, 8-11] & Posyandu Kuntum Melati 10B [RT 4, 5, 7])
+ * - RW 11: Jumlah RT 5 (Posyandu Dewi Shinta)
+ * - RW 12: Jumlah RT 13 (Posyandu Bahtera A [RT 1-8] & Posyandu Bahtera B [RT 9-13])
+ * - RW 13: Jumlah RT 7 (Posyandu Tulip)
+ * - RW 14: Jumlah RT 5 (Posyandu Teratai Putih)
+ * Total RW resmi: 14 RW, Total RT: 143 RT (9 + 11 + 9 + 9 + 9 + 10 + 19 + 6 + 20 + 11 + 5 + 13 + 7 + 5)
+ * Tetap pertahankan pilihan "Belum Tahu" untuk RW dan RT
+ */
+export const DATA_RT_PER_RW_PANGGUNG: Record<string, number> = {
+  "01": 9,
+  "1": 9,
+  "02": 11,
+  "2": 11,
+  "03": 9,
+  "3": 9,
+  "04": 9,
+  "4": 9,
+  "05": 9,
+  "5": 9,
+  "06": 10,
+  "6": 10,
+  "07": 19,
+  "7": 19,
+  "08": 6,
+  "8": 6,
+  "09": 20,
+  "9": 20,
+  "10": 11,
+  "11": 5,
+  "12": 13,
+  "13": 7,
+  "14": 5,
+};
 
 /**
  * Ketentuan Khusus RT per RW di Kelurahan Pekauman, Kecamatan Tegal Barat:
@@ -905,6 +952,9 @@ export function getJumlahRwByKelurahan(kelurahan?: string | null): number {
   if (clean === "margadana") {
     return 13;
   }
+  if (clean === "panggung") {
+    return 14;
+  }
   for (const [k, v] of Object.entries(DATA_RW_PER_KELURAHAN)) {
     if (k.toLowerCase() === clean) {
       return v;
@@ -972,6 +1022,16 @@ export function getJumlahRtPerRwByKelurahan(kelurahan?: string | null, rw?: stri
     }
     return 8; // Default max RT di RW 5 & 7 Margadana
   }
+  if (clean === "panggung") {
+    if (rw && rw !== "Belum Tahu") {
+      const cleanRw = rw.replace(/^(rw|rt)\s*/i, "").trim();
+      const normRw = String(parseInt(cleanRw, 10)).padStart(2, "0");
+      if (DATA_RT_PER_RW_PANGGUNG[normRw]) {
+        return DATA_RT_PER_RW_PANGGUNG[normRw];
+      }
+    }
+    return 20; // Default max RT di RW 9 Panggung
+  }
   return RT_PER_RW_DEFAULT; // Kondisi default sebelumnya: 15 RT per RW
 }
 
@@ -1005,6 +1065,10 @@ export function getTotalRtByKelurahan(kelurahan?: string | null): number {
   if (clean === "margadana") {
     // 4 + 3 + 3 + 4 + 8 + 4 + 8 + 5 + 5 + 5 + 6 + 6 + 7 = 68 RT
     return 68;
+  }
+  if (clean === "panggung") {
+    // 9 + 11 + 9 + 9 + 9 + 10 + 19 + 6 + 20 + 11 + 5 + 13 + 7 + 5 = 143 RT
+    return 143;
   }
   const rwCount = getJumlahRwByKelurahan(kelurahan);
   const rtPerRw = getJumlahRtPerRwByKelurahan(kelurahan);
@@ -1048,6 +1112,10 @@ export function getRwListByKelurahan(kelurahan?: string | null): string[] {
 
   if (clean === "margadana") {
     const list = Array.from({ length: 13 }, (_, i) => String(i + 1).padStart(2, "0"));
+    return [...list, "Belum Tahu"];
+  }
+  if (clean === "panggung") {
+    const list = Array.from({ length: 14 }, (_, i) => String(i + 1).padStart(2, "0"));
     return [...list, "Belum Tahu"];
   }
   const count = getJumlahRwByKelurahan(kelurahan);
@@ -1137,6 +1205,26 @@ export function getRtListByKelurahan(kelurahan?: string | null, rw?: string | nu
       return [...list, "Belum Tahu"];
     }
     const list = Array.from({ length: 8 }, (_, i) => String(i + 1).padStart(2, "0"));
+    return [...list, "Belum Tahu"];
+  }
+
+  if (clean === "panggung") {
+    if (rw && rw !== "Belum Tahu") {
+      const cleanRw = rw.replace(/^(rw|rt)\s*/i, "").trim();
+      const normRw = String(parseInt(cleanRw, 10)).padStart(2, "0");
+      if (normRw === "07") {
+        // RW 7: Posyandu Anggrek 1 (RT 1-6, 17, 18) & Posyandu Anggrek 2 (RT 7-16, 20) -> total 19 RT
+        const list = [
+          "01", "02", "03", "04", "05", "06", "07", "08", "09", "10",
+          "11", "12", "13", "14", "15", "16", "17", "18", "19", "20"
+        ];
+        return [...list, "Belum Tahu"];
+      }
+      const count = DATA_RT_PER_RW_PANGGUNG[normRw] || 20;
+      const list = Array.from({ length: count }, (_, i) => String(i + 1).padStart(2, "0"));
+      return [...list, "Belum Tahu"];
+    }
+    const list = Array.from({ length: 20 }, (_, i) => String(i + 1).padStart(2, "0"));
     return [...list, "Belum Tahu"];
   }
   const count = getJumlahRtPerRwByKelurahan(kelurahan, rw);
