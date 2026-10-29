@@ -10,6 +10,7 @@ import {
   formatNamaSekolahDisplay,
   isValidKeturenRtRw,
   isValidDebongKulonRtRw,
+  isValidTunonRtRw,
 } from "@/lib/data-anak-helpers";
 import { isAdminPusat, isSuperAdmin as checkIsSuperAdmin } from "@/lib/utils";
 
@@ -98,6 +99,7 @@ export async function getRekapDataAnakUsiaDiniAction(): Promise<{
       const rt = parsed.domisiliRt || parsed.kkRt;
       if (!isValidKeturenRtRw(kel, rw, rt)) return false;
       if (!isValidDebongKulonRtRw(kel, rw, rt)) return false;
+      if (!isValidTunonRtRw(kel, rw, rt)) return false;
       return true;
     });
     const totalLiveRecords = validLiveChildren.length;

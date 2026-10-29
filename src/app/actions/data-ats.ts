@@ -12,6 +12,7 @@ import {
   getPosyanduCakupanWilayah,
   isValidKeturenRtRw,
   isValidDebongKulonRtRw,
+  isValidTunonRtRw,
 } from "@/lib/data-anak-helpers";
 import { extractKomunitasMetadata } from "@/lib/admin-helpers";
 import { findOrGenerateKomunitasSeed, RAW_PKBM_SKB_TEGAL } from "@/lib/constants/tegal-data";
@@ -1540,6 +1541,11 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
 
         // Ketentuan Khusus Kelurahan Debong Kulon: Hapus/abaikan data yang tidak sesuai ketentuan resmi RW & RT Debong Kulon
         if (!isValidDebongKulonRtRw(itemKel, itemRw, itemRt)) {
+          return false;
+        }
+
+        // Ketentuan Khusus Kelurahan Tunon: Hapus/abaikan data yang tidak sesuai ketentuan resmi RW & RT Tunon
+        if (!isValidTunonRtRw(itemKel, itemRw, itemRt)) {
           return false;
         }
 

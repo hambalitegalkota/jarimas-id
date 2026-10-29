@@ -9,6 +9,7 @@ import {
   normalizeKeinginanSekolah,
   isValidKeturenRtRw,
   isValidDebongKulonRtRw,
+  isValidTunonRtRw,
 } from "@/lib/data-anak-helpers";
 import { DAFTAR_15_KELAS_ATS, classifyKelasAts } from "@/lib/ats-helpers";
 import { checkUserRekapAdminAccess } from "@/app/actions/rekap-data-anak";
@@ -414,6 +415,7 @@ export async function getRekapDataAtsAction(): Promise<{
       const parsed = parseAtsDetails(c.alasan_sekolah);
       if (!isValidKeturenRtRw(parsed.kelurahan, parsed.rw, parsed.rt)) return false;
       if (!isValidDebongKulonRtRw(parsed.kelurahan, parsed.rw, parsed.rt)) return false;
+      if (!isValidTunonRtRw(parsed.kelurahan, parsed.rw, parsed.rt)) return false;
       return true;
     });
     const totalLiveRecords = validLiveAtsRecords.length;

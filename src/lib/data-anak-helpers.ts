@@ -976,6 +976,60 @@ export function getPosyanduCakupanWilayah(targetKomunitas: any): PosyanduCakupan
     }
   }
 
+  // Khusus Kelurahan Tunon (Kecamatan Tegal Selatan)
+  if (
+    kel.includes("tunon") ||
+    nama.includes("tunon") ||
+    targetKomunitas?.id === "f73b16ab-c16e-4572-8423-6a3d5cec3d4a" ||
+    targetKomunitas?.id === "1c94a998-c16e-4572-88b1-fcd58ff2f5db" ||
+    targetKomunitas?.id === "1cfd9970-a971-434c-8221-cd859e2cda3f" ||
+    targetKomunitas?.id === "73857d1e-31fe-4277-8ad6-4139a5a87ed1"
+  ) {
+    // 1. Posyandu Mawar I: RW 1 (RT 01 s/d RT 06)
+    if (
+      targetKomunitas?.id === "f73b16ab-c16e-4572-8423-6a3d5cec3d4a" ||
+      /\bmawar\s+(1|i)\b/i.test(nama) ||
+      (nama.includes("mawar") &&
+        !nama.includes("ii") &&
+        !nama.includes("2") &&
+        !nama.includes("iii") &&
+        !nama.includes("3") &&
+        !nama.includes("iv") &&
+        !nama.includes("4"))
+    ) {
+      return {
+        rw: "01",
+      };
+    }
+    // 2. Posyandu Mawar II: RW 2 (RT 01 s/d RT 06)
+    if (
+      targetKomunitas?.id === "1c94a998-c16e-4572-88b1-fcd58ff2f5db" ||
+      /\bmawar\s+(2|ii)\b/i.test(nama)
+    ) {
+      return {
+        rw: "02",
+      };
+    }
+    // 3. Posyandu Mawar III: RW 3 (RT 01 s/d RT 04)
+    if (
+      targetKomunitas?.id === "1cfd9970-a971-434c-8221-cd859e2cda3f" ||
+      /\bmawar\s+(3|iii)\b/i.test(nama)
+    ) {
+      return {
+        rw: "03",
+      };
+    }
+    // 4. Posyandu Mawar IV: RW 4 (RT 01 s/d RT 05)
+    if (
+      targetKomunitas?.id === "73857d1e-31fe-4277-8ad6-4139a5a87ed1" ||
+      /\bmawar\s+(4|iv)\b/i.test(nama)
+    ) {
+      return {
+        rw: "04",
+      };
+    }
+  }
+
   // Posyandu umum berdasarkan kolom rw
   if (targetKomunitas.rw) {
     const rawRw = String(targetKomunitas.rw).replace(/^(rw|rt)\s*/i, "").trim();
@@ -1095,6 +1149,57 @@ export function isValidDebongKulonRtRw(
 }
 
 /**
+ * Validasi ketentuan khusus RW & RT di Kelurahan Tunon, Kecamatan Tegal Selatan:
+ * - Jumlah RW ada 4 (RW 1 s/d 4)
+ * - RW 1 Jumlah RT 6 (RT 1 s/d 6)
+ * - RW 2 Jumlah RT 6 (RT 1 s/d 6)
+ * - RW 3 Jumlah RT 4 (RT 1 s/d 4)
+ * - RW 4 Jumlah RT 5 (RT 1 s/d 5)
+ * - Tetap mempertahankan RW "Belum Tahu" dan RT "Belum Tahu"
+ */
+export function isValidTunonRtRw(
+  kel?: string | null,
+  rw?: string | null,
+  rt?: string | null
+): boolean {
+  if (!kel) return true;
+  const cleanKel = normalizeWilayah(kel);
+  if (!cleanKel.includes("tunon")) return true;
+
+  const rawRw = (rw || "").trim().toLowerCase();
+  const rawRt = (rt || "").trim().toLowerCase();
+
+  const isRwBelumTahu =
+    !rawRw ||
+    rawRw.includes("belum") ||
+    rawRw === "-" ||
+    rawRw === "0" ||
+    rawRw === "00";
+  if (isRwBelumTahu) return true;
+
+  const rwNum = parseInt(rawRw.replace(/\D/g, ""), 10);
+  if (isNaN(rwNum) || rwNum < 1 || rwNum > 4) return false;
+
+  const isRtBelumTahu =
+    !rawRt ||
+    rawRt.includes("belum") ||
+    rawRt === "-" ||
+    rawRt === "0" ||
+    rawRt === "00";
+  if (isRtBelumTahu) return true;
+
+  const rtNum = parseInt(rawRt.replace(/\D/g, ""), 10);
+  if (isNaN(rtNum)) return false;
+
+  if (rwNum === 1 && (rtNum < 1 || rtNum > 6)) return false;
+  if (rwNum === 2 && (rtNum < 1 || rtNum > 6)) return false;
+  if (rwNum === 3 && (rtNum < 1 || rtNum > 4)) return false;
+  if (rwNum === 4 && (rtNum < 1 || rtNum > 5)) return false;
+
+  return true;
+}
+
+/**
  * Filter logika hierarkis: Apakah data anak sesuai dan harus muncul di komunitas target?
  * Mencakup Komunitas PAUD, Posyandu, RT, RW, Kelurahan, Kecamatan, dan Kabupaten/Kota.
  */
@@ -1115,6 +1220,13 @@ export function isDataAnakMatchingKomunitas(
   if (
     !isValidDebongKulonRtRw(item.domisili_kelurahan, item.domisili_rw, item.domisili_rt) &&
     !isValidDebongKulonRtRw(item.kk_kelurahan, item.kk_rw, item.kk_rt)
+  ) {
+    return false;
+  }
+  // Ketentuan Khusus Kelurahan Tunon: Hapus/abaikan data yang tidak sesuai ketentuan resmi RW & RT Tunon
+  if (
+    !isValidTunonRtRw(item.domisili_kelurahan, item.domisili_rw, item.domisili_rt) &&
+    !isValidTunonRtRw(item.kk_kelurahan, item.kk_rw, item.kk_rt)
   ) {
     return false;
   }
