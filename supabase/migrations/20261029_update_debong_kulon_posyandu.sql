@@ -43,3 +43,4 @@ SET
   lokasi = 'Balai Posyandu / RW 04, Debong Kulon, Tegal Selatan, Kota Tegal',
   deskripsi = 'Layanan terpadu Posyandu Nusa Indah Debong Kulon cakupan sinkronisasi wilayah RW 04 (RT 01 s/d RT 04): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.'
 WHERE id = '06e8fa37-05e8-4ae9-82dd-ac2d08bd809a';
+
