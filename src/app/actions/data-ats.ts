@@ -11,6 +11,7 @@ import {
   getPosyanduCakupanRw,
   getPosyanduCakupanWilayah,
   isValidKeturenRtRw,
+  isValidDebongKulonRtRw,
 } from "@/lib/data-anak-helpers";
 import { extractKomunitasMetadata } from "@/lib/admin-helpers";
 import { findOrGenerateKomunitasSeed, RAW_PKBM_SKB_TEGAL } from "@/lib/constants/tegal-data";
@@ -29,7 +30,7 @@ function parseUsiaToDate(usiaStr?: string | null, tanggalLahirStr?: string | nul
   if (tanggalLahirStr && tanggalLahirStr.includes("-") && tanggalLahirStr.length >= 8) {
     return tanggalLahirStr;
   }
-  
+
   const now = new Date();
   const currentYear = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, "0");
@@ -912,15 +913,12 @@ export async function kembaliBersekolah(
       }
     }
 
-    const schoolNote = `[KEMBALI BERSEKOLAH]${
-      payload.kategoriSekolah ? ` Kategori: ${payload.kategoriSekolah} |` : ""
-    } Sekolah: ${payload.namaSekolah.trim()}${
-      payload.jenjang ? ` | Jenjang: ${payload.jenjang}` : ""
-    }${
-      payload.bentukIntervensi
+    const schoolNote = `[KEMBALI BERSEKOLAH]${payload.kategoriSekolah ? ` Kategori: ${payload.kategoriSekolah} |` : ""
+      } Sekolah: ${payload.namaSekolah.trim()}${payload.jenjang ? ` | Jenjang: ${payload.jenjang}` : ""
+      }${payload.bentukIntervensi
         ? ` | Intervensi: ${payload.bentukIntervensi}`
         : ""
-    }${payload.catatan?.trim() ? ` | Catatan: ${payload.catatan.trim()}` : ""}`;
+      }${payload.catatan?.trim() ? ` | Catatan: ${payload.catatan.trim()}` : ""}`;
 
     // Cari apakah tempat kembali bersekolah merujuk ke PKBM atau SKB di Kota Tegal
     let destinationKomunitasId: string | null = null;
@@ -1540,6 +1538,11 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
           return false;
         }
 
+        // Ketentuan Khusus Kelurahan Debong Kulon: Hapus/abaikan data yang tidak sesuai ketentuan resmi RW & RT Debong Kulon
+        if (!isValidDebongKulonRtRw(itemKel, itemRw, itemRt)) {
+          return false;
+        }
+
         // -1. Komunitas PKBM dan SKB Kota Tegal: Tampilkan seluruh data Anak ATS se-Kota Tegal tanpa memisah-misahkan menurut alamat
         if (isPkbmOrSkb) {
           return true;
@@ -1679,15 +1682,15 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
     const sanitizedItems = canAccessDaftarNama
       ? items
       : items.map((c, idx) => ({
-          ...c,
-          nama_lengkap: `Anak ATS #${idx + 1} (Terkunci)`,
-          nama_orangtua: "Dirahasiakan",
-          nomor_hp: "-",
-          alamat: "-",
-          rt: "-",
-          rw: "-",
-          keterangan: "",
-        }));
+        ...c,
+        nama_lengkap: `Anak ATS #${idx + 1} (Terkunci)`,
+        nama_orangtua: "Dirahasiakan",
+        nomor_hp: "-",
+        alamat: "-",
+        rt: "-",
+        rw: "-",
+        keterangan: "",
+      }));
 
     return {
       success: true,

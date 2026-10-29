@@ -917,6 +917,65 @@ export function getPosyanduCakupanWilayah(targetKomunitas: any): PosyanduCakupan
     }
   }
 
+  // Khusus Kelurahan Debong Kulon (Kecamatan Tegal Selatan)
+  if (
+    kel.includes("debong kulon") ||
+    (nama.includes("debong kulon") && !kel.includes("debong lor") && !kel.includes("debong kidul")) ||
+    targetKomunitas?.id === "5ed1310a-8c1d-4362-8518-3469e3262955" ||
+    targetKomunitas?.id === "58cedef8-322d-45ca-83de-c1f9716b29ef" ||
+    targetKomunitas?.id === "c099b759-8c1d-4362-8089-a1d15d3a5eea" ||
+    targetKomunitas?.id === "301ddd91-0d8e-40a0-80a9-3031ac9f1642" ||
+    targetKomunitas?.id === "06e8fa37-05e8-4ae9-82dd-ac2d08bd809a"
+  ) {
+    // 1. Posyandu Mawar: RW 1 RT 3, 4, 6
+    if (
+      targetKomunitas?.id === "5ed1310a-8c1d-4362-8518-3469e3262955" ||
+      nama.includes("mawar")
+    ) {
+      return {
+        rw: "01",
+        rtList: ["03", "04", "06", "3", "4", "6"],
+      };
+    }
+    // 2. Posyandu Cempaka: RW 1 RT 1, 2, 5
+    if (
+      targetKomunitas?.id === "58cedef8-322d-45ca-83de-c1f9716b29ef" ||
+      nama.includes("cempaka")
+    ) {
+      return {
+        rw: "01",
+        rtList: ["01", "02", "05", "1", "2", "5"],
+      };
+    }
+    // 3. Posyandu Kenanga: RW 2 (RT 01 s/d RT 05)
+    if (
+      targetKomunitas?.id === "c099b759-8c1d-4362-8089-a1d15d3a5eea" ||
+      nama.includes("kenanga")
+    ) {
+      return {
+        rw: "02",
+      };
+    }
+    // 4. Posyandu Melati: RW 3 (RT 01 s/d RT 05)
+    if (
+      targetKomunitas?.id === "301ddd91-0d8e-40a0-80a9-3031ac9f1642" ||
+      nama.includes("melati")
+    ) {
+      return {
+        rw: "03",
+      };
+    }
+    // 5. Posyandu Nusa Indah: RW 4 (RT 01 s/d RT 04)
+    if (
+      targetKomunitas?.id === "06e8fa37-05e8-4ae9-82dd-ac2d08bd809a" ||
+      nama.includes("nusa indah")
+    ) {
+      return {
+        rw: "04",
+      };
+    }
+  }
+
   // Posyandu umum berdasarkan kolom rw
   if (targetKomunitas.rw) {
     const rawRw = String(targetKomunitas.rw).replace(/^(rw|rt)\s*/i, "").trim();
@@ -985,6 +1044,57 @@ export function isValidKeturenRtRw(
 }
 
 /**
+ * Validasi ketentuan khusus RW & RT di Kelurahan Debong Kulon, Kecamatan Tegal Selatan:
+ * - Jumlah RW ada 4 (RW 1 s/d 4)
+ * - RW 1 Jumlah RT 6 (RT 1 s/d 6)
+ * - RW 2 Jumlah RT 5 (RT 1 s/d 5)
+ * - RW 3 Jumlah RT 5 (RT 1 s/d 5)
+ * - RW 4 Jumlah RT 4 (RT 1 s/d 4)
+ * - Tetap mempertahankan RW "Belum Tahu" dan RT "Belum Tahu"
+ */
+export function isValidDebongKulonRtRw(
+  kel?: string | null,
+  rw?: string | null,
+  rt?: string | null
+): boolean {
+  if (!kel) return true;
+  const cleanKel = normalizeWilayah(kel);
+  if (!cleanKel.includes("debong kulon")) return true;
+
+  const rawRw = (rw || "").trim().toLowerCase();
+  const rawRt = (rt || "").trim().toLowerCase();
+
+  const isRwBelumTahu =
+    !rawRw ||
+    rawRw.includes("belum") ||
+    rawRw === "-" ||
+    rawRw === "0" ||
+    rawRw === "00";
+  if (isRwBelumTahu) return true;
+
+  const rwNum = parseInt(rawRw.replace(/\D/g, ""), 10);
+  if (isNaN(rwNum) || rwNum < 1 || rwNum > 4) return false;
+
+  const isRtBelumTahu =
+    !rawRt ||
+    rawRt.includes("belum") ||
+    rawRt === "-" ||
+    rawRt === "0" ||
+    rawRt === "00";
+  if (isRtBelumTahu) return true;
+
+  const rtNum = parseInt(rawRt.replace(/\D/g, ""), 10);
+  if (isNaN(rtNum)) return false;
+
+  if (rwNum === 1 && (rtNum < 1 || rtNum > 6)) return false;
+  if (rwNum === 2 && (rtNum < 1 || rtNum > 5)) return false;
+  if (rwNum === 3 && (rtNum < 1 || rtNum > 5)) return false;
+  if (rwNum === 4 && (rtNum < 1 || rtNum > 4)) return false;
+
+  return true;
+}
+
+/**
  * Filter logika hierarkis: Apakah data anak sesuai dan harus muncul di komunitas target?
  * Mencakup Komunitas PAUD, Posyandu, RT, RW, Kelurahan, Kecamatan, dan Kabupaten/Kota.
  */
@@ -998,6 +1108,13 @@ export function isDataAnakMatchingKomunitas(
   if (
     !isValidKeturenRtRw(item.domisili_kelurahan, item.domisili_rw, item.domisili_rt) &&
     !isValidKeturenRtRw(item.kk_kelurahan, item.kk_rw, item.kk_rt)
+  ) {
+    return false;
+  }
+  // Ketentuan Khusus Kelurahan Debong Kulon: Hapus/abaikan data yang tidak sesuai ketentuan resmi RW & RT Debong Kulon
+  if (
+    !isValidDebongKulonRtRw(item.domisili_kelurahan, item.domisili_rw, item.domisili_rt) &&
+    !isValidDebongKulonRtRw(item.kk_kelurahan, item.kk_rw, item.kk_rt)
   ) {
     return false;
   }
