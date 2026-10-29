@@ -23,6 +23,7 @@ import { createClient } from "@/utils/supabase/client";
 import type { PesanGrup, GrupChatRoom, RegisteredUserItem } from "@/types/database";
 import { ManageGrupMembersModal } from "./manage-grup-members-modal";
 import { useGlobalMessageNotification } from "@/components/notifications/global-message-notification-provider";
+import { parseChatMessage } from "@/lib/chat-media-helper";
 
 interface GroupChatModalProps {
   isOpen: boolean;
@@ -430,7 +431,26 @@ export function GroupChatModal({
                             )}
                           </div>
                         )}
-                        <p className="whitespace-pre-wrap break-words">{msg.pesan}</p>
+                        {(() => {
+                          const parsed = parseChatMessage(msg.pesan);
+                          return (
+                            <>
+                              {parsed.replyTo && (
+                                <div className="p-1.5 rounded-md text-2xs border-l-2 bg-black/10 dark:bg-black/30 border-teal-500 mb-1">
+                                  <p className="font-bold">{parsed.replyTo.senderName}</p>
+                                  <p className="truncate line-clamp-1 italic text-2xs opacity-80">{parsed.replyTo.textSnippet}</p>
+                                </div>
+                              )}
+                              {parsed.imageUrl && (
+                                <div className="overflow-hidden rounded-md mb-1.5 border border-black/10">
+                                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                                  <img src={parsed.imageUrl} alt="Tangkapan layar" className="max-h-60 w-auto rounded-md object-cover" />
+                                </div>
+                              )}
+                              {parsed.text && <p className="whitespace-pre-wrap break-words">{parsed.text}</p>}
+                            </>
+                          );
+                        })()}
                         <div
                           className={`flex items-center justify-end gap-1 text-2xs mt-1 ${
                             isMe ? "text-primary-foreground/75" : "text-muted-foreground"

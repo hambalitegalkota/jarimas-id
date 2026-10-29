@@ -2593,7 +2593,9 @@ export function KomunitasDetailClientView({
             <KomunitasPercakapanTab
               komunitas={komunitasData}
               currentUserId={currentUserId}
+              currentUserName={myProfileName}
               isAdminOrKader={isAdminOrKader}
+              anggotaList={anggotaState}
               onOpenJoinModal={() => {
                 if (komunitas.jenis === "warga_kita") {
                   setIsWargaOnboardingOpen(true);
