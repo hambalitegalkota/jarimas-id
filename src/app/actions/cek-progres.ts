@@ -8,6 +8,7 @@ import {
   isRoleAdmin,
 } from "@/lib/utils";
 import { getUserAdminInfo, extractKomunitasMetadata } from "@/lib/admin-helpers";
+import { isSchoolNameMatching } from "@/lib/data-anak-helpers";
 import type {
   ProgresPaudItem,
   CekProgresPaudSummary,
@@ -269,7 +270,9 @@ async function fetchProgresPaudFallback(
   // Ambil data anggota per PAUD & seluruh data anak bersekolah (termasuk hasil sinkronisasi Google Sheet)
   const chunkRanges = [
     [0, 999], [1000, 1999], [2000, 2999], [3000, 3999],
-    [4000, 4999], [5000, 5999], [6000, 6999], [7000, 7999]
+    [4000, 4999], [5000, 5999], [6000, 6999], [7000, 7999],
+    [8000, 8999], [9000, 9999], [10000, 10999], [11000, 11999],
+    [12000, 12999], [13000, 13999], [14000, 14999]
   ];
 
   const [{ data: memberCounts }, ...childChunks] = await Promise.all([
@@ -281,7 +284,7 @@ async function fetchProgresPaudFallback(
     ...chunkRanges.map(([start, end]) =>
       supabase
         .from("data_anak")
-        .select("id, nama_sekolah, komunitas_id, status_approval, validated_at, is_updated_by_paud, diperbarui_oleh")
+        .select("id, nama_sekolah, komunitas_id, status_approval, validated_at, validated_by, is_updated_by_paud, diperbarui_oleh")
         .eq("is_sekolah", true)
         .range(start, end)
     ),
@@ -315,16 +318,21 @@ async function fetchProgresPaudFallback(
   });
 
   const studentCountMap: Record<string, { total: number; updated: number }> = {};
+  const validatorMap: Record<string, Set<string>> = {};
   paudList.forEach((p: any) => {
     studentCountMap[p.id] = { total: 0, updated: 0 };
+    validatorMap[p.id] = new Set<string>();
   });
 
   childrenData.forEach((c: any) => {
-    // 1. Cari PAUD yang cocok: via ID langsung atau nama sekolah Google Sheet
+    // 1. Cari PAUD yang cocok: via ID langsung atau nama sekolah
     let p = paudById.get(c.komunitas_id);
     if (!p && c.nama_sekolah) {
       const cName = cleanSchool(c.nama_sekolah);
       p = paudByClean.get(cName);
+      if (!p) {
+        p = paudList.find((x: any) => isSchoolNameMatching(c.nama_sekolah, x.nama));
+      }
       if (!p) {
         // Fallback substring matcher
         p = paudList.find((x: any) => {
@@ -337,18 +345,21 @@ async function fetchProgresPaudFallback(
     if (p && studentCountMap[p.id]) {
       studentCountMap[p.id].total += 1;
 
-      // SYARAT 1: Lembaga PAUD HARUS memiliki akun guru/operator yang bergabung
-      const hasTeacher = (memberCountMap[p.id] || 0) > 0;
-
-      // SYARAT 2: Murid tersebut secara nyata telah divalidasi (approved) ATAU diedit oleh akun pengguna terdaftar
-      const isUpdated =
-        hasTeacher &&
-        (c.status_approval === "approved" ||
+      // Murid tersebut secara nyata telah divalidasi (approved) ATAU diedit oleh akun pengguna terdaftar
+      const isUpdated = Boolean(
+        c.status_approval === "approved" ||
           c.validated_at != null ||
-          (c.is_updated_by_paud === true && c.diperbarui_oleh != null));
+          (c.is_updated_by_paud === true && c.diperbarui_oleh != null)
+      );
 
       if (isUpdated) {
         studentCountMap[p.id].updated += 1;
+      }
+
+      // Catat akun validator/editor yang beraktivitas nyata di PAUD ini
+      const validatorId = c.validated_by || c.diperbarui_oleh;
+      if (validatorId) {
+        validatorMap[p.id].add(validatorId);
       }
     }
   });
@@ -356,14 +367,16 @@ async function fetchProgresPaudFallback(
   return paudList.map((p: any) => {
     const totalStudents = studentCountMap[p.id]?.total || 0;
     const totalUpdated = studentCountMap[p.id]?.updated || 0;
-    const memberCount = memberCountMap[p.id] || 0;
+    const directMemberCount = memberCountMap[p.id] || 0;
+    const activeValidatorCount = validatorMap[p.id]?.size || 0;
+    // Total akun guru/operator terverifikasi (anggota terdaftar atau validator riil)
+    const memberCount = Math.max(directMemberCount, activeValidatorCount);
+    const hasAnggota = memberCount > 0;
     const pct = totalStudents > 0 ? Math.round((totalUpdated / totalStudents) * 1000) / 10 : 0.0;
 
     let status: StatusPenyelesaianProgres = "BELUM_MULAI";
     if (totalStudents === 0) {
       status = "KOSONG";
-    } else if (memberCount === 0) {
-      status = "BELUM_MULAI";
     } else if (totalUpdated >= totalStudents && totalStudents > 0) {
       status = "SELESAI";
     } else if (totalUpdated > 0) {
@@ -390,7 +403,7 @@ async function fetchProgresPaudFallback(
       kecamatan: p.kecamatan || "Kota Tegal",
       kelurahan: p.kelurahan || "-",
       jumlah_anggota: memberCount,
-      has_anggota: memberCount > 0,
+      has_anggota: hasAnggota,
       total_peserta_didik: totalStudents,
       total_diperbarui: totalUpdated,
       persentase_selesai: pct,

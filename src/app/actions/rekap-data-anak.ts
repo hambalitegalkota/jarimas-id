@@ -11,6 +11,7 @@ import {
   isValidKeturenRtRw,
   isValidDebongKulonRtRw,
   isValidTunonRtRw,
+  isValidPekaumanRtRw,
 } from "@/lib/data-anak-helpers";
 import { isAdminPusat, isSuperAdmin as checkIsSuperAdmin } from "@/lib/utils";
 
@@ -100,6 +101,7 @@ export async function getRekapDataAnakUsiaDiniAction(): Promise<{
       if (!isValidKeturenRtRw(kel, rw, rt)) return false;
       if (!isValidDebongKulonRtRw(kel, rw, rt)) return false;
       if (!isValidTunonRtRw(kel, rw, rt)) return false;
+      if (!isValidPekaumanRtRw(kel, rw, rt)) return false;
       return true;
     });
     const totalLiveRecords = validLiveChildren.length;

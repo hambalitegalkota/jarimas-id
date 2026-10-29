@@ -376,7 +376,7 @@ export async function validateDataAnak(dataAnakId: string): Promise<{
     }
 
     // Perbarui status approval di database
-    const { error: updateError } = await supabase
+    const { data: updatedChildData, error: updateError } = await supabase
       .from("data_anak")
       .update({
         status_approval: "approved",
@@ -387,13 +387,32 @@ export async function validateDataAnak(dataAnakId: string): Promise<{
         terakhir_diperbarui_at: new Date().toISOString(),
         diperbarui_oleh: user.id,
       })
-      .eq("id", dataAnakId);
+      .eq("id", dataAnakId)
+      .select("komunitas_id")
+      .single();
 
     if (updateError) {
       return {
         success: false,
         message: "Gagal memvalidasi data: " + updateError.message,
       };
+    }
+
+    // Pastikan validator otomatis tercatat di anggota_komunitas PAUD jika belum ada
+    if (updatedChildData?.komunitas_id && user?.id) {
+      try {
+        await supabase.from("anggota_komunitas").upsert(
+          {
+            komunitas_id: updatedChildData.komunitas_id,
+            user_id: user.id,
+            peran: "Pendidik",
+            status: "approved",
+          },
+          { onConflict: "komunitas_id,user_id", ignoreDuplicates: true }
+        );
+      } catch (e) {
+        // Non-blocking
+      }
     }
 
     revalidatePath("/cek-progres");
@@ -1380,6 +1399,24 @@ export async function updateDataAnak(
           "Gagal memperbarui data anak: " +
           (updateError?.message || "Kesalahan database"),
       };
+    }
+
+    // Pastikan validator/editor otomatis tercatat di anggota_komunitas PAUD jika belum ada
+    const targetPaudId = updatedChild.komunitas_id || (komunitasId ? toValidUUID(komunitasId) : null);
+    if (targetPaudId && user?.id) {
+      try {
+        await supabase.from("anggota_komunitas").upsert(
+          {
+            komunitas_id: targetPaudId,
+            user_id: user.id,
+            peran: "Pendidik",
+            status: "approved",
+          },
+          { onConflict: "komunitas_id,user_id", ignoreDuplicates: true }
+        );
+      } catch (e) {
+        // Non-blocking
+      }
     }
 
     revalidatePath(`/komunitas/${komunitasId}/data`);

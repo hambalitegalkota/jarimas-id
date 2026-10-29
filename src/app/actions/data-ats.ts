@@ -13,6 +13,7 @@ import {
   isValidKeturenRtRw,
   isValidDebongKulonRtRw,
   isValidTunonRtRw,
+  isValidPekaumanRtRw,
 } from "@/lib/data-anak-helpers";
 import { extractKomunitasMetadata } from "@/lib/admin-helpers";
 import { findOrGenerateKomunitasSeed, RAW_PKBM_SKB_TEGAL } from "@/lib/constants/tegal-data";
@@ -1549,6 +1550,11 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
           return false;
         }
 
+        // Ketentuan Khusus Kelurahan Pekauman: Hapus/abaikan data yang tidak sesuai ketentuan resmi RW & RT Pekauman
+        if (!isValidPekaumanRtRw(itemKel, itemRw, itemRt)) {
+          return false;
+        }
+
         // -1. Komunitas PKBM dan SKB Kota Tegal: Tampilkan seluruh data Anak ATS se-Kota Tegal tanpa memisah-misahkan menurut alamat
         if (isPkbmOrSkb) {
           return true;
@@ -1578,7 +1584,23 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
           const cakupan = getPosyanduCakupanWilayah(targetKomunitas);
           const posyanduRw = cakupan?.rw || getPosyanduCakupanRw(targetKomunitas) || targetRw;
           const normPosyanduRw = normalizeRtRwNum(posyanduRw);
-          if (posyanduRw) {
+
+          if (cakupan?.rwList && cakupan.rwList.length > 0) {
+            const normRwList = cakupan.rwList.map((r) => normalizeRtRwNum(r));
+            const rwMatch = Boolean(
+              itemRw && (cakupan.rwList.includes(itemRw) || normRwList.includes(itemRw))
+            );
+            if (!rwMatch) return false;
+            // Jika RT Belum Tahu, tetap lolos ke Posyandu yang sesuai RW tersebut
+            if (isRtBelumTahu || !itemRt) return true;
+            if (cakupan?.rtList && cakupan.rtList.length > 0) {
+              const normRtList = cakupan.rtList.map((r) => normalizeRtRwNum(r));
+              return Boolean(
+                itemRt && (cakupan.rtList.includes(itemRt) || normRtList.includes(itemRt))
+              );
+            }
+            return true;
+          } else if (posyanduRw) {
             if (itemRw !== posyanduRw && itemRw !== normPosyanduRw) return false;
             // Jika RT Belum Tahu, tetap lolos ke Posyandu yang sesuai RW tersebut
             if (isRtBelumTahu || !itemRt) return true;

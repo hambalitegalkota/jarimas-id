@@ -738,7 +738,8 @@ export function isSchoolNameMatching(
 }
 
 export interface PosyanduCakupanWilayah {
-  rw: string;
+  rw?: string;
+  rwList?: string[];
   rtList?: string[];
 }
 
@@ -1043,6 +1044,85 @@ export function getPosyanduCakupanWilayah(targetKomunitas: any): PosyanduCakupan
     }
   }
 
+  // Khusus Kelurahan Pekauman (Kecamatan Tegal Barat)
+  // 1. Posyandu Tunas: cakupan sinkronisasi dengan RW 1 dan RW 8
+  // 2. Posyandu Delima: cakupan sinkronisasi dengan RW 2
+  // 3. Posyandu Duku: cakupan sinkronisasi dengan RW 3
+  // 4. Posyandu Garuda: cakupan sinkronisasi dengan RW 4
+  // 5. Posyandu Nanas: cakupan sinkronisasi dengan RW 5
+  // 6. Posyandu Jalak: cakupan sinkronisasi dengan RW 6
+  // 7. Posyandu Belimbing: cakupan sinkronisasi dengan RW 7
+  const isPekaumanPosyandu =
+    kel.includes("pekauman") ||
+    (nama.includes("pekauman") && !kel.includes("debong") && !kel.includes("kraton")) ||
+    targetKomunitas?.id === "1ba20db1-a59e-4198-8a8c-42e1c533e3e6" ||
+    targetKomunitas?.id === "5c47a988-d1a2-4752-94b1-ca48e24c25d8" ||
+    targetKomunitas?.id === "17781170-34ce-4a78-89c2-91190ebe0263" ||
+    targetKomunitas?.id === "8b197084-7d24-43a1-81e1-01452e11eb73" ||
+    targetKomunitas?.id === "abf64cd0-4dca-4a68-8acb-eab110f9c010" ||
+    targetKomunitas?.id === "869cb9e3-4dca-4a68-8f5a-7d4996e58a7b" ||
+    targetKomunitas?.id === "76ea213c-362e-4073-87cb-aacd851ab8bc";
+
+  if (isPekaumanPosyandu) {
+    if (
+      targetKomunitas?.id === "1ba20db1-a59e-4198-8a8c-42e1c533e3e6" ||
+      nama.includes("tunas")
+    ) {
+      return {
+        rw: "01",
+        rwList: ["01", "08", "1", "8"],
+      };
+    }
+    if (
+      targetKomunitas?.id === "5c47a988-d1a2-4752-94b1-ca48e24c25d8" ||
+      (nama.includes("delima") && !nama.includes("paud"))
+    ) {
+      return {
+        rw: "02",
+      };
+    }
+    if (
+      targetKomunitas?.id === "17781170-34ce-4a78-89c2-91190ebe0263" ||
+      nama.includes("duku")
+    ) {
+      return {
+        rw: "03",
+      };
+    }
+    if (
+      targetKomunitas?.id === "8b197084-7d24-43a1-81e1-01452e11eb73" ||
+      nama.includes("garuda")
+    ) {
+      return {
+        rw: "04",
+      };
+    }
+    if (
+      targetKomunitas?.id === "abf64cd0-4dca-4a68-8acb-eab110f9c010" ||
+      nama.includes("nanas")
+    ) {
+      return {
+        rw: "05",
+      };
+    }
+    if (
+      targetKomunitas?.id === "869cb9e3-4dca-4a68-8f5a-7d4996e58a7b" ||
+      nama.includes("jalak")
+    ) {
+      return {
+        rw: "06",
+      };
+    }
+    if (
+      targetKomunitas?.id === "76ea213c-362e-4073-87cb-aacd851ab8bc" ||
+      nama.includes("belimbing")
+    ) {
+      return {
+        rw: "07",
+      };
+    }
+  }
+
   // Posyandu umum berdasarkan kolom rw
   if (targetKomunitas.rw) {
     const rawRw = String(targetKomunitas.rw).replace(/^(rw|rt)\s*/i, "").trim();
@@ -1170,6 +1250,65 @@ export function isValidDebongKulonRtRw(
  * - RW 4 Jumlah RT 5 (RT 1 s/d 5)
  * - Tetap mempertahankan RW "Belum Tahu" dan RT "Belum Tahu"
  */
+/**
+ * Validasi ketentuan khusus RW & RT di Kelurahan Pekauman, Kecamatan Tegal Barat:
+ * - Jumlah RW ada 8 (RW 1 s/d 8)
+ * - RW 1 Jumlah RT 5 (RT 1 s/d 5)
+ * - RW 2 Jumlah RT 7 (RT 1 s/d 7)
+ * - RW 3 Jumlah RT 5 (RT 1 s/d 5)
+ * - RW 4 Jumlah RT 7 (RT 1 s/d 7)
+ * - RW 5 Jumlah RT 6 (RT 1 s/d 6)
+ * - RW 6 Jumlah RT 9 (RT 1 s/d 9)
+ * - RW 7 Jumlah RT 6 (RT 1 s/d 6)
+ * - RW 8 Jumlah RT 5 (RT 1 s/d 5)
+ * - Tetap mempertahankan RW "Belum Tahu" dan RT "Belum Tahu"
+ */
+export function isValidPekaumanRtRw(
+  kel?: string | null,
+  rw?: string | null,
+  rt?: string | null
+): boolean {
+  if (!kel) return true;
+  const cleanKel = normalizeWilayah(kel);
+  if (!cleanKel.includes("pekauman")) return true;
+
+  const rawRw = (rw || "").trim().toLowerCase();
+  const rawRt = (rt || "").trim().toLowerCase();
+
+  const isRwBelumTahu =
+    !rawRw ||
+    rawRw.includes("belum") ||
+    rawRw === "-" ||
+    rawRw === "0" ||
+    rawRw === "00";
+  if (isRwBelumTahu) return true;
+
+  const rwNum = parseInt(rawRw.replace(/\D/g, ""), 10);
+  if (isNaN(rwNum) || rwNum < 1 || rwNum > 8) return false;
+
+  const isRtBelumTahu =
+    !rawRt ||
+    rawRt.includes("belum") ||
+    rawRt === "-" ||
+    rawRt === "0" ||
+    rawRt === "00";
+  if (isRtBelumTahu) return true;
+
+  const rtNum = parseInt(rawRt.replace(/\D/g, ""), 10);
+  if (isNaN(rtNum)) return false;
+
+  if (rwNum === 1 && (rtNum < 1 || rtNum > 5)) return false;
+  if (rwNum === 2 && (rtNum < 1 || rtNum > 7)) return false;
+  if (rwNum === 3 && (rtNum < 1 || rtNum > 5)) return false;
+  if (rwNum === 4 && (rtNum < 1 || rtNum > 7)) return false;
+  if (rwNum === 5 && (rtNum < 1 || rtNum > 6)) return false;
+  if (rwNum === 6 && (rtNum < 1 || rtNum > 9)) return false;
+  if (rwNum === 7 && (rtNum < 1 || rtNum > 6)) return false;
+  if (rwNum === 8 && (rtNum < 1 || rtNum > 5)) return false;
+
+  return true;
+}
+
 export function isValidTunonRtRw(
   kel?: string | null,
   rw?: string | null,
@@ -1243,6 +1382,14 @@ export function isDataAnakMatchingKomunitas(
   ) {
     return false;
   }
+  // Ketentuan Khusus Kelurahan Pekauman: Hapus/abaikan data yang tidak sesuai ketentuan resmi RW & RT Pekauman
+  if (
+    !isValidPekaumanRtRw(item.domisili_kelurahan, item.domisili_rw, item.domisili_rt) &&
+    !isValidPekaumanRtRw(item.kk_kelurahan, item.kk_rw, item.kk_rt)
+  ) {
+    return false;
+  }
+
   // 1. Cocok langsung dengan ID komunitas pembuat / tempat pendaftaran
   // Kecualikan Posyandu! Posyandu HANYA menampilkan data yang sesuai dengan cakupan wilayahnya (atau RW/RT "Belum Tahu")
   const isTargetPosyandu = targetKomunitas?.jenis === "posyandu" || targetMeta?.jenis === "posyandu";
@@ -1363,7 +1510,41 @@ export function isDataAnakMatchingKomunitas(
     }
 
     // Jika Posyandu memiliki target RW / cakupan RW spesifik
-    if (posyanduRw) {
+    if (cakupan?.rwList && cakupan.rwList.length > 0) {
+      const normRwList = cakupan.rwList.map((r) => normalizeRtRwNum(r));
+      let domRwMatch = Boolean(domRw && (cakupan.rwList.includes(domRw) || normRwList.includes(domRw))) && domKelMatch;
+      let kkRwMatch = Boolean(kkRw && (cakupan.rwList.includes(kkRw) || normRwList.includes(kkRw))) && kkKelMatch;
+
+      // Jika Posyandu memiliki cakupan RT spesifik
+      if (cakupan?.rtList && cakupan.rtList.length > 0) {
+        const isDomRtBelumTahu =
+          !domRt ||
+          !item.domisili_rt ||
+          String(item.domisili_rt).toLowerCase().includes("belum") ||
+          item.domisili_rt === "-" ||
+          item.domisili_rt === "0";
+
+        const isKkRtBelumTahu =
+          !kkRt ||
+          !item.kk_rt ||
+          String(item.kk_rt).toLowerCase().includes("belum") ||
+          item.kk_rt === "-" ||
+          item.kk_rt === "0";
+
+        const normRtList = cakupan.rtList.map((r) => normalizeRtRwNum(r));
+        const domRtMatch = Boolean(
+          (domRt && (cakupan.rtList.includes(domRt) || normRtList.includes(domRt))) || isDomRtBelumTahu
+        );
+        const kkRtMatch = Boolean(
+          (kkRt && (cakupan.rtList.includes(kkRt) || normRtList.includes(kkRt))) || isKkRtBelumTahu
+        );
+
+        domRwMatch = domRwMatch && domRtMatch;
+        kkRwMatch = kkRwMatch && kkRtMatch;
+      }
+
+      return Boolean(domRwMatch || kkRwMatch);
+    } else if (posyanduRw) {
       const normPosyanduRw = normalizeRtRwNum(posyanduRw);
       let domRwMatch = (domRw === posyanduRw || domRw === normPosyanduRw) && domKelMatch;
       let kkRwMatch = (kkRw === posyanduRw || kkRw === normPosyanduRw) && kkKelMatch;

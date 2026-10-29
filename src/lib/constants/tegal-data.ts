@@ -308,6 +308,7 @@ export const KOTA_TEGAL_DATA: Record<string, KecamatanData> = {
         "nama": "Pekauman",
         "posyandu": [
           "Posyandu Belimbing",
+          "Posyandu Delima",
           "Posyandu Duku",
           "Posyandu Garuda",
           "Posyandu Jalak",
@@ -690,9 +691,42 @@ export const DATA_RW_PER_KELURAHAN: Record<string, number> = {
   "Margadana": 13,
   "Keturen": 4,
   "Tunon": 4,
+  "Pekauman": 8,
 };
 
 export const RT_PER_RW_DEFAULT = 15;
+
+/**
+ * Ketentuan Khusus RT per RW di Kelurahan Pekauman, Kecamatan Tegal Barat:
+ * - RW 1: Jumlah RT 5
+ * - RW 2: Jumlah RT 7
+ * - RW 3: Jumlah RT 5
+ * - RW 4: Jumlah RT 7
+ * - RW 5: Jumlah RT 6
+ * - RW 6: Jumlah RT 9
+ * - RW 7: Jumlah RT 6
+ * - RW 8: Jumlah RT 5
+ * Total RW resmi: 8 RW, Total RT: 50 RT (5 + 7 + 5 + 7 + 6 + 9 + 6 + 5)
+ * Tetap pertahankan pilihan "Belum Tahu" untuk RW dan RT
+ */
+export const DATA_RT_PER_RW_PEKAUMAN: Record<string, number> = {
+  "01": 5,
+  "1": 5,
+  "02": 7,
+  "2": 7,
+  "03": 5,
+  "3": 5,
+  "04": 7,
+  "4": 7,
+  "05": 6,
+  "5": 6,
+  "06": 9,
+  "6": 9,
+  "07": 6,
+  "7": 6,
+  "08": 5,
+  "8": 5,
+};
 
 /**
  * Ketentuan Khusus RT per RW di Kelurahan Tunon, Kecamatan Tegal Selatan:
@@ -1007,6 +1041,11 @@ export function getRwListByKelurahan(kelurahan?: string | null): string[] {
     const list = Array.from({ length: 4 }, (_, i) => String(i + 1).padStart(2, "0"));
     return [...list, "Belum Tahu"];
   }
+  if (clean === "pekauman") {
+    const list = Array.from({ length: 8 }, (_, i) => String(i + 1).padStart(2, "0"));
+    return [...list, "Belum Tahu"];
+  }
+
   if (clean === "margadana") {
     const list = Array.from({ length: 13 }, (_, i) => String(i + 1).padStart(2, "0"));
     return [...list, "Belum Tahu"];
@@ -1077,6 +1116,18 @@ export function getRtListByKelurahan(kelurahan?: string | null, rw?: string | nu
     const list = Array.from({ length: 6 }, (_, i) => String(i + 1).padStart(2, "0"));
     return [...list, "Belum Tahu"];
   }
+  if (clean === "pekauman") {
+    if (rw && rw !== "Belum Tahu") {
+      const cleanRw = rw.replace(/^(rw|rt)\s*/i, "").trim();
+      const normRw = String(parseInt(cleanRw, 10)).padStart(2, "0");
+      const count = DATA_RT_PER_RW_PEKAUMAN[normRw] || 9;
+      const list = Array.from({ length: count }, (_, i) => String(i + 1).padStart(2, "0"));
+      return [...list, "Belum Tahu"];
+    }
+    const list = Array.from({ length: 9 }, (_, i) => String(i + 1).padStart(2, "0"));
+    return [...list, "Belum Tahu"];
+  }
+
   if (clean === "margadana") {
     if (rw && rw !== "Belum Tahu") {
       const cleanRw = rw.replace(/^(rw|rt)\s*/i, "").trim();
