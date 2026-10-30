@@ -816,6 +816,25 @@ export async function getDataAnakByKomunitas(
           searchPhrases.add(phrase.replace(/[()]/g, "%"));
           searchPhrases.add(phrase.replace(/[()]/g, ""));
         }
+        // Toleransi spasi <-> tanda hubung (misal "Mubtadi-ien" vs "Mubtadiien" vs "Mubtadi ien", "Al-Izzah" vs "Al Izzah")
+        if (phrase.includes(" ")) {
+          searchPhrases.add(phrase.replace(/\s+/g, "%"));
+          searchPhrases.add(phrase.replace(/\s+/g, "-"));
+        }
+        if (phrase.includes("-")) {
+          searchPhrases.add(phrase.replace(/-/g, "%"));
+          searchPhrases.add(phrase.replace(/-/g, " "));
+          searchPhrases.add(phrase.replace(/-/g, ""));
+        }
+        // Jika terdiri dari beberapa kata, tambahkan kombinasi kata kunci inti dengan wildcard antar-kata
+        const cleanWords = phrase.replace(/[()\-]/g, " ").split(/\s+/).filter((w) => w.length > 2);
+        if (cleanWords.length >= 2) {
+          searchPhrases.add(`${cleanWords[0]}%${cleanWords[1]}`);
+          // Potongan awalan kata kedua (misal "Hidayatul%Mubtadi" untuk menangani "Mubtadi-ien" dan "Mubtadiien")
+          if (cleanWords[1].length > 5) {
+            searchPhrases.add(`${cleanWords[0]}%${cleanWords[1].slice(0, 6)}`);
+          }
+        }
       }
 
       // Bersihkan karakter pembatas sintaks PostgREST (.or() terganggu jika ada kurung atau koma)
