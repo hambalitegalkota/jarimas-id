@@ -301,14 +301,9 @@ async function fetchProgresPaudFallback(
     }
   });
 
-  // Normalisasi helper untuk mencocokkan nama sekolah hasil sinkronisasi dengan nama lembaga PAUD
-  const cleanSchool = (s: string) => cleanBaseSchoolName(s);
-
-  const paudByClean = new Map<string, any>();
   const paudById = new Map<string, any>();
   paudList.forEach((p: any) => {
     paudById.set(p.id, p);
-    paudByClean.set(cleanSchool(p.nama), p);
   });
 
   const memberCountMap: Record<string, number> = {};
@@ -338,17 +333,15 @@ async function fetchProgresPaudFallback(
     const hasDirectMatch = Boolean(p);
 
     if (!p && c.nama_sekolah) {
-      const cName = cleanSchool(c.nama_sekolah);
-      p = paudByClean.get(cName);
-      if (!p) {
-        p = paudList.find((x: any) => isSchoolNameMatching(c.nama_sekolah, x.nama));
-      }
-      if (!p) {
-        // Fallback substring matcher
-        p = paudList.find((x: any) => {
-          const cx = cleanSchool(x.nama);
-          return cx === cName || cx.includes(cName) || cName.includes(cx);
-        });
+      // Cari PAUD yang cocok dengan presisi jenjang dan lokasi wilayah
+      const matchedPauds = paudList.filter((x: any) => isSchoolNameMatching(c.nama_sekolah, x.nama));
+      if (matchedPauds.length === 1) {
+        p = matchedPauds[0];
+      } else if (matchedPauds.length > 1) {
+        // Disambiguasi Wilayah: Jika ada beberapa PAUD dengan nama mirip, cocokkan dengan kelurahan domisili/KK anak
+        const m = (c.alasan_sekolah || "").match(/\[(DOM_KEL|KK_KEL|KEL):([^\]]+)\]/);
+        const childKel = m ? normalizeWilayah(m[2]) : "";
+        p = matchedPauds.find((x: any) => normalizeWilayah(x.kelurahan) === childKel) || matchedPauds[0];
       }
     }
 

@@ -721,6 +721,64 @@ export function cleanBaseSchoolName(str?: string | null): string {
   return s.replace(/[^a-z0-9]/g, "");
 }
 
+export type SchoolLevel = "ra" | "kb" | "tk" | "pos_paud" | "tpa" | "pkbm" | "skb" | "other";
+
+/**
+ * Ekstraksi jenjang/prefix institusi dari nama sekolah/komunitas
+ * (RA, KB, TK, Pos PAUD/SPS, TPA, PKBM, SKB)
+ */
+export function extractSchoolLevel(str?: string | null): SchoolLevel {
+  if (!str) return "other";
+  const s = str.trim().toLowerCase();
+
+  if (/^(ra|raudhatul\s+athfal)\b/i.test(s) || /^ra[\s.]+/i.test(s)) {
+    return "ra";
+  }
+  if (/^(pos\s+paud|sps|paud\s+tpq)\b/i.test(s) || /\bpos\s+paud\b/i.test(s)) {
+    return "pos_paud";
+  }
+  if (/^(tpa)\b/i.test(s) || /^tpa[\s.]+/i.test(s)) {
+    return "tpa";
+  }
+  if (/^(kb|kelompok\s+bermain|kbi)\b/i.test(s) || /^kb[\s.]+/i.test(s)) {
+    return "kb";
+  }
+  if (/^(tk|taman\s+kanak)\b/i.test(s) || /^tk[\s.]+/i.test(s)) {
+    return "tk";
+  }
+  if (/^(pkbm)\b/i.test(s) || /^pkbm[\s.]+/i.test(s)) {
+    return "pkbm";
+  }
+  if (/^(skb)\b/i.test(s) || /^skb[\s.]+/i.test(s)) {
+    return "skb";
+  }
+  return "other";
+}
+
+/**
+ * Memeriksa apakah dua jenjang institusi cocok / kompatibel.
+ * RA, KB, dan TK adalah lembaga dengan perizinan dan NPSN berbeda, sehingga TIDAK BOLEH saling tertukar!
+ */
+export function areSchoolLevelsCompatible(lvl1: SchoolLevel, lvl2: SchoolLevel): boolean {
+  if (lvl1 === "other" || lvl2 === "other") return true;
+  if (lvl1 === lvl2) return true;
+  return false;
+}
+
+/**
+ * Ekstraksi token kelurahan spesifik Kota Tegal dari nama sekolah jika tertera eksplisit
+ */
+export function extractSchoolLocationToken(str?: string | null): string | null {
+  if (!str) return null;
+  const s = str.toLowerCase();
+  for (const w of TEGAL_WILAYAH_TOKENS) {
+    if (new RegExp(`\\b${w}\\b`, "i").test(s)) {
+      return w;
+    }
+  }
+  return null;
+}
+
 /**
  * Mencocokkan dua nama sekolah/PAUD secara cerdas dan toleran terhadap variasi penulisan:
  * tanda baca (titik, petik), romawi vs angka arab (111 -> III, 1 -> I), singkatan, jenjang prefix, dll.
@@ -733,6 +791,23 @@ export function isSchoolNameMatching(
   const s1 = school1.trim();
   const s2 = school2.trim();
   if (s1.toLowerCase() === s2.toLowerCase()) return true;
+
+  // 1. Cek Kompatibilitas Jenjang Institusi (RA vs KB vs TK vs Pos PAUD)
+  // RA, KB, dan TK adalah lembaga yang berbeda dan tidak boleh saling tertukar!
+  const lvl1 = extractSchoolLevel(s1);
+  const lvl2 = extractSchoolLevel(s2);
+  if (!areSchoolLevelsCompatible(lvl1, lvl2)) {
+    return false;
+  }
+
+  // 2. Cek Kompatibilitas Kelurahan jika kedua nama mencantumkan nama kelurahan secara eksplisit
+  // Misal: "Pos PAUD Kartini Kraton" vs "POS PAUD KARTINI RW. VI SLEROK" -> Beda kelurahan = Beda lembaga!
+  // "Pos PAUD Dewi Sartika Kraton" vs "Pos PAUD Dewi Sartika Debong Kulon" -> Beda kelurahan = Beda lembaga!
+  const loc1 = extractSchoolLocationToken(s1);
+  const loc2 = extractSchoolLocationToken(s2);
+  if (loc1 && loc2 && loc1 !== loc2) {
+    return false;
+  }
 
   const num1 = extractSchoolNumberToken(s1);
   const num2 = extractSchoolNumberToken(s2);
