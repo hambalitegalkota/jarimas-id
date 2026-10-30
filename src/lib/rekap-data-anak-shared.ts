@@ -94,16 +94,20 @@ export interface RekapDataAnakUsiaDiniResult {
   totalLiveRecords: number;
 }
 
-export const DAFTAR_ALASAN_BERSEKOLAH = [
-  "Stimulasi & Pendidikan Usia Dini",
-  "Melatih Kemandirian & Sosialisasi",
-  "Persiapan Masuk Sekolah Dasar (SD)",
-  "Pengembangan Bahasa & Kognitif",
-  "Pengembangan Minat, Bakat & Motorik",
-  "Fasilitas Belajar & Bermain Lengkap",
-  "Dorongan Orang Tua & Lingkungan",
-  "Alasan Lainnya",
-];
+export const ALASAN_SEKOLAH_PAUD = [
+  "Sudah Usia PAUD",
+  "Memberikan Pendidikan Terbaik Sejak Usia Dini",
+  "Agar Mandiri",
+  "Supaya Lebih Matang Emosional",
+  "Persiapan Ke SD",
+  "Mengembangkan Keterampilan Sosial & Bahasa",
+  "Semua Kerabat, Tetangga Seusia Sekolah PAUD",
+  "Orang Tua Bekerja",
+] as const;
+
+export type AlasanSekolahPaud = (typeof ALASAN_SEKOLAH_PAUD)[number];
+
+export const DAFTAR_ALASAN_BERSEKOLAH: string[] = [...ALASAN_SEKOLAH_PAUD];
 
 export const DAFTAR_ALASAN_TIDAK_SEKOLAH = [
   "Belum Cukup Usia / Masih Balita",
@@ -176,15 +180,52 @@ export function classifySchoolType(namaSekolah?: string | null): keyof SchoolTyp
 }
 
 export function normalizeReasonBersekolah(raw?: string | null): string {
-  const s = (raw || "").toLowerCase();
-  if (s.includes("stimulasi") || s.includes("pendidikan") || s.includes("terbaik")) return "Stimulasi & Pendidikan Usia Dini";
-  if (s.includes("mandiri") || s.includes("sosialisasi") || s.includes("teman")) return "Melatih Kemandirian & Sosialisasi";
-  if (s.includes("sd") || s.includes("sekolah dasar") || s.includes("persiapan")) return "Persiapan Masuk Sekolah Dasar (SD)";
-  if (s.includes("bahasa") || s.includes("kognitif") || s.includes("bicara")) return "Pengembangan Bahasa & Kognitif";
-  if (s.includes("motorik") || s.includes("bakat") || s.includes("kreatif")) return "Pengembangan Minat, Bakat & Motorik";
-  if (s.includes("fasilitas") || s.includes("bermain") || s.includes("dekat")) return "Fasilitas Belajar & Bermain Lengkap";
-  if (s.includes("orang tua") || s.includes("keluarga") || s.includes("lingkungan") || s.includes("usia paud")) return "Dorongan Orang Tua & Lingkungan";
-  return "Stimulasi & Pendidikan Usia Dini";
+  if (!raw) return ALASAN_SEKOLAH_PAUD[0];
+
+  // 1. Ekstraksi jika dalam format tag [ALASAN:...]
+  const m = String(raw).match(/\[ALASAN\s*:\s*([^\]]+)\]/i);
+  let val = m ? m[1].trim() : String(raw).trim();
+  if (val.startsWith("[") && val.includes("]")) {
+    val = val.replace(/\[[^\]]+\]/g, "").trim();
+  }
+
+  if (!val) return ALASAN_SEKOLAH_PAUD[0];
+
+  // 2. Cocokkan langsung (case-insensitive) dengan daftar resmi ALASAN_SEKOLAH_PAUD
+  const matched = ALASAN_SEKOLAH_PAUD.find(
+    (opt) => opt.toLowerCase() === val.toLowerCase()
+  );
+  if (matched) return matched;
+
+  // 3. Pemetaan semantik jika terdapat variasi teks lama
+  const s = val.toLowerCase();
+  if (s.includes("usia") || s.includes("cukup umur")) {
+    return "Sudah Usia PAUD";
+  }
+  if (s.includes("pendidikan") || s.includes("stimulasi") || s.includes("terbaik")) {
+    return "Memberikan Pendidikan Terbaik Sejak Usia Dini";
+  }
+  if (s.includes("mandiri") || s.includes("keberanian") || s.includes("percaya diri")) {
+    return "Agar Mandiri";
+  }
+  if (s.includes("emosi") || s.includes("matang") || s.includes("karakter") || s.includes("budi pekerti")) {
+    return "Supaya Lebih Matang Emosional";
+  }
+  if (s.includes("sd") || s.includes("sekolah dasar") || s.includes("persiapan")) {
+    return "Persiapan Ke SD";
+  }
+  if (s.includes("bahasa") || s.includes("keterampilan") || s.includes("bicara") || s.includes("sosial") || s.includes("sosialisasi")) {
+    return "Mengembangkan Keterampilan Sosial & Bahasa";
+  }
+  if (s.includes("kerabat") || s.includes("tetangga") || s.includes("teman") || s.includes("sebaya")) {
+    return "Semua Kerabat, Tetangga Seusia Sekolah PAUD";
+  }
+  if (s.includes("kerja") || s.includes("bekerja") || s.includes("karir") || s.includes("sibuk")) {
+    return "Orang Tua Bekerja";
+  }
+
+  // 4. Jika ada alasan baru di masa depan yang ditambahkan di form, gunakan teks tersebut secara dinamis
+  return val;
 }
 
 export function normalizeReasonTidakSekolah(raw?: string | null, age: number = 2): string {

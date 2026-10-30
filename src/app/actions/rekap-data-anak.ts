@@ -182,8 +182,12 @@ export async function getRekapDataAnakUsiaDiniAction(): Promise<{
             }
 
             const normReason = normalizeReasonBersekolah(parsed.alasan);
-            const rObj = targetKelItem.bersekolahAlasan.find((r) => r.alasan === normReason);
-            if (rObj) rObj.jumlah += 1;
+            let rObj = targetKelItem.bersekolahAlasan.find((r) => r.alasan === normReason);
+            if (!rObj) {
+              rObj = { alasan: normReason, jumlah: 0, persentase: 0 };
+              targetKelItem.bersekolahAlasan.push(rObj);
+            }
+            rObj.jumlah += 1;
           } else {
             targetKelItem.totalTidakBersekolah += 1;
             if (isLaki) {
@@ -276,8 +280,13 @@ export async function getRekapDataAnakUsiaDiniAction(): Promise<{
           kecItem.bersekolahUsiaJenjang[a].pkbm += kel.bersekolahUsiaJenjang[a].pkbm;
         }
 
-        kel.bersekolahAlasan.forEach((r, idx) => {
-          kecItem.bersekolahAlasan[idx].jumlah += r.jumlah;
+        kel.bersekolahAlasan.forEach((r) => {
+          let targetR = kecItem.bersekolahAlasan.find((x) => x.alasan === r.alasan);
+          if (!targetR) {
+            targetR = { alasan: r.alasan, jumlah: 0, persentase: 0 };
+            kecItem.bersekolahAlasan.push(targetR);
+          }
+          targetR.jumlah += r.jumlah;
         });
 
         kecItem.tidakBersekolahGender.lakiLaki += kel.tidakBersekolahGender.lakiLaki;
@@ -291,8 +300,13 @@ export async function getRekapDataAnakUsiaDiniAction(): Promise<{
         kecItem.tidakBersekolahUsia.age5 += kel.tidakBersekolahUsia.age5;
         kecItem.tidakBersekolahUsia.age6 += kel.tidakBersekolahUsia.age6;
 
-        kel.tidakBersekolahAlasan.forEach((r, idx) => {
-          kecItem.tidakBersekolahAlasan[idx].jumlah += r.jumlah;
+        kel.tidakBersekolahAlasan.forEach((r) => {
+          let targetR = kecItem.tidakBersekolahAlasan.find((x) => x.alasan === r.alasan);
+          if (!targetR) {
+            targetR = { alasan: r.alasan, jumlah: 0, persentase: 0 };
+            kecItem.tidakBersekolahAlasan.push(targetR);
+          }
+          targetR.jumlah += r.jumlah;
         });
       }
 
@@ -358,8 +372,13 @@ export async function getRekapDataAnakUsiaDiniAction(): Promise<{
         kotaItem.bersekolahUsiaJenjang[a].pkbm += kec.bersekolahUsiaJenjang[a].pkbm;
       }
 
-      kec.bersekolahAlasan.forEach((r, idx) => {
-        kotaItem.bersekolahAlasan[idx].jumlah += r.jumlah;
+      kec.bersekolahAlasan.forEach((r) => {
+        let targetR = kotaItem.bersekolahAlasan.find((x) => x.alasan === r.alasan);
+        if (!targetR) {
+          targetR = { alasan: r.alasan, jumlah: 0, persentase: 0 };
+          kotaItem.bersekolahAlasan.push(targetR);
+        }
+        targetR.jumlah += r.jumlah;
       });
 
       kotaItem.tidakBersekolahGender.lakiLaki += kec.tidakBersekolahGender.lakiLaki;
@@ -373,8 +392,13 @@ export async function getRekapDataAnakUsiaDiniAction(): Promise<{
       kotaItem.tidakBersekolahUsia.age5 += kec.tidakBersekolahUsia.age5;
       kotaItem.tidakBersekolahUsia.age6 += kec.tidakBersekolahUsia.age6;
 
-      kec.tidakBersekolahAlasan.forEach((r, idx) => {
-        kotaItem.tidakBersekolahAlasan[idx].jumlah += r.jumlah;
+      kec.tidakBersekolahAlasan.forEach((r) => {
+        let targetR = kotaItem.tidakBersekolahAlasan.find((x) => x.alasan === r.alasan);
+        if (!targetR) {
+          targetR = { alasan: r.alasan, jumlah: 0, persentase: 0 };
+          kotaItem.tidakBersekolahAlasan.push(targetR);
+        }
+        targetR.jumlah += r.jumlah;
       });
     }
 

@@ -109,9 +109,15 @@ export function ModalEditDataAnak({
     anak.jarak_rumah_km ? String(anak.jarak_rumah_km) : "0.5"
   );
   const isPaud = isKomunitasLayananPaud(null, komunitasNama, String(jenisKomunitas));
-  const [alasanSekolah, setAlasanSekolah] = useState(
-    anak.alasan_sekolah || (isPaud ? ALASAN_SEKOLAH_PAUD[0] : ALASAN_BELUM_SEKOLAH[0])
-  );
+  const cleanInitialAlasan = () => {
+    const raw = anak.alasan_sekolah || "";
+    const m = raw.match(/\[ALASAN\s*:\s*([^\]]+)\]/i);
+    if (m && m[1]) return m[1].trim();
+    if (raw && !raw.startsWith("[")) return raw.trim();
+    return isPaud ? ALASAN_SEKOLAH_PAUD[0] : ALASAN_BELUM_SEKOLAH[0];
+  };
+
+  const [alasanSekolah, setAlasanSekolah] = useState(cleanInitialAlasan());
   // Ceklis konfirmasi bahwa data sudah benar & valid.
   // Default false jika anak belum approved, agar admin wajib mencentang secara sadar sebelum memvalidasi.
   const [isCheckedValid, setIsCheckedValid] = useState(
@@ -970,6 +976,11 @@ export function ModalEditDataAnak({
                         {alasan}
                       </option>
                     ))}
+                    {alasanSekolah && !ALASAN_SEKOLAH_PAUD.includes(alasanSekolah as any) && (
+                      <option value={alasanSekolah}>
+                        {alasanSekolah}
+                      </option>
+                    )}
                   </select>
                 </div>
               </>

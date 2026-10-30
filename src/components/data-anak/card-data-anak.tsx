@@ -338,7 +338,9 @@ export function CardDataAnak({
             {/* Alasan Sekolah / Keterangan Tag */}
             {cleanedAlasan && (
               <div className="rounded-lg bg-primary/5 px-2.5 py-1.5 text-xs text-foreground border border-primary/20 leading-snug">
-                <span className="font-semibold text-primary">Keterangan: </span>
+                <span className="font-semibold text-primary">
+                  {currentChild.is_sekolah ? "Alasan Mengikuti PAUD: " : "Keterangan: "}
+                </span>
                 <span className="text-foreground">{cleanedAlasan}</span>
               </div>
             )}

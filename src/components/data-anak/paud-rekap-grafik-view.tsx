@@ -17,7 +17,7 @@ import {
   RotateCcw,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { calculateAgeFromBirthDate } from "@/lib/rekap-data-anak-shared";
+import { calculateAgeFromBirthDate, ALASAN_SEKOLAH_PAUD, normalizeReasonBersekolah } from "@/lib/rekap-data-anak-shared";
 import type { DataAnakItem } from "@/types/database";
 
 export interface PaudRekapGrafikViewProps {
@@ -278,27 +278,19 @@ export function PaudRekapGrafikView({
     return { list, max };
   }, [childrenList, totalMurid]);
 
-  // 7. Alasan / Motivasi Bersekolah PAUD
+  // 7. Alasan / Motivasi Bersekolah PAUD (Otomatis sinkron dengan formulir Edit Data Anak)
   const motivasiEntries = useMemo(() => {
     const countMap: Record<string, number> = {};
-    childrenList.forEach((c) => {
-      let r = (c.alasan_sekolah || "").trim();
-      if (!r) {
-        r = "Stimulasi Tumbuh Kembang Sejak Dini";
-      }
-      countMap[r] = (countMap[r] || 0) + 1;
+
+    // Inisialisasi seluruh opsi resmi dari ALASAN_SEKOLAH_PAUD
+    ALASAN_SEKOLAH_PAUD.forEach((alasan) => {
+      countMap[alasan] = 0;
     });
 
-    // Default jika belum ada data variasi alasan
-    const defaults = [
-      "Stimulasi Tumbuh Kembang Sejak Dini",
-      "Persiapan Masuk Sekolah Dasar (SD)",
-      "Sosialisasi & Interaksi Teman Sebaya",
-      "Melatih Kemandirian dan Keberanian Anak",
-      "Mengembangkan Karakter & Budi Pekerti",
-    ];
-    defaults.forEach((d) => {
-      if (!countMap[d]) countMap[d] = 0;
+    // Hitung seluruh alasan anak di komunitas PAUD ini
+    childrenList.forEach((c) => {
+      const r = normalizeReasonBersekolah(c.alasan_sekolah);
+      countMap[r] = (countMap[r] || 0) + 1;
     });
 
     const entries = Object.entries(countMap)

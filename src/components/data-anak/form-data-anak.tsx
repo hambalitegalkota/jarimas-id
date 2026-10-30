@@ -47,18 +47,10 @@ interface FormDataAnakProps {
   onSuccess?: () => void;
 }
 
-export const USIA_ANAK_OPTIONS = ["0", "1", "2", "3", "4", "5", "6"] as const;
+import { ALASAN_SEKOLAH_PAUD } from "@/lib/rekap-data-anak-shared";
+export { ALASAN_SEKOLAH_PAUD };
 
-export const ALASAN_SEKOLAH_PAUD = [
-  "Sudah Usia PAUD",
-  "Memberikan Pendidikan Terbaik Sejak Usia Dini",
-  "Agar Mandiri",
-  "Supaya Lebih Matang Emosional",
-  "Persiapan Ke SD",
-  "Mengembangkan Keterampilan Sosial & Bahasa",
-  "Semua Kerabat, Tetangga Seusia Sekolah PAUD",
-  "Orang Tua Bekerja",
-];
+export const USIA_ANAK_OPTIONS = ["0", "1", "2", "3", "4", "5", "6"] as const;
 
 export const ALASAN_BELUM_SEKOLAH = [
   "Belum Wajib (Masih Balita)",
