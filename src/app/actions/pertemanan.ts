@@ -144,7 +144,8 @@ export async function getRegisteredUsers(params?: {
             rt
           )
         `)
-        .eq("status", "approved");
+        .eq("status", "approved")
+        .limit(5000);
 
       if (memberships) {
         // Petakan keanggotaan per user & catat komunitas user saat ini
@@ -238,7 +239,7 @@ export async function getRegisteredUsers(params?: {
         .from("profiles")
         .select("id, nama_lengkap, email, nomor_hp, avatar_url, is_super_admin, created_at")
         .order("created_at", { ascending: false })
-        .limit(100);
+        .limit(5000);
 
       if (profileErr) {
         console.warn("Gagal mengambil profiles untuk super admin / admin pusat:", profileErr);
@@ -274,7 +275,7 @@ export async function getRegisteredUsers(params?: {
           .select("id, nama_lengkap, email, nomor_hp, avatar_url, is_super_admin, created_at")
           .in("id", Array.from(userIdsToFetch))
           .order("created_at", { ascending: false })
-          .limit(100);
+          .limit(5000);
 
         if (profileErr) {
           console.warn("Gagal mengambil profiles satu komunitas:", profileErr);
