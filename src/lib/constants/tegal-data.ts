@@ -1079,6 +1079,16 @@ export function getJumlahRtPerRwByKelurahan(kelurahan?: string | null, rw?: stri
     }
     return 20; // Default max RT di RW 9 Panggung
   }
+  if (clean === "pekauman") {
+    if (rw && rw !== "Belum Tahu") {
+      const cleanRw = rw.replace(/^(rw|rt)\s*/i, "").trim();
+      const normRw = String(parseInt(cleanRw, 10)).padStart(2, "0");
+      if (DATA_RT_PER_RW_PEKAUMAN[normRw] || DATA_RT_PER_RW_PEKAUMAN[cleanRw]) {
+        return DATA_RT_PER_RW_PEKAUMAN[normRw] || DATA_RT_PER_RW_PEKAUMAN[cleanRw];
+      }
+    }
+    return 9; // Default max RT di RW 6 Pekauman
+  }
   if (clean === "tegalsari") {
     if (rw && rw !== "Belum Tahu") {
       const cleanRw = rw.replace(/^(rw|rt)\s*/i, "").trim();

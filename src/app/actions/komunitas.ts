@@ -32,6 +32,12 @@ import {
 import {
   getPosyanduCakupanRw,
   getPosyanduCakupanWilayah,
+  isValidKeturenRtRw,
+  isValidDebongKulonRtRw,
+  isValidTunonRtRw,
+  isValidPekaumanRtRw,
+  isValidPanggungRtRw,
+  isValidTegalsariRtRw,
 } from "@/lib/data-anak-helpers";
 import {
   toValidUUID,
@@ -155,8 +161,62 @@ function isInvalidDebongKidulWarga(item: { kelurahan?: string | null; rw?: strin
   return false;
 }
 
-function isInvalidWargaCommunity(item: { kelurahan?: string | null; rw?: string | null; rt?: string | null }): boolean {
-  return isInvalidMargadanaWarga(item) || isInvalidDebongKidulWarga(item);
+function isInvalidWargaCommunity(item: { kelurahan?: string | null; rw?: string | null; rt?: string | null; nama?: string | null }): boolean {
+  if (isInvalidMargadanaWarga(item) || isInvalidDebongKidulWarga(item)) return true;
+
+  const kel = (item.kelurahan || "").trim();
+  let rawRw = item.rw;
+  let rawRt = item.rt;
+
+  if (!rawRw && item.nama) {
+    const rwMatch = item.nama.match(/rw\s*:\s*(\d+|belum tahu)/i) || item.nama.match(/rw\s+(\d+)/i);
+    if (rwMatch) rawRw = rwMatch[1];
+  }
+  if (!rawRt && item.nama) {
+    const rtMatch = item.nama.match(/rt\s*:\s*(\d+|belum tahu)/i) || item.nama.match(/rt\s+(\d+)/i);
+    if (rtMatch) rawRt = rtMatch[1];
+  }
+
+  // 1. Validasi spesifik kelurahan yang memiliki aturan ketat RT & RW
+  if (!isValidTunonRtRw(kel, rawRw, rawRt)) return true;
+  if (!isValidDebongKulonRtRw(kel, rawRw, rawRt)) return true;
+  if (!isValidKeturenRtRw(kel, rawRw, rawRt)) return true;
+  if (!isValidPekaumanRtRw(kel, rawRw, rawRt)) return true;
+  if (!isValidPanggungRtRw(kel, rawRw, rawRt)) return true;
+  if (!isValidTegalsariRtRw(kel, rawRw, rawRt)) return true;
+
+  // 2. Validasi khusus Debong Lor (RW 1: 8 RT, RW 2: 5 RT, RW 3: 4 RT -> Max 3 RW)
+  const cleanKel = kel.toLowerCase().replace(/^(kelurahan|kel\.)\s+/i, "").trim();
+  if (cleanKel === "debong lor") {
+    if (rawRw && !String(rawRw).toLowerCase().includes("belum")) {
+      const rwNum = parseInt(String(rawRw).replace(/\D/g, ""), 10);
+      if (rwNum > 3) return true;
+      if (rawRt && !String(rawRt).toLowerCase().includes("belum")) {
+        const rtNum = parseInt(String(rawRt).replace(/\D/g, ""), 10);
+        if (rwNum === 1 && rtNum > 8) return true;
+        if (rwNum === 2 && rtNum > 5) return true;
+        if (rwNum === 3 && rtNum > 4) return true;
+      }
+    }
+  }
+
+  // 3. Validasi umum terhadap batas resmi Kota Tegal
+  if (kel) {
+    if (rawRw && !String(rawRw).toLowerCase().includes("belum")) {
+      const rwNum = parseInt(String(rawRw).replace(/\D/g, ""), 10);
+      const maxRw = getJumlahRwByKelurahan(kel);
+      const isTegalsariSpecial = cleanKel.includes("tegalsari") && rwNum === 31;
+      if (maxRw && rwNum > maxRw && !isTegalsariSpecial) return true;
+
+      if (rawRt && !String(rawRt).toLowerCase().includes("belum")) {
+        const rtNum = parseInt(String(rawRt).replace(/\D/g, ""), 10);
+        const maxRt = getJumlahRtPerRwByKelurahan(kel, rawRw);
+        if (maxRt && rtNum > maxRt) return true;
+      }
+    }
+  }
+
+  return false;
 }
 
 /**
@@ -320,6 +380,9 @@ export async function getKomunitasList(
           }
         }
       }
+
+      // Pastikan seluruh item warga_kita yang dihasilkan maupun digabung dari DB disaring ketat
+      filteredWarga = filteredWarga.filter((w) => !isInvalidWargaCommunity(w));
 
       if (params.searchQuery && params.searchQuery.trim()) {
         const sq = params.searchQuery.toLowerCase().trim();
@@ -1009,6 +1072,16 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
 
     let nama = komunitas.nama || komunitas.nama_komunitas || "Komunitas";
     let jenis = komunitas.jenis || komunitas.jenis_komunitas || seedItem?.jenis || "posyandu";
+
+    if (jenis === "warga_kita" && isInvalidWargaCommunity(komunitas)) {
+      return {
+        success: false,
+        message: "Komunitas rukun warga/tetangga tidak sesuai ketentuan wilayah resmi Kota Tegal.",
+        data: null,
+        currentUserId,
+        isAdminOrKader: false,
+      };
+    }
 
     const cleanNamaCheck = nama.toLowerCase();
     const isSkbEntity =
