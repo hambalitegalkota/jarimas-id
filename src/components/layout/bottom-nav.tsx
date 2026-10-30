@@ -61,17 +61,17 @@ export function BottomNav() {
       isActive: (pathname: string) => pathname.startsWith("/kabar"),
     },
     {
+      label: "Profil",
+      href: "/profil",
+      icon: User,
+      isActive: (pathname: string) => pathname.startsWith("/profil"),
+    },
+    {
       label: "Tanya Admin",
       href: "#tanya-admin",
       icon: MessageCircleQuestion,
       isTanyaAdmin: true,
       isActive: () => false,
-    },
-    {
-      label: "Profil",
-      href: "/profil",
-      icon: User,
-      isActive: (pathname: string) => pathname.startsWith("/profil"),
     },
   ];
 

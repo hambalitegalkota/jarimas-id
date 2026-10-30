@@ -202,3 +202,4 @@ WHERE jenis = 'warga_kita'
       (NULLIF(regexp_replace(rw, '\D', '', 'g'), '')::int IN (13, 31) AND NULLIF(regexp_replace(rt, '\D', '', 'g'), '')::int > 5 AND rt NOT ILIKE '%belum%')
     ))
   );
+

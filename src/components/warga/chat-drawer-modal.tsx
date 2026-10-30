@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import {
   X,
   Send,
@@ -17,6 +18,7 @@ import {
   Download,
   AlertCircle,
   CornerDownLeft,
+  AtSign,
 } from "lucide-react";
 import { getPrivateConversation, sendPrivateMessage } from "@/app/actions/pertemanan";
 import { createClient } from "@/utils/supabase/client";
@@ -43,14 +45,47 @@ interface ChatDrawerModalProps {
   currentUserId: string | null;
 }
 
+// Rekomendasi pesan cepat untuk konsultasi Admin Pusat
 const QUICK_GREETINGS = [
-  "Halo Admin Pusat Jarimas! 👋",
-  "Assalamu'alaikum wr. wb. 🙏",
-  "Bisa konsultasi terkait pendataan warga? 📋",
+  "Assalamu'alaikum wr. wb. salam hangat Admin! 🙏",
   "Mohon panduan terkait fitur aplikasi Jarimas 💡",
+  "Bisa konsultasi terkait pendataan warga? 📋",
+  "Ada kendala saat validasi data anak usia dini 🩺",
+  "Informasi sinkronisasi Posyandu & RT/RW 🏘️",
 ];
 
-const QUICK_EMOJIS = ["👍", "❤️", "😊", "🙏", "👏", "🎉", "🔥", "💡", "🩺", "📚", "🏘️", "✅"];
+// Kategori Emoticon Lengkap (sama seperti percakapan komunitas The Orbit Sixty)
+const EMOJI_CATEGORIES = [
+  {
+    name: "Populer",
+    icon: "🌟",
+    emojis: ["👍", "❤️", "😊", "🙏", "👏", "🎉", "🔥", "💡", "☕", "✅", "📢", "🏘️"],
+  },
+  {
+    name: "Ekspresi",
+    icon: "😀",
+    emojis: [
+      "😀", "😃", "😄", "😁", "😆", "😅", "🤣", "😂", "🙂", "😉", "😊", "😇",
+      "🥰", "😍", "🤩", "😘", "😋", "😜", "🤔", "🤫", "🤝", "👏", "🙌", "👍",
+      "👎", "👊", "✌️", "👌", "🙏", "💪",
+    ],
+  },
+  {
+    name: "Kesehatan",
+    icon: "🩺",
+    emojis: ["🩺", "💉", "💊", "🩹", "👶", "🧒", "🍼", "🥣", "🥗", "🍎", "🥛", "❤️", "🌡️", "⚖️"],
+  },
+  {
+    name: "Pendidikan",
+    icon: "📚",
+    emojis: ["📚", "🎒", "✏️", "🎨", "🎓", "🏫", "📖", "🖍️", "🧸", "🧩", "📝", "📋", "🧑‍🏫", "📌"],
+  },
+  {
+    name: "Lingkungan",
+    icon: "🏘️",
+    emojis: ["🏘️", "🏡", "🏢", "🌳", "🧹", "🛡️", "🤝", "👥", "📢", "🔔", "📌", "📍", "🇮🇩", "🌱"],
+  },
+];
 
 export function ChatDrawerModal({
   isOpen,
@@ -58,6 +93,11 @@ export function ChatDrawerModal({
   targetUser,
   currentUserId,
 }: ChatDrawerModalProps) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   let isOnline = false;
   try {
     // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -66,7 +106,7 @@ export function ChatDrawerModal({
       isOnline = notifContext.isUserOnline(targetUser.id);
     }
   } catch {
-    // Fallback if rendered outside context
+    // Fallback jika dirender di luar context
   }
 
   const [messages, setMessages] = useState<PesanPribadi[]>([]);
@@ -74,6 +114,9 @@ export function ChatDrawerModal({
   const [isLoading, setIsLoading] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
+
+  // Mode Enter: "newline" (Enter baris baru) atau "send" (Enter kirim)
+  const [enterMode, setEnterMode] = useState<"newline" | "send">("send");
 
   // Fitur Modern: Tangkapan Layar
   const [attachedImage, setAttachedImage] = useState<CompressedImageResult | null>(null);
@@ -83,12 +126,14 @@ export function ChatDrawerModal({
   // Fitur Modern: Lightbox Preview
   const [lightboxImage, setLightboxImage] = useState<{ url: string; title: string } | null>(null);
 
-  // Fitur Modern: Emoji Picker
+  // Fitur Modern: Emoji Picker dengan Kategori
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [activeEmojiCategory, setActiveEmojiCategory] = useState(0);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const emojiPickerRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = (behavior: ScrollBehavior = "smooth") => {
     messagesEndRef.current?.scrollIntoView({ behavior });
@@ -140,14 +185,12 @@ export function ChatDrawerModal({
             if (!isMounted) return;
             const newMsg = payload.new as PesanPribadi;
 
-            // Validasi pesan memang antara kedua pengguna ini
             const isRelevant =
               (newMsg.sender_id === currentUserId && newMsg.receiver_id === targetUser.id) ||
               (newMsg.sender_id === targetUser.id && newMsg.receiver_id === currentUserId);
 
             if (isRelevant) {
               setMessages((prev) => {
-                // Hindari duplikat dari optimistic UI
                 if (
                   prev.some(
                     (m) =>
@@ -203,14 +246,32 @@ export function ChatDrawerModal({
     };
   }, [isOpen, targetUser, currentUserId]);
 
-  if (!isOpen || !targetUser) return null;
+  // Tutup emoji picker jika klik di luar
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (
+        emojiPickerRef.current &&
+        !emojiPickerRef.current.contains(e.target as Node)
+      ) {
+        setShowEmojiPicker(false);
+      }
+    }
+    if (showEmojiPicker) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showEmojiPicker]);
+
+  if (!isOpen || !targetUser || !mounted) return null;
 
   // Sesuaikan tinggi textarea otomatis
   const adjustTextareaHeight = () => {
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
       textareaRef.current.style.height = `${Math.min(
-        Math.max(textareaRef.current.scrollHeight, 40),
+        Math.max(textareaRef.current.scrollHeight, 44),
         120
       )}px`;
     }
@@ -279,14 +340,66 @@ export function ChatDrawerModal({
     }, 20);
   };
 
+  // Sisipkan baris baru (tombol Baris Baru)
+  const insertNewline = () => {
+    if (!textareaRef.current) {
+      setInputMessage((prev) => prev + "\n");
+      return;
+    }
+    const val = inputMessage;
+    const start = textareaRef.current.selectionStart;
+    const end = textareaRef.current.selectionEnd;
+    const newVal = val.substring(0, start) + "\n" + val.substring(end);
+    setInputMessage(newVal);
+
+    setTimeout(() => {
+      if (textareaRef.current) {
+        textareaRef.current.focus();
+        textareaRef.current.setSelectionRange(start + 1, start + 1);
+        adjustTextareaHeight();
+      }
+    }, 20);
+  };
+
+  // Sisipkan tag Admin Pusat (@AdminPusat)
+  const insertTagAdmin = () => {
+    const tag = "@AdminPusat ";
+    if (!textareaRef.current) {
+      setInputMessage((prev) => prev + tag);
+      return;
+    }
+    const val = inputMessage;
+    const start = textareaRef.current.selectionStart;
+    const end = textareaRef.current.selectionEnd;
+    const newVal = val.substring(0, start) + tag + val.substring(end);
+    setInputMessage(newVal);
+
+    setTimeout(() => {
+      if (textareaRef.current) {
+        textareaRef.current.focus();
+        textareaRef.current.setSelectionRange(start + tag.length, start + tag.length);
+        adjustTextareaHeight();
+      }
+    }, 20);
+  };
+
+  const toggleEnterMode = () => {
+    setEnterMode((prev) => (prev === "newline" ? "send" : "newline"));
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter") {
       if (e.shiftKey) {
-        // Shift + Enter membuat baris baru
+        // Shift + Enter selalu membuat baris baru
         return;
       }
-      e.preventDefault();
-      handleSendMessage();
+      if (enterMode === "send") {
+        e.preventDefault();
+        handleSendMessage();
+      } else {
+        // Mode enter newline: biarkan browser memasukkan \n, sesuaikan tinggi
+        setTimeout(adjustTextareaHeight, 10);
+      }
     }
   };
 
@@ -318,10 +431,11 @@ export function ChatDrawerModal({
     setAttachedImage(null);
     setShowEmojiPicker(false);
     setIsSending(true);
+
     setTimeout(() => {
       scrollToBottom("smooth");
       if (textareaRef.current) {
-        textareaRef.current.style.height = "40px";
+        textareaRef.current.style.height = "44px";
       }
     }, 50);
 
@@ -360,26 +474,25 @@ export function ChatDrawerModal({
 
   const isJarimasBot =
     targetUser.id === JARIMAS_BOT_ID || targetUser.nama_lengkap === JARIMAS_BOT_NAME;
-  const initial = targetUser.nama_lengkap.charAt(0).toUpperCase() || "W";
-  const primaryCommunity = targetUser.komunitas_list?.[0];
+  const initial = targetUser.nama_lengkap.charAt(0).toUpperCase() || "J";
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in duration-200">
+  const modalContent = (
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-2.5 sm:p-4 bg-slate-950/75 backdrop-blur-xs animate-in fade-in duration-200">
       <div
-        className="relative flex flex-col w-full max-w-lg h-[88vh] max-h-[680px] rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200"
+        className="relative flex flex-col w-full max-w-lg h-[92vh] sm:h-[86vh] max-h-[660px] rounded-2xl sm:rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200"
         role="dialog"
         aria-modal="true"
       >
         {/* ========================================================= */}
-        {/* HEADER CHAT                                               */}
+        {/* 1. HEADER CHAT                                            */}
         {/* ========================================================= */}
-        <div className="flex items-center justify-between px-4 py-3.5 border-b-2 border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/90 shrink-0">
-          <div className="flex items-center gap-3 min-w-0">
+        <div className="flex items-center justify-between px-3.5 sm:px-4 py-3 border-b-2 border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/90 shrink-0">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
             {/* User Avatar */}
             <div className="relative shrink-0">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-tr from-emerald-600 via-teal-600 to-emerald-800 text-white font-black text-base shadow-xs border border-white dark:border-slate-800">
+              <div className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-2xl bg-gradient-to-tr from-teal-600 via-emerald-600 to-teal-800 text-white font-black text-sm sm:text-base shadow-xs border border-white dark:border-slate-800">
                 {isJarimasBot ? (
-                  <Sparkles className="h-6 w-6 text-amber-300 animate-pulse" />
+                  <Sparkles className="h-5 w-5 text-amber-300 animate-pulse" />
                 ) : targetUser.avatar_url ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
@@ -407,80 +520,68 @@ export function ChatDrawerModal({
                 <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 truncate">
                   {targetUser.nama_lengkap}
                 </h3>
-                {targetUser.is_super_admin ? (
-                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-purple-100 dark:bg-purple-950/80 text-purple-700 dark:text-purple-300 text-[10px] font-extrabold border border-purple-200 dark:border-purple-800">
-                    <Sparkles className="h-2.5 w-2.5" />
-                    Super Admin
-                  </span>
-                ) : targetUser.is_admin_pusat ? (
-                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-teal-100 dark:bg-teal-950/80 text-teal-800 dark:text-teal-300 text-[10px] font-extrabold border border-teal-200 dark:border-teal-800">
-                    <ShieldCheck className="h-2.5 w-2.5" />
-                    Admin Pusat
-                  </span>
-                ) : null}
+                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-teal-100 dark:bg-teal-950/80 text-teal-800 dark:text-teal-300 text-[10px] font-extrabold border border-teal-200 dark:border-teal-800">
+                  <ShieldCheck className="h-2.5 w-2.5" />
+                  Admin Pusat
+                </span>
               </div>
 
               <div className="flex items-center gap-1.5 text-2xs text-slate-500 dark:text-slate-400 truncate">
-                {primaryCommunity ? (
-                  <>
-                    <Building2 className="h-3 w-3 shrink-0 text-emerald-600 dark:text-emerald-400" />
-                    <span className="truncate">{primaryCommunity.nama}</span>
-                    <span className="opacity-60">•</span>
-                  </>
-                ) : null}
+                <span className="truncate">Jarimas Indonesia</span>
+                <span className="opacity-60">•</span>
                 <span className={cn("font-medium", isOnline || isJarimasBot ? "text-emerald-600 dark:text-emerald-400 font-bold" : "")}>
-                  {isOnline || isJarimasBot ? "Aktif Sekarang" : "Pesan Pribadi Langsung"}
+                  {isOnline || isJarimasBot ? "Aktif Sekarang" : "Pesan Langsung"}
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Close Button */}
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Tutup Percakapan"
-            className="flex h-9 w-9 items-center justify-center rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-          >
-            <X className="h-5 w-5" />
-          </button>
+          {/* Action Header: Enter Mode Toggle & Close */}
+          <div className="flex items-center gap-1.5 shrink-0">
+            <button
+              type="button"
+              onClick={toggleEnterMode}
+              title={`Klik untuk ubah: saat ini tombol Enter berfungsi ${
+                enterMode === "newline" ? "membuat baris baru" : "mengirim pesan"
+              }`}
+              className="hidden sm:inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-[10px] font-semibold transition-colors cursor-pointer"
+            >
+              <CornerDownLeft className="h-3 w-3 text-teal-600 dark:text-teal-400" />
+              <span>Enter: {enterMode === "newline" ? "Baris Baru" : "Kirim"}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Tutup Percakapan"
+              className="flex h-9 w-9 items-center justify-center rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
         </div>
 
         {/* ========================================================= */}
-        {/* MESSAGES SCROLL AREA                                      */}
+        {/* 2. MESSAGES SCROLL AREA (min-h-0 prevents overflow)      */}
         {/* ========================================================= */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-5 bg-slate-50/60 dark:bg-slate-950/40">
+        <div className="flex-1 min-h-0 overflow-y-auto p-3.5 sm:p-4 bg-slate-50/60 dark:bg-slate-950/40 space-y-3">
           {isLoading ? (
             <div className="flex flex-col items-center justify-center h-full gap-2 text-slate-400">
-              <Loader2 className="h-6 w-6 animate-spin text-emerald-600" />
+              <Loader2 className="h-6 w-6 animate-spin text-teal-600" />
               <span className="text-xs font-semibold">Memuat percakapan...</span>
             </div>
           ) : messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center px-4 space-y-3">
-              <div className="flex h-14 w-14 items-center justify-center rounded-3xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 border border-emerald-200 dark:border-emerald-800">
-                <Sparkles className="h-7 w-7 animate-pulse" />
+              <div className="flex h-13 w-13 items-center justify-center rounded-2xl bg-teal-50 dark:bg-teal-950/50 text-teal-600 border border-teal-200 dark:border-teal-800">
+                <Sparkles className="h-6 w-6 animate-pulse" />
               </div>
               <div className="space-y-1 max-w-xs">
-                <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">
-                  Percakapan Langsung dengan {targetUser.nama_lengkap}
+                <h4 className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200">
+                  Konsultasi dengan Admin Pusat
                 </h4>
-                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                  Belum ada pesan sebelumnya. Kirim pesan pertama untuk bertanya, konsultasi, atau berbagi tangkapan layar!
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                  Belum ada pesan sebelumnya. Kirim pertanyaan, panduan aplikasi, kendala data warga, atau lampirkan tangkapan layar.
                 </p>
-              </div>
-
-              {/* Quick Greeting Chips */}
-              <div className="flex flex-wrap items-center justify-center gap-1.5 pt-2 max-w-sm">
-                {QUICK_GREETINGS.map((greeting, idx) => (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => handleQuickGreeting(greeting)}
-                    className="rounded-full bg-white dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-emerald-950 border border-slate-200 dark:border-slate-700 hover:border-emerald-300 px-3 py-1 text-[11px] font-semibold text-slate-700 dark:text-slate-300 transition-all cursor-pointer shadow-2xs active:scale-95"
-                  >
-                    {greeting}
-                  </button>
-                ))}
               </div>
             </div>
           ) : (
@@ -500,10 +601,17 @@ export function ChatDrawerModal({
                       isMe ? "items-end" : "items-start"
                     }`}
                   >
+                    {!isMe && (
+                      <span className="text-[10px] font-bold text-teal-700 dark:text-teal-400 mb-0.5 px-1 flex items-center gap-1">
+                        <ShieldCheck className="h-3 w-3" />
+                        Admin Pusat
+                      </span>
+                    )}
+
                     <div
-                      className={`max-w-[85%] sm:max-w-[78%] rounded-2xl px-4 py-2.5 shadow-2xs text-xs sm:text-sm leading-relaxed space-y-1.5 ${
+                      className={`max-w-[88%] sm:max-w-[80%] rounded-2xl px-3.5 py-2.5 shadow-2xs text-xs sm:text-sm leading-relaxed space-y-1.5 ${
                         isMe
-                          ? "bg-gradient-to-tr from-emerald-700 to-teal-600 text-white rounded-tr-none font-medium shadow-emerald-700/10"
+                          ? "bg-gradient-to-r from-teal-600 to-emerald-600 text-white rounded-tr-none font-medium shadow-teal-700/10"
                           : "bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-tl-none border border-slate-200 dark:border-slate-700"
                       }`}
                     >
@@ -518,17 +626,17 @@ export function ChatDrawerModal({
                             onClick={() =>
                               setLightboxImage({
                                 url: parsed.imageUrl!,
-                                title: `Tangkapan Layar ${isMe ? "Saya" : targetUser.nama_lengkap}`,
+                                title: `Tangkapan Layar ${isMe ? "Saya" : "Admin Pusat"}`,
                               })
                             }
-                            className="max-h-56 w-auto object-cover rounded-xl cursor-pointer hover:opacity-95 transition-opacity"
+                            className="max-h-52 w-auto object-cover rounded-xl cursor-pointer hover:opacity-95 transition-opacity"
                           />
                           <button
                             type="button"
                             onClick={() =>
                               setLightboxImage({
                                 url: parsed.imageUrl!,
-                                title: `Tangkapan Layar ${isMe ? "Saya" : targetUser.nama_lengkap}`,
+                                title: `Tangkapan Layar ${isMe ? "Saya" : "Admin Pusat"}`,
                               })
                             }
                             className="absolute bottom-2 right-2 flex items-center gap-1 px-2 py-0.5 rounded-md bg-black/60 text-white text-[10px] font-bold backdrop-blur-xs cursor-pointer"
@@ -548,16 +656,16 @@ export function ChatDrawerModal({
 
                       <div
                         className={`flex items-center justify-end gap-1 text-[10px] mt-1 ${
-                          isMe ? "text-emerald-100" : "text-slate-400"
+                          isMe ? "text-teal-100" : "text-slate-400"
                         }`}
                       >
                         <span>{timeStr}</span>
                         {isMe && (
                           <span>
                             {msg.is_read ? (
-                              <CheckCheck className="h-3 w-3 text-emerald-200" />
+                              <CheckCheck className="h-3 w-3 text-teal-200" />
                             ) : (
-                              <Check className="h-3 w-3 text-emerald-200" />
+                              <Check className="h-3 w-3 text-teal-200" />
                             )}
                           </span>
                         )}
@@ -571,9 +679,31 @@ export function ChatDrawerModal({
           )}
         </div>
 
-        {/* Preview Tangkapan Layar Siap Dikirim */}
+        {/* ========================================================= */}
+        {/* 3. SARAN PESAN CEPAT (QUICK PRESETS)                      */}
+        {/* ========================================================= */}
+        <div className="px-3 py-1.5 border-t border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center gap-1.5 overflow-x-auto no-scrollbar shrink-0">
+          <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 shrink-0 flex items-center gap-1 pl-1">
+            <Sparkles className="h-3 w-3 text-amber-500" />
+            Saran:
+          </span>
+          {QUICK_GREETINGS.map((greeting, idx) => (
+            <button
+              key={idx}
+              type="button"
+              onClick={() => handleQuickGreeting(greeting)}
+              className="shrink-0 text-2xs px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-teal-50 hover:text-teal-700 hover:border-teal-300 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer"
+            >
+              {greeting}
+            </button>
+          ))}
+        </div>
+
+        {/* ========================================================= */}
+        {/* 4. PREVIEW TANGKAPAN LAYAR TERLAMPIR                      */}
+        {/* ========================================================= */}
         {attachedImage && (
-          <div className="flex items-center justify-between gap-3 px-3.5 py-2 bg-emerald-50 dark:bg-emerald-950/50 border-t border-emerald-200 dark:border-emerald-800 shrink-0">
+          <div className="flex items-center justify-between gap-3 px-3 py-2 bg-emerald-50 dark:bg-emerald-950/50 border-t border-emerald-200 dark:border-emerald-800 shrink-0">
             <div className="flex items-center gap-2.5 min-w-0">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -582,9 +712,14 @@ export function ChatDrawerModal({
                 className="h-10 w-10 object-cover rounded-lg border border-emerald-300 shadow-2xs shrink-0"
               />
               <div className="min-w-0 text-2xs">
-                <p className="font-bold text-emerald-900 dark:text-emerald-200 truncate">
-                  Tangkapan Layar Siap Dikirim ({formatFileSize(attachedImage.sizeBytes)})
-                </p>
+                <div className="flex items-center gap-1.5">
+                  <span className="font-bold text-emerald-900 dark:text-emerald-200 truncate">
+                    Tangkapan Layar Siap Dikirim
+                  </span>
+                  <span className="px-1.5 py-0.2 rounded-full bg-emerald-200 dark:bg-emerald-800 text-emerald-800 dark:text-emerald-200 font-extrabold text-[10px]">
+                    {formatFileSize(attachedImage.sizeBytes)}
+                  </span>
+                </div>
                 <p className="text-slate-500 dark:text-slate-400 text-[10px]">
                   Terkompresi otomatis ({attachedImage.width}x{attachedImage.height}px)
                 </p>
@@ -593,35 +728,64 @@ export function ChatDrawerModal({
             <button
               type="button"
               onClick={() => setAttachedImage(null)}
-              className="p-1 rounded-md text-slate-400 hover:text-red-500 cursor-pointer"
+              className="p-1 rounded-md text-slate-400 hover:text-red-500 hover:bg-white dark:hover:bg-slate-800 transition-colors cursor-pointer"
+              title="Hapus tangkapan layar"
             >
               <X className="h-4 w-4" />
             </button>
           </div>
         )}
 
-        {/* Baris Emoji Cepat jika dibuka */}
+        {/* ========================================================= */}
+        {/* 5. POPUP EMOJI PICKER (KATEGORI MODERN)                   */}
+        {/* ========================================================= */}
         {showEmojiPicker && (
-          <div className="flex items-center gap-1.5 p-2 bg-slate-100 dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 overflow-x-auto no-scrollbar shrink-0">
-            {QUICK_EMOJIS.map((emoji, idx) => (
-              <button
-                key={idx}
-                type="button"
-                onClick={() => insertEmoji(emoji)}
-                className="h-8 w-8 flex items-center justify-center text-lg rounded-lg hover:bg-white dark:hover:bg-slate-700 transition-colors shrink-0 cursor-pointer"
-              >
-                {emoji}
-              </button>
-            ))}
+          <div
+            ref={emojiPickerRef}
+            className="absolute bottom-28 left-3 right-3 sm:left-4 sm:w-80 rounded-2xl bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 shadow-2xl z-30 overflow-hidden animate-in fade-in zoom-in-95 duration-150"
+          >
+            {/* Header Tabs Emoji */}
+            <div className="flex items-center gap-1 p-2 bg-slate-50 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 overflow-x-auto no-scrollbar">
+              {EMOJI_CATEGORIES.map((cat, idx) => (
+                <button
+                  key={cat.name}
+                  type="button"
+                  onClick={() => setActiveEmojiCategory(idx)}
+                  className={cn(
+                    "flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold shrink-0 transition-colors cursor-pointer",
+                    activeEmojiCategory === idx
+                      ? "bg-teal-600 text-white shadow-xs"
+                      : "text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800"
+                  )}
+                >
+                  <span>{cat.icon}</span>
+                  <span className="hidden sm:inline">{cat.name}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Grid Emoji */}
+            <div className="p-2.5 max-h-48 overflow-y-auto grid grid-cols-6 gap-2 bg-white dark:bg-slate-900">
+              {EMOJI_CATEGORIES[activeEmojiCategory].emojis.map((emoji, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => insertEmoji(emoji)}
+                  className="h-8 w-8 flex items-center justify-center text-lg rounded-xl hover:bg-teal-50 dark:hover:bg-teal-950/60 hover:scale-115 transition-transform cursor-pointer"
+                >
+                  {emoji}
+                </button>
+              ))}
+            </div>
           </div>
         )}
 
         {/* ========================================================= */}
-        {/* INPUT CHAT BAR                                            */}
+        {/* 6. INPUT CHAT BAR (KOTAK PESAN DIJAMIN SELALU TERLIHAT)  */}
         {/* ========================================================= */}
         <form
           onSubmit={handleSendMessage}
-          className="p-3 border-t-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shrink-0 space-y-1.5"
+          className="p-3 bg-slate-50 dark:bg-slate-950/90 border-t-2 border-slate-200 dark:border-slate-800 shrink-0 space-y-2"
         >
           {sendError && (
             <p className="text-2xs text-red-600 flex items-center gap-1">
@@ -630,43 +794,76 @@ export function ChatDrawerModal({
             </p>
           )}
 
-          <div className="flex items-end gap-1.5">
-            {/* Tombol Emoji */}
-            <button
-              type="button"
-              onClick={() => setShowEmojiPicker((prev) => !prev)}
-              title="Sisipkan Emoji"
-              className={cn(
-                "h-10 w-10 flex items-center justify-center rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer shrink-0",
-                showEmojiPicker ? "bg-emerald-50 border-emerald-300 text-emerald-700" : ""
-              )}
-            >
-              <Smile className="h-4 w-4 text-amber-500" />
-            </button>
+          {/* Toolbar Pembantu: Emoticon, Tag Admin, Tangkapan Layar, Baris Baru */}
+          <div className="flex items-center justify-between gap-1.5 flex-wrap">
+            <div className="flex items-center gap-1">
+              {/* Tombol Emoji */}
+              <button
+                type="button"
+                onClick={() => setShowEmojiPicker((prev) => !prev)}
+                title="Sisipkan Emoticon"
+                className={cn(
+                  "flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold transition-colors cursor-pointer",
+                  showEmojiPicker
+                    ? "bg-teal-600 text-white"
+                    : "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                )}
+              >
+                <Smile className="h-3.5 w-3.5 text-amber-500" />
+                <span className="hidden sm:inline">Emoticon</span>
+              </button>
 
-            {/* Tombol Lampirkan Tangkapan Layar */}
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={isProcessingImage}
-              title="Kirim Gambar / Tangkapan Layar (bisa juga Ctrl+V langsung)"
-              className="h-10 w-10 flex items-center justify-center rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer shrink-0 disabled:opacity-50"
-            >
-              {isProcessingImage ? (
-                <Loader2 className="h-4 w-4 animate-spin text-emerald-600" />
-              ) : (
-                <Camera className="h-4 w-4 text-emerald-600" />
-              )}
-            </button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleFileChange}
-              className="hidden"
-            />
+              {/* Tombol Tag Admin */}
+              <button
+                type="button"
+                onClick={insertTagAdmin}
+                title="Tag / Sebut Admin Pusat"
+                className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-bold transition-colors cursor-pointer"
+              >
+                <AtSign className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400" />
+                <span className="hidden sm:inline">Tag Admin</span>
+              </button>
 
-            {/* Input Multi-line Textarea */}
+              {/* Tombol Lampirkan Tangkapan Layar */}
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isProcessingImage}
+                title="Kirim Gambar / Tangkapan Layar (Ctrl+V juga didukung)"
+                className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-bold transition-colors cursor-pointer disabled:opacity-50"
+              >
+                {isProcessingImage ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin text-teal-600" />
+                ) : (
+                  <Camera className="h-3.5 w-3.5 text-emerald-600" />
+                )}
+                <span className="hidden sm:inline">Tangkapan Layar</span>
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="hidden"
+              />
+            </div>
+
+            {/* Tombol Enter Baris Baru */}
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={insertNewline}
+                title="Tambahkan baris baru"
+                className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-bold transition-colors cursor-pointer"
+              >
+                <CornerDownLeft className="h-3 w-3 text-slate-500" />
+                <span>Baris Baru</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Kotak Input Textarea & Tombol Kirim */}
+          <div className="flex items-end gap-2">
             <div className="relative flex-1">
               <textarea
                 ref={textareaRef}
@@ -678,12 +875,8 @@ export function ChatDrawerModal({
                 onKeyDown={handleKeyDown}
                 onPaste={handlePaste}
                 rows={1}
-                placeholder={
-                  isJarimasBot
-                    ? "Tulis pesan untuk Jarimas..."
-                    : `Tulis pesan untuk ${targetUser.nama_lengkap.split(" ")[0]}... (Enter kirim, Shift+Enter baris baru, Ctrl+V tangkapan layar)`
-                }
-                className="w-full min-h-[40px] max-h-32 py-2.5 px-3.5 text-xs sm:text-sm rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none leading-relaxed"
+                placeholder="Ketik pesan untuk Admin Pusat Jarimas... (Enter kirim, Shift+Enter baris baru, Ctrl+V tangkapan layar)"
+                className="w-full min-h-[44px] max-h-32 py-2.5 px-3.5 text-xs sm:text-sm rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none leading-relaxed shadow-2xs"
                 disabled={isSending}
               />
             </div>
@@ -693,14 +886,14 @@ export function ChatDrawerModal({
               type="submit"
               disabled={(!inputMessage.trim() && !attachedImage) || isSending}
               aria-label="Kirim Pesan"
-              className="inline-flex h-10 px-3.5 sm:px-4 items-center justify-center gap-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-xs font-bold transition-all active:scale-95 cursor-pointer disabled:cursor-not-allowed shadow-xs shrink-0"
+              className="inline-flex h-11 px-4 items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 disabled:opacity-50 text-white text-xs font-bold transition-all active:scale-95 cursor-pointer disabled:cursor-not-allowed shadow-xs shrink-0"
             >
               {isSending ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
                 <>
                   <Send className="h-3.5 w-3.5" />
-                  <span className="hidden sm:inline">Kirim</span>
+                  <span>Kirim</span>
                 </>
               )}
             </button>
@@ -711,7 +904,7 @@ export function ChatDrawerModal({
       {/* Lightbox Modal untuk Preview Gambar Penuh */}
       {lightboxImage && (
         <div
-          className="fixed inset-0 z-60 bg-black/85 backdrop-blur-sm flex flex-col items-center justify-center p-4 animate-in fade-in duration-200"
+          className="fixed inset-0 z-[10000] bg-black/85 backdrop-blur-sm flex flex-col items-center justify-center p-4 animate-in fade-in duration-200"
           onClick={() => setLightboxImage(null)}
         >
           <div
@@ -726,7 +919,7 @@ export function ChatDrawerModal({
                 <a
                   href={lightboxImage.url}
                   download="tangkapan-layar-jarimas.webp"
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold transition-colors cursor-pointer"
                 >
                   <Download className="h-3.5 w-3.5" />
                   <span>Unduh</span>
@@ -752,4 +945,6 @@ export function ChatDrawerModal({
       )}
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 }

@@ -325,10 +325,6 @@ export default async function HomePage() {
 
           {user ? (
             <div className="flex items-center gap-1.5 sm:gap-2">
-              <TanyaAdminButton
-                currentUserId={user.id}
-                showTextOnMobile={true}
-              />
               <Link
                 href="/profil"
                 className="inline-flex min-h-[36px] sm:min-h-[40px] items-center gap-2 rounded-lg bg-card border border-border hover:bg-muted px-2.5 sm:px-3 py-1 text-xs font-bold text-foreground transition-all active:scale-95 shadow-sm"
@@ -340,6 +336,10 @@ export default async function HomePage() {
                   {profile?.nama_lengkap || "Profil"}
                 </span>
               </Link>
+              <TanyaAdminButton
+                currentUserId={user.id}
+                showTextOnMobile={true}
+              />
             </div>
           ) : (
             <div className="flex items-center gap-1.5 sm:gap-2">
