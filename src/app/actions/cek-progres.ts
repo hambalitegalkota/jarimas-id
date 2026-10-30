@@ -198,20 +198,30 @@ export async function getCekProgresPaudAction(filters?: {
     }
 
     // Urutkan Secara Default:
-    // 1) Satuan PAUD yang SUDAH ADA akun gurunya terlebih dahulu
-    // 2) Prosentase proses penyelesaian tertinggi
-    // 3) Jumlah siswa yang telah diperbarui terbanyak
+    // Selesai validasi terbaik diletakkan di bawah, yang belum diletakkan di atas agar terlihat lebih awal.
+    // 1) Kelompokkan: Belum Selesai (<100%) di atas, Selesai (100%) di bawah
+    // 2) Di antara yang belum selesai: persentase penyelesaian terendah terlebih dahulu (0% -> 99%)
+    // 3) Siswa yang belum diperbarui (sisa target) terbanyak (lebih mendesak)
     // 4) Target peserta didik terbanyak
-    // 5) Jumlah akun guru terbanyak
+    // 5) Ketersediaan akun guru
     // 6) Abjad nama PAUD
     filteredItems.sort((a, b) => {
+      const isSelesaiA = a.persentase_selesai >= 100 || a.status_penyelesaian === "SELESAI" ? 1 : 0;
+      const isSelesaiB = b.persentase_selesai >= 100 || b.status_penyelesaian === "SELESAI" ? 1 : 0;
+      if (isSelesaiA !== isSelesaiB) return isSelesaiA - isSelesaiB;
+
+      if (a.persentase_selesai !== b.persentase_selesai) return a.persentase_selesai - b.persentase_selesai;
+
+      const sisaA = Math.max(0, a.total_peserta_didik - a.total_diperbarui);
+      const sisaB = Math.max(0, b.total_peserta_didik - b.total_diperbarui);
+      if (sisaB !== sisaA) return sisaB - sisaA;
+
+      if (b.total_peserta_didik !== a.total_peserta_didik) return b.total_peserta_didik - a.total_peserta_didik;
+
       const hasAccA = a.has_anggota || a.jumlah_anggota > 0 ? 1 : 0;
       const hasAccB = b.has_anggota || b.jumlah_anggota > 0 ? 1 : 0;
       if (hasAccB !== hasAccA) return hasAccB - hasAccA;
-      if (b.persentase_selesai !== a.persentase_selesai) return b.persentase_selesai - a.persentase_selesai;
-      if (b.total_diperbarui !== a.total_diperbarui) return b.total_diperbarui - a.total_diperbarui;
-      if (b.total_peserta_didik !== a.total_peserta_didik) return b.total_peserta_didik - a.total_peserta_didik;
-      if (b.jumlah_anggota !== a.jumlah_anggota) return b.jumlah_anggota - a.jumlah_anggota;
+
       return a.nama_paud.localeCompare(b.nama_paud);
     });
 

@@ -56,9 +56,9 @@ export function CekProgresClientView({
   const [filterStatus, setFilterStatus] = useState<string>("semua");
   const [filterKeanggotaan, setFilterKeanggotaan] = useState<string>("semua");
 
-  // Sorting States - Default: persentase DESC agar yang 100% atau progres tinggi di atas
+  // Sorting States - Default: persentase ASC (yang belum selesai di atas, selesai terbaik di bawah)
   const [sortField, setSortField] = useState<SortField>("persentase");
-  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
 
   // Toggle sorting logic
   const handleSort = (field: SortField) => {
@@ -66,7 +66,7 @@ export function CekProgresClientView({
       setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
     } else {
       setSortField(field);
-      setSortDirection("desc");
+      setSortDirection(field === "persentase" ? "asc" : "desc");
     }
   };
 
@@ -110,36 +110,48 @@ export function CekProgresClientView({
       const hasAccB = b.has_anggota || b.jumlah_anggota > 0 ? 1 : 0;
 
       if (sortField === "persentase") {
-        if (sortDirection === "desc") {
-          // 1. Utamakan Satuan PAUD yang SUDAH ADA akun gurunya terlebih dahulu
-          if (hasAccB !== hasAccA) {
-            return hasAccB - hasAccA;
+        const isSelesaiA = a.persentase_selesai >= 100 || a.status_penyelesaian === "SELESAI" ? 1 : 0;
+        const isSelesaiB = b.persentase_selesai >= 100 || b.status_penyelesaian === "SELESAI" ? 1 : 0;
+
+        if (sortDirection === "asc") {
+          // Default: Yang belum selesai diletakkan di atas, selesai validasi terbaik di bawah
+          // 1. Yang belum selesai (0) di atas, yang selesai 100% (1) di bawah
+          if (isSelesaiA !== isSelesaiB) {
+            return isSelesaiA - isSelesaiB;
           }
-          // 2. Prosentase proses penyelesaian tertinggi
-          if (b.persentase_selesai !== a.persentase_selesai) {
-            return b.persentase_selesai - a.persentase_selesai;
+          // 2. Persentase penyelesaian terendah lebih awal (0% -> 99%)
+          if (a.persentase_selesai !== b.persentase_selesai) {
+            return a.persentase_selesai - b.persentase_selesai;
           }
-          // 3. Jumlah siswa yang telah diperbarui terbanyak
-          if (b.total_diperbarui !== a.total_diperbarui) {
-            return b.total_diperbarui - a.total_diperbarui;
+          // 3. Siswa yang belum tervalidasi (sisa target) terbanyak (lebih mendesak)
+          const sisaA = Math.max(0, a.total_peserta_didik - a.total_diperbarui);
+          const sisaB = Math.max(0, b.total_peserta_didik - b.total_diperbarui);
+          if (sisaB !== sisaA) {
+            return sisaB - sisaA;
           }
           // 4. Target siswa terbanyak
           if (b.total_peserta_didik !== a.total_peserta_didik) {
             return b.total_peserta_didik - a.total_peserta_didik;
           }
-          // 5. Jumlah akun guru terbanyak
-          if (b.jumlah_anggota !== a.jumlah_anggota) {
-            return b.jumlah_anggota - a.jumlah_anggota;
+          // 5. Kesiapan akun guru
+          if (hasAccB !== hasAccA) {
+            return hasAccB - hasAccA;
           }
           // 6. Abjad nama PAUD
           return a.nama_paud.localeCompare(b.nama_paud);
         } else {
-          // Ascending: dari persentase terendah
-          if (a.persentase_selesai !== b.persentase_selesai) {
-            return a.persentase_selesai - b.persentase_selesai;
+          // Descending: Selesai terbaik / persentase tertinggi di atas
+          if (isSelesaiB !== isSelesaiA) {
+            return isSelesaiB - isSelesaiA;
           }
-          if (hasAccA !== hasAccB) {
-            return hasAccA - hasAccB;
+          if (b.persentase_selesai !== a.persentase_selesai) {
+            return b.persentase_selesai - a.persentase_selesai;
+          }
+          if (b.total_diperbarui !== a.total_diperbarui) {
+            return b.total_diperbarui - a.total_diperbarui;
+          }
+          if (b.total_peserta_didik !== a.total_peserta_didik) {
+            return b.total_peserta_didik - a.total_peserta_didik;
           }
           return a.nama_paud.localeCompare(b.nama_paud);
         }
@@ -241,9 +253,9 @@ export function CekProgresClientView({
   // Deskripsi urutan aktif yang jelas dan representatif
   const sortDescription = useMemo(() => {
     if (sortField === "persentase") {
-      return sortDirection === "desc"
-        ? "Akun Guru & Persentase Tertinggi"
-        : "Persentase Terendah";
+      return sortDirection === "asc"
+        ? "Belum Selesai Lebih Awal (Selesai Validasi di Bawah)"
+        : "Selesai Validasi Teratas / Persentase Tertinggi";
     }
     if (sortField === "nama") {
       return sortDirection === "asc" ? "Nama Satuan PAUD (A - Z)" : "Nama Satuan PAUD (Z - A)";
