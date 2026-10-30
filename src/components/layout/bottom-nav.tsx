@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Users, ShoppingBag, MessageSquare, User } from "lucide-react";
+import { Home, Users, ShoppingBag, MessageSquare, User, MessageCircleQuestion } from "lucide-react";
+import { TanyaAdminButton } from "@/components/warga/tanya-admin-button";
 import { cn } from "@/lib/utils";
 import { useGlobalMessageNotification } from "@/components/notifications/global-message-notification-provider";
 
@@ -13,6 +14,7 @@ interface NavItem {
   badge?: string | number;
   badgeVariant?: "danger" | "emerald" | "amber";
   isActive: (pathname: string) => boolean;
+  isTanyaAdmin?: boolean;
 }
 
 // Flag status fitur Market (Set ke `true` jika fitur Market siap diluncurkan ke publik)
@@ -20,7 +22,7 @@ export const SHOW_MARKET_FEATURE = true;
 
 export function BottomNav() {
   const pathname = usePathname();
-  const { totalUnreadCount } = useGlobalMessageNotification();
+  const { totalUnreadCount, currentUserId } = useGlobalMessageNotification();
 
   const NAV_ITEMS: NavItem[] = [
     {
@@ -59,6 +61,13 @@ export function BottomNav() {
       isActive: (pathname: string) => pathname.startsWith("/kabar"),
     },
     {
+      label: "Tanya Admin",
+      href: "#tanya-admin",
+      icon: MessageCircleQuestion,
+      isTanyaAdmin: true,
+      isActive: () => false,
+    },
+    {
       label: "Profil",
       href: "/profil",
       icon: User,
@@ -81,6 +90,16 @@ export function BottomNav() {
     >
       <div className="mx-auto flex h-16 w-full max-w-md items-center justify-around px-2 sm:max-w-lg md:max-w-xl">
         {NAV_ITEMS.map((item) => {
+          if (item.isTanyaAdmin) {
+            return (
+              <TanyaAdminButton
+                key="tanya-admin-bottom-nav"
+                currentUserId={currentUserId}
+                variant="nav"
+              />
+            );
+          }
+
           const active = item.isActive(pathname);
           const Icon = item.icon;
           const hasBadge = item.badge !== undefined && item.badge !== null && item.badge !== 0;

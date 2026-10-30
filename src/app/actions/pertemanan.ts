@@ -2339,4 +2339,60 @@ export async function getRekapitulasiWargaKomunitas(): Promise<
   }
 }
 
+/**
+ * Server Action: Mengambil profil Admin Pusat untuk fitur "Tanya Admin"
+ */
+export async function getAdminPusatProfile(): Promise<import("@/types/database").RegisteredUserItem | null> {
+  try {
+    const supabase = await createClient();
 
+    // 1. Cari profil yang memiliki is_admin_pusat = true atau email jarimas.id@gmail.com
+    const { data: adminPusat } = await supabase
+      .from("profiles")
+      .select("id, nama_lengkap, email, nomor_hp, avatar_url, is_super_admin, is_admin_pusat")
+      .or("is_admin_pusat.eq.true,email.eq.jarimas.id@gmail.com")
+      .limit(1)
+      .maybeSingle();
+
+    if (adminPusat) {
+      return {
+        id: adminPusat.id,
+        nama_lengkap: adminPusat.nama_lengkap || "Admin Pusat Jarimas Indonesia",
+        email: adminPusat.email,
+        nomor_hp: adminPusat.nomor_hp,
+        avatar_url: adminPusat.avatar_url,
+        is_super_admin: Boolean(adminPusat.is_super_admin),
+        is_admin_pusat: true,
+        created_at: new Date().toISOString(),
+        komunitas_list: [{ id: "pusat", nama: "Admin Pusat Jarimas Indonesia", jenis: "warga_kita", peran: "Admin Pusat" }],
+      };
+    }
+
+    // 2. Fallback ke Super Admin jika akun admin pusat belum diset
+    const { data: superAdmin } = await supabase
+      .from("profiles")
+      .select("id, nama_lengkap, email, nomor_hp, avatar_url, is_super_admin")
+      .eq("is_super_admin", true)
+      .limit(1)
+      .maybeSingle();
+
+    if (superAdmin) {
+      return {
+        id: superAdmin.id,
+        nama_lengkap: superAdmin.nama_lengkap || "Admin Pusat Jarimas Indonesia",
+        email: superAdmin.email,
+        nomor_hp: superAdmin.nomor_hp,
+        avatar_url: superAdmin.avatar_url,
+        is_super_admin: true,
+        is_admin_pusat: true,
+        created_at: new Date().toISOString(),
+        komunitas_list: [{ id: "pusat", nama: "Admin Pusat Jarimas Indonesia", jenis: "warga_kita", peran: "Admin Pusat" }],
+      };
+    }
+
+    return null;
+  } catch (err) {
+    console.error("Error getAdminPusatProfile:", err);
+    return null;
+  }
+}

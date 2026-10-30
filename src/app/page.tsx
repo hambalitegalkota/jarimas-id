@@ -42,6 +42,7 @@ import { formatRupiah, isSuperAdmin as checkIsSuperAdmin } from "@/lib/utils";
 import { isTheOrbitSixtyCommunity } from "@/lib/admin-helpers";
 import { SHOW_MARKET_FEATURE } from "@/components/layout/bottom-nav";
 import { PrintButton } from "@/components/ui/print-button";
+import { TanyaAdminButton } from "@/components/warga/tanya-admin-button";
 import type { MarketProduk } from "@/types/database";
 
 // Fallback data produk katalog Jarimas Market
@@ -323,17 +324,23 @@ export default async function HomePage() {
           </Link>
 
           {user ? (
-            <Link
-              href="/profil"
-              className="inline-flex min-h-[36px] sm:min-h-[40px] items-center gap-2 rounded-lg bg-card border border-border hover:bg-muted px-2.5 sm:px-3 py-1 text-xs font-bold text-foreground transition-all active:scale-95 shadow-sm"
-            >
-              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground font-black text-[11px]">
-                {(profile?.nama_lengkap || user.email || "U").charAt(0).toUpperCase()}
-              </div>
-              <span className="hidden sm:inline truncate max-w-[120px]">
-                {profile?.nama_lengkap || "Profil"}
-              </span>
-            </Link>
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <TanyaAdminButton
+                currentUserId={user.id}
+                showTextOnMobile={true}
+              />
+              <Link
+                href="/profil"
+                className="inline-flex min-h-[36px] sm:min-h-[40px] items-center gap-2 rounded-lg bg-card border border-border hover:bg-muted px-2.5 sm:px-3 py-1 text-xs font-bold text-foreground transition-all active:scale-95 shadow-sm"
+              >
+                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground font-black text-[11px]">
+                  {(profile?.nama_lengkap || user.email || "U").charAt(0).toUpperCase()}
+                </div>
+                <span className="hidden sm:inline truncate max-w-[120px]">
+                  {profile?.nama_lengkap || "Profil"}
+                </span>
+              </Link>
+            </div>
           ) : (
             <div className="flex items-center gap-1.5 sm:gap-2">
               <Link
