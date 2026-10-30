@@ -32,6 +32,7 @@ export function normalizeRtRwNum(val?: string | null | number): string {
  */
 export function isDataAtsRecord(row: any): boolean {
   if (!row) return false;
+  if (isDummyDataAnak(row)) return false;
 
   const rawAlasan = String(row.alasan_sekolah || "");
   const rawNamaSekolah = String(row.nama_sekolah || "").toLowerCase();
@@ -135,6 +136,11 @@ export function isDummyDataAnak(row: any): boolean {
   const name = String(row.nama_lengkap || "").trim().toUpperCase();
   const school = String(row.nama_sekolah || "").trim().toUpperCase();
   const parent = String(row.nama_orangtua || "").trim();
+  const alasan = String(row.alasan_sekolah || "");
+
+  if (alasan.includes("DELETED_SYNC_ANOMALY")) {
+    return true;
+  }
 
   // Pola nama uji coba: "ANAK TEST 0".."ANAK TEST 49", "TEST", "TEST CEK RETURN", dll.
   if (
