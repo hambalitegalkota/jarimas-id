@@ -1018,13 +1018,31 @@ export async function getDataAnakByKomunitas(
           );
         });
 
-      const totalCount = items.length;
-      const approvedCount = items.filter((c) => c.status_approval === "approved").length;
+      // Deduplikasi murid: utamakan record yang sudah approved / terverifikasi agar tidak menggandakan data
+      const dedupedCountMap = new Map<string, DataAnakItem>();
+      items.forEach((item) => {
+        const key = (item.nama_lengkap || "").toLowerCase().trim().replace(/[^a-z0-9]/g, "");
+        if (!key) return;
+        const existing = dedupedCountMap.get(key);
+        if (!existing) {
+          dedupedCountMap.set(key, item);
+        } else {
+          if (item.status_approval === "approved" && existing.status_approval !== "approved") {
+            dedupedCountMap.set(key, item);
+          } else if (new Date(item.created_at).getTime() > new Date(existing.created_at).getTime() && existing.status_approval !== "approved") {
+            dedupedCountMap.set(key, item);
+          }
+        }
+      });
+      const finalCountItems = Array.from(dedupedCountMap.values());
+
+      const totalCount = finalCountItems.length;
+      const approvedCount = finalCountItems.filter((c) => c.status_approval === "approved").length;
       const pendingCount = totalCount - approvedCount;
 
       return {
         success: true,
-        data: items,
+        data: finalCountItems,
         stats: {
           total: totalCount,
           approved: approvedCount,
@@ -1112,13 +1130,31 @@ export async function getDataAnakByKomunitas(
         );
       });
 
-    const totalCount = items.length;
-    const approvedCount = items.filter((c) => c.status_approval === "approved").length;
+    // Deduplikasi murid: utamakan record yang sudah approved / terverifikasi agar tidak menggandakan data
+    const dedupedItemMap = new Map<string, DataAnakItem>();
+    items.forEach((item) => {
+      const key = (item.nama_lengkap || "").toLowerCase().trim().replace(/[^a-z0-9]/g, "");
+      if (!key) return;
+      const existing = dedupedItemMap.get(key);
+      if (!existing) {
+        dedupedItemMap.set(key, item);
+      } else {
+        if (item.status_approval === "approved" && existing.status_approval !== "approved") {
+          dedupedItemMap.set(key, item);
+        } else if (new Date(item.created_at).getTime() > new Date(existing.created_at).getTime() && existing.status_approval !== "approved") {
+          dedupedItemMap.set(key, item);
+        }
+      }
+    });
+    const finalItems = Array.from(dedupedItemMap.values());
+
+    const totalCount = finalItems.length;
+    const approvedCount = finalItems.filter((c) => c.status_approval === "approved").length;
     const pendingCount = totalCount - approvedCount;
 
     return {
       success: true,
-      data: items,
+      data: finalItems,
       stats: {
         total: totalCount,
         approved: approvedCount,

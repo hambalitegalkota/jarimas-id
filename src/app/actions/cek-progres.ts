@@ -8,7 +8,11 @@ import {
   isRoleAdmin,
 } from "@/lib/utils";
 import { getUserAdminInfo, extractKomunitasMetadata } from "@/lib/admin-helpers";
-import { isSchoolNameMatching } from "@/lib/data-anak-helpers";
+import {
+  cleanBaseSchoolName,
+  isSchoolNameMatching,
+  normalizeWilayah,
+} from "@/lib/data-anak-helpers";
 import type {
   ProgresPaudItem,
   CekProgresPaudSummary,
@@ -298,12 +302,7 @@ async function fetchProgresPaudFallback(
   });
 
   // Normalisasi helper untuk mencocokkan nama sekolah hasil sinkronisasi dengan nama lembaga PAUD
-  const cleanSchool = (s: string) =>
-    (s || "")
-      .toLowerCase()
-      .replace(/111/g, "iii")
-      .replace(/bina anak sholeh/g, "bina iman anak sholeh")
-      .replace(/[^a-z0-9]/g, "");
+  const cleanSchool = (s: string) => cleanBaseSchoolName(s);
 
   const paudByClean = new Map<string, any>();
   const paudById = new Map<string, any>();
@@ -317,16 +316,27 @@ async function fetchProgresPaudFallback(
     memberCountMap[m.komunitas_id] = (memberCountMap[m.komunitas_id] || 0) + 1;
   });
 
-  const studentCountMap: Record<string, { total: number; updated: number }> = {};
+  // Track murid unik per PAUD agar tidak terjadi pembengkakan data akibat record duplikat (misal pending vs approved)
+  const paudStudentsMap = new Map<string, Map<string, { isUpdated: boolean; child: any }>>();
   const validatorMap: Record<string, Set<string>> = {};
   paudList.forEach((p: any) => {
-    studentCountMap[p.id] = { total: 0, updated: 0 };
+    paudStudentsMap.set(p.id, new Map());
     validatorMap[p.id] = new Set<string>();
+  });
+
+  // Catat PAUD mana saja yang sudah memiliki siswa terdaftar langsung (komunitas_id === p.id)
+  const paudDirectCount = new Map<string, number>();
+  childrenData.forEach((c: any) => {
+    if (c.komunitas_id && paudById.has(c.komunitas_id)) {
+      paudDirectCount.set(c.komunitas_id, (paudDirectCount.get(c.komunitas_id) || 0) + 1);
+    }
   });
 
   childrenData.forEach((c: any) => {
     // 1. Cari PAUD yang cocok: via ID langsung atau nama sekolah
     let p = paudById.get(c.komunitas_id);
+    const hasDirectMatch = Boolean(p);
+
     if (!p && c.nama_sekolah) {
       const cName = cleanSchool(c.nama_sekolah);
       p = paudByClean.get(cName);
@@ -342,8 +352,22 @@ async function fetchProgresPaudFallback(
       }
     }
 
-    if (p && studentCountMap[p.id]) {
-      studentCountMap[p.id].total += 1;
+    if (p && paudStudentsMap.has(p.id)) {
+      // Disambiguasi Wilayah: Jika PAUD sudah memiliki siswa yang diinput/terdaftar langsung (komunitas_id === p.id),
+      // jangan masukkan data unlinked (komunitas_id !== p.id) yang kelurahannya berbeda
+      const directCount = paudDirectCount.get(p.id) || 0;
+      if (directCount > 0 && !hasDirectMatch) {
+        const m = (c.alasan_sekolah || "").match(/DOM_KEL:([^\]]+)/);
+        const domKel = m ? normalizeWilayah(m[1]) : "";
+        const paudKel = normalizeWilayah(p.kelurahan);
+        if (domKel && paudKel && domKel !== paudKel) {
+          return;
+        }
+      }
+
+      const pMap = paudStudentsMap.get(p.id)!;
+      const childKey = (c.nama_lengkap || "").toLowerCase().trim().replace(/[^a-z0-9]/g, "");
+      if (!childKey) return;
 
       // Murid tersebut secara nyata telah divalidasi (approved) ATAU diedit oleh akun pengguna terdaftar
       const isUpdated = Boolean(
@@ -352,8 +376,15 @@ async function fetchProgresPaudFallback(
           (c.is_updated_by_paud === true && c.diperbarui_oleh != null)
       );
 
-      if (isUpdated) {
-        studentCountMap[p.id].updated += 1;
+      if (!pMap.has(childKey)) {
+        pMap.set(childKey, { isUpdated, child: c });
+      } else {
+        // Jika sudah ada tapi record saat ini sudah approved/diperbarui, update statusnya ke true
+        const existing = pMap.get(childKey)!;
+        if (isUpdated && !existing.isUpdated) {
+          existing.isUpdated = true;
+          existing.child = c;
+        }
       }
 
       // Catat akun validator/editor yang beraktivitas nyata di PAUD ini
@@ -365,8 +396,12 @@ async function fetchProgresPaudFallback(
   });
 
   return paudList.map((p: any) => {
-    const totalStudents = studentCountMap[p.id]?.total || 0;
-    const totalUpdated = studentCountMap[p.id]?.updated || 0;
+    const pMap = paudStudentsMap.get(p.id);
+    const totalStudents = pMap ? pMap.size : 0;
+    let totalUpdated = 0;
+    pMap?.forEach((v) => {
+      if (v.isUpdated) totalUpdated++;
+    });
     const directMemberCount = memberCountMap[p.id] || 0;
     const activeValidatorCount = validatorMap[p.id]?.size || 0;
     // Total akun guru/operator terverifikasi (anggota terdaftar atau validator riil)

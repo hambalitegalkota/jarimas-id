@@ -668,6 +668,21 @@ export function extractSchoolNumberToken(str?: string | null): string | null {
 /**
  * Membersihkan nama sekolah ke basis string alfanumerik tanpa nomor cabang
  */
+const TEGAL_WILAYAH_TOKENS = [
+  "cabawan", "debong kidul", "debong kulon", "debong lor", "debong tengah",
+  "kaligangsa", "kalinyamat kulon", "kalinyamat wetan", "kejambon",
+  "kemandungan", "krandon", "kraton", "margadana", "mintaragen",
+  "muarareja", "panggung", "pekauman", "pesurungan kidul", "pesurungan lor",
+  "randugunting", "slerok", "sumurpanggang", "tegalsari", "tunon",
+  "tegal barat", "tegal timur", "tegal selatan", "kota tegal"
+];
+
+// Kata-kata pembeda nama PAUD yang tidak boleh dicocokkan sebagai substring semata
+// Contoh: "Anggrek" TIDAK BOLEH mencocokkan "Anggrek Bulan", "Mawar" TIDAK BOLEH mencocokkan "Mawar Merah"
+const DISTINCT_PAUD_SUFFIXES = [
+  "bulan", "merah", "putih", "sari", "ungu", "mutiara", "indah", "abadi", "shinta", "tulip", "teratai"
+];
+
 export function cleanBaseSchoolName(str?: string | null): string {
   if (!str) return "";
   let s = str
@@ -678,6 +693,9 @@ export function cleanBaseSchoolName(str?: string | null): string {
     .replace(/\biman\b/g, "")
     .replace(/\s+/g, " ")
     .trim();
+
+  // Bersihkan prefix jenjang institusi agar RA, TK, KB, Pos PAUD, SPS dengan nama sama saling cocok
+  s = s.replace(/^(pos\s+paud|paud\s+tpq|kb|tk|ra|tpa|sps|pkbm|skb)\b\s*/gi, "").trim();
 
   // Bersihkan penanda RW/RT beserta angkanya atau kata rw/rt itu sendiri
   s = s
@@ -694,12 +712,18 @@ export function cleanBaseSchoolName(str?: string | null): string {
     .replace(/\s+/g, " ")
     .trim();
 
+  // Bersihkan token kelurahan / kecamatan Kota Tegal dari nama dasar sekolah
+  for (const w of TEGAL_WILAYAH_TOKENS) {
+    s = s.replace(new RegExp(`\\b${w}\\b`, "gi"), " ");
+  }
+
+  s = s.replace(/\s+/g, " ").trim();
   return s.replace(/[^a-z0-9]/g, "");
 }
 
 /**
  * Mencocokkan dua nama sekolah/PAUD secara cerdas dan toleran terhadap variasi penulisan:
- * tanda baca (titik, petik), romawi vs angka arab (111 -> III, 1 -> I), singkatan, dll.
+ * tanda baca (titik, petik), romawi vs angka arab (111 -> III, 1 -> I), singkatan, jenjang prefix, dll.
  */
 export function isSchoolNameMatching(
   school1?: string | null,
@@ -726,6 +750,17 @@ export function isSchoolNameMatching(
   const base2 = cleanBaseSchoolName(s2);
 
   if (base1 === base2) return true;
+
+  // Cek kata pembeda khusus (misal "bulan", "merah", "sari"):
+  // Jika salah satu nama mengandung kata pembeda dan yang lain tidak, jangan anggap cocok!
+  for (const suffix of DISTINCT_PAUD_SUFFIXES) {
+    const hasIn1 = base1.includes(suffix);
+    const hasIn2 = base2.includes(suffix);
+    if ((hasIn1 && !hasIn2) || (!hasIn1 && hasIn2)) {
+      return false;
+    }
+  }
+
   if (
     base1.length > 5 &&
     base2.length > 5 &&
