@@ -2615,4 +2615,101 @@ export function formatNamaSekolahDisplay(
   return s;
 }
 
+/**
+ * Menghasilkan kunci unik identitas anak untuk keperluan deduplikasi data.
+ * Sesuai ketentuan: Dua data anak dengan NAMA YANG SAMA dianggap berbeda jika salah satu dari:
+ * 1. Nama orang tua / ibu BERBEDA, ATAU
+ * 2. Usia / tanggal lahir BERBEDA.
+ * Keduanya harus tetap diizinkan disimpan, ditambahkan, dan ditampilkan secara utuh.
+ */
+export function generateChildIdentityKey(child: {
+  id?: string | null;
+  nama_lengkap?: string | null;
+  nama_orangtua?: string | null;
+  tanggal_lahir?: string | null;
+  usia?: string | number | null;
+}): string {
+  if (!child) return "";
+  const normName = (child.nama_lengkap || "").toLowerCase().trim().replace(/[^a-z0-9]/g, "");
+  if (!normName) {
+    return child.id ? `id_${child.id}` : "";
+  }
 
+  // Normalisasi nama orang tua / ibu
+  const rawParent = (child.nama_orangtua || "").toLowerCase().trim();
+  const cleanParent = rawParent && rawParent !== "-" ? rawParent.replace(/[^a-z0-9]/g, "") : "";
+
+  // Normalisasi usia / tanggal lahir
+  let cleanAge = "";
+  if (child.tanggal_lahir) {
+    const rawDob = String(child.tanggal_lahir).trim();
+    const yMatch = rawDob.match(/\b(20\d{2})\b/);
+    if (yMatch) {
+      cleanAge = yMatch[1];
+    } else {
+      cleanAge = rawDob.replace(/[^0-9]/g, "");
+    }
+  } else if (child.usia !== undefined && child.usia !== null && child.usia !== "") {
+    const uMatch = String(child.usia).match(/\b(\d+)\b/);
+    if (uMatch) {
+      cleanAge = `usia${uMatch[1]}`;
+    }
+  }
+
+  const parentPart = cleanParent || "noparent";
+  const agePart = cleanAge || "noage";
+
+  if (parentPart === "noparent" && agePart === "noage" && child.id) {
+    return `${normName}_${child.id}`;
+  }
+
+  return `${normName}__p_${parentPart}__a_${agePart}`;
+}
+
+/**
+ * Mengecek apakah dua record merujuk ke anak yang persis sama (duplikat murni).
+ * Dua record anak dianggap SAMA PERSIS (duplikat) HANYA JIKA:
+ * - Nama lengkap sama, DAN
+ * - Nama orang tua sama (atau keduanya tidak diisi), DAN
+ * - Usia / tahun lahir sama (atau keduanya tidak diisi).
+ * Jika nama orang tua BERBEDA atau usia/tahun lahir BERBEDA, maka BUKAN duplikat (return false).
+ */
+export function isSameChildRecord(
+  a: { nama_lengkap?: string | null; nama_orangtua?: string | null; tanggal_lahir?: string | null; usia?: string | number | null },
+  b: { nama_lengkap?: string | null; nama_orangtua?: string | null; tanggal_lahir?: string | null; usia?: string | number | null }
+): boolean {
+  if (!a || !b) return false;
+  const nameA = (a.nama_lengkap || "").toLowerCase().trim().replace(/[^a-z0-9]/g, "");
+  const nameB = (b.nama_lengkap || "").toLowerCase().trim().replace(/[^a-z0-9]/g, "");
+  if (!nameA || !nameB || nameA !== nameB) return false;
+
+  // Nama sama: periksa nama orang tua
+  const parentA = (a.nama_orangtua || "").toLowerCase().trim().replace(/[^a-z0-9]/g, "");
+  const parentB = (b.nama_orangtua || "").toLowerCase().trim().replace(/[^a-z0-9]/g, "");
+  const hasParentA = parentA && parentA !== "-";
+  const hasParentB = parentB && parentB !== "-";
+
+  // Jika kedua record memiliki nama orang tua dan berbeda -> ANAK BERBEDA
+  if (hasParentA && hasParentB && parentA !== parentB) {
+    return false;
+  }
+
+  // Periksa tahun lahir / usia
+  const yearA = (a.tanggal_lahir || "").match(/\b(20\d{2})\b/)?.[1] || "";
+  const yearB = (b.tanggal_lahir || "").match(/\b(20\d{2})\b/)?.[1] || "";
+  const hasYearA = Boolean(yearA);
+  const hasYearB = Boolean(yearB);
+
+  // Jika kedua record memiliki tahun lahir dan berbeda -> ANAK BERBEDA
+  if (hasYearA && hasYearB && yearA !== yearB) {
+    return false;
+  }
+
+  const ageNumA = a.usia !== undefined && a.usia !== null && a.usia !== "" ? String(a.usia).match(/\b(\d+)\b/)?.[1] : null;
+  const ageNumB = b.usia !== undefined && b.usia !== null && b.usia !== "" ? String(b.usia).match(/\b(\d+)\b/)?.[1] : null;
+  if (ageNumA && ageNumB && ageNumA !== ageNumB) {
+    return false;
+  }
+
+  return true;
+}

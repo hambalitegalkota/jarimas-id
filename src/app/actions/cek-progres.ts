@@ -13,6 +13,7 @@ import {
   isSchoolNameMatching,
   normalizeWilayah,
   isDataAtsRecord,
+  generateChildIdentityKey,
   isDummyDataAnak,
 } from "@/lib/data-anak-helpers";
 import type {
@@ -300,7 +301,7 @@ async function fetchProgresPaudFallback(
     ...chunkRanges.map(([start, end]) =>
       supabase
         .from("data_anak")
-        .select("id, nama_lengkap, nama_sekolah, alasan_sekolah, komunitas_id, status_approval, validated_at, validated_by, is_updated_by_paud, diperbarui_oleh")
+        .select("id, nama_lengkap, nama_orangtua, tanggal_lahir, nama_sekolah, alasan_sekolah, komunitas_id, status_approval, validated_at, validated_by, is_updated_by_paud, diperbarui_oleh")
         .eq("is_sekolah", true)
         .range(start, end)
     ),
@@ -376,7 +377,7 @@ async function fetchProgresPaudFallback(
       }
 
       const pMap = paudStudentsMap.get(p.id)!;
-      const childKey = (c.nama_lengkap || c.id || "").toLowerCase().trim().replace(/[^a-z0-9]/g, "");
+      const childKey = generateChildIdentityKey(c) || c.id;
       if (!childKey) return;
 
       // Murid tersebut secara nyata telah divalidasi (approved) ATAU diedit oleh akun pengguna terdaftar

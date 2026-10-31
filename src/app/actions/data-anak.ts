@@ -13,6 +13,7 @@ import {
   isDataAtsRecord,
   isDummyDataAnak,
   isSchoolNameMatching,
+  generateChildIdentityKey,
   extractSchoolNumberToken,
   isKomunitasLayananPaud,
 } from "@/lib/data-anak-helpers";
@@ -1040,7 +1041,7 @@ export async function getDataAnakByKomunitas(
       // Deduplikasi murid: utamakan record yang sudah approved / terverifikasi agar tidak menggandakan data
       const dedupedCountMap = new Map<string, DataAnakItem>();
       items.forEach((item) => {
-        const key = (item.nama_lengkap || "").toLowerCase().trim().replace(/[^a-z0-9]/g, "");
+        const key = generateChildIdentityKey(item);
         if (!key) return;
         const existing = dedupedCountMap.get(key);
         if (!existing) {
@@ -1152,7 +1153,7 @@ export async function getDataAnakByKomunitas(
     // Deduplikasi murid: utamakan record yang sudah approved / terverifikasi agar tidak menggandakan data
     const dedupedItemMap = new Map<string, DataAnakItem>();
     items.forEach((item) => {
-      const key = (item.nama_lengkap || "").toLowerCase().trim().replace(/[^a-z0-9]/g, "");
+      const key = generateChildIdentityKey(item);
       if (!key) return;
       const existing = dedupedItemMap.get(key);
       if (!existing) {

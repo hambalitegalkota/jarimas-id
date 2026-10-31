@@ -9,6 +9,7 @@ import {
   isDataAtsRecord,
   isDummyDataAnak,
   isSchoolNameMatching,
+  isSameChildRecord,
 } from "@/lib/data-anak-helpers";
 import { toValidUUID } from "@/lib/utils";
 
@@ -235,7 +236,7 @@ export async function POST(req: NextRequest) {
     if (incomingNames.length > 0) {
       const { data: foundByName } = await supabase
         .from("data_anak")
-        .select("id, nama_lengkap, nama_orangtua, alasan_sekolah")
+        .select("id, nama_lengkap, nama_orangtua, tanggal_lahir, alasan_sekolah")
         .in("nama_lengkap", incomingNames);
       if (foundByName) existingByName = foundByName;
     }
@@ -321,13 +322,13 @@ export async function POST(req: NextRequest) {
         matchById ||
         existingByName.find(
           (ex) =>
-            ex.nama_lengkap?.toLowerCase() === namaLengkap.toLowerCase() &&
+            isSameChildRecord(ex, {
+              nama_lengkap: namaLengkap,
+              nama_orangtua: namaOrangtua,
+              tanggal_lahir: birthDate,
+            }) &&
             !isDataAtsRecord(ex) &&
-            !isDummyDataAnak(ex) &&
-            (namaOrangtua === "-" ||
-              !ex.nama_orangtua ||
-              ex.nama_orangtua === "-" ||
-              ex.nama_orangtua.toLowerCase() === namaOrangtua.toLowerCase())
+            !isDummyDataAnak(ex)
         );
 
       if (matchInDb) {
