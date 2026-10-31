@@ -14,6 +14,7 @@ import {
   getUserProfileForChat,
   sendPrivateMessage,
   markConversationAsRead,
+  markAllMessagesAsReadAction,
   getGroupMessageNotificationInfo,
   sendGroupMessage,
 } from "@/app/actions/pertemanan";
@@ -64,6 +65,7 @@ interface GlobalMessageNotificationContextType {
   refreshUnreadCount: () => Promise<void>;
   restoreBannerFromPill: () => void;
   dismissPill: () => void;
+  markAllMessagesAsRead: () => Promise<void>;
 }
 
 const GlobalMessageNotificationContext =
@@ -110,7 +112,12 @@ export function GlobalMessageNotificationProvider({
   const [activeNotification, setActiveNotification] =
     useState<IncomingMessageNotificationItem | null>(null);
   const [isMuted, setIsMuted] = useState<boolean>(false);
-  const [isPillDismissed, setIsPillDismissed] = useState<boolean>(false);
+  const [isPillDismissed, setIsPillDismissed] = useState<boolean>(() => {
+    if (typeof window !== "undefined") {
+      return sessionStorage.getItem("jarimas_unread_dock_dismissed") === "true";
+    }
+    return false;
+  });
 
   // Realtime Active Online Users State
   const [onlineUserIds, setOnlineUserIds] = useState<Set<string>>(new Set());
@@ -698,8 +705,36 @@ export function GlobalMessageNotificationProvider({
     }
   }, [unreadList]);
 
+    const markAllMessagesAsRead = useCallback(async () => {
+    try {
+      const res = await markAllMessagesAsReadAction();
+      if (res.success) {
+        const nowIso = res.readTimestamp;
+        if (typeof window !== "undefined" && currentUserId) {
+          (res.clearedGroupIds || []).forEach((gid) => {
+            localStorage.setItem(`jarimas_group_last_read_${currentUserId}_${gid}`, nowIso);
+          });
+          sessionStorage.setItem("jarimas_unread_dock_dismissed", "true");
+        }
+        setTotalUnreadCount(0);
+        setTotalUnreadDirect(0);
+        setTotalUnreadGroup(0);
+        setGroupUnreadCounts({});
+        setUnreadList([]);
+        setActiveNotification(null);
+        setIsPillDismissed(true);
+        stopTabTitleFlash();
+      }
+    } catch (e) {
+      console.warn("Gagal membersihkan pesan:", e);
+    }
+  }, [currentUserId]);
+
   const dismissPill = useCallback(() => {
     setIsPillDismissed(true);
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("jarimas_unread_dock_dismissed", "true");
+    }
   }, []);
 
   return (
@@ -732,6 +767,7 @@ export function GlobalMessageNotificationProvider({
         refreshUnreadCount,
         restoreBannerFromPill,
         dismissPill,
+        markAllMessagesAsRead,
       }}
     >
       {children}
@@ -756,24 +792,23 @@ export function GlobalMessageNotificationProvider({
         />
       )}
 
-      {/* 2. Floating Unread Dock Pill (appears when banner is dismissed but messages remain) */}
-      {!activeNotification && totalUnreadCount > 0 && !isPillDismissed && (
+      {/* 2. Floating Unread Dock Pill (HANYA untuk Direct Message / Pesan Pribadi 1-on-1 yang belum dibaca) */}
+      {!activeNotification && totalUnreadDirect > 0 && !isPillDismissed && (
         <FloatingUnreadDock
-          unreadCount={totalUnreadCount}
-          latestUnread={unreadList[0]}
+          unreadCount={totalUnreadDirect}
+          latestUnread={unreadList.find((it) => !it.isGroup) || unreadList[0]}
           onClick={() => {
-            const first = unreadList[0];
-            if (first?.isGroup && first.groupId) {
-              openGroupChat(first.groupId);
-            } else if (first?.partnerUser) {
-              openChatWithUser(first.partnerUser);
-            } else if (first?.senderId) {
-              openChatWithUser(first.senderId);
+            const firstDirect = unreadList.find((it) => !it.isGroup) || unreadList[0];
+            if (firstDirect?.partnerUser) {
+              openChatWithUser(firstDirect.partnerUser);
+            } else if (firstDirect?.senderId) {
+              openChatWithUser(firstDirect.senderId);
             } else {
               restoreBannerFromPill();
             }
           }}
           onDismiss={dismissPill}
+          onMarkAllRead={markAllMessagesAsRead}
         />
       )}
 

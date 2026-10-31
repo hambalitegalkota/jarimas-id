@@ -2069,7 +2069,7 @@ export async function getUnreadMessagesSummary(
           const lastRead = lastReadGroupMap?.[komId];
           const isUnread = lastRead
             ? new Date(gm.created_at).getTime() > new Date(lastRead).getTime()
-            : new Date(gm.created_at).getTime() > Date.now() - 7 * 24 * 60 * 60 * 1000;
+            : false; // Jangan anggap riwayat masa lalu sebagai unread notifikasi jika belum pernah dibuka di browser ini
 
           if (isUnread) {
             groupUnreadCounts[komId] = (groupUnreadCounts[komId] || 0) + 1;
@@ -2252,6 +2252,82 @@ export async function markConversationAsRead(senderId: string): Promise<{
   } catch (err: any) {
     console.error("Error markConversationAsRead:", err);
     return { success: false, message: err?.message };
+  }
+}
+
+/**
+ * Server Action: Menandai seluruh percakapan (pribadi dan grup) sebagai sudah dibaca / dibersihkan
+ */
+export async function markAllMessagesAsReadAction(): Promise<{
+  success: boolean;
+  message?: string;
+  clearedGroupIds: string[];
+  readTimestamp: string;
+}> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return {
+        success: false,
+        message: "Belum login.",
+        clearedGroupIds: [],
+        readTimestamp: new Date().toISOString(),
+      };
+    }
+
+    const currentUserId = user.id;
+    const nowIso = new Date().toISOString();
+
+    // 1. Tandai semua pesan pribadi yang ditujukan ke user ini menjadi is_read = true
+    await supabase
+      .from("pesan_pribadi")
+      .update({ is_read: true })
+      .eq("receiver_id", currentUserId)
+      .eq("is_read", false);
+
+    // 2. Ambil seluruh komunitas/grup yang relevan bagi user saat ini
+    const [{ data: memberships }, { data: createdKom }] = await Promise.all([
+      supabase
+        .from("anggota_komunitas")
+        .select("komunitas_id")
+        .eq("user_id", currentUserId)
+        .eq("status", "approved"),
+      supabase
+        .from("komunitas")
+        .select("id")
+        .eq("created_by", currentUserId),
+    ]);
+
+    const groupIds = Array.from(
+      new Set(
+        [
+          ...(memberships || []).map((m: any) => m.komunitas_id),
+          ...(createdKom || []).map((k: any) => k.id),
+        ].filter(Boolean)
+      )
+    );
+
+    revalidatePath("/kabar");
+    revalidatePath("/");
+
+    return {
+      success: true,
+      message: "Seluruh notifikasi percakapan berhasil dibersihkan.",
+      clearedGroupIds: groupIds,
+      readTimestamp: nowIso,
+    };
+  } catch (err: any) {
+    console.error("Error markAllMessagesAsReadAction:", err);
+    return {
+      success: false,
+      message: err?.message || "Gagal membersihkan notifikasi.",
+      clearedGroupIds: [],
+      readTimestamp: new Date().toISOString(),
+    };
   }
 }
 

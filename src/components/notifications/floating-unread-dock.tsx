@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { MessageSquare, X, ArrowRight, Sparkles } from "lucide-react";
+import { MessageSquare, X, ArrowRight, Sparkles, CheckCheck } from "lucide-react";
 import type { IncomingMessageNotificationItem } from "@/types/database";
 
 interface FloatingUnreadDockProps {
@@ -9,6 +9,7 @@ interface FloatingUnreadDockProps {
   latestUnread?: IncomingMessageNotificationItem;
   onClick: () => void;
   onDismiss: () => void;
+  onMarkAllRead?: () => void;
 }
 
 export function FloatingUnreadDock({
@@ -16,6 +17,7 @@ export function FloatingUnreadDock({
   latestUnread,
   onClick,
   onDismiss,
+  onMarkAllRead,
 }: FloatingUnreadDockProps) {
   if (unreadCount <= 0) return null;
 
@@ -64,18 +66,35 @@ export function FloatingUnreadDock({
           </div>
         </button>
 
-        {/* Dismiss cross */}
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onDismiss();
-          }}
-          title="Sembunyikan notifikasi mengambang"
-          className="p-1 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
-        >
-          <X className="h-3.5 w-3.5" />
-        </button>
+        {/* Action Buttons: Mark all as read & dismiss */}
+        <div className="flex items-center gap-1 border-l border-slate-700/60 pl-1.5 ml-1">
+          {onMarkAllRead && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onMarkAllRead();
+              }}
+              title="Tandai semua pesan sebagai sudah dibaca / bersihkan"
+              className="p-1.5 text-slate-400 hover:text-emerald-400 rounded-lg hover:bg-slate-800 transition-colors"
+            >
+              <CheckCheck className="h-4 w-4" />
+            </button>
+          )}
+
+          {/* Dismiss cross */}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDismiss();
+            }}
+            title="Sembunyikan notifikasi mengambang"
+            className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
       </div>
     </div>
   );

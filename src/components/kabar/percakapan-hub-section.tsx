@@ -67,6 +67,7 @@ export function PercakapanHubSection({
     totalUnreadGroup: ctxUnreadGroup,
     groupUnreadCounts,
     markGroupAsRead,
+    markAllMessagesAsRead,
   } = useGlobalMessageNotification();
   const [subTab, setSubTab] = useState<"pribadi" | "grup">("pribadi");
   const [grupFilterTab, setGrupFilterTab] = useState<"semua" | "kegiatan" | "komunitas">("semua");
@@ -352,20 +353,37 @@ export function PercakapanHubSection({
           </button>
         </div>
 
-        {/* Search Bar */}
-        <div className="relative flex-1 sm:max-w-xs">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder={
-              subTab === "pribadi"
-                ? "Cari kontak atau pesan..."
-                : "Cari grup posyandu/kegiatan..."
-            }
-            className="w-full min-h-[38px] rounded-lg border border-border bg-background pl-8.5 pr-3 text-xs text-foreground placeholder:text-muted-foreground focus:outline-hidden focus:border-primary transition-all"
-          />
+        {/* Search Bar & Clear Notif Action */}
+        <div className="flex items-center gap-2 flex-1 sm:max-w-md justify-end">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder={
+                subTab === "pribadi"
+                  ? "Cari kontak atau pesan..."
+                  : "Cari grup posyandu/kegiatan..."
+              }
+              className="w-full min-h-[38px] rounded-lg border border-border bg-background pl-8.5 pr-3 text-xs text-foreground placeholder:text-muted-foreground focus:outline-hidden focus:border-primary transition-all"
+            />
+          </div>
+
+          {(totalUnreadDirect > 0 || totalUnreadGroup > 0) && (
+            <button
+              type="button"
+              onClick={async () => {
+                await markAllMessagesAsRead();
+                router.refresh();
+              }}
+              title="Bersihkan semua tanda belum dibaca"
+              className="shrink-0 inline-flex min-h-[38px] items-center gap-1.5 rounded-lg border border-border bg-card px-2.5 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted transition-all cursor-pointer shadow-2xs"
+            >
+              <CheckCheck className="h-3.5 w-3.5 text-emerald-600" />
+              <span className="hidden sm:inline">Bersihkan Notifikasi</span>
+            </button>
+          )}
         </div>
       </div>
 
