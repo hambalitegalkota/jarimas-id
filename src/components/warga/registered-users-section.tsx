@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Link from "next/link";
 import {
   Users,
   Search,
@@ -19,6 +20,7 @@ import {
   Loader2,
   User,
   HeartHandshake,
+  ExternalLink,
 } from "lucide-react";
 import {
   sendFriendRequest,
@@ -419,21 +421,24 @@ export function RegisteredUsersSection({
                     {userItem.komunitas_list && userItem.komunitas_list.length > 0 ? (
                       <div className="flex flex-wrap gap-1.5">
                         {userItem.komunitas_list.slice(0, 2).map((comm) => (
-                          <span
+                          <Link
                             key={comm.id}
-                            className="inline-flex items-center gap-1 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2.5 py-1 text-[10px] font-bold text-slate-700 dark:text-slate-300 truncate max-w-full"
+                            href={`/komunitas/${comm.id}`}
+                            title={`Buka komunitas ${comm.nama} untuk komunikasi & koordinasi`}
+                            className="inline-flex items-center gap-1 rounded-xl bg-slate-100 hover:bg-primary/10 dark:bg-slate-800 dark:hover:bg-primary/20 border border-slate-200 hover:border-primary/40 dark:border-slate-700 px-2.5 py-1 text-[10px] font-bold text-slate-700 dark:text-slate-300 hover:text-primary transition-all duration-150 truncate max-w-full group cursor-pointer shadow-2xs"
                           >
                             {comm.jenis === "posyandu" ? (
-                              <HeartPulse className="h-3 w-3 text-emerald-600 shrink-0" />
+                              <HeartPulse className="h-3 w-3 text-emerald-600 shrink-0 group-hover:scale-110 transition-transform" />
                             ) : comm.jenis === "satuan_paud" ? (
-                              <GraduationCap className="h-3 w-3 text-indigo-600 shrink-0" />
+                              <GraduationCap className="h-3 w-3 text-indigo-600 shrink-0 group-hover:scale-110 transition-transform" />
                             ) : (
-                              <Building2 className="h-3 w-3 text-sky-600 shrink-0" />
+                              <Building2 className="h-3 w-3 text-sky-600 shrink-0 group-hover:scale-110 transition-transform" />
                             )}
-                            <span className="truncate">
+                            <span className="truncate group-hover:underline">
                               {comm.peran} • {comm.nama}
                             </span>
-                          </span>
+                            <ExternalLink className="h-2.5 w-2.5 opacity-40 group-hover:opacity-100 group-hover:text-primary shrink-0 transition-opacity" />
+                          </Link>
                         ))}
                       </div>
                     ) : (
