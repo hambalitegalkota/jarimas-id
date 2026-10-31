@@ -992,6 +992,91 @@ export function getPosyanduCakupanWilayah(targetKomunitas: any): PosyanduCakupan
     if (nama.includes("edelweis") || nama.includes("edelweiss")) return { rw: "13" };
   }
 
+  // Khusus Kelurahan Kaligangsa (Kecamatan Margadana)
+  // 1. Posyandu Anggrek: cakupan sinkronisasi datanya dengan RW 1 (RT 1 s/d RT 6)
+  // 2. Posyandu Bougenville: cakupan sinkronisasi datanya dengan RW 2 (RT 1 s/d RT 6)
+  // 3. Posyandu Cempaka: cakupan sinkronisasi datanya dengan RW 3 (RT 1 s/d RT 7)
+  // 4. Posyandu Melati: cakupan sinkronisasi datanya dengan RW 4 (RT 1 s/d RT 9)
+  // 5. Posyandu Dahlia: cakupan sinkronisasi datanya dengan RW 5 (RT 1 s/d RT 4)
+  // 6. Posyandu Flamboyan: cakupan sinkronisasi datanya dengan RW 6 (RT 1 s/d RT 3)
+  // 7. Posyandu Rosela: cakupan sinkronisasi datanya dengan RW 7 (RT 1 s/d RT 3)
+  const isKaligangsaPosyandu =
+    kel.includes("kaligangsa") ||
+    nama.includes("kaligangsa") ||
+    targetKomunitas?.id === "93140e77-af37-41dd-8e6d-6a35ea1fc019" ||
+    targetKomunitas?.id === "6e505c7d-7f43-4b8f-87db-5115d3e9a977" ||
+    targetKomunitas?.id === "a14626d4-1c90-40ed-8a2f-0f0d1e16d868" ||
+    targetKomunitas?.id === "af9f86a2-65b8-4328-8b0c-bfeda9384e66" ||
+    targetKomunitas?.id === "73309340-65b8-4328-81ef-9abd9d60b990" ||
+    targetKomunitas?.id === "4dd70053-65b8-4328-867e-2d552f2418d1" ||
+    targetKomunitas?.id === "6fa19fca-928b-42d6-8823-1a9d1a6ff64e";
+
+  if (isKaligangsaPosyandu) {
+    if (
+      targetKomunitas?.id === "93140e77-af37-41dd-8e6d-6a35ea1fc019" ||
+      nama.includes("anggrek")
+    ) {
+      return {
+        rw: "01",
+        rtList: ["01", "02", "03", "04", "05", "06", "1", "2", "3", "4", "5", "6"],
+      };
+    }
+    if (
+      targetKomunitas?.id === "6e505c7d-7f43-4b8f-87db-5115d3e9a977" ||
+      nama.includes("bougenville")
+    ) {
+      return {
+        rw: "02",
+        rtList: ["01", "02", "03", "04", "05", "06", "1", "2", "3", "4", "5", "6"],
+      };
+    }
+    if (
+      targetKomunitas?.id === "a14626d4-1c90-40ed-8a2f-0f0d1e16d868" ||
+      nama.includes("cempaka")
+    ) {
+      return {
+        rw: "03",
+        rtList: ["01", "02", "03", "04", "05", "06", "07", "1", "2", "3", "4", "5", "6", "7"],
+      };
+    }
+    if (
+      targetKomunitas?.id === "af9f86a2-65b8-4328-8b0c-bfeda9384e66" ||
+      nama.includes("melati")
+    ) {
+      return {
+        rw: "04",
+        rtList: ["01", "02", "03", "04", "05", "06", "07", "08", "09", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
+      };
+    }
+    if (
+      targetKomunitas?.id === "73309340-65b8-4328-81ef-9abd9d60b990" ||
+      nama.includes("dahlia")
+    ) {
+      return {
+        rw: "05",
+        rtList: ["01", "02", "03", "04", "1", "2", "3", "4"],
+      };
+    }
+    if (
+      targetKomunitas?.id === "4dd70053-65b8-4328-867e-2d552f2418d1" ||
+      nama.includes("flamboyan")
+    ) {
+      return {
+        rw: "06",
+        rtList: ["01", "02", "03", "1", "2", "3"],
+      };
+    }
+    if (
+      targetKomunitas?.id === "6fa19fca-928b-42d6-8823-1a9d1a6ff64e" ||
+      nama.includes("rosela")
+    ) {
+      return {
+        rw: "07",
+        rtList: ["01", "02", "03", "1", "2", "3"],
+      };
+    }
+  }
+
   // Khusus Kelurahan Keturen (Kecamatan Tegal Selatan)
   // 1. Posyandu Kemuning I: cakupan sinkronisasi dengan RW 1 (RT 01 s/d RT 06)
   // 2. Posyandu Kemuning II: cakupan sinkronisasi dengan RW 2 (RT 01 s/d RT 07)
@@ -1649,6 +1734,63 @@ export function getPosyanduCakupanRw(targetKomunitas: any): string | null {
 }
 
 /**
+ * Validasi ketentuan khusus RW & RT di Kelurahan Kaligangsa, Kecamatan Margadana:
+ * - Jumlah RW ada 7 (RW 1 s/d 7)
+ * - RW 1 Jumlah RT 6 (RT 1 s/d 6)
+ * - RW 2 Jumlah RT 6 (RT 1 s/d 6)
+ * - RW 3 Jumlah RT 7 (RT 1 s/d 7)
+ * - RW 4 Jumlah RT 9 (RT 1 s/d 9)
+ * - RW 5 Jumlah RT 4 (RT 1 s/d 4)
+ * - RW 6 Jumlah RT 3 (RT 1 s/d 3)
+ * - RW 7 Jumlah RT 3 (RT 1 s/d 3)
+ * - Tetap mempertahankan RW "Belum Tahu" dan RT "Belum Tahu"
+ */
+export function isValidKaligangsaRtRw(
+  kel?: string | null,
+  rw?: string | null,
+  rt?: string | null
+): boolean {
+  if (!kel) return true;
+  const cleanKel = normalizeWilayah(kel);
+  if (!cleanKel.includes("kaligangsa")) return true;
+
+  const rawRw = (rw || "").trim().toLowerCase();
+  const rawRt = (rt || "").trim().toLowerCase();
+
+  const isRwBelumTahu =
+    !rawRw ||
+    rawRw.includes("belum") ||
+    rawRw === "-" ||
+    rawRw === "0" ||
+    rawRw === "00";
+  if (isRwBelumTahu) return true;
+
+  const rwNum = parseInt(rawRw.replace(/\D/g, ""), 10);
+  if (isNaN(rwNum) || rwNum < 1 || rwNum > 7) return false;
+
+  const isRtBelumTahu =
+    !rawRt ||
+    rawRt.includes("belum") ||
+    rawRt === "-" ||
+    rawRt === "0" ||
+    rawRt === "00";
+  if (isRtBelumTahu) return true;
+
+  const rtNum = parseInt(rawRt.replace(/\D/g, ""), 10);
+  if (isNaN(rtNum)) return false;
+
+  if (rwNum === 1 && (rtNum < 1 || rtNum > 6)) return false;
+  if (rwNum === 2 && (rtNum < 1 || rtNum > 6)) return false;
+  if (rwNum === 3 && (rtNum < 1 || rtNum > 7)) return false;
+  if (rwNum === 4 && (rtNum < 1 || rtNum > 9)) return false;
+  if (rwNum === 5 && (rtNum < 1 || rtNum > 4)) return false;
+  if (rwNum === 6 && (rtNum < 1 || rtNum > 3)) return false;
+  if (rwNum === 7 && (rtNum < 1 || rtNum > 3)) return false;
+
+  return true;
+}
+
+/**
  * Validasi ketentuan khusus RW & RT di Kelurahan Keturen, Kecamatan Tegal Selatan:
  * - Jumlah RW ada 4 (RW 1 s/d 4)
  * - RW 1 Jumlah RT 6 (RT 1 s/d 6)
@@ -2010,6 +2152,13 @@ export function isDataAnakMatchingKomunitas(
   targetMeta: any,
   targetKomId: string
 ): boolean {
+  // Ketentuan Khusus Kelurahan Kaligangsa: Hapus/abaikan data yang tidak sesuai ketentuan resmi RW & RT Kaligangsa
+  if (
+    !isValidKaligangsaRtRw(item.domisili_kelurahan, item.domisili_rw, item.domisili_rt) &&
+    !isValidKaligangsaRtRw(item.kk_kelurahan, item.kk_rw, item.kk_rt)
+  ) {
+    return false;
+  }
   // Ketentuan Khusus Kelurahan Keturen: Hapus/abaikan data yang tidak sesuai ketentuan resmi RW & RT Keturen
   if (
     !isValidKeturenRtRw(item.domisili_kelurahan, item.domisili_rw, item.domisili_rt) &&

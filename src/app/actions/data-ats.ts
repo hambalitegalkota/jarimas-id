@@ -10,6 +10,7 @@ import {
   isDataAtsRecord,
   getPosyanduCakupanRw,
   getPosyanduCakupanWilayah,
+  isValidKaligangsaRtRw,
   isValidKeturenRtRw,
   isValidDebongKulonRtRw,
   isValidTunonRtRw,
@@ -1536,6 +1537,11 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
           rawItemRt === "-" ||
           rawItemRt === "0" ||
           rawItemRt === "00";
+
+        // Ketentuan Khusus Kelurahan Kaligangsa: Hapus/abaikan data yang tidak sesuai ketentuan resmi RW & RT Kaligangsa
+        if (!isValidKaligangsaRtRw(itemKel, itemRw, itemRt)) {
+          return false;
+        }
 
         // Ketentuan Khusus Kelurahan Keturen: Hapus/abaikan data yang tidak sesuai ketentuan resmi RW & RT Keturen
         if (!isValidKeturenRtRw(itemKel, itemRw, itemRt)) {

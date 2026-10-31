@@ -684,6 +684,7 @@ export const DAFTAR_KECAMATAN_TEGAL = Object.keys(KOTA_TEGAL_DATA);
  * - Kelurahan lainnya: Dikembalikan ke kondisi default sebelumnya (15 RW dan 15 RT per RW) hingga pemetaan selesai.
  */
 export const DATA_RW_PER_KELURAHAN: Record<string, number> = {
+  "Kaligangsa": 7,
   "Debong Lor": 3,
   "Debong Kidul": 4,
   "Debong Kulon": 4,
@@ -973,6 +974,35 @@ export const DATA_RT_PER_RW_MARGADANA: Record<string, number> = {
   "11": 6,
   "12": 6,
   "13": 7,
+};
+
+/**
+ * Ketentuan Khusus RT per RW di Kelurahan Kaligangsa, Kecamatan Margadana:
+ * - RW 1: Jumlah RT 6
+ * - RW 2: Jumlah RT 6
+ * - RW 3: Jumlah RT 7
+ * - RW 4: Jumlah RT 9
+ * - RW 5: Jumlah RT 4
+ * - RW 6: Jumlah RT 3
+ * - RW 7: Jumlah RT 3
+ * Total RW resmi: 7 RW, Total RT: 38 RT (6 + 6 + 7 + 9 + 4 + 3 + 3)
+ * Tetap pertahankan pilihan "Belum Tahu" untuk RW dan RT
+ */
+export const DATA_RT_PER_RW_KALIGANGSA: Record<string, number> = {
+  "01": 6,
+  "1": 6,
+  "02": 6,
+  "2": 6,
+  "03": 7,
+  "3": 7,
+  "04": 9,
+  "4": 9,
+  "05": 4,
+  "5": 4,
+  "06": 3,
+  "6": 3,
+  "07": 3,
+  "7": 3,
 };
 
 export const TOTAL_KOMUNITAS_RW_KOTA_TEGAL = 167;

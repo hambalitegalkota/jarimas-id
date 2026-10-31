@@ -600,6 +600,8 @@ export function serializeJadwalPosyandu(jadwal: {
  * Mengurai cakupan wilayah layanan posyandu (RW dan RT yang dilayani)
  */
 export function parseCakupanWilayah(komunitas?: {
+  id?: string | null;
+  nama?: string | null;
   cakupan_wilayah?: string | null;
   kontak?: string | null;
   rw?: string | null;
@@ -608,25 +610,153 @@ export function parseCakupanWilayah(komunitas?: {
 } | null): string {
   if (!komunitas) return "";
 
+  // 1. Ekstraksi custom cakupan_wilayah jika ada dan bukan default lama yang hanya menyebut 1 RT
+  let customCakupan = "";
   if (komunitas.cakupan_wilayah && komunitas.cakupan_wilayah.trim()) {
-    return komunitas.cakupan_wilayah.trim();
-  }
-
-  if (komunitas.kontak) {
+    customCakupan = komunitas.cakupan_wilayah.trim();
+  } else if (komunitas.kontak) {
     const trimmed = komunitas.kontak.trim();
     if (trimmed.startsWith("{") && trimmed.endsWith("}")) {
       try {
         const parsed = JSON.parse(trimmed);
         if (parsed.cakupan_wilayah && String(parsed.cakupan_wilayah).trim()) {
-          return String(parsed.cakupan_wilayah).trim();
+          customCakupan = String(parsed.cakupan_wilayah).trim();
         }
       } catch {}
     }
   }
 
-  const rw = komunitas.rw ? String(komunitas.rw).replace(/\D/g, "").padStart(2, "0") : "";
+  const kelClean = (komunitas.kelurahan || "").toLowerCase().replace(/^(kelurahan|kel\.)\s+/i, "").trim();
+  const namaClean = (komunitas.nama || "").toLowerCase();
+  let rw = komunitas.rw ? String(komunitas.rw).replace(/\D/g, "").padStart(2, "0") : "";
   const rt = komunitas.rt ? String(komunitas.rt).replace(/\D/g, "").padStart(2, "0") : "";
 
+  // Khusus Kaligangsa: Sinkronisasi Posyandu dengan RW resmi
+  if (kelClean.includes("kaligangsa") || namaClean.includes("kaligangsa")) {
+    if (namaClean.includes("anggrek")) rw = "01";
+    else if (namaClean.includes("bougenville")) rw = "02";
+    else if (namaClean.includes("cempaka")) rw = "03";
+    else if (namaClean.includes("melati")) rw = "04";
+    else if (namaClean.includes("dahlia")) rw = "05";
+    else if (namaClean.includes("flamboyan")) rw = "06";
+    else if (namaClean.includes("rosela")) rw = "07";
+  }
+
+  // Jika customCakupan sudah ada dan bukan format lama "Melayani Warga RW xx (RT xx)", gunakan customCakupan
+  const isOldSingleRtFormat = customCakupan && /^Melayani\s+Warga\s+RW\s+\d+\s*\(RT\s+\d+\)$/i.test(customCakupan);
+  if (customCakupan && !isOldSingleRtFormat) {
+    return customCakupan;
+  }
+
+  // Pemetaan Khusus Kelurahan yang sudah disesuaikan cakupan RW & RT-nya:
+  // 1. Kaligangsa (Kecamatan Margadana)
+  if (kelClean.includes("kaligangsa") || namaClean.includes("kaligangsa")) {
+    const rtMapKaligangsa: Record<string, number> = {
+      "01": 6,
+      "02": 6,
+      "03": 7,
+      "04": 9,
+      "05": 4,
+      "06": 3,
+      "07": 3,
+    };
+    const count = rtMapKaligangsa[rw];
+    if (count) {
+      const rtList = Array.from({ length: count }, (_, i) => `RT ${String(i + 1).padStart(2, "0")}`);
+      return `Melayani Warga RW ${rw} (${rtList.join(", ")} dan RW - RT Tidak Tahu)`;
+    }
+  }
+
+  // 2. Tunon (Kecamatan Tegal Selatan)
+  if (kelClean.includes("tunon") || namaClean.includes("tunon")) {
+    const rtMapTunon: Record<string, number> = {
+      "01": 6,
+      "02": 6,
+      "03": 4,
+      "04": 5,
+    };
+    const count = rtMapTunon[rw];
+    if (count) {
+      const rtList = Array.from({ length: count }, (_, i) => `RT ${String(i + 1).padStart(2, "0")}`);
+      return `Melayani Warga RW ${rw} (${rtList.join(", ")} dan RW - RT Tidak Tahu)`;
+    }
+  }
+
+  // 3. Keturen (Kecamatan Tegal Selatan)
+  if (kelClean.includes("keturen") || namaClean.includes("keturen")) {
+    if (namaClean.includes("kemuning") && (namaClean.includes("selatan") || namaClean.includes("iii selatan") || namaClean.includes("3 selatan"))) {
+      return `Melayani Warga RW 03 (RT 01, RT 05 dan RW - RT Tidak Tahu)`;
+    }
+    if (namaClean.includes("kemuning") && (namaClean.includes("utara") || namaClean.includes("iii utara") || namaClean.includes("3 utara"))) {
+      return `Melayani Warga RW 03 (RT 02, RT 03, RT 04 dan RW - RT Tidak Tahu)`;
+    }
+    const rtMapKeturen: Record<string, number> = {
+      "01": 6,
+      "02": 7,
+      "03": 5,
+      "04": 5,
+    };
+    const count = rtMapKeturen[rw];
+    if (count) {
+      const rtList = Array.from({ length: count }, (_, i) => `RT ${String(i + 1).padStart(2, "0")}`);
+      return `Melayani Warga RW ${rw} (${rtList.join(", ")} dan RW - RT Tidak Tahu)`;
+    }
+  }
+
+  // 4. Debong Kulon (Kecamatan Tegal Selatan)
+  if (kelClean.includes("debong kulon") || (namaClean.includes("debong kulon") && !kelClean.includes("debong lor") && !kelClean.includes("debong kidul"))) {
+    if (namaClean.includes("mawar")) {
+      return `Melayani Warga RW 01 (RT 03, RT 04, RT 06 dan RW - RT Tidak Tahu)`;
+    }
+    if (namaClean.includes("cempaka")) {
+      return `Melayani Warga RW 01 (RT 01, RT 02, RT 05 dan RW - RT Tidak Tahu)`;
+    }
+    const rtMapDebongKulon: Record<string, number> = {
+      "01": 6,
+      "02": 5,
+      "03": 5,
+      "04": 4,
+    };
+    const count = rtMapDebongKulon[rw];
+    if (count) {
+      const rtList = Array.from({ length: count }, (_, i) => `RT ${String(i + 1).padStart(2, "0")}`);
+      return `Melayani Warga RW ${rw} (${rtList.join(", ")} dan RW - RT Tidak Tahu)`;
+    }
+  }
+
+  // 5. Debong Lor (Kecamatan Tegal Barat)
+  if (kelClean.includes("debong lor") || namaClean.includes("debong lor")) {
+    const rtMapDebongLor: Record<string, number> = {
+      "01": 8,
+      "02": 5,
+      "03": 4,
+    };
+    const count = rtMapDebongLor[rw];
+    if (count) {
+      const rtList = Array.from({ length: count }, (_, i) => `RT ${String(i + 1).padStart(2, "0")}`);
+      return `Melayani Warga RW ${rw} (${rtList.join(", ")} dan RW - RT Tidak Tahu)`;
+    }
+  }
+
+  // 6. Debong Kidul (Kecamatan Tegal Selatan)
+  if (kelClean.includes("debong kidul") || namaClean.includes("debong kidul")) {
+    const count = 5;
+    if (rw) {
+      const rtList = Array.from({ length: count }, (_, i) => `RT ${String(i + 1).padStart(2, "0")}`);
+      return `Melayani Warga RW ${rw} (${rtList.join(", ")} dan RW - RT Tidak Tahu)`;
+    }
+  }
+
+  // 7. Pesurungan Lor (Kecamatan Margadana)
+  if (kelClean.includes("pesurungan lor") || namaClean.includes("pesurungan lor")) {
+    const count = 7;
+    if (rw) {
+      const rtList = Array.from({ length: count }, (_, i) => `RT ${String(i + 1).padStart(2, "0")}`);
+      return `Melayani Warga RW ${rw} (${rtList.join(", ")} dan RW - RT Tidak Tahu)`;
+    }
+  }
+
+  // 8. Kelurahan Umum / Default Fallback
   if (rw && rt) {
     return `Melayani Warga RW ${rw} (RT ${rt})`;
   } else if (rw) {
