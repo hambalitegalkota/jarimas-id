@@ -1001,6 +1001,13 @@ export async function getDataAnakByKomunitas(
       };
     }
 
+    // Petakan key identitas unik murid dari data ASLI database (sebelum sensor nama untuk pengunjung)
+    // agar anak berbeda dengan inisial sama tidak tertelan/terhapus oleh deduplikasi
+    const rawChildIdentityMap = new Map<string, string>();
+    nonAtsChildren.forEach((row: any) => {
+      rawChildIdentityMap.set(row.id, generateChildIdentityKey(row));
+    });
+
     // 4. Format dan filter data_anak sesuai hierarki & interoperabilitas wilayah
     if (options?.countOnly) {
       const items: DataAnakItem[] = nonAtsChildren
@@ -1059,7 +1066,7 @@ export async function getDataAnakByKomunitas(
       // Deduplikasi murid: utamakan record yang sudah approved / terverifikasi agar tidak menggandakan data
       const dedupedCountMap = new Map<string, DataAnakItem>();
       items.forEach((item) => {
-        const key = generateChildIdentityKey(item);
+        const key = rawChildIdentityMap.get(item.id) || generateChildIdentityKey(item);
         if (!key) return;
         const existing = dedupedCountMap.get(key);
         if (!existing) {
@@ -1171,7 +1178,7 @@ export async function getDataAnakByKomunitas(
     // Deduplikasi murid: utamakan record yang sudah approved / terverifikasi agar tidak menggandakan data
     const dedupedItemMap = new Map<string, DataAnakItem>();
     items.forEach((item) => {
-      const key = generateChildIdentityKey(item);
+      const key = rawChildIdentityMap.get(item.id) || generateChildIdentityKey(item);
       if (!key) return;
       const existing = dedupedItemMap.get(key);
       if (!existing) {
