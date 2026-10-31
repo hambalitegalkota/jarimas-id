@@ -27,7 +27,7 @@ import {
   respondFriendRequest,
 } from "@/app/actions/pertemanan";
 import { ChatDrawerModal } from "./chat-drawer-modal";
-import { isAdminPusat, isSuperAdmin } from "@/lib/utils";
+import { isAdminPusat, isSuperAdmin, formatPeranDisplay, cn } from "@/lib/utils";
 import type { RegisteredUserItem } from "@/types/database";
 
 interface RegisteredUsersSectionProps {
@@ -420,26 +420,45 @@ export function RegisteredUsersSection({
                   <div className="space-y-1.5 pt-1">
                     {userItem.komunitas_list && userItem.komunitas_list.length > 0 ? (
                       <div className="flex flex-wrap gap-1.5">
-                        {userItem.komunitas_list.slice(0, 2).map((comm) => (
-                          <Link
-                            key={comm.id}
-                            href={`/komunitas/${comm.id}`}
-                            title={`Buka komunitas ${comm.nama} untuk komunikasi & koordinasi`}
-                            className="inline-flex items-center gap-1 rounded-xl bg-slate-100 hover:bg-primary/10 dark:bg-slate-800 dark:hover:bg-primary/20 border border-slate-200 hover:border-primary/40 dark:border-slate-700 px-2.5 py-1 text-[10px] font-bold text-slate-700 dark:text-slate-300 hover:text-primary transition-all duration-150 truncate max-w-full group cursor-pointer shadow-2xs"
-                          >
-                            {comm.jenis === "posyandu" ? (
-                              <HeartPulse className="h-3 w-3 text-emerald-600 shrink-0 group-hover:scale-110 transition-transform" />
-                            ) : comm.jenis === "satuan_paud" ? (
-                              <GraduationCap className="h-3 w-3 text-indigo-600 shrink-0 group-hover:scale-110 transition-transform" />
-                            ) : (
-                              <Building2 className="h-3 w-3 text-sky-600 shrink-0 group-hover:scale-110 transition-transform" />
-                            )}
-                            <span className="truncate group-hover:underline">
-                              {comm.peran} • {comm.nama}
-                            </span>
-                            <ExternalLink className="h-2.5 w-2.5 opacity-40 group-hover:opacity-100 group-hover:text-primary shrink-0 transition-opacity" />
-                          </Link>
-                        ))}
+                        {userItem.komunitas_list.map((comm) => {
+                          const isPaud = comm.jenis === "satuan_paud";
+                          const isPosyandu = comm.jenis === "posyandu";
+                          const isKegiatan = comm.jenis === "kegiatan";
+
+                          return (
+                            <Link
+                              key={comm.id}
+                              href={`/komunitas/${comm.id}`}
+                              title={`Buka komunitas ${comm.nama} untuk komunikasi & koordinasi`}
+                              className={cn(
+                                "inline-flex items-center gap-1 rounded-xl border px-2.5 py-1 text-[10px] font-semibold transition-all duration-150 truncate max-w-full group cursor-pointer shadow-2xs",
+                                isPaud
+                                  ? "bg-indigo-50 hover:bg-indigo-100 border-indigo-200 text-indigo-900 dark:bg-indigo-950/40 dark:hover:bg-indigo-900/60 dark:border-indigo-800 dark:text-indigo-200"
+                                  : isPosyandu
+                                  ? "bg-rose-50 hover:bg-rose-100 border-rose-200 text-rose-900 dark:bg-rose-950/40 dark:hover:bg-rose-900/60 dark:border-rose-800 dark:text-rose-200"
+                                  : isKegiatan
+                                  ? "bg-amber-50 hover:bg-amber-100 border-amber-200 text-amber-900 dark:bg-amber-950/40 dark:hover:bg-amber-900/60 dark:border-amber-800 dark:text-amber-200"
+                                  : "bg-slate-100 hover:bg-primary/10 dark:bg-slate-800 dark:hover:bg-primary/20 border-slate-200 hover:border-primary/40 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:text-primary"
+                              )}
+                            >
+                              {isPosyandu ? (
+                                <HeartPulse className="h-3 w-3 text-rose-500 shrink-0 group-hover:scale-110 transition-transform" />
+                              ) : isPaud ? (
+                                <GraduationCap className="h-3 w-3 text-indigo-600 dark:text-indigo-400 shrink-0 group-hover:scale-110 transition-transform" />
+                              ) : isKegiatan ? (
+                                <Sparkles className="h-3 w-3 text-amber-500 shrink-0 group-hover:scale-110 transition-transform" />
+                              ) : (
+                                <Building2 className="h-3 w-3 text-sky-600 shrink-0 group-hover:scale-110 transition-transform" />
+                              )}
+                              <span className="truncate group-hover:underline">
+                                <span className="font-bold">{formatPeranDisplay(comm.peran)}</span>
+                                {" • "}
+                                {comm.nama}
+                              </span>
+                              <ExternalLink className="h-2.5 w-2.5 opacity-40 group-hover:opacity-100 shrink-0 transition-opacity" />
+                            </Link>
+                          );
+                        })}
                       </div>
                     ) : (
                       <span className="inline-flex items-center gap-1 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 px-2.5 py-1 text-[10px] font-semibold text-slate-500">

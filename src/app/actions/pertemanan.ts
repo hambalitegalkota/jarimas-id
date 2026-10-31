@@ -177,6 +177,21 @@ export async function getRegisteredUsers(params?: {
           }
         });
 
+        // Urutkan komunitas agar Satuan PAUD & Posyandu tampil terdepan, disusul peran institusional
+        Object.keys(communityMap).forEach((uid) => {
+          communityMap[uid].sort((a, b) => {
+            const getPriority = (item: any) => {
+              if (item.jenis === "satuan_paud") return 1;
+              if (item.jenis === "posyandu") return 2;
+              if (item.jenis === "kegiatan") return 3;
+              const pLower = (item.peran || "").toLowerCase();
+              if (pLower.includes("admin") || pLower.includes("pengurus") || pLower.includes("ketua") || pLower.includes("kader") || pLower.includes("guru") || pLower.includes("pendidik")) return 4;
+              return 5;
+            };
+            return getPriority(a) - getPriority(b);
+          });
+        });
+
         // Kumpulkan ID pengguna yang berada di komunitas yang sama dengan user saat ini
         memberships.forEach((m: any) => {
           if (m.user_id && m.komunitas_id && myCommunityIds.has(m.komunitas_id)) {
