@@ -17,6 +17,7 @@ import {
   UserPlus,
   Shield,
   ShieldAlert,
+  MessageSquare,
 } from "lucide-react";
 import {
   approveAnggotaByAdmin,
@@ -25,6 +26,7 @@ import {
   getAnggotaKomunitas,
 } from "@/app/actions/komunitas";
 import { assignOrRevokeKomunitasAdminAction } from "@/app/actions/admin";
+import { useGlobalMessageNotification } from "@/components/notifications/global-message-notification-provider";
 import { ManageGrupMembersModal } from "@/components/kabar/manage-grup-members-modal";
 import type { AnggotaKomunitasDetail } from "@/types/database";
 import { cn, formatPeranDisplay, isRoleAdmin, isProtectedSuperAdmin } from "@/lib/utils";
@@ -56,6 +58,7 @@ export function KelolaAnggotaClientView({
   const [kickTargetMember, setKickTargetMember] = useState<AnggotaKomunitasDetail | null>(null);
   const [isKicking, setIsKicking] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const { openChatWithUser } = useGlobalMessageNotification();
 
   const getDefaultAdminRole = (jenis?: string) => {
     switch (jenis) {
@@ -334,9 +337,14 @@ export function KelolaAnggotaClientView({
                         {initial}
                       </div>
                       <div>
-                        <h4 className="text-sm font-bold text-foreground leading-snug">
+                        <button
+                          type="button"
+                          onClick={() => openChatWithUser(member.user_id)}
+                          className="text-sm font-bold text-foreground hover:text-emerald-600 dark:hover:text-emerald-400 hover:underline transition-colors text-left leading-snug cursor-pointer"
+                          title={`Mulai chat dengan ${name}`}
+                        >
                           {name}
-                        </h4>
+                        </button>
                         <p className="text-xs font-mono text-muted-foreground">{email}</p>
                       </div>
                     </div>
@@ -354,6 +362,16 @@ export function KelolaAnggotaClientView({
 
                   {/* Actions */}
                   <div className="flex items-center gap-2 pt-2 border-t border-border">
+                    <button
+                      type="button"
+                      onClick={() => openChatWithUser(member.user_id)}
+                      className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-emerald-500/30 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:hover:bg-emerald-900/60 dark:text-emerald-200 px-3 text-xs font-bold transition-all cursor-pointer shadow-2xs"
+                      title={`Mulai chat dengan ${name}`}
+                    >
+                      <MessageSquare className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                      <span>Chat</span>
+                    </button>
+
                     <button
                       onClick={() => handleApprove(member.id, name)}
                       disabled={isProcessing}
@@ -412,9 +430,14 @@ export function KelolaAnggotaClientView({
                       {initial}
                     </div>
                     <div className="min-w-0">
-                      <h4 className="text-sm font-bold text-foreground truncate">
+                      <button
+                        type="button"
+                        onClick={() => openChatWithUser(member.user_id)}
+                        className="text-sm font-bold text-foreground hover:text-emerald-600 dark:hover:text-emerald-400 hover:underline transition-colors text-left truncate cursor-pointer"
+                        title={`Mulai chat dengan ${name}`}
+                      >
                         {name}
-                      </h4>
+                      </button>
                       <p className="text-xs font-mono text-muted-foreground truncate">{email}</p>
                     </div>
                   </div>
@@ -469,6 +492,16 @@ export function KelolaAnggotaClientView({
                         )}
                       </>
                     )}
+
+                    <button
+                      type="button"
+                      onClick={() => openChatWithUser(member.user_id)}
+                      className="inline-flex h-8 items-center gap-1 rounded-lg border border-emerald-500/30 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:hover:bg-emerald-900/60 dark:text-emerald-200 px-2.5 text-xs font-semibold transition-all cursor-pointer shadow-2xs"
+                      title={`Chat langsung dengan ${name}`}
+                    >
+                      <MessageSquare className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                      <span>Chat</span>
+                    </button>
 
                     {/* Tombol Keluarkan Anggota oleh Admin */}
                     <button

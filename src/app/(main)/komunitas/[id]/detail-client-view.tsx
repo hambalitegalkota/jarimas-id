@@ -157,7 +157,7 @@ export function KomunitasDetailClientView({
     return currentSubtab;
   }, [currentSubtab]);
   const [activeTab, setActiveTab] = useState<string | null>(initialActiveTab);
-  const { groupUnreadCounts, markGroupAsRead } = useGlobalMessageNotification();
+  const { groupUnreadCounts, markGroupAsRead, openChatWithUser } = useGlobalMessageNotification();
   const communityUnreadCount = groupUnreadCounts[komunitasData.id] || 0;
 
   // State untuk data anak & ATS komunitas
@@ -2162,21 +2162,33 @@ export function KomunitasDetailClientView({
                     const hp = admin.profiles?.nomor_hp;
                     const email = admin.profiles?.email;
                     const role = formatPeranDisplay(admin.peran);
+                    const isAdminMe = currentUserId && admin.user_id === currentUserId;
 
                     return (
                       <div
                         key={admin.id}
                         className="flex items-start justify-between gap-3 p-3 rounded-xl bg-card border border-border shadow-2xs hover:border-emerald-500/40 transition-all"
                       >
-                        <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="flex items-center gap-2.5 min-w-0 flex-1">
                           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 font-bold text-base shadow-2xs">
                             {initial}
                           </div>
-                          <div className="min-w-0 space-y-0.5">
-                            <div className="flex items-center gap-1.5">
-                              <p className="text-xs sm:text-sm font-bold text-foreground truncate">
-                                {adminName}
-                              </p>
+                          <div className="min-w-0 space-y-0.5 flex-1">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              {isAdminMe ? (
+                                <p className="text-xs sm:text-sm font-bold text-foreground truncate">
+                                  {adminName}
+                                </p>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => openChatWithUser(admin.user_id)}
+                                  className="text-xs sm:text-sm font-bold text-foreground hover:text-emerald-600 dark:hover:text-emerald-400 hover:underline transition-colors text-left truncate cursor-pointer"
+                                  title={`Mulai Chat dengan ${adminName}`}
+                                >
+                                  {adminName}
+                                </button>
+                              )}
                               <span className="text-[9px] font-extrabold px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-950 dark:bg-emerald-950 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-700">
                                 {role}
                               </span>
@@ -2199,6 +2211,20 @@ export function KomunitasDetailClientView({
                             )}
                           </div>
                         </div>
+
+                        {!isAdminMe && (
+                          <div className="shrink-0 pt-0.5">
+                            <button
+                              type="button"
+                              onClick={() => openChatWithUser(admin.user_id)}
+                              className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-500/30 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:hover:bg-emerald-900/60 dark:text-emerald-200 dark:border-emerald-700/60 px-2.5 py-1.5 text-xs font-bold shadow-2xs transition-all active:scale-95 cursor-pointer"
+                              title={`Mulai Chat Langsung dengan ${adminName}`}
+                            >
+                              <MessageSquare className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                              <span>Chat</span>
+                            </button>
+                          </div>
+                        )}
                       </div>
                     );
                   })}
@@ -2420,9 +2446,20 @@ export function KomunitasDetailClientView({
                         </div>
                         <div className="min-w-0">
                           <div className="flex items-center gap-1.5">
-                            <h4 className="text-xs sm:text-sm font-bold text-foreground truncate">
-                              {name}
-                            </h4>
+                            {isMe ? (
+                              <h4 className="text-xs sm:text-sm font-bold text-foreground truncate">
+                                {name}
+                              </h4>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => openChatWithUser(member.user_id)}
+                                className="text-xs sm:text-sm font-bold text-foreground hover:text-emerald-600 dark:hover:text-emerald-400 hover:underline transition-colors text-left truncate cursor-pointer"
+                                title={`Mulai Chat dengan ${name}`}
+                              >
+                                {name}
+                              </button>
+                            )}
                             {isMe && (
                               <span className="text-[9px] font-extrabold bg-primary/20 text-primary px-1.5 py-0.2 rounded">
                                 ANDA
@@ -2483,6 +2520,18 @@ export function KomunitasDetailClientView({
                           >
                             <Sparkles className="h-3 w-3 text-primary" />
                             <span>Ubah Peran</span>
+                          </button>
+                        )}
+
+                        {!isMe && (
+                          <button
+                            type="button"
+                            onClick={() => openChatWithUser(member.user_id)}
+                            className="inline-flex items-center gap-1 rounded-lg border border-emerald-500/30 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:hover:bg-emerald-900/60 dark:text-emerald-200 dark:border-emerald-700/60 px-2 py-1 text-2xs font-bold shadow-2xs transition-all active:scale-95 cursor-pointer"
+                            title={`Chat langsung dengan ${name}`}
+                          >
+                            <MessageSquare className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
+                            <span>Chat</span>
                           </button>
                         )}
 

@@ -14,6 +14,7 @@ import {
   AlertCircle,
   Sparkles,
   Calendar,
+  MessageSquare,
 } from "lucide-react";
 import {
   getGrupKegiatanMembers,
@@ -53,7 +54,7 @@ export function ManageGrupMembersModal({
   initialTab = "anggota",
   onMembersUpdated,
 }: ManageGrupMembersModalProps) {
-  const { onlineUserIds } = useGlobalMessageNotification();
+  const { onlineUserIds, openChatWithUser } = useGlobalMessageNotification();
 
   const [activeTab, setActiveTab] = useState<"anggota" | "undang">(initialTab);
   const [internalUsers, setInternalUsers] = useState<RegisteredUserItem[]>(allUsers);
@@ -494,10 +495,23 @@ export function ManageGrupMembersModal({
                         {/* Profile Info */}
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="text-xs sm:text-sm font-bold text-foreground truncate">
-                              {prof?.nama_lengkap || "Warga Jarimas"}
-                              {isMe && " (Anda)"}
-                            </span>
+                            {isMe ? (
+                              <span className="text-xs sm:text-sm font-bold text-foreground truncate">
+                                {prof?.nama_lengkap || "Warga Jarimas"} (Anda)
+                              </span>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  onClose();
+                                  openChatWithUser(m.user_id);
+                                }}
+                                className="text-xs sm:text-sm font-bold text-foreground hover:text-emerald-600 dark:hover:text-emerald-400 hover:underline transition-colors text-left truncate cursor-pointer"
+                                title={`Mulai Chat dengan ${prof?.nama_lengkap || "Warga"}`}
+                              >
+                                {prof?.nama_lengkap || "Warga Jarimas"}
+                              </button>
+                            )}
                             {isSuperAdmin(prof) && (
                               <span className="rounded-md bg-secondary/15 border border-secondary/30 text-secondary px-1.5 py-0.2 text-[9px] font-semibold">
                                 Super Admin
@@ -518,22 +532,39 @@ export function ManageGrupMembersModal({
                         </div>
                       </div>
 
-                      {/* Action: Keluarkan jika Admin & bukan pembuat */}
-                      {canManage && !isMe && !isSuperAdmin(prof) && (
-                        <button
-                          type="button"
-                          onClick={() =>
-                            handleRemoveMember(
-                              m.user_id,
-                              prof?.nama_lengkap || "Pengguna"
-                            )
-                          }
-                          className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer shrink-0 ml-2 border border-border"
-                          title="Keluarkan dari grup"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
-                      )}
+                      <div className="flex items-center gap-1.5 shrink-0 ml-2">
+                        {!isMe && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                                  onClose();
+                                  openChatWithUser(m.user_id);
+                                }}
+                            className="inline-flex h-8 items-center gap-1 rounded-lg border border-emerald-500/30 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:hover:bg-emerald-900/60 dark:text-emerald-200 px-2 text-xs font-semibold transition-all cursor-pointer shadow-2xs"
+                            title={`Chat langsung dengan ${prof?.nama_lengkap || "Pengguna"}`}
+                          >
+                            <MessageSquare className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                            <span className="hidden sm:inline">Chat</span>
+                          </button>
+                        )}
+
+                        {/* Action: Keluarkan jika Admin & bukan pembuat */}
+                        {canManage && !isMe && !isSuperAdmin(prof) && (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleRemoveMember(
+                                m.user_id,
+                                prof?.nama_lengkap || "Pengguna"
+                              )
+                            }
+                            className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer border border-border"
+                            title="Keluarkan dari grup"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        )}
+                      </div>
                     </div>
                   );
                 })}
