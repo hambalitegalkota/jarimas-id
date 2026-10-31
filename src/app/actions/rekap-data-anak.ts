@@ -1,5 +1,17 @@
 "use server";
 
+// In-Memory Cache untuk Rekapitulasi Berjenjang Data Anak Usia Dini Se-Kota Tegal
+let cachedRekapResult: {
+  timestamp: number;
+  data: RekapDataAnakUsiaDiniResult;
+} | null = null;
+const REKAP_CACHE_TTL_MS = 3 * 60 * 1000; // 3 Menit
+
+export async function invalidateRekapDataAnakCache(): Promise<void> {
+  cachedRekapResult = null;
+}
+
+
 import { createClient } from "@/utils/supabase/server";
 import { KOTA_TEGAL_DATA, findOrGenerateKomunitasSeed } from "@/lib/constants/tegal-data";
 import {
@@ -48,6 +60,14 @@ export async function getRekapDataAnakUsiaDiniAction(): Promise<{
   data: RekapDataAnakUsiaDiniResult;
   message?: string;
 }> {
+  // Gunakan cache jika masih valid dalam jendela TTL untuk mereduksi beban 29 chunk query
+  if (cachedRekapResult && Date.now() - cachedRekapResult.timestamp < REKAP_CACHE_TTL_MS) {
+    return {
+      success: true,
+      data: cachedRekapResult.data,
+    };
+  }
+
   try {
     const supabase = await createClient();
 

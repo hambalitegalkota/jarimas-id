@@ -68,6 +68,16 @@ export default async function KomunitasDetailPage({
   const isPaud = isKomunitasLayananPaud(komunitas, komunitas.nama, komunitas.jenis);
   const hasRootAccess = Boolean(isSuperOrAdminPusat || isSuperAdmin || isAdminPusat);
 
+  // Optimasi Performa: Hanya ambil rekapitulasi data anak se-Kota Tegal jika komunitas adalah
+  // Komunitas Warga Tingkat Kota atau Tingkat Kecamatan (tanpa RW/RT).
+  // Untuk Satuan PAUD, Posyandu, RT, dan RW, rekapitulasi dihitung langsung dari data lokal (dataAnakList)
+  // sehingga tidak perlu mendownload seluruh puluhan ribu baris anak se-Kota Tegal.
+  const isCityOrKecamatanWarga =
+    komunitas.jenis === "warga_kita" &&
+    (!komunitas.rw || komunitas.rw === "") &&
+    (!komunitas.rt || komunitas.rt === "");
+  const needsCityRekap = canShowDataAnak && isCityOrKecamatanWarga;
+
   // Ambil data anggota, data anak, data ATS, kabar, rekap, dan kewenangan pengangkatan admin secara paralel
   const [
     { data: anggotaList },
@@ -100,7 +110,7 @@ export default async function KomunitasDetailPage({
         }),
     canShowDataAts ? getDataAtsByKomunitas(id) : Promise.resolve({ data: [] }),
     getKabarFeed({ filterVisibilitas: "semua", limit: 20 }),
-    canShowDataAnak ? getRekapDataAnakUsiaDiniAction() : Promise.resolve({ data: null }),
+    needsCityRekap ? getRekapDataAnakUsiaDiniAction() : Promise.resolve({ data: null }),
     currentUserId ? checkCanManageKomunitasAdminsAction(id) : Promise.resolve(false),
   ]);
 

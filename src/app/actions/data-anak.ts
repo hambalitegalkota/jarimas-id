@@ -22,6 +22,19 @@ import type {
   DdksRecord,
   JenisKomunitas,
 } from "@/types/database";
+import { invalidateRekapDataAnakCache } from "@/app/actions/rekap-data-anak";
+import { invalidateCekProgresCache } from "@/app/actions/cek-progres";
+
+async function triggerDataAnakCacheInvalidation() {
+  try {
+    await Promise.allSettled([
+      invalidateRekapDataAnakCache(),
+      invalidateCekProgresCache(),
+    ]);
+  } catch (err) {
+    console.warn("Cache invalidation warning:", err);
+  }
+}
 
 /**
  * Server Action: Menyimpan Data Anak Baru beserta Record DDKS Awal
@@ -278,6 +291,8 @@ export async function createDataAnak(formData: FormData): Promise<{
     revalidatePath("/profil");
     revalidatePath("/");
 
+    await triggerDataAnakCacheInvalidation();
+
     return {
       success: true,
       message:
@@ -422,6 +437,9 @@ export async function validateDataAnak(dataAnakId: string): Promise<{
     revalidatePath("/data-ats");
     revalidatePath("/profil");
     revalidatePath("/");
+
+    await triggerDataAnakCacheInvalidation();
+
     return {
       success: true,
       message:
@@ -1484,6 +1502,8 @@ export async function updateDataAnak(
     revalidatePath("/profil");
     revalidatePath("/");
 
+    await triggerDataAnakCacheInvalidation();
+
     const parsedUpdated = parseDataAnakDetails(updatedChild.alasan_sekolah);
 
     return {
@@ -1659,6 +1679,8 @@ export async function keluarDataAnak(
     revalidatePath("/profil");
     revalidatePath("/");
 
+    await triggerDataAnakCacheInvalidation();
+
     return {
       success: true,
       message: `Anak berhasil dicatat keluar dengan alasan "${payload.alasanKeluar}".`,
@@ -1783,6 +1805,8 @@ export async function deleteDataAnak(
     revalidatePath("/data-ats");
     revalidatePath("/profil");
     revalidatePath("/");
+
+    await triggerDataAnakCacheInvalidation();
 
     return {
       success: true,

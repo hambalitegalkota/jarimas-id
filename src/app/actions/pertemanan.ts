@@ -2255,6 +2255,17 @@ export async function markConversationAsRead(senderId: string): Promise<{
   }
 }
 
+// In-Memory Cache untuk Rekapitulasi Partisipasi Warga
+let cachedRekapWargaKomunitas: {
+  timestamp: number;
+  data: import("@/types/database").RekapitulasiWargaKomunitasResult;
+} | null = null;
+const REKAP_WARGA_CACHE_TTL_MS = 60 * 1000; // 60 detik
+
+export async function invalidateRekapitulasiWargaKomunitasCache(): Promise<void> {
+  cachedRekapWargaKomunitas = null;
+}
+
 /**
  * Server Action: Mengambil ringkasan rekapitulasi partisipasi warga:
  * 1. Jumlah warga yang telah registrasi di Jarimas-ID
@@ -2265,6 +2276,13 @@ export async function getRekapitulasiWargaKomunitas(): Promise<
   import("@/types/database").RekapitulasiWargaKomunitasResult
 > {
   try {
+    if (
+      cachedRekapWargaKomunitas &&
+      Date.now() - cachedRekapWargaKomunitas.timestamp < REKAP_WARGA_CACHE_TTL_MS
+    ) {
+      return cachedRekapWargaKomunitas.data;
+    }
+
     const supabase = await createClient();
 
     // 1 & 2. Ambil total pengguna dan data keanggotaan komunitas secara paralel
@@ -2325,7 +2343,7 @@ export async function getRekapitulasiWargaKomunitas(): Promise<
       });
     }
 
-    return {
+    const result: import("@/types/database").RekapitulasiWargaKomunitasResult = {
       totalRegisteredUsers: userCount || 0,
       totalWargaPosyandu: posyanduUserSet.size,
       totalWargaPaud: paudUserSet.size,
@@ -2338,6 +2356,13 @@ export async function getRekapitulasiWargaKomunitas(): Promise<
       totalKomunitasRt: wargaKitaIdSet.size,
       totalKomunitasWargaKita: wargaKitaIdSet.size,
     };
+
+    cachedRekapWargaKomunitas = {
+      timestamp: Date.now(),
+      data: result,
+    };
+
+    return result;
   } catch (err) {
     console.error("Error getRekapitulasiWargaKomunitas:", err);
     return {

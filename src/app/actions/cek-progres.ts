@@ -1,5 +1,17 @@
 "use server";
 
+// In-Memory Cache untuk Rekapitulasi Cek Progres Satuan PAUD
+let cachedProgresData: {
+  timestamp: number;
+  rawItems: ProgresPaudItem[];
+} | null = null;
+const PROGRES_CACHE_TTL_MS = 60 * 1000; // 60 Detik
+
+export async function invalidateCekProgresCache(): Promise<void> {
+  cachedProgresData = null;
+}
+
+
 import { createClient } from "@/utils/supabase/server";
 import {
   isSuperAdmin as checkIsSuperAdmin,
@@ -138,48 +150,60 @@ export async function getCekProgresPaudAction(filters?: {
       kegiatan = dbKegiatan as KegiatanAdministratif;
     }
 
-    // 3. Ambil Data Progres (Coba via RPC Supabase terlebih dahulu)
+    // 3. Ambil Data Progres (Gunakan cache instan jika tersedia)
     let rawItems: ProgresPaudItem[] = [];
     const filterKec = filters?.kecamatan && filters.kecamatan !== "semua" ? filters.kecamatan : null;
     const filterKel = filters?.kelurahan && filters.kelurahan !== "semua" ? filters.kelurahan : null;
+    const isNoLocationFilter = (!filterKec || filterKec === "semua") && (!filterKel || filterKel === "semua");
 
-    const { data: rpcData, error: rpcError } = await supabase.rpc(
-      "get_cek_progres_paud",
-      {
-        p_user_id: user?.id || null,
-        p_kecamatan: filterKec,
-        p_kelurahan: filterKel,
-      }
-    );
-
-    if (!rpcError && rpcData && Array.isArray(rpcData) && rpcData.length > 0) {
-      rawItems = rpcData.map((item: any) => ({
-        komunitas_id: item.komunitas_id,
-        nama_paud: item.nama_paud,
-        jenis_institusi: item.jenis_institusi,
-        kecamatan: item.kecamatan,
-        kelurahan: item.kelurahan,
-        jumlah_anggota: Number(item.jumlah_anggota || 0),
-        has_anggota: Boolean(item.has_anggota),
-        total_peserta_didik: Number(item.total_peserta_didik || 0),
-        total_diperbarui: Number(item.total_diperbarui || 0),
-        persentase_selesai: Number(item.persentase_selesai || 0),
-        status_penyelesaian: item.status_penyelesaian as StatusPenyelesaianProgres,
-      }));
+    if (isNoLocationFilter && cachedProgresData && Date.now() - cachedProgresData.timestamp < PROGRES_CACHE_TTL_MS) {
+      rawItems = cachedProgresData.rawItems;
     } else {
-      // Fallback Engine jika RPC belum dijalankan di Supabase SQL Editor
-      rawItems = await fetchProgresPaudFallback(
-        supabase,
-        user?.id || null,
-        isSuper,
-        memberships,
-        filterKec,
-        filterKel
+      const { data: rpcData, error: rpcError } = await supabase.rpc(
+        "get_cek_progres_paud",
+        {
+          p_user_id: user?.id || null,
+          p_kecamatan: filterKec,
+          p_kelurahan: filterKel,
+        }
       );
+
+      if (!rpcError && rpcData && Array.isArray(rpcData) && rpcData.length > 0) {
+        rawItems = rpcData.map((item: any) => ({
+          komunitas_id: item.komunitas_id,
+          nama_paud: item.nama_paud,
+          jenis_institusi: item.jenis_institusi,
+          kecamatan: item.kecamatan,
+          kelurahan: item.kelurahan,
+          jumlah_anggota: Number(item.jumlah_anggota || 0),
+          has_anggota: Boolean(item.has_anggota),
+          total_peserta_didik: Number(item.total_peserta_didik || 0),
+          total_diperbarui: Number(item.total_diperbarui || 0),
+          persentase_selesai: Number(item.persentase_selesai || 0),
+          status_penyelesaian: item.status_penyelesaian as StatusPenyelesaianProgres,
+        }));
+      } else {
+        // Fallback Engine jika RPC belum dijalankan di Supabase SQL Editor
+        rawItems = await fetchProgresPaudFallback(
+          supabase,
+          user?.id || null,
+          isSuper,
+          memberships,
+          filterKec,
+          filterKel
+        );
+      }
     }
 
     // Saring institusi: Lepaskan seluruh PKBM KECUALI 'PKBM Star of Tomorrow' dan SKB
     rawItems = rawItems.filter((it) => isAllowedPaudInstitution(it.nama_paud));
+
+    if (isNoLocationFilter && (!cachedProgresData || Date.now() - cachedProgresData.timestamp >= PROGRES_CACHE_TTL_MS)) {
+      cachedProgresData = {
+        timestamp: Date.now(),
+        rawItems,
+      };
+    }
 
     // 4. Terapkan Filter Opsional (Pencarian Teks & Status)
     let filteredItems = rawItems;
@@ -284,13 +308,15 @@ async function fetchProgresPaudFallback(
 
   const allowedIds = paudList.map((p: any) => p.id);
 
-  // Ambil data anggota per PAUD & seluruh data anak bersekolah (termasuk hasil sinkronisasi Google Sheet)
-  const chunkRanges = [
-    [0, 999], [1000, 1999], [2000, 2999], [3000, 3999],
-    [4000, 4999], [5000, 5999], [6000, 6999], [7000, 7999],
-    [8000, 8999], [9000, 9999], [10000, 10999], [11000, 11999],
-    [12000, 12999], [13000, 13999], [14000, 14999]
-  ];
+  // Hitung total anak bersekolah secara presisi agar tidak mengirim query kosong yang memperlambat
+  const { count: totalSekolahCount } = await supabase
+    .from("data_anak")
+    .select("id", { count: "exact", head: true })
+    .eq("is_sekolah", true);
+
+  const totalToQuery = totalSekolahCount && totalSekolahCount > 0 ? totalSekolahCount : 8000;
+  const numChunks = Math.min(10, Math.ceil(totalToQuery / 1000));
+  const chunkRanges = Array.from({ length: numChunks }, (_, i) => [i * 1000, (i + 1) * 1000 - 1]);
 
   const [{ data: memberCounts }, ...childChunks] = await Promise.all([
     supabase
