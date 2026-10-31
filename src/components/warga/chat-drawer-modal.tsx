@@ -7,6 +7,7 @@ import {
   Send,
   Sparkles,
   ShieldCheck,
+  Crown,
   Building2,
   Clock,
   Check,
@@ -29,7 +30,7 @@ import {
   JARIMAS_BOT_ID,
   JARIMAS_BOT_NAME,
 } from "@/types/database";
-import { isAdminPusat, isSuperAdmin, cn } from "@/lib/utils";
+import { isAdminPusat, isSuperAdmin, formatPeranDisplay, cn } from "@/lib/utils";
 import {
   compressScreenshot,
   serializeChatMessage,
@@ -52,6 +53,14 @@ const QUICK_GREETINGS = [
   "Bisa konsultasi terkait pendataan warga? 📋",
   "Ada kendala saat validasi data anak usia dini 🩺",
   "Informasi sinkronisasi Posyandu & RT/RW 🏘️",
+];
+
+// Rekomendasi pesan cepat untuk percakapan sesama warga / anggota komunitas
+const CITIZEN_GREETINGS = [
+  "Assalamu'alaikum, salam hangat! 🙏",
+  "Bisa koordinasi terkait data warga / anak? 📋",
+  "Mohon info terkait kegiatan komunitas 🤝",
+  "Terima kasih atas kerja samanya! ✨",
 ];
 
 // Kategori Emoticon Lengkap (sama seperti percakapan komunitas The Orbit Sixty)
@@ -361,9 +370,17 @@ export function ChatDrawerModal({
     }, 20);
   };
 
-  // Sisipkan tag Admin Pusat (@AdminPusat)
-  const insertTagAdmin = () => {
-    const tag = "@AdminPusat ";
+  const isTargetSuperAdmin = isSuperAdmin(targetUser);
+  const isTargetAdminPusat = isAdminPusat(targetUser);
+  const primaryRole = targetUser?.komunitas_list?.[0]?.peran;
+  const primaryKomunitas = targetUser?.komunitas_list?.[0]?.nama;
+  const activeGreetings = isTargetAdminPusat ? QUICK_GREETINGS : CITIZEN_GREETINGS;
+
+  // Sisipkan tag nama / admin
+  const insertTagTarget = () => {
+    const tag = isTargetAdminPusat
+      ? "@AdminPusat "
+      : `@${(targetUser?.nama_lengkap || "Pengguna").split(" ")[0]} `;
     if (!textareaRef.current) {
       setInputMessage((prev) => prev + tag);
       return;
@@ -520,14 +537,35 @@ export function ChatDrawerModal({
                 <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 truncate">
                   {targetUser.nama_lengkap}
                 </h3>
-                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-teal-100 dark:bg-teal-950/80 text-teal-800 dark:text-teal-300 text-[10px] font-extrabold border border-teal-200 dark:border-teal-800">
-                  <ShieldCheck className="h-2.5 w-2.5" />
-                  Admin Pusat
-                </span>
+                {isTargetSuperAdmin ? (
+                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-100 dark:bg-amber-950/80 text-amber-900 dark:text-amber-200 text-[10px] font-extrabold border border-amber-300 dark:border-amber-700">
+                    <Crown className="h-2.5 w-2.5 text-amber-600 dark:text-amber-400" />
+                    Super Admin
+                  </span>
+                ) : isTargetAdminPusat ? (
+                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-teal-100 dark:bg-teal-950/80 text-teal-800 dark:text-teal-300 text-[10px] font-extrabold border border-teal-200 dark:border-teal-800">
+                    <ShieldCheck className="h-2.5 w-2.5" />
+                    Admin Pusat
+                  </span>
+                ) : primaryRole ? (
+                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] font-bold border border-slate-200 dark:border-slate-700">
+                    {formatPeranDisplay(primaryRole)}
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] font-semibold border border-slate-200 dark:border-slate-700">
+                    Warga Terdaftar
+                  </span>
+                )}
               </div>
 
               <div className="flex items-center gap-1.5 text-2xs text-slate-500 dark:text-slate-400 truncate">
-                <span className="truncate">Jarimas Indonesia</span>
+                <span className="truncate">
+                  {isTargetAdminPusat
+                    ? "Jarimas Indonesia"
+                    : isTargetSuperAdmin
+                    ? "Platform Administrator"
+                    : primaryKomunitas || targetUser.email || "Warga Jarimas"}
+                </span>
                 <span className="opacity-60">•</span>
                 <span className={cn("font-medium", isOnline || isJarimasBot ? "text-emerald-600 dark:text-emerald-400 font-bold" : "")}>
                   {isOnline || isJarimasBot ? "Aktif Sekarang" : "Pesan Langsung"}
@@ -577,10 +615,16 @@ export function ChatDrawerModal({
               </div>
               <div className="space-y-1 max-w-xs">
                 <h4 className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200">
-                  Konsultasi dengan Admin Pusat
+                  {isTargetAdminPusat
+                    ? "Konsultasi dengan Admin Pusat"
+                    : isTargetSuperAdmin
+                    ? "Percakapan dengan Super Admin"
+                    : `Percakapan Langsung dengan ${targetUser.nama_lengkap}`}
                 </h4>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
-                  Belum ada pesan sebelumnya. Kirim pertanyaan, panduan aplikasi, kendala data warga, atau lampirkan tangkapan layar.
+                  {isTargetAdminPusat
+                    ? "Belum ada pesan sebelumnya. Kirim pertanyaan, panduan aplikasi, kendala data warga, atau lampirkan tangkapan layar."
+                    : `Belum ada pesan sebelumnya. Kirim salam, koordinasi pendataan, atau pesan langsung kepada ${targetUser.nama_lengkap}.`}
                 </p>
               </div>
             </div>
@@ -602,9 +646,20 @@ export function ChatDrawerModal({
                     }`}
                   >
                     {!isMe && (
-                      <span className="text-[10px] font-bold text-teal-700 dark:text-teal-400 mb-0.5 px-1 flex items-center gap-1">
-                        <ShieldCheck className="h-3 w-3" />
-                        Admin Pusat
+                      <span className="text-[10px] font-bold text-slate-700 dark:text-slate-300 mb-0.5 px-1 flex items-center gap-1">
+                        {isTargetSuperAdmin ? (
+                          <>
+                            <Crown className="h-3 w-3 text-amber-500" />
+                            <span className="text-amber-700 dark:text-amber-400">{targetUser.nama_lengkap} (Super Admin)</span>
+                          </>
+                        ) : isTargetAdminPusat ? (
+                          <>
+                            <ShieldCheck className="h-3 w-3 text-teal-600" />
+                            <span className="text-teal-700 dark:text-teal-400">Admin Pusat Jarimas</span>
+                          </>
+                        ) : (
+                          <span>{targetUser.nama_lengkap}</span>
+                        )}
                       </span>
                     )}
 
@@ -626,7 +681,7 @@ export function ChatDrawerModal({
                             onClick={() =>
                               setLightboxImage({
                                 url: parsed.imageUrl!,
-                                title: `Tangkapan Layar ${isMe ? "Saya" : "Admin Pusat"}`,
+                                title: `Tangkapan Layar ${isMe ? "Saya" : targetUser.nama_lengkap}`,
                               })
                             }
                             className="max-h-52 w-auto object-cover rounded-xl cursor-pointer hover:opacity-95 transition-opacity"
@@ -687,7 +742,7 @@ export function ChatDrawerModal({
             <Sparkles className="h-3 w-3 text-amber-500" />
             Saran:
           </span>
-          {QUICK_GREETINGS.map((greeting, idx) => (
+          {activeGreetings.map((greeting, idx) => (
             <button
               key={idx}
               type="button"
@@ -813,15 +868,15 @@ export function ChatDrawerModal({
                 <span className="hidden sm:inline">Emoticon</span>
               </button>
 
-              {/* Tombol Tag Admin */}
+              {/* Tombol Tag */}
               <button
                 type="button"
-                onClick={insertTagAdmin}
-                title="Tag / Sebut Admin Pusat"
+                onClick={insertTagTarget}
+                title={isTargetAdminPusat ? "Tag / Sebut Admin Pusat" : `Tag / Sebut ${targetUser.nama_lengkap}`}
                 className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-bold transition-colors cursor-pointer"
               >
                 <AtSign className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400" />
-                <span className="hidden sm:inline">Tag Admin</span>
+                <span className="hidden sm:inline">{isTargetAdminPusat ? "Tag Admin" : "Tag Nama"}</span>
               </button>
 
               {/* Tombol Lampirkan Tangkapan Layar */}
@@ -875,7 +930,11 @@ export function ChatDrawerModal({
                 onKeyDown={handleKeyDown}
                 onPaste={handlePaste}
                 rows={1}
-                placeholder="Ketik pesan untuk Admin Pusat Jarimas... (Enter kirim, Shift+Enter baris baru, Ctrl+V tangkapan layar)"
+                placeholder={
+                  isTargetAdminPusat
+                    ? "Ketik pesan untuk Admin Pusat Jarimas... (Enter kirim, Shift+Enter baris baru, Ctrl+V tangkapan layar)"
+                    : `Ketik pesan untuk ${targetUser.nama_lengkap}... (Enter kirim, Shift+Enter baris baru, Ctrl+V tangkapan layar)`
+                }
                 className="w-full min-h-[44px] max-h-32 py-2.5 px-3.5 text-xs sm:text-sm rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none leading-relaxed shadow-2xs"
                 disabled={isSending}
               />

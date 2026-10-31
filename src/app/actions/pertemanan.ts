@@ -2143,7 +2143,7 @@ export async function getUserProfileForChat(targetUserId: string): Promise<{
 
     const { data: prof, error } = await supabase
       .from("profiles")
-      .select("id, nama_lengkap, email, nomor_hp, avatar_url, is_super_admin, created_at")
+      .select("id, nama_lengkap, email, nomor_hp, avatar_url, is_super_admin, is_admin_pusat, created_at")
       .eq("id", targetUserId)
       .maybeSingle();
 
@@ -2190,7 +2190,8 @@ export async function getUserProfileForChat(targetUserId: string): Promise<{
         email: prof.email,
         nomor_hp: prof.nomor_hp,
         avatar_url: prof.avatar_url,
-        is_super_admin: false,
+        is_super_admin: checkIsSuperAdmin(prof),
+        is_admin_pusat: isAdminPusat(prof),
         created_at: prof.created_at || new Date().toISOString(),
         komunitas_list: komunitasList,
         friendship_status: "accepted",
