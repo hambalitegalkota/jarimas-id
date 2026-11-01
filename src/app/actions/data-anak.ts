@@ -845,21 +845,39 @@ export async function getDataAnakByKomunitas(
           searchPhrases.add(phrase.replace(/-/g, " "));
           searchPhrases.add(phrase.replace(/-/g, ""));
         }
-        // Jika terdiri dari beberapa kata, tambahkan kombinasi kata kunci inti dengan wildcard antar-kata
-        const cleanWords = phrase.replace(/[()\-]/g, " ").split(/\s+/).filter((w) => w.length > 2);
-        if (cleanWords.length >= 2) {
-          searchPhrases.add(`${cleanWords[0]}%${cleanWords[1]}`);
+      }
+
+      // KATA KUNCI INTI: HANYA diekstrak dari cleanPrefix (nama spesifik sekolah, BUKAN dari nama dengan prefix jenjang seperti 'Pos PAUD')
+      if (cleanPrefix && cleanPrefix.length > 2) {
+        const coreWords = cleanPrefix.replace(/[()\-]/g, " ").split(/\s+/).filter((w: string) => w.length > 2);
+        if (coreWords.length >= 2) {
+          searchPhrases.add(`${coreWords[0]}%${coreWords[1]}`);
           // Potongan awalan kata kedua (misal "Hidayatul%Mubtadi" untuk menangani "Mubtadi-ien" dan "Mubtadiien")
-          if (cleanWords[1].length > 5) {
-            searchPhrases.add(`${cleanWords[0]}%${cleanWords[1].slice(0, 6)}`);
+          if (coreWords[1].length > 5) {
+            searchPhrases.add(`${coreWords[0]}%${coreWords[1].slice(0, 6)}`);
           }
         }
       }
 
+      // Saring frasa generik jenjang (misal 'Pos PAUD', 'PAUD TPQ', 'TK') agar tidak membanjiri query PostgREST
+      const genericPrefixes = new Set([
+        "pos", "paud", "tk", "kb", "tpa", "sps", "ra", "pkbm", "skb", "tpq", "pos paud", "paud tpq"
+      ]);
+      const isGenericPhrase = (p: string) => {
+        const norm = p.toLowerCase().replace(/[%_\-\.\s]+/g, " ").trim();
+        return genericPrefixes.has(norm);
+      };
+
       // Bersihkan karakter pembatas sintaks PostgREST (.or() terganggu jika ada kurung atau koma)
+      // dan pastikan tidak ada frasa yang hanya merupakan jenis jenjang generik seperti 'Pos PAUD'
       const validPhrases = Array.from(searchPhrases)
         .map((p) => p.replace(/[(),]/g, "%").replace(/%+/g, "%").trim())
-        .filter((p) => p.replace(/%/g, "").length >= 3);
+        .filter((p) => {
+          const pureChars = p.replace(/%/g, "").trim();
+          if (pureChars.length < 3) return false;
+          if (isGenericPhrase(p)) return false;
+          return true;
+        });
 
       const orConditions: string[] = [
         `komunitas_id.eq.${validKomId}`,
