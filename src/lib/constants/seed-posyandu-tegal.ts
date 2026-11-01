@@ -307,14 +307,11 @@ export const RAW_POSYANDU_TEGAL: RawPosyanduItem[] = [
   { id: "959b88ad-0f63-4283-8c49-c699cf1d0d35", nama: "Posyandu Cempaka RW 3", kecamatan: "Margadana", kelurahan: "Cabawan", rw: "04", rt: "02", lokasi: "Balai Posyandu / RW 04, Cabawan, Margadana, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Kenanga Asri Cabawan: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
   { id: "8668159c-8f20-498b-89ea-877d8f0d7958", nama: "Posyandu Dahlia RW 4", kecamatan: "Margadana", kelurahan: "Cabawan", rw: "03", rt: "01", lokasi: "Balai Posyandu / RW 03, Cabawan, Margadana, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Mawar Cabawan Cabawan: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
 
-  // Kalinyamat Kulon (7 Posyandu)
-  { id: "6b8c16bf-12b3-4073-8114-cf6d630d025a", nama: "Posyandu Anggrek Kalinyamat Kulon 1", kecamatan: "Margadana", kelurahan: "Kalinyamat Kulon", rw: "01", rt: "01", lokasi: "Balai Posyandu / RW 01, Kalinyamat Kulon, Margadana, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Anggrek Kalinyamat Kulon 1 Kalinyamat Kulon: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "90e5a9ac-12b3-4073-8369-17a53757143b", nama: "Posyandu Anggrek Kalinyamat Kulon 2", kecamatan: "Margadana", kelurahan: "Kalinyamat Kulon", rw: "01", rt: "03", lokasi: "Balai Posyandu / RW 01, Kalinyamat Kulon, Margadana, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Anggrek Kalinyamat Kulon 2 Kalinyamat Kulon: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "b257f491-d187-47c8-888d-3635756ede83", nama: "Posyandu Dahlia Sejahtera", kecamatan: "Margadana", kelurahan: "Kalinyamat Kulon", rw: "04", rt: "02", lokasi: "Balai Posyandu / RW 04, Kalinyamat Kulon, Margadana, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Dahlia Sejahtera Kalinyamat Kulon: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "cd1c0055-44d7-49d1-8124-24a12ac7f2da", nama: "Posyandu Kenanga Kulon", kecamatan: "Margadana", kelurahan: "Kalinyamat Kulon", rw: "02", rt: "04", lokasi: "Balai Posyandu / RW 02, Kalinyamat Kulon, Margadana, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Kenanga Kulon Kalinyamat Kulon: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "0bfdb446-adf9-4d49-8d0f-f22dbe67eeb2", nama: "Posyandu Mawar Kalinyamat", kecamatan: "Margadana", kelurahan: "Kalinyamat Kulon", rw: "03", rt: "01", lokasi: "Balai Posyandu / RW 03, Kalinyamat Kulon, Margadana, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Mawar Kalinyamat Kalinyamat Kulon: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "2165d174-9c9d-42b1-8ba0-b2ed3d8a1d78", nama: "Posyandu Melati Kulon", kecamatan: "Margadana", kelurahan: "Kalinyamat Kulon", rw: "02", rt: "02", lokasi: "Balai Posyandu / RW 02, Kalinyamat Kulon, Margadana, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Melati Kulon Kalinyamat Kulon: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "d5bfb20a-f504-407e-8427-5c594defd111", nama: "Posyandu Teratai Sehat", kecamatan: "Margadana", kelurahan: "Kalinyamat Kulon", rw: "03", rt: "03", lokasi: "Balai Posyandu / RW 03, Kalinyamat Kulon, Margadana, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Teratai Sehat Kalinyamat Kulon: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  // Kalinyamat Kulon (4 Posyandu) - Sesuai RW resmi Kalinyamat Kulon
+  { id: "6b8c16bf-12b3-4073-8114-cf6d630d025a", nama: "Posyandu Melati 1", kecamatan: "Margadana", kelurahan: "Kalinyamat Kulon", rw: "01", rt: "01", lokasi: "Balai Posyandu / RW 01, Kalinyamat Kulon, Margadana, Kota Tegal", cakupan_wilayah: "Melayani Warga RW 01 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08, RW Belum Tahu dan RT Belum Tahu)", deskripsi: "Layanan terpadu Posyandu Melati 1 Kalinyamat Kulon cakupan sinkronisasi wilayah RW 01 (RT 01 s/d RT 08): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "2165d174-9c9d-42b1-8ba0-b2ed3d8a1d78", nama: "Posyandu Melati 2", kecamatan: "Margadana", kelurahan: "Kalinyamat Kulon", rw: "02", rt: "01", lokasi: "Balai Posyandu / RW 02, Kalinyamat Kulon, Margadana, Kota Tegal", cakupan_wilayah: "Melayani Warga RW 02 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08, RW Belum Tahu dan RT Belum Tahu)", deskripsi: "Layanan terpadu Posyandu Melati 2 Kalinyamat Kulon cakupan sinkronisasi wilayah RW 02 (RT 01 s/d RT 08): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "0bfdb446-adf9-4d49-8d0f-f22dbe67eeb2", nama: "Posyandu Melati 3", kecamatan: "Margadana", kelurahan: "Kalinyamat Kulon", rw: "03", rt: "01", lokasi: "Balai Posyandu / RW 03, Kalinyamat Kulon, Margadana, Kota Tegal", cakupan_wilayah: "Melayani Warga RW 03 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RW Belum Tahu dan RT Belum Tahu)", deskripsi: "Layanan terpadu Posyandu Melati 3 Kalinyamat Kulon cakupan sinkronisasi wilayah RW 03 (RT 01 s/d RT 07): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "b257f491-d187-47c8-888d-3635756ede83", nama: "Posyandu Melati 4", kecamatan: "Margadana", kelurahan: "Kalinyamat Kulon", rw: "04", rt: "01", lokasi: "Balai Posyandu / RW 04, Kalinyamat Kulon, Margadana, Kota Tegal", cakupan_wilayah: "Melayani Warga RW 04 (RT 01, RT 02, RT 03, RT 04, RW Belum Tahu dan RT Belum Tahu)", deskripsi: "Layanan terpadu Posyandu Melati 4 Kalinyamat Kulon cakupan sinkronisasi wilayah RW 04 (RT 01 s/d RT 04): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
 
   // Kaligangsa (7 Posyandu) - Sesuai RW resmi Kaligangsa
   { id: "93140e77-af37-41dd-8e6d-6a35ea1fc019", nama: "Posyandu Anggrek", kecamatan: "Margadana", kelurahan: "Kaligangsa", rw: "01", rt: "01", lokasi: "Balai Posyandu / RW 01, Kaligangsa, Margadana, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Anggrek Kaligangsa: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
@@ -363,8 +360,78 @@ export const RAW_POSYANDU_TEGAL: RawPosyanduItem[] = [
 
 ];
 
+export const KALINYAMAT_KULON_POSYANDU_MAP: Record<
+  string,
+  { nama: string; rw: string; cakupan_wilayah: string }
+> = {
+  "6b8c16bf-12b3-4073-8114-cf6d630d025a": {
+    nama: "Posyandu Melati 1",
+    rw: "01",
+    cakupan_wilayah: "Melayani Warga RW 01 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08, RW Belum Tahu dan RT Belum Tahu)",
+  },
+  "2165d174-9c9d-42b1-8ba0-b2ed3d8a1d78": {
+    nama: "Posyandu Melati 2",
+    rw: "02",
+    cakupan_wilayah: "Melayani Warga RW 02 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08, RW Belum Tahu dan RT Belum Tahu)",
+  },
+  "0bfdb446-adf9-4d49-8d0f-f22dbe67eeb2": {
+    nama: "Posyandu Melati 3",
+    rw: "03",
+    cakupan_wilayah: "Melayani Warga RW 03 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RW Belum Tahu dan RT Belum Tahu)",
+  },
+  "b257f491-d187-47c8-888d-3635756ede83": {
+    nama: "Posyandu Melati 4",
+    rw: "04",
+    cakupan_wilayah: "Melayani Warga RW 04 (RT 01, RT 02, RT 03, RT 04, RW Belum Tahu dan RT Belum Tahu)",
+  },
+};
+
+export const KALIGANGSA_POSYANDU_MAP: Record<
+  string,
+  { nama: string; rw: string; cakupan_wilayah: string }
+> = {
+  "93140e77-af37-41dd-8e6d-6a35ea1fc019": {
+    nama: "Posyandu Anggrek",
+    rw: "01",
+    cakupan_wilayah: "Melayani Warga RW 01 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RW Belum Tahu dan RT Belum Tahu)",
+  },
+  "6e505c7d-7f43-4b8f-87db-5115d3e9a977": {
+    nama: "Posyandu Bougenville",
+    rw: "02",
+    cakupan_wilayah: "Melayani Warga RW 02 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RW Belum Tahu dan RT Belum Tahu)",
+  },
+  "a14626d4-1c90-40ed-8a2f-0f0d1e16d868": {
+    nama: "Posyandu Cempaka",
+    rw: "03",
+    cakupan_wilayah: "Melayani Warga RW 03 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RW Belum Tahu dan RT Belum Tahu)",
+  },
+  "af9f86a2-65b8-4328-8b0c-bfeda9384e66": {
+    nama: "Posyandu Melati",
+    rw: "04",
+    cakupan_wilayah: "Melayani Warga RW 04 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08, RT 09, RW Belum Tahu dan RT Belum Tahu)",
+  },
+  "73309340-65b8-4328-81ef-9abd9d60b990": {
+    nama: "Posyandu Dahlia",
+    rw: "05",
+    cakupan_wilayah: "Melayani Warga RW 05 (RT 01, RT 02, RT 03, RT 04, RW Belum Tahu dan RT Belum Tahu)",
+  },
+  "4dd70053-65b8-4328-867e-2d552f2418d1": {
+    nama: "Posyandu Flamboyan",
+    rw: "06",
+    cakupan_wilayah: "Melayani Warga RW 06 (RT 01, RT 02, RT 03, RW Belum Tahu dan RT Belum Tahu)",
+  },
+  "6fa19fca-928b-42d6-8823-1a9d1a6ff64e": {
+    nama: "Posyandu Rosela",
+    rw: "07",
+    cakupan_wilayah: "Melayani Warga RW 07 (RT 01, RT 02, RT 03, RW Belum Tahu dan RT Belum Tahu)",
+  },
+};
+
 function buildPosyanduMasterSeed(): MasterKomunitasSeedItem[] {
-  return RAW_POSYANDU_TEGAL.map((item) => {
+  const invalidSet = new Set(INVALID_POSYANDU_IDS.map((id) => id.toLowerCase()));
+  return RAW_POSYANDU_TEGAL
+    .filter((item) => !item.id || !invalidSet.has(item.id.toLowerCase()))
+    .map((item) => {
     const coreName = extractCorePosyanduName(item.nama);
     const slug = slugify(coreName);
     const kelSlug = slugify(item.kelurahan);

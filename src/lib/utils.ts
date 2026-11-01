@@ -650,12 +650,6 @@ export function parseCakupanWilayah(komunitas?: {
     else if (namaClean.includes("rosela")) rw = "07";
   }
 
-  // Jika customCakupan sudah ada dan bukan format lama "Melayani Warga RW xx (RT xx)", gunakan customCakupan
-  const isOldSingleRtFormat = customCakupan && /^Melayani\s+Warga\s+RW\s+\d+\s*\(RT\s+\d+\)$/i.test(customCakupan);
-  if (customCakupan && !isOldSingleRtFormat) {
-    return customCakupan;
-  }
-
   // Pemetaan Khusus Kelurahan yang sudah disesuaikan cakupan RW & RT-nya:
   // Kalinyamat Kulon (Kecamatan Margadana)
   if (kelClean.includes("kalinyamat kulon") || namaClean.includes("kalinyamat kulon") || (namaClean.includes("melati") && kelClean.includes("kalinyamat"))) {
@@ -686,8 +680,14 @@ export function parseCakupanWilayah(komunitas?: {
     const count = rtMapKaligangsa[rw];
     if (count) {
       const rtList = Array.from({ length: count }, (_, i) => `RT ${String(i + 1).padStart(2, "0")}`);
-      return `Melayani Warga RW ${rw} (${rtList.join(", ")} dan RW - RT Tidak Tahu)`;
+      return `Melayani Warga RW ${rw} (${rtList.join(", ")}, RW Belum Tahu dan RT Belum Tahu)`;
     }
+  }
+
+  // Jika customCakupan sudah ada dan bukan format lama "Melayani Warga RW xx (RT xx)", gunakan customCakupan
+  const isOldSingleRtFormat = customCakupan && /^Melayani\s+Warga\s+RW\s+\d+\s*\(RT\s+\d+\)$/i.test(customCakupan);
+  if (customCakupan && !isOldSingleRtFormat) {
+    return customCakupan;
   }
 
   // 2. Tunon (Kecamatan Tegal Selatan)
