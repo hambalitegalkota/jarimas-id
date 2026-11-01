@@ -1278,33 +1278,16 @@ export function KomunitasDetailClientView({
                 (isAdminOrKader || isSuperOrPusat) &&
                 (meta.hasKel || Boolean(meta.rawKec) || (!meta.hasRt && !meta.hasRw)))
           );
-          const totalTabs =
-            (canShowDataAnakCard ? 2 : 0) +
-            (canShowDataAtsCard ? 1 : 0) +
-            (canShowSpmTab ? 1 : 0) +
-            3;
-          const isGrid3 = totalTabs === 3;
-          const isGrid4 = totalTabs === 4;
 
           return (
-            <div
-              className={cn(
-                "pb-1 border-b border-border/80",
-                isGrid3
-                  ? "grid grid-cols-3 gap-1.5 sm:flex sm:items-center sm:gap-2"
-                  : isGrid4
-                  ? "grid grid-cols-4 gap-1 sm:flex sm:items-center sm:gap-2"
-                  : "flex items-center gap-1.5 sm:gap-2 overflow-x-auto scrollbar-none pb-1.5"
-              )}
-            >
+            <div className="pb-2 border-b border-border/80 flex flex-wrap items-center gap-1.5 sm:gap-2 w-full">
               {/* Tab 1: Data Anak (0-6 Thn) / Balita / Siswa */}
               {canShowDataAnakCard && (
                 <button
                   type="button"
                   onClick={() => setActiveMainTab("anak")}
                   className={cn(
-                    "flex items-center justify-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-2xs sm:text-xs font-semibold transition-all cursor-pointer border",
-                    isGrid3 || isGrid4 ? "w-full sm:w-auto" : "shrink-0",
+                    "flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-2xs sm:text-xs font-semibold transition-all cursor-pointer border flex-1 sm:flex-initial min-w-[fit-content] whitespace-nowrap",
                     activeMainTab === "anak"
                       ? "bg-primary text-primary-foreground border-primary shadow-xs font-bold"
                       : "bg-card text-muted-foreground border-border hover:bg-muted hover:text-foreground"
@@ -1324,7 +1307,7 @@ export function KomunitasDetailClientView({
                     ) : isWargaKita ? (
                       <>
                         <span className="sm:hidden">Anak</span>
-                        <span className="hidden sm:inline">Data Anak (0–6 Thn)</span>
+                        <span className="hidden md:inline">Data Anak (0–6 Thn)</span><span className="hidden sm:inline md:hidden">Data Anak</span>
                       </>
                     ) : (
                       <>
@@ -1351,8 +1334,7 @@ export function KomunitasDetailClientView({
                   type="button"
                   onClick={() => setActiveMainTab("rekap")}
                   className={cn(
-                    "flex items-center justify-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-2xs sm:text-xs font-semibold transition-all cursor-pointer border",
-                    isGrid3 || isGrid4 ? "w-full sm:w-auto" : "shrink-0",
+                    "flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-2xs sm:text-xs font-semibold transition-all cursor-pointer border flex-1 sm:flex-initial min-w-[fit-content] whitespace-nowrap",
                     activeMainTab === "rekap"
                       ? "bg-primary text-primary-foreground border-primary shadow-xs font-bold"
                       : "bg-card text-muted-foreground border-border hover:bg-muted hover:text-foreground"
@@ -1360,7 +1342,7 @@ export function KomunitasDetailClientView({
                 >
                   <BarChart3 className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
                   <span>
-                    <span className="sm:hidden">Grafik</span>
+                    <span className="sm:hidden">Rekap</span>
                     <span className="hidden sm:inline">Rekap &amp; Grafik</span>
                   </span>
                 </button>
@@ -1372,8 +1354,7 @@ export function KomunitasDetailClientView({
                   type="button"
                   onClick={() => setActiveMainTab("ats")}
                   className={cn(
-                    "flex items-center justify-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-2xs sm:text-xs font-semibold transition-all cursor-pointer border",
-                    isGrid3 || isGrid4 ? "w-full sm:w-auto" : "shrink-0",
+                    "flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-2xs sm:text-xs font-semibold transition-all cursor-pointer border flex-1 sm:flex-initial min-w-[fit-content] whitespace-nowrap",
                     activeMainTab === "ats"
                       ? "bg-secondary text-secondary-foreground border-secondary shadow-xs font-bold"
                       : "bg-card text-muted-foreground border-border hover:bg-muted hover:text-foreground"
@@ -1403,8 +1384,7 @@ export function KomunitasDetailClientView({
                   type="button"
                   onClick={() => setActiveMainTab("laporan_spm")}
                   className={cn(
-                    "flex items-center justify-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-2xs sm:text-xs font-semibold transition-all cursor-pointer border",
-                    isGrid3 || isGrid4 ? "w-full sm:w-auto" : "shrink-0",
+                    "flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-2xs sm:text-xs font-semibold transition-all cursor-pointer border flex-1 sm:flex-initial min-w-[fit-content] whitespace-nowrap",
                     activeMainTab === "laporan_spm"
                       ? "bg-teal-600 text-white border-teal-600 shadow-xs font-bold"
                       : "bg-card text-muted-foreground border-border hover:bg-muted hover:text-foreground"
@@ -1425,8 +1405,7 @@ export function KomunitasDetailClientView({
                 type="button"
                 onClick={() => setActiveMainTab("anggota")}
                 className={cn(
-                  "flex items-center justify-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-2xs sm:text-xs font-semibold transition-all cursor-pointer border",
-                  isGrid3 || isGrid4 ? "w-full sm:w-auto" : "shrink-0",
+                  "flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-2xs sm:text-xs font-semibold transition-all cursor-pointer border flex-1 sm:flex-initial min-w-[fit-content] whitespace-nowrap",
                   activeMainTab === "anggota"
                     ? "bg-primary text-primary-foreground border-primary shadow-xs font-bold"
                     : "bg-card text-muted-foreground border-border hover:bg-muted hover:text-foreground"
@@ -1446,7 +1425,7 @@ export function KomunitasDetailClientView({
                     </>
                   ) : isPaudCommunity ? (
                     <>
-                      <span className="sm:hidden">Anggota</span>
+                      <span className="sm:hidden">Pendidik</span>
                       <span className="hidden sm:inline">Anggota &amp; Pendidik</span>
                     </>
                   ) : (
@@ -1473,8 +1452,7 @@ export function KomunitasDetailClientView({
                 type="button"
                 onClick={() => setActiveMainTab("kabar")}
                 className={cn(
-                  "flex items-center justify-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-2xs sm:text-xs font-semibold transition-all cursor-pointer border",
-                  isGrid3 || isGrid4 ? "w-full sm:w-auto" : "shrink-0",
+                  "flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-2xs sm:text-xs font-semibold transition-all cursor-pointer border flex-1 sm:flex-initial min-w-[fit-content] whitespace-nowrap",
                   activeMainTab === "kabar"
                     ? "bg-primary text-primary-foreground border-primary shadow-xs font-bold"
                     : "bg-card text-muted-foreground border-border hover:bg-muted hover:text-foreground"
@@ -1482,7 +1460,7 @@ export function KomunitasDetailClientView({
               >
                 <MessageSquare className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
                 <span>
-                  Kabar<span className="hidden sm:inline"> Komunitas</span>
+                  Kabar<span className="hidden md:inline"> Komunitas</span>
                 </span>
                 <span
                   className={cn(
@@ -1504,8 +1482,7 @@ export function KomunitasDetailClientView({
                   markGroupAsRead(komunitasData.id);
                 }}
                 className={cn(
-                  "flex items-center justify-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-2xs sm:text-xs font-semibold transition-all cursor-pointer border",
-                  isGrid3 || isGrid4 ? "w-full sm:w-auto" : "shrink-0",
+                  "flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-2xs sm:text-xs font-semibold transition-all cursor-pointer border flex-1 sm:flex-initial min-w-[fit-content] whitespace-nowrap",
                   activeMainTab === "percakapan"
                     ? "bg-primary text-primary-foreground border-primary shadow-xs font-bold"
                     : "bg-card text-muted-foreground border-border hover:bg-muted hover:text-foreground"
@@ -1513,7 +1490,7 @@ export function KomunitasDetailClientView({
               >
                 <MessageCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
                 <span>
-                  Percakapan<span className="hidden sm:inline"> Komunitas</span>
+                  Percakapan<span className="hidden md:inline"> Komunitas</span>
                 </span>
                 {communityUnreadCount > 0 && (
                   <span className="px-1.5 py-0.5 rounded-full font-mono text-2xs bg-rose-500 text-white font-bold animate-pulse leading-none shrink-0">
@@ -1569,23 +1546,23 @@ export function KomunitasDetailClientView({
             ) : null}
 
             {/* 3 STATISTIC METRIC CARDS (INTERAKTIF FILTER STATUS) */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-3 gap-2 sm:gap-3">
               <div
                 onClick={() => setPaudStatusFilter("semua")}
                 className={cn(
-                  "rounded-lg border p-4 text-center space-y-1 shadow-sm cursor-pointer transition-all",
+                  "rounded-lg border p-2.5 sm:p-4 text-center space-y-0.5 sm:space-y-1 shadow-xs cursor-pointer transition-all",
                   paudStatusFilter === "semua"
                     ? "border-primary bg-primary/10 shadow-2xs ring-1 ring-primary/30"
                     : "border-border bg-card hover:bg-muted/30"
                 )}
               >
-                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">
+                <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-muted-foreground block truncate">
                   TOTAL DATA ANAK
                 </span>
-                <span className="text-2xl sm:text-3xl font-bold font-mono text-foreground">
+                <span className="text-xl sm:text-3xl font-bold font-mono text-foreground block">
                   {totalChildren}
                 </span>
-                <span className="text-xs font-semibold text-muted-foreground block">
+                <span className="text-[10px] sm:text-xs font-semibold text-muted-foreground block truncate">
                   {isPaudCommunity ? "Siswa Terdata" : "Anak Terdaftar"}
                 </span>
               </div>
@@ -1593,19 +1570,19 @@ export function KomunitasDetailClientView({
               <div
                 onClick={() => setPaudStatusFilter("approved")}
                 className={cn(
-                  "rounded-lg border p-4 text-center space-y-1 shadow-sm cursor-pointer transition-all",
+                  "rounded-lg border p-2.5 sm:p-4 text-center space-y-0.5 sm:space-y-1 shadow-xs cursor-pointer transition-all",
                   paudStatusFilter === "approved"
                     ? "border-teal-500 bg-teal-500/15 shadow-2xs ring-1 ring-teal-500/30"
                     : "border-teal-500/30 bg-teal-500/10 hover:bg-teal-500/15"
                 )}
               >
-                <span className="text-xs font-bold uppercase tracking-wider text-teal-800 dark:text-teal-300 block">
+                <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-teal-800 dark:text-teal-300 block truncate">
                   TERVERIFIKASI
                 </span>
-                <span className="text-2xl sm:text-3xl font-bold font-mono text-teal-700 dark:text-teal-300">
+                <span className="text-xl sm:text-3xl font-bold font-mono text-teal-700 dark:text-teal-300 block">
                   {totalApproved}
                 </span>
-                <span className="text-xs font-semibold text-teal-800 dark:text-teal-300 block">
+                <span className="text-[10px] sm:text-xs font-semibold text-teal-800 dark:text-teal-300 block truncate">
                   Status Valid
                 </span>
               </div>
@@ -1613,19 +1590,19 @@ export function KomunitasDetailClientView({
               <div
                 onClick={() => setPaudStatusFilter("pending")}
                 className={cn(
-                  "rounded-lg border p-4 text-center space-y-1 shadow-sm cursor-pointer transition-all",
+                  "rounded-lg border p-2.5 sm:p-4 text-center space-y-0.5 sm:space-y-1 shadow-xs cursor-pointer transition-all",
                   paudStatusFilter === "pending"
                     ? "border-secondary bg-secondary/20 shadow-2xs ring-1 ring-secondary/40"
                     : "border-secondary/30 bg-secondary/10 hover:bg-secondary/15"
                 )}
               >
-                <span className="text-xs font-bold uppercase tracking-wider text-amber-900 dark:text-amber-200 block">
+                <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-amber-900 dark:text-amber-200 block truncate">
                   MENUNGGU VALIDASI
                 </span>
-                <span className="text-2xl sm:text-3xl font-bold font-mono text-secondary">
+                <span className="text-xl sm:text-3xl font-bold font-mono text-secondary block">
                   {totalPending}
                 </span>
-                <span className="text-xs font-semibold text-amber-900 dark:text-amber-200 block">
+                <span className="text-[10px] sm:text-xs font-semibold text-amber-900 dark:text-amber-200 block truncate">
                   Perlu Verifikasi
                 </span>
               </div>
@@ -1646,12 +1623,12 @@ export function KomunitasDetailClientView({
                   </span>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2">
+                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
                   <button
                     type="button"
                     onClick={() => setDataAnakFilterSubTab("semua")}
                     className={cn(
-                      "px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer border flex items-center gap-1.5",
+                      "px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer border flex-1 sm:flex-initial justify-center min-w-[fit-content] flex items-center gap-1.5",
                       dataAnakFilterSubTab === "semua"
                         ? "bg-primary text-primary-foreground border-primary shadow-xs"
                         : "bg-card text-muted-foreground border-border hover:bg-muted hover:text-foreground"
@@ -1667,14 +1644,14 @@ export function KomunitasDetailClientView({
                     type="button"
                     onClick={() => setDataAnakFilterSubTab("bersekolah")}
                     className={cn(
-                      "px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer border flex items-center gap-1.5",
+                      "px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer border flex-1 sm:flex-initial justify-center min-w-[fit-content] flex items-center gap-1.5",
                       dataAnakFilterSubTab === "bersekolah"
                         ? "bg-teal-600 text-white border-teal-600 shadow-xs"
                         : "bg-card text-muted-foreground border-border hover:bg-teal-500/10 hover:text-teal-700"
                     )}
                   >
                     <School className="h-3.5 w-3.5" />
-                    <span>Sudah Bersekolah (PAUD/TK/KB)</span>
+                    <span><span className="sm:hidden">Sudah Sekolah</span><span className="hidden sm:inline">Sudah Bersekolah (PAUD/TK/KB)</span></span>
                     <span className="px-1.5 py-0.2 rounded-md bg-background/20 font-mono text-2xs">
                       {totalBersekolahCount}
                     </span>
@@ -1684,7 +1661,7 @@ export function KomunitasDetailClientView({
                     type="button"
                     onClick={() => setDataAnakFilterSubTab("belum_bersekolah")}
                     className={cn(
-                      "px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer border flex items-center gap-1.5",
+                      "px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer border flex-1 sm:flex-initial justify-center min-w-[fit-content] flex items-center gap-1.5",
                       dataAnakFilterSubTab === "belum_bersekolah"
                         ? "bg-amber-600 text-white border-amber-600 shadow-xs"
                         : "bg-card text-muted-foreground border-border hover:bg-amber-500/10 hover:text-amber-800"
@@ -1736,7 +1713,7 @@ export function KomunitasDetailClientView({
                     <button
                       type="button"
                       onClick={() => setIsAddChildModalOpen(true)}
-                      className="flex h-10 items-center justify-center gap-2 rounded-lg bg-primary hover:bg-primary-hover active:scale-[0.98] text-primary-foreground px-4 text-xs font-bold shadow-xs transition-all shrink-0 cursor-pointer"
+                      className="flex h-10 w-full sm:w-auto items-center justify-center gap-2 rounded-lg bg-primary hover:bg-primary-hover active:scale-[0.98] text-primary-foreground px-4 text-xs font-bold shadow-xs transition-all shrink-0 cursor-pointer"
                     >
                       <Plus className="h-4 w-4" />
                       <span>TAMBAH DATA ANAK</span>
@@ -1745,12 +1722,12 @@ export function KomunitasDetailClientView({
                 </div>
 
                 {/* FILTER CHIPS STATUS */}
-                <div className="flex items-center gap-2 overflow-x-auto pb-1">
+                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 pb-1">
                   <button
                     type="button"
                     onClick={() => setPaudStatusFilter("semua")}
                     className={cn(
-                      "px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer border shrink-0 flex items-center gap-1.5",
+                      "px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer border flex-1 sm:flex-initial justify-center min-w-[fit-content] flex items-center gap-1.5",
                       paudStatusFilter === "semua"
                         ? "bg-primary text-primary-foreground border-primary shadow-xs"
                         : "bg-card text-muted-foreground border-border hover:bg-muted hover:text-foreground"
@@ -1766,7 +1743,7 @@ export function KomunitasDetailClientView({
                     type="button"
                     onClick={() => setPaudStatusFilter("approved")}
                     className={cn(
-                      "px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer border shrink-0 flex items-center gap-1.5",
+                      "px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer border flex-1 sm:flex-initial justify-center min-w-[fit-content] flex items-center gap-1.5",
                       paudStatusFilter === "approved"
                         ? "bg-teal-600 text-white border-teal-600 shadow-xs"
                         : "bg-card text-muted-foreground border-border hover:bg-teal-500/10 hover:text-teal-700"
@@ -1783,7 +1760,7 @@ export function KomunitasDetailClientView({
                     type="button"
                     onClick={() => setPaudStatusFilter("pending")}
                     className={cn(
-                      "px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer border shrink-0 flex items-center gap-1.5",
+                      "px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer border flex-1 sm:flex-initial justify-center min-w-[fit-content] flex items-center gap-1.5",
                       paudStatusFilter === "pending"
                         ? "bg-amber-600 text-white border-amber-600 shadow-xs"
                         : "bg-card text-muted-foreground border-border hover:bg-amber-500/10 hover:text-amber-800"
@@ -2000,40 +1977,40 @@ export function KomunitasDetailClientView({
             </div>
 
             {/* 3 Kartu Metrik ATS */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div className="p-4 rounded-xl border border-border bg-card shadow-2xs space-y-1 text-center">
-                <span className="text-2xs font-bold text-muted-foreground uppercase tracking-wider block">
+            <div className="grid grid-cols-3 gap-2 sm:gap-3">
+              <div className="p-2.5 sm:p-4 rounded-xl border border-border bg-card shadow-2xs space-y-0.5 sm:space-y-1 text-center">
+                <span className="text-[10px] sm:text-2xs font-bold text-muted-foreground uppercase tracking-wider block truncate">
                   TOTAL KASUS ATS
                 </span>
-                <span className="text-2xl sm:text-3xl font-black font-mono text-foreground">
+                <span className="text-xl sm:text-3xl font-black font-mono text-foreground block">
                   {dataAtsState.length}
                 </span>
-                <span className="text-2xs font-semibold text-muted-foreground block">
+                <span className="text-[10px] sm:text-2xs font-semibold text-muted-foreground block truncate">
                   Kasus Terdata
                 </span>
               </div>
 
-              <div className="p-4 rounded-xl border border-emerald-500/25 bg-emerald-500/10 shadow-2xs space-y-1 text-center">
-                <span className="text-2xs font-bold text-emerald-800 dark:text-emerald-300 uppercase tracking-wider block">
+              <div className="p-2.5 sm:p-4 rounded-xl border border-emerald-500/25 bg-emerald-500/10 shadow-2xs space-y-0.5 sm:space-y-1 text-center">
+                <span className="text-[10px] sm:text-2xs font-bold text-emerald-800 dark:text-emerald-300 uppercase tracking-wider block truncate">
                   LAYANAN KESETARAAN
                 </span>
-                <span className="text-sm font-black font-mono text-emerald-700 dark:text-emerald-300 py-1.5 block">
+                <span className="text-xs sm:text-sm font-black font-mono text-emerald-700 dark:text-emerald-300 py-1 block truncate">
                   Paket A, B &amp; C
                 </span>
-                <span className="text-2xs font-semibold text-emerald-800 dark:text-emerald-300 block">
+                <span className="text-[10px] sm:text-2xs font-semibold text-emerald-800 dark:text-emerald-300 block truncate">
                   SD / SMP / SMA
                 </span>
               </div>
 
-              <div className="p-4 rounded-xl border border-secondary/30 bg-secondary/15 shadow-2xs space-y-1 text-center">
-                <span className="text-2xs font-bold text-amber-900 dark:text-amber-200 uppercase tracking-wider block">
+              <div className="p-2.5 sm:p-4 rounded-xl border border-secondary/30 bg-secondary/15 shadow-2xs space-y-0.5 sm:space-y-1 text-center">
+                <span className="text-[10px] sm:text-2xs font-bold text-amber-900 dark:text-amber-200 uppercase tracking-wider block truncate">
                   INTERVENSI AKTIF
                 </span>
-                <span className="text-sm font-black font-mono text-secondary py-1.5 block">
+                <span className="text-xs sm:text-sm font-black font-mono text-secondary py-1 block truncate">
                   Pemberdayaan
                 </span>
-                <span className="text-2xs font-semibold text-amber-900 dark:text-amber-200 block">
-                  Pamong &amp; Tutor Belajar
+                <span className="text-[10px] sm:text-2xs font-semibold text-amber-900 dark:text-amber-200 block truncate">
+                  Pamong &amp; Tutor
                 </span>
               </div>
             </div>
