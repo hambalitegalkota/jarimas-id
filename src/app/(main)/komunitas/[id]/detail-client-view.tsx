@@ -42,7 +42,12 @@ import {
   AlertCircle,
   Edit3,
   ShieldPlus,
+  Globe,
+  Copy,
+  Check,
+  Share2,
 } from "lucide-react";
+import { getKomunitasSlug } from "@/lib/community-slugs";
 import { JoinKomunitasModal } from "@/components/komunitas/join-komunitas-modal";
 import { WargaOnboardingModal } from "@/components/komunitas/warga-onboarding-modal";
 import { EditInformasiOperasionalModal } from "@/components/komunitas/edit-informasi-operasional-modal";
@@ -327,6 +332,34 @@ export function KomunitasDetailClientView({
   const [isUbahPeranOpen, setIsUbahPeranOpen] = useState(false);
   const [isManageCardsOpen, setIsManageCardsOpen] = useState(false);
   const [cardActionLoading, setCardActionLoading] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
+
+  const communitySlug = useMemo(() => {
+    return getKomunitasSlug(komunitasData);
+  }, [komunitasData]);
+
+  const shareUrl = useMemo(() => {
+    if (typeof window !== "undefined") {
+      return `${window.location.origin}/kotategal/${communitySlug}`;
+    }
+    return `https://jarimas.id/kotategal/${communitySlug}`;
+  }, [communitySlug]);
+
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2500);
+    } catch (err) {
+      console.error("Gagal menyalin tautan:", err);
+    }
+  };
+
+  const handleShareWhatsApp = () => {
+    const text = `Halo! Kunjungi profil dan informasi resmi kami di JARIMAS-ID:\n*${komunitasData.nama}*\n\n${shareUrl}`;
+    const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+    window.open(waUrl, "_blank", "noopener,noreferrer");
+  };
 
   const handleToggleCard = async (kartu: "data_anak" | "data_ats", enable: boolean) => {
     setCardActionLoading(true);
@@ -1046,6 +1079,37 @@ export function KomunitasDetailClientView({
               </button>
             ) : null}
 
+            {/* Tombol SALIN TAUTAN & BAGIKAN KE WHATSAPP */}
+            <button
+              type="button"
+              onClick={handleCopyLink}
+              className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card hover:bg-muted text-foreground px-2.5 py-1 text-xs font-bold shadow-2xs transition-all active:scale-98 cursor-pointer"
+              title="Salin tautan profil komunitas ini"
+            >
+              {isCopied ? (
+                <>
+                  <Check className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                  <span className="text-emerald-700 dark:text-emerald-300">Tersalin!</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+                  <span className="hidden sm:inline">Salin Tautan</span>
+                  <span className="sm:hidden">Salin</span>
+                </>
+              )}
+            </button>
+
+            <button
+              type="button"
+              onClick={handleShareWhatsApp}
+              className="inline-flex items-center gap-1.5 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 sm:px-3 py-1 text-xs font-bold shadow-2xs transition-all active:scale-98 cursor-pointer"
+              title="Bagikan profil komunitas ke grup WhatsApp"
+            >
+              <MessageCircle className="h-3.5 w-3.5" />
+              <span>Bagikan ke WhatsApp</span>
+            </button>
+
             {/* Tombol EDIT INFORMASI KOMUNITAS / LEMBAGA (Khusus Admin/Pengurus/Kader) */}
             {canEditOperasional && (
               <button
@@ -1107,6 +1171,33 @@ export function KomunitasDetailClientView({
                   ? "Satuan Pendidikan PAUD Terdaftar"
                   : "Komunitas Terdaftar"}
               </span>
+            </div>
+
+            {/* TAUTAN UNIK KOMUNITAS (VANITY SLUG) */}
+            <div className="flex flex-wrap items-center gap-2 pt-1.5">
+              <div className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 border border-primary/25 px-2.5 py-0.5 text-2xs sm:text-xs font-mono font-medium text-primary shadow-2xs">
+                <Globe className="h-3 w-3 shrink-0" />
+                <span className="text-muted-foreground/80">jarimas.id/kotategal/</span>
+                <span className="font-bold">{communitySlug}</span>
+              </div>
+              <button
+                type="button"
+                onClick={handleCopyLink}
+                className="inline-flex items-center gap-1 text-2xs font-bold text-muted-foreground hover:text-primary transition-colors cursor-pointer"
+                title="Salin tautan"
+              >
+                {isCopied ? (
+                  <>
+                    <Check className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
+                    <span className="text-emerald-700 dark:text-emerald-300">Tersalin</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="h-3 w-3" />
+                    <span>Salin</span>
+                  </>
+                )}
+              </button>
             </div>
           </div>
         </div>

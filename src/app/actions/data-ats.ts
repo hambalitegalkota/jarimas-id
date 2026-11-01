@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/utils/supabase/server";
 import { DataAtsSchema } from "@/lib/zod-schemas";
 import { toValidUUID, isSuperAdmin as checkIsSuperAdmin, isAdminPusat as checkIsAdminPusat, isSuperOrAdminPusat, isRoleAdmin } from "@/lib/utils";
+import { toValidKomunitasUUID } from "@/lib/community-slugs";
 import {
   normalizeKeinginanSekolah,
   serializeDataAtsAlasan,
@@ -166,7 +167,7 @@ export async function createDataAts(formData: FormData): Promise<{
     }
 
     // Pastikan komunitas ada di tabel public.komunitas untuk foreign key
-    const validKomId = toValidUUID(komunitasId);
+    const validKomId = toValidKomunitasUUID(komunitasId);
     const { data: dbKomCheck } = await supabase
       .from("komunitas")
       .select("id")
@@ -1247,7 +1248,7 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
         };
         const isSuperOrPusat = isSuperOrAdminPusat(profileCtx);
         isSuperAdmin = isSuperOrPusat;
-        const dbKomunitasId = toValidUUID(komunitasId);
+        const dbKomunitasId = toValidKomunitasUUID(komunitasId);
 
         const { data: member } = await supabase
           .from("anggota_komunitas")
@@ -1289,7 +1290,7 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
     const { data: dbKom } = await supabase
       .from("komunitas")
       .select("*")
-      .eq("id", toValidUUID(komunitasId))
+      .eq("id", toValidKomunitasUUID(komunitasId))
       .maybeSingle();
 
     if (dbKom) {
@@ -1318,7 +1319,7 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
           await supabase
             .from("komunitas")
             .update({ jenis: "pkbm_skb", jenis_komunitas: "pkbm_skb" })
-            .eq("id", toValidUUID(komunitasId));
+            .eq("id", toValidKomunitasUUID(komunitasId));
         } catch {
           // ignore
         }
@@ -1370,7 +1371,7 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
     }
 
     // 3. Query data ATS dari data_anak dengan filter wilayah target
-    const validKomId = toValidUUID(komunitasId);
+    const validKomId = toValidKomunitasUUID(komunitasId);
     const targetKel =
       meta.rawKel && meta.rawKel !== "semua" && meta.rawKel !== "Semua Kelurahan"
         ? meta.rawKel

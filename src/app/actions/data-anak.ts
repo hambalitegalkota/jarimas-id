@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/utils/supabase/server";
 import { DataAnakSchema } from "@/lib/zod-schemas";
 import { toValidUUID, isSuperAdmin as checkIsSuperAdmin, isAdminPusat as checkIsAdminPusat, isSuperOrAdminPusat, isRoleAdmin } from "@/lib/utils";
+import { toValidKomunitasUUID } from "@/lib/community-slugs";
 import { extractKomunitasMetadata } from "@/lib/admin-helpers";
 import { findOrGenerateKomunitasSeed } from "@/lib/constants/tegal-data";
 import {
@@ -109,7 +110,7 @@ export async function createDataAnak(formData: FormData): Promise<{
     });
 
     if (!isSuperOrPusat) {
-      const validTargetKomId = toValidUUID(komunitasId);
+      const validTargetKomId = toValidKomunitasUUID(komunitasId);
       const { data: member } = await supabase
         .from("anggota_komunitas")
         .select("peran, status")
@@ -171,7 +172,7 @@ export async function createDataAnak(formData: FormData): Promise<{
     const domisiliJalan = formData.get("domisiliJalan")?.toString()?.trim() || "";
 
     // Verifikasi jenis komunitas dari database: Satuan PAUD, PKBM Star of Tomorrow, dan SKB Kota Tegal berhak mendaftarkan peserta didik PAUD
-    const validKomId = toValidUUID(komunitasId);
+    const validKomId = toValidKomunitasUUID(komunitasId);
     const { data: dbKom } = await supabase
       .from("komunitas")
       .select("id, nama, jenis, jenis_institusi")
@@ -260,7 +261,7 @@ export async function createDataAnak(formData: FormData): Promise<{
       is_sekolah: isSekolah,
       nama_sekolah: namaSekolah,
       alasan_sekolah: formattedAlasan,
-      komunitas_id: toValidUUID(komunitasId),
+      komunitas_id: toValidKomunitasUUID(komunitasId),
       status_approval: "pending",
       created_by: user.id,
       created_at: new Date().toISOString(),
@@ -518,7 +519,7 @@ export async function getDataAnakByKomunitas(
       const { data: dbKom } = await supabase
         .from("komunitas")
         .select("*")
-        .eq("id", toValidUUID(komunitasId))
+        .eq("id", toValidKomunitasUUID(komunitasId))
         .maybeSingle();
 
       if (dbKom) {
@@ -556,7 +557,7 @@ export async function getDataAnakByKomunitas(
         const isAdminPusat = checkIsAdminPusat(userProfileCtx);
         const isSuperOrPusat = isSuperAdmin || isAdminPusat;
 
-        const dbKomunitasId = toValidUUID(komunitasId);
+        const dbKomunitasId = toValidKomunitasUUID(komunitasId);
 
         let member = options?.currentUserMembership;
         if (!member) {
@@ -716,7 +717,7 @@ export async function getDataAnakByKomunitas(
     }
 
     // 2. Query data_anak dari database (Targeted untuk Satuan PAUD & Paginasi penuh untuk wilayah)
-    const validKomId = toValidUUID(komunitasId);
+    const validKomId = toValidKomunitasUUID(komunitasId);
     let dbChildren: any[] = [];
     let childError: any = null;
 
@@ -1324,7 +1325,7 @@ export async function updateDataAnak(
         .from("anggota_komunitas")
         .select("peran, status")
         .eq("user_id", user.id)
-        .eq("komunitas_id", toValidUUID(komunitasId))
+        .eq("komunitas_id", toValidKomunitasUUID(komunitasId))
         .eq("status", "approved")
         .maybeSingle();
 
@@ -1379,7 +1380,7 @@ export async function updateDataAnak(
     const domisiliJalan = formData.get("domisiliJalan")?.toString()?.trim() || "";
 
     // Verifikasi jenis komunitas dari database: Satuan PAUD, PKBM Star of Tomorrow, dan SKB Kota Tegal berhak mengelola peserta didik PAUD
-    const validKomId = toValidUUID(komunitasId);
+    const validKomId = toValidKomunitasUUID(komunitasId);
     const { data: dbKom } = await supabase
       .from("komunitas")
       .select("id, nama, jenis, jenis_institusi")
@@ -1501,7 +1502,7 @@ export async function updateDataAnak(
     }
 
     // Pastikan validator/editor otomatis tercatat di anggota_komunitas PAUD jika belum ada
-    const targetPaudId = updatedChild.komunitas_id || (komunitasId ? toValidUUID(komunitasId) : null);
+    const targetPaudId = updatedChild.komunitas_id || (komunitasId ? toValidKomunitasUUID(komunitasId) : null);
     if (targetPaudId && user?.id) {
       try {
         await supabase.from("anggota_komunitas").upsert(
@@ -1650,7 +1651,7 @@ export async function keluarDataAnak(
         .from("anggota_komunitas")
         .select("peran, status")
         .eq("user_id", user.id)
-        .eq("komunitas_id", toValidUUID(komunitasId))
+        .eq("komunitas_id", toValidKomunitasUUID(komunitasId))
         .eq("status", "approved")
         .maybeSingle();
 

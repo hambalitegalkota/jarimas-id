@@ -57,6 +57,11 @@ import {
   rejectMemberRole,
 } from "@/app/actions/admin";
 import {
+  resolveKomunitasIdBySlug,
+  toValidKomunitasUUID,
+  getKomunitasSlug,
+} from "@/lib/community-slugs";
+import {
   computeTierAndApprover,
   extractKomunitasMetadata,
 } from "@/lib/admin-helpers";
@@ -1075,7 +1080,8 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
 }> {
   try {
     const supabase = await createClient();
-    const dbKomunitasId = toValidUUID(komunitasId);
+    const resolvedKomunitasId = resolveKomunitasIdBySlug(komunitasId) || komunitasId;
+    const dbKomunitasId = toValidUUID(resolvedKomunitasId);
 
     let currentUserId: string | null = null;
     let isSuperAdmin = false;
@@ -1111,7 +1117,11 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
     const invalidIdsSet = new Set(allInvalidIds.map((id) => toValidUUID(id)));
     allInvalidIds.forEach((id) => invalidIdsSet.add(id));
 
-    if (invalidIdsSet.has(komunitasId) || invalidIdsSet.has(dbKomunitasId)) {
+    if (
+      invalidIdsSet.has(komunitasId) ||
+      invalidIdsSet.has(resolvedKomunitasId) ||
+      invalidIdsSet.has(dbKomunitasId)
+    ) {
       return {
         success: false,
         message: "Komunitas tidak ditemukan atau telah dihapus sesuai penataan wilayah resmi Kota Tegal.",
@@ -1140,7 +1150,9 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
       }
     }
 
-    const seedItem = findOrGenerateKomunitasSeed(komunitasId);
+    const seedItem =
+      findOrGenerateKomunitasSeed(resolvedKomunitasId) ||
+      findOrGenerateKomunitasSeed(komunitasId);
     let komunitas = komunitasFromDb;
 
     // Fallback: Jika data belum ada di database, coba cari/generate dari Master Seed
@@ -1743,7 +1755,8 @@ export async function getAnggotaKomunitas(komunitasId: string): Promise<{
 }> {
   try {
     const supabase = await createClient();
-    const dbKomunitasId = toValidUUID(komunitasId);
+    const resolvedKomunitasId = resolveKomunitasIdBySlug(komunitasId) || komunitasId;
+    const dbKomunitasId = toValidUUID(resolvedKomunitasId);
 
     const { data: rawMembers, error } = await supabase
       .from("anggota_komunitas")
