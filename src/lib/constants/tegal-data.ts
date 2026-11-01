@@ -606,13 +606,10 @@ export const KOTA_TEGAL_DATA: Record<string, KecamatanData> = {
       "Kalinyamat Kulon": {
         "nama": "Kalinyamat Kulon",
         "posyandu": [
-          "Posyandu Anggrek Kalinyamat Kulon 1",
-          "Posyandu Anggrek Kalinyamat Kulon 2",
-          "Posyandu Dahlia Sejahtera",
-          "Posyandu Kenanga Kulon",
-          "Posyandu Mawar Kalinyamat",
-          "Posyandu Melati Kulon",
-          "Posyandu Teratai Sehat"
+          "Posyandu Melati 1",
+          "Posyandu Melati 2",
+          "Posyandu Melati 3",
+          "Posyandu Melati 4"
         ],
         "paud": [
           "PAUD TPQ Al-Hikmah",
@@ -685,6 +682,7 @@ export const DAFTAR_KECAMATAN_TEGAL = Object.keys(KOTA_TEGAL_DATA);
  */
 export const DATA_RW_PER_KELURAHAN: Record<string, number> = {
   "Kaligangsa": 7,
+  "Kalinyamat Kulon": 4,
   "Debong Lor": 3,
   "Debong Kidul": 4,
   "Debong Kulon": 4,
@@ -988,6 +986,26 @@ export const DATA_RT_PER_RW_MARGADANA: Record<string, number> = {
  * Total RW resmi: 7 RW, Total RT: 38 RT (6 + 6 + 7 + 9 + 4 + 3 + 3)
  * Tetap pertahankan pilihan "Belum Tahu" untuk RW dan RT
  */
+/**
+ * Ketentuan Khusus RT per RW di Kelurahan Kalinyamat Kulon, Kecamatan Margadana:
+ * - RW 1: Jumlah RT 8
+ * - RW 2: Jumlah RT 8
+ * - RW 3: Jumlah RT 7
+ * - RW 4: Jumlah RT 4
+ * Total RW resmi: 4 RW, Total RT: 27 RT (8 + 8 + 7 + 4)
+ * Tetap pertahankan pilihan "Belum Tahu" untuk RW dan RT
+ */
+export const DATA_RT_PER_RW_KALINYAMAT_KULON: Record<string, number> = {
+  "01": 8,
+  "1": 8,
+  "02": 8,
+  "2": 8,
+  "03": 7,
+  "3": 7,
+  "04": 4,
+  "4": 4,
+};
+
 export const DATA_RT_PER_RW_KALIGANGSA: Record<string, number> = {
   "01": 6,
   "1": 6,
@@ -1129,6 +1147,26 @@ export function getJumlahRtPerRwByKelurahan(kelurahan?: string | null, rw?: stri
     }
     return 10; // Default max RT di Tegalsari (RW 2, 3, 4, 9, 10 memiliki 10 RT)
   }
+  if (clean === "kalinyamat kulon") {
+    if (rw && rw !== "Belum Tahu") {
+      const cleanRw = rw.replace(/^(rw|rt)\s*/i, "").trim();
+      const normRw = String(parseInt(cleanRw, 10)).padStart(2, "0");
+      if (DATA_RT_PER_RW_KALINYAMAT_KULON[normRw] || DATA_RT_PER_RW_KALINYAMAT_KULON[cleanRw]) {
+        return DATA_RT_PER_RW_KALINYAMAT_KULON[normRw] || DATA_RT_PER_RW_KALINYAMAT_KULON[cleanRw];
+      }
+    }
+    return 8; // Default max RT (RW 1 & 2)
+  }
+  if (clean === "kaligangsa") {
+    if (rw && rw !== "Belum Tahu") {
+      const cleanRw = rw.replace(/^(rw|rt)\s*/i, "").trim();
+      const normRw = String(parseInt(cleanRw, 10)).padStart(2, "0");
+      if (DATA_RT_PER_RW_KALIGANGSA[normRw] || DATA_RT_PER_RW_KALIGANGSA[cleanRw]) {
+        return DATA_RT_PER_RW_KALIGANGSA[normRw] || DATA_RT_PER_RW_KALIGANGSA[cleanRw];
+      }
+    }
+    return 9; // Default max RT (RW 4)
+  }
   return RT_PER_RW_DEFAULT; // Kondisi default sebelumnya: 15 RT per RW
 }
 
@@ -1170,6 +1208,14 @@ export function getTotalRtByKelurahan(kelurahan?: string | null): number {
   if (clean === "tegalsari") {
     // RW 1: 6, RW 2: 10, RW 3: 10, RW 4: 10, RW 5: 6, RW 6: 6, RW 7: 4, RW 8: 5, RW 9: 10, RW 10: 10, RW 11: 5, RW 12: 5, RW 13/31: 5 = 92 RT
     return 92;
+  }
+  if (clean === "kalinyamat kulon") {
+    // RW 1: 8 RT, RW 2: 8 RT, RW 3: 7 RT, RW 4: 4 RT -> Total 27 RT
+    return 8 + 8 + 7 + 4;
+  }
+  if (clean === "kaligangsa") {
+    // RW 1: 6, RW 2: 6, RW 3: 7, RW 4: 9, RW 5: 4, RW 6: 3, RW 7: 3 -> Total 38 RT
+    return 6 + 6 + 7 + 9 + 4 + 3 + 3;
   }
   const rwCount = getJumlahRwByKelurahan(kelurahan);
   const rtPerRw = getJumlahRtPerRwByKelurahan(kelurahan);

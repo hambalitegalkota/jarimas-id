@@ -1077,6 +1077,43 @@ export function getPosyanduCakupanWilayah(targetKomunitas: any): PosyanduCakupan
     }
   }
 
+  // Khusus Kelurahan Kalinyamat Kulon (Kecamatan Margadana)
+  // 1. Posyandu Melati 1: cakupan sinkronisasi datanya dengan RW 1 (RT 1 s/d RT 8)
+  // 2. Posyandu Melati 2: cakupan sinkronisasi datanya dengan RW 2 (RT 1 s/d RT 8)
+  // 3. Posyandu Melati 3: cakupan sinkronisasi datanya dengan RW 3 (RT 1 s/d RT 7)
+  // 4. Posyandu Melati 4: cakupan sinkronisasi datanya dengan RW 4 (RT 1 s/d RT 4)
+  const isKalinyamatKulonPosyandu =
+    kel.includes("kalinyamat kulon") ||
+    nama.includes("kalinyamat kulon") ||
+    ((nama.includes("melati 1") || nama.includes("melati 2") || nama.includes("melati 3") || nama.includes("melati 4") || nama.includes("melati kulon")) && (kel.includes("kalinyamat") || !kel));
+
+  if (isKalinyamatKulonPosyandu) {
+    if (nama.includes("melati 1") || nama.includes("melati i") || nama.includes("melati 01")) {
+      return {
+        rw: "01",
+        rtList: ["01", "02", "03", "04", "05", "06", "07", "08", "1", "2", "3", "4", "5", "6", "7", "8"],
+      };
+    }
+    if (nama.includes("melati 2") || nama.includes("melati ii") || nama.includes("melati 02") || nama.includes("melati kulon")) {
+      return {
+        rw: "02",
+        rtList: ["01", "02", "03", "04", "05", "06", "07", "08", "1", "2", "3", "4", "5", "6", "7", "8"],
+      };
+    }
+    if (nama.includes("melati 3") || nama.includes("melati iii") || nama.includes("melati 03")) {
+      return {
+        rw: "03",
+        rtList: ["01", "02", "03", "04", "05", "06", "07", "1", "2", "3", "4", "5", "6", "7"],
+      };
+    }
+    if (nama.includes("melati 4") || nama.includes("melati iv") || nama.includes("melati 04")) {
+      return {
+        rw: "04",
+        rtList: ["01", "02", "03", "04", "1", "2", "3", "4"],
+      };
+    }
+  }
+
   // Khusus Kelurahan Keturen (Kecamatan Tegal Selatan)
   // 1. Posyandu Kemuning I: cakupan sinkronisasi dengan RW 1 (RT 01 s/d RT 06)
   // 2. Posyandu Kemuning II: cakupan sinkronisasi dengan RW 2 (RT 01 s/d RT 07)
@@ -1745,6 +1782,57 @@ export function getPosyanduCakupanRw(targetKomunitas: any): string | null {
  * - RW 7 Jumlah RT 3 (RT 1 s/d 3)
  * - Tetap mempertahankan RW "Belum Tahu" dan RT "Belum Tahu"
  */
+/**
+ * Validasi ketentuan khusus RW & RT di Kelurahan Kalinyamat Kulon, Kecamatan Margadana:
+ * - Jumlah RW ada 4 (RW 1 s/d 4)
+ * - RW 1 Jumlah RT 8 (RT 1 s/d 8)
+ * - RW 2 Jumlah RT 8 (RT 1 s/d 8)
+ * - RW 3 Jumlah RT 7 (RT 1 s/d 7)
+ * - RW 4 Jumlah RT 4 (RT 1 s/d 4)
+ * - Tetap mempertahankan RW "Belum Tahu" dan RT "Belum Tahu"
+ */
+export function isValidKalinyamatKulonRtRw(
+  kel?: string | null,
+  rw?: string | null,
+  rt?: string | null
+): boolean {
+  if (!kel) return true;
+  const cleanKel = normalizeWilayah(kel);
+  if (!cleanKel.includes("kalinyamat kulon")) return true;
+
+  const rawRw = (rw || "").trim().toLowerCase();
+  const rawRt = (rt || "").trim().toLowerCase();
+
+  const isRwBelumTahu =
+    !rawRw ||
+    rawRw.includes("belum") ||
+    rawRw === "-" ||
+    rawRw === "0" ||
+    rawRw === "00";
+  if (isRwBelumTahu) return true;
+
+  const rwNum = parseInt(rawRw.replace(/\D/g, ""), 10);
+  if (isNaN(rwNum) || rwNum < 1 || rwNum > 4) return false;
+
+  const isRtBelumTahu =
+    !rawRt ||
+    rawRt.includes("belum") ||
+    rawRt === "-" ||
+    rawRt === "0" ||
+    rawRt === "00";
+  if (isRtBelumTahu) return true;
+
+  const rtNum = parseInt(rawRt.replace(/\D/g, ""), 10);
+  if (isNaN(rtNum)) return false;
+
+  if (rwNum === 1 && (rtNum < 1 || rtNum > 8)) return false;
+  if (rwNum === 2 && (rtNum < 1 || rtNum > 8)) return false;
+  if (rwNum === 3 && (rtNum < 1 || rtNum > 7)) return false;
+  if (rwNum === 4 && (rtNum < 1 || rtNum > 4)) return false;
+
+  return true;
+}
+
 export function isValidKaligangsaRtRw(
   kel?: string | null,
   rw?: string | null,
@@ -2152,6 +2240,13 @@ export function isDataAnakMatchingKomunitas(
   targetMeta: any,
   targetKomId: string
 ): boolean {
+  // Ketentuan Khusus Kelurahan Kalinyamat Kulon: Hapus/abaikan data yang tidak sesuai ketentuan resmi RW & RT Kalinyamat Kulon
+  if (
+    !isValidKalinyamatKulonRtRw(item.domisili_kelurahan, item.domisili_rw, item.domisili_rt) &&
+    !isValidKalinyamatKulonRtRw(item.kk_kelurahan, item.kk_rw, item.kk_rt)
+  ) {
+    return false;
+  }
   // Ketentuan Khusus Kelurahan Kaligangsa: Hapus/abaikan data yang tidak sesuai ketentuan resmi RW & RT Kaligangsa
   if (
     !isValidKaligangsaRtRw(item.domisili_kelurahan, item.domisili_rw, item.domisili_rt) &&

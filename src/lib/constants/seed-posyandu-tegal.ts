@@ -43,6 +43,10 @@ export interface RawPosyanduItem {
  * Daftar ID Posyandu Dummy/Salah Input yang Telah Dihapus
  */
 export const INVALID_POSYANDU_IDS = [
+  "90e5a9ac-12b3-4073-8369-17a53757143b", // Posyandu Anggrek Kalinyamat Kulon 2
+  "cd1c0055-44d7-49d1-8124-24a12ac7f2da", // Posyandu Kenanga Kulon
+  "d5bfb20a-f504-407e-8427-5c594defd111", // Posyandu Teratai Sehat
+
   "491d1393-f6af-4440-823f-394dd302750a", // Posyandu Mekarsari Tegalsari (duplikasi/tidak terdaftar di Tegalsari)
   "cedf7f85-c8c9-4e41-8c3a-3bf50f4807d7",
   "21520ed0-ed1e-440c-8a36-e83d1b33fef0",

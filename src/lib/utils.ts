@@ -631,6 +631,14 @@ export function parseCakupanWilayah(komunitas?: {
   let rw = komunitas.rw ? String(komunitas.rw).replace(/\D/g, "").padStart(2, "0") : "";
   const rt = komunitas.rt ? String(komunitas.rt).replace(/\D/g, "").padStart(2, "0") : "";
 
+  // Khusus Kalinyamat Kulon: Sinkronisasi Posyandu Melati 1-4 dengan RW resmi
+  if (kelClean.includes("kalinyamat kulon") || namaClean.includes("kalinyamat kulon") || (namaClean.includes("melati") && kelClean.includes("kalinyamat"))) {
+    if (namaClean.includes("melati 1") || namaClean.includes("melati i") || namaClean.includes("melati 01")) rw = "01";
+    else if (namaClean.includes("melati 2") || namaClean.includes("melati ii") || namaClean.includes("melati 02") || namaClean.includes("melati kulon")) rw = "02";
+    else if (namaClean.includes("melati 3") || namaClean.includes("melati iii") || namaClean.includes("melati 03")) rw = "03";
+    else if (namaClean.includes("melati 4") || namaClean.includes("melati iv") || namaClean.includes("melati 04")) rw = "04";
+  }
+
   // Khusus Kaligangsa: Sinkronisasi Posyandu dengan RW resmi
   if (kelClean.includes("kaligangsa") || namaClean.includes("kaligangsa")) {
     if (namaClean.includes("anggrek")) rw = "01";
@@ -649,6 +657,21 @@ export function parseCakupanWilayah(komunitas?: {
   }
 
   // Pemetaan Khusus Kelurahan yang sudah disesuaikan cakupan RW & RT-nya:
+  // Kalinyamat Kulon (Kecamatan Margadana)
+  if (kelClean.includes("kalinyamat kulon") || namaClean.includes("kalinyamat kulon") || (namaClean.includes("melati") && kelClean.includes("kalinyamat"))) {
+    const rtMapKalinyamatKulon: Record<string, number> = {
+      "01": 8,
+      "02": 8,
+      "03": 7,
+      "04": 4,
+    };
+    const count = rtMapKalinyamatKulon[rw];
+    if (count) {
+      const rtList = Array.from({ length: count }, (_, i) => `RT ${String(i + 1).padStart(2, "0")}`);
+      return `Melayani Warga RW ${rw} (${rtList.join(", ")}, RW Belum Tahu dan RT Belum Tahu)`;
+    }
+  }
+
   // 1. Kaligangsa (Kecamatan Margadana)
   if (kelClean.includes("kaligangsa") || namaClean.includes("kaligangsa")) {
     const rtMapKaligangsa: Record<string, number> = {
