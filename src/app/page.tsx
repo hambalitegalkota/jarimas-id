@@ -229,7 +229,7 @@ export default async function HomePage() {
     getKabarFeed({
       sorting: "terbaru",
       filterVisibilitas: "semua",
-      limit: 10,
+      limit: 20,
     }),
     getRekapitulasiWargaKomunitas(),
   ]);
@@ -239,7 +239,7 @@ export default async function HomePage() {
       ? dbProducts.slice(0, 4)
       : FALLBACK_SHOWCASE_PRODUCTS;
 
-  // Ambil cukup 1 kabar unggulan untuk beranda: utamakan yang terpopuler (interaksi tinggi) atau terbaru
+  // Ambil kabar terbaru yang dikirim untuk beranda publik Kota Tegal
   // Beranda adalah etalase publik warga se-Kota Tegal. Kabar The Orbit Sixty & kabar khusus komunitas tertutup tidak disorot ke publik.
   const allKabar = (recentKabar || []).filter((k) => {
     if (isTheOrbitSixtyCommunity(k.komunitas_id || k.komunitas)) return false;
@@ -248,20 +248,13 @@ export default async function HomePage() {
   });
   const topKabarItem =
     allKabar.length > 0
-      ? [...allKabar].sort((a, b) => {
-        const scoreA = (a.jumlah_reaksi || 0) * 2 + (a.jumlah_komentar || 0) * 3;
-        const scoreB = (b.jumlah_reaksi || 0) * 2 + (b.jumlah_komentar || 0) * 3;
-        if (scoreB !== scoreA) {
-          return scoreB - scoreA; // paling banyak interaksi/populer
-        }
-        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime(); // terbaru
-      })[0]
+      ? [...allKabar].sort(
+          (a, b) =>
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        )[0]
       : null;
 
   const topKabarItems = topKabarItem ? [topKabarItem] : [];
-  const isKabarPopular = Boolean(
-    topKabarItem && ((topKabarItem.jumlah_reaksi || 0) > 0 || (topKabarItem.jumlah_komentar || 0) > 0)
-  );
 
   // Informasi domisili pengguna aktif jika terdaftar
   const userLocationLabel = profile?.kelurahan
@@ -448,7 +441,7 @@ export default async function HomePage() {
                   Kabar &amp; Pengumuman Terkini
                 </h2>
                 <span className="rounded-full bg-primary/10 border border-primary/20 px-2 py-0.5 text-[10px] font-bold text-primary font-mono">
-                  {isKabarPopular ? "Kabar Terpopuler" : "Kabar Terbaru"}
+                  Kabar Terbaru
                 </span>
                 <span className="inline-flex items-center gap-1 rounded-full bg-teal-50 dark:bg-teal-950/60 text-teal-800 dark:text-teal-300 px-2 py-0.5 text-[10px] font-semibold">
                   <span className="h-1.5 w-1.5 rounded-full bg-teal-500 animate-pulse" />
