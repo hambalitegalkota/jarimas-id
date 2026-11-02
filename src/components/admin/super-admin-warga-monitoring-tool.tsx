@@ -611,7 +611,7 @@ export function SuperAdminWargaMonitoringTool({
                             Super Admin (Permanen)
                           </span>
                         ) : viewerTier === "super_admin" ? (
-                          /* HANYA SUPER ADMIN yang mengelola Admin Pusat */
+                          /* HANYA SUPER ADMIN yang mengelola Admin Pusat & Admin Kota */
                           isAdminPusat(userItem) ? (
                             <button
                               type="button"
@@ -627,28 +627,62 @@ export function SuperAdminWargaMonitoringTool({
                               )}
                               Cabut Admin Pusat
                             </button>
-                          ) : (userItem.komunitas_list?.some(
-                              (c) =>
-                                (c.nama.toLowerCase().includes("warga kota tegal") ||
-                                  (c.jenis === "warga_kita" && (c.kecamatan === "Kota Tegal" || !c.kecamatan))) &&
-                                isRoleAdmin(c.peran)
-                            )) ? (
-                            /* Pengangkatan Admin Pusat secara berjenjang HANYA tersedia bagi Admin Kota Tegal */
-                            <button
-                              type="button"
-                              disabled={processingUserId === userItem.id}
-                              onClick={() => handleToggleAdminPusat(userItem)}
-                              className="inline-flex min-h-[32px] items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold border border-teal-500/30 bg-teal-500/10 hover:bg-teal-500/20 text-teal-800 dark:text-teal-300 transition-all cursor-pointer disabled:opacity-50"
-                              title="Promosikan Admin Kota ini menjadi Admin Pusat secara berjenjang"
-                            >
-                              {processingUserId === userItem.id ? (
-                                <Loader2 className="h-3 w-3 animate-spin" />
-                              ) : (
-                                <Shield className="h-3 w-3 text-teal-600 dark:text-teal-400" />
-                              )}
-                              + Angkat Admin Pusat
-                            </button>
-                          ) : null
+                          ) : (
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              {userItem.komunitas_list?.some(
+                                (c) =>
+                                  (c.nama.toLowerCase().includes("warga kota tegal") ||
+                                    (c.jenis === "warga_kita" && (c.kecamatan === "Kota Tegal" || !c.kecamatan))) &&
+                                  isRoleAdmin(c.peran)
+                              ) ? (
+                                <>
+                                  <button
+                                    type="button"
+                                    disabled={processingUserId === userItem.id}
+                                    onClick={() => handleToggleAdminPusat(userItem)}
+                                    className="inline-flex min-h-[32px] items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold border border-teal-500/30 bg-teal-500/10 hover:bg-teal-500/20 text-teal-800 dark:text-teal-300 transition-all cursor-pointer disabled:opacity-50"
+                                    title="Promosikan Admin Kota ini menjadi Admin Pusat secara berjenjang"
+                                  >
+                                    {processingUserId === userItem.id ? (
+                                      <Loader2 className="h-3 w-3 animate-spin" />
+                                    ) : (
+                                      <Shield className="h-3 w-3 text-teal-600 dark:text-teal-400" />
+                                    )}
+                                    + Angkat Admin Pusat
+                                  </button>
+                                  <button
+                                    type="button"
+                                    disabled={processingUserId === userItem.id}
+                                    onClick={() => handleToggleAdminKota(userItem)}
+                                    className="inline-flex min-h-[32px] items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-rose-700 dark:text-rose-400 transition-all cursor-pointer disabled:opacity-50"
+                                    title="Cabut wewenang sebagai Admin Kota Tegal"
+                                  >
+                                    {processingUserId === userItem.id ? (
+                                      <Loader2 className="h-3 w-3 animate-spin" />
+                                    ) : (
+                                      <ShieldAlert className="h-3 w-3 text-rose-600 dark:text-rose-400" />
+                                    )}
+                                    Cabut Admin Kota
+                                  </button>
+                                </>
+                              ) : userItem.komunitas_list?.some((c) => isRoleAdmin(c.peran)) ? (
+                                <button
+                                  type="button"
+                                  disabled={processingUserId === userItem.id}
+                                  onClick={() => handleToggleAdminKota(userItem)}
+                                  className="inline-flex min-h-[32px] items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold border border-teal-500/30 bg-teal-500/10 hover:bg-teal-500/20 text-teal-800 dark:text-teal-300 transition-all cursor-pointer disabled:opacity-50"
+                                  title="Angkat Admin ini menjadi Admin Kota Tegal secara berjenjang"
+                                >
+                                  {processingUserId === userItem.id ? (
+                                    <Loader2 className="h-3 w-3 animate-spin" />
+                                  ) : (
+                                    <Shield className="h-3 w-3 text-teal-600 dark:text-teal-400" />
+                                  )}
+                                  + Angkat Admin Kota
+                                </button>
+                              ) : null}
+                            </div>
+                          )
                         ) : viewerTier === "admin_pusat" ? (
                           /* ADMIN PUSAT: Hanya bisa mengelola Admin di bawahnya (Admin Kota) */
                           isAdminPusat(userItem) ? (

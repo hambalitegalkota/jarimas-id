@@ -58,6 +58,7 @@ interface ProfilKomunitasSectionProps {
   currentUserId?: string | null;
   isSuperAdmin?: boolean;
   isAdminPusat?: boolean;
+  isAdminKota?: boolean;
   registeredUsers?: RegisteredUserItem[];
 }
 
@@ -67,6 +68,7 @@ export function ProfilKomunitasSection({
   currentUserId,
   isSuperAdmin = false,
   isAdminPusat = false,
+  isAdminKota = false,
   registeredUsers = [],
 }: ProfilKomunitasSectionProps) {
   const router = useRouter();
@@ -88,7 +90,7 @@ export function ProfilKomunitasSection({
         <div className="flex items-center gap-2">
           <Building2 className="h-5 w-5 text-primary" />
           <h2 className="text-base sm:text-lg font-bold text-foreground">
-            {isSuperAdmin || isAdminPusat
+            {isSuperAdmin || isAdminPusat || isAdminKota
               ? "Komunitas Binaan & Dikelola Admin"
               : "Komunitas Saya"}
           </h2>
@@ -146,6 +148,7 @@ export function ProfilKomunitasSection({
             const canManageThisCommunity =
               isSuperAdmin ||
               isAdminPusat ||
+              isAdminKota ||
               (Boolean(currentUserId) && kom.created_by === currentUserId) ||
               item.peran?.toLowerCase().includes("admin") ||
               item.peran?.toLowerCase().includes("pengurus");

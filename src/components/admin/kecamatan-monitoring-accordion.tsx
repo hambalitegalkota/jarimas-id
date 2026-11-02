@@ -23,6 +23,7 @@ import { cn } from "@/lib/utils";
 
 interface KecamatanMonitoringAccordionProps {
   initialItems: PendingApprovalItem[];
+  viewerTier?: string | null;
 }
 
 const DAFTAR_KECAMATAN = [
@@ -34,6 +35,7 @@ const DAFTAR_KECAMATAN = [
 
 export function KecamatanMonitoringAccordion({
   initialItems,
+  viewerTier,
 }: KecamatanMonitoringAccordionProps) {
   const [items, setItems] = useState<PendingApprovalItem[]>(initialItems);
   const [isOpen, setIsOpen] = useState(false);
@@ -143,9 +145,16 @@ export function KecamatanMonitoringAccordion({
               <span className="text-[11px] font-semibold text-muted-foreground">
                 (4 Kecamatan)
               </span>
+              {viewerTier === "admin_kota" && (
+                <span className="rounded-md bg-secondary/15 border border-secondary/30 px-2 py-0.5 text-[10px] font-bold text-secondary uppercase tracking-wider">
+                  ADMIN KOTA
+                </span>
+              )}
             </div>
             <p className="text-xs text-muted-foreground">
-              Pantau dan kelola seluruh permohonan berjenjang (RT, RW, Kelurahan, Kecamatan, Satuan PAUD, Posyandu) dalam satu panel.
+              {viewerTier === "admin_kota"
+                ? "Pantau dan kelola seluruh permohonan berjenjang (RT, RW, Kelurahan, Kecamatan, Satuan PAUD, Posyandu) se-Kota Tegal dalam satu panel."
+                : "Pantau dan kelola seluruh permohonan berjenjang (RT, RW, Kelurahan, Kecamatan, Satuan PAUD, Posyandu) dalam satu panel."}
             </p>
           </div>
         </div>

@@ -13,8 +13,9 @@ export interface Profile {
   email: string;
   is_super_admin: boolean;
   is_admin_pusat?: boolean;
+  is_admin_kota?: boolean;
   admin_bidang?: string[];
-  role_level?: "root_super_admin" | "admin_pusat" | "user";
+  role_level?: "root_super_admin" | "admin_pusat" | "admin_kota" | "user";
   avatar_url?: string | null;
   nomor_hp?: string | null;
   created_at?: string;

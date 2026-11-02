@@ -172,15 +172,7 @@ export default async function ProfilePage() {
       .select("id, komunitas_id, peran, peran_diajukan, status, created_at")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false }),
-    isSuperAdmin || isAdminPusatUser
-      ? getRegisteredUsers()
-      : Promise.resolve({
-          isAuthenticated: true,
-          users: [],
-          totalCount: 0,
-          totalFriendsCount: 0,
-          totalPendingRequestsCount: 0,
-        }),
+    getRegisteredUsers(),
     supabase
       .from("komunitas")
       .select("id, nama, jenis, kecamatan, kelurahan, rw, rt, lokasi, deskripsi, created_by")
@@ -581,6 +573,7 @@ export default async function ProfilePage() {
         currentUserId={user.id}
         isSuperAdmin={isSuperAdmin}
         isAdminPusat={isAdminPusatUser}
+        isAdminKota={userAdminInfo.tierLevel === "admin_kota"}
         registeredUsers={registeredUsersResult.users || []}
       />
 
@@ -600,9 +593,14 @@ export default async function ProfilePage() {
             </span>
           </div>
 
-          {/* Monitoring Hierarki Wilayah (Kecamatan Accordion) untuk Super Admin & Admin Pusat - PALING ATAS */}
-          {(userAdminInfo.tierLevel === "super_admin" || userAdminInfo.tierLevel === "admin_pusat") && (
-            <KecamatanMonitoringAccordion initialItems={allHierarchyPendingApprovals} />
+          {/* Monitoring Hierarki Wilayah (Kecamatan Accordion) untuk Super Admin, Admin Pusat, dan Admin Kota - PALING ATAS */}
+          {(userAdminInfo.tierLevel === "super_admin" ||
+            userAdminInfo.tierLevel === "admin_pusat" ||
+            userAdminInfo.tierLevel === "admin_kota") && (
+            <KecamatanMonitoringAccordion
+              initialItems={allHierarchyPendingApprovals}
+              viewerTier={userAdminInfo.tierLevel}
+            />
           )}
 
           {/* Monitoring Warga Realtime: Ditampilkan untuk Super Admin, Admin Pusat, dan Admin Kota */}

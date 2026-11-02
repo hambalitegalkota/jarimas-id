@@ -4,6 +4,7 @@ import {
   isRoleAdmin,
   isSuperAdmin as isRoleSuperAdmin,
   isAdminPusat as isRoleAdminPusat,
+  isAdminKota as isRoleAdminKota,
 } from "@/lib/utils";
 
 function normalizeStr(str?: string | null): string {
@@ -293,15 +294,59 @@ export function computeTierAndApprover(
  * - Admin RW: Berhak menyetujui permohonan Admin & Warga di tingkat RT dalam RW-nya
  * - Admin RT: Berhak menyetujui pendaftaran Warga di tingkat RT-nya
  * - Super Admin / Admin Pusat: Berhak menyetujui seluruh tingkatan (Kecamatan, Kelurahan, RW, RT, Posyandu, Satuan PAUD, SKB & PKBM)
+ * - Admin Kota: Berhak menyetujui seluruh permohonan berjenjang khusus dalam lingkup kota (Kota Tegal)
  */
+export function isItemInKota(targetItem: {
+  komunitas?: {
+    nama?: string;
+    kecamatan?: string | null;
+    kelurahan?: string | null;
+    lokasi?: string | null;
+  } | null;
+}): boolean {
+  const kom = targetItem?.komunitas;
+  if (!kom) return true;
+  const targetMeta = extractKomunitasMetadata(kom);
+  const kec = (
+    targetMeta.kec ||
+    normalizeStr(KELURAHAN_TO_KECAMATAN_MAP[targetMeta.kel]) ||
+    ""
+  ).toLowerCase();
+  const kel = (targetMeta.kel || "").toLowerCase();
+  const lok = (kom.lokasi || "").toLowerCase();
+  const nama = (kom.nama || "").toLowerCase();
+
+  if (
+    kec.includes("tegal timur") ||
+    kec.includes("tegal barat") ||
+    kec.includes("tegal selatan") ||
+    kec.includes("margadana") ||
+    kec.includes("tegal")
+  ) {
+    return true;
+  }
+
+  if (kel && KELURAHAN_TO_KECAMATAN_MAP[normalizeStr(kel)]) {
+    return true;
+  }
+
+  if (lok.includes("tegal") || nama.includes("tegal")) {
+    return true;
+  }
+
+  return true;
+}
+
 export function checkUserCanApproveItem({
   isSuperAdmin,
   isAdminPusat = false,
+  isAdminKota = false,
   userAdminKomunitas,
   targetItem,
 }: {
   isSuperAdmin: boolean;
   isAdminPusat?: boolean;
+  isAdminKota?: boolean;
   userAdminKomunitas: any[];
   targetItem: {
     komunitas_id: string;
@@ -319,6 +364,24 @@ export function checkUserCanApproveItem({
   };
 }): boolean {
   if (isSuperAdmin || isAdminPusat) return true;
+
+  const isUserAdminKota =
+    isAdminKota ||
+    (userAdminKomunitas || []).some((uKom) => {
+      const p = (uKom.peran || uKom.raw_peran || "").toLowerCase();
+      return p.includes("admin kota") || p.includes("admin_kota");
+    });
+
+  if (isUserAdminKota) {
+    const roleReq = (targetItem.peran_diajukan || targetItem.peran || "").toLowerCase();
+    // Admin Kota tidak berhak menyetujui permohonan peran Super Admin atau Admin Pusat
+    if (roleReq.includes("super admin") || roleReq.includes("admin pusat")) {
+      return false;
+    }
+    // Admin Kota berhak menyetujui seluruh permohonan berjenjang dalam lingkup kota (Kota Tegal)
+    return isItemInKota(targetItem);
+  }
+
   if (!userAdminKomunitas || userAdminKomunitas.length === 0) return false;
 
   const roleReq = (targetItem.peran_diajukan || targetItem.peran || "").toLowerCase();
@@ -673,11 +736,13 @@ export function getKomunitasFeatureCards(komunitas: any) {
 export function checkUserCanAssignAdminRole({
   isSuperAdmin,
   isAdminPusat = false,
+  isAdminKota = false,
   userAdminKomunitas,
   targetKomunitas,
 }: {
   isSuperAdmin: boolean;
   isAdminPusat?: boolean;
+  isAdminKota?: boolean;
   userAdminKomunitas: any[];
   targetKomunitas: any;
 }): boolean {
@@ -686,6 +751,27 @@ export function checkUserCanAssignAdminRole({
 
   const targetMeta = extractKomunitasMetadata(targetKomunitas);
   const targetId = targetKomunitas.id || targetKomunitas.komunitas_id;
+
+  const isUserAdminKota =
+    isAdminKota ||
+    (userAdminKomunitas || []).some((uKom) => {
+      const p = (uKom.peran || uKom.raw_peran || "").toLowerCase();
+      return p.includes("admin kota") || p.includes("admin_kota");
+    });
+
+  if (isUserAdminKota) {
+    // Admin Kota TIDAK BISA mengangkat Admin Kota lain, Admin Pusat, atau Super Admin (satu level atau lebih tinggi)
+    if (
+      !targetMeta.hasKel &&
+      !targetMeta.hasRw &&
+      !targetMeta.hasRt &&
+      (targetMeta.rawKec === "Kota Tegal" || !targetMeta.kec || targetMeta.kec === "kota tegal" || targetId === "kom-warga-kota-tegal")
+    ) {
+      return false;
+    }
+    // Admin Kota BISA mengangkat Admin Kecamatan, Kelurahan, RW, RT, Posyandu, PAUD, PKBM & SKB dalam lingkup Kota Tegal
+    return isItemInKota({ komunitas: targetKomunitas });
+  }
 
   // 1. Evaluasi Komunitas Warga Kita Berjenjang
   // Aturan Mutlak: Admin HANYA bisa mengangkat Admin di bawahnya, TIDAK BISA mengangkat Admin yang satu level apalagi lebih tinggi!
@@ -902,7 +988,21 @@ export function getUserAdminInfo({
     };
   }
 
-  // 3. Evaluasi dari Komunitas yang disetujui (Approved)
+  // 3. Admin Kota (City Manager) dari profil langsung jika terdaftar
+  if (isRoleAdminKota(userFull) || profile?.is_admin_kota === true) {
+    return {
+      isAdmin: true,
+      tierLevel: "admin_kota",
+      tierRank: 3,
+      panelTitle: "Panel Kendali Admin Kota Tegal",
+      tierBadgeLabel: "Admin Kota",
+      wilayahLabel: "Kota Tegal",
+      canAppointRole: "admin_kecamatan",
+      canAppointRoleLabel: "Admin Kecamatan",
+    };
+  }
+
+  // 4. Evaluasi dari Komunitas yang disetujui (Approved)
   const approvedAdminCommunities = (userCommunities || []).filter((item) => {
     if (item.status !== "approved") return false;
     const role = (item.raw_peran || item.peran || "").toLowerCase().trim();
@@ -926,6 +1026,22 @@ export function getUserAdminInfo({
   for (const item of approvedAdminCommunities) {
     const kom = item.komunitas || {};
     const meta = extractKomunitasMetadata(kom);
+    const role = (item.raw_peran || item.peran || "").toLowerCase().trim();
+
+    // Prioritas Peran Admin Kota dari keanggotaan
+    if (role.includes("admin kota") || role.includes("admin_kota")) {
+      candidateTiers.push({
+        isAdmin: true,
+        tierLevel: "admin_kota",
+        tierRank: 3,
+        panelTitle: "Panel Kendali Admin Kota Tegal",
+        tierBadgeLabel: "Admin Kota",
+        wilayahLabel: "Kota Tegal",
+        canAppointRole: "admin_kecamatan",
+        canAppointRoleLabel: "Admin Kecamatan",
+      });
+      continue;
+    }
 
     if (meta.jenis === "warga_kita") {
       // Tingkat Kota

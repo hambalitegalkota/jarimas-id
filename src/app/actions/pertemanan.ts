@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient, createAdminClient } from "@/utils/supabase/server";
-import { toValidUUID, isAdminPusat, isSuperOrAdminPusat, isSuperAdmin as checkIsSuperAdmin } from "@/lib/utils";
+import { toValidUUID, isAdminPusat, isAdminKota as checkIsAdminKota, isSuperOrAdminPusat, isSuperAdmin as checkIsSuperAdmin } from "@/lib/utils";
 import { extractKomunitasMetadata } from "@/lib/admin-helpers";
 import type {
   GetRegisteredUsersResult,
@@ -98,13 +98,14 @@ export async function getRegisteredUsers(params?: {
 
     const currentUserId = user.id;
 
-    // 2. Periksa status Super Admin & Admin Pusat pengguna saat ini
+    // 2. Periksa status Super Admin, Admin Pusat & Admin Kota pengguna saat ini
     let isSuperAdmin = false;
     let isAdminPusatUser = false;
+    let isAdminKotaUser = false;
     try {
       const { data: currentUserProfile } = await supabase
         .from("profiles")
-        .select("id, is_super_admin, is_admin_pusat, nama_lengkap, email")
+        .select("id, is_super_admin, is_admin_pusat, is_admin_kota, nama_lengkap, email, peran")
         .eq("id", currentUserId)
         .maybeSingle();
 
@@ -116,6 +117,7 @@ export async function getRegisteredUsers(params?: {
       };
       isSuperAdmin = checkIsSuperAdmin(userCtx);
       isAdminPusatUser = !isSuperAdmin && isAdminPusat(userCtx);
+      isAdminKotaUser = !isSuperAdmin && !isAdminPusatUser && checkIsAdminKota(userCtx);
     } catch {
       // Abaikan jika pengecekan profil terkendala
     }
@@ -207,6 +209,18 @@ export async function getRegisteredUsers(params?: {
       (c) => (c.peran || "").toLowerCase().includes("admin bidang")
     );
 
+    if (!isAdminKotaUser && !isSuperAdmin && !isAdminPusatUser) {
+      isAdminKotaUser = (communityMap[currentUserId] || []).some((c) => {
+        const p = (c.peran || "").toLowerCase();
+        const nama = (c.nama || "").toLowerCase();
+        return (
+          p.includes("admin kota") ||
+          p.includes("admin_kota") ||
+          (nama.includes("warga kota tegal") && (p.includes("admin") || p.includes("pengurus")))
+        );
+      });
+    }
+
     // 3b. Hitung rekapitulasi sebaran warga satu komunitas (Kota Tegal, Kecamatan, Kelurahan, RW, RT, Komunitas Lain)
     // Aturan penting: Warga yang sama hanya dihitung satu kali (tidak dihitung ganda jika terdaftar di beberapa komunitas)
     const kotaSet = new Set<string>();
@@ -218,7 +232,7 @@ export async function getRegisteredUsers(params?: {
     const totalUniqueSet = new Set<string>();
 
     const targetRekapUserIds =
-      isSuperAdmin || isAdminPusatUser || isCurrentAdminBidang || sameCommunityUserIds.size === 0
+      isSuperAdmin || isAdminPusatUser || isAdminKotaUser || isCurrentAdminBidang || sameCommunityUserIds.size === 0
         ? new Set(Object.keys(userCategoriesMap))
         : sameCommunityUserIds;
 
@@ -246,10 +260,10 @@ export async function getRegisteredUsers(params?: {
     };
 
     // 4. Ambil profil pengguna sesuai hak akses:
-    // - Super Admin, Admin Pusat, Admin Bidang: Mengambil semua profil terdaftar
+    // - Super Admin, Admin Pusat, Admin Kota, Admin Bidang: Mengambil semua profil terdaftar
     // - User Reguler: HANYA mengambil profil pengguna yang satu komunitas
     let targetProfiles: any[] = [];
-    if (isSuperAdmin || isAdminPusatUser || isCurrentAdminBidang) {
+    if (isSuperAdmin || isAdminPusatUser || isAdminKotaUser || isCurrentAdminBidang) {
       const { data: profiles, error: profileErr } = await supabase
         .from("profiles")
         .select("id, nama_lengkap, email, nomor_hp, avatar_url, is_super_admin, created_at")

@@ -8,6 +8,7 @@ import {
   isRoleAdmin,
   isSuperAdmin as checkIsSuperAdmin,
   isAdminPusat as checkIsAdminPusat,
+  isAdminKota as checkIsAdminKota,
   isSuperOrAdminPusat as checkIsSuperOrAdminPusat,
   isProtectedSuperAdmin,
 } from "@/lib/utils";
@@ -16,6 +17,7 @@ import {
   computeTierAndApprover,
   checkUserCanApproveItem,
   checkUserCanAssignAdminRole,
+  isItemInKota,
 } from "@/lib/admin-helpers";
 import type { PendingApprovalItem } from "@/types/database";
 
@@ -52,6 +54,7 @@ async function getAuthenticatedUserContext() {
 
   const isSuperAdmin = checkIsSuperAdmin(userFullProfile);
   const isAdminPusat = !isSuperAdmin && checkIsAdminPusat(userFullProfile);
+  let isAdminKota = !isSuperAdmin && !isAdminPusat && checkIsAdminKota(userFullProfile);
   const isSuperOrAdminPusat = isSuperAdmin || isAdminPusat;
 
   // Auto-sync Super Admin status in DB
@@ -96,9 +99,21 @@ async function getAuthenticatedUserContext() {
   if (!isSuperOrAdminPusat) {
     const { data: myAdminMemberships } = await supabase
       .from("anggota_komunitas")
-      .select("komunitas_id, peran, status")
+      .select("komunitas_id, peran, status, komunitas(id, nama, jenis, kecamatan, kelurahan, rw, rt, lokasi)")
       .eq("user_id", user.id)
       .eq("status", "approved");
+
+    if (!isAdminKota) {
+      isAdminKota = (myAdminMemberships || []).some((m: any) => {
+        const p = (m.peran || "").toLowerCase();
+        const kNama = (m.komunitas?.nama || "").toLowerCase();
+        return (
+          p.includes("admin kota") ||
+          p.includes("admin_kota") ||
+          (kNama.includes("warga kota tegal") && isRoleAdmin(p))
+        );
+      });
+    }
 
     const adminKomIds = (myAdminMemberships || [])
       .filter((m) => {
@@ -146,7 +161,7 @@ async function getAuthenticatedUserContext() {
     }
   }
 
-  return { supabase, user, profile, isSuperAdmin, isAdminPusat, isSuperOrAdminPusat, userAdminKomunitas };
+  return { supabase, user, profile, isSuperAdmin, isAdminPusat, isAdminKota, isSuperOrAdminPusat, userAdminKomunitas };
 }
 
 /**
@@ -163,9 +178,10 @@ export async function getPendingApprovals(): Promise<{
   allHierarchyItems?: PendingApprovalItem[];
   isSuperAdmin: boolean;
   isAdminPusat?: boolean;
+  isAdminKota?: boolean;
 }> {
   try {
-    const { supabase, isSuperAdmin, isAdminPusat, isSuperOrAdminPusat, userAdminKomunitas } =
+    const { supabase, isSuperAdmin, isAdminPusat, isAdminKota, isSuperOrAdminPusat, userAdminKomunitas } =
       await getAuthenticatedUserContext();
 
     // 1. Ambil data permohonan dengan status pending ATAU memiliki peran_diajukan
@@ -286,6 +302,7 @@ export async function getPendingApprovals(): Promise<{
       const canApprove = checkUserCanApproveItem({
         isSuperAdmin,
         isAdminPusat,
+        isAdminKota,
         userAdminKomunitas,
         targetItem: targetItemForPermCheck,
       });
@@ -325,17 +342,29 @@ export async function getPendingApprovals(): Promise<{
 
     // 1. Primary Approvals:
     // - Jika Super Admin / Admin Pusat: Tampilkan seluruh permohonan
+    // - Jika Admin Kota: Tampilkan seluruh permohonan khusus di wilayah kota (Kota Tegal)
     // - Jika Community Admin: Tampilkan permohonan yang sesuai wewenangnya
+    const allKotaItems = allItems.filter(isItemInKota);
+
     const primaryApprovals = isSuperOrAdminPusat
       ? allItems
+      : isAdminKota
+      ? allKotaItems
       : allItems.filter((item) => item.canApprove);
+
+    const allHierarchyItems = isSuperOrAdminPusat
+      ? allItems
+      : isAdminKota
+      ? allKotaItems
+      : [];
 
     return {
       success: true,
       data: primaryApprovals,
-      allHierarchyItems: isSuperOrAdminPusat ? allItems : [],
+      allHierarchyItems,
       isSuperAdmin,
       isAdminPusat,
+      isAdminKota,
     };
   } catch (err: any) {
     return {
@@ -357,7 +386,7 @@ export async function approveMemberRole(anggotaId: string): Promise<{
   message: string;
 }> {
   try {
-    const { supabase, user, isSuperAdmin, isAdminPusat, userAdminKomunitas } =
+    const { supabase, user, isSuperAdmin, isAdminPusat, isAdminKota, userAdminKomunitas } =
       await getAuthenticatedUserContext();
 
     if (!anggotaId) {
@@ -395,6 +424,7 @@ export async function approveMemberRole(anggotaId: string): Promise<{
     const canApprove = checkUserCanApproveItem({
       isSuperAdmin,
       isAdminPusat,
+      isAdminKota,
       userAdminKomunitas,
       targetItem: {
         komunitas_id: memberTarget.komunitas_id,
@@ -605,7 +635,7 @@ export async function rejectMemberRole(anggotaId: string): Promise<{
   message: string;
 }> {
   try {
-    const { supabase, isSuperAdmin, isAdminPusat, userAdminKomunitas } =
+    const { supabase, isSuperAdmin, isAdminPusat, isAdminKota, userAdminKomunitas } =
       await getAuthenticatedUserContext();
 
     if (!anggotaId) {
@@ -640,6 +670,7 @@ export async function rejectMemberRole(anggotaId: string): Promise<{
     const canApprove = checkUserCanApproveItem({
       isSuperAdmin,
       isAdminPusat,
+      isAdminKota,
       userAdminKomunitas,
       targetItem: {
         komunitas_id: memberTarget.komunitas_id,
@@ -1439,7 +1470,7 @@ export async function assignOrRevokeKomunitasAdminAction({
   message: string;
 }> {
   try {
-    const { supabase, isSuperAdmin, isAdminPusat, userAdminKomunitas, user } =
+    const { supabase, isSuperAdmin, isAdminPusat, isAdminKota, userAdminKomunitas, user } =
       await getAuthenticatedUserContext();
     const currentUserId = user.id;
 
@@ -1536,6 +1567,7 @@ export async function assignOrRevokeKomunitasAdminAction({
     const canAssign = checkUserCanAssignAdminRole({
       isSuperAdmin,
       isAdminPusat,
+      isAdminKota,
       userAdminKomunitas,
       targetKomunitas,
     });

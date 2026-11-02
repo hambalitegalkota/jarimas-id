@@ -244,6 +244,36 @@ export function isAdminPusat(profileOrUser?: {
 }
 
 /**
+ * Mengecek apakah pengguna memiliki status peran Admin Kota (khususnya Kota Tegal)
+ */
+export function isAdminKota(profileOrUser?: {
+  is_admin_kota?: boolean;
+  is_admin_pusat?: boolean;
+  is_super_admin?: boolean;
+  peran?: string | null;
+  nama_lengkap?: string | null;
+  email?: string | null;
+  id?: string | null;
+} | null): boolean {
+  if (!profileOrUser) return false;
+  if (isSuperAdmin(profileOrUser) || isAdminPusat(profileOrUser)) return false;
+
+  if (profileOrUser.is_admin_kota === true) return true;
+
+  const email = (profileOrUser.email || "").toLowerCase().trim();
+  if (email.startsWith("adminkota.") || email.includes("adminkota@jarimas.id")) {
+    return true;
+  }
+
+  const peran = (profileOrUser.peran || "").toLowerCase();
+  if (peran.includes("admin kota") || peran.includes("admin_kota")) {
+    return true;
+  }
+
+  return false;
+}
+
+/**
  * Mengecek apakah pengguna memiliki hak akses penuh tingkat atas (Super Admin atau Admin Pusat)
  */
 export function isSuperOrAdminPusat(profileOrUser?: {
@@ -255,6 +285,22 @@ export function isSuperOrAdminPusat(profileOrUser?: {
 } | null): boolean {
   if (!profileOrUser) return false;
   return isSuperAdmin(profileOrUser) || isAdminPusat(profileOrUser);
+}
+
+/**
+ * Mengecek apakah pengguna memiliki hak akses manajerial wilayah tingkat atas (Super Admin, Admin Pusat, atau Admin Kota)
+ */
+export function isSuperOrAdminPusatOrKota(profileOrUser?: {
+  is_admin_kota?: boolean;
+  is_admin_pusat?: boolean;
+  is_super_admin?: boolean;
+  peran?: string | null;
+  nama_lengkap?: string | null;
+  email?: string | null;
+  id?: string | null;
+} | null): boolean {
+  if (!profileOrUser) return false;
+  return isSuperAdmin(profileOrUser) || isAdminPusat(profileOrUser) || isAdminKota(profileOrUser);
 }
 
 /**
