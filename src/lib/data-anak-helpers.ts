@@ -2315,6 +2315,14 @@ export function isDataAnakMatchingKomunitas(
       targetKomunitas?.nama &&
       isSchoolNameMatching(item.nama_sekolah, targetKomunitas.nama)
     ) {
+      // Jika nama sekolah cocok persis dengan nama resmi lembaga PAUD:
+      // Murid ini dipastikan bersekolah di PAUD ini (tanpa dibatasi kelurahan domisili/KK anak)
+      const normChild = (item.nama_sekolah || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+      const normTarget = (targetKomunitas.nama || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+      if (normChild && normTarget && normChild === normTarget) {
+        return true;
+      }
+
       // Disambiguation check: jika nama sekolah anak ambigu tanpa kelurahan (misal "Pos PAUD Melati")
       // dan targetKomunitas memiliki nama kelurahan (misal "Pos PAUD Melati Pesurungan Kidul"),
       // pastikan wilayah domisili/KK anak tidak bertentangan dengan kelurahan komunitas PAUD.
