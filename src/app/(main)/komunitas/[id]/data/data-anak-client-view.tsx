@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import {
   Baby,
@@ -23,6 +23,7 @@ import {
   Clock,
   Sparkles,
   School,
+  ChevronDown,
 } from "lucide-react";
 import { CardDataAnak } from "@/components/data-anak/card-data-anak";
 import { FormDataAnak } from "@/components/data-anak/form-data-anak";
@@ -199,6 +200,21 @@ export function DataAnakClientView({
         (c.alasan_sekolah && c.alasan_sekolah.toLowerCase().includes(q))
     );
   }, [childrenList, bersekolahChildren, belumBersekolahChildren, dataFilterTab, searchQuery]);
+
+  // Paginasi bertahap untuk performa optimal
+  const [visibleCount, setVisibleCount] = useState(30);
+
+  useEffect(() => {
+    setVisibleCount(30);
+  }, [searchQuery, dataFilterTab, paudStatusFilter, childrenList]);
+
+  const paginatedPaudChildren = useMemo(() => {
+    return paudDisplayedChildren.slice(0, visibleCount);
+  }, [paudDisplayedChildren, visibleCount]);
+
+  const paginatedChildren = useMemo(() => {
+    return displayedChildren.slice(0, visibleCount);
+  }, [displayedChildren, visibleCount]);
 
   return (
     <div className="space-y-6">
@@ -498,41 +514,83 @@ export function DataAnakClientView({
                   </div>
 
                   {paudDisplayedChildren.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border bg-card p-10 text-center space-y-3">
+                    <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border bg-card p-8 sm:p-10 text-center space-y-4">
                       <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 border border-primary/20 text-primary">
                         <Baby className="h-6 w-6" />
                       </div>
-                      <div className="space-y-1 max-w-sm">
-                        <h4 className="text-sm font-bold tracking-tight text-foreground">
-                          Belum Ada Data Anak
+                      <div className="space-y-1.5 max-w-md">
+                        <h4 className="text-sm sm:text-base font-bold tracking-tight text-foreground">
+                          Belum Ada Peserta Didik Terdaftar
                         </h4>
                         <p className="text-xs text-muted-foreground leading-relaxed">
-                          Admin, Kepala Sekolah, dan Guru PAUD dapat menambahkan siswa terdaftar di satuan PAUD ini.
+                          {searchQuery
+                            ? "Tidak ditemukan data anak yang sesuai dengan kata kunci pencarian."
+                            : "Satuan PAUD ini belum memiliki data murid terdaftar di sistem. Kepala Sekolah, Guru, atau Operator PAUD dapat mendaftarkan murid rombel berjalan menggunakan tombol di bawah."}
                         </p>
                       </div>
+                      {canCreate && (
+                        <button
+                          type="button"
+                          onClick={() => setIsAddModalOpen(true)}
+                          className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90 transition-all shadow-xs cursor-pointer"
+                        >
+                          <Plus className="h-4 w-4" />
+                          <span>Tambah Peserta Didik Pertama</span>
+                        </button>
+                      )}
                     </div>
                   ) : (
-                    paudDisplayedChildren.map((child) => (
-                      <CardDataAnak
-                        key={child.id}
-                        anak={child}
-                        komunitas={komunitas}
-                        canValidate={canValidate}
-                        canEdit={canEdit}
-                        canDelete={canDelete}
-                        isReadOnly={isReadOnly}
-                        onUpdate={(updated) => {
-                          setChildrenList((prev) =>
-                            prev.map((c) => (c.id === updated.id ? updated : c))
-                          );
-                        }}
-                        onDelete={(deletedId) => {
-                          setChildrenList((prev) =>
-                            prev.filter((c) => c.id !== deletedId)
-                          );
-                        }}
-                      />
-                    ))
+                    <>
+                      {paginatedPaudChildren.map((child) => (
+                        <CardDataAnak
+                          key={child.id}
+                          anak={child}
+                          komunitas={komunitas}
+                          canValidate={canValidate}
+                          canEdit={canEdit}
+                          canDelete={canDelete}
+                          isReadOnly={isReadOnly}
+                          onUpdate={(updated) => {
+                            setChildrenList((prev) =>
+                              prev.map((c) => (c.id === updated.id ? updated : c))
+                            );
+                          }}
+                          onDelete={(deletedId) => {
+                            setChildrenList((prev) =>
+                              prev.filter((c) => c.id !== deletedId)
+                            );
+                          }}
+                        />
+                      ))}
+
+                      {paudDisplayedChildren.length > visibleCount && (
+                        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-5 border-t border-border mt-3">
+                          <p className="text-xs text-muted-foreground font-mono">
+                            Menampilkan <span className="font-bold text-foreground">{Math.min(visibleCount, paudDisplayedChildren.length)}</span> dari{" "}
+                            <span className="font-bold text-foreground">{paudDisplayedChildren.length}</span> data anak
+                          </p>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => setVisibleCount((prev) => Math.min(prev + 30, paudDisplayedChildren.length))}
+                              className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90 transition-all shadow-xs cursor-pointer"
+                            >
+                              <span>Muat 30 Data Lagi</span>
+                              <ChevronDown className="h-3.5 w-3.5" />
+                            </button>
+                            {paudDisplayedChildren.length > visibleCount + 30 && (
+                              <button
+                                type="button"
+                                onClick={() => setVisibleCount(paudDisplayedChildren.length)}
+                                className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-border bg-card text-foreground text-xs font-medium hover:bg-muted transition-all cursor-pointer"
+                              >
+                                <span>Tampilkan Semua ({paudDisplayedChildren.length})</span>
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
               </>
@@ -731,27 +789,57 @@ export function DataAnakClientView({
                       </div>
                     </div>
                   ) : (
-                    displayedChildren.map((child) => (
-                      <CardDataAnak
-                        key={child.id}
-                        anak={child}
-                        komunitas={komunitas}
-                        canValidate={false}
-                        canEdit={!child.is_sekolah && canEdit}
-                        canDelete={!child.is_sekolah && canDelete}
-                        isReadOnly={isReadOnly}
-                        onUpdate={(updated) => {
-                          setChildrenList((prev) =>
-                            prev.map((c) => (c.id === updated.id ? updated : c))
-                          );
-                        }}
-                        onDelete={(deletedId) => {
-                          setChildrenList((prev) =>
-                            prev.filter((c) => c.id !== deletedId)
-                          );
-                        }}
-                      />
-                    ))
+                    <>
+                      {paginatedChildren.map((child) => (
+                        <CardDataAnak
+                          key={child.id}
+                          anak={child}
+                          komunitas={komunitas}
+                          canValidate={false}
+                          canEdit={!child.is_sekolah && canEdit}
+                          canDelete={!child.is_sekolah && canDelete}
+                          isReadOnly={isReadOnly}
+                          onUpdate={(updated) => {
+                            setChildrenList((prev) =>
+                              prev.map((c) => (c.id === updated.id ? updated : c))
+                            );
+                          }}
+                          onDelete={(deletedId) => {
+                            setChildrenList((prev) =>
+                              prev.filter((c) => c.id !== deletedId)
+                            );
+                          }}
+                        />
+                      ))}
+
+                      {displayedChildren.length > visibleCount && (
+                        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-5 border-t border-border mt-3">
+                          <p className="text-xs text-muted-foreground font-mono">
+                            Menampilkan <span className="font-bold text-foreground">{Math.min(visibleCount, displayedChildren.length)}</span> dari{" "}
+                            <span className="font-bold text-foreground">{displayedChildren.length}</span> data anak
+                          </p>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => setVisibleCount((prev) => Math.min(prev + 30, displayedChildren.length))}
+                              className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90 transition-all shadow-xs cursor-pointer"
+                            >
+                              <span>Muat 30 Data Lagi</span>
+                              <ChevronDown className="h-3.5 w-3.5" />
+                            </button>
+                            {displayedChildren.length > visibleCount + 30 && (
+                              <button
+                                type="button"
+                                onClick={() => setVisibleCount(displayedChildren.length)}
+                                className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-border bg-card text-foreground text-xs font-medium hover:bg-muted transition-all cursor-pointer"
+                              >
+                                <span>Tampilkan Semua ({displayedChildren.length})</span>
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
               </>

@@ -5,7 +5,7 @@ let cachedRekapResult: {
   timestamp: number;
   data: RekapDataAnakUsiaDiniResult;
 } | null = null;
-const REKAP_CACHE_TTL_MS = 3 * 60 * 1000; // 3 Menit
+const REKAP_CACHE_TTL_MS = 30 * 60 * 1000; // 30 Menit (In-Memory Cache Diperpanjang untuk Mencegah Beban 29 Chunk Kueri Berulang)
 
 export async function invalidateRekapDataAnakCache(): Promise<void> {
   cachedRekapResult = null;

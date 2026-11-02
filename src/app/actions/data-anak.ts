@@ -749,8 +749,7 @@ export async function getDataAnakByKomunitas(
         validated_by,
         validated_at,
         created_by,
-        created_at,
-        ddks_records (*)
+        created_at
       `;
 
     const cleanKomNama = (targetKomunitas?.nama || "").toLowerCase();

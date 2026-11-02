@@ -5,7 +5,7 @@ let cachedProgresData: {
   timestamp: number;
   rawItems: ProgresPaudItem[];
 } | null = null;
-const PROGRES_CACHE_TTL_MS = 60 * 1000; // 60 Detik
+const PROGRES_CACHE_TTL_MS = 15 * 60 * 1000; // 15 Menit (Cache Diperpanjang; Otomatis Diinvalidsi Setiap Ada Update Data Anak)
 
 export async function invalidateCekProgresCache(): Promise<void> {
   cachedProgresData = null;

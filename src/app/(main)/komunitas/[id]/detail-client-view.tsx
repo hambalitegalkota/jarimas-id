@@ -325,6 +325,17 @@ export function KomunitasDetailClientView({
     searchQueryAnak,
   ]);
 
+  // Paginasi cerdas untuk performa optimal (render awal 30 kartu anak agar halaman terbuka instan)
+  const [visibleChildrenCount, setVisibleChildrenCount] = useState(30);
+
+  useEffect(() => {
+    setVisibleChildrenCount(30);
+  }, [searchQueryAnak, dataAnakFilterSubTab, paudStatusFilter, dataAnakState]);
+
+  const paginatedChildren = useMemo(() => {
+    return displayedChildren.slice(0, visibleChildrenCount);
+  }, [displayedChildren, visibleChildrenCount]);
+
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
   const [membershipState, setMembershipState] = useState(komunitas.currentUserMembership);
   const [isWargaOnboardingOpen, setIsWargaOnboardingOpen] = useState(false);
@@ -1880,73 +1891,114 @@ export function KomunitasDetailClientView({
                   </div>
 
                   {displayedChildren.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-card p-10 text-center space-y-3">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 border border-primary/20 text-primary">
-                        <Baby className="h-6 w-6" />
+                    <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-card p-8 sm:p-10 text-center space-y-4">
+                      <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10 border border-primary/20 text-primary shadow-2xs">
+                        <Baby className="h-7 w-7" />
                       </div>
-                      <div className="space-y-1 max-w-sm">
-                        <h4 className="text-sm font-bold tracking-tight text-foreground">
-                          Belum Ada Data Anak
+                      <div className="space-y-1.5 max-w-md">
+                        <h4 className="text-sm sm:text-base font-bold tracking-tight text-foreground">
+                          {isPaudCommunity ? "Belum Ada Peserta Didik Terdaftar" : "Belum Ada Data Anak"}
                         </h4>
                         <p className="text-xs text-muted-foreground leading-relaxed">
                           {searchQueryAnak
                             ? "Tidak ditemukan data anak yang sesuai dengan kata kunci pencarian."
                             : isPaudCommunity
-                            ? "Admin, Kepala Sekolah, dan Guru PAUD dapat menambahkan siswa terdaftar di satuan PAUD ini."
+                            ? "Satuan PAUD ini belum memiliki data murid terdaftar di sistem. Kepala Sekolah, Guru, atau Operator PAUD dapat mendaftarkan murid rombel berjalan menggunakan tombol di bawah."
                             : "Kader dan pengurus dapat menambahkan data anak usia 0–6 tahun di lingkungan komunitas ini."}
                         </p>
                       </div>
+                      {canCreateDataAnak && (
+                        <button
+                          type="button"
+                          onClick={() => setIsAddChildModalOpen(true)}
+                          className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90 transition-all shadow-xs cursor-pointer"
+                        >
+                          <Plus className="h-4 w-4" />
+                          <span>{isPaudCommunity ? "Tambah Peserta Didik Pertama" : "Tambah Data Anak"}</span>
+                        </button>
+                      )}
                     </div>
                   ) : (
-                    displayedChildren.map((child) => {
-                      const isChildFromPaudSchool =
-                        child.is_sekolah === true ||
-                        Boolean(
-                          child.nama_sekolah &&
-                            !child.nama_sekolah.toLowerCase().includes("belum")
+                    <>
+                      {paginatedChildren.map((child) => {
+                        const isChildFromPaudSchool =
+                          child.is_sekolah === true ||
+                          Boolean(
+                            child.nama_sekolah &&
+                              !child.nama_sekolah.toLowerCase().includes("belum")
+                          );
+
+                        const isReadOnlyForThisChild =
+                          (isWargaKitaCheck && isChildFromPaudSchool) || Boolean(isReadOnlyDataAnak);
+
+                        const canEditForThisChild =
+                          (isWargaKitaCheck && isChildFromPaudSchool)
+                            ? false
+                            : Boolean(canEditDataAnak);
+
+                        const canDeleteForThisChild =
+                          (isWargaKitaCheck && isChildFromPaudSchool)
+                            ? false
+                            : Boolean(canDeleteDataAnak);
+
+                        const canValidateForThisChild =
+                          (isWargaKitaCheck && isChildFromPaudSchool)
+                            ? false
+                            : Boolean(canValidateDataAnak);
+
+                        return (
+                          <CardDataAnak
+                            key={child.id}
+                            anak={child}
+                            komunitas={komunitasData}
+                            canViewDetail={true}
+                            canValidate={canValidateForThisChild}
+                            canEdit={canEditForThisChild}
+                            canDelete={canDeleteForThisChild}
+                            isReadOnly={isReadOnlyForThisChild}
+                            onUpdate={(updated) => {
+                              setDataAnakState((prev) =>
+                                prev.map((c) => (c.id === updated.id ? updated : c))
+                              );
+                            }}
+                            onDelete={(deletedId) => {
+                              setDataAnakState((prev) =>
+                                prev.filter((c) => c.id !== deletedId)
+                              );
+                            }}
+                          />
                         );
+                      })}
 
-                      const isReadOnlyForThisChild =
-                        (isWargaKitaCheck && isChildFromPaudSchool) || Boolean(isReadOnlyDataAnak);
-
-                      const canEditForThisChild =
-                        (isWargaKitaCheck && isChildFromPaudSchool)
-                          ? false
-                          : Boolean(canEditDataAnak);
-
-                      const canDeleteForThisChild =
-                        (isWargaKitaCheck && isChildFromPaudSchool)
-                          ? false
-                          : Boolean(canDeleteDataAnak);
-
-                      const canValidateForThisChild =
-                        (isWargaKitaCheck && isChildFromPaudSchool)
-                          ? false
-                          : Boolean(canValidateDataAnak);
-
-                      return (
-                        <CardDataAnak
-                          key={child.id}
-                          anak={child}
-                          komunitas={komunitasData}
-                          canViewDetail={true}
-                          canValidate={canValidateForThisChild}
-                          canEdit={canEditForThisChild}
-                          canDelete={canDeleteForThisChild}
-                          isReadOnly={isReadOnlyForThisChild}
-                          onUpdate={(updated) => {
-                            setDataAnakState((prev) =>
-                              prev.map((c) => (c.id === updated.id ? updated : c))
-                            );
-                          }}
-                          onDelete={(deletedId) => {
-                            setDataAnakState((prev) =>
-                              prev.filter((c) => c.id !== deletedId)
-                            );
-                          }}
-                        />
-                      );
-                    })
+                      {/* Tombol Paginasi / Muat Lebih Banyak Data */}
+                      {displayedChildren.length > visibleChildrenCount && (
+                        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-5 border-t border-border mt-3">
+                          <p className="text-xs text-muted-foreground font-mono">
+                            Menampilkan <span className="font-bold text-foreground">{Math.min(visibleChildrenCount, displayedChildren.length)}</span> dari{" "}
+                            <span className="font-bold text-foreground">{displayedChildren.length}</span> data anak
+                          </p>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => setVisibleChildrenCount((prev) => Math.min(prev + 30, displayedChildren.length))}
+                              className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90 transition-all shadow-xs cursor-pointer"
+                            >
+                              <span>Muat 30 Data Lagi</span>
+                              <ChevronDown className="h-3.5 w-3.5" />
+                            </button>
+                            {displayedChildren.length > visibleChildrenCount + 30 && (
+                              <button
+                                type="button"
+                                onClick={() => setVisibleChildrenCount(displayedChildren.length)}
+                                className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-border bg-card text-foreground text-xs font-medium hover:bg-muted transition-all cursor-pointer"
+                              >
+                                <span>Tampilkan Semua ({displayedChildren.length})</span>
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
               </>
