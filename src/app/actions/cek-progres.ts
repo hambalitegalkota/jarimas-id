@@ -159,40 +159,15 @@ export async function getCekProgresPaudAction(filters?: {
     if (isNoLocationFilter && cachedProgresData && Date.now() - cachedProgresData.timestamp < PROGRES_CACHE_TTL_MS) {
       rawItems = cachedProgresData.rawItems;
     } else {
-      const { data: rpcData, error: rpcError } = await supabase.rpc(
-        "get_cek_progres_paud",
-        {
-          p_user_id: user?.id || null,
-          p_kecamatan: filterKec,
-          p_kelurahan: filterKel,
-        }
+      // Gunakan Engine Kalkulasi Presisi Penuh (Mendukung pencocokan nama institusi, validator nyata & kelurahan)
+      rawItems = await fetchProgresPaudFallback(
+        supabase,
+        user?.id || null,
+        isSuper,
+        memberships,
+        filterKec,
+        filterKel
       );
-
-      if (!rpcError && rpcData && Array.isArray(rpcData) && rpcData.length > 0) {
-        rawItems = rpcData.map((item: any) => ({
-          komunitas_id: item.komunitas_id,
-          nama_paud: item.nama_paud,
-          jenis_institusi: item.jenis_institusi,
-          kecamatan: item.kecamatan,
-          kelurahan: item.kelurahan,
-          jumlah_anggota: Number(item.jumlah_anggota || 0),
-          has_anggota: Boolean(item.has_anggota),
-          total_peserta_didik: Number(item.total_peserta_didik || 0),
-          total_diperbarui: Number(item.total_diperbarui || 0),
-          persentase_selesai: Number(item.persentase_selesai || 0),
-          status_penyelesaian: item.status_penyelesaian as StatusPenyelesaianProgres,
-        }));
-      } else {
-        // Fallback Engine jika RPC belum dijalankan di Supabase SQL Editor
-        rawItems = await fetchProgresPaudFallback(
-          supabase,
-          user?.id || null,
-          isSuper,
-          memberships,
-          filterKec,
-          filterKel
-        );
-      }
     }
 
     // Saring institusi: Lepaskan seluruh PKBM KECUALI 'PKBM Star of Tomorrow' dan SKB
