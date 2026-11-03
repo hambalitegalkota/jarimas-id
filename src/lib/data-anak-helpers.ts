@@ -4,6 +4,7 @@ import { RAW_POSYANDU_TEGAL } from "@/lib/constants/seed-posyandu-tegal";
 import {
   MASTER_KOMUNITAS_SEED,
   findOrGenerateKomunitasSeed,
+  getJumlahRtPerRwByKelurahan,
 } from "@/lib/constants/tegal-data";
 import type { DataAnakItem } from "@/types/database";
 
@@ -1007,40 +1008,31 @@ export function getPosyanduCakupanWilayah(targetKomunitas: any): PosyanduCakupan
     targetKomunitas?.id === "9947ded5-9cb9-40c9-8da8-b92d1324eb04" ||
     targetKomunitas?.id === "377f5886-9cb9-40c9-8ffd-01655ddacd41"
   ) {
+    const debongKidulRtList = ["01", "02", "03", "04", "05", "1", "2", "3", "4", "5"];
     if (
-      targetKomunitas?.id === "69759427-9ff6-42a9-80d4-36a91e42c627" ||
-      nama.includes("seruni 1") ||
-      nama.includes("seruni i") ||
-      (nama.includes("seruni") &&
-        !nama.includes("seruni 2") &&
-        !nama.includes("seruni ii") &&
-        !nama.includes("seruni 3") &&
-        !nama.includes("seruni iii") &&
-        !nama.includes("seruni 4") &&
-        !nama.includes("seruni iv"))
+      targetKomunitas?.id === "377f5886-9cb9-40c9-8ffd-01655ddacd41" ||
+      /\bseruni\s*(4|iv)\b/i.test(nama)
     ) {
-      return { rw: "01" };
-    }
-    if (
-      targetKomunitas?.id === "8ecf2714-9ff6-42a9-8c45-a4119856fbbc" ||
-      nama.includes("seruni 2") ||
-      nama.includes("seruni ii")
-    ) {
-      return { rw: "02" };
+      return { rw: "04", rtList: debongKidulRtList };
     }
     if (
       targetKomunitas?.id === "9947ded5-9cb9-40c9-8da8-b92d1324eb04" ||
-      nama.includes("seruni 3") ||
-      nama.includes("seruni iii")
+      /\bseruni\s*(3|iii)\b/i.test(nama)
     ) {
-      return { rw: "03" };
+      return { rw: "03", rtList: debongKidulRtList };
     }
     if (
-      targetKomunitas?.id === "377f5886-9cb9-40c9-8ffd-01655ddacd41" ||
-      nama.includes("seruni 4") ||
-      nama.includes("seruni iv")
+      targetKomunitas?.id === "8ecf2714-9ff6-42a9-8c45-a4119856fbbc" ||
+      /\bseruni\s*(2|ii)\b/i.test(nama)
     ) {
-      return { rw: "04" };
+      return { rw: "02", rtList: debongKidulRtList };
+    }
+    if (
+      targetKomunitas?.id === "69759427-9ff6-42a9-80d4-36a91e42c627" ||
+      /\bseruni\s*(1|i)\b/i.test(nama) ||
+      nama.includes("seruni")
+    ) {
+      return { rw: "01", rtList: debongKidulRtList };
     }
   }
 
@@ -1380,13 +1372,13 @@ export function getPosyanduCakupanWilayah(targetKomunitas: any): PosyanduCakupan
   }
 
   // Khusus Kelurahan Pekauman (Kecamatan Tegal Barat)
-  // 1. Posyandu Tunas: cakupan sinkronisasi dengan RW 1 dan RW 8
-  // 2. Posyandu Delima: cakupan sinkronisasi dengan RW 2
-  // 3. Posyandu Duku: cakupan sinkronisasi dengan RW 3
-  // 4. Posyandu Garuda: cakupan sinkronisasi dengan RW 4
-  // 5. Posyandu Nanas: cakupan sinkronisasi dengan RW 5
-  // 6. Posyandu Jalak: cakupan sinkronisasi dengan RW 6
-  // 7. Posyandu Belimbing: cakupan sinkronisasi dengan RW 7
+  // 1. Posyandu Tunas: cakupan sinkronisasi dengan RW 1 (RT 1 s/d 5) dan RW 8 (RT 1 s/d 5)
+  // 2. Posyandu Delima: cakupan sinkronisasi dengan RW 2 (RT 1 s/d 7)
+  // 3. Posyandu Duku: cakupan sinkronisasi dengan RW 3 (RT 1 s/d 5)
+  // 4. Posyandu Garuda: cakupan sinkronisasi dengan RW 4 (RT 1 s/d 7)
+  // 5. Posyandu Nanas: cakupan sinkronisasi dengan RW 5 (RT 1 s/d 6)
+  // 6. Posyandu Jalak: cakupan sinkronisasi dengan RW 6 (RT 1 s/d 9)
+  // 7. Posyandu Belimbing: cakupan sinkronisasi dengan RW 7 (RT 1 s/d 6)
   const isPekaumanPosyandu =
     kel.includes("pekauman") ||
     (nama.includes("pekauman") && !kel.includes("debong") && !kel.includes("kraton")) ||
@@ -1406,6 +1398,7 @@ export function getPosyanduCakupanWilayah(targetKomunitas: any): PosyanduCakupan
       return {
         rw: "01",
         rwList: ["01", "08", "1", "8"],
+        rtList: ["01", "02", "03", "04", "05", "1", "2", "3", "4", "5"],
       };
     }
     if (
@@ -1414,6 +1407,7 @@ export function getPosyanduCakupanWilayah(targetKomunitas: any): PosyanduCakupan
     ) {
       return {
         rw: "02",
+        rtList: ["01", "02", "03", "04", "05", "06", "07", "1", "2", "3", "4", "5", "6", "7"],
       };
     }
     if (
@@ -1422,6 +1416,7 @@ export function getPosyanduCakupanWilayah(targetKomunitas: any): PosyanduCakupan
     ) {
       return {
         rw: "03",
+        rtList: ["01", "02", "03", "04", "05", "1", "2", "3", "4", "5"],
       };
     }
     if (
@@ -1430,6 +1425,7 @@ export function getPosyanduCakupanWilayah(targetKomunitas: any): PosyanduCakupan
     ) {
       return {
         rw: "04",
+        rtList: ["01", "02", "03", "04", "05", "06", "07", "1", "2", "3", "4", "5", "6", "7"],
       };
     }
     if (
@@ -1438,6 +1434,7 @@ export function getPosyanduCakupanWilayah(targetKomunitas: any): PosyanduCakupan
     ) {
       return {
         rw: "05",
+        rtList: ["01", "02", "03", "04", "05", "06", "1", "2", "3", "4", "5", "6"],
       };
     }
     if (
@@ -1446,6 +1443,7 @@ export function getPosyanduCakupanWilayah(targetKomunitas: any): PosyanduCakupan
     ) {
       return {
         rw: "06",
+        rtList: ["01", "02", "03", "04", "05", "06", "07", "08", "09", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
       };
     }
     if (
@@ -1454,29 +1452,30 @@ export function getPosyanduCakupanWilayah(targetKomunitas: any): PosyanduCakupan
     ) {
       return {
         rw: "07",
+        rtList: ["01", "02", "03", "04", "05", "06", "1", "2", "3", "4", "5", "6"],
       };
     }
   }
 
   // Khusus Kelurahan Panggung (Kecamatan Tegal Timur)
-  // 1. Posyandu Dahlia: RW 1
-  // 2. Posyandu Anyelir: RW 2
-  // 3. Posyandu Jaya Abadi: RW 3
-  // 4. Posyandu Harapan: RW 4
-  // 5. Posyandu Mekarsari: RW 5
-  // 6. Posyandu Seruni: RW 6
+  // 1. Posyandu Dahlia: RW 1 (RT 1 s/d 9)
+  // 2. Posyandu Anyelir: RW 2 (RT 1 s/d 11)
+  // 3. Posyandu Jaya Abadi: RW 3 (RT 1 s/d 9)
+  // 4. Posyandu Harapan: RW 4 (RT 1 s/d 9)
+  // 5. Posyandu Mekarsari: RW 5 (RT 1 s/d 9)
+  // 6. Posyandu Seruni: RW 6 (RT 1 s/d 10)
   // 7. Posyandu Anggrek 1: RW 7 RT 1, 2, 3, 4, 5, 6, 17, 18
   // 8. Posyandu Anggrek 2: RW 7 RT 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 20
-  // 9. Posyandu Bahtera Serayu: RW 8
+  // 9. Posyandu Bahtera Serayu: RW 8 (RT 1 s/d 6)
   // 10. Posyandu Nusa Indah A: RW 9 RT 4, 5, 6, 7, 8, 9, 10, 11, 14, 15, 20
   // 11. Posyandu Nusa Indah B: RW 9 RT 1, 2, 3, 12, 13, 16, 17, 18, 19
   // 12. Posyandu Melati 10A: RW 10 RT 1, 2, 3, 6, 8, 9, 10, 11
   // 13. Posyandu Kuntum Melati 10B: RW 10 RT 4, 5, 7
-  // 14. Posyandu Dewi Shinta: RW 11
+  // 14. Posyandu Dewi Shinta: RW 11 (RT 1 s/d 5)
   // 15. Posyandu Bahtera A: RW 12 RT 1, 2, 3, 4, 5, 6, 7, 8
   // 16. Posyandu Bahtera B: RW 12 RT 9, 10, 11, 12, 13
-  // 17. Posyandu Tulip: RW 13
-  // 18. Posyandu Teratai Putih: RW 14
+  // 17. Posyandu Tulip: RW 13 (RT 1 s/d 7)
+  // 18. Posyandu Teratai Putih: RW 14 (RT 1 s/d 5)
   const isPanggungPosyandu =
     kel.includes("panggung") ||
     (nama.includes("panggung") && !kel.includes("sumurpanggang")) ||
@@ -1504,37 +1503,61 @@ export function getPosyanduCakupanWilayah(targetKomunitas: any): PosyanduCakupan
       targetKomunitas?.id === "2fc50ff0-9d53-42bc-8b1b-e4ad73e274a8" ||
       (nama.includes("dahlia") && !nama.includes("paud"))
     ) {
-      return { rw: "01" };
+      return {
+        rw: "01",
+        rtList: ["01", "02", "03", "04", "05", "06", "07", "08", "09", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
+      };
     }
     if (
       targetKomunitas?.id === "cd56796d-8dee-4007-8730-02b14bce06aa" ||
       (nama.includes("anyelir") && !nama.includes("paud"))
     ) {
-      return { rw: "02" };
+      return {
+        rw: "02",
+        rtList: [
+          "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11",
+          "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"
+        ],
+      };
     }
     if (
       targetKomunitas?.id === "ffadd058-40be-47a6-8ff2-19eddce9c530" ||
       nama.includes("jaya abadi")
     ) {
-      return { rw: "03" };
+      return {
+        rw: "03",
+        rtList: ["01", "02", "03", "04", "05", "06", "07", "08", "09", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
+      };
     }
     if (
       targetKomunitas?.id === "9ebc29ec-a5e5-4aff-8b13-12190735836b" ||
       (nama.includes("harapan") && !nama.includes("paud"))
     ) {
-      return { rw: "04" };
+      return {
+        rw: "04",
+        rtList: ["01", "02", "03", "04", "05", "06", "07", "08", "09", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
+      };
     }
     if (
       targetKomunitas?.id === "9a8a12f0-0a2a-4680-84bf-ce21a26b6830" ||
       nama.includes("mekarsari")
     ) {
-      return { rw: "05" };
+      return {
+        rw: "05",
+        rtList: ["01", "02", "03", "04", "05", "06", "07", "08", "09", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
+      };
     }
     if (
       targetKomunitas?.id === "87d14abf-fee3-4e2f-8c91-e115debc0a75" ||
       (nama.includes("seruni") && !nama.includes("paud"))
     ) {
-      return { rw: "06" };
+      return {
+        rw: "06",
+        rtList: [
+          "01", "02", "03", "04", "05", "06", "07", "08", "09", "10",
+          "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"
+        ],
+      };
     }
     if (
       targetKomunitas?.id === "b02a2aa6-c19a-4e35-8e61-07e189d39062" ||
@@ -1564,7 +1587,10 @@ export function getPosyanduCakupanWilayah(targetKomunitas: any): PosyanduCakupan
       targetKomunitas?.id === "be4e95a4-fd43-4e21-863d-419d649de22c" ||
       nama.includes("bahtera serayu")
     ) {
-      return { rw: "08" };
+      return {
+        rw: "08",
+        rtList: ["01", "02", "03", "04", "05", "06", "1", "2", "3", "4", "5", "6"],
+      };
     }
     if (
       targetKomunitas?.id === "e6cd570b-74d9-4cd6-8b08-ed5dce09561e" ||
@@ -1618,7 +1644,10 @@ export function getPosyanduCakupanWilayah(targetKomunitas: any): PosyanduCakupan
       targetKomunitas?.id === "354459e2-bba6-4af4-81bc-ace901825749" ||
       nama.includes("dewi shinta")
     ) {
-      return { rw: "11" };
+      return {
+        rw: "11",
+        rtList: ["01", "02", "03", "04", "05", "1", "2", "3", "4", "5"],
+      };
     }
     if (
       targetKomunitas?.id === "3f81947c-cd1a-49d7-8018-5091b1208ed0" ||
@@ -1645,35 +1674,41 @@ export function getPosyanduCakupanWilayah(targetKomunitas: any): PosyanduCakupan
       targetKomunitas?.id === "3099b01d-e5e2-49e7-885f-94b9b4f18209" ||
       (nama.includes("tulip") && !nama.includes("paud"))
     ) {
-      return { rw: "13" };
+      return {
+        rw: "13",
+        rtList: ["01", "02", "03", "04", "05", "06", "07", "1", "2", "3", "4", "5", "6", "7"],
+      };
     }
     if (
       targetKomunitas?.id === "3898c3f2-0122-4ddf-833d-99bfd5fb682c" ||
       nama.includes("teratai putih")
     ) {
-      return { rw: "14" };
+      return {
+        rw: "14",
+        rtList: ["01", "02", "03", "04", "05", "1", "2", "3", "4", "5"],
+      };
     }
   }
 
   // Khusus Kelurahan Tegalsari (Kecamatan Tegal Barat)
-  // 1. Posyandu Tunas Bahari: RW 1
+  // 1. Posyandu Tunas Bahari: RW 1 (RT 1 s/d 6)
   // 2. Posyandu Minasari: RW 2 RT 1, 2, 3, 4, 5, 6, 7
   // 3. Posyandu Mina Bahari: RW 2 RT 8, 9, 10
   // 4. Posyandu Melatisari 1: RW 3 RT 1, 2, 3, 4, 5, 6
   // 5. Posyandu Melatisari 2: RW 3 RT 7, 8, 9, 10
   // 6. Posyandu Sejahtera 1: RW 4 RT 1, 6, 7, 8, 9, 10
   // 7. Posyandu Sejahtera 2: RW 4 RT 2, 3, 4, 5
-  // 8. Posyandu Mawar Merah: RW 5
-  // 9. Posyandu Kuncup Mekar: RW 6
-  // 10. Posyandu Bougenville: RW 7
-  // 11. Posyandu Kamboja: RW 8
+  // 8. Posyandu Mawar Merah: RW 5 (RT 1 s/d 6)
+  // 9. Posyandu Kuncup Mekar: RW 6 (RT 1 s/d 6)
+  // 10. Posyandu Bougenville: RW 7 (RT 1 s/d 4)
+  // 11. Posyandu Kamboja: RW 8 (RT 1 s/d 5)
   // 12. Posyandu Layangsari A: RW 9 RT 1, 2, 3, 4
   // 13. Posyandu Layangsari B: RW 9 RT 5, 6, 7, 8, 9, 10
   // 14. Posyandu Wijayakusuma 1: RW 10 RT 3, 4, 5, 6, 7, 8, 9
   // 15. Posyandu Wijayakusuma 2: RW 10 RT 1, 2, 10
   // 16. Posyandu Kenanga A: RW 11 RT 3, 4, 5
   // 17. Posyandu Kenanga B: RW 11 RT 1, 2
-  // 18. Posyandu Anggrek Ungu: RW 12 dan RW 31
+  // 18. Posyandu Anggrek Ungu: RW 12 (RT 1 s/d 5) dan RW 31
   const isTegalsariPosyandu =
     kel.includes("tegalsari") ||
     nama.includes("tegalsari") ||
@@ -1701,7 +1736,10 @@ export function getPosyanduCakupanWilayah(targetKomunitas: any): PosyanduCakupan
       targetKomunitas?.id === "cd1adf7b-5be1-4c26-8f3f-99b1c2242d80" ||
       nama.includes("tunas bahari")
     ) {
-      return { rw: "01" };
+      return {
+        rw: "01",
+        rtList: ["01", "02", "03", "04", "05", "06", "1", "2", "3", "4", "5", "6"],
+      };
     }
     if (
       targetKomunitas?.id === "f6013505-8603-4059-803c-04855b1a6e07" ||
@@ -1763,25 +1801,37 @@ export function getPosyanduCakupanWilayah(targetKomunitas: any): PosyanduCakupan
       targetKomunitas?.id === "c0b56c95-1bd4-4d71-8e2c-35cda656c2c8" ||
       nama.includes("mawar merah")
     ) {
-      return { rw: "05" };
+      return {
+        rw: "05",
+        rtList: ["01", "02", "03", "04", "05", "06", "1", "2", "3", "4", "5", "6"],
+      };
     }
     if (
       targetKomunitas?.id === "1f4e2ab6-ab04-4639-86c1-b995731ae82d" ||
       nama.includes("kuncup mekar")
     ) {
-      return { rw: "06" };
+      return {
+        rw: "06",
+        rtList: ["01", "02", "03", "04", "05", "06", "1", "2", "3", "4", "5", "6"],
+      };
     }
     if (
       targetKomunitas?.id === "df44de8c-b56b-4b87-8895-35b9e0ba5fa7" ||
       (nama.includes("bougenville") && !nama.includes("paud"))
     ) {
-      return { rw: "07" };
+      return {
+        rw: "07",
+        rtList: ["01", "02", "03", "04", "1", "2", "3", "4"],
+      };
     }
     if (
       targetKomunitas?.id === "6b1baada-093a-403e-86eb-50d54599d1f9" ||
       nama.includes("kamboja")
     ) {
-      return { rw: "08" };
+      return {
+        rw: "08",
+        rtList: ["01", "02", "03", "04", "05", "1", "2", "3", "4", "5"],
+      };
     }
     if (
       targetKomunitas?.id === "e16878e7-303e-46fd-89b6-d3e179ff87c0" ||
@@ -1847,6 +1897,7 @@ export function getPosyanduCakupanWilayah(targetKomunitas: any): PosyanduCakupan
       return {
         rw: "12",
         rwList: ["12", "13", "31", "02"],
+        rtList: ["01", "02", "03", "04", "05", "1", "2", "3", "4", "5"],
       };
     }
   }
@@ -1939,6 +1990,37 @@ export function getPosyanduCoverageDisplay(komunitas: any): PosyanduCoverageResu
     const rangeMatch = desc.match(/\((RT\s*\d+[^)]+)\)/i);
     if (rangeMatch) {
       rtLabel = rangeMatch[1].trim();
+    }
+  }
+
+  // Khusus kelurahan yang telah dipetakan resmi: jika posyandu melayani 1 RW penuh,
+  // otomatis tetapkan rtLabel = RT 01 s/d RT XX sesuai jumlah RT resmi di RW tersebut
+  if (!rtLabel && isValidRw) {
+    const kel = (komunitas.kelurahan || seedItem?.kelurahan || "")
+      .replace(/^(kelurahan|kel\.)\s+/i, "")
+      .trim()
+      .toLowerCase();
+    const MAPPED_KELURAHAN_SET = new Set([
+      "debong lor",
+      "debong kidul",
+      "debong kulon",
+      "pesurungan lor",
+      "keturen",
+      "tunon",
+      "margadana",
+      "panggung",
+      "pekauman",
+      "tegalsari",
+      "kalinyamat kulon",
+      "kaligangsa",
+      "kraton",
+    ]);
+
+    if (MAPPED_KELURAHAN_SET.has(kel)) {
+      const totalRtOfficial = getJumlahRtPerRwByKelurahan(kel, rawRw);
+      if (totalRtOfficial > 1) {
+        rtLabel = `RT 01 s/d RT ${String(totalRtOfficial).padStart(2, "0")}`;
+      }
     }
   }
 
