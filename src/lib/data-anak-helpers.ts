@@ -1,5 +1,6 @@
 import { extractKomunitasMetadata } from "@/lib/admin-helpers";
 import { RAW_PAUD_PKBM_TEGAL } from "@/lib/constants/seed-paud-tegal";
+import { RAW_POSYANDU_TEGAL } from "@/lib/constants/seed-posyandu-tegal";
 import {
   MASTER_KOMUNITAS_SEED,
   findOrGenerateKomunitasSeed,
@@ -1768,6 +1769,120 @@ export function getPosyanduCakupanWilayah(targetKomunitas: any): PosyanduCakupan
 
 export function getPosyanduCakupanRw(targetKomunitas: any): string | null {
   return getPosyanduCakupanWilayah(targetKomunitas)?.rw || null;
+}
+
+export interface PosyanduCoverageResult {
+  isMapped: boolean;
+  label: string;
+  rwLabel: string | null;
+  rtLabel: string | null;
+}
+
+export function formatRtList(rtList?: string[]): string {
+  if (!rtList || rtList.length === 0) return "";
+  const nums = Array.from(
+    new Set(
+      rtList
+        .map((n) => parseInt(n, 10))
+        .filter((n) => !isNaN(n) && n > 0)
+    )
+  ).sort((a, b) => a - b);
+
+  if (nums.length === 0) return "";
+
+  const min = nums[0];
+  const max = nums[nums.length - 1];
+  const isConsecutive = nums.length > 2 && max - min + 1 === nums.length;
+
+  if (isConsecutive) {
+    return `RT ${String(min).padStart(2, "0")} s/d RT ${String(max).padStart(2, "0")}`;
+  } else if (nums.length === 1) {
+    return `RT ${String(nums[0]).padStart(2, "0")}`;
+  } else {
+    return `RT ` + nums.map((n) => String(n).padStart(2, "0")).join(", ");
+  }
+}
+
+/**
+ * Helper terpusat untuk menampilkan cakupan wilayah RW dan RT suatu Posyandu pada kartu & detail.
+ * Menggabungkan aturan pemetaan kanonikal (getPosyanduCakupanWilayah), rentang RT dari deskripsi,
+ * data kolom rw/rt database, serta master seed resmi.
+ */
+export function getPosyanduCoverageDisplay(komunitas: any): PosyanduCoverageResult {
+  if (!komunitas) {
+    return {
+      isMapped: false,
+      label: "Cakupan RW/RT Belum Dipetakan",
+      rwLabel: null,
+      rtLabel: null,
+    };
+  }
+
+  // 1. Ambil dari canonical rule di data-anak-helpers
+  const canon = getPosyanduCakupanWilayah(komunitas);
+
+  // Fallback ke master seed jika komunitas belum terisi rw/rt di DB
+  const seedItem = komunitas.id ? RAW_POSYANDU_TEGAL.find((s) => s.id === komunitas.id) : null;
+
+  // Parse RW
+  let rawRw = canon?.rw || komunitas.rw || seedItem?.rw || "";
+  rawRw = String(rawRw).replace(/^(rw|rt)\s*/i, "").trim();
+  const rwNum = parseInt(rawRw, 10);
+  const isValidRw = !isNaN(rwNum) && rwNum > 0;
+  const rwLabel = isValidRw ? `RW ${String(rwNum).padStart(2, "0")}` : null;
+
+  // Parse RT
+  let rtLabel: string | null = null;
+  if (canon?.rtList && canon.rtList.length > 0) {
+    rtLabel = formatRtList(canon.rtList);
+  }
+
+  // Jika belum dapat rtLabel, cek rentang di deskripsi misal: (RT 01 s/d RT 04)
+  if (!rtLabel) {
+    const desc = komunitas.deskripsi || seedItem?.deskripsi || "";
+    const rangeMatch = desc.match(/\((RT\s*\d+[^)]+)\)/i);
+    if (rangeMatch) {
+      rtLabel = rangeMatch[1].trim();
+    }
+  }
+
+  // Jika masih belum ada, cek kolom rt di database atau master seed
+  if (!rtLabel) {
+    const rawRt = String(komunitas.rt || seedItem?.rt || "").replace(/^(rw|rt)\s*/i, "").trim();
+    const rtNum = parseInt(rawRt, 10);
+    if (!isNaN(rtNum) && rtNum > 0) {
+      rtLabel = `RT ${String(rtNum).padStart(2, "0")}`;
+    }
+  }
+
+  if (!rwLabel && !rtLabel) {
+    return {
+      isMapped: false,
+      label: "Cakupan RW/RT Belum Dipetakan",
+      rwLabel: null,
+      rtLabel: null,
+    };
+  }
+
+  let fullLabel = "";
+  if (rwLabel && rtLabel) {
+    if (rtLabel.startsWith("(") && rtLabel.endsWith(")")) {
+      fullLabel = `${rwLabel} ${rtLabel}`;
+    } else {
+      fullLabel = `${rwLabel} (${rtLabel})`;
+    }
+  } else if (rwLabel) {
+    fullLabel = rwLabel;
+  } else if (rtLabel) {
+    fullLabel = rtLabel;
+  }
+
+  return {
+    isMapped: true,
+    label: fullLabel,
+    rwLabel,
+    rtLabel,
+  };
 }
 
 /**

@@ -19,11 +19,13 @@ import {
   AlertTriangle,
   X,
   Loader2,
+  Home,
 } from "lucide-react";
 import type { UserJoinedKomunitas } from "@/types/database";
 import { cn, isRoleAdmin, toValidUUID, formatPeranDisplay } from "@/lib/utils";
 import { UnifiedWargaCard, type WargaTierItem } from "@/components/komunitas/unified-warga-card";
 import { extractKomunitasMetadata } from "@/lib/admin-helpers";
+import { getPosyanduCoverageDisplay } from "@/lib/data-anak-helpers";
 import { getWargaHierarchyChain, findKecamatanByKelurahan, slugify } from "@/lib/constants/tegal-data";
 import { leaveKomunitas } from "@/app/actions/komunitas";
 
@@ -455,12 +457,32 @@ export function KomunitasSayaSection({
                   <h3 className="text-base font-bold text-slate-900 line-clamp-1 leading-snug">
                     {formattedTitle}
                   </h3>
-                  <div className="flex items-center gap-2 text-sm font-semibold text-slate-600 mt-1">
-                    <span className="flex items-center gap-1">
+                  <div className="flex flex-wrap items-center gap-2 text-sm font-semibold text-slate-600 mt-1">
+                    <span className="flex items-center gap-1 shrink-0">
                       <MapPin className="h-3.5 w-3.5 text-slate-500" />
                       {item.kelurahan || "Tegal"}, {item.kecamatan || "Kota Tegal"}
                     </span>
-                    <span>•</span>
+                    {item.jenis === "posyandu" && (() => {
+                      const cov = getPosyanduCoverageDisplay(item);
+                      return cov.isMapped ? (
+                        <>
+                          <span className="text-slate-400">•</span>
+                          <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 text-emerald-800 font-semibold px-2 py-0.5 text-xs border border-emerald-200">
+                            <Home className="h-3 w-3 shrink-0 text-emerald-600" />
+                            <span>{cov.label}</span>
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="text-slate-400">•</span>
+                          <span className="inline-flex items-center gap-1 rounded-md bg-amber-50 text-amber-800 font-semibold px-2 py-0.5 text-xs border border-amber-200">
+                            <AlertTriangle className="h-3 w-3 shrink-0 text-amber-600" />
+                            <span>Belum Dipetakan</span>
+                          </span>
+                        </>
+                      );
+                    })()}
+                    <span className="text-slate-400">•</span>
                     <span className="font-mono text-slate-900">{item.jumlah_anggota} Anggota</span>
                   </div>
                 </div>

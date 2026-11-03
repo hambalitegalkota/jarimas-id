@@ -48,6 +48,7 @@ import {
   Share2,
 } from "lucide-react";
 import { getKomunitasSlug } from "@/lib/community-slugs";
+import { getPosyanduCoverageDisplay } from "@/lib/data-anak-helpers";
 import { JoinKomunitasModal } from "@/components/komunitas/join-komunitas-modal";
 import { WargaOnboardingModal } from "@/components/komunitas/warga-onboarding-modal";
 import { EditInformasiOperasionalModal } from "@/components/komunitas/edit-informasi-operasional-modal";
@@ -1173,7 +1174,10 @@ export function KomunitasDetailClientView({
               <span className="text-muted-foreground/40">•</span>
               <span className="font-semibold text-foreground">
                 {isPosyandu
-                  ? `Posyandu Siklus Hidup Terpadu (ILP) • RW ${meta.rw || "-"} Kel. ${komunitas.kelurahan || "Kraton"}`
+                  ? (() => {
+                      const cov = getPosyanduCoverageDisplay(komunitasData);
+                      return `Posyandu Siklus Hidup Terpadu (ILP) • ${cov.isMapped ? cov.label : "Cakupan RW/RT Belum Dipetakan"} • Kel. ${komunitas.kelurahan || "Kota Tegal"}`;
+                    })()
                   : isWargaKita
                   ? `Lingkungan Warga Kita • ${tierLevelLabel}`
                   : isPkbmOrSkb
@@ -1243,11 +1247,29 @@ export function KomunitasDetailClientView({
             <div className="p-3 rounded-lg bg-card border border-border space-y-1">
               <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
                 <MapPin className="h-3.5 w-3.5 text-primary" />
-                {isPosyandu ? "Alamat Posyandu" : isWargaKita ? "Alamat / Sekretariat" : "Alamat Lembaga"}
+                {isPosyandu ? "Alamat & Cakupan Posyandu" : isWargaKita ? "Alamat / Sekretariat" : "Alamat Lembaga"}
               </span>
               <p className="font-semibold text-foreground leading-relaxed">
                 {komunitasData.lokasi || "Alamat belum dicantumkan"}
               </p>
+              {isPosyandu && (() => {
+                const cov = getPosyanduCoverageDisplay(komunitasData);
+                return (
+                  <div className="pt-1">
+                    {cov.isMapped ? (
+                      <span className="inline-flex items-center gap-1 rounded bg-emerald-50 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300 font-semibold px-2 py-0.5 text-xs border border-emerald-200 dark:border-emerald-800">
+                        <Home className="h-3 w-3 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                        <span>Cakupan: {cov.label}</span>
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 rounded bg-amber-50 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300 font-semibold px-2 py-0.5 text-xs border border-amber-200 dark:border-amber-800">
+                        <AlertTriangle className="h-3 w-3 shrink-0 text-amber-600 dark:text-amber-400" />
+                        <span>Cakupan RW/RT Belum Dipetakan</span>
+                      </span>
+                    )}
+                  </div>
+                );
+              })()}
             </div>
 
             {/* 2. Jam Operasional / Jadwal Layanan */}

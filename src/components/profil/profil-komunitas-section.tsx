@@ -17,9 +17,12 @@ import {
   Sparkles,
   School,
   ExternalLink,
+  Home,
+  AlertTriangle,
 } from "lucide-react";
 import { UnifiedWargaCard, type WargaTierItem } from "@/components/komunitas/unified-warga-card";
 import { ManageGrupMembersModal } from "@/components/kabar/manage-grup-members-modal";
+import { getPosyanduCoverageDisplay } from "@/lib/data-anak-helpers";
 import type { RegisteredUserItem } from "@/types/database";
 
 export interface ProfilCommunityItem {
@@ -215,6 +218,26 @@ export function ProfilKomunitasSection({
                             "Kota Tegal"}
                         </span>
                       </span>
+                      {kom.jenis === "posyandu" && (() => {
+                        const cov = getPosyanduCoverageDisplay(kom);
+                        return cov.isMapped ? (
+                          <>
+                            <span>•</span>
+                            <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300 font-semibold px-2 py-0.5 text-xs border border-emerald-200 dark:border-emerald-800">
+                              <Home className="h-3 w-3 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                              <span>{cov.label}</span>
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            <span>•</span>
+                            <span className="inline-flex items-center gap-1 rounded-md bg-amber-50 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300 font-semibold px-2 py-0.5 text-xs border border-amber-200 dark:border-amber-800">
+                              <AlertTriangle className="h-3 w-3 shrink-0 text-amber-600 dark:text-amber-400" />
+                              <span>Belum Dipetakan</span>
+                            </span>
+                          </>
+                        );
+                      })()}
                       {kom.jumlah_anggota !== undefined && (
                         <>
                           <span>•</span>

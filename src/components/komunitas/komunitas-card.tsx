@@ -13,9 +13,12 @@ import {
   ArrowRight,
   Sparkles,
   BookOpen,
+  Home,
+  AlertTriangle,
 } from "lucide-react";
 import { JoinKomunitasModal } from "@/components/komunitas/join-komunitas-modal";
 import { WargaOnboardingModal } from "@/components/komunitas/warga-onboarding-modal";
+import { getPosyanduCoverageDisplay } from "@/lib/data-anak-helpers";
 import type { KomunitasWithMembership } from "@/types/database";
 import { cn } from "@/lib/utils";
 
@@ -33,6 +36,8 @@ export function KomunitasCard({
 
   const membership = komunitas.currentUserMembership;
   const isApprovedMember = membership?.status === "approved";
+  const isPosyandu = komunitas.jenis === "posyandu";
+  const coverage = isPosyandu ? getPosyanduCoverageDisplay(komunitas) : null;
 
   // Hanya Komunitas RT, Posyandu, dan Satuan PAUD yang dapat digabung secara langsung.
   // Komunitas RW, Kelurahan, Kecamatan, dan Kota Tegal tidak memiliki tombol gabung langsung.
@@ -156,15 +161,40 @@ export function KomunitasCard({
               )}
             </div>
 
-            <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-              <MapPin className="h-3.5 w-3.5 text-muted-foreground/70 shrink-0" />
-              <span className="truncate">
-                {komunitas.kelurahan && komunitas.kelurahan !== "Semua Kelurahan"
-                  ? `${komunitas.kelurahan}, ${komunitas.kecamatan || "Kota Tegal"}`
-                  : komunitas.kecamatan && komunitas.kecamatan !== "Kota Tegal"
-                  ? `Kecamatan ${komunitas.kecamatan}, Kota Tegal`
-                  : "Kota Tegal, Jawa Tengah"}
-              </span>
+            <div className="flex flex-wrap items-center gap-1.5 text-xs font-medium text-muted-foreground">
+              <div className="flex items-center gap-1 shrink-0">
+                <MapPin className="h-3.5 w-3.5 text-muted-foreground/70 shrink-0" />
+                <span>
+                  {komunitas.kelurahan && komunitas.kelurahan !== "Semua Kelurahan"
+                    ? `${komunitas.kelurahan}, ${komunitas.kecamatan || "Kota Tegal"}`
+                    : komunitas.kecamatan && komunitas.kecamatan !== "Kota Tegal"
+                    ? `Kecamatan ${komunitas.kecamatan}, Kota Tegal`
+                    : "Kota Tegal, Jawa Tengah"}
+                </span>
+              </div>
+
+              {isPosyandu && coverage && (
+                <>
+                  <span className="text-muted-foreground/40 hidden xs:inline">•</span>
+                  {coverage.isMapped ? (
+                    <span
+                      title="Cakupan sinkronisasi wilayah Posyandu"
+                      className="inline-flex items-center gap-1 rounded-md bg-emerald-50 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300 font-semibold px-2 py-0.5 text-[11px] border border-emerald-200 dark:border-emerald-800 shadow-2xs"
+                    >
+                      <Home className="h-3 w-3 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                      <span>{coverage.label}</span>
+                    </span>
+                  ) : (
+                    <span
+                      title="Posyandu ini belum memiliki pemetaan RW/RT resmi di sistem"
+                      className="inline-flex items-center gap-1 rounded-md bg-amber-50 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300 font-semibold px-2 py-0.5 text-[11px] border border-amber-200 dark:border-amber-800 shadow-2xs"
+                    >
+                      <AlertTriangle className="h-3 w-3 shrink-0 text-amber-600 dark:text-amber-400" />
+                      <span>Cakupan RW/RT Belum Dipetakan</span>
+                    </span>
+                  )}
+                </>
+              )}
             </div>
           </div>
         </div>
