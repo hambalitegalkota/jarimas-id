@@ -791,9 +791,12 @@ export function CekProgresClientView({
                       {/* Nama PAUD & Institusi */}
                       <td className="py-3 px-3.5">
                         <div className="space-y-0.5">
-                          <span className="font-bold text-foreground block">
+                          <Link
+                            href={`/komunitas/${item.komunitas_id}`}
+                            className="font-bold text-foreground hover:text-primary transition-colors block"
+                          >
                             {item.nama_paud}
-                          </span>
+                          </Link>
                           <span className="inline-block px-1.5 py-0.2 rounded-md bg-muted text-[10px] font-semibold text-muted-foreground">
                             {item.jenis_institusi}
                           </span>
@@ -890,7 +893,7 @@ export function CekProgresClientView({
                       {/* Aksi */}
                       <td className="py-3 px-3.5 text-center print:hidden">
                         <Link
-                          href={`/komunitas/${item.komunitas_id}/data`}
+                          href={`/komunitas/${item.komunitas_id}`}
                           className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-border bg-background hover:bg-muted text-2xs font-bold text-foreground transition-colors cursor-pointer shadow-2xs"
                           title="Buka Data Anak PAUD"
                         >

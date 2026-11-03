@@ -821,7 +821,7 @@ export function KomunitasDetailClientView({
       ? [
           {
             id: "data_anak" as const,
-            href: `/komunitas/${komunitas.id}/data`,
+            href: `/komunitas/${komunitas.id}`,
             title: isRekapOnlyTier
               ? "Rekapitulasi Data Anak Usia Dini (0–6 Tahun)"
               : "Data Anak (0–6 Tahun) & DDTK",
