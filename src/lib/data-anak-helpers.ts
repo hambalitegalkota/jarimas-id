@@ -1046,17 +1046,18 @@ export function getPosyanduCakupanWilayah(targetKomunitas: any): PosyanduCakupan
 
   // Khusus Kelurahan Pesurungan Lor
   if (kel.includes("pesurungan lor") || nama.includes("pesurungan lor")) {
+    const pesurunganLorRtList = ["01", "02", "03", "04", "05", "06", "07", "1", "2", "3", "4", "5", "6", "7"];
     if (nama.includes("melati")) {
-      return { rw: "01" };
+      return { rw: "01", rtList: pesurunganLorRtList };
     }
     if (nama.includes("mawar")) {
-      return { rw: "02" };
+      return { rw: "02", rtList: pesurunganLorRtList };
     }
     if (nama.includes("anggrek")) {
-      return { rw: "03" };
+      return { rw: "03", rtList: pesurunganLorRtList };
     }
     if (nama.includes("jaya samudra") || nama.includes("jaya samudera")) {
-      return { rw: "04" };
+      return { rw: "04", rtList: pesurunganLorRtList };
     }
   }
 

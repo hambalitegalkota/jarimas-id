@@ -857,6 +857,11 @@ export async function getKomunitasList(
         if (itemDeskripsi) {
           itemDeskripsi = itemDeskripsi.replace(/Posyandu\s+Posyandu/gi, "Posyandu");
         }
+        if (item.id === "7e363301-78ea-4310-84c2-94618d860cee" || (item.kelurahan?.toLowerCase() === "pesurungan lor" && itemNama?.toLowerCase().includes("anggrek"))) {
+          if (!itemDeskripsi?.includes("(RT 01 s/d RT 07)")) {
+            itemDeskripsi = "Layanan terpadu Posyandu Anggrek Pesurungan Lor cakupan sinkronisasi wilayah RW 03 (RT 01 s/d RT 07): penimbangan berat badan, tinggi badan, imunisasi, DDKS, dan PMT balita serta ibu hamil.";
+          }
+        }
         const canonicalRw = getPosyanduCakupanRw(item);
         if (canonicalRw && !kkInfo && !kgInfo) {
           itemRw = canonicalRw;
@@ -1296,6 +1301,11 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
       komunitas.deskripsi || `Layanan dan kegiatan ${nama} di ${lokasi}.`;
     if (jenis === "posyandu") {
       deskripsi = deskripsi.replace(/Posyandu\s+Posyandu/gi, "Posyandu");
+      if (komunitas.id === "7e363301-78ea-4310-84c2-94618d860cee" || (komunitas.kelurahan?.toLowerCase() === "pesurungan lor" && nama?.toLowerCase().includes("anggrek"))) {
+        if (!deskripsi.includes("(RT 01 s/d RT 07)")) {
+          deskripsi = "Layanan terpadu Posyandu Anggrek Pesurungan Lor cakupan sinkronisasi wilayah RW 03 (RT 01 s/d RT 07): penimbangan berat badan, tinggi badan, imunisasi, DDKS, dan PMT balita serta ibu hamil.";
+        }
+      }
     }
 
     // 1. Identifikasi komunitas yang relevan (hanya untuk detail ini dan hierarkinya jika warga_kita)
@@ -3911,6 +3921,11 @@ export async function getKomunitasAdminListAction(params: GetKomunitasAdminListP
             }
             if (itemDeskripsi) {
               itemDeskripsi = itemDeskripsi.replace(/Posyandu\s+Posyandu/gi, "Posyandu");
+            }
+            if (item.id === "7e363301-78ea-4310-84c2-94618d860cee" || (item.kelurahan?.toLowerCase() === "pesurungan lor" && itemNama?.toLowerCase().includes("anggrek"))) {
+              if (!itemDeskripsi?.includes("(RT 01 s/d RT 07)")) {
+                itemDeskripsi = "Layanan terpadu Posyandu Anggrek Pesurungan Lor cakupan sinkronisasi wilayah RW 03 (RT 01 s/d RT 07): penimbangan berat badan, tinggi badan, imunisasi, DDKS, dan PMT balita serta ibu hamil.";
+              }
             }
             const canonicalRw = getPosyanduCakupanRw(item);
             if (canonicalRw && !kkInfo && !kgInfo) itemRw = canonicalRw;
