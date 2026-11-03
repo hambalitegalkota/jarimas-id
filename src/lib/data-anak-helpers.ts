@@ -873,6 +873,101 @@ export function getPosyanduCakupanWilayah(targetKomunitas: any): PosyanduCakupan
   const nama = (targetKomunitas.nama || "").toLowerCase();
   const kel = (targetKomunitas.kelurahan || "").toLowerCase();
 
+  // Khusus Kelurahan Kraton (Kecamatan Tegal Barat)
+  if (kel.includes("kraton") || nama.includes("kraton")) {
+    if (nama.includes("nusa indah")) {
+      return {
+        rw: "01",
+        rtList: ["01", "02", "03", "04", "05", "06", "07", "08", "09", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
+      };
+    }
+    if (nama.includes("mawar a") || (nama.includes("mawar") && !nama.includes("mawar b"))) {
+      return {
+        rw: "02",
+        rtList: ["01", "02", "04", "05", "1", "2", "4", "5"],
+      };
+    }
+    if (nama.includes("mawar b")) {
+      return {
+        rw: "02",
+        rtList: ["03", "06", "07", "08", "09", "3", "6", "7", "8", "9"],
+      };
+    }
+    if (nama.includes("kenanga a") || (nama.includes("kenanga") && !nama.includes("kenanga b"))) {
+      return {
+        rw: "03",
+        rtList: ["01", "02", "03", "08", "1", "2", "3", "8"],
+      };
+    }
+    if (nama.includes("kenanga b")) {
+      return {
+        rw: "03",
+        rtList: ["04", "05", "06", "07", "4", "5", "6", "7"],
+      };
+    }
+    if (nama.includes("astika a")) {
+      return {
+        rw: "04",
+        rtList: ["01", "02", "03", "09", "1", "2", "3", "9"],
+      };
+    }
+    if (nama.includes("astika b")) {
+      return {
+        rw: "04",
+        rtList: ["04", "06", "07", "08", "4", "6", "7", "8"],
+      };
+    }
+    if (nama.includes("astika c")) {
+      return {
+        rw: "04",
+        rtList: ["05", "10", "5"],
+      };
+    }
+    if (nama.includes("kartini a")) {
+      return {
+        rw: "05",
+        rtList: ["03", "07", "09", "10", "11", "3", "7", "9"],
+      };
+    }
+    if (nama.includes("kartini b")) {
+      return {
+        rw: "05",
+        rtList: ["01", "02", "03", "04", "05", "06", "08", "1", "2", "3", "4", "5", "6", "8"],
+      };
+    }
+    if (nama.includes("sekar indah a")) {
+      return {
+        rw: "06",
+        rtList: ["01", "02", "03", "04", "05", "1", "2", "3", "4", "5"],
+      };
+    }
+    if (nama.includes("sekar indah b")) {
+      return {
+        rw: "06",
+        rtList: ["06", "07", "08", "6", "7", "8"],
+      };
+    }
+    if (nama.includes("mayang sari") || nama.includes("mayangsari")) {
+      return {
+        rw: "07",
+        rtList: ["01", "02", "03", "04", "05", "06", "07", "08", "1", "2", "3", "4", "5", "6", "7", "8"],
+      };
+    }
+    if (nama.includes("seruni")) {
+      return {
+        rw: "08",
+        rtList: ["01", "02", "03", "04", "05", "1", "2", "3", "4", "5"],
+      };
+    }
+    if (nama.includes("dewi sartika") || nama.includes("sartika")) {
+      return {
+        rw: "09",
+        rtList: ["01", "02", "03", "04", "05", "06", "1", "2", "3", "4", "5", "6"],
+      };
+    }
+  }
+
+
   // Khusus Kelurahan Debong Lor
   if (kel.includes("debong lor") || nama.includes("debong lor")) {
     if (
@@ -2252,6 +2347,67 @@ export function isValidPanggungRtRw(
  * - RW 13 / RW 31 Jumlah RT 5 (RT 1 s/d 5)
  * - Tetap mempertahankan RW "Belum Tahu" dan RT "Belum Tahu"
  */
+/**
+ * Validasi ketentuan khusus RW & RT di Kelurahan Kraton, Kecamatan Tegal Barat:
+ * - Jumlah RW ada 9 (RW 1 s/d 9)
+ * - RW 1 Jumlah RT 9 (RT 1 s/d 9)
+ * - RW 2 Jumlah RT 9 (RT 1 s/d 9)
+ * - RW 3 Jumlah RT 8 (RT 1 s/d 8)
+ * - RW 4 Jumlah RT 10 (RT 1 s/d 10: Astika A 1,2,3,9; Astika B 4,6,7,8; Astika C 5,10)
+ * - RW 5 Jumlah RT 11 (RT 1 s/d 11)
+ * - RW 6 Jumlah RT 8 (RT 1 s/d 8)
+ * - RW 7 Jumlah RT 8 (RT 1 s/d 8)
+ * - RW 8 Jumlah RT 5 (RT 1 s/d 5)
+ * - RW 9 Jumlah RT 6 (RT 1 s/d 6)
+ * - Tetap mempertahankan RW "Belum Tahu" dan RT "Belum Tahu"
+ */
+export function isValidKratonRtRw(
+  kel?: string | null,
+  rw?: string | null,
+  rt?: string | null
+): boolean {
+  if (!kel) return true;
+  const cleanKel = normalizeWilayah(kel);
+  if (!cleanKel.includes("kraton")) return true;
+
+  const rawRw = (rw || "").trim().toLowerCase();
+  const rawRt = (rt || "").trim().toLowerCase();
+
+  const isRwBelumTahu =
+    !rawRw ||
+    rawRw.includes("belum") ||
+    rawRw === "-" ||
+    rawRw === "0" ||
+    rawRw === "00";
+  if (isRwBelumTahu) return true;
+
+  const rwNum = parseInt(rawRw.replace(/\D/g, ""), 10);
+  if (isNaN(rwNum) || rwNum < 1 || rwNum > 9) return false;
+
+  const isRtBelumTahu =
+    !rawRt ||
+    rawRt.includes("belum") ||
+    rawRt === "-" ||
+    rawRt === "0" ||
+    rawRt === "00";
+  if (isRtBelumTahu) return true;
+
+  const rtNum = parseInt(rawRt.replace(/\D/g, ""), 10);
+  if (isNaN(rtNum)) return false;
+
+  if (rwNum === 1 && (rtNum < 1 || rtNum > 9)) return false;
+  if (rwNum === 2 && (rtNum < 1 || rtNum > 9)) return false;
+  if (rwNum === 3 && (rtNum < 1 || rtNum > 8)) return false;
+  if (rwNum === 4 && (rtNum < 1 || rtNum > 10)) return false;
+  if (rwNum === 5 && (rtNum < 1 || rtNum > 11)) return false;
+  if (rwNum === 6 && (rtNum < 1 || rtNum > 8)) return false;
+  if (rwNum === 7 && (rtNum < 1 || rtNum > 8)) return false;
+  if (rwNum === 8 && (rtNum < 1 || rtNum > 5)) return false;
+  if (rwNum === 9 && (rtNum < 1 || rtNum > 6)) return false;
+
+  return true;
+}
+
 export function isValidTegalsariRtRw(
   kel?: string | null,
   rw?: string | null,
@@ -2355,6 +2511,15 @@ export function isDataAnakMatchingKomunitas(
   targetMeta: any,
   targetKomId: string
 ): boolean {
+  // Ketentuan Khusus Kelurahan Kraton: Hapus/abaikan data yang tidak sesuai ketentuan resmi RW & RT Kraton
+  const isDomKraton = (item.domisili_kelurahan || "").toLowerCase().includes("kraton");
+  const isKkKraton = (item.kk_kelurahan || "").toLowerCase().includes("kraton");
+  if (isDomKraton && !isValidKratonRtRw(item.domisili_kelurahan, item.domisili_rw, item.domisili_rt)) {
+    return false;
+  }
+  if (isKkKraton && !isValidKratonRtRw(item.kk_kelurahan, item.kk_rw, item.kk_rt)) {
+    return false;
+  }
   // Ketentuan Khusus Kelurahan Kalinyamat Kulon: Hapus/abaikan data yang tidak sesuai ketentuan resmi RW & RT Kalinyamat Kulon
   if (
     !isValidKalinyamatKulonRtRw(item.domisili_kelurahan, item.domisili_rw, item.domisili_rt) &&
@@ -2488,18 +2653,13 @@ export function isDataAnakMatchingKomunitas(
     !targetKec ||
     targetKec === "kota tegal" ||
     targetKec === "semua" ||
-    !kec ||
-    kec === targetKec ||
-    kec.includes(targetKec) ||
-    targetKec.includes(kec);
+    (Boolean(kec) && (kec === targetKec || kec.includes(targetKec) || targetKec.includes(kec)));
 
   const isKelMatch = (kel: string) =>
     !targetKel ||
     targetKel === "semua" ||
     targetKel === "semua kelurahan" ||
-    kel === targetKel ||
-    kel.includes(targetKel) ||
-    targetKel.includes(kel);
+    (Boolean(kel) && (kel === targetKel || kel.includes(targetKel) || targetKel.includes(kel)));
 
   // Cek lokasi PAUD tempat anak terdaftar (jika bersekolah di PAUD / nama_sekolah terisi)
   const paudLoc = findPaudLocation(item.nama_sekolah || item.komunitas_id);
@@ -2512,8 +2672,8 @@ export function isDataAnakMatchingKomunitas(
   if (targetKomunitas?.jenis === "posyandu" || targetMeta?.jenis === "posyandu") {
     const cakupan = getPosyanduCakupanWilayah(targetKomunitas);
     const posyanduRw = cakupan?.rw || getPosyanduCakupanRw(targetKomunitas) || targetRw;
-    const domKelMatch = isKelMatch(domKel) && isKecMatch(domKec);
-    const kkKelMatch = isKelMatch(kkKel) && isKecMatch(kkKec);
+    const domKelMatch = Boolean(domKel) && isKelMatch(domKel) && isKecMatch(domKec);
+    const kkKelMatch = Boolean(kkKel) && isKelMatch(kkKel) && isKecMatch(kkKec);
 
     if (!domKelMatch && !kkKelMatch && !paudKelMatch) {
       return false;
@@ -2521,18 +2681,20 @@ export function isDataAnakMatchingKomunitas(
 
     // Helper cek apakah isian RW atau RT adalah "Belum Tahu" / kosong
     const isDomRwBelumTahu =
-      !domRw ||
-      !item.domisili_rw ||
-      String(item.domisili_rw).toLowerCase().includes("belum") ||
-      item.domisili_rw === "-" ||
-      item.domisili_rw === "0";
+      Boolean(domKel) &&
+      (!domRw ||
+        !item.domisili_rw ||
+        String(item.domisili_rw).toLowerCase().includes("belum") ||
+        item.domisili_rw === "-" ||
+        item.domisili_rw === "0");
 
     const isKkRwBelumTahu =
-      !kkRw ||
-      !item.kk_rw ||
-      String(item.kk_rw).toLowerCase().includes("belum") ||
-      item.kk_rw === "-" ||
-      item.kk_rw === "0";
+      Boolean(kkKel) &&
+      (!kkRw ||
+        !item.kk_rw ||
+        String(item.kk_rw).toLowerCase().includes("belum") ||
+        item.kk_rw === "-" ||
+        item.kk_rw === "0");
 
     // Data dengan isian RW “Belum Tahu” dan RT “Belum Tahu” tetap dialirkan ke seluruh Posyandu di wilayah kelurahan
     if ((domKelMatch && isDomRwBelumTahu) || (kkKelMatch && isKkRwBelumTahu)) {

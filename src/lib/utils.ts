@@ -731,6 +731,55 @@ export function parseCakupanWilayah(komunitas?: {
   }
 
   // Jika customCakupan sudah ada dan bukan format lama "Melayani Warga RW xx (RT xx)", gunakan customCakupan
+    // Khusus Kelurahan Kraton (Kecamatan Tegal Barat)
+  if (kelClean.includes("kraton") || namaClean.includes("kraton")) {
+    if (namaClean.includes("nusa indah")) {
+      return "Melayani Warga RW 01 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08, RT 09 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("mawar a") || (namaClean.includes("mawar") && !namaClean.includes("mawar b"))) {
+      return "Melayani Warga RW 02 (RT 01, RT 02, RT 04, RT 05 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("mawar b")) {
+      return "Melayani Warga RW 02 (RT 03, RT 06, RT 07, RT 08, RT 09 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("kenanga a") || (namaClean.includes("kenanga") && !namaClean.includes("kenanga b"))) {
+      return "Melayani Warga RW 03 (RT 01, RT 02, RT 03, RT 08 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("kenanga b")) {
+      return "Melayani Warga RW 03 (RT 04, RT 05, RT 06, RT 07 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("astika a")) {
+      return "Melayani Warga RW 04 (RT 01, RT 02, RT 03, RT 09 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("astika b")) {
+      return "Melayani Warga RW 04 (RT 04, RT 06, RT 07, RT 08 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("astika c")) {
+      return "Melayani Warga RW 04 (RT 05, RT 10 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("kartini a")) {
+      return "Melayani Warga RW 05 (RT 03, RT 07, RT 09, RT 10, RT 11 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("kartini b")) {
+      return "Melayani Warga RW 05 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 08 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("sekar indah a")) {
+      return "Melayani Warga RW 06 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("sekar indah b")) {
+      return "Melayani Warga RW 06 (RT 06, RT 07, RT 08 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("mayang sari") || namaClean.includes("mayangsari")) {
+      return "Melayani Warga RW 07 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("seruni")) {
+      return "Melayani Warga RW 08 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("dewi sartika") || namaClean.includes("sartika")) {
+      return "Melayani Warga RW 09 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06 dan RW - RT Tidak Tahu)";
+    }
+  }
+
   const isOldSingleRtFormat = customCakupan && /^Melayani\s+Warga\s+RW\s+\d+\s*\(RT\s+\d+\)$/i.test(customCakupan);
   if (customCakupan && !isOldSingleRtFormat) {
     return customCakupan;

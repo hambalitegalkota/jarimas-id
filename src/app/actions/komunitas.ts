@@ -9,6 +9,7 @@ import {
   extractCorePosyanduName,
   KALINYAMAT_KULON_POSYANDU_MAP,
   KALIGANGSA_POSYANDU_MAP,
+  KRATON_POSYANDU_MAP,
 } from "@/lib/constants/seed-posyandu-tegal";
 import {
   RAW_PAUD_PKBM_TEGAL,
@@ -621,6 +622,7 @@ export async function getKomunitasList(
         const normId = toValidUUID(dbItem.id);
         const kkConfig = KALINYAMAT_KULON_POSYANDU_MAP[dbItem.id] || KALINYAMAT_KULON_POSYANDU_MAP[normId];
         const kgConfig = KALIGANGSA_POSYANDU_MAP[dbItem.id] || KALIGANGSA_POSYANDU_MAP[normId];
+        const kratonConfig = KRATON_POSYANDU_MAP[dbItem.id] || KRATON_POSYANDU_MAP[normId];
 
         if (itemJenis === "posyandu" && kkConfig) {
           matched.nama = kkConfig.nama;
@@ -632,6 +634,13 @@ export async function getKomunitasList(
           matched.rw = kgConfig.rw;
           matched.kecamatan = "Margadana";
           matched.kelurahan = "Kaligangsa";
+        } else if (itemJenis === "posyandu" && kratonConfig) {
+          matched.nama = kratonConfig.nama;
+          matched.rw = kratonConfig.rw;
+          matched.rt = kratonConfig.rt;
+          matched.cakupan_wilayah = kratonConfig.cakupan_wilayah;
+          matched.kecamatan = "Tegal Barat";
+          matched.kelurahan = "Kraton";
         } else {
           if (dbItem.nama) matched.nama = dbItem.nama;
           const officialKec = findKecamatanByKelurahan(matched.kelurahan || dbItem.kelurahan);
@@ -782,6 +791,7 @@ export async function getKomunitasList(
       const kkInfo = KALINYAMAT_KULON_POSYANDU_MAP[item.id] || KALINYAMAT_KULON_POSYANDU_MAP[normId];
       if (kkInfo) coreNama = kkInfo.nama.toLowerCase();
       const kgInfo = KALIGANGSA_POSYANDU_MAP[item.id] || KALIGANGSA_POSYANDU_MAP[normId];
+            const kratonInfo = KRATON_POSYANDU_MAP[item.id] || KRATON_POSYANDU_MAP[normId];
       if (kgInfo) coreNama = kgInfo.nama.toLowerCase();
 
       const key = `${item.jenis}|${kelClean}|${coreNama}`;
@@ -829,13 +839,18 @@ export async function getKomunitasList(
         const normId = toValidUUID(item.id);
         const kkInfo = KALINYAMAT_KULON_POSYANDU_MAP[item.id] || KALINYAMAT_KULON_POSYANDU_MAP[normId];
         const kgInfo = KALIGANGSA_POSYANDU_MAP[item.id] || KALIGANGSA_POSYANDU_MAP[normId];
+            const kratonInfo = KRATON_POSYANDU_MAP[item.id] || KRATON_POSYANDU_MAP[normId];
         if (kkInfo) {
           itemNama = kkInfo.nama;
           itemRw = kkInfo.rw;
         } else if (kgInfo) {
           itemNama = kgInfo.nama;
           itemRw = kgInfo.rw;
-        } else {
+        } else if (kratonInfo) {
+              itemNama = kratonInfo.nama;
+              itemRw = kratonInfo.rw;
+              item.rt = kratonInfo.rt;
+            } else {
           const coreName = extractCorePosyanduName(item.nama);
           itemNama = coreName ? `Posyandu ${coreName}` : "Posyandu";
         }
@@ -1237,6 +1252,11 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
         KALIGANGSA_POSYANDU_MAP[normId] ||
         KALIGANGSA_POSYANDU_MAP[komunitasId] ||
         KALIGANGSA_POSYANDU_MAP[dbKomunitasId];
+      const kratonInfo =
+        KRATON_POSYANDU_MAP[komunitas.id] ||
+        KRATON_POSYANDU_MAP[normId] ||
+        KRATON_POSYANDU_MAP[komunitasId] ||
+        KRATON_POSYANDU_MAP[dbKomunitasId];
 
       if (kkInfo) {
         nama = kkInfo.nama;
@@ -1252,6 +1272,15 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
         komunitas.kecamatan = "Margadana";
         komunitas.rw = kgInfo.rw;
         posyanduCanonicalRw = kgInfo.rw;
+      } else if (kratonInfo) {
+        nama = kratonInfo.nama;
+        komunitas.nama = kratonInfo.nama;
+        komunitas.kelurahan = "Kraton";
+        komunitas.kecamatan = "Tegal Barat";
+        komunitas.rw = kratonInfo.rw;
+        komunitas.rt = kratonInfo.rt;
+        komunitas.cakupan_wilayah = kratonInfo.cakupan_wilayah;
+        posyanduCanonicalRw = kratonInfo.rw;
       } else {
         const coreName = extractCorePosyanduName(nama);
         nama = coreName ? `Posyandu ${coreName}` : "Posyandu";
@@ -3865,12 +3894,17 @@ export async function getKomunitasAdminListAction(params: GetKomunitasAdminListP
             const normId = toValidUUID(item.id);
             const kkInfo = KALINYAMAT_KULON_POSYANDU_MAP[item.id] || KALINYAMAT_KULON_POSYANDU_MAP[normId];
             const kgInfo = KALIGANGSA_POSYANDU_MAP[item.id] || KALIGANGSA_POSYANDU_MAP[normId];
+            const kratonInfo = KRATON_POSYANDU_MAP[item.id] || KRATON_POSYANDU_MAP[normId];
             if (kkInfo) {
               itemNama = kkInfo.nama;
               itemRw = kkInfo.rw;
             } else if (kgInfo) {
               itemNama = kgInfo.nama;
               itemRw = kgInfo.rw;
+            } else if (kratonInfo) {
+              itemNama = kratonInfo.nama;
+              itemRw = kratonInfo.rw;
+              item.rt = kratonInfo.rt;
             } else {
               const coreName = extractCorePosyanduName(itemNama);
               itemNama = coreName ? `Posyandu ${coreName}` : "Posyandu";
@@ -3972,12 +4006,17 @@ export async function getKomunitasAdminListAction(params: GetKomunitasAdminListP
             const normId = toValidUUID(item.id);
             const kkInfo = KALINYAMAT_KULON_POSYANDU_MAP[item.id] || KALINYAMAT_KULON_POSYANDU_MAP[normId];
             const kgInfo = KALIGANGSA_POSYANDU_MAP[item.id] || KALIGANGSA_POSYANDU_MAP[normId];
+            const kratonInfo = KRATON_POSYANDU_MAP[item.id] || KRATON_POSYANDU_MAP[normId];
             if (kkInfo) {
               itemNama = kkInfo.nama;
               itemRw = kkInfo.rw;
             } else if (kgInfo) {
               itemNama = kgInfo.nama;
               itemRw = kgInfo.rw;
+            } else if (kratonInfo) {
+              itemNama = kratonInfo.nama;
+              itemRw = kratonInfo.rw;
+              item.rt = kratonInfo.rt;
             } else {
               const coreName = extractCorePosyanduName(itemNama);
               itemNama = coreName ? `Posyandu ${coreName}` : "Posyandu";

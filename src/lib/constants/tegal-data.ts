@@ -223,9 +223,10 @@ export const KOTA_TEGAL_DATA: Record<string, KecamatanData> = {
           "Posyandu Kartini A",
           "Posyandu Kartini B",
           "Posyandu Kenanga A",
+          "Posyandu Kenanga B",
           "Posyandu Mawar A",
-          "Posyandu Mawar A",
-          "Posyandu Mayangsari",
+          "Posyandu Mawar B",
+          "Posyandu Mayang Sari",
           "Posyandu Nusa Indah",
           "Posyandu Sekar Indah A",
           "Posyandu Sekar Indah B",
@@ -693,6 +694,7 @@ export const DATA_RW_PER_KELURAHAN: Record<string, number> = {
   "Pekauman": 8,
   "Panggung": 14,
   "Tegalsari": 13,
+  "Kraton": 9,
 };
 
 export const RT_PER_RW_DEFAULT = 15;
@@ -1023,6 +1025,42 @@ export const DATA_RT_PER_RW_KALIGANGSA: Record<string, number> = {
   "7": 3,
 };
 
+/**
+ * Ketentuan Khusus RT per RW di Kelurahan Kraton, Kecamatan Tegal Barat:
+ * - Jumlah RW ada 9
+ * - RW 1: Jumlah RT 9 (RT 1 s/d 9)
+ * - RW 2: Jumlah RT 9 (RT 1 s/d 9)
+ * - RW 3: Jumlah RT 8 (RT 1 s/d 8)
+ * - RW 4: Jumlah RT 10 (RT 1 s/d 10: Astika A 1,2,3,9; Astika B 4,6,7,8; Astika C 5,10)
+ * - RW 5: Jumlah RT 11 (RT 1 s/d 11)
+ * - RW 6: Jumlah RT 8 (RT 1 s/d 8)
+ * - RW 7: Jumlah RT 8 (RT 1 s/d 8)
+ * - RW 8: Jumlah RT 5 (RT 1 s/d 5)
+ * - RW 9: Jumlah RT 6 (RT 1 s/d 6)
+ * Total RW resmi: 9 RW, Total RT: 74 RT
+ * Tetap pertahankan pilihan "Belum Tahu" untuk RW dan RT
+ */
+export const DATA_RT_PER_RW_KRATON: Record<string, number> = {
+  "01": 9,
+  "1": 9,
+  "02": 9,
+  "2": 9,
+  "03": 8,
+  "3": 8,
+  "04": 10,
+  "4": 10,
+  "05": 11,
+  "5": 11,
+  "06": 8,
+  "6": 8,
+  "07": 8,
+  "7": 8,
+  "08": 5,
+  "8": 5,
+  "09": 6,
+  "9": 6,
+};
+
 export const TOTAL_KOMUNITAS_RW_KOTA_TEGAL = 167;
 export const TOTAL_KOMUNITAS_RT_KOTA_TEGAL = 1712;
 
@@ -1049,6 +1087,9 @@ export function getJumlahRwByKelurahan(kelurahan?: string | null): number {
   }
   if (clean === "tegalsari") {
     return 13;
+  }
+  if (clean === "kraton") {
+    return 9; // Kraton
   }
   for (const [k, v] of Object.entries(DATA_RW_PER_KELURAHAN)) {
     if (k.toLowerCase() === clean) {
@@ -1167,6 +1208,16 @@ export function getJumlahRtPerRwByKelurahan(kelurahan?: string | null, rw?: stri
     }
     return 9; // Default max RT (RW 4)
   }
+  if (clean === "kraton") {
+    if (rw && rw !== "Belum Tahu") {
+      const cleanRw = rw.replace(/^(rw|rt)\s*/i, "").trim();
+      const normRw = String(parseInt(cleanRw, 10)).padStart(2, "0");
+      if (DATA_RT_PER_RW_KRATON[normRw] || DATA_RT_PER_RW_KRATON[cleanRw]) {
+        return DATA_RT_PER_RW_KRATON[normRw] || DATA_RT_PER_RW_KRATON[cleanRw];
+      }
+    }
+    return 11; // Default max RT di RW 5 Kraton
+  }
   return RT_PER_RW_DEFAULT; // Kondisi default sebelumnya: 15 RT per RW
 }
 
@@ -1217,6 +1268,10 @@ export function getTotalRtByKelurahan(kelurahan?: string | null): number {
     // RW 1: 6, RW 2: 6, RW 3: 7, RW 4: 9, RW 5: 4, RW 6: 3, RW 7: 3 -> Total 38 RT
     return 6 + 6 + 7 + 9 + 4 + 3 + 3;
   }
+  if (clean === "kraton") {
+    // RW 1: 9, RW 2: 9, RW 3: 8, RW 4: 10, RW 5: 11, RW 6: 8, RW 7: 8, RW 8: 5, RW 9: 6 = 74 RT
+    return 9 + 9 + 8 + 10 + 11 + 8 + 8 + 5 + 6;
+  }
   const rwCount = getJumlahRwByKelurahan(kelurahan);
   const rtPerRw = getJumlahRtPerRwByKelurahan(kelurahan);
   return rwCount * rtPerRw;
@@ -1228,6 +1283,10 @@ export function getRwListByKelurahan(kelurahan?: string | null): string[] {
     return [...list, "Belum Tahu"];
   }
   const clean = kelurahan.replace(/^(kelurahan|kel\.)\s+/i, "").trim().toLowerCase();
+  if (clean === "kraton") {
+    const list = Array.from({ length: 9 }, (_, i) => String(i + 1).padStart(2, "0"));
+    return [...list, "Belum Tahu"];
+  }
   if (clean === "debong lor") {
     const list = Array.from({ length: 3 }, (_, i) => String(i + 1).padStart(2, "0"));
     return [...list, "Belum Tahu"];
@@ -1281,6 +1340,17 @@ export function getRtListByKelurahan(kelurahan?: string | null, rw?: string | nu
     return [...list, "Belum Tahu"];
   }
   const clean = kelurahan.replace(/^(kelurahan|kel\.)\s+/i, "").trim().toLowerCase();
+  if (clean === "kraton") {
+    if (rw && rw !== "Belum Tahu") {
+      const cleanRw = rw.replace(/^(rw|rt)\s*/i, "").trim();
+      const normRw = String(parseInt(cleanRw, 10)).padStart(2, "0");
+      const count = DATA_RT_PER_RW_KRATON[normRw] || 11;
+      const list = Array.from({ length: count }, (_, i) => String(i + 1).padStart(2, "0"));
+      return [...list, "Belum Tahu"];
+    }
+    const list = Array.from({ length: 11 }, (_, i) => String(i + 1).padStart(2, "0"));
+    return [...list, "Belum Tahu"];
+  }
   if (clean === "debong lor") {
     if (rw && rw !== "Belum Tahu") {
       const cleanRw = rw.replace(/^(rw|rt)\s*/i, "").trim();

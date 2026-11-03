@@ -163,21 +163,22 @@ export const RAW_POSYANDU_TEGAL: RawPosyanduItem[] = [
   { id: "7e5bcfd3-2220-4c28-8c88-5b01930049fc", nama: "Posyandu Melati", kecamatan: "Tegal Barat", kelurahan: "Kemandungan", rw: "01", rt: "03", lokasi: "Balai Posyandu / RW 01, Kemandungan, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Melati Kemandungan 2 Kemandungan: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
   { id: "0c52a3df-6317-42cb-8cd4-d5d1abaf3f0c", nama: "Posyandu Seruni", kecamatan: "Tegal Barat", kelurahan: "Kemandungan", rw: "03", rt: "01", lokasi: "Balai Posyandu / RW 03, Kemandungan, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Kenanga Asri Kemandungan: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
 
-  // Kraton (14 Posyandu)
-  { id: "1416e589-a3e1-4906-87ab-04b1091e723a", nama: "Posyandu Astika A", kecamatan: "Tegal Barat", kelurahan: "Kraton", rw: "02", rt: "02", lokasi: "Balai Posyandu / RW 02, Kraton, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Anggrek 3 Kraton: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "214a0998-cfbd-425e-8ea4-0d89ab534df7", nama: "Posyandu Astika B", kecamatan: "Tegal Barat", kelurahan: "Kraton", rw: "02", rt: "04", lokasi: "Balai Posyandu / RW 02, Kraton, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Cempaka 1 Kraton: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "fbf076ab-cfbd-425e-8a15-7af12567838c", nama: "Posyandu Astika C", kecamatan: "Tegal Barat", kelurahan: "Kraton", rw: "03", rt: "01", lokasi: "Balai Posyandu / RW 03, Kraton, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Cempaka 2 Kraton: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "d3af708d-5195-41eb-80aa-72ad29d264c4", nama: "Posyandu Dewi Sartika", kecamatan: "Tegal Barat", kelurahan: "Kraton", rw: "06", rt: "04", lokasi: "Balai Posyandu / RW 06, Kraton, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Dahlia Kraton: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "75df6bd8-a3e1-4906-831c-72196b837e23", nama: "Posyandu Kartini A", kecamatan: "Tegal Barat", kelurahan: "Kraton", rw: "01", rt: "03", lokasi: "Balai Posyandu / RW 01, Kraton, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Anggrek 2 Kraton: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "3ca52e00-3385-42b8-8865-372dbb245ac8", nama: "Posyandu Kartini B", kecamatan: "Tegal Barat", kelurahan: "Kraton", rw: "03", rt: "03", lokasi: "Balai Posyandu / RW 03, Kraton, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Melati 1 Kraton: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "99daf535-ef51-46fd-8d9c-39b9ec645a81", nama: "Posyandu Kenanga A", kecamatan: "Tegal Barat", kelurahan: "Kraton", lokasi: "Kraton, Kecamatan Tegal Barat, Kota Tegal" },
-  { id: "5085d8eb-a3e1-4906-80c8-29e1e597b3b8", nama: "Posyandu Mawar A", kecamatan: "Tegal Barat", kelurahan: "Kraton", rw: "01", rt: "01", lokasi: "Balai Posyandu / RW 01, Kraton, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Anggrek 1 Kraton: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "95086f40-9590-4684-8db6-ed8139608504", nama: "Posyandu Mawar A", kecamatan: "Tegal Barat", kelurahan: "Kraton", rw: "05", rt: "03", lokasi: "Balai Posyandu / RW 05, Kraton, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Mawar 1 Kraton: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "6faedc53-9590-4684-800b-35b9bf4c4f6f", nama: "Posyandu Mayangsari", kecamatan: "Tegal Barat", kelurahan: "Kraton", rw: "06", rt: "02", lokasi: "Balai Posyandu / RW 06, Kraton, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Mawar 2 Kraton: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "174b9b13-3385-42b8-8ab9-7f654ce7ba09", nama: "Posyandu Nusa Indah", kecamatan: "Tegal Barat", kelurahan: "Kraton", rw: "04", rt: "02", lokasi: "Balai Posyandu / RW 04, Kraton, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Melati 2 Kraton: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "49ec2216-30fe-4a39-8ea1-775ddc8966a2", nama: "Posyandu Sekar Indah A", kecamatan: "Tegal Barat", kelurahan: "Kraton", rw: "04", rt: "04", lokasi: "Balai Posyandu / RW 04, Kraton, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Nusa Indah 1 Kraton: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "abb4a865-30fe-4a39-8330-09f5569d9c37", nama: "Posyandu Sekar Indah B", kecamatan: "Tegal Barat", kelurahan: "Kraton", rw: "05", rt: "01", lokasi: "Balai Posyandu / RW 05, Kraton, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Nusa Indah 2 Kraton: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "43073336-7eaf-4e5d-8bba-60ddb10cf89a", nama: "Posyandu Seruni", kecamatan: "Tegal Barat", kelurahan: "Kraton", lokasi: "Kraton, Kecamatan Tegal Barat, Kota Tegal" },
+  // Kraton (15 Posyandu)
+  { id: "174b9b13-3385-42b8-8ab9-7f654ce7ba09", nama: "Posyandu Nusa Indah", kecamatan: "Tegal Barat", kelurahan: "Kraton", rw: "01", rt: "01", lokasi: "Balai Posyandu / RW 01, Kraton, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Nusa Indah Kraton cakupan sinkronisasi wilayah RW 01 (RT 01 s/d RT 09): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "5085d8eb-a3e1-4906-80c8-29e1e597b3b8", nama: "Posyandu Mawar A", kecamatan: "Tegal Barat", kelurahan: "Kraton", rw: "02", rt: "01", lokasi: "Balai Posyandu / RW 02, Kraton, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Mawar A Kraton cakupan sinkronisasi wilayah RW 02 (RT 01, RT 02, RT 04, RT 05): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "95086f40-9590-4684-8db6-ed8139608504", nama: "Posyandu Mawar B", kecamatan: "Tegal Barat", kelurahan: "Kraton", rw: "02", rt: "03", lokasi: "Balai Posyandu / RW 02, Kraton, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Mawar B Kraton cakupan sinkronisasi wilayah RW 02 (RT 03, RT 06, RT 07, RT 08, RT 09): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "99daf535-ef51-46fd-8d9c-39b9ec645a81", nama: "Posyandu Kenanga A", kecamatan: "Tegal Barat", kelurahan: "Kraton", rw: "03", rt: "01", lokasi: "Balai Posyandu / RW 03, Kraton, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Kenanga A Kraton cakupan sinkronisasi wilayah RW 03 (RT 01, RT 02, RT 03, RT 08): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "99daf535-ef51-46fd-8d9c-39b9ec645a82", nama: "Posyandu Kenanga B", kecamatan: "Tegal Barat", kelurahan: "Kraton", rw: "03", rt: "04", lokasi: "Balai Posyandu / RW 03, Kraton, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Kenanga B Kraton cakupan sinkronisasi wilayah RW 03 (RT 04, RT 05, RT 06, RT 07): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "1416e589-a3e1-4906-87ab-04b1091e723a", nama: "Posyandu Astika A", kecamatan: "Tegal Barat", kelurahan: "Kraton", rw: "04", rt: "01", lokasi: "Balai Posyandu / RW 04, Kraton, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Astika A Kraton cakupan sinkronisasi wilayah RW 04 (RT 01, RT 02, RT 03, RT 09): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "214a0998-cfbd-425e-8ea4-0d89ab534df7", nama: "Posyandu Astika B", kecamatan: "Tegal Barat", kelurahan: "Kraton", rw: "04", rt: "04", lokasi: "Balai Posyandu / RW 04, Kraton, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Astika B Kraton cakupan sinkronisasi wilayah RW 04 (RT 04, RT 06, RT 07, RT 08): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "fbf076ab-cfbd-425e-8a15-7af12567838c", nama: "Posyandu Astika C", kecamatan: "Tegal Barat", kelurahan: "Kraton", rw: "04", rt: "05", lokasi: "Balai Posyandu / RW 04, Kraton, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Astika C Kraton cakupan sinkronisasi wilayah RW 04 (RT 05, RT 10): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "75df6bd8-a3e1-4906-831c-72196b837e23", nama: "Posyandu Kartini A", kecamatan: "Tegal Barat", kelurahan: "Kraton", rw: "05", rt: "03", lokasi: "Balai Posyandu / RW 05, Kraton, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Kartini A Kraton cakupan sinkronisasi wilayah RW 05 (RT 03, RT 07, RT 09, RT 10, RT 11): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "3ca52e00-3385-42b8-8865-372dbb245ac8", nama: "Posyandu Kartini B", kecamatan: "Tegal Barat", kelurahan: "Kraton", rw: "05", rt: "01", lokasi: "Balai Posyandu / RW 05, Kraton, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Kartini B Kraton cakupan sinkronisasi wilayah RW 05 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 08): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "49ec2216-30fe-4a39-8ea1-775ddc8966a2", nama: "Posyandu Sekar Indah A", kecamatan: "Tegal Barat", kelurahan: "Kraton", rw: "06", rt: "01", lokasi: "Balai Posyandu / RW 06, Kraton, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Sekar Indah A Kraton cakupan sinkronisasi wilayah RW 06 (RT 01, RT 02, RT 03, RT 04, RT 05): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "abb4a865-30fe-4a39-8330-09f5569d9c37", nama: "Posyandu Sekar Indah B", kecamatan: "Tegal Barat", kelurahan: "Kraton", rw: "06", rt: "06", lokasi: "Balai Posyandu / RW 06, Kraton, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Sekar Indah B Kraton cakupan sinkronisasi wilayah RW 06 (RT 06, RT 07, RT 08): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "6faedc53-9590-4684-800b-35b9bf4c4f6f", nama: "Posyandu Mayang Sari", kecamatan: "Tegal Barat", kelurahan: "Kraton", rw: "07", rt: "01", lokasi: "Balai Posyandu / RW 07, Kraton, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Mayang Sari Kraton cakupan sinkronisasi wilayah RW 07 (RT 01 s/d RT 08): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "43073336-7eaf-4e5d-8bba-60ddb10cf89a", nama: "Posyandu Seruni", kecamatan: "Tegal Barat", kelurahan: "Kraton", rw: "08", rt: "01", lokasi: "Balai Posyandu / RW 08, Kraton, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Seruni Kraton cakupan sinkronisasi wilayah RW 08 (RT 01 s/d RT 05): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "d3af708d-5195-41eb-80aa-72ad29d264c4", nama: "Posyandu Dewi Sartika", kecamatan: "Tegal Barat", kelurahan: "Kraton", rw: "09", rt: "01", lokasi: "Balai Posyandu / RW 09, Kraton, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Dewi Sartika Kraton cakupan sinkronisasi wilayah RW 09 (RT 01 s/d RT 06): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
 
   // Muarareja (7 Posyandu)
   { id: "55c8f953-cbdd-4afc-805f-f601f5ae4c98", nama: "Posyandu Anggrek", kecamatan: "Tegal Barat", kelurahan: "Muarareja", rw: "03", rt: "03", lokasi: "Balai Posyandu / RW 03, Muarareja, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Pelabuhan Asri Muarareja: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
@@ -424,6 +425,102 @@ export const KALIGANGSA_POSYANDU_MAP: Record<
     nama: "Posyandu Rosela",
     rw: "07",
     cakupan_wilayah: "Melayani Warga RW 07 (RT 01, RT 02, RT 03, RW Belum Tahu dan RT Belum Tahu)",
+  },
+};
+
+export const KRATON_POSYANDU_MAP: Record<
+  string,
+  { nama: string; rw: string; rt: string; cakupan_wilayah: string }
+> = {
+  "174b9b13-3385-42b8-8ab9-7f654ce7ba09": {
+    nama: "Posyandu Nusa Indah",
+    rw: "01",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 01 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08, RT 09 dan RW - RT Tidak Tahu)",
+  },
+  "5085d8eb-a3e1-4906-80c8-29e1e597b3b8": {
+    nama: "Posyandu Mawar A",
+    rw: "02",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 02 (RT 01, RT 02, RT 04, RT 05 dan RW - RT Tidak Tahu)",
+  },
+  "95086f40-9590-4684-8db6-ed8139608504": {
+    nama: "Posyandu Mawar B",
+    rw: "02",
+    rt: "03",
+    cakupan_wilayah: "Melayani Warga RW 02 (RT 03, RT 06, RT 07, RT 08, RT 09 dan RW - RT Tidak Tahu)",
+  },
+  "99daf535-ef51-46fd-8d9c-39b9ec645a81": {
+    nama: "Posyandu Kenanga A",
+    rw: "03",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 03 (RT 01, RT 02, RT 03, RT 08 dan RW - RT Tidak Tahu)",
+  },
+  "99daf535-ef51-46fd-8d9c-39b9ec645a82": {
+    nama: "Posyandu Kenanga B",
+    rw: "03",
+    rt: "04",
+    cakupan_wilayah: "Melayani Warga RW 03 (RT 04, RT 05, RT 06, RT 07 dan RW - RT Tidak Tahu)",
+  },
+  "1416e589-a3e1-4906-87ab-04b1091e723a": {
+    nama: "Posyandu Astika A",
+    rw: "04",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 04 (RT 01, RT 02, RT 03, RT 09 dan RW - RT Tidak Tahu)",
+  },
+  "214a0998-cfbd-425e-8ea4-0d89ab534df7": {
+    nama: "Posyandu Astika B",
+    rw: "04",
+    rt: "04",
+    cakupan_wilayah: "Melayani Warga RW 04 (RT 04, RT 06, RT 07, RT 08 dan RW - RT Tidak Tahu)",
+  },
+  "fbf076ab-cfbd-425e-8a15-7af12567838c": {
+    nama: "Posyandu Astika C",
+    rw: "04",
+    rt: "05",
+    cakupan_wilayah: "Melayani Warga RW 04 (RT 05, RT 10 dan RW - RT Tidak Tahu)",
+  },
+  "75df6bd8-a3e1-4906-831c-72196b837e23": {
+    nama: "Posyandu Kartini A",
+    rw: "05",
+    rt: "03",
+    cakupan_wilayah: "Melayani Warga RW 05 (RT 03, RT 07, RT 09, RT 10, RT 11 dan RW - RT Tidak Tahu)",
+  },
+  "3ca52e00-3385-42b8-8865-372dbb245ac8": {
+    nama: "Posyandu Kartini B",
+    rw: "05",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 05 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 08 dan RW - RT Tidak Tahu)",
+  },
+  "49ec2216-30fe-4a39-8ea1-775ddc8966a2": {
+    nama: "Posyandu Sekar Indah A",
+    rw: "06",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 06 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu)",
+  },
+  "abb4a865-30fe-4a39-8330-09f5569d9c37": {
+    nama: "Posyandu Sekar Indah B",
+    rw: "06",
+    rt: "06",
+    cakupan_wilayah: "Melayani Warga RW 06 (RT 06, RT 07, RT 08 dan RW - RT Tidak Tahu)",
+  },
+  "6faedc53-9590-4684-800b-35b9bf4c4f6f": {
+    nama: "Posyandu Mayang Sari",
+    rw: "07",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 07 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08 dan RW - RT Tidak Tahu)",
+  },
+  "43073336-7eaf-4e5d-8bba-60ddb10cf89a": {
+    nama: "Posyandu Seruni",
+    rw: "08",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 08 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu)",
+  },
+  "d3af708d-5195-41eb-80aa-72ad29d264c4": {
+    nama: "Posyandu Dewi Sartika",
+    rw: "09",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 09 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06 dan RW - RT Tidak Tahu)",
   },
 };
 
