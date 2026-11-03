@@ -18,7 +18,7 @@ import {
   Ruler,
   AlertCircle,
   Pencil,
-  LogOut,
+  Trash2,
   Home,
   FileText,
   MapPin,
@@ -365,9 +365,9 @@ export function CardDataAnak({
                       <button
                         type="button"
                         onClick={() => setIsKeluarModalOpen(true)}
-                        className="flex h-8 sm:h-8.5 items-center justify-center gap-1 rounded-lg bg-rose-50 hover:bg-rose-100 active:scale-98 border border-rose-200 px-2.5 text-xs font-semibold text-rose-700 transition-all cursor-pointer"
+                        className="flex h-8 sm:h-8.5 items-center justify-center gap-1 rounded-lg bg-rose-50 hover:bg-rose-100 active:scale-98 border border-rose-200 px-2.5 text-xs font-semibold text-rose-700 transition-all cursor-pointer dark:bg-rose-950/20 dark:hover:bg-rose-950/40 dark:border-rose-900/40 dark:text-rose-400"
                       >
-                        <LogOut className="h-3.5 w-3.5 text-rose-700" />
+                        <Trash2 className="h-3.5 w-3.5 text-rose-700 dark:text-rose-400" />
                         <span>Keluar / Hapus</span>
                       </button>
                     )}
@@ -412,9 +412,9 @@ export function CardDataAnak({
                       <button
                         type="button"
                         onClick={() => setIsKeluarModalOpen(true)}
-                        className="flex h-8 items-center justify-center gap-1 rounded-lg bg-rose-50 hover:bg-rose-100 active:scale-98 border border-rose-200 px-2.5 text-xs font-semibold text-rose-700 transition-all cursor-pointer"
+                        className="flex h-8 items-center justify-center gap-1 rounded-lg bg-rose-50 hover:bg-rose-100 active:scale-98 border border-rose-200 px-2.5 text-xs font-semibold text-rose-700 transition-all cursor-pointer dark:bg-rose-950/20 dark:hover:bg-rose-950/40 dark:border-rose-900/40 dark:text-rose-400"
                       >
-                        <LogOut className="h-3.5 w-3.5 text-rose-700" />
+                        <Trash2 className="h-3.5 w-3.5 text-rose-700 dark:text-rose-400" />
                         <span>Hapus Data</span>
                       </button>
                     )}

@@ -1582,145 +1582,24 @@ export async function updateDataAnak(
 
 /**
  * Server Action: Mencatat Status Keluar Anak dari Satuan PAUD
- * Alasan: Melanjutkan Ke SD, Pindah PAUD Lain, Tidak Sekolah, Meninggal Dunia
+ * Sekarang langsung menghapus data anak dari sistem secara permanen sesuai alur bisnis baru.
  */
 export async function keluarDataAnak(
   dataAnakId: string,
   komunitasId: string,
-  payload: {
-    alasanKeluar: string;
+  _payload?: {
+    alasanKeluar?: string;
     catatan?: string;
   }
 ): Promise<{
   success: boolean;
   message: string;
 }> {
-  try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return {
-        success: false,
-        message: "Silakan masuk terlebih dahulu untuk memproses status anak keluar.",
-      };
-    }
-
-    if (!payload.alasanKeluar) {
-      return {
-        success: false,
-        message: "Pilih alasan keluar anak dari PAUD.",
-      };
-    }
-
-    // Ambil data anak target
-    const { data: existingChild, error: fetchError } = await supabase
-      .from("data_anak")
-      .select("id, nama_lengkap, created_by, komunitas_id")
-      .eq("id", dataAnakId)
-      .maybeSingle();
-
-    if (fetchError || !existingChild) {
-      return {
-        success: false,
-        message: "Data anak tidak ditemukan atau telah dihapus.",
-      };
-    }
-
-    // Cek otorisasi user
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("id, is_super_admin, is_admin_pusat, nama_lengkap, email")
-      .eq("id", user.id)
-      .maybeSingle();
-
-    const isSuperOrPusat = isSuperOrAdminPusat({
-      ...profile,
-      id: user.id,
-      email: profile?.email || user.email,
-      nama_lengkap: profile?.nama_lengkap || user.user_metadata?.nama_lengkap,
-    });
-    const isCreator = existingChild.created_by === user.id;
-
-    if (!isSuperOrPusat && !isCreator) {
-      const { data: membership } = await supabase
-        .from("anggota_komunitas")
-        .select("peran, status")
-        .eq("user_id", user.id)
-        .eq("komunitas_id", toValidKomunitasUUID(komunitasId))
-        .eq("status", "approved")
-        .maybeSingle();
-
-      const roleLower = (membership?.peran || "").toLowerCase();
-      const isAuthorized =
-        roleLower.includes("admin") ||
-        roleLower.includes("kepala") ||
-        roleLower.includes("guru") ||
-        roleLower.includes("pendidik") ||
-        roleLower.includes("tutor") ||
-        roleLower.includes("pengelola") ||
-        roleLower.includes("pengurus") ||
-        roleLower.includes("pimpinan") ||
-        roleLower.includes("kader");
-
-      if (!isAuthorized) {
-        return {
-          success: false,
-          message:
-            "Akses ditolak: Hanya Admin, Kepala Sekolah, Guru/Pendidik PAUD, atau penginput data yang dapat mencatat anak keluar.",
-        };
-      }
-    }
-
-    // Hapus records DDKS terlebih dahulu untuk integritas foreign key
-    await supabase
-      .from("ddks_records")
-      .delete()
-      .eq("data_anak_id", dataAnakId);
-
-    // Hapus record data_anak dari database satuan PAUD
-    const { error: deleteError } = await supabase
-      .from("data_anak")
-      .delete()
-      .eq("id", dataAnakId);
-
-    if (deleteError) {
-      return {
-        success: false,
-        message:
-          "Gagal memproses anak keluar: " +
-          (deleteError?.message || "Kesalahan database"),
-      };
-    }
-
-    revalidatePath(`/komunitas/${komunitasId}/data`);
-    revalidatePath(`/komunitas/${komunitasId}`);
-    revalidatePath("/komunitas");
-    revalidatePath("/data-anak");
-    revalidatePath("/data-ats");
-    revalidatePath("/profil");
-    revalidatePath("/");
-
-    await triggerDataAnakCacheInvalidation();
-
-    return {
-      success: true,
-      message: `Anak berhasil dicatat keluar dengan alasan "${payload.alasanKeluar}".`,
-    };
-  } catch (err: any) {
-    console.error("Error keluarDataAnak:", err);
-    return {
-      success: false,
-      message: err.message || "Gagal memproses data anak keluar.",
-    };
-  }
+  return deleteDataAnak(dataAnakId, komunitasId);
 }
 
 /**
- * Server Action: Menghapus Data Anak secara permanen
+ * Server Action: Menghapus Data Anak secara permanen dari sistem
  */
 export async function deleteDataAnak(
   dataAnakId: string,
@@ -1771,25 +1650,55 @@ export async function deleteDataAnak(
     const isCreator = existingChild.created_by === user.id;
 
     if (!isSuperOrPusat && !isCreator) {
-      const { data: membership } = await supabase
-        .from("anggota_komunitas")
-        .select("peran, status")
-        .eq("user_id", user.id)
-        .eq("komunitas_id", existingChild.komunitas_id)
-        .eq("status", "approved")
-        .maybeSingle();
+      const targetKomId = toValidKomunitasUUID(komunitasId || existingChild.komunitas_id);
+      let isAuthorized = false;
 
-      const roleLower = (membership?.peran || "").toLowerCase();
-      const isAuthorized =
-        roleLower.includes("admin") ||
-        roleLower.includes("kepala") ||
-        roleLower.includes("guru") ||
-        roleLower.includes("pendidik") ||
-        roleLower.includes("tutor") ||
-        roleLower.includes("pengelola") ||
-        roleLower.includes("pengurus") ||
-        roleLower.includes("pimpinan") ||
-        roleLower.includes("kader");
+      if (targetKomId) {
+        const { data: membership } = await supabase
+          .from("anggota_komunitas")
+          .select("peran, status")
+          .eq("user_id", user.id)
+          .eq("komunitas_id", targetKomId)
+          .eq("status", "approved")
+          .maybeSingle();
+
+        const roleLower = (membership?.peran || "").toLowerCase();
+        isAuthorized =
+          roleLower.includes("admin") ||
+          roleLower.includes("kepala") ||
+          roleLower.includes("guru") ||
+          roleLower.includes("pendidik") ||
+          roleLower.includes("tutor") ||
+          roleLower.includes("pengelola") ||
+          roleLower.includes("pengurus") ||
+          roleLower.includes("pimpinan") ||
+          roleLower.includes("kader");
+      }
+
+      if (!isAuthorized && existingChild.komunitas_id) {
+        const childKomId = toValidKomunitasUUID(existingChild.komunitas_id);
+        if (childKomId && childKomId !== targetKomId) {
+          const { data: membershipChild } = await supabase
+            .from("anggota_komunitas")
+            .select("peran, status")
+            .eq("user_id", user.id)
+            .eq("komunitas_id", childKomId)
+            .eq("status", "approved")
+            .maybeSingle();
+
+          const roleLower = (membershipChild?.peran || "").toLowerCase();
+          isAuthorized =
+            roleLower.includes("admin") ||
+            roleLower.includes("kepala") ||
+            roleLower.includes("guru") ||
+            roleLower.includes("pendidik") ||
+            roleLower.includes("tutor") ||
+            roleLower.includes("pengelola") ||
+            roleLower.includes("pengurus") ||
+            roleLower.includes("pimpinan") ||
+            roleLower.includes("kader");
+        }
+      }
 
       if (!isAuthorized) {
         return {
@@ -1799,7 +1708,7 @@ export async function deleteDataAnak(
       }
     }
 
-    // Hapus records DDKS terlebih dahulu
+    // Hapus records DDKS terlebih dahulu untuk integritas referensi
     try {
       await supabase
         .from("ddks_records")
@@ -1809,7 +1718,7 @@ export async function deleteDataAnak(
       console.warn("Hapus ddks_records warning:", e);
     }
 
-    // Hapus record data_anak
+    // Hapus record data_anak dari database
     const { error: deleteError } = await supabase
       .from("data_anak")
       .delete()
@@ -1823,12 +1732,15 @@ export async function deleteDataAnak(
     }
 
     const targetKomunitasId = komunitasId || existingChild.komunitas_id;
-    revalidatePath(`/komunitas/${targetKomunitasId}/data`);
-    revalidatePath(`/komunitas/${targetKomunitasId}`);
+    if (targetKomunitasId) {
+      revalidatePath(`/komunitas/${targetKomunitasId}/data`);
+      revalidatePath(`/komunitas/${targetKomunitasId}`);
+    }
     revalidatePath("/komunitas");
     revalidatePath("/data-anak");
     revalidatePath("/data-ats");
     revalidatePath("/profil");
+    revalidatePath("/cek-progres");
     revalidatePath("/");
 
     await triggerDataAnakCacheInvalidation();
