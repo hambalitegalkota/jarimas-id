@@ -89,7 +89,6 @@ import {
   hasFullProfilDataAccess,
   parseKontakKomunitas,
   parseJadwalPosyandu,
-  parseCakupanWilayah,
   formatWhatsAppUrl,
   formatPeranDisplay,
   isRoleAdmin,
@@ -533,11 +532,6 @@ export function KomunitasDetailClientView({
   const parsedKontak = useMemo(
     () => parseKontakKomunitas(komunitasData.kontak),
     [komunitasData.kontak]
-  );
-
-  const parsedCakupanWilayah = useMemo(
-    () => parseCakupanWilayah(komunitasData),
-    [komunitasData]
   );
 
   const parsedJadwalPosyandu = useMemo(
@@ -1320,15 +1314,15 @@ export function KomunitasDetailClientView({
             </div>
           </div>
 
-          {/* Cakupan Wilayah Layanan (Khusus Posyandu & Warga Kita) */}
-          {(isPosyandu || isWargaKita) && (
+          {/* Cakupan Wilayah Layanan (Khusus Warga Kita) */}
+          {isWargaKita && (
             <div className="p-3 rounded-lg bg-card border border-border text-xs flex flex-wrap items-center gap-2">
               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-primary/10 text-primary border border-primary/20 font-bold text-2xs uppercase tracking-wide shrink-0">
                 <Users className="h-3 w-3" />
                 Cakupan Wilayah
               </span>
               <p className="text-foreground font-semibold">
-                {isPosyandu ? parsedCakupanWilayah : `Wilayah Layanan: ${tierLevelLabel}, Kelurahan ${komunitas.kelurahan || "-"}, Kecamatan ${komunitas.kecamatan || "-"}`}
+                {`Wilayah Layanan: ${tierLevelLabel}, Kelurahan ${komunitas.kelurahan || "-"}, Kecamatan ${komunitas.kecamatan || "-"}`}
               </p>
             </div>
           )}
