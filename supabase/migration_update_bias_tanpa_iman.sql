@@ -33,3 +33,4 @@ SET
   nama_sekolah = 'KB Bina Anak Sholeh (BIAS) Panggung',
   updated_at = NOW()
 WHERE komunitas_id = '6448b6d1-a2b6-4844-8595-ba29636faa7d';
+

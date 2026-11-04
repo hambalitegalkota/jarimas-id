@@ -444,21 +444,29 @@ export async function getRekapDataAnakUsiaDiniAction(): Promise<{
           : 0;
     });
 
+    const finalRekapData: RekapDataAnakUsiaDiniResult = {
+      kota: kotaItem,
+      kecamatanList,
+      kelurahanList,
+      lastUpdated: new Date().toLocaleDateString("id-ID", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+      totalLiveRecords,
+    };
+
+    // Simpan ke in-memory cache agar kunjungan berikutnya instan dan hemat Egress Supabase
+    cachedRekapResult = {
+      timestamp: Date.now(),
+      data: finalRekapData,
+    };
+
     return {
       success: true,
-      data: {
-        kota: kotaItem,
-        kecamatanList,
-        kelurahanList,
-        lastUpdated: new Date().toLocaleDateString("id-ID", {
-          day: "numeric",
-          month: "long",
-          year: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-        totalLiveRecords,
-      },
+      data: finalRekapData,
     };
   } catch (err: any) {
     console.error("Error getRekapDataAnakUsiaDiniAction:", err);

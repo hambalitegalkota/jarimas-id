@@ -1,5 +1,16 @@
 "use server";
 
+// In-Memory Cache untuk Rekapitulasi Berjenjang Data Anak Tidak Sekolah (ATS) Se-Kota Tegal
+let cachedRekapAtsResult: {
+  timestamp: number;
+  data: RekapDataAtsResult;
+} | null = null;
+const REKAP_ATS_CACHE_TTL_MS = 30 * 60 * 1000; // 30 Menit (Diinvalidasi seketika saat ada perubahan data ATS)
+
+export async function invalidateRekapDataAtsCache(): Promise<void> {
+  cachedRekapAtsResult = null;
+}
+
 import { createClient } from "@/utils/supabase/server";
 import { KOTA_TEGAL_DATA, findOrGenerateKomunitasSeed } from "@/lib/constants/tegal-data";
 import {
@@ -388,6 +399,14 @@ export async function getRekapDataAtsAction(): Promise<{
   data: RekapDataAtsResult;
   message?: string;
 }> {
+  // Gunakan cache jika masih valid dalam jendela TTL untuk menghemat Egress dan Log Supabase
+  if (cachedRekapAtsResult && Date.now() - cachedRekapAtsResult.timestamp < REKAP_ATS_CACHE_TTL_MS) {
+    return {
+      success: true,
+      data: cachedRekapAtsResult.data,
+    };
+  }
+
   try {
     const supabase = await createClient();
 
@@ -715,21 +734,29 @@ export async function getRekapDataAtsAction(): Promise<{
       rek.persentase = kotaItem.totalAts > 0 ? Math.round((rek.jumlahTarget / kotaItem.totalAts) * 100) : 0;
     });
 
+    const finalAtsData: RekapDataAtsResult = {
+      kota: kotaItem,
+      kecamatanList,
+      kelurahanList,
+      lastUpdated: new Date().toLocaleDateString("id-ID", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+      totalLiveRecords,
+    };
+
+    // Simpan ke in-memory cache agar kunjungan berikutnya instan dan hemat Egress Supabase
+    cachedRekapAtsResult = {
+      timestamp: Date.now(),
+      data: finalAtsData,
+    };
+
     return {
       success: true,
-      data: {
-        kota: kotaItem,
-        kecamatanList,
-        kelurahanList,
-        lastUpdated: new Date().toLocaleDateString("id-ID", {
-          day: "numeric",
-          month: "long",
-          year: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-        totalLiveRecords,
-      },
+      data: finalAtsData,
     };
   } catch (err: any) {
     console.error("Error getRekapDataAtsAction:", err);

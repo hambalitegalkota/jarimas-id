@@ -29,6 +29,19 @@ import type {
 } from "@/types/database";
 
 import { checkIsPkbmOrSkb } from "@/lib/ats-helpers";
+import { invalidateRekapDataAtsCache } from "@/app/actions/rekap-data-ats";
+import { invalidateRekapDataAnakCache } from "@/app/actions/rekap-data-anak";
+
+async function triggerAtsCacheInvalidation() {
+  try {
+    await Promise.allSettled([
+      invalidateRekapDataAtsCache(),
+      invalidateRekapDataAnakCache(),
+    ]);
+  } catch (err) {
+    console.warn("ATS cache invalidation warning:", err);
+  }
+}
 
 /**
  * Server Action: Mendaftarkan Data Anak Tidak Sekolah (ATS) Baru
@@ -267,6 +280,7 @@ export async function createDataAts(formData: FormData): Promise<{
     revalidatePath("/data-anak");
     revalidatePath("/profil");
     revalidatePath("/");
+    await triggerAtsCacheInvalidation();
 
     const parsed = parseAtsDetails(insertedChild.alasan_sekolah);
     const formattedItem: DataAtsItem = {
@@ -397,6 +411,7 @@ export async function validateDataAts(dataAtsId: string): Promise<{
     revalidatePath("/data-anak");
     revalidatePath("/profil");
     revalidatePath("/");
+    await triggerAtsCacheInvalidation();
     return {
       success: true,
       message: "Data ATS berhasil diverifikasi dan masuk dalam basis intervensi pendidikan.",
@@ -709,6 +724,7 @@ export async function updateDataAts(
     revalidatePath("/data-anak");
     revalidatePath("/profil");
     revalidatePath("/");
+    await triggerAtsCacheInvalidation();
 
     const parsed = parseAtsDetails(updatedData.alasan_sekolah);
     const formattedItem: DataAtsItem = {
@@ -1058,6 +1074,7 @@ export async function kembaliBersekolah(
     revalidatePath("/data-anak");
     revalidatePath("/profil");
     revalidatePath("/");
+    await triggerAtsCacheInvalidation();
 
     return {
       success: true,
@@ -1185,6 +1202,7 @@ export async function deleteDataAts(
     revalidatePath("/data-anak");
     revalidatePath("/profil");
     revalidatePath("/");
+    await triggerAtsCacheInvalidation();
 
     return {
       success: true,
