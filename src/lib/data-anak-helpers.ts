@@ -3066,10 +3066,10 @@ export function formatNamaSekolahDisplay(
 
   // 1. KB BIAS
   if (lower.includes("bias") && (lower.includes("tb") || lower.includes("kemandungan") || lower.includes("barat") || ctxKel.includes("kemandungan") || ctxKec.includes("barat"))) {
-    return "KB Bina Iman Anak Sholeh (BIAS) Kemandungan";
+    return "KB Bina Anak Sholeh (BIAS) Kemandungan";
   }
   if (lower.includes("bias") && (lower.includes("tt") || lower.includes("panggung") || lower.includes("timur") || ctxKel.includes("panggung") || ctxKec.includes("timur"))) {
-    return "KB Bina Iman Anak Sholeh (BIAS) Panggung";
+    return "KB Bina Anak Sholeh (BIAS) Panggung";
   }
 
   // 2. Pos PAUD Kartini
