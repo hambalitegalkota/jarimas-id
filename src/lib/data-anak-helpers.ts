@@ -1396,7 +1396,7 @@ export function getPosyanduCakupanWilayah(targetKomunitas: any): PosyanduCakupan
       nama.includes("tunas")
     ) {
       return {
-        rw: "01",
+        rw: "01 & 08",
         rwList: ["01", "08", "1", "8"],
         rtList: ["01", "02", "03", "04", "05", "1", "2", "3", "4", "5"],
       };
@@ -1973,10 +1973,41 @@ export function getPosyanduCoverageDisplay(komunitas: any): PosyanduCoverageResu
 
   // Parse RW
   let rawRw = canon?.rw || komunitas.rw || seedItem?.rw || "";
-  rawRw = String(rawRw).replace(/^(rw|rt)\s*/i, "").trim();
-  const rwNum = parseInt(rawRw, 10);
-  const isValidRw = !isNaN(rwNum) && rwNum > 0;
-  const rwLabel = isValidRw ? `RW ${String(rwNum).padStart(2, "0")}` : null;
+  let rwLabel: string | null = null;
+  let isValidRw = false;
+
+  // 1. Cek apakah ada multi-RW dari canon.rwList
+  const distinctCanonRwNums = canon?.rwList
+    ? Array.from(
+        new Set(
+          canon.rwList
+            .map((n) => parseInt(n, 10))
+            .filter((n) => !isNaN(n) && n > 0)
+        )
+      ).sort((a, b) => a - b)
+    : [];
+
+  if (distinctCanonRwNums.length > 1) {
+    rwLabel = distinctCanonRwNums.map((n) => `RW ${String(n).padStart(2, "0")}`).join(" & ");
+    isValidRw = true;
+  } else if (String(rawRw).includes("&") || String(rawRw).includes(",")) {
+    const matches = String(rawRw).match(/\d+/g);
+    const distinctRaw = Array.from(
+      new Set((matches || []).map((m) => parseInt(m, 10)).filter((n) => !isNaN(n) && n > 0))
+    ).sort((a, b) => a - b);
+    if (distinctRaw.length > 1) {
+      rwLabel = distinctRaw.map((n) => `RW ${String(n).padStart(2, "0")}`).join(" & ");
+      isValidRw = true;
+    } else if (distinctRaw.length === 1) {
+      rwLabel = `RW ${String(distinctRaw[0]).padStart(2, "0")}`;
+      isValidRw = true;
+    }
+  } else {
+    rawRw = String(rawRw).replace(/^(rw|rt)\s*/i, "").trim();
+    const rwNum = parseInt(rawRw, 10);
+    isValidRw = !isNaN(rwNum) && rwNum > 0;
+    rwLabel = isValidRw ? `RW ${String(rwNum).padStart(2, "0")}` : null;
+  }
 
   // Parse RT
   let rtLabel: string | null = null;
@@ -1995,7 +2026,7 @@ export function getPosyanduCoverageDisplay(komunitas: any): PosyanduCoverageResu
 
   // Khusus kelurahan yang telah dipetakan resmi: jika posyandu melayani 1 RW penuh,
   // otomatis tetapkan rtLabel = RT 01 s/d RT XX sesuai jumlah RT resmi di RW tersebut
-  if (!rtLabel && isValidRw) {
+  if (!rtLabel && isValidRw && distinctCanonRwNums.length <= 1 && !String(rawRw).includes("&") && !String(rawRw).includes(",")) {
     const kel = (komunitas.kelurahan || seedItem?.kelurahan || "")
       .replace(/^(kelurahan|kel\.)\s+/i, "")
       .trim()
@@ -2820,9 +2851,17 @@ export function isDataAnakMatchingKomunitas(
 
       return Boolean(domRwMatch || kkRwMatch);
     } else if (posyanduRw) {
-      const normPosyanduRw = normalizeRtRwNum(posyanduRw);
-      let domRwMatch = (domRw === posyanduRw || domRw === normPosyanduRw) && domKelMatch;
-      let kkRwMatch = (kkRw === posyanduRw || kkRw === normPosyanduRw) && kkKelMatch;
+      let domRwMatch = false;
+      let kkRwMatch = false;
+      if (posyanduRw.includes("&") || posyanduRw.includes(",")) {
+        const rws = posyanduRw.split(/[&,]+/).map((r) => normalizeRtRwNum(r.trim())).filter(Boolean);
+        domRwMatch = Boolean(domRw && rws.includes(domRw)) && domKelMatch;
+        kkRwMatch = Boolean(kkRw && rws.includes(kkRw)) && kkKelMatch;
+      } else {
+        const normPosyanduRw = normalizeRtRwNum(posyanduRw);
+        domRwMatch = (domRw === posyanduRw || domRw === normPosyanduRw) && domKelMatch;
+        kkRwMatch = (kkRw === posyanduRw || kkRw === normPosyanduRw) && kkKelMatch;
+      }
 
       // Jika Posyandu memiliki cakupan RT spesifik (misal Seruni 1: RT 1,2,3,7,8 & Seruni 2: RT 4,5,6, Kemuning III: RT 1,5 dll)
       if (cakupan?.rtList && cakupan.rtList.length > 0) {

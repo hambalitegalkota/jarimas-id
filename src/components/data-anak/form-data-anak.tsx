@@ -102,7 +102,11 @@ export function FormDataAnak({
 
   const posyanduCakupan = getPosyanduCakupanWilayah(komunitas);
   const posyanduCakupanRw = posyanduCakupan?.rw || getPosyanduCakupanRw(komunitas);
-  const initialRw = posyanduCakupanRw || meta.rawRw || "01";
+  const initialRw =
+    (posyanduCakupan?.rwList?.[0] ? posyanduCakupan.rwList[0].padStart(2, "0") : null) ||
+    (posyanduCakupanRw && !posyanduCakupanRw.includes("&") && !posyanduCakupanRw.includes(",") ? posyanduCakupanRw : null) ||
+    meta.rawRw ||
+    "01";
   const initialRt =
     (posyanduCakupan?.rtList?.[0] ? posyanduCakupan.rtList[0].padStart(2, "0") : null) ||
     meta.rawRt ||
@@ -111,7 +115,9 @@ export function FormDataAnak({
   const getAvailableRtOptions = (kel: string, rwVal: string) => {
     if (isPosyandu && posyanduCakupan?.rtList && posyanduCakupan.rtList.length > 0) {
       const isSameKel = normalizeWilayah(kel) === normalizeWilayah(initialKel);
-      const isSameRw = normalizeRtRwNum(rwVal) === normalizeRtRwNum(posyanduCakupan.rw);
+      const isSameRw = posyanduCakupan.rwList && posyanduCakupan.rwList.length > 0
+        ? posyanduCakupan.rwList.some((r) => normalizeRtRwNum(r) === normalizeRtRwNum(rwVal))
+        : normalizeRtRwNum(rwVal) === normalizeRtRwNum(posyanduCakupan.rw);
       if (isSameKel && isSameRw) {
         const uniqueRts = [...new Set(posyanduCakupan.rtList.map((r) => r.padStart(2, "0")))];
         return [...uniqueRts, "Belum Tahu"];
