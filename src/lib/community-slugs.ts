@@ -40,7 +40,26 @@ function normalizeNumber(val?: string | null): string {
  * - PAUD/PKBM: "[nama-paud/pkbm]" (nama asli lembaga, bila kembar ditambahkan kelurahan)
  */
 export function generateKomunitasSlug(komunitas: KomunitasSlugInput): string {
-  const nama = (komunitas.nama || komunitas.nama_komunitas || "").trim();
+  // Override khusus ID KB Bina Anak Sholeh (BIAS) Kemandungan & Panggung
+  const rawId = komunitas.id || "";
+  const validId = toValidUUID(rawId);
+  if (
+    rawId === "e001abba-d414-4cf2-886e-913577dbfcc5" ||
+    validId === "e001abba-d414-4cf2-886e-913577dbfcc5"
+  ) {
+    return "kb-bina-anak-sholeh-bias-kemandungan";
+  }
+  if (
+    rawId === "6448b6d1-a2b6-4844-8595-ba29636faa7d" ||
+    validId === "6448b6d1-a2b6-4844-8595-ba29636faa7d"
+  ) {
+    return "kb-bina-anak-sholeh-bias-panggung";
+  }
+
+  let nama = (komunitas.nama || komunitas.nama_komunitas || "").trim();
+  if (nama.toLowerCase().includes("bina iman anak sholeh")) {
+    nama = nama.replace(/bina\s+iman\s+anak\s+sholeh/gi, "bina anak sholeh");
+  }
   const jenis = (komunitas.jenis || komunitas.jenis_komunitas || "").toLowerCase().trim();
   const kec = (komunitas.kecamatan || "").trim();
   const kel = (komunitas.kelurahan || "").trim();
@@ -161,6 +180,22 @@ function initializeSlugMaps() {
       }
     }
   }
+
+  // 4. Aliases khusus KB Bina Anak Sholeh (BIAS) Kemandungan & Panggung (mendukung slug baru maupun lama)
+  const biasKemandunganId = "e001abba-d414-4cf2-886e-913577dbfcc5";
+  const biasPanggungId = "6448b6d1-a2b6-4844-8595-ba29636faa7d";
+
+  slugToIdMap.set("kb-bina-anak-sholeh-bias-kemandungan", biasKemandunganId);
+  slugToIdMap.set("kb-bina-iman-anak-sholeh-bias-kemandungan", biasKemandunganId);
+  slugToIdMap.set("kb-bina-anak-sholeh-bias-tb", biasKemandunganId);
+  slugToIdMap.set("kb-bina-iman-anak-sholeh-bias-tb", biasKemandunganId);
+  idToSlugMap.set(biasKemandunganId, "kb-bina-anak-sholeh-bias-kemandungan");
+
+  slugToIdMap.set("kb-bina-anak-sholeh-bias-panggung", biasPanggungId);
+  slugToIdMap.set("kb-bina-iman-anak-sholeh-bias-panggung", biasPanggungId);
+  slugToIdMap.set("kb-bina-anak-sholeh-bias-tt", biasPanggungId);
+  slugToIdMap.set("kb-bina-iman-anak-sholeh-bias-tt", biasPanggungId);
+  idToSlugMap.set(biasPanggungId, "kb-bina-anak-sholeh-bias-panggung");
 }
 
 /**

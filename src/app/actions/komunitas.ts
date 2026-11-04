@@ -642,7 +642,23 @@ export async function getKomunitasList(
           matched.kecamatan = "Tegal Barat";
           matched.kelurahan = "Kraton";
         } else {
-          if (dbItem.nama) matched.nama = dbItem.nama;
+          if (dbItem.nama) {
+            let itemNama = dbItem.nama;
+            if (
+              dbItem.id === "e001abba-d414-4cf2-886e-913577dbfcc5" ||
+              toValidUUID(dbItem.id) === "e001abba-d414-4cf2-886e-913577dbfcc5"
+            ) {
+              itemNama = "KB Bina Anak Sholeh (BIAS) Kemandungan";
+            } else if (
+              dbItem.id === "6448b6d1-a2b6-4844-8595-ba29636faa7d" ||
+              toValidUUID(dbItem.id) === "6448b6d1-a2b6-4844-8595-ba29636faa7d"
+            ) {
+              itemNama = "KB Bina Anak Sholeh (BIAS) Panggung";
+            } else if (itemNama.includes("Bina Iman Anak Sholeh")) {
+              itemNama = itemNama.replace(/Bina Iman Anak Sholeh/gi, "Bina Anak Sholeh");
+            }
+            matched.nama = itemNama;
+          }
           const officialKec = findKecamatanByKelurahan(matched.kelurahan || dbItem.kelurahan);
           if (officialKec) {
             matched.kecamatan = officialKec;
@@ -655,7 +671,9 @@ export async function getKomunitasList(
         if (dbItem.lokasi && (!matched.lokasi || !dbItem.lokasi.startsWith(dbItem.kelurahan + ", Kecamatan"))) {
           matched.lokasi = dbItem.lokasi;
         }
-        if (dbItem.deskripsi) matched.deskripsi = dbItem.deskripsi;
+        if (dbItem.deskripsi) {
+          matched.deskripsi = dbItem.deskripsi.replace(/Bina Iman Anak Sholeh/gi, "Bina Anak Sholeh");
+        }
         if (dbItem.kontak) matched.kontak = dbItem.kontak;
         if (dbItem.jadwal) matched.jadwal = dbItem.jadwal;
         if (itemJenis === "posyandu") {
@@ -686,6 +704,19 @@ export async function getKomunitasList(
         }
 
         let dbNama = dbItem.nama || "Komunitas";
+        if (
+          dbItem.id === "e001abba-d414-4cf2-886e-913577dbfcc5" ||
+          toValidUUID(dbItem.id) === "e001abba-d414-4cf2-886e-913577dbfcc5"
+        ) {
+          dbNama = "KB Bina Anak Sholeh (BIAS) Kemandungan";
+        } else if (
+          dbItem.id === "6448b6d1-a2b6-4844-8595-ba29636faa7d" ||
+          toValidUUID(dbItem.id) === "6448b6d1-a2b6-4844-8595-ba29636faa7d"
+        ) {
+          dbNama = "KB Bina Anak Sholeh (BIAS) Panggung";
+        } else if (dbNama.includes("Bina Iman Anak Sholeh")) {
+          dbNama = dbNama.replace(/Bina Iman Anak Sholeh/gi, "Bina Anak Sholeh");
+        }
         if (itemJenis === "posyandu") {
           const core = extractCorePosyanduName(dbNama);
           dbNama = core ? `Posyandu ${core}` : dbNama;
@@ -1211,6 +1242,36 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
     }
 
     let nama = komunitas.nama || komunitas.nama_komunitas || "Komunitas";
+    // Standarisasi khusus nama & identitas lembaga KB BIAS (Kemandungan & Panggung) tanpa kata "Iman"
+    if (
+      dbKomunitasId === "e001abba-d414-4cf2-886e-913577dbfcc5" ||
+      komunitasId === "e001abba-d414-4cf2-886e-913577dbfcc5" ||
+      resolvedKomunitasId === "e001abba-d414-4cf2-886e-913577dbfcc5" ||
+      (nama.toLowerCase().includes("bias") &&
+        (nama.toLowerCase().includes("kemandungan") ||
+          komunitas.kelurahan?.toLowerCase() === "kemandungan" ||
+          seedItem?.kelurahan?.toLowerCase() === "kemandungan"))
+    ) {
+      nama = "KB Bina Anak Sholeh (BIAS) Kemandungan";
+      komunitas.nama = nama;
+      komunitas.nama_komunitas = nama;
+    } else if (
+      dbKomunitasId === "6448b6d1-a2b6-4844-8595-ba29636faa7d" ||
+      komunitasId === "6448b6d1-a2b6-4844-8595-ba29636faa7d" ||
+      resolvedKomunitasId === "6448b6d1-a2b6-4844-8595-ba29636faa7d" ||
+      (nama.toLowerCase().includes("bias") &&
+        (nama.toLowerCase().includes("panggung") ||
+          komunitas.kelurahan?.toLowerCase() === "panggung" ||
+          seedItem?.kelurahan?.toLowerCase() === "panggung"))
+    ) {
+      nama = "KB Bina Anak Sholeh (BIAS) Panggung";
+      komunitas.nama = nama;
+      komunitas.nama_komunitas = nama;
+    } else if (nama.includes("Bina Iman Anak Sholeh")) {
+      nama = nama.replace(/Bina Iman Anak Sholeh/gi, "Bina Anak Sholeh");
+      komunitas.nama = nama;
+      komunitas.nama_komunitas = nama;
+    }
     let jenis = komunitas.jenis || komunitas.jenis_komunitas || seedItem?.jenis || "posyandu";
 
     if (jenis === "warga_kita" && isInvalidWargaCommunity(komunitas)) {
@@ -1298,7 +1359,7 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
         .filter(Boolean)
         .join(", ");
     let deskripsi =
-      komunitas.deskripsi || `Layanan dan kegiatan ${nama} di ${lokasi}.`;
+      (komunitas.deskripsi || `Layanan dan kegiatan ${nama} di ${lokasi}.`).replace(/Bina Iman Anak Sholeh/gi, "Bina Anak Sholeh");
     if (jenis === "posyandu") {
       deskripsi = deskripsi.replace(/Posyandu\s+Posyandu/gi, "Posyandu");
       if (komunitas.id === "7e363301-78ea-4310-84c2-94618d860cee" || (komunitas.kelurahan?.toLowerCase() === "pesurungan lor" && nama?.toLowerCase().includes("anggrek"))) {
