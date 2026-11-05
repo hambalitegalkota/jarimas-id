@@ -20,6 +20,7 @@ import {
   isDummyDataAnak,
   normalizeWilayah,
   formatNamaSekolahDisplay,
+  isValidBandungRtRw,
   isValidKalinyamatWetanRtRw,
   isValidKeturenRtRw,
   isValidDebongKulonRtRw,
@@ -123,6 +124,7 @@ export async function getRekapDataAnakUsiaDiniAction(): Promise<{
       const kel = parsed.domisiliKelurahan || parsed.kkKelurahan;
       const rw = parsed.domisiliRw || parsed.kkRw;
       const rt = parsed.domisiliRt || parsed.kkRt;
+      if (!isValidBandungRtRw(kel, rw, rt)) return false;
       if (!isValidKalinyamatWetanRtRw(kel, rw, rt)) return false;
       if (!isValidKeturenRtRw(kel, rw, rt)) return false;
       if (!isValidDebongKulonRtRw(kel, rw, rt)) return false;

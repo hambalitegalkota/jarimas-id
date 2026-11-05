@@ -230,11 +230,11 @@ export const RAW_POSYANDU_TEGAL: RawPosyanduItem[] = [
   // 3. KECAMATAN TEGAL SELATAN (8 Kelurahan)
   // ==========================================
   // Bandung (5 Posyandu)
-  { id: "ce057279-6468-4616-83dc-602d548a8530", nama: "Posyandu Melati I", kecamatan: "Tegal Selatan", kelurahan: "Bandung", rw: "03", rt: "01", lokasi: "Balai Posyandu / RW 03, Bandung, Tegal Selatan, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Flamboyan 1 Bandung: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "6c3cec2a-6468-4616-8630-a8652d5b6175", nama: "Posyandu Melati II", kecamatan: "Tegal Selatan", kelurahan: "Bandung", rw: "03", rt: "03", lokasi: "Balai Posyandu / RW 03, Bandung, Tegal Selatan, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Flamboyan 2 Bandung: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "6ebd6959-6b52-41a6-8c0d-093d0b1669c8", nama: "Posyandu Melati III", kecamatan: "Tegal Selatan", kelurahan: "Bandung", rw: "04", rt: "02", lokasi: "Balai Posyandu / RW 04, Bandung, Tegal Selatan, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Kenanga Bandung Bandung: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "189a6054-01b2-4271-83fd-59a52d00164f", nama: "Posyandu Melati IV", kecamatan: "Tegal Selatan", kelurahan: "Bandung", rw: "02", rt: "02", lokasi: "Balai Posyandu / RW 02, Bandung, Tegal Selatan, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Mawar Bandung 1 Bandung: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "f340cd67-01b2-4271-81a9-116d9b3cb70e", nama: "Posyandu Melati V", kecamatan: "Tegal Selatan", kelurahan: "Bandung", rw: "02", rt: "04", lokasi: "Balai Posyandu / RW 02, Bandung, Tegal Selatan, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Mawar Bandung 2 Bandung: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "ce057279-6468-4616-83dc-602d548a8530", nama: "Posyandu Melati I", kecamatan: "Tegal Selatan", kelurahan: "Bandung", rw: "01", rt: "01", cakupan_wilayah: "RW 01 (RT 01 s/d RT 04)", lokasi: "Balai Posyandu / RW 01, Bandung, Tegal Selatan, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Melati I Bandung cakupan sinkronisasi wilayah RW 01 (RT 01 s/d RT 04): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "6c3cec2a-6468-4616-8630-a8652d5b6175", nama: "Posyandu Melati II", kecamatan: "Tegal Selatan", kelurahan: "Bandung", rw: "02", rt: "01", cakupan_wilayah: "RW 02 (RT 01 s/d RT 06)", lokasi: "Balai Posyandu / RW 02, Bandung, Tegal Selatan, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Melati II Bandung cakupan sinkronisasi wilayah RW 02 (RT 01 s/d RT 06): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "6ebd6959-6b52-41a6-8c0d-093d0b1669c8", nama: "Posyandu Melati III", kecamatan: "Tegal Selatan", kelurahan: "Bandung", rw: "03", rt: "01", cakupan_wilayah: "RW 03 (RT 01 s/d RT 04)", lokasi: "Balai Posyandu / RW 03, Bandung, Tegal Selatan, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Melati III Bandung cakupan sinkronisasi wilayah RW 03 (RT 01 s/d RT 04): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "189a6054-01b2-4271-83fd-59a52d00164f", nama: "Posyandu Melati IV", kecamatan: "Tegal Selatan", kelurahan: "Bandung", rw: "04", rt: "01", cakupan_wilayah: "RW 04 (RT 01 s/d RT 04)", lokasi: "Balai Posyandu / RW 04, Bandung, Tegal Selatan, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Melati IV Bandung cakupan sinkronisasi wilayah RW 04 (RT 01 s/d RT 04): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "f340cd67-01b2-4271-81a9-116d9b3cb70e", nama: "Posyandu Melati V", kecamatan: "Tegal Selatan", kelurahan: "Bandung", rw: "05", rt: "01", cakupan_wilayah: "RW 05 (RT 01 s/d RT 05)", lokasi: "Balai Posyandu / RW 05, Bandung, Tegal Selatan, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Melati V Bandung cakupan sinkronisasi wilayah RW 05 (RT 01 s/d RT 05): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
 
   // Debong Kidul (4 Posyandu)
   { id: "69759427-9ff6-42a9-80d4-36a91e42c627", nama: "Posyandu Seruni I", kecamatan: "Tegal Selatan", kelurahan: "Debong Kidul", rw: "01", rt: "01", lokasi: "Balai Posyandu / RW 01, Debong Kidul, Tegal Selatan, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Seruni 1 Debong Kidul cakupan sinkronisasi wilayah RW 01 (RT 01 s/d RT 05): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
@@ -360,6 +360,52 @@ export const RAW_POSYANDU_TEGAL: RawPosyanduItem[] = [
   { id: "5b56f9df-bd53-4737-8d60-63d1deed57bc", nama: "Posyandu Ragasela", kecamatan: "Margadana", kelurahan: "Sumurpanggang", rw: "03", rt: "03", lokasi: "Balai Posyandu / RW 03, Sumurpanggang, Margadana, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Mawar Panggang 2 Sumurpanggang: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
 
 ];
+
+export const BANDUNG_POSYANDU_MAP: Record<
+  string,
+  { nama: string; rw: string; rt: string; cakupan_wilayah: string; lokasi: string; deskripsi: string }
+> = {
+  "ce057279-6468-4616-83dc-602d548a8530": {
+    nama: "Posyandu Melati I",
+    rw: "01",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 01 (RT 01, RT 02, RT 03, RT 04 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 01, Bandung, Tegal Selatan, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Melati I Bandung cakupan sinkronisasi wilayah RW 01 (RT 01 s/d RT 04): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+  },
+  "6c3cec2a-6468-4616-8630-a8652d5b6175": {
+    nama: "Posyandu Melati II",
+    rw: "02",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 02 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 02, Bandung, Tegal Selatan, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Melati II Bandung cakupan sinkronisasi wilayah RW 02 (RT 01 s/d RT 06): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+  },
+  "6ebd6959-6b52-41a6-8c0d-093d0b1669c8": {
+    nama: "Posyandu Melati III",
+    rw: "03",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 03 (RT 01, RT 02, RT 03, RT 04 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 03, Bandung, Tegal Selatan, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Melati III Bandung cakupan sinkronisasi wilayah RW 03 (RT 01 s/d RT 04): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+  },
+  "189a6054-01b2-4271-83fd-59a52d00164f": {
+    nama: "Posyandu Melati IV",
+    rw: "04",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 04 (RT 01, RT 02, RT 03, RT 04 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 04, Bandung, Tegal Selatan, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Melati IV Bandung cakupan sinkronisasi wilayah RW 04 (RT 01 s/d RT 04): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+  },
+  "f340cd67-01b2-4271-81a9-116d9b3cb70e": {
+    nama: "Posyandu Melati V",
+    rw: "05",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 05 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 05, Bandung, Tegal Selatan, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Melati V Bandung cakupan sinkronisasi wilayah RW 05 (RT 01 s/d RT 05): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+  },
+};
 
 export const KALINYAMAT_WETAN_POSYANDU_MAP: Record<
   string,

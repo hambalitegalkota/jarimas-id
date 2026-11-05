@@ -678,7 +678,8 @@ export function extractSchoolNumberToken(str?: string | null): string | null {
  */
 const TEGAL_WILAYAH_TOKENS = [
   "cabawan", "debong kidul", "debong kulon", "debong lor", "debong tengah",
-  "kaligangsa", "kalinyamat kulon", "kalinyamat wetan", "kejambon",
+  "kaligangsa", "kalinyamat kulon", "kalinyamat wetan",
+      "bandung", "kejambon",
   "kemandungan", "krandon", "kraton", "margadana", "mintaragen",
   "muarareja", "panggung", "pekauman", "pesurungan kidul", "pesurungan lor",
   "randugunting", "slerok", "sumurpanggang", "tegalsari", "tunon",
@@ -968,6 +969,55 @@ export function getPosyanduCakupanWilayah(targetKomunitas: any): PosyanduCakupan
     }
   }
 
+
+  // Khusus Kelurahan Bandung (Kecamatan Tegal Selatan)
+  // - Posyandu Melati I: RW 1 (RT 01 s/d RT 04)
+  // - Posyandu Melati II: RW 2 (RT 01 s/d RT 06)
+  // - Posyandu Melati III: RW 3 (RT 01 s/d RT 04)
+  // - Posyandu Melati IV: RW 4 (RT 01 s/d RT 04)
+  // - Posyandu Melati V: RW 5 (RT 01 s/d RT 05)
+  const isBandungPosyandu =
+    kel.includes("bandung") ||
+    nama.includes("bandung") ||
+    targetKomunitas?.id === "ce057279-6468-4616-83dc-602d548a8530" ||
+    targetKomunitas?.id === "6c3cec2a-6468-4616-8630-a8652d5b6175" ||
+    targetKomunitas?.id === "6ebd6959-6b52-41a6-8c0d-093d0b1669c8" ||
+    targetKomunitas?.id === "189a6054-01b2-4271-83fd-59a52d00164f" ||
+    targetKomunitas?.id === "f340cd67-01b2-4271-81a9-116d9b3cb70e";
+
+  if (isBandungPosyandu) {
+    if (
+      targetKomunitas?.id === "f340cd67-01b2-4271-81a9-116d9b3cb70e" ||
+      /\bmelati\s*(5|v)\b/i.test(nama)
+    ) {
+      return { rw: "05", rtList: ["01", "02", "03", "04", "05", "1", "2", "3", "4", "5"] };
+    }
+    if (
+      targetKomunitas?.id === "189a6054-01b2-4271-83fd-59a52d00164f" ||
+      /\bmelati\s*(4|iv)\b/i.test(nama)
+    ) {
+      return { rw: "04", rtList: ["01", "02", "03", "04", "1", "2", "3", "4"] };
+    }
+    if (
+      targetKomunitas?.id === "6ebd6959-6b52-41a6-8c0d-093d0b1669c8" ||
+      /\bmelati\s*(3|iii)\b/i.test(nama)
+    ) {
+      return { rw: "03", rtList: ["01", "02", "03", "04", "1", "2", "3", "4"] };
+    }
+    if (
+      targetKomunitas?.id === "6c3cec2a-6468-4616-8630-a8652d5b6175" ||
+      /\bmelati\s*(2|ii)\b/i.test(nama)
+    ) {
+      return { rw: "02", rtList: ["01", "02", "03", "04", "05", "06", "1", "2", "3", "4", "5", "6"] };
+    }
+    if (
+      targetKomunitas?.id === "ce057279-6468-4616-83dc-602d548a8530" ||
+      /\bmelati\s*(1|i)\b/i.test(nama) ||
+      nama.includes("melati")
+    ) {
+      return { rw: "01", rtList: ["01", "02", "03", "04", "1", "2", "3", "4"] };
+    }
+  }
 
   // Khusus Kelurahan Kalinyamat Wetan (Kecamatan Tegal Selatan)
   // - Posyandu Dahlia I: RW 1 (RT 01 s/d RT 05)
@@ -2167,6 +2217,59 @@ export function getPosyanduCoverageDisplay(komunitas: any): PosyanduCoverageResu
  * - RW 4 Jumlah RT 5 (RT 1 s/d 5)
  * - Tetap mempertahankan RW "Belum Tahu" dan RT "Belum Tahu"
  */
+/**
+ * Validasi ketentuan khusus RW & RT di Kelurahan Bandung, Kecamatan Tegal Selatan:
+ * - Jumlah RW ada 5 (RW 1 s/d 5)
+ * - RW 1 Jumlah RT 4 (RT 1 s/d 4)
+ * - RW 2 Jumlah RT 6 (RT 1 s/d 6)
+ * - RW 3 Jumlah RT 4 (RT 1 s/d 4)
+ * - RW 4 Jumlah RT 4 (RT 1 s/d 4)
+ * - RW 5 Jumlah RT 5 (RT 1 s/d 5)
+ * - Tetap mempertahankan RW "Belum Tahu" dan RT "Belum Tahu"
+ */
+export function isValidBandungRtRw(
+  kel?: string | null,
+  rw?: string | null,
+  rt?: string | null
+): boolean {
+  if (!kel) return true;
+  const cleanKel = normalizeWilayah(kel);
+  if (!cleanKel.includes("bandung")) return true;
+
+  const rawRw = (rw || "").trim().toLowerCase();
+  const rawRt = (rt || "").trim().toLowerCase();
+
+  const isRwBelumTahu =
+    !rawRw ||
+    rawRw.includes("belum") ||
+    rawRw === "-" ||
+    rawRw === "0" ||
+    rawRw === "00";
+  if (isRwBelumTahu) return true;
+
+  const rwNum = parseInt(rawRw.replace(/\D/g, ""), 10);
+  if (isNaN(rwNum) || rwNum < 1 || rwNum > 5) return false;
+
+  const isRtBelumTahu =
+    !rawRt ||
+    rawRt.includes("belum") ||
+    rawRt === "-" ||
+    rawRt === "0" ||
+    rawRt === "00";
+  if (isRtBelumTahu) return true;
+
+  const rtNum = parseInt(rawRt.replace(/\D/g, ""), 10);
+  if (isNaN(rtNum)) return false;
+
+  if (rwNum === 1 && (rtNum < 1 || rtNum > 4)) return false;
+  if (rwNum === 2 && (rtNum < 1 || rtNum > 6)) return false;
+  if (rwNum === 3 && (rtNum < 1 || rtNum > 4)) return false;
+  if (rwNum === 4 && (rtNum < 1 || rtNum > 4)) return false;
+  if (rwNum === 5 && (rtNum < 1 || rtNum > 5)) return false;
+
+  return true;
+}
+
 export function isValidKalinyamatWetanRtRw(
   kel?: string | null,
   rw?: string | null,
@@ -2737,6 +2840,13 @@ export function isDataAnakMatchingKomunitas(
   if (
     !isValidKalinyamatKulonRtRw(item.domisili_kelurahan, item.domisili_rw, item.domisili_rt) &&
     !isValidKalinyamatKulonRtRw(item.kk_kelurahan, item.kk_rw, item.kk_rt)
+  ) {
+    return false;
+  }
+  // Ketentuan Khusus Kelurahan Bandung: Hapus/abaikan data yang tidak sesuai ketentuan resmi RW & RT Bandung
+  if (
+    !isValidBandungRtRw(item.domisili_kelurahan, item.domisili_rw, item.domisili_rt) &&
+    !isValidBandungRtRw(item.kk_kelurahan, item.kk_rw, item.kk_rt)
   ) {
     return false;
   }

@@ -11,6 +11,7 @@ import {
   isDataAtsRecord,
   getPosyanduCakupanRw,
   getPosyanduCakupanWilayah,
+  isValidBandungRtRw,
   isValidKalinyamatWetanRtRw,
   isValidKalinyamatKulonRtRw,
   isValidKaligangsaRtRw,
@@ -1558,6 +1559,11 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
           rawItemRt === "-" ||
           rawItemRt === "0" ||
           rawItemRt === "00";
+
+        // Ketentuan Khusus Kelurahan Bandung:
+        if (!isValidBandungRtRw(itemKel, itemRw, itemRt)) {
+          return false;
+        }
 
         // Ketentuan Khusus Kelurahan Kalinyamat Wetan:
         if (!isValidKalinyamatWetanRtRw(itemKel, itemRw, itemRt)) {
