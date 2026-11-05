@@ -103,8 +103,10 @@ export async function getRekapDataAnakUsiaDiniAction(): Promise<{
             nama_sekolah,
             alasan_sekolah,
             komunitas_id,
+            status_approval,
             created_at
           `)
+          .neq("status_approval", "deleted")
           .order("created_at", { ascending: false })
           .range(from, to)
       );
@@ -115,7 +117,7 @@ export async function getRekapDataAnakUsiaDiniAction(): Promise<{
 
     // Filter ketat: Hanya data anak balita / PAUD riil (BUKAN data ATS, BUKAN data dummy, dan memenuhi ketentuan wilayah Keturen)
     const validLiveChildren = (dbChildren || []).filter((c) => {
-      if (isDataAtsRecord(c) || isDummyDataAnak(c)) return false;
+      if (isDataAtsRecord(c) || isDummyDataAnak(c) || c.status_approval === "deleted" || c.status_approval === "keluar") return false;
       const parsed = parseDataAnakDetails(c.alasan_sekolah);
       const kel = parsed.domisiliKelurahan || parsed.kkKelurahan;
       const rw = parsed.domisiliRw || parsed.kkRw;

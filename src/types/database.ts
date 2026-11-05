@@ -376,7 +376,7 @@ export interface DataAnakItem {
 
   komunitas_id: string;
   komunitas_nama?: string;
-  status_approval: "pending" | "approved" | "rejected";
+  status_approval: "pending" | "approved" | "rejected" | "deleted" | "keluar";
   validated_by?: string | null;
   validated_at?: string | null;
   is_updated_by_paud?: boolean;
@@ -435,7 +435,7 @@ export interface DataAtsItem {
   keterangan?: string | null;
   komunitas_id: string;
   komunitas_nama?: string;
-  status_approval: "pending" | "approved" | "rejected";
+  status_approval: "pending" | "approved" | "rejected" | "deleted" | "keluar";
   validated_by?: string | null;
   validated_at?: string | null;
   created_by?: string;

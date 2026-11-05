@@ -36,6 +36,9 @@ export function buildScopedRekapFromChildren(
   const item: WilayahRekapItem = createEmptyRekapWilayah(id, nama, tingkat, kecamatan);
 
   for (const child of children) {
+    if (child.status_approval === "deleted" || child.status_approval === "keluar") {
+      continue;
+    }
     const age = calculateAgeFromBirthDate(child.tanggal_lahir);
     const rawGender = (child.jenis_kelamin || "L").toUpperCase();
     const isLaki = rawGender === "L" || rawGender.startsWith("LAKI");

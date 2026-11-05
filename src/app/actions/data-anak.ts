@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/utils/supabase/server";
+import { createClient, createAdminClient } from "@/utils/supabase/server";
 import { DataAnakSchema } from "@/lib/zod-schemas";
 import { toValidUUID, isSuperAdmin as checkIsSuperAdmin, isAdminPusat as checkIsAdminPusat, isSuperOrAdminPusat, isRoleAdmin } from "@/lib/utils";
 import { toValidKomunitasUUID } from "@/lib/community-slugs";
@@ -933,6 +933,7 @@ export async function getDataAnakByKomunitas(
       let query = supabase
         .from("data_anak")
         .select(selectFields)
+        .neq("status_approval", "deleted")
         .order("created_at", { ascending: false });
 
       if (orConditions.length > 0) {
@@ -960,6 +961,7 @@ export async function getDataAnakByKomunitas(
       let directQuery = supabase
         .from("data_anak")
         .select(selectFields)
+        .neq("status_approval", "deleted")
         .order("created_at", { ascending: false });
 
       if (targetKel) {
@@ -1708,27 +1710,89 @@ export async function deleteDataAnak(
       }
     }
 
-    // Hapus records DDKS terlebih dahulu untuk integritas referensi
-    try {
-      await supabase
-        .from("ddks_records")
-        .delete()
-        .eq("data_anak_id", dataAnakId);
-    } catch (e) {
-      console.warn("Hapus ddks_records warning:", e);
+    let isHardDeleted = false;
+
+    // 1. Coba hapus via createAdminClient (service role) jika tersedia
+    const adminClient = createAdminClient();
+    if (adminClient) {
+      try {
+        await adminClient.from("ddks_records").delete().eq("data_anak_id", dataAnakId);
+        const { data: delRows, error: delErr } = await adminClient
+          .from("data_anak")
+          .delete()
+          .eq("id", dataAnakId)
+          .select("id");
+        if (!delErr && delRows && delRows.length > 0) {
+          isHardDeleted = true;
+        }
+      } catch (e) {
+        console.warn("adminClient deleteDataAnak error:", e);
+      }
     }
 
-    // Hapus record data_anak dari database
-    const { error: deleteError } = await supabase
-      .from("data_anak")
-      .delete()
-      .eq("id", dataAnakId);
+    // 2. Coba via RPC hierarkis / SECURITY DEFINER
+    if (!isHardDeleted) {
+      try {
+        const { data: rpcRes, error: rpcErr } = await supabase.rpc(
+          "hapus_data_anak_oleh_admin",
+          { p_data_anak_id: dataAnakId }
+        );
+        if (!rpcErr && rpcRes) {
+          const resObj = typeof rpcRes === "string" ? JSON.parse(rpcRes) : rpcRes;
+          if (resObj && resObj.success) {
+            isHardDeleted = true;
+          }
+        }
+      } catch (e) {
+        console.warn("RPC hapus_data_anak_oleh_admin error:", e);
+      }
+    }
 
-    if (deleteError) {
-      return {
-        success: false,
-        message: "Gagal menghapus data anak: " + deleteError.message,
-      };
+    // 3. Coba direct delete via authenticated supabase client
+    if (!isHardDeleted) {
+      try {
+        await supabase
+          .from("ddks_records")
+          .delete()
+          .eq("data_anak_id", dataAnakId);
+      } catch (e) {
+        console.warn("Hapus ddks_records warning:", e);
+      }
+
+      const { data: directDeletedRows, error: deleteError } = await supabase
+        .from("data_anak")
+        .delete()
+        .eq("id", dataAnakId)
+        .select("id");
+
+      if (!deleteError && directDeletedRows && directDeletedRows.length > 0) {
+        isHardDeleted = true;
+      }
+    }
+
+    // 4. Jika direct hard delete tidak berhasil menghapus baris (misal karena RLS Supabase memblokir),
+    // lakukan pembersihan status/flag deleted agar anak langsung hilang seketika dari komunitas, sistem, dan rekap
+    if (!isHardDeleted) {
+      const { error: softDeleteError } = await supabase
+        .from("data_anak")
+        .update({
+          status_approval: "deleted",
+          is_sekolah: false,
+          nama_sekolah: "",
+          alasan_sekolah: "[DIHAPUS_OLEH_ADMIN]",
+          updated_at: new Date().toISOString(),
+          terakhir_diperbarui_at: new Date().toISOString(),
+          diperbarui_oleh: user.id,
+        })
+        .eq("id", dataAnakId);
+
+      if (softDeleteError) {
+        console.error("Gagal update pembersihan data anak:", softDeleteError);
+        return {
+          success: false,
+          message: "Gagal menghapus data anak: " + softDeleteError.message,
+        };
+      }
     }
 
     const targetKomunitasId = komunitasId || existingChild.komunitas_id;

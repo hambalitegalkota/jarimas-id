@@ -274,15 +274,29 @@ export function KomunitasDetailClientView({
     [dataAnakState]
   );
 
-  const totalChildren = dataAnakStats?.total ?? dataAnakState.length;
+  const totalChildren = useMemo(() => {
+    if (dataAnakList.length > 0 || dataAnakState.length > 0) {
+      return dataAnakState.length;
+    }
+    return dataAnakStats?.total ?? 0;
+  }, [dataAnakState.length, dataAnakList.length, dataAnakStats?.total]);
+
   const totalBersekolahCount = bersekolahChildren.length;
   const totalBelumBersekolahCount = belumBersekolahChildren.length;
-  const totalApproved =
-    dataAnakStats?.approved ??
-    dataAnakState.filter((c) => c.status_approval === "approved").length;
-  const totalPending =
-    dataAnakStats?.pending ??
-    dataAnakState.filter((c) => c.status_approval === "pending").length;
+
+  const totalApproved = useMemo(() => {
+    if (dataAnakList.length > 0 || dataAnakState.length > 0) {
+      return dataAnakState.filter((c) => c.status_approval === "approved").length;
+    }
+    return dataAnakStats?.approved ?? 0;
+  }, [dataAnakState, dataAnakList.length, dataAnakStats?.approved]);
+
+  const totalPending = useMemo(() => {
+    if (dataAnakList.length > 0 || dataAnakState.length > 0) {
+      return dataAnakState.filter((c) => c.status_approval === "pending").length;
+    }
+    return dataAnakStats?.pending ?? 0;
+  }, [dataAnakState, dataAnakList.length, dataAnakStats?.pending]);
 
   const isWargaKitaCheck = komunitasData.jenis === "warga_kita";
 

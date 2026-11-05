@@ -152,15 +152,29 @@ export function DataAnakClientView({
     [childrenList]
   );
 
-  const totalChildren = stats?.total ?? childrenList.length;
+  const totalChildren = useMemo(() => {
+    if (initialChildren.length > 0 || childrenList.length > 0) {
+      return childrenList.length;
+    }
+    return stats?.total ?? 0;
+  }, [childrenList.length, initialChildren.length, stats?.total]);
+
   const totalBersekolahCount = bersekolahChildren.length;
   const totalBelumBersekolahCount = belumBersekolahChildren.length;
-  const totalApproved =
-    stats?.approved ??
-    childrenList.filter((c) => c.status_approval === "approved").length;
-  const totalPending =
-    stats?.pending ??
-    childrenList.filter((c) => c.status_approval === "pending").length;
+
+  const totalApproved = useMemo(() => {
+    if (initialChildren.length > 0 || childrenList.length > 0) {
+      return childrenList.filter((c) => c.status_approval === "approved").length;
+    }
+    return stats?.approved ?? 0;
+  }, [childrenList, initialChildren.length, stats?.approved]);
+
+  const totalPending = useMemo(() => {
+    if (initialChildren.length > 0 || childrenList.length > 0) {
+      return childrenList.filter((c) => c.status_approval === "pending").length;
+    }
+    return stats?.pending ?? 0;
+  }, [childrenList, initialChildren.length, stats?.pending]);
 
   // Filter daftar khusus Komunitas PAUD (Kondisi 2 commit sebelum ini): Berdasarkan status verifikasi & pencarian
   const paudDisplayedChildren = useMemo(() => {

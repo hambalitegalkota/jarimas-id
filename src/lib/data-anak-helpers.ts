@@ -2625,6 +2625,11 @@ export function isDataAnakMatchingKomunitas(
   targetMeta: any,
   targetKomId: string
 ): boolean {
+  // Abaikan data anak yang sudah dihapus atau dicatat keluar dari sistem
+  if (item.status_approval === "deleted" || item.status_approval === "keluar") {
+    return false;
+  }
+
   // Ketentuan Khusus Kelurahan Kraton: Hapus/abaikan data yang tidak sesuai ketentuan resmi RW & RT Kraton
   const isDomKraton = (item.domisili_kelurahan || "").toLowerCase().includes("kraton");
   const isKkKraton = (item.kk_kelurahan || "").toLowerCase().includes("kraton");

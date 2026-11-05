@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import {
   AlertTriangle,
   Trash2,
@@ -29,6 +30,7 @@ export function ModalKeluarDataAnak({
   onClose,
   onSuccess,
 }: ModalKeluarDataAnakProps) {
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -43,6 +45,7 @@ export function ModalKeluarDataAnak({
       if (res.success) {
         onSuccess(anak.id);
         onClose();
+        router.refresh();
       } else {
         setErrorMsg(res.message || "Gagal menghapus data anak dari sistem.");
       }

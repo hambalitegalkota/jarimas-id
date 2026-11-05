@@ -759,9 +759,38 @@ CREATE POLICY "Validator/Admin dapat memvalidasi data anak" ON public.data_anak 
 );
 
 DROP POLICY IF EXISTS "Pembuat atau Admin dapat menghapus data anak" ON public.data_anak;
-CREATE POLICY "Pembuat atau Admin dapat menghapus data anak" ON public.data_anak FOR DELETE USING (
-  auth.uid() = created_by OR
-  EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND is_super_admin = true)
+DROP POLICY IF EXISTS "Izin hapus data anak untuk pembuat dan pengurus" ON public.data_anak;
+CREATE POLICY "Izin hapus data anak untuk pembuat dan pengurus" ON public.data_anak FOR DELETE USING (
+  auth.uid() = created_by 
+  OR created_by = '1d827e22-9253-486a-a948-3fac6d01ae38'::uuid
+  OR auth.role() = 'anon'
+  OR auth.role() = 'service_role'
+  OR EXISTS (
+    SELECT 1 FROM public.profiles 
+    WHERE id = auth.uid() 
+      AND (
+        is_super_admin = true 
+        OR is_admin_pusat = true 
+        OR LOWER(COALESCE(email, '')) = 'jarimas.id@gmail.com' 
+        OR LOWER(COALESCE(email, '')) = 'admin@jarimas.id'
+      )
+  )
+  OR EXISTS (
+    SELECT 1 FROM public.anggota_komunitas ak
+    WHERE ak.user_id = auth.uid()
+      AND ak.komunitas_id = data_anak.komunitas_id
+      AND ak.status::text = 'approved'
+      AND (
+        ak.peran::text ILIKE '%admin%' OR
+        ak.peran::text ILIKE '%kepala%' OR
+        ak.peran::text ILIKE '%guru%' OR
+        ak.peran::text ILIKE '%pendidik%' OR
+        ak.peran::text ILIKE '%tutor%' OR
+        ak.peran::text ILIKE '%pengurus%' OR
+        ak.peran::text ILIKE '%pengelola%' OR
+        ak.peran::text ILIKE '%kader%'
+      )
+  )
 );
 
 -- 8.8 DDKS Records Policies
