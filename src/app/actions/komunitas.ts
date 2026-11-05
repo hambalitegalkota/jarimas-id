@@ -7,6 +7,7 @@ import {
   SEED_POSYANDU_TEGAL,
   INVALID_POSYANDU_IDS,
   extractCorePosyanduName,
+  KALINYAMAT_WETAN_POSYANDU_MAP,
   KALINYAMAT_KULON_POSYANDU_MAP,
   KALIGANGSA_POSYANDU_MAP,
   KRATON_POSYANDU_MAP,
@@ -41,6 +42,7 @@ import {
   isValidPekaumanRtRw,
   isValidPanggungRtRw,
   isValidTegalsariRtRw,
+  isValidKalinyamatWetanRtRw,
   isValidKalinyamatKulonRtRw,
   isValidKaligangsaRtRw,
 } from "@/lib/data-anak-helpers";
@@ -188,6 +190,7 @@ function isInvalidWargaCommunity(item: { kelurahan?: string | null; rw?: string 
   }
 
   // 1. Validasi spesifik kelurahan yang memiliki aturan ketat RT & RW
+  if (!isValidKalinyamatWetanRtRw(kel, rawRw, rawRt)) return true;
   if (!isValidKalinyamatKulonRtRw(kel, rawRw, rawRt)) return true;
   if (!isValidKaligangsaRtRw(kel, rawRw, rawRt)) return true;
 
@@ -620,11 +623,21 @@ export async function getKomunitasList(
       if (matched) {
         matched.id = dbItem.id;
         const normId = toValidUUID(dbItem.id);
+        const kwConfig = KALINYAMAT_WETAN_POSYANDU_MAP[dbItem.id] || KALINYAMAT_WETAN_POSYANDU_MAP[normId];
         const kkConfig = KALINYAMAT_KULON_POSYANDU_MAP[dbItem.id] || KALINYAMAT_KULON_POSYANDU_MAP[normId];
         const kgConfig = KALIGANGSA_POSYANDU_MAP[dbItem.id] || KALIGANGSA_POSYANDU_MAP[normId];
         const kratonConfig = KRATON_POSYANDU_MAP[dbItem.id] || KRATON_POSYANDU_MAP[normId];
 
-        if (itemJenis === "posyandu" && kkConfig) {
+        if (itemJenis === "posyandu" && kwConfig) {
+          matched.nama = kwConfig.nama;
+          matched.rw = kwConfig.rw;
+          matched.rt = kwConfig.rt;
+          matched.cakupan_wilayah = kwConfig.cakupan_wilayah;
+          matched.lokasi = kwConfig.lokasi;
+          matched.deskripsi = kwConfig.deskripsi;
+          matched.kecamatan = "Tegal Selatan";
+          matched.kelurahan = "Kalinyamat Wetan";
+        } else if (itemJenis === "posyandu" && kkConfig) {
           matched.nama = kkConfig.nama;
           matched.rw = kkConfig.rw;
           matched.kecamatan = "Margadana";
@@ -819,6 +832,8 @@ export async function getKomunitasList(
       const normId = toValidUUID(item.id);
       const kelClean = (item.kelurahan || "").toLowerCase().trim();
       let coreNama = item.jenis === "posyandu" ? extractCorePosyanduName(item.nama).toLowerCase() : item.nama.toLowerCase();
+      const kwInfo = KALINYAMAT_WETAN_POSYANDU_MAP[item.id] || KALINYAMAT_WETAN_POSYANDU_MAP[normId];
+      if (kwInfo) coreNama = kwInfo.nama.toLowerCase();
       const kkInfo = KALINYAMAT_KULON_POSYANDU_MAP[item.id] || KALINYAMAT_KULON_POSYANDU_MAP[normId];
       if (kkInfo) coreNama = kkInfo.nama.toLowerCase();
       const kgInfo = KALIGANGSA_POSYANDU_MAP[item.id] || KALIGANGSA_POSYANDU_MAP[normId];
@@ -868,10 +883,15 @@ export async function getKomunitasList(
       let itemRw = item.rw;
       if (item.jenis === "posyandu") {
         const normId = toValidUUID(item.id);
+        const kwInfo = KALINYAMAT_WETAN_POSYANDU_MAP[item.id] || KALINYAMAT_WETAN_POSYANDU_MAP[normId];
         const kkInfo = KALINYAMAT_KULON_POSYANDU_MAP[item.id] || KALINYAMAT_KULON_POSYANDU_MAP[normId];
         const kgInfo = KALIGANGSA_POSYANDU_MAP[item.id] || KALIGANGSA_POSYANDU_MAP[normId];
-            const kratonInfo = KRATON_POSYANDU_MAP[item.id] || KRATON_POSYANDU_MAP[normId];
-        if (kkInfo) {
+        const kratonInfo = KRATON_POSYANDU_MAP[item.id] || KRATON_POSYANDU_MAP[normId];
+        if (kwInfo) {
+          itemNama = kwInfo.nama;
+          itemRw = kwInfo.rw;
+          item.rt = kwInfo.rt;
+        } else if (kkInfo) {
           itemNama = kkInfo.nama;
           itemRw = kkInfo.rw;
         } else if (kgInfo) {
@@ -1308,6 +1328,11 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
     let posyanduCanonicalRw: string | null = null;
     if (jenis === "posyandu") {
       const normId = toValidUUID(komunitas.id || komunitasId);
+      const kwInfo =
+        KALINYAMAT_WETAN_POSYANDU_MAP[komunitas.id] ||
+        KALINYAMAT_WETAN_POSYANDU_MAP[normId] ||
+        KALINYAMAT_WETAN_POSYANDU_MAP[komunitasId] ||
+        KALINYAMAT_WETAN_POSYANDU_MAP[dbKomunitasId];
       const kkInfo =
         KALINYAMAT_KULON_POSYANDU_MAP[komunitas.id] ||
         KALINYAMAT_KULON_POSYANDU_MAP[normId] ||
@@ -1324,7 +1349,18 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
         KRATON_POSYANDU_MAP[komunitasId] ||
         KRATON_POSYANDU_MAP[dbKomunitasId];
 
-      if (kkInfo) {
+      if (kwInfo) {
+        nama = kwInfo.nama;
+        komunitas.nama = kwInfo.nama;
+        komunitas.kelurahan = "Kalinyamat Wetan";
+        komunitas.kecamatan = "Tegal Selatan";
+        komunitas.rw = kwInfo.rw;
+        komunitas.rt = kwInfo.rt;
+        komunitas.cakupan_wilayah = kwInfo.cakupan_wilayah;
+        komunitas.lokasi = kwInfo.lokasi;
+        komunitas.deskripsi = kwInfo.deskripsi;
+        posyanduCanonicalRw = kwInfo.rw;
+      } else if (kkInfo) {
         nama = kkInfo.nama;
         komunitas.nama = kkInfo.nama;
         komunitas.kelurahan = "Kalinyamat Kulon";
@@ -3963,10 +3999,15 @@ export async function getKomunitasAdminListAction(params: GetKomunitasAdminListP
           let itemRw = item.rw;
           if (item.jenis === "posyandu") {
             const normId = toValidUUID(item.id);
+            const kwInfo = KALINYAMAT_WETAN_POSYANDU_MAP[item.id] || KALINYAMAT_WETAN_POSYANDU_MAP[normId];
             const kkInfo = KALINYAMAT_KULON_POSYANDU_MAP[item.id] || KALINYAMAT_KULON_POSYANDU_MAP[normId];
             const kgInfo = KALIGANGSA_POSYANDU_MAP[item.id] || KALIGANGSA_POSYANDU_MAP[normId];
             const kratonInfo = KRATON_POSYANDU_MAP[item.id] || KRATON_POSYANDU_MAP[normId];
-            if (kkInfo) {
+            if (kwInfo) {
+              itemNama = kwInfo.nama;
+              itemRw = kwInfo.rw;
+              item.rt = kwInfo.rt;
+            } else if (kkInfo) {
               itemNama = kkInfo.nama;
               itemRw = kkInfo.rw;
             } else if (kgInfo) {
@@ -4080,10 +4121,15 @@ export async function getKomunitasAdminListAction(params: GetKomunitasAdminListP
           let itemRw = item.rw;
           if (item.jenis === "posyandu") {
             const normId = toValidUUID(item.id);
+            const kwInfo = KALINYAMAT_WETAN_POSYANDU_MAP[item.id] || KALINYAMAT_WETAN_POSYANDU_MAP[normId];
             const kkInfo = KALINYAMAT_KULON_POSYANDU_MAP[item.id] || KALINYAMAT_KULON_POSYANDU_MAP[normId];
             const kgInfo = KALIGANGSA_POSYANDU_MAP[item.id] || KALIGANGSA_POSYANDU_MAP[normId];
             const kratonInfo = KRATON_POSYANDU_MAP[item.id] || KRATON_POSYANDU_MAP[normId];
-            if (kkInfo) {
+            if (kwInfo) {
+              itemNama = kwInfo.nama;
+              itemRw = kwInfo.rw;
+              item.rt = kwInfo.rt;
+            } else if (kkInfo) {
               itemNama = kkInfo.nama;
               itemRw = kkInfo.rw;
             } else if (kgInfo) {

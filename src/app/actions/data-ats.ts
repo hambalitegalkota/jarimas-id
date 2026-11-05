@@ -11,6 +11,7 @@ import {
   isDataAtsRecord,
   getPosyanduCakupanRw,
   getPosyanduCakupanWilayah,
+  isValidKalinyamatWetanRtRw,
   isValidKalinyamatKulonRtRw,
   isValidKaligangsaRtRw,
   isValidKeturenRtRw,
@@ -1557,6 +1558,11 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
           rawItemRt === "-" ||
           rawItemRt === "0" ||
           rawItemRt === "00";
+
+        // Ketentuan Khusus Kelurahan Kalinyamat Wetan:
+        if (!isValidKalinyamatWetanRtRw(itemKel, itemRw, itemRt)) {
+          return false;
+        }
 
         // Ketentuan Khusus Kelurahan Kalinyamat Kulon: Hapus/abaikan data yang tidak sesuai ketentuan resmi RW & RT Kalinyamat Kulon
         if (!isValidKalinyamatKulonRtRw(itemKel, itemRw, itemRt)) {

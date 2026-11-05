@@ -18,6 +18,7 @@ import {
   normalizeWilayah,
   parseAtsDetails,
   normalizeKeinginanSekolah,
+  isValidKalinyamatWetanRtRw,
   isValidKeturenRtRw,
   isValidDebongKulonRtRw,
   isValidTunonRtRw,
@@ -435,6 +436,7 @@ export async function getRekapDataAtsAction(): Promise<{
     const validLiveAtsRecords = (dbChildren || []).filter((c) => {
       if (!isDataAtsRecord(c)) return false;
       const parsed = parseAtsDetails(c.alasan_sekolah);
+      if (!isValidKalinyamatWetanRtRw(parsed.kelurahan, parsed.rw, parsed.rt)) return false;
       if (!isValidKeturenRtRw(parsed.kelurahan, parsed.rw, parsed.rt)) return false;
       if (!isValidDebongKulonRtRw(parsed.kelurahan, parsed.rw, parsed.rt)) return false;
       if (!isValidTunonRtRw(parsed.kelurahan, parsed.rw, parsed.rt)) return false;

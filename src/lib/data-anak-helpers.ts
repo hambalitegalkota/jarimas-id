@@ -969,6 +969,48 @@ export function getPosyanduCakupanWilayah(targetKomunitas: any): PosyanduCakupan
   }
 
 
+  // Khusus Kelurahan Kalinyamat Wetan (Kecamatan Tegal Selatan)
+  // - Posyandu Dahlia I: RW 1 (RT 01 s/d RT 05)
+  // - Posyandu Dahlia II: RW 2 (RT 01 s/d RT 05)
+  // - Posyandu Dahlia III: RW 3 (RT 01 s/d RT 05)
+  // - Posyandu Dahlia IV: RW 4 (RT 01 s/d RT 05)
+  const isKalinyamatWetanPosyandu =
+    kel.includes("kalinyamat wetan") ||
+    nama.includes("kalinyamat wetan") ||
+    targetKomunitas?.id === "fec0168d-20ee-4c27-8b5f-f52168e9ea56" ||
+    targetKomunitas?.id === "6d9c48bd-822d-4163-8ebb-480d5edc5858" ||
+    targetKomunitas?.id === "0bd3c26e-822d-4163-810f-904565fe523d" ||
+    targetKomunitas?.id === "75a7cfd4-75ed-4c79-8dd2-02c164bc8e5c";
+
+  if (isKalinyamatWetanPosyandu) {
+    const kwRtList = ["01", "02", "03", "04", "05", "1", "2", "3", "4", "5"];
+    if (
+      targetKomunitas?.id === "75a7cfd4-75ed-4c79-8dd2-02c164bc8e5c" ||
+      /\bdahlia\s*(4|iv)\b/i.test(nama)
+    ) {
+      return { rw: "04", rtList: kwRtList };
+    }
+    if (
+      targetKomunitas?.id === "0bd3c26e-822d-4163-810f-904565fe523d" ||
+      /\bdahlia\s*(3|iii)\b/i.test(nama)
+    ) {
+      return { rw: "03", rtList: kwRtList };
+    }
+    if (
+      targetKomunitas?.id === "6d9c48bd-822d-4163-8ebb-480d5edc5858" ||
+      /\bdahlia\s*(2|ii)\b/i.test(nama)
+    ) {
+      return { rw: "02", rtList: kwRtList };
+    }
+    if (
+      targetKomunitas?.id === "fec0168d-20ee-4c27-8b5f-f52168e9ea56" ||
+      /\bdahlia\s*(1|i)\b/i.test(nama) ||
+      nama.includes("dahlia")
+    ) {
+      return { rw: "01", rtList: kwRtList };
+    }
+  }
+
   // Khusus Kelurahan Debong Lor
   if (kel.includes("debong lor") || nama.includes("debong lor")) {
     if (
@@ -2045,6 +2087,7 @@ export function getPosyanduCoverageDisplay(komunitas: any): PosyanduCoverageResu
       "kalinyamat kulon",
       "kaligangsa",
       "kraton",
+      "kalinyamat wetan",
     ]);
 
     if (MAPPED_KELURAHAN_SET.has(kel)) {
@@ -2115,6 +2158,57 @@ export function getPosyanduCoverageDisplay(komunitas: any): PosyanduCoverageResu
  * - RW 4 Jumlah RT 4 (RT 1 s/d 4)
  * - Tetap mempertahankan RW "Belum Tahu" dan RT "Belum Tahu"
  */
+/**
+ * Validasi ketentuan khusus RW & RT di Kelurahan Kalinyamat Wetan, Kecamatan Tegal Selatan:
+ * - Jumlah RW ada 4 (RW 1 s/d 4)
+ * - RW 1 Jumlah RT 5 (RT 1 s/d 5)
+ * - RW 2 Jumlah RT 5 (RT 1 s/d 5)
+ * - RW 3 Jumlah RT 5 (RT 1 s/d 5)
+ * - RW 4 Jumlah RT 5 (RT 1 s/d 5)
+ * - Tetap mempertahankan RW "Belum Tahu" dan RT "Belum Tahu"
+ */
+export function isValidKalinyamatWetanRtRw(
+  kel?: string | null,
+  rw?: string | null,
+  rt?: string | null
+): boolean {
+  if (!kel) return true;
+  const cleanKel = normalizeWilayah(kel);
+  if (!cleanKel.includes("kalinyamat wetan")) return true;
+
+  const rawRw = (rw || "").trim().toLowerCase();
+  const rawRt = (rt || "").trim().toLowerCase();
+
+  const isRwBelumTahu =
+    !rawRw ||
+    rawRw.includes("belum") ||
+    rawRw === "-" ||
+    rawRw === "0" ||
+    rawRw === "00";
+  if (isRwBelumTahu) return true;
+
+  const rwNum = parseInt(rawRw.replace(/\D/g, ""), 10);
+  if (isNaN(rwNum) || rwNum < 1 || rwNum > 4) return false;
+
+  const isRtBelumTahu =
+    !rawRt ||
+    rawRt.includes("belum") ||
+    rawRt === "-" ||
+    rawRt === "0" ||
+    rawRt === "00";
+  if (isRtBelumTahu) return true;
+
+  const rtNum = parseInt(rawRt.replace(/\D/g, ""), 10);
+  if (isNaN(rtNum)) return false;
+
+  if (rwNum === 1 && (rtNum < 1 || rtNum > 5)) return false;
+  if (rwNum === 2 && (rtNum < 1 || rtNum > 5)) return false;
+  if (rwNum === 3 && (rtNum < 1 || rtNum > 5)) return false;
+  if (rwNum === 4 && (rtNum < 1 || rtNum > 5)) return false;
+
+  return true;
+}
+
 export function isValidKalinyamatKulonRtRw(
   kel?: string | null,
   rw?: string | null,
@@ -2643,6 +2737,13 @@ export function isDataAnakMatchingKomunitas(
   if (
     !isValidKalinyamatKulonRtRw(item.domisili_kelurahan, item.domisili_rw, item.domisili_rt) &&
     !isValidKalinyamatKulonRtRw(item.kk_kelurahan, item.kk_rw, item.kk_rt)
+  ) {
+    return false;
+  }
+  // Ketentuan Khusus Kelurahan Kalinyamat Wetan: Hapus/abaikan data yang tidak sesuai ketentuan resmi RW & RT Kalinyamat Wetan
+  if (
+    !isValidKalinyamatWetanRtRw(item.domisili_kelurahan, item.domisili_rw, item.domisili_rt) &&
+    !isValidKalinyamatWetanRtRw(item.kk_kelurahan, item.kk_rw, item.kk_rt)
   ) {
     return false;
   }

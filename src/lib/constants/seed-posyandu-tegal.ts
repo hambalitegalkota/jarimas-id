@@ -262,10 +262,10 @@ export const RAW_POSYANDU_TEGAL: RawPosyanduItem[] = [
 
 
   // Kalinyamat Wetan (4 Posyandu)
-  { id: "fec0168d-20ee-4c27-8b5f-f52168e9ea56", nama: "Posyandu Dahlia I", kecamatan: "Tegal Selatan", kelurahan: "Kalinyamat Wetan", rw: "03", rt: "03", lokasi: "Balai Posyandu / RW 03, Kalinyamat Wetan, Tegal Selatan, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Dahlia Kalinyamat Kalinyamat Wetan: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "6d9c48bd-822d-4163-8ebb-480d5edc5858", nama: "Posyandu Dahlia II", kecamatan: "Tegal Selatan", kelurahan: "Kalinyamat Wetan", rw: "01", rt: "01", lokasi: "Balai Posyandu / RW 01, Kalinyamat Wetan, Tegal Selatan, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Kamboja Kalinyamat Wetan 1 Kalinyamat Wetan: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "0bd3c26e-822d-4163-810f-904565fe523d", nama: "Posyandu Dahlia III", kecamatan: "Tegal Selatan", kelurahan: "Kalinyamat Wetan", rw: "01", rt: "03", lokasi: "Balai Posyandu / RW 01, Kalinyamat Wetan, Tegal Selatan, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Kamboja Kalinyamat Wetan 2 Kalinyamat Wetan: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "75a7cfd4-75ed-4c79-8dd2-02c164bc8e5c", nama: "Posyandu Dahlia IV", kecamatan: "Tegal Selatan", kelurahan: "Kalinyamat Wetan", rw: "03", rt: "01", lokasi: "Balai Posyandu / RW 03, Kalinyamat Wetan, Tegal Selatan, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Mawar Wetan Kalinyamat Wetan: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "fec0168d-20ee-4c27-8b5f-f52168e9ea56", nama: "Posyandu Dahlia I", kecamatan: "Tegal Selatan", kelurahan: "Kalinyamat Wetan", rw: "01", rt: "01", cakupan_wilayah: "RW 01 (RT 01 s/d RT 05)", lokasi: "Balai Posyandu / RW 01, Kalinyamat Wetan, Tegal Selatan, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Dahlia I Kalinyamat Wetan cakupan sinkronisasi wilayah RW 01 (RT 01 s/d RT 05): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "6d9c48bd-822d-4163-8ebb-480d5edc5858", nama: "Posyandu Dahlia II", kecamatan: "Tegal Selatan", kelurahan: "Kalinyamat Wetan", rw: "02", rt: "01", cakupan_wilayah: "RW 02 (RT 01 s/d RT 05)", lokasi: "Balai Posyandu / RW 02, Kalinyamat Wetan, Tegal Selatan, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Dahlia II Kalinyamat Wetan cakupan sinkronisasi wilayah RW 02 (RT 01 s/d RT 05): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "0bd3c26e-822d-4163-810f-904565fe523d", nama: "Posyandu Dahlia III", kecamatan: "Tegal Selatan", kelurahan: "Kalinyamat Wetan", rw: "03", rt: "01", cakupan_wilayah: "RW 03 (RT 01 s/d RT 05)", lokasi: "Balai Posyandu / RW 03, Kalinyamat Wetan, Tegal Selatan, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Dahlia III Kalinyamat Wetan cakupan sinkronisasi wilayah RW 03 (RT 01 s/d RT 05): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "75a7cfd4-75ed-4c79-8dd2-02c164bc8e5c", nama: "Posyandu Dahlia IV", kecamatan: "Tegal Selatan", kelurahan: "Kalinyamat Wetan", rw: "04", rt: "01", cakupan_wilayah: "RW 04 (RT 01 s/d RT 05)", lokasi: "Balai Posyandu / RW 04, Kalinyamat Wetan, Tegal Selatan, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Dahlia IV Kalinyamat Wetan cakupan sinkronisasi wilayah RW 04 (RT 01 s/d RT 05): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
 
   // Keturen (4 Posyandu)
   // Ketentuan cakupan wilayah Posyandu di Kelurahan Keturen:
@@ -360,6 +360,44 @@ export const RAW_POSYANDU_TEGAL: RawPosyanduItem[] = [
   { id: "5b56f9df-bd53-4737-8d60-63d1deed57bc", nama: "Posyandu Ragasela", kecamatan: "Margadana", kelurahan: "Sumurpanggang", rw: "03", rt: "03", lokasi: "Balai Posyandu / RW 03, Sumurpanggang, Margadana, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Mawar Panggang 2 Sumurpanggang: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
 
 ];
+
+export const KALINYAMAT_WETAN_POSYANDU_MAP: Record<
+  string,
+  { nama: string; rw: string; rt: string; cakupan_wilayah: string; lokasi: string; deskripsi: string }
+> = {
+  "fec0168d-20ee-4c27-8b5f-f52168e9ea56": {
+    nama: "Posyandu Dahlia I",
+    rw: "01",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 01 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 01, Kalinyamat Wetan, Tegal Selatan, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Dahlia I Kalinyamat Wetan cakupan sinkronisasi wilayah RW 01 (RT 01 s/d RT 05): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+  },
+  "6d9c48bd-822d-4163-8ebb-480d5edc5858": {
+    nama: "Posyandu Dahlia II",
+    rw: "02",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 02 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 02, Kalinyamat Wetan, Tegal Selatan, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Dahlia II Kalinyamat Wetan cakupan sinkronisasi wilayah RW 02 (RT 01 s/d RT 05): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+  },
+  "0bd3c26e-822d-4163-810f-904565fe523d": {
+    nama: "Posyandu Dahlia III",
+    rw: "03",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 03 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 03, Kalinyamat Wetan, Tegal Selatan, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Dahlia III Kalinyamat Wetan cakupan sinkronisasi wilayah RW 03 (RT 01 s/d RT 05): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+  },
+  "75a7cfd4-75ed-4c79-8dd2-02c164bc8e5c": {
+    nama: "Posyandu Dahlia IV",
+    rw: "04",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 04 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 04, Kalinyamat Wetan, Tegal Selatan, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Dahlia IV Kalinyamat Wetan cakupan sinkronisasi wilayah RW 04 (RT 01 s/d RT 05): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+  },
+};
 
 export const KALINYAMAT_KULON_POSYANDU_MAP: Record<
   string,
