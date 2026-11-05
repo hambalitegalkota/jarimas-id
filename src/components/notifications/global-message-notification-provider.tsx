@@ -36,6 +36,7 @@ import { FloatingMessageNotificationBanner } from "./floating-message-notificati
 import { FloatingUnreadDock } from "./floating-unread-dock";
 import { ChatDrawerModal } from "@/components/warga/chat-drawer-modal";
 import { GroupChatModal } from "@/components/kabar/group-chat-modal";
+import { UnreadMessagesModal } from "./unread-messages-modal";
 
 interface GlobalMessageNotificationContextType {
   currentUserId: string | null;
@@ -66,6 +67,10 @@ interface GlobalMessageNotificationContextType {
   restoreBannerFromPill: () => void;
   dismissPill: () => void;
   markAllMessagesAsRead: () => Promise<void>;
+  isUnreadModalOpen: boolean;
+  openUnreadModal: () => void;
+  closeUnreadModal: () => void;
+  openLatestUnreadConversation: () => void;
 }
 
 const GlobalMessageNotificationContext =
@@ -129,6 +134,7 @@ export function GlobalMessageNotificationProvider({
   // Global Group Chat Modal State
   const [isGroupChatOpen, setIsGroupChatOpen] = useState(false);
   const [activeGroupRoom, setActiveGroupRoom] = useState<GrupChatRoom | null>(null);
+  const [isUnreadModalOpen, setIsUnreadModalOpen] = useState(false);
 
   const activeChatTargetRef = useRef<RegisteredUserItem | null>(null);
   const isChatDrawerOpenRef = useRef<boolean>(false);
@@ -737,6 +743,44 @@ export function GlobalMessageNotificationProvider({
     }
   }, []);
 
+  const openUnreadModal = useCallback(() => {
+    setIsUnreadModalOpen(true);
+  }, []);
+
+  const closeUnreadModal = useCallback(() => {
+    setIsUnreadModalOpen(false);
+  }, []);
+
+  const openLatestUnreadConversation = useCallback(() => {
+    if (unreadList.length > 0) {
+      // Periksa apakah hanya ada 1 percakapan unik
+      const distinctKeys = new Set(
+        unreadList.map((it) => (it.isGroup && it.groupId ? `group_${it.groupId}` : `direct_${it.senderId}`))
+      );
+
+      if (distinctKeys.size === 1) {
+        const first = unreadList[0];
+        if (first.isGroup && first.groupId) {
+          openGroupChat(first.groupId);
+        } else if (first.partnerUser) {
+          openChatWithUser(first.partnerUser);
+        } else if (first.senderId) {
+          openChatWithUser(first.senderId);
+        } else {
+          openUnreadModal();
+        }
+      } else {
+        openUnreadModal();
+      }
+    } else if (totalUnreadCount > 0) {
+      openUnreadModal();
+    } else {
+      if (typeof window !== "undefined") {
+        window.location.href = "/kabar?tab=percakapan";
+      }
+    }
+  }, [unreadList, totalUnreadCount, openGroupChat, openChatWithUser, openUnreadModal]);
+
   return (
     <GlobalMessageNotificationContext.Provider
       value={{
@@ -768,6 +812,10 @@ export function GlobalMessageNotificationProvider({
         restoreBannerFromPill,
         dismissPill,
         markAllMessagesAsRead,
+        isUnreadModalOpen,
+        openUnreadModal,
+        closeUnreadModal,
+        openLatestUnreadConversation,
       }}
     >
       {children}
@@ -831,6 +879,18 @@ export function GlobalMessageNotificationProvider({
           currentUserId={currentUserId}
         />
       )}
+
+      {/* 5. Global Integrated Unread Messages Modal (Buka pesan via notifikasi navigasi) */}
+      <UnreadMessagesModal
+        isOpen={isUnreadModalOpen}
+        onClose={closeUnreadModal}
+        unreadCount={totalUnreadCount}
+        unreadList={unreadList}
+        isUserOnline={isUserOnline}
+        onOpenDirectChat={openChatWithUser}
+        onOpenGroupChat={openGroupChat}
+        onMarkAllRead={markAllMessagesAsRead}
+      />
     </GlobalMessageNotificationContext.Provider>
   );
 }

@@ -23,6 +23,7 @@ import { KabarFilter } from "@/components/kabar/kabar-filter";
 import { PercakapanHubSection } from "@/components/kabar/percakapan-hub-section";
 import { DaftarWargaKabarSection } from "@/components/kabar/daftar-warga-kabar-section";
 import { CreateKabarModal } from "@/components/kabar/create-kabar-modal";
+import { KabarUnreadBanner } from "@/components/kabar/kabar-unread-banner";
 import { WargaLockedCard } from "@/components/warga/warga-locked-card";
 import { PrintButton } from "@/components/ui/print-button";
 import { isSuperAdmin as checkIsSuperAdmin } from "@/lib/utils";
@@ -42,19 +43,6 @@ export default async function KabarPage({ searchParams }: KabarPageProps) {
   const resolvedParams = await searchParams;
   const rawTab = resolvedParams.tab;
   const targetGroupId = resolvedParams.groupId || resolvedParams.room || null;
-  const isExplicitlyClosed =
-    rawTab === "closed" ||
-    rawTab === "none" ||
-    rawTab === "sembunyi" ||
-    rawTab === "tutup";
-
-  const currentTab: "kabar" | "percakapan" | "warga" | null = isExplicitlyClosed
-    ? null
-    : rawTab === "percakapan" || Boolean(targetGroupId)
-    ? "percakapan"
-    : rawTab === "warga"
-    ? "warga"
-    : "kabar";
   const currentSort = (resolvedParams.sort as SortingKabar) || "terbaru";
   const currentVisibility =
     (resolvedParams.visibility as "semua" | VisibilitasKabar) || "semua";
@@ -72,12 +60,8 @@ export default async function KabarPage({ searchParams }: KabarPageProps) {
       limit: 30,
     }),
     getRegisteredUsers(),
-    currentTab === "percakapan" || Boolean(targetGroupId)
-      ? getRecentConversations()
-      : Promise.resolve({ conversations: [] }),
-    currentTab === "percakapan" || Boolean(targetGroupId)
-      ? getGroupChatRooms()
-      : Promise.resolve({ rooms: [] }),
+    getRecentConversations(),
+    getGroupChatRooms(),
   ]);
 
   const feedItems = feedResult.data;
@@ -90,6 +74,21 @@ export default async function KabarPage({ searchParams }: KabarPageProps) {
     (acc, c) => acc + c.unreadCount,
     0
   );
+
+  const isExplicitlyClosed =
+    rawTab === "closed" ||
+    rawTab === "none" ||
+    rawTab === "sembunyi" ||
+    rawTab === "tutup";
+
+  const hasUnread = totalUnreadChat > 0;
+  const currentTab: "kabar" | "percakapan" | "warga" | null = isExplicitlyClosed
+    ? null
+    : rawTab === "percakapan" || Boolean(targetGroupId) || (!rawTab && hasUnread)
+    ? "percakapan"
+    : rawTab === "warga"
+    ? "warga"
+    : "kabar";
 
   const createTabUrl = (targetTab: string) => {
     const params = new URLSearchParams();
@@ -217,6 +216,9 @@ export default async function KabarPage({ searchParams }: KabarPageProps) {
           </span>
         </div>
       </section>
+
+      {/* Realtime Unread Notification Alert Banner */}
+      <KabarUnreadBanner currentTab={currentTab} />
 
       {/* ========================================================= */}
       {/* 2. COLLAPSIBLE / ACCORDION KATEGORI KABAR                 */}

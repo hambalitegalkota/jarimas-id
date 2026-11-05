@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Home, Users, ShoppingBag, MessageSquare, User, MessageCircleQuestion } from "lucide-react";
 import { TanyaAdminButton } from "@/components/warga/tanya-admin-button";
 import { cn } from "@/lib/utils";
@@ -22,7 +22,8 @@ export const SHOW_MARKET_FEATURE = true;
 
 export function BottomNav() {
   const pathname = usePathname();
-  const { totalUnreadCount, currentUserId } = useGlobalMessageNotification();
+  const router = useRouter();
+  const { totalUnreadCount, currentUserId, openLatestUnreadConversation } = useGlobalMessageNotification();
 
   const NAV_ITEMS: NavItem[] = [
     {
@@ -49,7 +50,7 @@ export function BottomNav() {
       : []),
     {
       label: "Kabar",
-      href: "/kabar",
+      href: totalUnreadCount > 0 ? "/kabar?tab=percakapan" : "/kabar",
       icon: MessageSquare,
       badge:
         totalUnreadCount > 0
@@ -109,6 +110,14 @@ export function BottomNav() {
               key={item.href}
               href={item.href}
               aria-current={active ? "page" : undefined}
+              onClick={(e) => {
+                if (item.label === "Kabar") {
+                  if (totalUnreadCount > 0) {
+                    e.preventDefault();
+                    router.push("/kabar?tab=percakapan");
+                  }
+                }
+              }}
               className={cn(
                 "group relative flex h-full flex-1 flex-col items-center justify-center gap-1 px-1 py-1.5 transition-all outline-none",
                 active
@@ -136,17 +145,29 @@ export function BottomNav() {
                   )}
                 />
 
-                {/* Prominent High-Visibility Notification Badge */}
+                {/* Prominent High-Visibility Interactive Notification Badge */}
                 {hasBadge && (
-                  <span className="absolute -top-1.5 -right-3 flex items-center justify-center pointer-events-none z-10">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      if (item.label === "Kabar") {
+                        openLatestUnreadConversation();
+                      }
+                    }}
+                    title="Klik untuk membuka percakapan belum dibaca"
+                    aria-label={`${item.badge} pesan belum dibaca. Klik untuk langsung membuka percakapan`}
+                    className="absolute -top-1.5 -right-3.5 flex items-center justify-center z-20 cursor-pointer hover:scale-110 active:scale-90 transition-transform p-0.5 outline-none"
+                  >
                     {/* Animated Ping Radar Wave */}
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-500 opacity-75" />
 
                     {/* Gradient Notification Pill */}
-                    <span className="relative flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-gradient-to-r from-rose-500 via-rose-600 to-red-600 px-1 text-[10px] font-black text-white font-mono shadow-md shadow-rose-500/40 ring-2 ring-white dark:ring-slate-900 leading-none">
+                    <span className="relative flex h-[19px] min-w-[19px] items-center justify-center rounded-full bg-gradient-to-r from-rose-500 via-rose-600 to-red-600 px-1 text-[10px] font-black text-white font-mono shadow-md shadow-rose-500/40 ring-2 ring-white dark:ring-slate-900 leading-none">
                       {item.badge}
                     </span>
-                  </span>
+                  </button>
                 )}
               </div>
 
