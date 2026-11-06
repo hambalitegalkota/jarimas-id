@@ -634,8 +634,19 @@ export function extractSchoolNumberToken(str?: string | null): string | null {
   // Bersihkan penanda RW/RT beserta angkanya (misal "RW. VI", "RW 06", "RT 02") agar tidak disalahartikan sebagai nomor cabang sekolah
   norm = norm
     .replace(/\b(rw|rt)\s*(\d+|xiii|xii|xi|x|ix|viii|vii|vi|v|iv|iii|ii|i)\b/gi, "")
+    .replace(/\b(rw|rt)\b/gi, "")
     .replace(/\s+/g, " ")
     .trim();
+
+  // Kasus anomali autofill drag Excel:
+  // 1. KB Ihsaniyah 3..18 dinormalisasi menjadi cabang 3 ('iii')
+  if (/\b(?:kb\s+)?ihsaniyah\s+(?:[3-9]|1[0-8])\b/i.test(norm)) {
+    return "iii";
+  }
+  // 2. TK Kartika III-28..30 (atau 111-28..30) dinormalisasi menjadi cabang 'iii'
+  if (/\bkartika\s+(?:iii|111)\s*[- ]*\s*(?:28|29|30)\b/i.test(norm)) {
+    return "iii";
+  }
 
   const match = norm.match(
     /\b(xiii|xii|xi|x|ix|viii|vii|vi|v|iv|iii|ii|i|13|12|11|10|9|8|7|6|5|4|3|2|1)\b/
@@ -705,6 +716,13 @@ export function cleanBaseSchoolName(str?: string | null): string {
 
   // Bersihkan prefix jenjang institusi agar RA, TK, KB, Pos PAUD, SPS dengan nama sama saling cocok
   s = s.replace(/^(pos\s+paud|paud\s+tpq|kb|tk|ra|tpa|sps|pkbm|skb)\b\s*/gi, "").trim();
+
+  // Kasus anomali autofill drag Excel:
+  // Normalisasi penamaan KB Ihsaniyah 3..18 -> ihsaniyah 3
+  s = s.replace(/\bihsaniyah\s*(?:[3-9]|1[0-8])\b/gi, "ihsaniyah 3");
+  // Normalisasi TK Kartika 28..30 -> kartika
+  s = s.replace(/\bkartika\s*(?:iii|111)\s*[- ]*\s*(?:28|29|30)\b/gi, "kartika");
+  s = s.replace(/\bkartika\s*(?:28|29|30)\b/gi, "kartika");
 
   // Bersihkan penanda RW/RT beserta angkanya atau kata rw/rt itu sendiri
   s = s
@@ -3325,6 +3343,29 @@ export function formatNamaSekolahDisplay(
   }
   if (lower.includes("bias") && (lower.includes("tt") || lower.includes("panggung") || lower.includes("timur") || ctxKel.includes("panggung") || ctxKec.includes("timur"))) {
     return "KB Bina Anak Sholeh (BIAS) Panggung";
+  }
+
+  // 1b. KB Ihsaniyah 3 (anomali autofill drag Excel KB Ihsaniyah 4..18)
+  if (lower.startsWith("kb ihsaniyah") || lower.startsWith("kb. ihsaniyah")) {
+    const numMatch = lower.match(/ihsaniyah\s*(\d+)/);
+    if (numMatch) {
+      const n = parseInt(numMatch[1], 10);
+      if (n >= 3 && n <= 18) {
+        return "KB Ihsaniyah 3";
+      }
+    }
+  }
+
+  // 1c. TK Kartika III-28 (anomali autofill drag Excel TK Kartika 111-29..30 atau III-29..30)
+  if (
+    lower.includes("kartika") &&
+    (lower.includes("111-") ||
+      lower.includes("iii-") ||
+      lower.includes("28") ||
+      lower.includes("29") ||
+      lower.includes("30"))
+  ) {
+    return "TK Kartika III-28";
   }
 
   // 2. Pos PAUD Kartini
