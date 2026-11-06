@@ -25,6 +25,7 @@ import {
   isValidKalinyamatWetanRtRw,
   isValidKeturenRtRw,
   isValidDebongKulonRtRw,
+  isValidDebongLorRtRw,
   isValidTunonRtRw,
   isValidPekaumanRtRw,
   isValidPanggungRtRw,
@@ -130,6 +131,7 @@ export async function getRekapDataAnakUsiaDiniAction(): Promise<{
       if (!isValidKalinyamatWetanRtRw(kel, rw, rt)) return false;
       if (!isValidKeturenRtRw(kel, rw, rt)) return false;
       if (!isValidDebongKulonRtRw(kel, rw, rt)) return false;
+      if (!isValidDebongLorRtRw(kel, rw, rt)) return false;
       if (!isValidTunonRtRw(kel, rw, rt)) return false;
       if (!isValidPekaumanRtRw(kel, rw, rt)) return false;
       if (!isValidPanggungRtRw(kel, rw, rt)) return false;

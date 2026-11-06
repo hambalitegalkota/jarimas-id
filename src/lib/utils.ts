@@ -844,6 +844,22 @@ export function parseCakupanWilayah(komunitas?: {
 
   // 5. Debong Lor (Kecamatan Tegal Barat)
   if (kelClean.includes("debong lor") || namaClean.includes("debong lor")) {
+    if (
+      namaClean.includes("seruni 1") ||
+      namaClean.includes("seruni i") ||
+      (namaClean.includes("seruni") && !namaClean.includes("seruni 2") && !namaClean.includes("seruni ii"))
+    ) {
+      return "Melayani Warga RW 01 (RT 01, RT 02, RT 03, RT 07, RT 08 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("seruni 2") || namaClean.includes("seruni ii")) {
+      return "Melayani Warga RW 01 (RT 04, RT 05, RT 06 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("sartika")) {
+      return "Melayani Warga RW 02 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("mawar")) {
+      return "Melayani Warga RW 03 (RT 01, RT 02, RT 03, RT 04 dan RW - RT Tidak Tahu)";
+    }
     const rtMapDebongLor: Record<string, number> = {
       "01": 8,
       "02": 5,

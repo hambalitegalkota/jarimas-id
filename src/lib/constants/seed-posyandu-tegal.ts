@@ -153,10 +153,10 @@ export const RAW_POSYANDU_TEGAL: RawPosyanduItem[] = [
   // - Posyandu Seruni 2 cakupan sinkronisasi datanya dengan RW 1 RT 4, 5 dan 6.
   // - Posyandu Sartika cakupan sinkronisasi datanya dengan RW 2 (RT 01 s/d RT 05).
   // - Posyandu Mawar cakupan sinkronisasi datanya dengan RW 3 (RT 01 s/d RT 04).
-  { id: "2d1654eb-575c-488e-8c7e-98c90607f3a7", nama: "Posyandu Seruni 1", kecamatan: "Tegal Barat", kelurahan: "Debong Lor", rw: "01", rt: "01", cakupan_wilayah: "RW 01 (RT 01, RT 02, RT 03, RT 07, RT 08)", lokasi: "Balai Posyandu / RW 01, Debong Lor, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Seruni 1 Debong Lor cakupan sinkronisasi wilayah RW 01 RT 1, 2, 3, 7 dan 8: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "526fe7d8-575c-488e-87f0-0631801c293c", nama: "Posyandu Seruni 2", kecamatan: "Tegal Barat", kelurahan: "Debong Lor", rw: "01", rt: "04", cakupan_wilayah: "RW 01 (RT 04, RT 05, RT 06)", lokasi: "Balai Posyandu / RW 01, Debong Lor, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Seruni 2 Debong Lor cakupan sinkronisasi wilayah RW 01 RT 4, 5 dan 6: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "f0a76189-575c-488e-8361-739911df887d", nama: "Posyandu Sartika", kecamatan: "Tegal Barat", kelurahan: "Debong Lor", rw: "02", rt: "01", cakupan_wilayah: "RW 02 (RT 01 s/d RT 05)", lokasi: "Balai Posyandu / RW 02, Debong Lor, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Sartika Debong Lor cakupan sinkronisasi wilayah RW 02 (RT 01 s/d RT 05): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "8a3e27d7-c6b0-4cf9-8b2b-6425e1f79f59", nama: "Posyandu Mawar", kecamatan: "Tegal Barat", kelurahan: "Debong Lor", rw: "03", rt: "01", cakupan_wilayah: "RW 03 (RT 01 s/d RT 04)", lokasi: "Balai Posyandu / RW 03, Debong Lor, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Mawar Debong Lor cakupan sinkronisasi wilayah RW 03 (RT 01 s/d RT 04): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "2d1654eb-575c-488e-8c7e-98c90607f3a7", nama: "Posyandu Seruni 1", kecamatan: "Tegal Barat", kelurahan: "Debong Lor", rw: "01", rt: "01", cakupan_wilayah: "Melayani Warga RW 01 (RT 01, RT 02, RT 03, RT 07, RT 08 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 01, Debong Lor, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Seruni 1 Debong Lor cakupan sinkronisasi wilayah RW 01 RT 1, 2, 3, 7 dan 8: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "526fe7d8-575c-488e-87f0-0631801c293c", nama: "Posyandu Seruni 2", kecamatan: "Tegal Barat", kelurahan: "Debong Lor", rw: "01", rt: "04", cakupan_wilayah: "Melayani Warga RW 01 (RT 04, RT 05, RT 06 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 01, Debong Lor, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Seruni 2 Debong Lor cakupan sinkronisasi wilayah RW 01 RT 4, 5 dan 6: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "f0a76189-575c-488e-8361-739911df887d", nama: "Posyandu Sartika", kecamatan: "Tegal Barat", kelurahan: "Debong Lor", rw: "02", rt: "01", cakupan_wilayah: "Melayani Warga RW 02 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 02, Debong Lor, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Sartika Debong Lor cakupan sinkronisasi wilayah RW 02 (RT 01 s/d RT 05): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "8a3e27d7-c6b0-4cf9-8b2b-6425e1f79f59", nama: "Posyandu Mawar", kecamatan: "Tegal Barat", kelurahan: "Debong Lor", rw: "03", rt: "01", cakupan_wilayah: "Melayani Warga RW 03 (RT 01, RT 02, RT 03, RT 04 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 03, Debong Lor, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Mawar Debong Lor cakupan sinkronisasi wilayah RW 03 (RT 01 s/d RT 04): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
 
   // Kemandungan (3 Posyandu)
   { id: "9d57da39-7e2f-436a-802e-0a9d384eafc4", nama: "Posyandu Cempaka", kecamatan: "Tegal Barat", kelurahan: "Kemandungan", rw: "03", rt: "03", lokasi: "Balai Posyandu / RW 03, Kemandungan, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Cempaka Wangi Kemandungan: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
@@ -404,6 +404,44 @@ export const BANDUNG_POSYANDU_MAP: Record<
     cakupan_wilayah: "Melayani Warga RW 05 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu)",
     lokasi: "Balai Posyandu / RW 05, Bandung, Tegal Selatan, Kota Tegal",
     deskripsi: "Layanan terpadu Posyandu Melati V Bandung cakupan sinkronisasi wilayah RW 05 (RT 01 s/d RT 05): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+  },
+};
+
+export const DEBONG_LOR_POSYANDU_MAP: Record<
+  string,
+  { nama: string; rw: string; rt: string; cakupan_wilayah: string; lokasi: string; deskripsi: string }
+> = {
+  "2d1654eb-575c-488e-8c7e-98c90607f3a7": {
+    nama: "Posyandu Seruni 1",
+    rw: "01",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 01 (RT 01, RT 02, RT 03, RT 07, RT 08 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 01, Debong Lor, Tegal Barat, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Seruni 1 Debong Lor cakupan sinkronisasi wilayah RW 01 RT 1, 2, 3, 7 dan 8: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+  },
+  "526fe7d8-575c-488e-87f0-0631801c293c": {
+    nama: "Posyandu Seruni 2",
+    rw: "01",
+    rt: "04",
+    cakupan_wilayah: "Melayani Warga RW 01 (RT 04, RT 05, RT 06 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 01, Debong Lor, Tegal Barat, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Seruni 2 Debong Lor cakupan sinkronisasi wilayah RW 01 RT 4, 5 dan 6: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+  },
+  "f0a76189-575c-488e-8361-739911df887d": {
+    nama: "Posyandu Sartika",
+    rw: "02",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 02 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 02, Debong Lor, Tegal Barat, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Sartika Debong Lor cakupan sinkronisasi wilayah RW 02 (RT 01 s/d RT 05): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+  },
+  "8a3e27d7-c6b0-4cf9-8b2b-6425e1f79f59": {
+    nama: "Posyandu Mawar",
+    rw: "03",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 03 (RT 01, RT 02, RT 03, RT 04 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 03, Debong Lor, Tegal Barat, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Mawar Debong Lor cakupan sinkronisasi wilayah RW 03 (RT 01 s/d RT 04): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
   },
 };
 

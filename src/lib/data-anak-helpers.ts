@@ -1160,8 +1160,16 @@ export function getPosyanduCakupanWilayah(targetKomunitas: any): PosyanduCakupan
   }
 
   // Khusus Kelurahan Debong Lor
-  if (kel.includes("debong lor") || nama.includes("debong lor")) {
+  if (
+    kel.includes("debong lor") ||
+    nama.includes("debong lor") ||
+    targetKomunitas?.id === "2d1654eb-575c-488e-8c7e-98c90607f3a7" ||
+    targetKomunitas?.id === "526fe7d8-575c-488e-87f0-0631801c293c" ||
+    targetKomunitas?.id === "f0a76189-575c-488e-8361-739911df887d" ||
+    targetKomunitas?.id === "8a3e27d7-c6b0-4cf9-8b2b-6425e1f79f59"
+  ) {
     if (
+      targetKomunitas?.id === "2d1654eb-575c-488e-8c7e-98c90607f3a7" ||
       nama.includes("seruni 1") ||
       nama.includes("seruni i") ||
       (nama.includes("seruni") && !nama.includes("seruni 2") && !nama.includes("seruni ii"))
@@ -1171,20 +1179,32 @@ export function getPosyanduCakupanWilayah(targetKomunitas: any): PosyanduCakupan
         rtList: ["01", "02", "03", "07", "08", "1", "2", "3", "7", "8"],
       };
     }
-    if (nama.includes("seruni 2") || nama.includes("seruni ii")) {
+    if (
+      targetKomunitas?.id === "526fe7d8-575c-488e-87f0-0631801c293c" ||
+      nama.includes("seruni 2") ||
+      nama.includes("seruni ii")
+    ) {
       return {
         rw: "01",
         rtList: ["04", "05", "06", "4", "5", "6"],
       };
     }
-    if (nama.includes("sartika")) {
+    if (
+      targetKomunitas?.id === "f0a76189-575c-488e-8361-739911df887d" ||
+      nama.includes("sartika")
+    ) {
       return {
         rw: "02",
+        rtList: ["01", "02", "03", "04", "05", "1", "2", "3", "4", "5"],
       };
     }
-    if (nama.includes("mawar")) {
+    if (
+      targetKomunitas?.id === "8a3e27d7-c6b0-4cf9-8b2b-6425e1f79f59" ||
+      nama.includes("mawar")
+    ) {
       return {
         rw: "03",
+        rtList: ["01", "02", "03", "04", "1", "2", "3", "4"],
       };
     }
   }
@@ -2318,6 +2338,60 @@ export function getPosyanduCoverageDisplay(komunitas: any): PosyanduCoverageResu
  * - Tetap mempertahankan RW "Belum Tahu" dan RT "Belum Tahu"
  */
 /**
+ * Validasi ketentuan khusus RW & RT di Kelurahan Debong Lor, Kecamatan Tegal Barat:
+ * - Jumlah RW ada 3 (RW 1 s/d 3)
+ * - RW 1 Jumlah RT 8 (RT 1 s/d 8)
+ * - RW 2 Jumlah RT 5 (RT 1 s/d 5)
+ * - RW 3 Jumlah RT 4 (RT 1 s/d 4)
+ * - Tetap mempertahankan RW "Belum Tahu" dan RT "Belum Tahu"
+ */
+export function isValidDebongLorRtRw(
+  kel?: string | null,
+  rw?: string | null,
+  rt?: string | null
+): boolean {
+  if (!kel) return true;
+  const cleanKel = normalizeWilayah(kel);
+  if (!cleanKel.includes("debong lor")) return true;
+
+  const rawRw = (rw || "").trim().toLowerCase();
+  const rawRt = (rt || "").trim().toLowerCase();
+
+  const isRwBelumTahu =
+    !rawRw ||
+    rawRw.includes("belum") ||
+    rawRw.includes("tidak") ||
+    rawRw === "-" ||
+    rawRw === "0" ||
+    rawRw === "00";
+  if (isRwBelumTahu) return true;
+
+  const rwNum = parseInt(rawRw.replace(/\D/g, ""), 10);
+  if (isNaN(rwNum) || rwNum < 1 || rwNum > 3) return false;
+
+  const isRtBelumTahu =
+    !rawRt ||
+    rawRt.includes("belum") ||
+    rawRt.includes("tidak") ||
+    rawRt === "-" ||
+    rawRt === "0" ||
+    rawRt === "00";
+  if (isRtBelumTahu) return true;
+
+  const rtNum = parseInt(rawRt.replace(/\D/g, ""), 10);
+  if (isNaN(rtNum)) return false;
+
+  const maxRtMap: Record<number, number> = {
+    1: 8,
+    2: 5,
+    3: 4,
+  };
+
+  const maxRt = maxRtMap[rwNum] || 8;
+  return rtNum >= 1 && rtNum <= maxRt;
+}
+
+/**
  * Validasi ketentuan khusus RW & RT di Kelurahan Kejambon, Kecamatan Tegal Timur:
  * - Jumlah RW ada 6 (RW 1 s/d 6)
  * - RW 1 Jumlah RT 6 (RT 1 s/d 6)
@@ -3042,6 +3116,13 @@ export function isDataAnakMatchingKomunitas(
   if (
     !isValidDebongKulonRtRw(item.domisili_kelurahan, item.domisili_rw, item.domisili_rt) &&
     !isValidDebongKulonRtRw(item.kk_kelurahan, item.kk_rw, item.kk_rt)
+  ) {
+    return false;
+  }
+  // Ketentuan Khusus Kelurahan Debong Lor: Hapus/abaikan data yang tidak sesuai ketentuan resmi RW & RT Debong Lor
+  if (
+    !isValidDebongLorRtRw(item.domisili_kelurahan, item.domisili_rw, item.domisili_rt) &&
+    !isValidDebongLorRtRw(item.kk_kelurahan, item.kk_rw, item.kk_rt)
   ) {
     return false;
   }

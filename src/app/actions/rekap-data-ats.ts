@@ -23,6 +23,7 @@ import {
   isValidKalinyamatWetanRtRw,
   isValidKeturenRtRw,
   isValidDebongKulonRtRw,
+  isValidDebongLorRtRw,
   isValidTunonRtRw,
   isValidPekaumanRtRw,
   isValidPanggungRtRw,
@@ -443,6 +444,7 @@ export async function getRekapDataAtsAction(): Promise<{
       if (!isValidKalinyamatWetanRtRw(parsed.kelurahan, parsed.rw, parsed.rt)) return false;
       if (!isValidKeturenRtRw(parsed.kelurahan, parsed.rw, parsed.rt)) return false;
       if (!isValidDebongKulonRtRw(parsed.kelurahan, parsed.rw, parsed.rt)) return false;
+      if (!isValidDebongLorRtRw(parsed.kelurahan, parsed.rw, parsed.rt)) return false;
       if (!isValidTunonRtRw(parsed.kelurahan, parsed.rw, parsed.rt)) return false;
       if (!isValidPekaumanRtRw(parsed.kelurahan, parsed.rw, parsed.rt)) return false;
       if (!isValidPanggungRtRw(parsed.kelurahan, parsed.rw, parsed.rt)) return false;

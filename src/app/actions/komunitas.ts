@@ -39,6 +39,7 @@ import {
   getPosyanduCakupanWilayah,
   isValidKeturenRtRw,
   isValidDebongKulonRtRw,
+  isValidDebongLorRtRw,
   isValidTunonRtRw,
   isValidPekaumanRtRw,
   isValidPanggungRtRw,
@@ -201,6 +202,7 @@ function isInvalidWargaCommunity(item: { kelurahan?: string | null; rw?: string 
 
   if (!isValidTunonRtRw(kel, rawRw, rawRt)) return true;
   if (!isValidDebongKulonRtRw(kel, rawRw, rawRt)) return true;
+  if (!isValidDebongLorRtRw(kel, rawRw, rawRt)) return true;
   if (!isValidKeturenRtRw(kel, rawRw, rawRt)) return true;
   if (!isValidPekaumanRtRw(kel, rawRw, rawRt)) return true;
   if (!isValidPanggungRtRw(kel, rawRw, rawRt)) return true;

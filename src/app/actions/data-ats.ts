@@ -18,6 +18,7 @@ import {
   isValidKaligangsaRtRw,
   isValidKeturenRtRw,
   isValidDebongKulonRtRw,
+  isValidDebongLorRtRw,
   isValidTunonRtRw,
   isValidPekaumanRtRw,
   isValidPanggungRtRw,
@@ -1592,6 +1593,9 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
 
         // Ketentuan Khusus Kelurahan Debong Kulon: Hapus/abaikan data yang tidak sesuai ketentuan resmi RW & RT Debong Kulon
         if (!isValidDebongKulonRtRw(itemKel, itemRw, itemRt)) {
+          return false;
+        }
+        if (!isValidDebongLorRtRw(itemKel, itemRw, itemRt)) {
           return false;
         }
 
