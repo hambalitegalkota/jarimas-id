@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { createClient } from "@supabase/supabase-js";
 import { createAdminClient } from "@/utils/supabase/server";
 import {
@@ -458,6 +458,7 @@ export async function POST(req: NextRequest) {
       revalidatePath("/komunitas");
       revalidatePath("/profil");
       revalidatePath("/");
+      revalidateTag("rekap-data-ats", "max");
     } catch (revalErr) {
       console.warn("Gagal revalidasi path pasca sinkronisasi ATS:", revalErr);
     }

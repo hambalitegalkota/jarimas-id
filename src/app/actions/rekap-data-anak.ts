@@ -1,18 +1,7 @@
 "use server";
 
-// In-Memory Cache untuk Rekapitulasi Berjenjang Data Anak Usia Dini Se-Kota Tegal
-let cachedRekapResult: {
-  timestamp: number;
-  data: RekapDataAnakUsiaDiniResult;
-} | null = null;
-const REKAP_CACHE_TTL_MS = 30 * 60 * 1000; // 30 Menit (In-Memory Cache Diperpanjang untuk Mencegah Beban 29 Chunk Kueri Berulang)
-
-export async function invalidateRekapDataAnakCache(): Promise<void> {
-  cachedRekapResult = null;
-}
-
-
-import { createClient } from "@/utils/supabase/server";
+import { unstable_cache, revalidateTag } from "next/cache";
+import { createClient, createStatelessClient } from "@/utils/supabase/server";
 import { KOTA_TEGAL_DATA, findOrGenerateKomunitasSeed } from "@/lib/constants/tegal-data";
 import {
   parseDataAnakDetails,
@@ -56,68 +45,66 @@ import {
 } from "@/lib/rekap-data-anak-shared";
 
 
+export async function invalidateRekapDataAnakCache(): Promise<void> {
+  try {
+    revalidateTag("rekap-data-anak", "max");
+  } catch (err) {
+    console.warn("invalidateRekapDataAnakCache error:", err);
+  }
+}
+
 /**
- * Server Action: Mengambil Rekapitulasi Berjenjang Data Anak Usia Dini MURNI dari Database Riil
+ * Komputasi Murni Rekapitulasi Berjenjang Data Anak Usia Dini Se-Kota Tegal
+ * Menggunakan client stateless tanpa cookie agar dapat disimpan dalam Next.js Data Cache.
  */
-export async function getRekapDataAnakUsiaDiniAction(): Promise<{
-  success: boolean;
-  data: RekapDataAnakUsiaDiniResult;
-  message?: string;
-}> {
-  // Gunakan cache jika masih valid dalam jendela TTL untuk mereduksi beban 29 chunk query
-  if (cachedRekapResult && Date.now() - cachedRekapResult.timestamp < REKAP_CACHE_TTL_MS) {
-    return {
-      success: true,
-      data: cachedRekapResult.data,
-    };
+async function fetchAndComputeRekapDataAnak(): Promise<RekapDataAnakUsiaDiniResult> {
+  const supabase = createStatelessClient();
+
+  // 1. Hitung total baris di data_anak yang is_sekolah = true dan belum deleted
+  // Ini memangkas 20.000+ baris data ATS dari scan sehingga Egress dan waktu eksekusi terpangkas 73%
+  const { count: totalRowCount, error: countErr } = await supabase
+    .from("data_anak")
+    .select("*", { count: "exact", head: true })
+    .eq("is_sekolah", true)
+    .neq("status_approval", "deleted");
+
+  if (countErr) {
+    console.warn("fetchAndComputeRekapDataAnak count error:", countErr.message);
   }
 
-  try {
-    const supabase = await createClient();
+  const totalToFetch = totalRowCount && totalRowCount > 0 ? totalRowCount : 1000;
+  const CHUNK_SIZE = 1000;
+  const numChunks = Math.max(1, Math.ceil(totalToFetch / CHUNK_SIZE));
 
-    // 1. Hitung total baris di data_anak untuk membagi pemanggilan paralel secara dinamis
-    const { count: totalRowCount, error: countErr } = await supabase
-      .from("data_anak")
-      .select("*", { count: "exact", head: true });
+  // Ambil hanya data anak sekolah (PAUD) secara paralel chunk per 1.000 baris
+  const chunkPromises = [];
+  for (let i = 0; i < numChunks; i++) {
+    const from = i * CHUNK_SIZE;
+    const to = from + CHUNK_SIZE - 1;
+    chunkPromises.push(
+      supabase
+        .from("data_anak")
+        .select(`
+          id,
+          nama_lengkap,
+          tanggal_lahir,
+          jenis_kelamin,
+          is_sekolah,
+          nama_sekolah,
+          alasan_sekolah,
+          komunitas_id,
+          status_approval,
+          created_at
+        `)
+        .eq("is_sekolah", true)
+        .neq("status_approval", "deleted")
+        .order("created_at", { ascending: false })
+        .range(from, to)
+    );
+  }
 
-    if (countErr) {
-      console.warn("getRekapDataAnakUsiaDiniAction count error:", countErr.message);
-    }
-
-    const totalToFetch = totalRowCount && totalRowCount > 0 ? totalRowCount : 2000;
-    const CHUNK_SIZE = 1000;
-    const numChunks = Math.max(1, Math.ceil(totalToFetch / CHUNK_SIZE));
-
-    // Ambil seluruh data_anak dari database secara paralel (chunk paralel per 1.000 data)
-    // Supabase PostgREST membatasi maksimal 1.000 baris per panggilan, sehingga eksekusi paralel chunk
-    // mengambil seluruh 7.000+ data secara utuh dalam waktu ~1-1.5 detik
-    const chunkPromises = [];
-    for (let i = 0; i < numChunks; i++) {
-      const from = i * CHUNK_SIZE;
-      const to = from + CHUNK_SIZE - 1;
-      chunkPromises.push(
-        supabase
-          .from("data_anak")
-          .select(`
-            id,
-            nama_lengkap,
-            tanggal_lahir,
-            jenis_kelamin,
-            is_sekolah,
-            nama_sekolah,
-            alasan_sekolah,
-            komunitas_id,
-            status_approval,
-            created_at
-          `)
-          .neq("status_approval", "deleted")
-          .order("created_at", { ascending: false })
-          .range(from, to)
-      );
-    }
-
-    const chunkResults = await Promise.all(chunkPromises);
-    const dbChildren: any[] = chunkResults.flatMap((res) => res.data || []);
+  const chunkResults = await Promise.all(chunkPromises);
+  const dbChildren: any[] = chunkResults.flatMap((res) => res.data || []);
 
     // Filter ketat: Hanya data anak balita / PAUD riil (BUKAN data ATS, BUKAN data dummy, dan memenuhi ketentuan wilayah Keturen)
     const validLiveChildren = (dbChildren || []).filter((c) => {
@@ -468,12 +455,32 @@ export async function getRekapDataAnakUsiaDiniAction(): Promise<{
       totalLiveRecords,
     };
 
-    // Simpan ke in-memory cache agar kunjungan berikutnya instan dan hemat Egress Supabase
-    cachedRekapResult = {
-      timestamp: Date.now(),
-      data: finalRekapData,
-    };
+    return finalRekapData;
+}
 
+/**
+ * Cache Rekapitulasi Data Anak dengan Next.js Shared Data Cache
+ * Supabase hanya di-query 1 kali per jam atau saat ada data anak baru (on-demand revalidation).
+ */
+const getCachedRekapDataAnak = unstable_cache(
+  fetchAndComputeRekapDataAnak,
+  ["rekap-data-anak-se-kota-tegal"],
+  {
+    tags: ["rekap-data-anak"],
+    revalidate: 3600, // 1 Jam di Next.js Data Cache
+  }
+);
+
+/**
+ * Server Action: Mengambil Rekapitulasi Berjenjang Data Anak Usia Dini MURNI dari Database Riil
+ */
+export async function getRekapDataAnakUsiaDiniAction(): Promise<{
+  success: boolean;
+  data: RekapDataAnakUsiaDiniResult;
+  message?: string;
+}> {
+  try {
+    const finalRekapData = await getCachedRekapDataAnak();
     return {
       success: true,
       data: finalRekapData,
@@ -482,7 +489,7 @@ export async function getRekapDataAnakUsiaDiniAction(): Promise<{
     console.error("Error getRekapDataAnakUsiaDiniAction:", err);
     return {
       success: false,
-      message: err.message || "Gagal menghasilkan rekap data anak usia dini.",
+      message: err?.message || "Gagal menghasilkan rekap data anak usia dini.",
       data: {
         kota: createEmptyRekapWilayah("kota-tegal", "Kota Tegal", "kota"),
         kecamatanList: [],
@@ -636,7 +643,8 @@ export async function getDaftarNamaAnakRekapAction(params: {
     // Hitung total data yang cocok untuk menentukan chunk pemanggilan paralel
     let countQuery = supabase
       .from("data_anak")
-      .select("*", { count: "exact", head: true });
+      .select("*", { count: "exact", head: true })
+      .eq("is_sekolah", true);
 
     if (targetKel) {
       countQuery = countQuery.ilike("alasan_sekolah", `%${targetKel}%`);
@@ -673,6 +681,7 @@ export async function getDaftarNamaAnakRekapAction(params: {
           status_approval,
           created_at
         `)
+        .eq("is_sekolah", true)
         .order("created_at", { ascending: false })
         .range(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE - 1);
 

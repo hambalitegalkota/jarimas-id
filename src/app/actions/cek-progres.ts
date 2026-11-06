@@ -1,18 +1,15 @@
 "use server";
 
-// In-Memory Cache untuk Rekapitulasi Cek Progres Satuan PAUD
-let cachedProgresData: {
-  timestamp: number;
-  rawItems: ProgresPaudItem[];
-} | null = null;
-const PROGRES_CACHE_TTL_MS = 15 * 60 * 1000; // 15 Menit (Cache Diperpanjang; Otomatis Diinvalidsi Setiap Ada Update Data Anak)
+import { unstable_cache, revalidateTag } from "next/cache";
+import { createClient, createStatelessClient } from "@/utils/supabase/server";
 
 export async function invalidateCekProgresCache(): Promise<void> {
-  cachedProgresData = null;
+  try {
+    revalidateTag("cek-progres-paud", "max");
+  } catch (err) {
+    console.warn("invalidateCekProgresCache error:", err);
+  }
 }
-
-
-import { createClient } from "@/utils/supabase/server";
 import {
   isSuperAdmin as checkIsSuperAdmin,
   isAdminPusat as checkIsAdminPusat,
@@ -150,34 +147,18 @@ export async function getCekProgresPaudAction(filters?: {
       kegiatan = dbKegiatan as KegiatanAdministratif;
     }
 
-    // 3. Ambil Data Progres (Gunakan cache instan jika tersedia)
-    let rawItems: ProgresPaudItem[] = [];
+    // 3. Ambil Data Progres dari Next.js Shared Data Cache (Bebas dari beban Egress berulang)
+    const allPaudItems = await getCachedAllProgresPaud();
+
     const filterKec = filters?.kecamatan && filters.kecamatan !== "semua" ? filters.kecamatan : null;
     const filterKel = filters?.kelurahan && filters.kelurahan !== "semua" ? filters.kelurahan : null;
-    const isNoLocationFilter = (!filterKec || filterKec === "semua") && (!filterKel || filterKel === "semua");
 
-    if (isNoLocationFilter && cachedProgresData && Date.now() - cachedProgresData.timestamp < PROGRES_CACHE_TTL_MS) {
-      rawItems = cachedProgresData.rawItems;
-    } else {
-      // Gunakan Engine Kalkulasi Presisi Penuh (Mendukung pencocokan nama institusi, validator nyata & kelurahan)
-      rawItems = await fetchProgresPaudFallback(
-        supabase,
-        user?.id || null,
-        isSuper,
-        memberships,
-        filterKec,
-        filterKel
-      );
+    let rawItems = allPaudItems;
+    if (filterKec) {
+      rawItems = rawItems.filter((it) => normalizeWilayah(it.kecamatan) === normalizeWilayah(filterKec));
     }
-
-    // Saring institusi: Lepaskan seluruh PKBM KECUALI 'PKBM Star of Tomorrow' dan SKB
-    rawItems = rawItems.filter((it) => isAllowedPaudInstitution(it.nama_paud));
-
-    if (isNoLocationFilter && (!cachedProgresData || Date.now() - cachedProgresData.timestamp >= PROGRES_CACHE_TTL_MS)) {
-      cachedProgresData = {
-        timestamp: Date.now(),
-        rawItems,
-      };
+    if (filterKel) {
+      rawItems = rawItems.filter((it) => normalizeWilayah(it.kelurahan) === normalizeWilayah(filterKel));
     }
 
     // 4. Terapkan Filter Opsional (Pencarian Teks & Status)
@@ -248,33 +229,31 @@ export async function getCekProgresPaudAction(filters?: {
   }
 }
 
+const getCachedAllProgresPaud = unstable_cache(
+  async () => {
+    const supabase = createStatelessClient();
+    return await computeAllProgresPaud(supabase);
+  },
+  ["cek-progres-paud-se-kota-tegal"],
+  {
+    tags: ["cek-progres-paud"],
+    revalidate: 3600, // 1 Jam di Next.js Data Cache
+  }
+);
+
 /**
- * Fallback jika fungsi SQL RPC belum dieksekusi di database
+ * Komputasi Murni Data Progres Satuan PAUD Se-Kota Tegal
+ * Menggunakan client stateless tanpa cookie agar dapat disimpan dalam Next.js Shared Data Cache.
  */
-async function fetchProgresPaudFallback(
-  supabase: any,
-  userId: string | null,
-  isSuper: boolean,
-  memberships: any[],
-  filterKec: string | null,
-  filterKel: string | null
-): Promise<ProgresPaudItem[]> {
-  // Ambil seluruh Satuan PAUD
-  let paudQuery = supabase
+async function computeAllProgresPaud(supabase: any): Promise<ProgresPaudItem[]> {
+  // Ambil seluruh Satuan PAUD se-Kota Tegal
+  const { data: rawPaudList, error: paudErr } = await supabase
     .from("komunitas")
     .select("id, nama, jenis, kecamatan, kelurahan")
     .eq("jenis", "satuan_paud");
 
-  if (filterKec && filterKec !== "semua") {
-    paudQuery = paudQuery.eq("kecamatan", filterKec);
-  }
-  if (filterKel && filterKel !== "semua") {
-    paudQuery = paudQuery.eq("kelurahan", filterKel);
-  }
-
-  const { data: rawPaudList, error: paudErr } = await paudQuery;
   if (paudErr || !rawPaudList || rawPaudList.length === 0) {
-    console.error("Error fetching paudList in fallback:", paudErr);
+    console.error("Error fetching paudList in computeAllProgresPaud:", paudErr);
     return [];
   }
 

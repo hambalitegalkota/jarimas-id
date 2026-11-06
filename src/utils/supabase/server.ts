@@ -44,6 +44,22 @@ export async function createClient() {
 }
 
 /**
+ * Client Supabase Stateless (Murni Client-side/Anon tanpa Cookie Session)
+ * Khusus digunakan di dalam Next.js unstable_cache / ISR untuk mencegah error headers/cookies.
+ */
+export function createStatelessClient() {
+  const supabaseUrl = (process.env.NEXT_PUBLIC_SUPABASE_URL || DEFAULT_SUPABASE_URL).trim();
+  const supabaseAnonKey = (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || DEFAULT_SUPABASE_ANON_KEY).trim();
+
+  return createSupabaseClient(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+    },
+  });
+}
+
+/**
  * Client Supabase dengan Service Role Key untuk operasi administratif backend (bypasses RLS)
  * Hanya aktif jika SUPABASE_SERVICE_ROLE_KEY tersedia di environment dan valid formatnya.
  */

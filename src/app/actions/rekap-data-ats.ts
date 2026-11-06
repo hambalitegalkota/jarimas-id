@@ -1,17 +1,15 @@
 "use server";
 
-// In-Memory Cache untuk Rekapitulasi Berjenjang Data Anak Tidak Sekolah (ATS) Se-Kota Tegal
-let cachedRekapAtsResult: {
-  timestamp: number;
-  data: RekapDataAtsResult;
-} | null = null;
-const REKAP_ATS_CACHE_TTL_MS = 30 * 60 * 1000; // 30 Menit (Diinvalidasi seketika saat ada perubahan data ATS)
+import { unstable_cache, revalidateTag } from "next/cache";
+import { createClient, createStatelessClient } from "@/utils/supabase/server";
 
 export async function invalidateRekapDataAtsCache(): Promise<void> {
-  cachedRekapAtsResult = null;
+  try {
+    revalidateTag("rekap-data-ats", "max");
+  } catch (err) {
+    console.warn("invalidateRekapDataAtsCache error:", err);
+  }
 }
-
-import { createClient } from "@/utils/supabase/server";
 import { KOTA_TEGAL_DATA, findOrGenerateKomunitasSeed } from "@/lib/constants/tegal-data";
 import {
   isDataAtsRecord,
@@ -396,23 +394,11 @@ function createEmptyRekapWilayahAts(id: string, nama: string, tingkat: "kota" | 
 }
 
 /**
- * Server Action: Mengambil Rekapitulasi Lengkap Berjenjang Data Anak Tidak Sekolah (ATS) MURNI dari Database Riil
+ * Komputasi Murni Rekapitulasi Lengkap Berjenjang Data Anak Tidak Sekolah (ATS)
+ * Menggunakan client stateless tanpa cookie agar dapat disimpan dalam Next.js Shared Data Cache.
  */
-export async function getRekapDataAtsAction(): Promise<{
-  success: boolean;
-  data: RekapDataAtsResult;
-  message?: string;
-}> {
-  // Gunakan cache jika masih valid dalam jendela TTL untuk menghemat Egress dan Log Supabase
-  if (cachedRekapAtsResult && Date.now() - cachedRekapAtsResult.timestamp < REKAP_ATS_CACHE_TTL_MS) {
-    return {
-      success: true,
-      data: cachedRekapAtsResult.data,
-    };
-  }
-
-  try {
-    const supabase = await createClient();
+async function fetchAndComputeRekapDataAts(): Promise<RekapDataAtsResult> {
+  const supabase = createStatelessClient();
 
     // 1. Ambil data_anak dari database
     const { data: dbChildren, error: fetchErr } = await supabase
@@ -756,21 +742,37 @@ export async function getRekapDataAtsAction(): Promise<{
       totalLiveRecords,
     };
 
-    // Simpan ke in-memory cache agar kunjungan berikutnya instan dan hemat Egress Supabase
-    cachedRekapAtsResult = {
-      timestamp: Date.now(),
-      data: finalAtsData,
-    };
+    return finalAtsData;
+}
 
+const getCachedRekapDataAts = unstable_cache(
+  fetchAndComputeRekapDataAts,
+  ["rekap-data-ats-se-kota-tegal"],
+  {
+    tags: ["rekap-data-ats"],
+    revalidate: 3600, // 1 Jam di Next.js Shared Data Cache
+  }
+);
+
+/**
+ * Server Action: Mengambil Rekapitulasi Lengkap Berjenjang Data Anak Tidak Sekolah (ATS) MURNI dari Database Riil
+ */
+export async function getRekapDataAtsAction(): Promise<{
+  success: boolean;
+  data: RekapDataAtsResult;
+  message?: string;
+}> {
+  try {
+    const data = await getCachedRekapDataAts();
     return {
       success: true,
-      data: finalAtsData,
+      data,
     };
   } catch (err: any) {
     console.error("Error getRekapDataAtsAction:", err);
     return {
       success: false,
-      message: err.message || "Gagal menghasilkan rekap data ATS.",
+      message: err?.message || "Gagal menghasilkan rekap data ATS.",
       data: {
         kota: createEmptyRekapWilayahAts("ats-kota-tegal", "Kota Tegal", "kota"),
         kecamatanList: [],

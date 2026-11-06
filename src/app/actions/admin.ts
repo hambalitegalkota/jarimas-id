@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { createClient, createAdminClient } from "@/utils/supabase/server";
 import {
   formatPeranDisplay,
@@ -869,6 +869,11 @@ export async function cleanupAllDataAnakAction(): Promise<{
     revalidatePath("/kabar");
     revalidatePath("/admin");
     revalidatePath("/");
+    try {
+      revalidateTag("rekap-data-anak", "max");
+      revalidateTag("rekap-data-ats", "max");
+      revalidateTag("cek-progres-paud", "max");
+    } catch {}
 
     return {
       success: true,
@@ -937,6 +942,11 @@ export async function cleanupAllKaderAndAnggotaAction(): Promise<{
     revalidatePath("/kabar");
     revalidatePath("/admin");
     revalidatePath("/");
+    try {
+      revalidateTag("rekap-data-anak", "max");
+      revalidateTag("rekap-data-ats", "max");
+      revalidateTag("cek-progres-paud", "max");
+    } catch {}
 
     return {
       success: true,
@@ -1063,6 +1073,11 @@ export async function cleanupAllTestDataAction(): Promise<{
     revalidatePath("/kabar");
     revalidatePath("/admin");
     revalidatePath("/");
+    try {
+      revalidateTag("rekap-data-anak", "max");
+      revalidateTag("rekap-data-ats", "max");
+      revalidateTag("cek-progres-paud", "max");
+    } catch {}
 
     return {
       success: true,
@@ -1188,6 +1203,11 @@ export async function cleanupNonSuperAdminDataAction(): Promise<{
     revalidatePath("/kabar");
     revalidatePath("/admin");
     revalidatePath("/");
+    try {
+      revalidateTag("rekap-data-anak", "max");
+      revalidateTag("rekap-data-ats", "max");
+      revalidateTag("cek-progres-paud", "max");
+    } catch {}
 
     return {
       success: true,
