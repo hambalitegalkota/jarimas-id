@@ -28,8 +28,6 @@ import {
   Flame,
   School,
   HeartHandshake,
-  UserPlus,
-  Bell,
   ClipboardCheck,
 } from "lucide-react";
 import { createClient } from "@/utils/supabase/server";
@@ -41,7 +39,6 @@ import { KabarCard } from "@/components/kabar/kabar-card";
 import { formatRupiah, isSuperAdmin as checkIsSuperAdmin } from "@/lib/utils";
 import { isTheOrbitSixtyCommunity } from "@/lib/admin-helpers";
 import { SHOW_MARKET_FEATURE } from "@/components/layout/bottom-nav";
-import { PrintButton } from "@/components/ui/print-button";
 import { TanyaAdminButton } from "@/components/warga/tanya-admin-button";
 import type { MarketProduk } from "@/types/database";
 
@@ -304,18 +301,8 @@ export default async function HomePage() {
           </div>
         </div>
 
-        {/* Right Action Icons: Cetak, Notifikasi & Profil */}
-        <div className="flex items-center gap-2 shrink-0">
-          <PrintButton variant="outline" size="sm" hideTextOnMobile={true} />
-          <Link
-            href="/kabar"
-            aria-label="Notifikasi Kabar Warga"
-            className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-lg bg-card border border-border text-foreground hover:bg-muted transition-all active:scale-95 shadow-sm relative"
-          >
-            <Bell className="h-4 w-4 sm:h-4.5 sm:w-4.5 text-muted-foreground" />
-            <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-secondary ring-2 ring-card" />
-          </Link>
-
+        {/* Right Action Icons: Profil & Tanya Admin (Login) atau Masuk & Registrasi (Tamu) */}
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           {user ? (
             <div className="flex items-center gap-1.5 sm:gap-2">
               <Link
@@ -338,15 +325,14 @@ export default async function HomePage() {
             <div className="flex items-center gap-1.5 sm:gap-2">
               <Link
                 href="/login"
-                className="inline-flex min-h-[36px] sm:min-h-[40px] items-center justify-center rounded-lg border border-border bg-card hover:bg-muted px-2.5 sm:px-3.5 py-1.5 text-xs font-semibold text-foreground transition-all active:scale-95 shadow-xs"
+                className="inline-flex min-h-[36px] sm:min-h-[40px] items-center justify-center rounded-lg border border-border bg-card hover:bg-muted px-2.5 sm:px-3.5 py-1.5 text-xs font-semibold text-foreground transition-all active:scale-95 shadow-xs whitespace-nowrap"
               >
                 <span>Masuk</span>
               </Link>
               <Link
                 href="/register"
-                className="inline-flex min-h-[36px] sm:min-h-[40px] items-center justify-center gap-1.5 rounded-lg bg-secondary hover:brightness-95 px-3 sm:px-4 py-1.5 text-xs font-bold text-secondary-foreground transition-all active:scale-95 shadow-sm"
+                className="inline-flex min-h-[36px] sm:min-h-[40px] items-center justify-center rounded-lg bg-secondary hover:brightness-95 px-3 sm:px-4 py-1.5 text-xs font-bold text-secondary-foreground transition-all active:scale-95 shadow-sm whitespace-nowrap"
               >
-                <UserPlus className="h-3.5 w-3.5" />
                 <span>Registrasi</span>
               </Link>
             </div>
