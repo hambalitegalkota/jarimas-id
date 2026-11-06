@@ -44,3 +44,4 @@ SET
   lokasi = 'Balai Posyandu / RW 03, Debong Lor, Tegal Barat, Kota Tegal',
   deskripsi = 'Layanan terpadu Posyandu Mawar Debong Lor cakupan sinkronisasi wilayah RW 03 (RT 01 s/d RT 04): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.'
 WHERE id = '8a3e27d7-c6b0-4cf9-8b2b-6425e1f79f59';
+
