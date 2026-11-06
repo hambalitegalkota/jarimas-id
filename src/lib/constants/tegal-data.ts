@@ -697,6 +697,7 @@ export const DATA_RW_PER_KELURAHAN: Record<string, number> = {
   "Panggung": 14,
   "Tegalsari": 13,
   "Kraton": 9,
+  "Kejambon": 6,
 };
 
 export const RT_PER_RW_DEFAULT = 15;
@@ -1010,6 +1011,33 @@ export const DATA_RT_PER_RW_MARGADANA: Record<string, number> = {
  * Tetap pertahankan pilihan "Belum Tahu" untuk RW dan RT
  */
 /**
+ * Ketentuan Khusus RT per RW di Kelurahan Kejambon, Kecamatan Tegal Timur:
+ * - Jumlah RW ada 6
+ * - RW 1: Jumlah RT 6 (RT 1 s/d 6)
+ * - RW 2: Jumlah RT 6 (RT 1 s/d 6)
+ * - RW 3: Jumlah RT 9 (RT 1 s/d 9)
+ * - RW 4: Jumlah RT 7 (RT 1 s/d 7)
+ * - RW 5: Jumlah RT 8 (RT 1 s/d 8)
+ * - RW 6: Jumlah RT 8 (RT 1 s/d 8)
+ * Total RW resmi: 6 RW, Total RT: 44 RT (6 + 6 + 9 + 7 + 8 + 8)
+ * Tetap pertahankan pilihan "Belum Tahu" untuk RW dan RT
+ */
+export const DATA_RT_PER_RW_KEJAMBON: Record<string, number> = {
+  "01": 6,
+  "1": 6,
+  "02": 6,
+  "2": 6,
+  "03": 9,
+  "3": 9,
+  "04": 7,
+  "4": 7,
+  "05": 8,
+  "5": 8,
+  "06": 8,
+  "6": 8,
+};
+
+/**
  * Ketentuan Khusus RT per RW di Kelurahan Bandung, Kecamatan Tegal Selatan:
  * - Jumlah RW ada 5
  * - RW 1: Jumlah RT 4 (RT 1 s/d 4)
@@ -1114,6 +1142,9 @@ export const TOTAL_KOMUNITAS_RT_KOTA_TEGAL = 1712;
 export function getJumlahRwByKelurahan(kelurahan?: string | null): number {
   if (!kelurahan) return 15;
   const clean = kelurahan.replace(/^(kelurahan|kel\.)\s+/i, "").trim().toLowerCase();
+  if (clean === "kejambon") {
+    return 6;
+  }
   if (clean === "bandung") {
     return 5;
   }
@@ -1155,6 +1186,16 @@ export function getJumlahRwByKelurahan(kelurahan?: string | null): number {
 export function getJumlahRtPerRwByKelurahan(kelurahan?: string | null, rw?: string | null): number {
   if (!kelurahan) return RT_PER_RW_DEFAULT;
   const clean = kelurahan.replace(/^(kelurahan|kel\.)\s+/i, "").trim().toLowerCase();
+  if (clean === "kejambon") {
+    if (rw && rw !== "Belum Tahu") {
+      const cleanRw = rw.replace(/^(rw|rt)\s*/i, "").trim();
+      const normRw = String(parseInt(cleanRw, 10)).padStart(2, "0");
+      if (DATA_RT_PER_RW_KEJAMBON[normRw] || DATA_RT_PER_RW_KEJAMBON[cleanRw]) {
+        return DATA_RT_PER_RW_KEJAMBON[normRw] || DATA_RT_PER_RW_KEJAMBON[cleanRw];
+      }
+    }
+    return 9; // Default max RT di RW 3 Kejambon (9 RT)
+  }
   if (clean === "kalinyamat wetan") {
     return 5;
   }
@@ -1280,6 +1321,10 @@ export function getJumlahRtPerRwByKelurahan(kelurahan?: string | null, rw?: stri
 export function getTotalRtByKelurahan(kelurahan?: string | null): number {
   if (!kelurahan) return 15 * RT_PER_RW_DEFAULT;
   const clean = kelurahan.replace(/^(kelurahan|kel\.)\s+/i, "").trim().toLowerCase();
+  if (clean === "kejambon") {
+    // RW 1: 6, RW 2: 6, RW 3: 9, RW 4: 7, RW 5: 8, RW 6: 8 -> Total 44 RT
+    return 6 + 6 + 9 + 7 + 8 + 8;
+  }
   if (clean === "bandung") {
     // RW 1: 4, RW 2: 6, RW 3: 4, RW 4: 4, RW 5: 5 -> Total 23 RT
     return 4 + 6 + 4 + 4 + 5;
@@ -1347,6 +1392,10 @@ export function getRwListByKelurahan(kelurahan?: string | null): string[] {
     return [...list, "Belum Tahu"];
   }
   const clean = kelurahan.replace(/^(kelurahan|kel\.)\s+/i, "").trim().toLowerCase();
+  if (clean === "kejambon") {
+    const list = Array.from({ length: 6 }, (_, i) => String(i + 1).padStart(2, "0"));
+    return [...list, "Belum Tahu"];
+  }
   if (clean === "bandung") {
     const list = Array.from({ length: 5 }, (_, i) => String(i + 1).padStart(2, "0"));
     return [...list, "Belum Tahu"];
@@ -1412,6 +1461,17 @@ export function getRtListByKelurahan(kelurahan?: string | null, rw?: string | nu
     return [...list, "Belum Tahu"];
   }
   const clean = kelurahan.replace(/^(kelurahan|kel\.)\s+/i, "").trim().toLowerCase();
+  if (clean === "kejambon") {
+    if (rw && rw !== "Belum Tahu") {
+      const cleanRw = rw.replace(/^(rw|rt)\s*/i, "").trim();
+      const normRw = String(parseInt(cleanRw, 10)).padStart(2, "0");
+      const count = DATA_RT_PER_RW_KEJAMBON[normRw] || 9;
+      const list = Array.from({ length: count }, (_, i) => String(i + 1).padStart(2, "0"));
+      return [...list, "Belum Tahu"];
+    }
+    const list = Array.from({ length: 9 }, (_, i) => String(i + 1).padStart(2, "0"));
+    return [...list, "Belum Tahu"];
+  }
   if (clean === "bandung") {
     if (rw && rw !== "Belum Tahu") {
       const cleanRw = rw.replace(/^(rw|rt)\s*/i, "").trim();

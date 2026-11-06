@@ -44,6 +44,7 @@ import {
   isValidPanggungRtRw,
   isValidTegalsariRtRw,
   isValidBandungRtRw,
+  isValidKejambonRtRw,
   isValidKalinyamatWetanRtRw,
   isValidKalinyamatKulonRtRw,
   isValidKaligangsaRtRw,
@@ -192,6 +193,7 @@ function isInvalidWargaCommunity(item: { kelurahan?: string | null; rw?: string 
   }
 
   // 1. Validasi spesifik kelurahan yang memiliki aturan ketat RT & RW
+  if (!isValidKejambonRtRw(kel, rawRw, rawRt)) return true;
   if (!isValidBandungRtRw(kel, rawRw, rawRt)) return true;
   if (!isValidKalinyamatWetanRtRw(kel, rawRw, rawRt)) return true;
   if (!isValidKalinyamatKulonRtRw(kel, rawRw, rawRt)) return true;

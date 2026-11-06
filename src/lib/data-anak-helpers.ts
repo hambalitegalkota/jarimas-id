@@ -988,6 +988,86 @@ export function getPosyanduCakupanWilayah(targetKomunitas: any): PosyanduCakupan
   }
 
 
+  // Khusus Kelurahan Kejambon (Kecamatan Tegal Timur)
+  // - Posyandu Teratai Merah: RW 1 (RT 01 s/d RT 06)
+  // - Posyandu Kamboja 1: RW 2 (RT 01, RT 02, RT 03)
+  // - Posyandu Kamboja 2: RW 2 (RT 04, RT 05, RT 06)
+  // - Posyandu Kemuning 1: RW 3 (RT 01, RT 02, RT 03, RT 08, RT 09)
+  // - Posyandu Kemuning 2: RW 3 (RT 04, RT 05, RT 06, RT 07)
+  // - Posyandu Tanjungsari: RW 4 (RT 01 s/d RT 07)
+  // - Posyandu Mawar Melati: RW 5 (RT 01 s/d RT 08)
+  // - Posyandu Seruni: RW 6 (RT 01, RT 02, RT 03, RT 04, RT 07, RT 08)
+  // - Posyandu Arimbi: RW 6 (RT 05, RT 06)
+  const isKejambonPosyandu =
+    kel.includes("kejambon") ||
+    nama.includes("kejambon") ||
+    targetKomunitas?.id === "191a9fc1-7ff8-4ee0-8e3b-0c6939ddccb1" ||
+    targetKomunitas?.id === "7a4c81ec-e4b0-40db-86ea-7941edae37c8" ||
+    targetKomunitas?.id === "54f2eeff-e4b0-40db-893e-c179739a0233" ||
+    targetKomunitas?.id === "078d4905-329e-4ce9-84e7-7cb51a0ffb4b" ||
+    targetKomunitas?.id === "a5c4c2b6-329e-4ce9-8058-ea1d9ffbc5b6" ||
+    targetKomunitas?.id === "3b4dae25-052e-42ed-81d8-2cf16fcead26" ||
+    targetKomunitas?.id === "9aab793a-3033-4016-8bdd-91a1dc327206" ||
+    targetKomunitas?.id === "8e113277-1f58-43a1-8a3f-6435839bc0f9" ||
+    targetKomunitas?.id === "d3c7fd8d-d7a2-4fff-8a4c-c7d51801b853";
+
+  if (isKejambonPosyandu) {
+    if (
+      targetKomunitas?.id === "191a9fc1-7ff8-4ee0-8e3b-0c6939ddccb1" ||
+      nama.includes("teratai merah")
+    ) {
+      return { rw: "01", rtList: ["01", "02", "03", "04", "05", "06", "1", "2", "3", "4", "5", "6"] };
+    }
+    if (
+      targetKomunitas?.id === "7a4c81ec-e4b0-40db-86ea-7941edae37c8" ||
+      /\bkamboja\s*(1|i)\b/i.test(nama)
+    ) {
+      return { rw: "02", rtList: ["01", "02", "03", "1", "2", "3"] };
+    }
+    if (
+      targetKomunitas?.id === "54f2eeff-e4b0-40db-893e-c179739a0233" ||
+      /\bkamboja\s*(2|ii)\b/i.test(nama)
+    ) {
+      return { rw: "02", rtList: ["04", "05", "06", "4", "5", "6"] };
+    }
+    if (
+      targetKomunitas?.id === "078d4905-329e-4ce9-84e7-7cb51a0ffb4b" ||
+      /\bkemuning\s*(1|i)\b/i.test(nama)
+    ) {
+      return { rw: "03", rtList: ["01", "02", "03", "08", "09", "1", "2", "3", "8", "9"] };
+    }
+    if (
+      targetKomunitas?.id === "a5c4c2b6-329e-4ce9-8058-ea1d9ffbc5b6" ||
+      /\bkemuning\s*(2|ii)\b/i.test(nama)
+    ) {
+      return { rw: "03", rtList: ["04", "05", "06", "07", "4", "5", "6", "7"] };
+    }
+    if (
+      targetKomunitas?.id === "3b4dae25-052e-42ed-81d8-2cf16fcead26" ||
+      nama.includes("tanjungsari") || nama.includes("tanjung sari")
+    ) {
+      return { rw: "04", rtList: ["01", "02", "03", "04", "05", "06", "07", "1", "2", "3", "4", "5", "6", "7"] };
+    }
+    if (
+      targetKomunitas?.id === "9aab793a-3033-4016-8bdd-91a1dc327206" ||
+      nama.includes("mawar melati")
+    ) {
+      return { rw: "05", rtList: ["01", "02", "03", "04", "05", "06", "07", "08", "1", "2", "3", "4", "5", "6", "7", "8"] };
+    }
+    if (
+      targetKomunitas?.id === "8e113277-1f58-43a1-8a3f-6435839bc0f9" ||
+      nama.includes("seruni")
+    ) {
+      return { rw: "06", rtList: ["01", "02", "03", "04", "07", "08", "1", "2", "3", "4", "7", "8"] };
+    }
+    if (
+      targetKomunitas?.id === "d3c7fd8d-d7a2-4fff-8a4c-c7d51801b853" ||
+      nama.includes("arimbi")
+    ) {
+      return { rw: "06", rtList: ["05", "06", "5", "6"] };
+    }
+  }
+
   // Khusus Kelurahan Bandung (Kecamatan Tegal Selatan)
   // - Posyandu Melati I: RW 1 (RT 01 s/d RT 04)
   // - Posyandu Melati II: RW 2 (RT 01 s/d RT 06)
@@ -2049,14 +2129,14 @@ export function formatRtList(rtList?: string[]): string {
 
   const min = nums[0];
   const max = nums[nums.length - 1];
-  const isConsecutive = nums.length > 2 && max - min + 1 === nums.length;
+  const isConsecutive = nums.length > 3 && max - min + 1 === nums.length;
 
   if (isConsecutive) {
     return `RT ${String(min).padStart(2, "0")} s/d RT ${String(max).padStart(2, "0")}`;
   } else if (nums.length === 1) {
     return `RT ${String(nums[0]).padStart(2, "0")}`;
   } else {
-    return `RT ` + nums.map((n) => String(n).padStart(2, "0")).join(", ");
+    return nums.map((n) => `RT ${String(n).padStart(2, "0")}`).join(", ");
   }
 }
 
@@ -2156,6 +2236,8 @@ export function getPosyanduCoverageDisplay(komunitas: any): PosyanduCoverageResu
       "kaligangsa",
       "kraton",
       "kalinyamat wetan",
+      "kejambon",
+      "bandung",
     ]);
 
     if (MAPPED_KELURAHAN_SET.has(kel)) {
@@ -2235,6 +2317,66 @@ export function getPosyanduCoverageDisplay(komunitas: any): PosyanduCoverageResu
  * - RW 4 Jumlah RT 5 (RT 1 s/d 5)
  * - Tetap mempertahankan RW "Belum Tahu" dan RT "Belum Tahu"
  */
+/**
+ * Validasi ketentuan khusus RW & RT di Kelurahan Kejambon, Kecamatan Tegal Timur:
+ * - Jumlah RW ada 6 (RW 1 s/d 6)
+ * - RW 1 Jumlah RT 6 (RT 1 s/d 6)
+ * - RW 2 Jumlah RT 6 (RT 1 s/d 6)
+ * - RW 3 Jumlah RT 9 (RT 1 s/d 9)
+ * - RW 4 Jumlah RT 7 (RT 1 s/d 7)
+ * - RW 5 Jumlah RT 8 (RT 1 s/d 8)
+ * - RW 6 Jumlah RT 8 (RT 1 s/d 8)
+ * - Tetap mempertahankan RW "Belum Tahu" dan RT "Belum Tahu"
+ */
+export function isValidKejambonRtRw(
+  kel?: string | null,
+  rw?: string | null,
+  rt?: string | null
+): boolean {
+  if (!kel) return true;
+  const cleanKel = normalizeWilayah(kel);
+  if (!cleanKel.includes("kejambon")) return true;
+
+  const rawRw = (rw || "").trim().toLowerCase();
+  const rawRt = (rt || "").trim().toLowerCase();
+
+  const isRwBelumTahu =
+    !rawRw ||
+    rawRw.includes("belum") ||
+    rawRw.includes("tidak") ||
+    rawRw === "-" ||
+    rawRw === "0" ||
+    rawRw === "00";
+  if (isRwBelumTahu) return true;
+
+  const rwNum = parseInt(rawRw.replace(/\D/g, ""), 10);
+  if (isNaN(rwNum) || rwNum < 1 || rwNum > 6) return false;
+
+  const isRtBelumTahu =
+    !rawRt ||
+    rawRt.includes("belum") ||
+    rawRt.includes("tidak") ||
+    rawRt === "-" ||
+    rawRt === "0" ||
+    rawRt === "00";
+  if (isRtBelumTahu) return true;
+
+  const rtNum = parseInt(rawRt.replace(/\D/g, ""), 10);
+  if (isNaN(rtNum)) return false;
+
+  const maxRtMap: Record<number, number> = {
+    1: 6,
+    2: 6,
+    3: 9,
+    4: 7,
+    5: 8,
+    6: 8,
+  };
+
+  const maxRt = maxRtMap[rwNum] || 6;
+  return rtNum >= 1 && rtNum <= maxRt;
+}
+
 /**
  * Validasi ketentuan khusus RW & RT di Kelurahan Bandung, Kecamatan Tegal Selatan:
  * - Jumlah RW ada 5 (RW 1 s/d 5)
@@ -2858,6 +3000,13 @@ export function isDataAnakMatchingKomunitas(
   if (
     !isValidKalinyamatKulonRtRw(item.domisili_kelurahan, item.domisili_rw, item.domisili_rt) &&
     !isValidKalinyamatKulonRtRw(item.kk_kelurahan, item.kk_rw, item.kk_rt)
+  ) {
+    return false;
+  }
+  // Ketentuan Khusus Kelurahan Kejambon: Hapus/abaikan data yang tidak sesuai ketentuan resmi RW & RT Kejambon
+  if (
+    !isValidKejambonRtRw(item.domisili_kelurahan, item.domisili_rw, item.domisili_rt) &&
+    !isValidKejambonRtRw(item.kk_kelurahan, item.kk_rw, item.kk_rt)
   ) {
     return false;
   }
