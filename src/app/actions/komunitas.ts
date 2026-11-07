@@ -49,6 +49,7 @@ import {
   isValidKalinyamatWetanRtRw,
   isValidKalinyamatKulonRtRw,
   isValidKaligangsaRtRw,
+  resolveJenisInstitusi,
 } from "@/lib/data-anak-helpers";
 import {
   toValidUUID,
@@ -756,6 +757,7 @@ export async function getKomunitasList(
           id: dbItem.id,
           nama: dbNama,
           jenis: itemJenis,
+          jenis_institusi: (dbItem as any).jenis_institusi || resolveJenisInstitusi(dbNama) || undefined,
           kecamatan: officialKec || dbItem.kecamatan,
           kelurahan: dbItem.kelurahan,
           rw: dbItem.rw || undefined,
@@ -1343,7 +1345,7 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
     const jenisInstitusi =
       (komunitas as any).jenis_institusi ||
       seedItem?.jenis_institusi ||
-      (isSkbEntity ? "SKB" : isPkbmEntity ? "PKBM" : undefined);
+      (isSkbEntity ? "SKB" : isPkbmEntity ? "PKBM" : resolveJenisInstitusi(nama) || undefined);
 
     if (isPkbmEntity || isSkbEntity) {
       jenis = "pkbm_skb";

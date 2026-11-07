@@ -148,13 +148,25 @@ export function classifySchoolType(namaSekolah?: string | null): keyof SchoolTyp
   const s = (namaSekolah || "").trim();
   if (!s) return "kb";
 
-  // 1. Taman Kanak-Kanak (TK) - Prioritas jika terdapat sebutan TK / Taman Kanak-Kanak (termasuk TK ABA)
+  // 1. Satuan PAUD Sejenis (SPS) & Pos PAUD (prioritaskan agar Pos PAUD tidak tertukar ke jenjang lain)
+  if (/\b(SPS|POS\s*PAUD|PAUD\s*TPQ)\b/i.test(s) || /^(POS\s*PAUD|SPS)\b/i.test(s)) return "sps";
+
+  // 2. Sanggar Kegiatan Belajar (SKB)
+  if (/\b(SKB|SANGGAR\s*KEGIATAN|SPNF)\b/i.test(s)) return "skb";
+
+  // 3. Pusat Kegiatan Belajar Masyarakat (PKBM)
+  if (/\b(PKBM|PUSAT\s*KEGIATAN\s*BELAJAR)\b/i.test(s)) return "pkbm";
+
+  // 4. Taman Penitipan Anak (TPA)
+  if (/\b(TPA|TAMAN\s*PENITIPAN|PENITIPAN\s*ANAK)\b/i.test(s)) return "tpa";
+
+  // 5. Taman Kanak-Kanak (TK) - Prioritas jika terdapat sebutan TK / Taman Kanak-Kanak (termasuk TK ABA)
   if (/\b(TK|TAMAN\s*KANAK[- ]*KANAK|TKI)\b/i.test(s)) return "tk";
 
-  // 2. Kelompok Bermain (KB)
+  // 6. Kelompok Bermain (KB)
   if (/\b(KB|KELOMPOK\s*BERMAIN|KBI)\b/i.test(s)) return "kb";
 
-  // 3. Raudhatul Athfal (RA) - Khusus satuan RA / Raudhatul Athfal Kemenag
+  // 7. Raudhatul Athfal (RA) - Khusus satuan RA / Raudhatul Athfal Kemenag
   if (
     /^(RA\b|RAUDHATUL\s*ATHFAL|RAUDLATUL\s*ATHFAL)/i.test(s) ||
     /\b(RAUDHATUL\s*ATHFAL|RAUDLATUL\s*ATHFAL)\b/i.test(s) ||
@@ -162,18 +174,6 @@ export function classifySchoolType(namaSekolah?: string | null): keyof SchoolTyp
   ) {
     return "ra";
   }
-
-  // 4. Satuan PAUD Sejenis (SPS)
-  if (/\b(SPS|POS\s*PAUD|PAUD\s*TPQ)\b/i.test(s)) return "sps";
-
-  // 5. Taman Penitipan Anak (TPA)
-  if (/\b(TPA|TAMAN\s*PENITIPAN|PENITIPAN\s*ANAK)\b/i.test(s)) return "tpa";
-
-  // 6. Sanggar Kegiatan Belajar (SKB)
-  if (/\b(SKB|SANGGAR\s*KEGIATAN)\b/i.test(s)) return "skb";
-
-  // 7. Pusat Kegiatan Belajar Masyarakat (PKBM)
-  if (/\b(PKBM|PUSAT\s*KEGIATAN\s*BELAJAR)\b/i.test(s)) return "pkbm";
 
   if (/\bPAUD\b/i.test(s)) return "kb";
   return "tk";

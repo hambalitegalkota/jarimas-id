@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { JoinKomunitasModal } from "@/components/komunitas/join-komunitas-modal";
 import { WargaOnboardingModal } from "@/components/komunitas/warga-onboarding-modal";
-import { getPosyanduCoverageDisplay } from "@/lib/data-anak-helpers";
+import { getPosyanduCoverageDisplay, resolveJenisInstitusi } from "@/lib/data-anak-helpers";
 import type { KomunitasWithMembership } from "@/types/database";
 import { cn } from "@/lib/utils";
 
@@ -126,11 +126,15 @@ export function KomunitasCard({
               <h3 className="text-sm sm:text-base font-bold text-foreground leading-snug truncate">
                 {formattedTitle}
               </h3>
-              {komunitas.jenis === "satuan_paud" && komunitas.jenis_institusi && (
-                <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-teal-500/10 border border-teal-500/20 text-[10px] font-bold text-teal-700 dark:text-teal-300">
-                  {komunitas.jenis_institusi}
-                </span>
-              )}
+              {komunitas.jenis === "satuan_paud" && (() => {
+                const jBadge = resolveJenisInstitusi(komunitas.nama, komunitas.jenis_institusi);
+                if (!jBadge) return null;
+                return (
+                  <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-teal-500/10 border border-teal-500/20 text-[10px] font-bold text-teal-700 dark:text-teal-300">
+                    {jBadge === "SPS" && (komunitas.nama || "").toLowerCase().includes("pos paud") ? "POS PAUD" : jBadge}
+                  </span>
+                );
+              })()}
               {komunitas.jenis === "pkbm_skb" && komunitas.jenis_institusi && (
                 <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-amber-500/10 border border-amber-500/20 text-[10px] font-bold text-amber-700 dark:text-amber-300">
                   {komunitas.jenis_institusi}

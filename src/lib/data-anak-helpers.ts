@@ -750,6 +750,111 @@ export function cleanBaseSchoolName(str?: string | null): string {
 
 export type SchoolLevel = "ra" | "kb" | "tk" | "pos_paud" | "tpa" | "pkbm" | "skb" | "other";
 
+export type JenisInstitusiPaud = "TK" | "KB" | "RA" | "SPS" | "TPA" | "PKBM" | "SKB";
+
+/**
+ * Menyelesaikan jenis institusi satuan PAUD / PKBM / SKB secara akurat.
+ * Mengutamakan nilai jenis_institusi eksplisit jika valid, dan jika tidak tersedia,
+ * mengidentifikasi dari nama institusi menggunakan boundary/prefix yang tepat.
+ * MENCEGAH kekeliruan pelabelan nama yang mengandung kata "ra" di tengah/akhir
+ * (seperti "Mutiara", "Kraton", "Harapan", "Randugunting", "Sejahtera", "Sakura", dsb).
+ */
+export function resolveJenisInstitusi(
+  nama?: string | null,
+  explicitJenis?: string | null
+): JenisInstitusiPaud | null {
+  const cleanNama = (nama || "").toLowerCase().trim();
+  const j = (explicitJenis || "").toUpperCase().trim();
+
+  // 1. Prioritas utama jika jenis_institusi sudah ditentukan secara valid
+  if (j === "SKB") return "SKB";
+  if (j === "PKBM") return "PKBM";
+  if (j === "TK") return "TK";
+  if (j === "KB") return "KB";
+  if (j === "RA") return "RA";
+  if (j === "TPA") return "TPA";
+  if (j === "SPS") return "SPS";
+
+  // 2. Prioritas identifikasi Satuan PAUD Sejenis (SPS) / Pos PAUD
+  if (
+    /^(pos\s+paud|sps|paud\s+tpq)\b/i.test(cleanNama) ||
+    /\bpos\s+paud\b/i.test(cleanNama) ||
+    /\bsps\b/i.test(cleanNama)
+  ) {
+    return "SPS";
+  }
+
+  // 3. Tempat Penitipan Anak (TPA)
+  if (/^(tpa|taman\s+penitipan)\b/i.test(cleanNama) || /\btpa\b/i.test(cleanNama)) {
+    return "TPA";
+  }
+
+  // 4. Raudhatul Athfal (RA) - hanya jika diawali prefix RA atau kata Raudhatul/Raudlatul Athfal
+  if (
+    /^(ra\b|raudhatul\s*athfal|raudlatul\s*athfal)/i.test(cleanNama) ||
+    /\b(raudhatul\s*athfal|raudlatul\s*athfal)\b/i.test(cleanNama) ||
+    /\bra\s+[a-z]/i.test(cleanNama)
+  ) {
+    return "RA";
+  }
+
+  // 5. Taman Kanak-Kanak (TK)
+  if (
+    /^(tk\b|taman\s*kanak[- ]*kanak|tki\b)/i.test(cleanNama) ||
+    /\b(tk|taman\s*kanak[- ]*kanak|tki)\b/i.test(cleanNama)
+  ) {
+    return "TK";
+  }
+
+  // 6. Kelompok Bermain (KB)
+  if (
+    /^(kb\b|kelompok\s*bermain|kbi\b)/i.test(cleanNama) ||
+    /\b(kb|kelompok\s*bermain|kbi)\b/i.test(cleanNama)
+  ) {
+    return "KB";
+  }
+
+  // 7. PKBM & SKB
+  if (/^(pkbm|pusat\s+kegiatan\s+belajar)\b/i.test(cleanNama) || /\bpkbm\b/i.test(cleanNama)) {
+    return "PKBM";
+  }
+  if (/^(skb|sanggar\s+kegiatan\s+belajar|spnf)\b/i.test(cleanNama) || /\bskb\b/i.test(cleanNama)) {
+    return "SKB";
+  }
+
+  return null;
+}
+
+/**
+ * Format label badge institusi secara elegan dan ramah pengguna.
+ */
+export function formatJenisInstitusiBadgeLabel(
+  nama?: string | null,
+  explicitJenis?: string | null
+): string {
+  const resolved = resolveJenisInstitusi(nama, explicitJenis);
+  const cleanNama = (nama || "").toLowerCase().trim();
+
+  switch (resolved) {
+    case "TK":
+      return "TAMAN KANAK-KANAK (TK)";
+    case "KB":
+      return "KELOMPOK BERMAIN (KB)";
+    case "RA":
+      return "RAUDHATUL ATHFAL (RA)";
+    case "SPS":
+      return cleanNama.includes("pos paud") ? "POS PAUD (SPS)" : "SATUAN PAUD SEJENIS (SPS)";
+    case "TPA":
+      return "TEMPAT PENITIPAN ANAK (TPA)";
+    case "PKBM":
+      return "PKBM (PENDIDIKAN KESETARAAN & MASYARAKAT)";
+    case "SKB":
+      return "SKB (SANGGAR KEGIATAN BELAJAR)";
+    default:
+      return "SATUAN PENDIDIKAN PAUD";
+  }
+}
+
 /**
  * Ekstraksi jenjang/prefix institusi dari nama sekolah/komunitas
  * (RA, KB, TK, Pos PAUD/SPS, TPA, PKBM, SKB)
@@ -758,14 +863,15 @@ export function extractSchoolLevel(str?: string | null): SchoolLevel {
   if (!str) return "other";
   const s = str.trim().toLowerCase();
 
-  if (/^(ra|raudhatul\s+athfal)\b/i.test(s) || /^ra[\s.]+/i.test(s)) {
-    return "ra";
-  }
-  if (/^(pos\s+paud|sps|paud\s+tpq)\b/i.test(s) || /\bpos\s+paud\b/i.test(s)) {
+  // Prioritaskan Pos PAUD & SPS agar tidak tertukar bila nama mengandung token lain
+  if (/^(pos\s+paud|sps|paud\s+tpq)\b/i.test(s) || /\bpos\s+paud\b/i.test(s) || /\bsps\b/i.test(s)) {
     return "pos_paud";
   }
   if (/^(tpa)\b/i.test(s) || /^tpa[\s.]+/i.test(s)) {
     return "tpa";
+  }
+  if (/^(ra|raudhatul\s+athfal|raudlatul\s+athfal)\b/i.test(s) || /^ra[\s.]+/i.test(s)) {
+    return "ra";
   }
   if (/^(kb|kelompok\s+bermain|kbi)\b/i.test(s) || /^kb[\s.]+/i.test(s)) {
     return "kb";

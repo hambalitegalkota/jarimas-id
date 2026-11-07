@@ -24,6 +24,7 @@ import {
   isDataAtsRecord,
   generateChildIdentityKey,
   isDummyDataAnak,
+  resolveJenisInstitusi,
 } from "@/lib/data-anak-helpers";
 import type {
   ProgresPaudItem,
@@ -412,15 +413,10 @@ async function computeAllProgresPaud(supabase: any): Promise<ProgresPaudItem[]> 
     }
 
     // Deteksi tipe institusi dari nama (TK, KB, RA, PKBM, SKB, SPS/Pos PAUD, TPA)
+    const resolved = resolveJenisInstitusi(p.nama);
     let jenisInstitusi = "PAUD";
-    const n = (p.nama || "").toUpperCase();
-    if (n.startsWith("TK ") || n.startsWith("TK-") || n.includes("TAMAN KANAK")) jenisInstitusi = "TK";
-    else if (n.startsWith("KB ") || n.includes("KELOMPOK BERMAIN")) jenisInstitusi = "KB";
-    else if (n.startsWith("RA ") || n.startsWith("RAUDHATUL")) jenisInstitusi = "RA";
-    else if (n.startsWith("PKBM ") || n.includes("PKBM")) jenisInstitusi = "PKBM";
-    else if (n.includes("SKB") || n.includes("SANGGAR KEGIATAN") || n.includes("SPNF")) jenisInstitusi = "SKB";
-    else if (n.startsWith("POS PAUD") || n.includes("SPS")) jenisInstitusi = "SPS / Pos PAUD";
-    else if (n.startsWith("TPA")) jenisInstitusi = "TPA";
+    if (resolved === "SPS") jenisInstitusi = "SPS / Pos PAUD";
+    else if (resolved) jenisInstitusi = resolved;
 
     return {
       komunitas_id: p.id,

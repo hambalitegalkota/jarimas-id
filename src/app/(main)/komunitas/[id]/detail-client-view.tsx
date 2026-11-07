@@ -48,7 +48,12 @@ import {
   Share2,
 } from "lucide-react";
 import { getKomunitasSlug } from "@/lib/community-slugs";
-import { getPosyanduCoverageDisplay } from "@/lib/data-anak-helpers";
+import {
+  getPosyanduCoverageDisplay,
+  isKomunitasLayananPaud,
+  formatJenisInstitusiBadgeLabel,
+  resolveJenisInstitusi,
+} from "@/lib/data-anak-helpers";
 import { JoinKomunitasModal } from "@/components/komunitas/join-komunitas-modal";
 import { WargaOnboardingModal } from "@/components/komunitas/warga-onboarding-modal";
 import { EditInformasiOperasionalModal } from "@/components/komunitas/edit-informasi-operasional-modal";
@@ -65,7 +70,6 @@ import { CardDataAnak } from "@/components/data-anak/card-data-anak";
 import { FormDataAnak } from "@/components/data-anak/form-data-anak";
 import { KomunitasRekapGrafikView } from "@/components/data-anak/komunitas-rekap-grafik-view";
 import { PaudRekapGrafikView } from "@/components/data-anak/paud-rekap-grafik-view";
-import { isKomunitasLayananPaud } from "@/lib/data-anak-helpers";
 import {
   buildKomunitasScopedRekap,
   type KomunitasScopedRekapResult,
@@ -1062,18 +1066,8 @@ export function KomunitasDetailClientView({
                 ? "PKBM & SATUAN PAUD"
                 : isPkbmOrSkb
                 ? "PKBM (PENDIDIKAN KESETARAAN & MASYARAKAT)"
-                : cleanKomNama.includes("tk")
-                ? "TAMAN KANAK-KANAK (TK)"
-                : cleanKomNama.includes("kb")
-                ? "KELOMPOK BERMAIN (KB)"
-                : cleanKomNama.includes("sps")
-                ? "SATUAN PAUD SEJENIS (SPS)"
-                : cleanKomNama.includes("tpa")
-                ? "TEMPAT PENITIPAN ANAK (TPA)"
-                : cleanKomNama.includes("ra")
-                ? "RAUDHATUL ATHFAL (RA)"
                 : isPaud
-                ? "SATUAN PENDIDIKAN PAUD"
+                ? formatJenisInstitusiBadgeLabel(komunitasData.nama, komunitasData.jenis_institusi)
                 : "KOMUNITAS"}
             </span>
 
@@ -1278,7 +1272,11 @@ export function KomunitasDetailClientView({
                   : isPkbmOrSkb
                   ? "Pendidikan Nonformal Kesetaraan & PAUD"
                   : isPaud
-                  ? "Satuan Pendidikan PAUD Terdaftar"
+                  ? cleanKomNama.includes("pos paud")
+                    ? "Satuan PAUD Sejenis (Pos PAUD) Terdaftar"
+                    : cleanKomNama.includes("sps")
+                    ? "Satuan PAUD Sejenis (SPS) Terdaftar"
+                    : "Satuan Pendidikan PAUD Terdaftar"
                   : "Komunitas Terdaftar"}
               </span>
             </div>
