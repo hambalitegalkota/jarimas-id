@@ -103,6 +103,7 @@ import {
   formatPeranDisplay,
   isRoleAdmin,
   isSuperAdmin,
+  toValidUUID,
 } from "@/lib/utils";
 import {
   extractKomunitasMetadata,
@@ -185,7 +186,10 @@ export function KomunitasDetailClientView({
   }, [currentSubtab]);
   const [activeTab, setActiveTab] = useState<string | null>(initialActiveTab);
   const { groupUnreadCounts, markGroupAsRead, openChatWithUser } = useGlobalMessageNotification();
-  const communityUnreadCount = groupUnreadCounts[komunitasData.id] || 0;
+  const communityUnreadCount =
+    groupUnreadCounts[komunitasData.id] ||
+    (toValidUUID(komunitasData.id) ? groupUnreadCounts[toValidUUID(komunitasData.id)] : 0) ||
+    0;
 
   // State untuk data anak & ATS komunitas
   const [dataAnakState, setDataAnakState] = useState<DataAnakItem[]>(dataAnakList);
@@ -255,6 +259,10 @@ export function KomunitasDetailClientView({
   useEffect(() => {
     if (activeMainTab === "percakapan") {
       markGroupAsRead(komunitasData.id);
+      const validId = toValidUUID(komunitasData.id);
+      if (validId && validId !== komunitasData.id) {
+        markGroupAsRead(validId);
+      }
     }
   }, [activeMainTab, komunitasData.id, markGroupAsRead]);
 
@@ -1721,6 +1729,10 @@ export function KomunitasDetailClientView({
                 onClick={() => {
                   setActiveMainTab("percakapan");
                   markGroupAsRead(komunitasData.id);
+                  const validId = toValidUUID(komunitasData.id);
+                  if (validId && validId !== komunitasData.id) {
+                    markGroupAsRead(validId);
+                  }
                 }}
                 className={cn(
                   "flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-2xs sm:text-xs font-semibold transition-all cursor-pointer border flex-1 sm:flex-initial min-w-[fit-content] whitespace-nowrap",

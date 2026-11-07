@@ -9,6 +9,7 @@ import React, {
   useRef,
 } from "react";
 import { createClient } from "@/utils/supabase/client";
+import { toValidUUID } from "@/lib/utils";
 import {
   getUnreadMessagesSummary,
   getUserProfileForChat,
@@ -194,17 +195,25 @@ export function GlobalMessageNotificationProvider({
   const markGroupAsRead = useCallback(
     (groupId: string) => {
       if (!groupId || !currentUserId) return;
+      const validId = toValidUUID(groupId);
       if (typeof window !== "undefined") {
-        localStorage.setItem(`jarimas_group_last_read_${currentUserId}_${groupId}`, new Date().toISOString());
+        const nowIso = new Date().toISOString();
+        localStorage.setItem(`jarimas_group_last_read_${currentUserId}_${groupId}`, nowIso);
+        if (validId && validId !== groupId) {
+          localStorage.setItem(`jarimas_group_last_read_${currentUserId}_${validId}`, nowIso);
+        }
       }
       setGroupUnreadCounts((prev) => {
-        const count = prev[groupId] || 0;
+        const count = prev[groupId] || (validId ? prev[validId] : 0) || 0;
         if (count <= 0) return prev;
         const next = { ...prev };
         delete next[groupId];
+        if (validId) delete next[validId];
         setTotalUnreadGroup((g) => Math.max(0, g - count));
         setTotalUnreadCount((t) => Math.max(0, t - count));
-        setUnreadList((list) => list.filter((item) => !(item.isGroup && item.groupId === groupId)));
+        setUnreadList((list) =>
+          list.filter((item) => !(item.isGroup && (item.groupId === groupId || item.groupId === validId)))
+        );
         return next;
       });
 
@@ -600,10 +609,12 @@ export function GlobalMessageNotificationProvider({
         let room: GrupChatRoom | null = null;
         if (typeof roomOrId === "string") {
           const supabase = createClient();
+          const validId = toValidUUID(roomOrId);
+          const lookupIds = Array.from(new Set([roomOrId, validId].filter(Boolean)));
           const { data: dbKom } = await supabase
             .from("komunitas")
             .select("*")
-            .eq("id", roomOrId)
+            .in("id", lookupIds)
             .maybeSingle();
 
           if (dbKom) {
@@ -783,17 +794,19 @@ export function GlobalMessageNotificationProvider({
         />
       )}
 
-      {/* 2. Floating Unread Dock Pill (HANYA untuk Direct Message / Pesan Pribadi 1-on-1 yang belum dibaca) */}
-      {!activeNotification && totalUnreadDirect > 0 && !isPillDismissed && (
+      {/* 2. Floating Unread Dock Pill (Untuk Direct Message maupun Percakapan Komunitas yang belum dibaca) */}
+      {!activeNotification && totalUnreadCount > 0 && !isPillDismissed && (
         <FloatingUnreadDock
-          unreadCount={totalUnreadDirect}
-          latestUnread={unreadList.find((it) => !it.isGroup) || unreadList[0]}
+          unreadCount={totalUnreadCount}
+          latestUnread={unreadList[0]}
           onClick={() => {
-            const firstDirect = unreadList.find((it) => !it.isGroup) || unreadList[0];
-            if (firstDirect?.partnerUser) {
-              openChatWithUser(firstDirect.partnerUser);
-            } else if (firstDirect?.senderId) {
-              openChatWithUser(firstDirect.senderId);
+            const first = unreadList[0];
+            if (first?.isGroup && first.groupId) {
+              openGroupChat(first.groupId);
+            } else if (first?.partnerUser) {
+              openChatWithUser(first.partnerUser);
+            } else if (first?.senderId) {
+              openChatWithUser(first.senderId);
             } else {
               restoreBannerFromPill();
             }

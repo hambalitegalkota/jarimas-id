@@ -29,6 +29,7 @@ import { ManageGrupMembersModal } from "./manage-grup-members-modal";
 import { deleteGrupKegiatan } from "@/app/actions/grup-kegiatan";
 import { getGroupMessages } from "@/app/actions/pertemanan";
 import { createClient } from "@/utils/supabase/client";
+import { toValidUUID } from "@/lib/utils";
 import { useGlobalMessageNotification } from "@/components/notifications/global-message-notification-provider";
 import {
   RecentConversationItem,
@@ -331,7 +332,7 @@ export function PercakapanHubSection({
             <Users className="h-3.5 w-3.5" />
             <span>Percakapan Grup</span>
             {totalUnreadGroup > 0 ? (
-              <span className="rounded-full bg-secondary text-secondary-foreground px-1.5 py-0.2 text-[10px] font-mono font-bold animate-pulse">
+              <span className="rounded-full bg-rose-500 text-white px-1.5 py-0.2 text-[10px] font-mono font-bold shadow-xs animate-pulse">
                 {totalUnreadGroup}
               </span>
             ) : rooms.length > 0 ? (
@@ -691,12 +692,18 @@ export function PercakapanHubSection({
               {filteredRooms.map((room) => {
                 const isKegiatan = room.is_kegiatan || room.jenis === "kegiatan";
 
+                const roomUnread = (groupUnreadCounts[room.id] || (toValidUUID(room.id) ? groupUnreadCounts[toValidUUID(room.id)] : 0) || 0);
+
                 return (
                   <div
                     key={room.id}
                     onClick={() => {
                       setSelectedGroupRoom(room);
                       markGroupAsRead(room.id);
+                      const validId = toValidUUID(room.id);
+                      if (validId && validId !== room.id) {
+                        markGroupAsRead(validId);
+                      }
                     }}
                     className="flex flex-col justify-between p-3.5 rounded-lg border border-border bg-card hover:border-primary/40 hover:bg-muted/30 transition-all cursor-pointer text-left shadow-2xs group relative"
                   >
@@ -721,9 +728,9 @@ export function PercakapanHubSection({
                             </span>
                           )}
 
-                          {(groupUnreadCounts[room.id] || 0) > 0 && (
+                          {roomUnread > 0 && (
                             <span className="inline-flex items-center gap-1 rounded-md bg-rose-500 text-white px-2 py-0.5 text-2xs font-bold font-mono shadow-xs animate-pulse">
-                              <span>{groupUnreadCounts[room.id]} Pesan Baru</span>
+                              <span>{roomUnread} Pesan Baru</span>
                             </span>
                           )}
                         </div>

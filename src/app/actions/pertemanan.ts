@@ -1426,27 +1426,7 @@ export async function getGroupChatRooms(): Promise<{
         : { data: [] };
     const creatorMap = new Map<string, any>((creatorProfiles || []).map((p: any) => [p.id, p]));
 
-    // 3. Ambil komunitas umum (Posyandu, Warga Kita, PAUD, PKBM)
-    const { data: dbCommunities } = await clientToUse
-      .from("komunitas")
-      .select(`
-        id,
-        nama,
-        jenis,
-        deskripsi,
-        logo_url,
-        kecamatan,
-        kelurahan,
-        rw,
-        rt
-      `)
-      .neq("jenis", "kegiatan")
-      .order("nama", { ascending: true })
-      .limit(60);
-
-    const communityList = [...(dbCommunities || [])];
-
-    // 4. Ambil keanggotaan user saat ini & jumlah anggota
+    // 3. Ambil keanggotaan user saat ini & jumlah anggota
     const { data: memberCounts } = await clientToUse
       .from("anggota_komunitas")
       .select("komunitas_id, user_id, status")
@@ -1460,8 +1440,61 @@ export async function getGroupChatRooms(): Promise<{
         countMap[m.komunitas_id] = (countMap[m.komunitas_id] || 0) + 1;
         if (currentUserId && m.user_id === currentUserId) {
           myMembershipSet.add(m.komunitas_id);
+          const u = toValidUUID(m.komunitas_id);
+          if (u) myMembershipSet.add(u);
         }
       });
+    }
+
+    // 4. Ambil komunitas umum (Posyandu, Warga Kita, PAUD, PKBM)
+    // Pastikan SEMUA komunitas yang diikuti atau dibuat oleh user selalu dimuat tanpa terpotong batas alfabetis
+    const myKomIds = Array.from(myMembershipSet);
+    let communityList: any[] = [];
+
+    if (isSuperAdmin) {
+      const { data: allComms } = await clientToUse
+        .from("komunitas")
+        .select(`
+          id,
+          nama,
+          jenis,
+          deskripsi,
+          logo_url,
+          kecamatan,
+          kelurahan,
+          rw,
+          rt
+        `)
+        .neq("jenis", "kegiatan")
+        .order("nama", { ascending: true })
+        .limit(100);
+      communityList = allComms || [];
+    } else {
+      const query = clientToUse
+        .from("komunitas")
+        .select(`
+          id,
+          nama,
+          jenis,
+          deskripsi,
+          logo_url,
+          kecamatan,
+          kelurahan,
+          rw,
+          rt
+        `)
+        .neq("jenis", "kegiatan");
+
+      if (myKomIds.length > 0) {
+        query.or(`id.in.(${myKomIds.join(",")})${currentUserId ? `,created_by.eq.${currentUserId}` : ""}`);
+      } else if (currentUserId) {
+        query.eq("created_by", currentUserId);
+      } else {
+        query.limit(20);
+      }
+
+      const { data: userComms } = await query.order("nama", { ascending: true });
+      communityList = userComms || [];
     }
 
     // Filter grup kegiatan yang relevan:
@@ -1473,7 +1506,7 @@ export async function getGroupChatRooms(): Promise<{
       return myMembershipSet.has(g.id);
     });
 
-    // Filter komunitas reguler:
+    // Filter komunitas reguler
     let relevantCommunities = communityList;
     if (!isSuperAdmin) {
       relevantCommunities = communityList.filter((c: any) => {
@@ -1752,10 +1785,20 @@ export async function sendGroupMessage(params: {
         .maybeSingle();
 
       if (!membership) {
-        return {
-          success: false,
-          message: "Anda hanya dapat mengirim pesan ke grup komunitas yang telah Anda ikuti.",
-        };
+        // Cek juga apakah pengguna adalah pembuat/pengelola komunitas
+        const { data: createdKom } = await supabase
+          .from("komunitas")
+          .select("id")
+          .in("id", [komunitasId, dbKomunitasId])
+          .eq("created_by", user.id)
+          .maybeSingle();
+
+        if (!createdKom) {
+          return {
+            success: false,
+            message: "Anda hanya dapat mengirim pesan ke grup komunitas yang telah Anda ikuti.",
+          };
+        }
       }
     }
 
@@ -1840,12 +1883,13 @@ export async function getGroupMessageNotificationInfo(
     }
 
     const cUuid = toValidUUID(komunitasId);
+    const lookupIds = Array.from(new Set([komunitasId, cUuid].filter(Boolean)));
 
     // Ambil info grup komunitas / kegiatan
     const { data: kom } = await supabase
       .from("komunitas")
       .select("id, nama, jenis, created_by")
-      .eq("id", cUuid)
+      .in("id", lookupIds)
       .maybeSingle();
 
     if (!kom) {
@@ -1860,7 +1904,7 @@ export async function getGroupMessageNotificationInfo(
       const { data: membership } = await supabase
         .from("anggota_komunitas")
         .select("status")
-        .eq("komunitas_id", cUuid)
+        .in("komunitas_id", lookupIds)
         .eq("user_id", user.id)
         .eq("status", "approved")
         .maybeSingle();
@@ -1880,12 +1924,25 @@ export async function getGroupMessageNotificationInfo(
       }
     }
 
-    // Ambil info profil pengirim
-    const { data: senderProf } = await supabase
-      .from("profiles")
-      .select("nama_lengkap, avatar_url")
-      .eq("id", senderId)
-      .maybeSingle();
+    // Ambil info profil pengirim & perannya di komunitas
+    const [{ data: senderProf }, { data: senderMember }] = await Promise.all([
+      supabase
+        .from("profiles")
+        .select("nama_lengkap, avatar_url")
+        .eq("id", senderId)
+        .maybeSingle(),
+      supabase
+        .from("anggota_komunitas")
+        .select("peran")
+        .in("komunitas_id", lookupIds)
+        .eq("user_id", senderId)
+        .eq("status", "approved")
+        .maybeSingle(),
+    ]);
+
+    const senderRole =
+      senderMember?.peran ||
+      (kom.jenis === "kegiatan" ? "Anggota Kegiatan" : "Warga Komunitas");
 
     return {
       success: true,
@@ -1894,7 +1951,7 @@ export async function getGroupMessageNotificationInfo(
       groupJenis: kom.jenis,
       senderName: senderProf?.nama_lengkap || "Warga Jarimas",
       senderAvatar: senderProf?.avatar_url || null,
-      senderRole: kom.jenis === "kegiatan" ? "Anggota Kegiatan" : "Warga Komunitas",
+      senderRole,
     };
   } catch (err: any) {
     console.error("Error getGroupMessageNotificationInfo:", err);
@@ -2033,21 +2090,43 @@ export async function getUnreadMessagesSummary(
     // 2. Ambil grup/komunitas yang diikuti oleh user saat ini
     const { data: myMemberships } = await supabase
       .from("anggota_komunitas")
-      .select("komunitas_id")
+      .select("komunitas_id, created_at")
       .eq("user_id", currentUserId)
       .eq("status", "approved");
 
     const { data: myCreatedKom } = await supabase
       .from("komunitas")
-      .select("id")
+      .select("id, created_at")
       .eq("created_by", currentUserId);
 
-    const relevantGroupIds = Array.from(
-      new Set([
-        ...(myMemberships || []).map((m: any) => m.komunitas_id),
-        ...(myCreatedKom || []).map((k: any) => k.id),
-      ].filter(Boolean))
-    );
+    const memberJoinMap: Record<string, string> = {};
+    const relevantGroupIdsSet = new Set<string>();
+
+    (myMemberships || []).forEach((m: any) => {
+      if (m.komunitas_id) {
+        relevantGroupIdsSet.add(m.komunitas_id);
+        const u = toValidUUID(m.komunitas_id);
+        if (u) relevantGroupIdsSet.add(u);
+        if (m.created_at) {
+          memberJoinMap[m.komunitas_id] = m.created_at;
+          if (u) memberJoinMap[u] = m.created_at;
+        }
+      }
+    });
+
+    (myCreatedKom || []).forEach((k: any) => {
+      if (k.id) {
+        relevantGroupIdsSet.add(k.id);
+        const u = toValidUUID(k.id);
+        if (u) relevantGroupIdsSet.add(u);
+        if (k.created_at) {
+          memberJoinMap[k.id] = k.created_at;
+          if (u) memberJoinMap[u] = k.created_at;
+        }
+      }
+    });
+
+    const relevantGroupIds = Array.from(relevantGroupIdsSet);
 
     const groupUnreadCounts: Record<string, number> = {};
     const groupUnreadList: IncomingMessageNotificationItem[] = [];
@@ -2080,13 +2159,30 @@ export async function getUnreadMessagesSummary(
       if (groupMsgs) {
         groupMsgs.forEach((gm: any) => {
           const komId = gm.komunitas_id;
-          const lastRead = lastReadGroupMap?.[komId];
-          const isUnread = lastRead
-            ? new Date(gm.created_at).getTime() > new Date(lastRead).getTime()
-            : false; // Jangan anggap riwayat masa lalu sebagai unread notifikasi jika belum pernah dibuka di browser ini
+          const validKomId = toValidUUID(komId);
+          const lastRead =
+            lastReadGroupMap?.[komId] ||
+            (validKomId ? lastReadGroupMap?.[validKomId] : undefined);
+
+          let isUnread = false;
+          if (lastRead) {
+            isUnread = new Date(gm.created_at).getTime() > new Date(lastRead).getTime();
+          } else {
+            // Jika belum ada riwayat baca di browser ini:
+            // Pesan dianggap unread jika dikirim setelah pengguna bergabung,
+            // atau dalam jendela aktif (7 hari terakhir).
+            const joinTimeStr = memberJoinMap[komId] || (validKomId ? memberJoinMap[validKomId] : undefined);
+            const joinTime = joinTimeStr ? new Date(joinTimeStr).getTime() : 0;
+            const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+            const baselineTime = Math.max(joinTime, sevenDaysAgo);
+            isUnread = new Date(gm.created_at).getTime() > baselineTime;
+          }
 
           if (isUnread) {
             groupUnreadCounts[komId] = (groupUnreadCounts[komId] || 0) + 1;
+            if (validKomId && validKomId !== komId) {
+              groupUnreadCounts[validKomId] = (groupUnreadCounts[validKomId] || 0) + 1;
+            }
             groupUnreadList.push({
               id: gm.id,
               senderId: gm.user_id,
@@ -2106,7 +2202,7 @@ export async function getUnreadMessagesSummary(
       }
     }
 
-    const totalUnreadGroup = Object.values(groupUnreadCounts).reduce((a, b) => a + b, 0);
+    const totalUnreadGroup = groupUnreadList.length;
     const totalUnread = directUnreadCount + totalUnreadGroup;
 
     const unreadList = [...directUnreadList, ...groupUnreadList].sort(
