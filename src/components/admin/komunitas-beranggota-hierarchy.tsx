@@ -494,10 +494,10 @@ export function KomunitasBeranggotaHierarchy() {
                               {/* Footer Action Buttons */}
                               <div className="pt-2 border-t border-border flex items-center justify-between gap-2">
                                 <Link
-                                  href={`/komunitas/${item.id}/anggota`}
+                                  href={`/komunitas/${item.id}?subtab=anggota`}
                                   className="text-xs font-bold text-primary hover:underline inline-flex items-center gap-1"
                                 >
-                                  <span>Kelola Anggota</span>
+                                  <span>Anggota Komunitas</span>
                                 </Link>
 
                                 <Link

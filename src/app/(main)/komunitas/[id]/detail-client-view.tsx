@@ -59,6 +59,7 @@ import { RekapLaporanKaderWilayahCard } from "@/components/komunitas/rekap-lapor
 import { KomunitasPercakapanTab } from "@/components/komunitas/komunitas-percakapan-tab";
 import { useGlobalMessageNotification } from "@/components/notifications/global-message-notification-provider";
 import { AjukanPerubahanPeranModal } from "@/components/komunitas/ajukan-perubahan-peran-modal";
+import { PermohonanAnggotaModal } from "@/components/komunitas/permohonan-anggota-modal";
 import { ManageGrupMembersModal } from "@/components/kabar/manage-grup-members-modal";
 import { CardDataAnak } from "@/components/data-anak/card-data-anak";
 import { FormDataAnak } from "@/components/data-anak/form-data-anak";
@@ -74,6 +75,8 @@ import {
   leaveKomunitas,
   resignAdminKomunitas,
   kickMemberByAdmin,
+  approveAnggotaByAdmin,
+  rejectAnggotaByAdmin,
   toggleKomunitasKartuLayananAction,
 } from "@/app/actions/komunitas";
 import { assignOrRevokeKomunitasAdminAction } from "@/app/actions/admin";
@@ -428,6 +431,8 @@ export function KomunitasDetailClientView({
   const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false);
   const [isResignModalOpen, setIsResignModalOpen] = useState(false);
   const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
+  const [isPendingMembersModalOpen, setIsPendingMembersModalOpen] = useState(false);
+  const [processingPendingId, setProcessingPendingId] = useState<string | null>(null);
   const [kickTargetMember, setKickTargetMember] = useState<AnggotaKomunitasDetail | null>(null);
   const [promoteTargetMember, setPromoteTargetMember] = useState<AnggotaKomunitasDetail | null>(null);
   const [isPromoting, setIsPromoting] = useState(false);
@@ -565,7 +570,18 @@ export function KomunitasDetailClientView({
   }, [anggotaState, currentUserId]);
 
   const defaultAdminRole = getDefaultAdminRole(komunitas.jenis, komunitas);
-  const approvedMembers = anggotaState.filter((m) => m.status === "approved");
+  const approvedMembers = useMemo(
+    () => anggotaState.filter((m) => m.status === "approved"),
+    [anggotaState]
+  );
+  const pendingMembers = useMemo(() => {
+    return anggotaState.filter(
+      (m) =>
+        m.status === "pending" ||
+        (Boolean(m.peran_diajukan) &&
+          m.peran_diajukan?.toLowerCase() !== m.peran.toLowerCase())
+    );
+  }, [anggotaState]);
 
   // Filter anggota yang memegang peran Admin resmi pengelola komunitas
   const adminMembers = useMemo(() => {
@@ -738,6 +754,77 @@ export function KomunitasDetailClientView({
       setActionFeedback({ type: "error", message: err.message || "Gagal mengeluarkan anggota." });
     } finally {
       setActionLoading(false);
+    }
+  };
+
+  const handleApprovePendingMember = async (member: AnggotaKomunitasDetail) => {
+    const name = member.profiles?.nama_lengkap || "Pemohon";
+    setProcessingPendingId(member.id);
+    setActionFeedback(null);
+    try {
+      const res = await approveAnggotaByAdmin(member.id);
+      if (res.success) {
+        setAnggotaState((prev) =>
+          prev.map((m) =>
+            m.id === member.id
+              ? {
+                  ...m,
+                  status: "approved",
+                  peran: m.peran_diajukan || m.peran,
+                  peran_diajukan: null,
+                }
+              : m
+          )
+        );
+        setKomunitasData((prev) => ({
+          ...prev,
+          jumlah_anggota: prev.jumlah_anggota + (member.status === "pending" ? 1 : 0),
+        }));
+        setActionFeedback({
+          type: "success",
+          message: `Permohonan pendaftaran / peran ${name} berhasil disetujui!`,
+        });
+      } else {
+        setActionFeedback({
+          type: "error",
+          message: res.message || "Gagal menyetujui permohonan.",
+        });
+      }
+    } catch (err: any) {
+      setActionFeedback({
+        type: "error",
+        message: err.message || "Terjadi kesalahan saat menyetujui permohonan.",
+      });
+    } finally {
+      setProcessingPendingId(null);
+    }
+  };
+
+  const handleRejectPendingMember = async (member: AnggotaKomunitasDetail) => {
+    const name = member.profiles?.nama_lengkap || "Pemohon";
+    setProcessingPendingId(member.id);
+    setActionFeedback(null);
+    try {
+      const res = await rejectAnggotaByAdmin(member.id);
+      if (res.success) {
+        setAnggotaState((prev) => prev.filter((m) => m.id !== member.id));
+        setActionFeedback({
+          type: "success",
+          message: `Permohonan pendaftaran ${name} telah ditolak.`,
+        });
+      } else {
+        setActionFeedback({
+          type: "error",
+          message: res.message || "Gagal menolak permohonan.",
+        });
+      }
+    } catch (err: any) {
+      setActionFeedback({
+        type: "error",
+        message: err.message || "Terjadi kesalahan saat menolak permohonan.",
+      });
+    } finally {
+      setProcessingPendingId(null);
     }
   };
 
@@ -1577,6 +1664,15 @@ export function KomunitasDetailClientView({
                 >
                   {approvedMembers.length}
                 </span>
+
+                {canManageMembers && pendingMembers.length > 0 && (
+                  <span
+                    className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full font-mono text-[10px] font-extrabold bg-amber-500 text-white shadow-2xs animate-pulse shrink-0"
+                    title={`${pendingMembers.length} Permohonan Anggota Baru`}
+                  >
+                    <span>+{pendingMembers.length}</span>
+                  </span>
+                )}
               </button>
 
               {/* Tab 6: Kabar Komunitas */}
@@ -2231,7 +2327,35 @@ export function KomunitasDetailClientView({
                 </p>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
+                {canManageMembers && (
+                  <button
+                    type="button"
+                    onClick={() => setIsPendingMembersModalOpen(true)}
+                    className={cn(
+                      "inline-flex min-h-[34px] h-8 items-center justify-center gap-1.5 rounded-lg px-3 text-xs font-bold shadow-2xs transition-all active:scale-98 cursor-pointer relative",
+                      pendingMembers.length > 0
+                        ? "bg-amber-500 hover:bg-amber-600 text-white ring-2 ring-amber-400/60 shadow-md font-extrabold animate-pulse"
+                        : "border border-border bg-card hover:bg-muted text-foreground"
+                    )}
+                    title={
+                      pendingMembers.length > 0
+                        ? `Ada ${pendingMembers.length} permohonan anggota baru yang menunggu verifikasi`
+                        : "Lihat permohonan anggota baru"
+                    }
+                  >
+                    {pendingMembers.length > 0 ? (
+                      <span className="relative flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-80"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
+                      </span>
+                    ) : (
+                      <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+                    )}
+                    <span>Permohonan Baru ({pendingMembers.length})</span>
+                  </button>
+                )}
+
                 {(isUserAdmin || isSuperOrPusat) && (
                   <button
                     type="button"
@@ -2242,18 +2366,35 @@ export function KomunitasDetailClientView({
                     <span>Tambah Anggota</span>
                   </button>
                 )}
-
-                {canManageMembers && (
-                  <Link
-                    href={`/komunitas/${komunitas.id}/anggota`}
-                    className="inline-flex min-h-[34px] h-8 items-center justify-center gap-1.5 rounded-lg border border-border bg-muted hover:bg-muted/80 text-foreground px-3 text-xs font-bold shadow-2xs transition-all active:scale-98 cursor-pointer"
-                  >
-                    <Settings2 className="h-3.5 w-3.5" />
-                    <span>Kelola Anggota</span>
-                  </Link>
-                )}
               </div>
             </div>
+
+            {/* Banner Khusus: Permohonan Anggota Baru yang Mencolok */}
+            {canManageMembers && pendingMembers.length > 0 && (
+              <div className="rounded-xl border-2 border-amber-500 bg-amber-500/10 p-3.5 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs animate-in fade-in">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-500 text-white font-bold shadow-2xs">
+                    <Clock className="h-5 w-5" />
+                  </div>
+                  <div className="space-y-0.5 min-w-0">
+                    <h4 className="text-xs sm:text-sm font-bold text-amber-950 dark:text-amber-200">
+                      Ada {pendingMembers.length} Permohonan Anggota Baru Menunggu Verifikasi
+                    </h4>
+                    <p className="text-2xs text-amber-900/80 dark:text-amber-300/80">
+                      Calon anggota atau pendidik mengajukan permohonan peran untuk bergabung di komunitas ini.
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsPendingMembersModalOpen(true)}
+                  className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white px-4 text-xs font-bold shadow-xs transition-all active:scale-95 cursor-pointer shrink-0"
+                >
+                  <CheckCircle2 className="h-4 w-4" />
+                  <span>Tinjau &amp; Setujui Sekarang ({pendingMembers.length})</span>
+                </button>
+              </div>
+            )}
 
             {/* Alert Feedback Aksi Anggota / Admin */}
             {actionFeedback && (
@@ -3429,6 +3570,18 @@ export function KomunitasDetailClientView({
           </div>
         </div>
       )}
+
+      {/* 13. Modal Permohonan Anggota Baru (Verifikasi & Persetujuan Admin Langsung) */}
+      <PermohonanAnggotaModal
+        isOpen={isPendingMembersModalOpen}
+        onClose={() => setIsPendingMembersModalOpen(false)}
+        pendingMembers={pendingMembers}
+        onApprove={handleApprovePendingMember}
+        onReject={handleRejectPendingMember}
+        processingId={processingPendingId}
+        komunitasNama={komunitasData.nama}
+        onOpenChat={openChatWithUser}
+      />
     </div>
   );
 }
