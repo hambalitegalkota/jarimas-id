@@ -408,7 +408,7 @@ export function GlobalMessageNotificationProvider({
         );
         authSub = authListener.data.subscription;
 
-        // 3. Supabase Realtime Subscription untuk pesan pribadi & pesan grup
+        // 3. Supabase Realtime Subscription untuk pesan pribadi & pesan grup (hemat egress dengan filter spesifik)
         if (user) {
           channel = supabase
             .channel(`global_message_notifications_${user.id}`)
@@ -418,6 +418,7 @@ export function GlobalMessageNotificationProvider({
                 event: "INSERT",
                 schema: "public",
                 table: "pesan_pribadi",
+                filter: `receiver_id=eq.${user.id}`,
               },
               (payload: any) => {
                 const newMsg = payload.new as PesanPribadi;
@@ -432,26 +433,13 @@ export function GlobalMessageNotificationProvider({
                 event: "UPDATE",
                 schema: "public",
                 table: "pesan_pribadi",
+                filter: `receiver_id=eq.${user.id}`,
               },
               (payload: any) => {
                 const updatedMsg = payload.new as PesanPribadi;
-                if (
-                  updatedMsg &&
-                  (updatedMsg.receiver_id === user.id || updatedMsg.sender_id === user.id)
-                ) {
+                if (updatedMsg && updatedMsg.receiver_id === user.id) {
                   refreshUnreadCount();
                 }
-              }
-            )
-            .on(
-              "postgres_changes",
-              {
-                event: "DELETE",
-                schema: "public",
-                table: "pesan_pribadi",
-              },
-              () => {
-                refreshUnreadCount();
               }
             )
             .on(
@@ -470,52 +458,7 @@ export function GlobalMessageNotificationProvider({
             )
             .subscribe();
 
-          // 4. Supabase Realtime Presence Channel untuk deteksi pengguna yang sedang aktif di web
-          presenceChannel = supabase.channel("online_citizens_presence", {
-            config: {
-              presence: {
-                key: user.id,
-              },
-            },
-          });
-
-          presenceChannel
-            .on("presence", { event: "sync" }, () => {
-              if (!isMounted) return;
-              const state = presenceChannel.presenceState();
-              const keys = Object.keys(state).filter(
-                (k) => k && k !== "undefined" && k !== "null"
-              );
-              setOnlineUserIds(new Set(keys));
-            })
-            .on("presence", { event: "join" }, ({ key }: any) => {
-              if (!isMounted) return;
-              if (key && key !== "undefined" && key !== "null") {
-                setOnlineUserIds((prev) => new Set([...prev, key]));
-              }
-            })
-            .on("presence", { event: "leave" }, ({ key }: any) => {
-              if (!isMounted) return;
-              if (key) {
-                setOnlineUserIds((prev) => {
-                  const next = new Set(prev);
-                  next.delete(key);
-                  return next;
-                });
-              }
-            })
-            .subscribe(async (status: string) => {
-              if (status === "SUBSCRIBED" && isMounted) {
-                try {
-                  await presenceChannel.track({
-                    user_id: user.id,
-                    online_at: new Date().toISOString(),
-                  });
-                } catch (trackErr) {
-                  console.warn("Realtime presence track notice:", trackErr);
-                }
-              }
-            });
+          // Realtime Presence ("online_citizens_presence") dinonaktifkan untuk menghemat Egress & Log Ingestion Supabase
         }
       } catch (err) {
         console.warn("Realtime notification initialization error:", err);
@@ -524,12 +467,12 @@ export function GlobalMessageNotificationProvider({
 
     init();
 
-    // 5. Polling sinkronisasi cadangan saat tab aktif (60 detik)
+    // 5. Polling sinkronisasi cadangan saat tab aktif (5 menit untuk hemat request)
     const interval = setInterval(() => {
       if (typeof document !== "undefined" && !document.hidden && currentUserId) {
         refreshUnreadCount();
       }
-    }, 60000);
+    }, 300000);
 
     // 6. Cross-tab Broadcast Channel synchronization
     let broadcastChannel: BroadcastChannel | null = null;

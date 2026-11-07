@@ -219,39 +219,28 @@ export function PercakapanHubSection({
     }
   }, [urlGroupId, rooms]);
 
-  // 2. Supabase Realtime Listener untuk memperbarui daftar grup saat ada grup/pesan baru
-  useEffect(() => {
-    if (!currentUserId) return;
-    let channel: any = null;
-    try {
-      const supabase = createClient();
-      channel = supabase
-        .channel(`hub_percakapan_sync_${currentUserId}`)
-        .on(
-          "postgres_changes",
-          {
-            event: "INSERT",
-            schema: "public",
-            table: "pesan_grup",
-          },
-          () => {
-            router.refresh();
-          }
-        )
-        .on(
-          "postgres_changes",
-          {
-            event: "*",
-            schema: "public",
-            table: "anggota_komunitas",
-            filter: `user_id=eq.${currentUserId}`,
-          },
-          () => {
-            router.refresh();
-          }
-        )
-        .subscribe();
-    } catch (err) {
+    // 2. Supabase Realtime Listener untuk memperbarui keanggotaan grup secara efisien
+    useEffect(() => {
+      if (!currentUserId) return;
+      let channel: any = null;
+      try {
+        const supabase = createClient();
+        channel = supabase
+          .channel(`hub_percakapan_sync_${currentUserId}`)
+          .on(
+            "postgres_changes",
+            {
+              event: "*",
+              schema: "public",
+              table: "anggota_komunitas",
+              filter: `user_id=eq.${currentUserId}`,
+            },
+            () => {
+              router.refresh();
+            }
+          )
+          .subscribe();
+      } catch (err) {
       console.warn("Realtime sync percakapan hub notice:", err);
     }
 

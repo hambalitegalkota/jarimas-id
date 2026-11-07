@@ -177,7 +177,7 @@ export function ChatDrawerModal({
       textareaRef.current?.focus();
     }, 200);
 
-    // 1. Supabase Realtime Subscription untuk percakapan 1-on-1 ini
+    // 1. Supabase Realtime Subscription untuk percakapan 1-on-1 ini (terfilter untuk hemat egress)
     let channel: any = null;
     try {
       const supabase = createClient();
@@ -189,16 +189,13 @@ export function ChatDrawerModal({
             event: "INSERT",
             schema: "public",
             table: "pesan_pribadi",
+            filter: `receiver_id=eq.${currentUserId}`,
           },
           (payload: any) => {
             if (!isMounted) return;
             const newMsg = payload.new as PesanPribadi;
 
-            const isRelevant =
-              (newMsg.sender_id === currentUserId && newMsg.receiver_id === targetUser.id) ||
-              (newMsg.sender_id === targetUser.id && newMsg.receiver_id === currentUserId);
-
-            if (isRelevant) {
+            if (newMsg && newMsg.sender_id === targetUser.id) {
               setMessages((prev) => {
                 if (
                   prev.some(
@@ -222,7 +219,7 @@ export function ChatDrawerModal({
       console.warn("Realtime not available, falling back to polling:", realtimeErr);
     }
 
-    // 2. Polling cadangan (30 detik)
+    // 2. Polling cadangan (60 detik, andalkan Realtime filter)
     const interval = setInterval(async () => {
       if (!targetUser || (typeof document !== "undefined" && document.hidden)) return;
       try {
