@@ -13,6 +13,7 @@ export async function invalidateRekapDataAtsCache(): Promise<void> {
 import { KOTA_TEGAL_DATA, findOrGenerateKomunitasSeed } from "@/lib/constants/tegal-data";
 import {
   isDataAtsRecord,
+  isDummyDataAnak,
   normalizeWilayah,
   parseAtsDetails,
   normalizeKeinginanSekolah,
@@ -400,43 +401,53 @@ function createEmptyRekapWilayahAts(id: string, nama: string, tingkat: "kota" | 
 async function fetchAndComputeRekapDataAts(): Promise<RekapDataAtsResult> {
   const supabase = createStatelessClient();
 
-    // 1. Ambil data_anak dari database
-    const { data: dbChildren, error: fetchErr } = await supabase
-      .from("data_anak")
-      .select(`
-        id,
-        nama_lengkap,
-        tanggal_lahir,
-        jenis_kelamin,
-        is_sekolah,
-        nama_sekolah,
-        alasan_sekolah,
-        komunitas_id,
-        created_at
-      `)
-      .or("is_sekolah.eq.false,is_sekolah.is.null,nama_sekolah.ilike.%ATS%,alasan_sekolah.ilike.%KEINGINAN%")
-      .limit(1000);
+    // 1. Ambil data_anak dari database secara menyeluruh dengan paginasi
+    const allDbChildren: any[] = [];
+    const pageSize = 1000;
+    let page = 0;
+    let hasMore = true;
 
-    if (fetchErr) {
-      console.warn("Rekap ATS fetch warning:", fetchErr.message);
+    while (hasMore) {
+      const { data: chunk, error: fetchErr } = await supabase
+        .from("data_anak")
+        .select(`
+          id,
+          nama_lengkap,
+          tanggal_lahir,
+          jenis_kelamin,
+          is_sekolah,
+          nama_sekolah,
+          alasan_sekolah,
+          komunitas_id,
+          created_at
+        `)
+        .or("is_sekolah.eq.false,is_sekolah.is.null,nama_sekolah.ilike.%ATS%,alasan_sekolah.ilike.%KEINGINAN%")
+        .neq("komunitas_id", "79c0e0c1-d8a9-41b8-8e0a-f9a5e581e703")
+        .range(page * pageSize, (page + 1) * pageSize - 1);
+
+      if (fetchErr) {
+        console.warn("Rekap ATS fetch warning:", fetchErr.message);
+        break;
+      }
+
+      if (!chunk || chunk.length === 0) {
+        hasMore = false;
+      } else {
+        allDbChildren.push(...chunk);
+        if (chunk.length < pageSize) {
+          hasMore = false;
+        } else {
+          page++;
+        }
+      }
+
+      if (page > 15) {
+        hasMore = false;
+      }
     }
 
-    // Filter ketat: Hanya data yang merupakan data ATS riil dan valid sesuai ketentuan Keturen
-    const validLiveAtsRecords = (dbChildren || []).filter((c) => {
-      if (!isDataAtsRecord(c)) return false;
-      const parsed = parseAtsDetails(c.alasan_sekolah);
-      if (!isValidKejambonRtRw(parsed.kelurahan, parsed.rw, parsed.rt)) return false;
-      if (!isValidBandungRtRw(parsed.kelurahan, parsed.rw, parsed.rt)) return false;
-      if (!isValidKalinyamatWetanRtRw(parsed.kelurahan, parsed.rw, parsed.rt)) return false;
-      if (!isValidKeturenRtRw(parsed.kelurahan, parsed.rw, parsed.rt)) return false;
-      if (!isValidDebongKulonRtRw(parsed.kelurahan, parsed.rw, parsed.rt)) return false;
-      if (!isValidDebongLorRtRw(parsed.kelurahan, parsed.rw, parsed.rt)) return false;
-      if (!isValidTunonRtRw(parsed.kelurahan, parsed.rw, parsed.rt)) return false;
-      if (!isValidPekaumanRtRw(parsed.kelurahan, parsed.rw, parsed.rt)) return false;
-      if (!isValidPanggungRtRw(parsed.kelurahan, parsed.rw, parsed.rt)) return false;
-      if (!isValidTegalsariRtRw(parsed.kelurahan, parsed.rw, parsed.rt)) return false;
-      return true;
-    });
+    // Filter ketat: Hanya data yang merupakan data ATS riil dan bukan data dummy
+    const validLiveAtsRecords = allDbChildren.filter((c) => isDataAtsRecord(c) && !isDummyDataAnak(c));
     const totalLiveRecords = validLiveAtsRecords.length;
 
     // 2. Inisialisasi seluruh 27 Kelurahan resmi Kota Tegal (0 data awal)
@@ -763,7 +774,16 @@ export async function getRekapDataAtsAction(): Promise<{
   message?: string;
 }> {
   try {
-    const data = await getCachedRekapDataAts();
+    let data: RekapDataAtsResult;
+    try {
+      data = await getCachedRekapDataAts();
+    } catch (cacheErr: any) {
+      if (cacheErr?.message?.includes("incrementalCache")) {
+        data = await fetchAndComputeRekapDataAts();
+      } else {
+        throw cacheErr;
+      }
+    }
     return {
       success: true,
       data,
@@ -836,13 +856,14 @@ export async function getDaftarNamaAtsRekapAction(params: {
         created_at
       `)
       .or("is_sekolah.eq.false,is_sekolah.is.null,nama_sekolah.ilike.%ATS%,alasan_sekolah.ilike.%KEINGINAN%")
+      .neq("komunitas_id", "79c0e0c1-d8a9-41b8-8e0a-f9a5e581e703")
       .order("created_at", { ascending: false });
 
     if (targetKel) {
       query = query.ilike("alasan_sekolah", `%${targetKel}%`);
     }
 
-    const { data: dbChildren, error: fetchErr } = await query.limit(500);
+    const { data: dbChildren, error: fetchErr } = await query.limit(2500);
 
     if (fetchErr) {
       return {
