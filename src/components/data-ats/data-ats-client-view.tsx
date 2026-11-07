@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
   GraduationCap,
@@ -55,6 +55,7 @@ interface DataAtsClientViewProps {
   canAccessDaftarNama?: boolean;
   currentUserId?: string | null;
   isSuperAdmin?: boolean;
+  onAtsListChange?: (items: DataAtsItem[]) => void;
 }
 
 export function DataAtsClientView({
@@ -65,6 +66,7 @@ export function DataAtsClientView({
   canAccessDaftarNama: initialCanAccessDaftarNama,
   currentUserId = null,
   isSuperAdmin = false,
+  onAtsListChange,
 }: DataAtsClientViewProps) {
   const router = useRouter();
   const [atsList, setAtsList] = useState<DataAtsItem[]>(initialAts);
@@ -212,6 +214,15 @@ export function DataAtsClientView({
       return [...newlyAddedLocally, ...(initialAts || [])];
     });
   }, [initialAts]);
+
+  const isFirstRender = useRef(true);
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    onAtsListChange?.(atsList);
+  }, [atsList, onAtsListChange]);
 
   const handleAddItem = (newItem?: DataAtsItem) => {
     setIsAddModalOpen(false);

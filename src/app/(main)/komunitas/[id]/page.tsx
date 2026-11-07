@@ -32,10 +32,16 @@ import { KabarCard } from "@/components/kabar/kabar-card";
 import { CreateKabarModal } from "@/components/kabar/create-kabar-modal";
 import { KomunitasDetailClientView } from "./detail-client-view";
 import { PrintButton } from "@/components/ui/print-button";
-import { getKomunitasFeatureCards, isTheOrbitSixtyCommunity } from "@/lib/admin-helpers";
+import {
+  getKomunitasFeatureCards,
+  isTheOrbitSixtyCommunity,
+  extractKomunitasMetadata,
+} from "@/lib/admin-helpers";
 import { isKomunitasLayananPaud } from "@/lib/data-anak-helpers";
 import { buildKomunitasScopedRekap } from "@/lib/komunitas-rekap-calculator";
 import { checkCanManageKomunitasAdminsAction } from "@/app/actions/admin";
+import { getRekapDataAtsAction } from "@/app/actions/rekap-data-ats";
+import { checkUserRekapAdminAccess } from "@/app/actions/rekap-data-anak";
 
 interface KomunitasDetailPageProps {
   params: Promise<{
@@ -43,6 +49,7 @@ interface KomunitasDetailPageProps {
   }>;
   searchParams: Promise<{
     subtab?: string;
+    tab?: string;
   }>;
 }
 
@@ -51,8 +58,8 @@ export default async function KomunitasDetailPage({
   searchParams,
 }: KomunitasDetailPageProps) {
   const { id } = await params;
-  const { subtab } = await searchParams;
-  const currentSubtab = subtab || null;
+  const { subtab, tab } = await searchParams;
+  const currentSubtab = subtab || tab || null;
 
   const {
     data: komunitas,
@@ -70,6 +77,12 @@ export default async function KomunitasDetailPage({
   const { canShowDataAnak, canShowDataAts } = getKomunitasFeatureCards(komunitas);
   const isPaud = isKomunitasLayananPaud(komunitas, komunitas.nama, komunitas.jenis);
   const hasRootAccess = Boolean(isSuperOrAdminPusat || isSuperAdmin || isAdminPusat);
+
+  const meta = extractKomunitasMetadata(komunitas);
+  const isWargaKita = komunitas.jenis === "warga_kita";
+  const isRt = isWargaKita && Boolean(komunitas.rt && komunitas.rt.trim() !== "" && komunitas.rt !== "semua" && komunitas.rt !== "00");
+  const isRekapOnlyTier = isWargaKita && !isRt;
+  const needsAtsRekap = canShowDataAts && isRekapOnlyTier;
 
   // Optimasi Performa: Hanya ambil rekapitulasi data anak se-Kota Tegal jika komunitas adalah
   // Komunitas Warga Tingkat Kota atau Tingkat Kecamatan (tanpa RW/RT).
@@ -89,6 +102,8 @@ export default async function KomunitasDetailPage({
     { data: allKabar },
     rekapDataRes,
     canManageAdminsRes,
+    rekapDataAtsRes,
+    rekapAtsAuthAccess,
   ] = await Promise.all([
     getAnggotaKomunitas(id),
     canShowDataAnak
@@ -111,10 +126,20 @@ export default async function KomunitasDetailPage({
           isReadOnly: true,
           userRole: "Pengunjung",
         }),
-    canShowDataAts ? getDataAtsByKomunitas(id) : Promise.resolve({ data: [] }),
+    canShowDataAts && !isRekapOnlyTier
+      ? getDataAtsByKomunitas(id)
+      : Promise.resolve({
+          success: true,
+          data: [],
+          canValidate: false,
+          canManage: false,
+          canAccessDaftarNama: false,
+        }),
     getKabarFeed({ filterVisibilitas: "semua", limit: 20 }),
     needsCityRekap ? getRekapDataAnakUsiaDiniAction() : Promise.resolve({ data: null }),
     currentUserId ? checkCanManageKomunitasAdminsAction(id) : Promise.resolve(false),
+    needsAtsRekap ? getRekapDataAtsAction() : Promise.resolve({ data: null }),
+    needsAtsRekap ? checkUserRekapAdminAccess() : Promise.resolve({ canAccess: false, userPeran: undefined }),
   ]);
 
   const canAssignAdmin = hasRootAccess ? true : Boolean(canManageAdminsRes);
@@ -177,6 +202,12 @@ export default async function KomunitasDetailPage({
         kabarKomunitas={kabarKomunitas}
         dataAnakList={dataAnakList || []}
         dataAtsList={dataAtsList || []}
+        canValidateDataAts={hasRootAccess ? true : Boolean(dataAtsRes?.canValidate)}
+        canManageDataAts={hasRootAccess ? true : Boolean(dataAtsRes?.canManage)}
+        canAccessDaftarNamaAts={hasRootAccess ? true : Boolean(dataAtsRes?.canAccessDaftarNama)}
+        rekapDataAts={rekapDataAtsRes?.data || null}
+        canAccessRekapNamesAts={hasRootAccess ? true : Boolean(rekapAtsAuthAccess?.canAccess)}
+        rekapAtsUserPeran={rekapAtsAuthAccess?.userPeran}
         dataAnakStats={dataAnakRes?.stats}
         canValidateDataAnak={hasRootAccess ? true : (dataAnakRes?.canValidate ?? false)}
         canCreateDataAnak={hasRootAccess ? true : (dataAnakRes?.canCreate ?? false)}

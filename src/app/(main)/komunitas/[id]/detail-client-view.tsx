@@ -70,6 +70,9 @@ import { CardDataAnak } from "@/components/data-anak/card-data-anak";
 import { FormDataAnak } from "@/components/data-anak/form-data-anak";
 import { KomunitasRekapGrafikView } from "@/components/data-anak/komunitas-rekap-grafik-view";
 import { PaudRekapGrafikView } from "@/components/data-anak/paud-rekap-grafik-view";
+import { DataAtsClientView } from "@/components/data-ats/data-ats-client-view";
+import { RekapDataAtsClientView } from "@/components/data-ats/rekap-data-ats-client-view";
+import type { RekapDataAtsResult } from "@/app/actions/rekap-data-ats";
 import {
   buildKomunitasScopedRekap,
   type KomunitasScopedRekapResult,
@@ -135,6 +138,12 @@ interface KomunitasDetailClientViewProps {
   userRoleDataAnak?: string;
   scopedRekapResult?: KomunitasScopedRekapResult | null;
   canAssignAdmin?: boolean;
+  canValidateDataAts?: boolean;
+  canManageDataAts?: boolean;
+  canAccessDaftarNamaAts?: boolean;
+  rekapDataAts?: RekapDataAtsResult | null;
+  canAccessRekapNamesAts?: boolean;
+  rekapAtsUserPeran?: string;
 }
 
 export function KomunitasDetailClientView({
@@ -159,6 +168,12 @@ export function KomunitasDetailClientView({
   userRoleDataAnak,
   scopedRekapResult,
   canAssignAdmin = false,
+  canValidateDataAts,
+  canManageDataAts,
+  canAccessDaftarNamaAts,
+  rekapDataAts,
+  canAccessRekapNamesAts,
+  rekapAtsUserPeran,
 }: KomunitasDetailClientViewProps) {
   const [komunitasData, setKomunitasData] = useState(komunitas);
 
@@ -946,7 +961,7 @@ export function KomunitasDetailClientView({
       ? [
           {
             id: "data_ats" as const,
-            href: `/komunitas/${komunitas.id}/ats`,
+            href: `/komunitas/${komunitas.id}?subtab=ats`,
             title: isRekapOnlyTier
               ? "Rekapitulasi Data ATS (Anak Tidak Sekolah)"
               : "Data ATS (Anak Tidak Sekolah)",
@@ -2217,70 +2232,58 @@ export function KomunitasDetailClientView({
         {/* TAB 3: DATA ATS (ANAK TIDAK SEKOLAH) */}
         {activeMainTab === "ats" && (
           <div className="space-y-4 animate-in fade-in duration-150 pb-8">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-secondary/10 border border-secondary/25 p-4 rounded-xl shadow-2xs">
-              <div className="flex items-start gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-secondary text-secondary-foreground shadow-2xs">
-                  <GraduationCap className="h-5 w-5" />
-                </div>
-                <div className="space-y-1">
-                  <h3 className="text-sm sm:text-base font-bold text-foreground">
-                    Penanganan Kasus Anak Tidak Sekolah (ATS)
-                  </h3>
-                  <p className="text-xs text-muted-foreground leading-relaxed max-w-2xl">
-                    {isPkbmOrSkb
-                      ? "PKBM dan SKB berperan sebagai garda terdepan pengentasan ATS di Kota Tegal melalui Program Kesetaraan Paket A (SD), Paket B (SMP), dan Paket C (SMA)."
-                      : "Pemantauan dan pendataan anak usia sekolah (7–18 tahun) yang putus sekolah atau belum pernah bersekolah untuk diintervensi kembali ke satuan pendidikan formal maupun nonformal."}
-                  </p>
-                </div>
-              </div>
-
-              <Link
-                href={`/komunitas/${komunitas.id}/ats`}
-                className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-secondary hover:bg-secondary-hover text-secondary-foreground text-xs font-bold shadow-xs transition-all shrink-0 cursor-pointer"
-              >
-                <span>Buka Manajemen ATS</span>
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-            </div>
-
-            {/* 3 Kartu Metrik ATS */}
-            <div className="grid grid-cols-3 gap-2 sm:gap-3">
-              <div className="p-2.5 sm:p-4 rounded-xl border border-border bg-card shadow-2xs space-y-0.5 sm:space-y-1 text-center">
-                <span className="text-[10px] sm:text-2xs font-bold text-muted-foreground uppercase tracking-wider block truncate">
-                  TOTAL KASUS ATS
-                </span>
-                <span className="text-xl sm:text-3xl font-black font-mono text-foreground block">
-                  {dataAtsState.length}
-                </span>
-                <span className="text-[10px] sm:text-2xs font-semibold text-muted-foreground block truncate">
-                  Kasus Terdata
-                </span>
-              </div>
-
-              <div className="p-2.5 sm:p-4 rounded-xl border border-emerald-500/25 bg-emerald-500/10 shadow-2xs space-y-0.5 sm:space-y-1 text-center">
-                <span className="text-[10px] sm:text-2xs font-bold text-emerald-800 dark:text-emerald-300 uppercase tracking-wider block truncate">
-                  LAYANAN KESETARAAN
-                </span>
-                <span className="text-xs sm:text-sm font-black font-mono text-emerald-700 dark:text-emerald-300 py-1 block truncate">
-                  Paket A, B &amp; C
-                </span>
-                <span className="text-[10px] sm:text-2xs font-semibold text-emerald-800 dark:text-emerald-300 block truncate">
-                  SD / SMP / SMA
-                </span>
-              </div>
-
-              <div className="p-2.5 sm:p-4 rounded-xl border border-secondary/30 bg-secondary/15 shadow-2xs space-y-0.5 sm:space-y-1 text-center">
-                <span className="text-[10px] sm:text-2xs font-bold text-amber-900 dark:text-amber-200 uppercase tracking-wider block truncate">
-                  INTERVENSI AKTIF
-                </span>
-                <span className="text-xs sm:text-sm font-black font-mono text-secondary py-1 block truncate">
-                  Pemberdayaan
-                </span>
-                <span className="text-[10px] sm:text-2xs font-semibold text-amber-900 dark:text-amber-200 block truncate">
-                  Pamong &amp; Tutor
-                </span>
-              </div>
-            </div>
+            {isRekapOnlyTier && rekapDataAts ? (
+              <RekapDataAtsClientView
+                initialData={rekapDataAts}
+                canAccessDaftarNamaAts={Boolean(isSuperOrPusat || canAccessRekapNamesAts)}
+                userPeran={
+                  isActualSuperAdmin
+                    ? "Super Admin"
+                    : isActualAdminPusat
+                    ? "Admin Pusat"
+                    : rekapAtsUserPeran || userPeran
+                }
+                initialTingkat={
+                  meta.hasRw || meta.hasKel
+                    ? "kelurahan"
+                    : meta.rawKec && meta.rawKec !== "Kota Tegal"
+                    ? "kecamatan"
+                    : "kota"
+                }
+                initialKecamatan={meta.rawKec || "Tegal Timur"}
+                initialKelurahan={meta.rawKel || "Kejambon"}
+                initialRw={meta.rawRw || undefined}
+                customScopeTitle={komunitasData.nama}
+                hideTingkatSelector={false}
+              />
+            ) : (
+              <DataAtsClientView
+                komunitas={komunitasData}
+                initialAts={dataAtsState}
+                canValidate={
+                  isSuperOrPusat || (isPkbmOrSkb && (canManageDataAts || isUserAdmin))
+                    ? true
+                    : Boolean(canValidateDataAts)
+                }
+                canManage={
+                  isSuperOrPusat || (isPkbmOrSkb && (canManageDataAts || isUserAdmin))
+                    ? true
+                    : Boolean(canManageDataAts)
+                }
+                canAccessDaftarNama={
+                  Boolean(
+                    isSuperOrPusat ||
+                    canAccessDaftarNamaAts ||
+                    canManageDataAts ||
+                    isPkbmOrSkb ||
+                    (isApprovedMember && (isWargaKita || isPkbmOrSkb ? isUserAdmin : isKader || isUserAdmin))
+                  )
+                }
+                currentUserId={currentUserId}
+                isSuperAdmin={isSuperOrPusat}
+                onAtsListChange={setDataAtsState}
+              />
+            )}
           </div>
         )}
 
