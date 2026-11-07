@@ -74,6 +74,13 @@ export interface AtsGenderBreakdown {
   total: number;
 }
 
+export interface AtsVerifikasiBreakdown {
+  terverifikasi: number;     // Sudah Verifikasi Lapangan (status_approval === "approved")
+  belumVerifikasi: number;   // Belum Verifikasi / Menunggu Validasi (status_approval !== "approved")
+  persenTerverifikasi: number;
+  persenBelumVerifikasi: number;
+}
+
 export interface AtsJenjangAsalBreakdown {
   belumSekolah: number; // Belum Pernah Bersekolah
   sdPutus: number;      // SD / MI / Paket A Putus Sekolah / DO
@@ -131,6 +138,7 @@ export interface WilayahRekapAtsItem {
   kategori: AtsCategoryBreakdown;
   keinginan: AtsKeinginanBreakdown;
   gender: AtsGenderBreakdown;
+  verifikasi: AtsVerifikasiBreakdown;
   jenjangAsal: AtsJenjangAsalBreakdown;
   kelasPerJenjang: AtsKelasDetailItem[];
   usia: AtsAgeGroupBreakdown;
@@ -335,6 +343,7 @@ function createEmptyRekapWilayahAts(id: string, nama: string, tingkat: "kota" | 
     kategori: { putusSekolah: 0, lulusTidakLanjut: 0, belumPernahSekolah: 0 },
     keinginan: { masihAda: 0, tidakAda: 0 },
     gender: { lakiLaki: 0, perempuan: 0, total: 0 },
+    verifikasi: { terverifikasi: 0, belumVerifikasi: 0, persenTerverifikasi: 0, persenBelumVerifikasi: 0 },
     jenjangAsal: { belumSekolah: 0, sdPutus: 0, sdLulus: 0, smpPutus: 0, smpLulus: 0, smaPutus: 0 },
     kelasPerJenjang: DAFTAR_15_KELAS_ATS.map((k) => ({
       key: k.key,
@@ -419,6 +428,7 @@ async function fetchAndComputeRekapDataAts(): Promise<RekapDataAtsResult> {
           nama_sekolah,
           alasan_sekolah,
           komunitas_id,
+          status_approval,
           created_at
         `)
         .or("is_sekolah.eq.false,is_sekolah.is.null,nama_sekolah.ilike.%ATS%,alasan_sekolah.ilike.%KEINGINAN%")
@@ -501,6 +511,14 @@ async function fetchAndComputeRekapDataAts(): Promise<RekapDataAtsResult> {
           }
           targetKelItem.gender.total += 1;
 
+          // Verifikasi Lapangan
+          const isApproved = String(child.status_approval || "").toLowerCase() === "approved";
+          if (isApproved) {
+            targetKelItem.verifikasi.terverifikasi += 1;
+          } else {
+            targetKelItem.verifikasi.belumVerifikasi += 1;
+          }
+
           // Keinginan
           if (isIngin) {
             targetKelItem.keinginan.masihAda += 1;
@@ -559,6 +577,14 @@ async function fetchAndComputeRekapDataAts(): Promise<RekapDataAtsResult> {
 
     // Hitung persentase & urutkan alasan kelurahan
     kelurahanMap.forEach((kelItem) => {
+      kelItem.verifikasi.persenTerverifikasi =
+        kelItem.totalAts > 0
+          ? Math.round((kelItem.verifikasi.terverifikasi / kelItem.totalAts) * 100)
+          : 0;
+      kelItem.verifikasi.persenBelumVerifikasi =
+        kelItem.totalAts > 0
+          ? Math.round((kelItem.verifikasi.belumVerifikasi / kelItem.totalAts) * 100)
+          : 0;
       kelItem.kelasPerJenjang.forEach((k) => {
         k.persentase = kelItem.totalAts > 0 ? Math.round((k.jumlah / kelItem.totalAts) * 100) : 0;
       });
@@ -594,6 +620,10 @@ async function fetchAndComputeRekapDataAts(): Promise<RekapDataAtsResult> {
         kecItem.gender.lakiLaki += kel.gender.lakiLaki;
         kecItem.gender.perempuan += kel.gender.perempuan;
         kecItem.gender.total += kel.gender.total;
+
+        // Verifikasi
+        kecItem.verifikasi.terverifikasi += kel.verifikasi.terverifikasi;
+        kecItem.verifikasi.belumVerifikasi += kel.verifikasi.belumVerifikasi;
 
         // Jenjang Asal
         kecItem.jenjangAsal.belumSekolah += kel.jenjangAsal.belumSekolah;
@@ -642,6 +672,8 @@ async function fetchAndComputeRekapDataAts(): Promise<RekapDataAtsResult> {
 
       kecItem.persenInginSekolah = kecItem.totalAts > 0 ? Math.round((kecItem.keinginan.masihAda / kecItem.totalAts) * 100) : 0;
       kecItem.persenPutusSekolah = kecItem.totalAts > 0 ? Math.round((kecItem.kategori.putusSekolah / kecItem.totalAts) * 100) : 0;
+      kecItem.verifikasi.persenTerverifikasi = kecItem.totalAts > 0 ? Math.round((kecItem.verifikasi.terverifikasi / kecItem.totalAts) * 100) : 0;
+      kecItem.verifikasi.persenBelumVerifikasi = kecItem.totalAts > 0 ? Math.round((kecItem.verifikasi.belumVerifikasi / kecItem.totalAts) * 100) : 0;
 
       kecItem.kelasPerJenjang.forEach((k) => {
         k.persentase = kecItem.totalAts > 0 ? Math.round((k.jumlah / kecItem.totalAts) * 100) : 0;
@@ -679,6 +711,9 @@ async function fetchAndComputeRekapDataAts(): Promise<RekapDataAtsResult> {
       kotaItem.gender.lakiLaki += kec.gender.lakiLaki;
       kotaItem.gender.perempuan += kec.gender.perempuan;
       kotaItem.gender.total += kec.gender.total;
+
+      kotaItem.verifikasi.terverifikasi += kec.verifikasi.terverifikasi;
+      kotaItem.verifikasi.belumVerifikasi += kec.verifikasi.belumVerifikasi;
 
       kotaItem.jenjangAsal.belumSekolah += kec.jenjangAsal.belumSekolah;
       kotaItem.jenjangAsal.sdPutus += kec.jenjangAsal.sdPutus;
@@ -721,6 +756,8 @@ async function fetchAndComputeRekapDataAts(): Promise<RekapDataAtsResult> {
 
     kotaItem.persenInginSekolah = kotaItem.totalAts > 0 ? Math.round((kotaItem.keinginan.masihAda / kotaItem.totalAts) * 100) : 0;
     kotaItem.persenPutusSekolah = kotaItem.totalAts > 0 ? Math.round((kotaItem.kategori.putusSekolah / kotaItem.totalAts) * 100) : 0;
+    kotaItem.verifikasi.persenTerverifikasi = kotaItem.totalAts > 0 ? Math.round((kotaItem.verifikasi.terverifikasi / kotaItem.totalAts) * 100) : 0;
+    kotaItem.verifikasi.persenBelumVerifikasi = kotaItem.totalAts > 0 ? Math.round((kotaItem.verifikasi.belumVerifikasi / kotaItem.totalAts) * 100) : 0;
 
     kotaItem.kelasPerJenjang.forEach((k) => {
       k.persentase = kotaItem.totalAts > 0 ? Math.round((k.jumlah / kotaItem.totalAts) * 100) : 0;

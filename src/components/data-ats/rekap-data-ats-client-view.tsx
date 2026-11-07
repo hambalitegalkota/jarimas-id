@@ -19,6 +19,7 @@ import {
   Printer,
   HeartHandshake,
   CheckCircle2,
+  Clock,
   HelpCircle,
   Compass,
   ArrowRight,
@@ -57,7 +58,8 @@ export type TableAtsSortColumn =
   | "keinginan"
   | "lakiLaki"
   | "perempuan"
-  | "prioritas";
+  | "terverifikasi"
+  | "belumVerifikasi";
 
 export type SortDirection = "asc" | "desc";
 
@@ -72,7 +74,8 @@ const TABLE_ATS_SORT_LABELS: Record<TableAtsSortColumn, string> = {
   keinginan: "Ingin Sekolah Kembali",
   lakiLaki: "Laki-laki",
   perempuan: "Perempuan",
-  prioritas: "Prioritas Intervensi",
+  terverifikasi: "Sudah Verifikasi",
+  belumVerifikasi: "Belum Verifikasi",
 };
 
 // Helper untuk menghasilkan path SVG Donut Chart
@@ -150,7 +153,8 @@ export function RekapDataAtsClientView({
   const [selectedKelurahan, setSelectedKelurahan] = useState<string>(initialKelurahan || "Kejambon");
   const [activeTabSection, setActiveTabSection] = useState<"semua" | "kategori" | "jenjang_usia" | "tabel">("semua");
   const [tableSearch, setTableSearch] = useState<string>("");
-  const [tablePriorityFilter, setTablePriorityFilter] = useState<"semua" | "tinggi" | "sedang" | "terkendali">("semua");
+  const [tableVerifikasiFilter, setTableVerifikasiFilter] = useState<"semua" | "perlu" | "selesai">("semua");
+  const [tableJenjangView, setTableJenjangView] = useState<"kelurahan" | "kecamatan">("kelurahan");
   const [sortColumn, setSortColumn] = useState<TableAtsSortColumn>("default");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
 
@@ -303,32 +307,59 @@ export function RekapDataAtsClientView({
     return match || initialData.kelurahanList[0] || initialData.kota;
   }, [selectedTingkat, selectedKecamatan, selectedKelurahan, initialData]);
 
-  // Statistik Prioritas Kelurahan untuk Quick Filter di Tabel
-  const priorityCounts = useMemo(() => {
-    const list = initialData.kelurahanList;
-    let tinggi = 0;
-    let sedang = 0;
-    let terkendali = 0;
-    list.forEach((k) => {
-      const tot = k.totalAts ?? 0;
-      if (tot >= 25) tinggi++;
-      else if (tot >= 15) sedang++;
-      else terkendali++;
-    });
-    return { tinggi, sedang, terkendali, total: list.length };
-  }, [initialData.kelurahanList]);
+  // Helper untuk membaca nilai kolom sorting
+  const getColValue = (item: WilayahRekapAtsItem, col: TableAtsSortColumn): number | string => {
+    switch (col) {
+      case "nama":
+        return item.nama || "";
+      case "kecamatan":
+        return item.kecamatan || "";
+      case "totalAts":
+        return item.totalAts ?? 0;
+      case "putusSekolah":
+        return item.kategori?.putusSekolah ?? 0;
+      case "lulusTidakLanjut":
+        return item.kategori?.lulusTidakLanjut ?? 0;
+      case "belumPernahSekolah":
+        return item.kategori?.belumPernahSekolah ?? 0;
+      case "keinginan":
+        return item.keinginan?.masihAda ?? 0;
+      case "lakiLaki":
+        return item.gender?.lakiLaki ?? 0;
+      case "perempuan":
+        return item.gender?.perempuan ?? 0;
+      case "terverifikasi":
+        return item.verifikasi?.terverifikasi ?? 0;
+      case "belumVerifikasi":
+        return item.verifikasi?.belumVerifikasi ?? 0;
+      default:
+        return 0;
+    }
+  };
 
-  // Data Tabel Komparatif yang difilter dan diurutkan
+  // Statistik Status Verifikasi untuk Quick Filter di Tabel
+  const verifikasiCounts = useMemo(() => {
+    const list = tableJenjangView === "kelurahan" ? initialData.kelurahanList : initialData.kecamatanList;
+    let perlu = 0;
+    let selesai = 0;
+    list.forEach((k) => {
+      const belum = k.verifikasi?.belumVerifikasi ?? 0;
+      if (belum > 0) perlu++;
+      else selesai++;
+    });
+    return { perlu, selesai, total: list.length };
+  }, [tableJenjangView, initialData.kelurahanList, initialData.kecamatanList]);
+
+  // Data Tabel Tingkat Kelurahan (27 Kelurahan)
   const filteredTableRows = useMemo(() => {
     const q = tableSearch.toLowerCase().trim();
     let rows = initialData.kelurahanList;
 
-    if (tablePriorityFilter !== "semua") {
+    if (tableVerifikasiFilter !== "semua") {
       rows = rows.filter((k) => {
-        const tot = k.totalAts ?? 0;
-        if (tablePriorityFilter === "tinggi") return tot >= 25;
-        if (tablePriorityFilter === "sedang") return tot >= 15 && tot < 25;
-        if (tablePriorityFilter === "terkendali") return tot < 15;
+        const belum = k.verifikasi?.belumVerifikasi ?? 0;
+        if (tableVerifikasiFilter === "perlu") return belum > 0;
+        if (tableVerifikasiFilter === "selesai") return belum === 0;
         return true;
       });
     }
@@ -344,32 +375,6 @@ export function RekapDataAtsClientView({
     if (sortColumn === "default") {
       return rows;
     }
-
-    const getColValue = (item: WilayahRekapAtsItem, col: TableAtsSortColumn): number | string => {
-      switch (col) {
-        case "nama":
-          return item.nama || "";
-        case "kecamatan":
-          return item.kecamatan || "";
-        case "totalAts":
-        case "prioritas":
-          return item.totalAts ?? 0;
-        case "putusSekolah":
-          return item.kategori?.putusSekolah ?? 0;
-        case "lulusTidakLanjut":
-          return item.kategori?.lulusTidakLanjut ?? 0;
-        case "belumPernahSekolah":
-          return item.kategori?.belumPernahSekolah ?? 0;
-        case "keinginan":
-          return item.keinginan?.masihAda ?? 0;
-        case "lakiLaki":
-          return item.gender?.lakiLaki ?? 0;
-        case "perempuan":
-          return item.gender?.perempuan ?? 0;
-        default:
-          return 0;
-      }
-    };
 
     return [...rows].sort((a, b) => {
       const valA = getColValue(a, sortColumn);
@@ -389,7 +394,95 @@ export function RekapDataAtsClientView({
 
       return sortDirection === "asc" ? cmp : -cmp;
     });
-  }, [initialData.kelurahanList, tableSearch, sortColumn, sortDirection]);
+  }, [initialData.kelurahanList, tableSearch, tableVerifikasiFilter, sortColumn, sortDirection]);
+
+  // Data Tabel Tingkat Kecamatan (4 Kecamatan)
+  const filteredKecamatanRows = useMemo(() => {
+    const q = tableSearch.toLowerCase().trim();
+    let rows = initialData.kecamatanList;
+
+    if (tableVerifikasiFilter !== "semua") {
+      rows = rows.filter((k) => {
+        const belum = k.verifikasi?.belumVerifikasi ?? 0;
+        if (tableVerifikasiFilter === "perlu") return belum > 0;
+        if (tableVerifikasiFilter === "selesai") return belum === 0;
+        return true;
+      });
+    }
+
+    if (q) {
+      rows = rows.filter((k) => k.nama.toLowerCase().includes(q));
+    }
+
+    if (sortColumn === "default") {
+      return rows;
+    }
+
+    return [...rows].sort((a, b) => {
+      const valA = getColValue(a, sortColumn);
+      const valB = getColValue(b, sortColumn);
+
+      let cmp = 0;
+      if (typeof valA === "string" && typeof valB === "string") {
+        cmp = valA.localeCompare(valB, "id", { sensitivity: "base" });
+      } else {
+        cmp = (valA as number) - (valB as number);
+      }
+
+      if (cmp === 0) {
+        cmp = a.nama.localeCompare(b.nama, "id");
+      }
+
+      return sortDirection === "asc" ? cmp : -cmp;
+    });
+  }, [initialData.kecamatanList, tableSearch, tableVerifikasiFilter, sortColumn, sortDirection]);
+
+  // Baris yang aktif ditampilkan di tabel sesuai pilihan jenjang
+  const displayedRows = tableJenjangView === "kelurahan" ? filteredTableRows : filteredKecamatanRows;
+
+  // Rekap Total Berjenjang untuk Footer Tabel
+  const tableTotals = useMemo(() => {
+    let totalAts = 0;
+    let putusSekolah = 0;
+    let lulusTidakLanjut = 0;
+    let belumPernahSekolah = 0;
+    let inginKembali = 0;
+    let lakiLaki = 0;
+    let perempuan = 0;
+    let terverifikasi = 0;
+    let belumVerifikasi = 0;
+
+    displayedRows.forEach((r) => {
+      totalAts += r.totalAts ?? 0;
+      putusSekolah += r.kategori?.putusSekolah ?? 0;
+      lulusTidakLanjut += r.kategori?.lulusTidakLanjut ?? 0;
+      belumPernahSekolah += r.kategori?.belumPernahSekolah ?? 0;
+      inginKembali += r.keinginan?.masihAda ?? 0;
+      lakiLaki += r.gender?.lakiLaki ?? 0;
+      perempuan += r.gender?.perempuan ?? 0;
+      terverifikasi += r.verifikasi?.terverifikasi ?? 0;
+      belumVerifikasi += r.verifikasi?.belumVerifikasi ?? 0;
+    });
+
+    const persenIngin = totalAts > 0 ? Math.round((inginKembali / totalAts) * 100) : 0;
+    const persenTerverifikasi = totalAts > 0 ? Math.round((terverifikasi / totalAts) * 100) : 0;
+    const persenBelumVerifikasi = totalAts > 0 ? Math.round((belumVerifikasi / totalAts) * 100) : 0;
+
+    return {
+      totalAts,
+      putusSekolah,
+      lulusTidakLanjut,
+      belumPernahSekolah,
+      inginKembali,
+      persenIngin,
+      lakiLaki,
+      perempuan,
+      terverifikasi,
+      belumVerifikasi,
+      persenTerverifikasi,
+      persenBelumVerifikasi,
+    };
+  }, [displayedRows]);
 
   // Data Donut Chart Kategori ATS (DO, LTM, BPB)
   const kategoriDonutData = useMemo(() => {
@@ -801,16 +894,59 @@ export function RekapDataAtsClientView({
         </div>
       </div>
 
-      {/* Ketentuan Privasi & Tingkat Data Rekapitulasi ATS */}
-      <div className="rounded-lg border border-secondary/30 bg-secondary/10 p-4 sm:p-5 flex items-start gap-3 shadow-xs print-hide-on-daftar-nama print-card-item break-inside-avoid print:p-3">
-        <ShieldCheck className="h-5 w-5 text-secondary shrink-0 mt-0.5" />
-        <div className="space-y-1">
-          <h4 className="text-sm sm:text-base font-bold text-amber-900 dark:text-amber-200">
-            Data Rekapitulasi Wilayah &amp; Perlindungan Privasi ATS
-          </h4>
-          <p className="text-xs sm:text-sm text-foreground leading-relaxed">
-            Data yang ditampilkan pada halaman ini adalah <strong>Data Rekapitulasi Hasil Pendataan ATS</strong>. Sesuai ketentuan perlindungan privasi data, rincian identitas lengkap anak tidak sekolah hanya dapat diakses di <strong>Tingkat KELURAHAN</strong> oleh <strong>Admin di Komunitas Warga Kita</strong>, <strong>Admin PAUD</strong>, <strong>Admin Posyandu</strong> dan <strong>Admin PKBM dan SKB</strong>.
-          </p>
+      {/* 3.5 REKAP TOTAL VERIFIKASI LAPANGAN ATS */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 print-cards-grid print-card-item break-inside-avoid">
+        {/* Card 1: Total Data ATS */}
+        <div className="rounded-xl border border-border bg-card p-4 sm:p-5 flex flex-col justify-between shadow-xs">
+          <div className="text-2xs sm:text-xs font-bold uppercase tracking-wider text-muted-foreground text-center">
+            Total Data ATS
+          </div>
+          <div className="my-2 text-center">
+            <span className="text-3xl sm:text-4xl font-black font-mono text-foreground">
+              {currentWilayahData.totalAts}
+            </span>
+          </div>
+          <div className="text-2xs sm:text-xs font-semibold text-muted-foreground text-center">
+            Anak Tidak Sekolah Terdata
+          </div>
+        </div>
+
+        {/* Card 2: Terverifikasi Lapangan */}
+        <div className="rounded-xl border-2 border-emerald-500/50 bg-emerald-50/50 dark:bg-emerald-950/20 p-4 sm:p-5 flex flex-col justify-between shadow-xs">
+          <div className="text-2xs sm:text-xs font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300 text-center flex items-center justify-center gap-1.5">
+            <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+            <span>Terverifikasi</span>
+          </div>
+          <div className="my-2 text-center">
+            <span className="text-3xl sm:text-4xl font-black font-mono text-emerald-600 dark:text-emerald-400">
+              {currentWilayahData.verifikasi?.terverifikasi ?? 0}
+            </span>
+            <span className="text-xs sm:text-sm font-bold text-emerald-700/80 dark:text-emerald-300/80 ml-2 font-mono">
+              ({currentWilayahData.verifikasi?.persenTerverifikasi ?? 0}%)
+            </span>
+          </div>
+          <div className="text-2xs sm:text-xs font-semibold text-emerald-700 dark:text-emerald-300 text-center">
+            Tervalidasi Kader / Admin
+          </div>
+        </div>
+
+        {/* Card 3: Menunggu Validasi / Belum Verifikasi */}
+        <div className="rounded-xl border-2 border-amber-500/50 bg-amber-50/50 dark:bg-amber-950/20 p-4 sm:p-5 flex flex-col justify-between shadow-xs">
+          <div className="text-2xs sm:text-xs font-bold uppercase tracking-wider text-amber-800 dark:text-amber-300 text-center flex items-center justify-center gap-1.5">
+            <Clock className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0" />
+            <span>Menunggu Validasi</span>
+          </div>
+          <div className="my-2 text-center">
+            <span className="text-3xl sm:text-4xl font-black font-mono text-amber-600 dark:text-amber-400">
+              {currentWilayahData.verifikasi?.belumVerifikasi ?? 0}
+            </span>
+            <span className="text-xs sm:text-sm font-bold text-amber-700/80 dark:text-amber-300/80 ml-2 font-mono">
+              ({currentWilayahData.verifikasi?.persenBelumVerifikasi ?? 0}%)
+            </span>
+          </div>
+          <div className="text-2xs sm:text-xs font-semibold text-amber-700 dark:text-amber-300 text-center">
+            Perlu Verifikasi Lapangan
+          </div>
         </div>
       </div>
 
@@ -2198,7 +2334,7 @@ export function RekapDataAtsClientView({
 
 
       {/* ========================================================= */}
-      {/* 8. TABEL KOMPARATIF BERJENJANG (27 KELURAHAN SE-KOTA TEGAL)*/}
+      {/* 8. TABEL KOMPARATIF BERJENJANG                            */}
       {/* ========================================================= */}
       {(activeTabSection === "semua" || activeTabSection === "tabel") && (
         <div className="space-y-4 pt-4 print-hide-on-daftar-nama">
@@ -2209,16 +2345,44 @@ export function RekapDataAtsClientView({
               </div>
               <div className="min-w-0">
                 <h2 className="text-base sm:text-lg font-black text-foreground truncate">
-                  Tabel Rekapitulasi Berjenjang ATS per Kelurahan
+                  Tabel Rekapitulasi Berjenjang ATS {tableJenjangView === "kelurahan" ? "per Kelurahan" : "per Kecamatan"}
                 </h2>
                 <p className="text-xs text-muted-foreground font-medium truncate">
-                  Rincian komparatif jumlah ATS, kategori DO/LTM/BPB, dan kesiapan sekolah kembali se-Kota Tegal
+                  Rincian komparatif jumlah ATS, status verifikasi lapangan, dan kesiapan sekolah kembali se-Kota Tegal
                 </p>
               </div>
             </div>
 
-            {/* Table Search Input & Sort Badge */}
+            {/* Controls: Toggle Jenjang, Table Search Input & Sort Badge */}
             <div className="flex flex-wrap items-center gap-2 print:hidden">
+              {/* Toggle Jenjang: Kelurahan vs Kecamatan */}
+              <div className="inline-flex rounded-lg border border-border bg-muted p-0.5 text-xs font-bold">
+                <button
+                  type="button"
+                  onClick={() => setTableJenjangView("kelurahan")}
+                  className={cn(
+                    "px-3 py-1 rounded-md transition-all cursor-pointer",
+                    tableJenjangView === "kelurahan"
+                      ? "bg-card text-foreground shadow-xs font-black"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  Per Kelurahan (27)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTableJenjangView("kecamatan")}
+                  className={cn(
+                    "px-3 py-1 rounded-md transition-all cursor-pointer",
+                    tableJenjangView === "kecamatan"
+                      ? "bg-card text-foreground shadow-xs font-black"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  Per Kecamatan (4)
+                </button>
+              </div>
+
               {sortColumn !== "default" && (
                 <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 border border-primary/20 text-xs font-bold text-primary shadow-2xs animate-in fade-in">
                   <span>
@@ -2249,7 +2413,7 @@ export function RekapDataAtsClientView({
                   type="text"
                   value={tableSearch}
                   onChange={(e) => setTableSearch(e.target.value)}
-                  placeholder="Cari Kelurahan / Kecamatan..."
+                  placeholder={tableJenjangView === "kelurahan" ? "Cari Kelurahan / Kecamatan..." : "Cari Kecamatan..."}
                   className="w-full bg-background border border-border rounded-lg pl-9 pr-8 py-1.5 text-xs font-semibold text-foreground focus:outline-hidden focus:border-primary shadow-2xs"
                 />
                 {tableSearch && (
@@ -2266,59 +2430,47 @@ export function RekapDataAtsClientView({
             </div>
           </div>
 
-          {/* Quick Priority Filter Pills */}
+          {/* Quick Verifikasi Filter Pills */}
           <div className="flex items-center gap-2 overflow-x-auto pb-1 text-2xs font-bold print:hidden">
             <span className="text-muted-foreground uppercase flex items-center gap-1 shrink-0 font-bold">
               <Filter className="h-3 w-3" />
-              <span>Prioritas:</span>
+              <span>Verifikasi:</span>
             </span>
             <button
               type="button"
-              onClick={() => setTablePriorityFilter("semua")}
+              onClick={() => setTableVerifikasiFilter("semua")}
               className={cn(
                 "px-2.5 py-1 rounded-lg transition-all cursor-pointer shrink-0 border",
-                tablePriorityFilter === "semua"
+                tableVerifikasiFilter === "semua"
                   ? "bg-primary text-primary-foreground border-primary shadow-2xs"
                   : "bg-card text-foreground border-border hover:bg-muted"
               )}
             >
-              Semua ({priorityCounts.total})
+              Semua ({verifikasiCounts.total})
             </button>
             <button
               type="button"
-              onClick={() => setTablePriorityFilter("tinggi")}
+              onClick={() => setTableVerifikasiFilter("perlu")}
               className={cn(
                 "px-2.5 py-1 rounded-lg transition-all cursor-pointer shrink-0 border",
-                tablePriorityFilter === "tinggi"
-                  ? "bg-rose-600 text-white border-rose-600 shadow-2xs"
-                  : "bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300 border-rose-200 dark:border-rose-800 hover:bg-rose-100"
-              )}
-            >
-              Tinggi (≥25): {priorityCounts.tinggi}
-            </button>
-            <button
-              type="button"
-              onClick={() => setTablePriorityFilter("sedang")}
-              className={cn(
-                "px-2.5 py-1 rounded-lg transition-all cursor-pointer shrink-0 border",
-                tablePriorityFilter === "sedang"
+                tableVerifikasiFilter === "perlu"
                   ? "bg-amber-600 text-white border-amber-600 shadow-2xs"
                   : "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 border-amber-200 dark:border-amber-800 hover:bg-amber-100"
               )}
             >
-              Sedang (15–24): {priorityCounts.sedang}
+              Perlu Verifikasi ({verifikasiCounts.perlu})
             </button>
             <button
               type="button"
-              onClick={() => setTablePriorityFilter("terkendali")}
+              onClick={() => setTableVerifikasiFilter("selesai")}
               className={cn(
                 "px-2.5 py-1 rounded-lg transition-all cursor-pointer shrink-0 border",
-                tablePriorityFilter === "terkendali"
+                tableVerifikasiFilter === "selesai"
                   ? "bg-emerald-600 text-white border-emerald-600 shadow-2xs"
                   : "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100"
               )}
             >
-              Terkendali (&lt;15): {priorityCounts.terkendali}
+              Sudah Selesai ({verifikasiCounts.selesai})
             </button>
           </div>
 
@@ -2347,8 +2499,8 @@ export function RekapDataAtsClientView({
                         )}
                       </div>
                     </th>
-                    {renderSortTh("nama", "Kelurahan", "left", "px-2.5")}
-                    {renderSortTh("kecamatan", "Kecamatan", "left", "px-2")}
+                    {renderSortTh("nama", tableJenjangView === "kelurahan" ? "Kelurahan" : "Kecamatan", "left", "px-2.5")}
+                    {tableJenjangView === "kelurahan" && renderSortTh("kecamatan", "Kecamatan", "left", "px-2")}
                     {renderSortTh("totalAts", "Total", "center", "px-2")}
                     {renderSortTh("putusSekolah", "DO", "center", "px-1 sm:px-1.5")}
                     {renderSortTh("lulusTidakLanjut", "LTM", "center", "px-1 sm:px-1.5")}
@@ -2356,26 +2508,35 @@ export function RekapDataAtsClientView({
                     {renderSortTh("keinginan", "Ingin Kembali", "center", "px-2")}
                     {renderSortTh("lakiLaki", "L", "center", "px-1")}
                     {renderSortTh("perempuan", "P", "center", "px-1")}
-                    {renderSortTh("prioritas", "Prioritas", "center", "px-2")}
+                    {renderSortTh("terverifikasi", "Sudah Verifikasi", "center", "px-2")}
+                    {renderSortTh("belumVerifikasi", "Belum Verifikasi", "center", "px-2")}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
-                  {filteredTableRows.length === 0 ? (
+                  {displayedRows.length === 0 ? (
                     <tr>
-                      <td colSpan={11} className="py-8 text-center text-xs text-slate-500 dark:text-slate-400">
-                        Tidak ada kelurahan yang cocok dengan filter pencarian &amp; prioritas.
+                      <td colSpan={tableJenjangView === "kelurahan" ? 12 : 11} className="py-8 text-center text-xs text-slate-500 dark:text-slate-400">
+                        Tidak ada wilayah yang cocok dengan filter pencarian &amp; status verifikasi.
                       </td>
                     </tr>
                   ) : (
-                    filteredTableRows.map((kel, idx) => {
-                      const isSelected = selectedKelurahan === kel.nama && selectedTingkat === "kelurahan";
+                    displayedRows.map((rowItem, idx) => {
+                      const isSelected =
+                        tableJenjangView === "kelurahan"
+                          ? selectedKelurahan === rowItem.nama && selectedTingkat === "kelurahan"
+                          : selectedKecamatan === rowItem.nama && selectedTingkat === "kecamatan";
                       return (
                         <tr
-                          key={kel.nama}
+                          key={rowItem.nama}
                           onClick={() => {
-                            setSelectedTingkat("kelurahan");
-                            if (kel.kecamatan) setSelectedKecamatan(kel.kecamatan);
-                            setSelectedKelurahan(kel.nama);
+                            if (tableJenjangView === "kelurahan") {
+                              setSelectedTingkat("kelurahan");
+                              if (rowItem.kecamatan) setSelectedKecamatan(rowItem.kecamatan);
+                              setSelectedKelurahan(rowItem.nama);
+                            } else {
+                              setSelectedTingkat("kecamatan");
+                              setSelectedKecamatan(rowItem.nama);
+                            }
                           }}
                           className={cn(
                             "transition-colors cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50",
@@ -2383,57 +2544,61 @@ export function RekapDataAtsClientView({
                               ? "bg-blue-50/90 dark:bg-blue-950/40 border-l-4 border-l-blue-600 font-bold"
                               : ""
                           )}
-                          title={`Klik untuk memfokuskan grafik ke Kelurahan ${kel.nama}`}
+                          title={`Klik untuk memfokuskan grafik ke ${tableJenjangView === "kelurahan" ? "Kelurahan" : "Kecamatan"} ${rowItem.nama}`}
                         >
                           <td className="py-2.5 px-2 text-center font-mono text-2xs sm:text-xs text-slate-500">{idx + 1}</td>
                           <td className={cn("py-2.5 px-2.5 text-2xs sm:text-xs", sortColumn === "nama" && "bg-blue-50/40 dark:bg-blue-950/20")}>
-                            <strong className="text-slate-900 dark:text-slate-100">{kel.nama}</strong>
+                            <strong className="text-slate-900 dark:text-slate-100">{rowItem.nama}</strong>
                           </td>
-                          <td className={cn("py-2.5 px-2 text-2xs sm:text-xs text-slate-600 dark:text-slate-400", sortColumn === "kecamatan" && "bg-blue-50/40 dark:bg-blue-950/20 font-bold")}>
-                            {kel.kecamatan}
-                          </td>
+                          {tableJenjangView === "kelurahan" && (
+                            <td className={cn("py-2.5 px-2 text-2xs sm:text-xs text-slate-600 dark:text-slate-400", sortColumn === "kecamatan" && "bg-blue-50/40 dark:bg-blue-950/20 font-bold")}>
+                              {rowItem.kecamatan}
+                            </td>
+                          )}
                           <td className={cn("py-2.5 px-2 text-center font-mono font-bold text-slate-900 dark:text-slate-100 text-2xs sm:text-xs", sortColumn === "totalAts" && "bg-blue-50/60 dark:bg-blue-950/30 text-blue-950 dark:text-blue-100 font-black")}>
                             <span className="px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-800">
-                              {kel.totalAts}
+                              {rowItem.totalAts}
                             </span>
                           </td>
                           <td className={cn("py-2.5 px-1 sm:px-1.5 text-center font-mono text-rose-600 font-bold text-2xs sm:text-xs", sortColumn === "putusSekolah" && "bg-rose-50/60 dark:bg-rose-950/30 font-black ring-1 ring-inset ring-rose-300")}>
-                            {kel.kategori.putusSekolah}
+                            {rowItem.kategori.putusSekolah}
                           </td>
                           <td className={cn("py-2.5 px-1 sm:px-1.5 text-center font-mono text-amber-600 font-bold text-2xs sm:text-xs", sortColumn === "lulusTidakLanjut" && "bg-amber-50/60 dark:bg-amber-950/30 font-black ring-1 ring-inset ring-amber-300")}>
-                            {kel.kategori.lulusTidakLanjut}
+                            {rowItem.kategori.lulusTidakLanjut}
                           </td>
                           <td className={cn("py-2.5 px-1 sm:px-1.5 text-center font-mono text-blue-600 font-bold text-2xs sm:text-xs", sortColumn === "belumPernahSekolah" && "bg-blue-50/60 dark:bg-blue-950/30 font-black ring-1 ring-inset ring-blue-300")}>
-                            {kel.kategori.belumPernahSekolah}
+                            {rowItem.kategori.belumPernahSekolah}
                           </td>
                           <td className={cn("py-2.5 px-2 text-center", sortColumn === "keinginan" && "bg-emerald-50/60 dark:bg-emerald-950/30 ring-1 ring-inset ring-emerald-300")}>
                             <span className="inline-flex items-center gap-1 font-mono font-bold text-emerald-700 dark:text-emerald-400 text-2xs sm:text-xs">
-                              <span>{kel.keinginan.masihAda}</span>
+                              <span>{rowItem.keinginan.masihAda}</span>
                               <span className="text-[10px] text-emerald-600 dark:text-emerald-500 font-sans">
-                                ({kel.persenInginSekolah}%)
+                                ({rowItem.persenInginSekolah}%)
                               </span>
                             </span>
                           </td>
                           <td className={cn("py-2.5 px-1 text-center font-mono text-sky-700 dark:text-sky-300 text-2xs sm:text-xs", sortColumn === "lakiLaki" && "bg-sky-50/60 dark:bg-sky-950/30 font-bold")}>
-                            {kel.gender.lakiLaki}
+                            {rowItem.gender.lakiLaki}
                           </td>
                           <td className={cn("py-2.5 px-1 text-center font-mono text-rose-700 dark:text-rose-300 text-2xs sm:text-xs", sortColumn === "perempuan" && "bg-rose-50/60 dark:bg-rose-950/30 font-bold")}>
-                            {kel.gender.perempuan}
+                            {rowItem.gender.perempuan}
                           </td>
-                          <td className={cn("py-2.5 px-2 text-center", sortColumn === "prioritas" && "bg-blue-50/60 dark:bg-blue-950/30")}>
-                            <span
-                              className={cn(
-                                "inline-block px-2 py-0.5 rounded-full font-black text-[10px] font-mono uppercase border",
-                                kel.totalAts === 0
-                                  ? "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-slate-200 dark:border-slate-700"
-                                  : kel.totalAts >= 25
-                                  ? "bg-rose-50 text-rose-700 dark:bg-rose-950 dark:text-rose-300 border-rose-200 dark:border-rose-800"
-                                  : kel.totalAts >= 15
-                                  ? "bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300 border-amber-200 dark:border-amber-800"
-                                  : "bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800"
-                              )}
-                            >
-                              {kel.totalAts === 0 ? "0 ATS" : kel.totalAts >= 25 ? "Tinggi" : kel.totalAts >= 15 ? "Sedang" : "Terkendali"}
+                          <td className={cn("py-2.5 px-2 text-center", sortColumn === "terverifikasi" && "bg-emerald-50/60 dark:bg-emerald-950/30")}>
+                            <span className="inline-flex items-center gap-1 font-mono font-bold text-emerald-700 dark:text-emerald-400 text-2xs sm:text-xs">
+                              <CheckCircle2 className="h-3 w-3 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                              <span>{rowItem.verifikasi?.terverifikasi ?? 0}</span>
+                              <span className="text-[10px] text-emerald-600/80 dark:text-emerald-500/80 font-sans">
+                                ({rowItem.verifikasi?.persenTerverifikasi ?? 0}%)
+                              </span>
+                            </span>
+                          </td>
+                          <td className={cn("py-2.5 px-2 text-center", sortColumn === "belumVerifikasi" && "bg-amber-50/60 dark:bg-amber-950/30")}>
+                            <span className="inline-flex items-center gap-1 font-mono font-bold text-amber-700 dark:text-amber-400 text-2xs sm:text-xs">
+                              <Clock className="h-3 w-3 text-amber-600 dark:text-amber-400 shrink-0" />
+                              <span>{rowItem.verifikasi?.belumVerifikasi ?? 0}</span>
+                              <span className="text-[10px] text-amber-600/80 dark:text-amber-500/80 font-sans">
+                                ({rowItem.verifikasi?.persenBelumVerifikasi ?? 0}%)
+                              </span>
                             </span>
                           </td>
                         </tr>
@@ -2441,17 +2606,61 @@ export function RekapDataAtsClientView({
                     })
                   )}
                 </tbody>
+                <tfoot className="sticky bottom-0 z-10 bg-muted/95 backdrop-blur-xs font-black border-t-2 border-border shadow-md">
+                  <tr className="text-foreground">
+                    <td colSpan={tableJenjangView === "kelurahan" ? 3 : 2} className="py-3 px-3 text-left font-black uppercase text-2xs sm:text-xs">
+                      TOTAL {tableJenjangView === "kelurahan" ? `REKAP (${filteredTableRows.length} KELURAHAN)` : `REKAP (${filteredKecamatanRows.length} KECAMATAN)`}
+                    </td>
+                    <td className="py-3 px-2 text-center font-mono text-2xs sm:text-xs">
+                      <span className="px-2 py-0.5 rounded-lg bg-primary/20 text-primary font-black">
+                        {tableTotals.totalAts}
+                      </span>
+                    </td>
+                    <td className="py-3 px-1 sm:px-1.5 text-center font-mono text-rose-600 text-2xs sm:text-xs font-black">
+                      {tableTotals.putusSekolah}
+                    </td>
+                    <td className="py-3 px-1 sm:px-1.5 text-center font-mono text-amber-600 text-2xs sm:text-xs font-black">
+                      {tableTotals.lulusTidakLanjut}
+                    </td>
+                    <td className="py-3 px-1 sm:px-1.5 text-center font-mono text-blue-600 text-2xs sm:text-xs font-black">
+                      {tableTotals.belumPernahSekolah}
+                    </td>
+                    <td className="py-3 px-2 text-center font-mono text-emerald-700 dark:text-emerald-400 text-2xs sm:text-xs font-black">
+                      {tableTotals.inginKembali} <span className="text-[10px] font-sans">({tableTotals.persenIngin}%)</span>
+                    </td>
+                    <td className="py-3 px-1 text-center font-mono text-sky-700 dark:text-sky-300 text-2xs sm:text-xs font-black">
+                      {tableTotals.lakiLaki}
+                    </td>
+                    <td className="py-3 px-1 text-center font-mono text-rose-700 dark:text-rose-300 text-2xs sm:text-xs font-black">
+                      {tableTotals.perempuan}
+                    </td>
+                    <td className="py-3 px-2 text-center font-mono text-emerald-700 dark:text-emerald-400 text-2xs sm:text-xs font-black">
+                      <span className="inline-flex items-center gap-1">
+                        <CheckCircle2 className="h-3 w-3 text-emerald-600 shrink-0" />
+                        <span>{tableTotals.terverifikasi}</span>
+                        <span className="text-[10px] font-sans">({tableTotals.persenTerverifikasi}%)</span>
+                      </span>
+                    </td>
+                    <td className="py-3 px-2 text-center font-mono text-amber-700 dark:text-amber-400 text-2xs sm:text-xs font-black">
+                      <span className="inline-flex items-center gap-1">
+                        <Clock className="h-3 w-3 text-amber-600 shrink-0" />
+                        <span>{tableTotals.belumVerifikasi}</span>
+                        <span className="text-[10px] font-sans">({tableTotals.persenBelumVerifikasi}%)</span>
+                      </span>
+                    </td>
+                  </tr>
+                </tfoot>
               </table>
             </div>
 
             <div className="p-3.5 sm:p-4 bg-slate-50 dark:bg-slate-800/40 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-slate-500 font-medium">
               <div className="flex flex-wrap items-center gap-2">
                 <span>
-                  Menampilkan <strong>{filteredTableRows.length}</strong> dari {initialData.kelurahanList.length} kelurahan
+                  Menampilkan <strong>{displayedRows.length}</strong> dari {tableJenjangView === "kelurahan" ? initialData.kelurahanList.length : initialData.kecamatanList.length} {tableJenjangView === "kelurahan" ? "kelurahan" : "kecamatan"}
                 </span>
-                {tablePriorityFilter !== "semua" && (
-                  <span className="font-bold text-indigo-600 dark:text-indigo-400">
-                    • Filter Prioritas: {tablePriorityFilter.toUpperCase()}
+                {tableVerifikasiFilter !== "semua" && (
+                  <span className="font-bold text-amber-600 dark:text-amber-400">
+                    • Filter Verifikasi: {tableVerifikasiFilter === "perlu" ? "PERLU VERIFIKASI" : "SUDAH SELESAI"}
                   </span>
                 )}
                 {sortColumn !== "default" && (
@@ -2469,12 +2678,12 @@ export function RekapDataAtsClientView({
                 )}
               </div>
               <div className="flex items-center gap-3">
-                {(sortColumn !== "default" || tablePriorityFilter !== "semua" || tableSearch) && (
+                {(sortColumn !== "default" || tableVerifikasiFilter !== "semua" || tableSearch) && (
                   <button
                     type="button"
                     onClick={() => {
                       handleResetSort();
-                      setTablePriorityFilter("semua");
+                      setTableVerifikasiFilter("semua");
                       setTableSearch("");
                     }}
                     className="font-bold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
@@ -2482,7 +2691,7 @@ export function RekapDataAtsClientView({
                     Reset Semua Filter &amp; Urutan
                   </button>
                 )}
-                <span className="hidden sm:inline">Klik baris kelurahan untuk memfokuskan grafik.</span>
+                <span className="hidden sm:inline">Klik baris untuk memfokuskan grafik wilayah.</span>
               </div>
             </div>
           </div>
