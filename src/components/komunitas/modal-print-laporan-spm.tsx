@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import {
   Printer,
   X,
@@ -34,41 +35,55 @@ export function ModalPrintLaporanSpm({
 }: ModalPrintLaporanSpmProps) {
   const printContentRef = useRef<HTMLDivElement>(null);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
+    const handleAfterPrint = () => {
+      document.body.classList.remove("print-spm-modal-active");
+    };
+    window.addEventListener("afterprint", handleAfterPrint);
     return () => {
+      window.removeEventListener("afterprint", handleAfterPrint);
       if (typeof document !== "undefined") {
         document.body.classList.remove("print-spm-modal-active");
       }
     };
   }, []);
 
-  if (!isOpen || !laporan) return null;
+  const handlePrint = () => {
+    if (typeof document !== "undefined") {
+      document.body.classList.add("print-spm-modal-active");
+      setTimeout(() => {
+        window.print();
+      }, 50);
+    }
+  };
 
   const handleDownloadPdf = async () => {
     if (!printContentRef.current || !laporan) return;
     setIsDownloading(true);
     try {
       const fileName = `Laporan_SPM_${laporan.posyandu_nama}_${laporan.bidang}_${laporan.bulan}_${laporan.tahun}`;
-      await exportElementToPdf(printContentRef.current, {
+      const result = await exportElementToPdf(printContentRef.current, {
         filename: fileName,
         title: `Laporan SPM ${laporan.posyandu_nama}`,
         orientation: "portrait",
       });
+
+      if (!result.success) {
+        console.warn("Ekspor PDF langsung gagal, beralih ke dialog cetak browser:", result.error);
+        handlePrint();
+      }
+    } catch (err) {
+      console.error("Gagal membuat berkas PDF:", err);
+      handlePrint();
     } finally {
       setIsDownloading(false);
     }
   };
 
-  const handlePrint = () => {
-    if (typeof document !== "undefined") {
-      document.body.classList.add("print-spm-modal-active");
-      window.print();
-      setTimeout(() => {
-        document.body.classList.remove("print-spm-modal-active");
-      }, 2000);
-    }
-  };
+  if (!isOpen || !laporan || !mounted) return null;
 
   const getBidangIcon = (bidang: string) => {
     switch (bidang) {
@@ -89,10 +104,10 @@ export function ModalPrintLaporanSpm({
     }
   };
 
-  return (
-    <div className="modal-print-spm-backdrop fixed inset-0 z-[120] flex items-center justify-center p-2 sm:p-4 bg-slate-900/70 backdrop-blur-xs animate-in fade-in duration-200 overflow-y-auto">
+  return createPortal(
+    <div className="modal-print-spm-backdrop fixed inset-0 z-[120] flex items-center justify-center p-2 sm:p-4 bg-slate-900/70 backdrop-blur-xs animate-in fade-in duration-200 overflow-y-auto print:p-0 print:m-0 print:bg-white print:overflow-visible print:static print:inset-auto print:w-full print:h-auto">
       {/* Container Dialog */}
-      <div className="modal-print-spm-dialog relative w-full max-w-3xl my-6 rounded-3xl border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-2xl z-10 flex flex-col max-h-[92dvh] overflow-hidden">
+      <div className="modal-print-spm-dialog relative w-full max-w-3xl my-6 rounded-3xl border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-2xl z-10 flex flex-col max-h-[92dvh] overflow-hidden print:max-h-none print:h-auto print:overflow-visible print:border-none print:shadow-none print:my-0 print:rounded-none">
         {/* Modal Top Bar (Hidden on Print) */}
         <div className="print:hidden flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-5 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/80">
           <div className="flex items-center gap-2.5">
@@ -149,10 +164,11 @@ export function ModalPrintLaporanSpm({
         {/* ========================================================= */}
         {/* AREA DOKUMEN LAPORAN RESMI (TAMPILAN CETAK PDF A4)        */}
         {/* ========================================================= */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-8 bg-slate-100 dark:bg-slate-950/60 print:bg-white print:p-0">
+        <div className="modal-print-spm-body flex-1 overflow-y-auto p-4 sm:p-8 bg-slate-100 dark:bg-slate-950/60 print:bg-white print:p-0 print:overflow-visible print:max-h-none print:h-auto">
           <div
             ref={printContentRef}
-            className="mx-auto max-w-2xl bg-white text-slate-900 p-6 sm:p-10 rounded-2xl shadow-sm border border-slate-200 print:shadow-none print:border-none print:p-0 print:m-0 print:max-w-none text-xs sm:text-sm font-serif leading-relaxed"
+            style={{ backgroundColor: "#ffffff", color: "#0f172a" }}
+            className="modal-print-spm-paper mx-auto max-w-2xl bg-white text-slate-900 p-6 sm:p-10 rounded-2xl shadow-sm border border-slate-200 print:shadow-none print:border-none print:p-0 print:m-0 print:max-w-none print:w-full text-xs sm:text-sm font-serif leading-relaxed"
           >
             {/* 1. KOP SURAT RESMI POSYANDU KOTA TEGAL */}
             <div className="text-center space-y-1 pb-3 border-b-4 border-double border-slate-900 mb-5">
@@ -355,6 +371,7 @@ export function ModalPrintLaporanSpm({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

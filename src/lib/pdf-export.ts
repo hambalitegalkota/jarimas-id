@@ -58,6 +58,52 @@ export async function exportElementToPdf(
       logging: false,
       backgroundColor: "#ffffff",
       windowWidth: Math.max(element.scrollWidth, 1024),
+      onclone: (_clonedDoc, clonedElement) => {
+        // html2canvas v1.4.1 tidak mendukung CSS Color Module 4 (oklch, color-mix) yang digunakan Tailwind v4.
+        // Konversi seluruh warna terhitung (computed styles) pada cloned DOM menjadi standar RGB/Hex menggunakan Canvas 2D.
+        try {
+          const tempCanvas = document.createElement("canvas");
+          tempCanvas.width = 1;
+          tempCanvas.height = 1;
+          const ctx = tempCanvas.getContext("2d");
+
+          const toStandardRgb = (c: string): string => {
+            if (!c || c === "transparent" || c === "inherit" || c === "initial" || c === "currentColor") return c;
+            if (!ctx) return c;
+            try {
+              ctx.fillStyle = c;
+              return ctx.fillStyle; // Browser otomatis mengonversi oklch -> #rrggbb / rgb(...)
+            } catch {
+              return "#000000";
+            }
+          };
+
+          const origNodes = [element, ...Array.from(element.querySelectorAll<HTMLElement>("*"))];
+          const cloneNodes = [clonedElement, ...Array.from(clonedElement.querySelectorAll<HTMLElement>("*"))];
+
+          for (let i = 0; i < origNodes.length; i++) {
+            const orig = origNodes[i];
+            const clone = cloneNodes[i];
+            if (!orig || !clone) continue;
+
+            try {
+              const cs = window.getComputedStyle(orig);
+              if (cs.color) clone.style.color = toStandardRgb(cs.color);
+              if (cs.backgroundColor && cs.backgroundColor !== "rgba(0, 0, 0, 0)" && cs.backgroundColor !== "transparent") {
+                clone.style.backgroundColor = toStandardRgb(cs.backgroundColor);
+              }
+              if (cs.borderTopColor) clone.style.borderTopColor = toStandardRgb(cs.borderTopColor);
+              if (cs.borderRightColor) clone.style.borderRightColor = toStandardRgb(cs.borderRightColor);
+              if (cs.borderBottomColor) clone.style.borderBottomColor = toStandardRgb(cs.borderBottomColor);
+              if (cs.borderLeftColor) clone.style.borderLeftColor = toStandardRgb(cs.borderLeftColor);
+            } catch {
+              // skip
+            }
+          }
+        } catch (e) {
+          console.warn("Gagal sanitize oklch colors pada cloned document:", e);
+        }
+      },
     });
 
     // Kembalikan posisi scroll awal
