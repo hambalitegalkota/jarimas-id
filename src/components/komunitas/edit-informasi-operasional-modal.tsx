@@ -279,33 +279,6 @@ export function EditInformasiOperasionalModal({
                   />
                 </div>
 
-                {/* Cakupan Wilayah Layanan (RW / RT yang dilayani) */}
-                {komunitas.jenis === "posyandu" && (
-                  <div className="space-y-1.5 p-3 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50/40 dark:bg-emerald-950/20">
-                    <div className="flex items-center justify-between">
-                      <label className="flex items-center gap-1.5 font-bold text-emerald-900 dark:text-emerald-300 text-xs">
-                        <Users className="h-4 w-4 text-emerald-600" />
-                        <span>Cakupan Wilayah Layanan (RW &amp; RT yang Dilayani)</span>
-                        <span className="text-destructive">*</span>
-                      </label>
-                      <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-md bg-emerald-100 text-emerald-800 border border-emerald-300">
-                        RW &amp; RT Sasaran
-                      </span>
-                    </div>
-                    <input
-                      type="text"
-                      required
-                      value={cakupanWilayah}
-                      onChange={(e) => setCakupanWilayah(e.target.value)}
-                      placeholder="Contoh: Melayani Warga RW 02 (RT 01, RT 02, RT 03, RT 04, RT 05)"
-                      className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm font-semibold focus:border-emerald-600 focus:outline-none"
-                    />
-                    <p className="text-2xs text-muted-foreground font-medium">
-                      Tuliskan keterangan RW dan RT berapa saja yang menjadi sasaran dan dilayani oleh posyandu ini.
-                    </p>
-                  </div>
-                )}
-
                 {/* Jadwal Layanan: Posyandu vs Non-Posyandu */}
                 {komunitas.jenis === "posyandu" ? (
                   <div className="space-y-3 p-3.5 rounded-xl border border-blue-200 dark:border-blue-900/60 bg-blue-50/30 dark:bg-blue-950/20">
