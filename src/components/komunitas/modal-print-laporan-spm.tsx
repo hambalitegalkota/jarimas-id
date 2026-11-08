@@ -39,14 +39,27 @@ export function ModalPrintLaporanSpm({
 
   useEffect(() => {
     setMounted(true);
+    let originalTitle = "";
+    const handleBeforePrint = () => {
+      originalTitle = document.title;
+      document.title = "";
+    };
     const handleAfterPrint = () => {
       document.body.classList.remove("print-spm-modal-active");
+      if (originalTitle) {
+        document.title = originalTitle;
+      }
     };
+    window.addEventListener("beforeprint", handleBeforePrint);
     window.addEventListener("afterprint", handleAfterPrint);
     return () => {
+      window.removeEventListener("beforeprint", handleBeforePrint);
       window.removeEventListener("afterprint", handleAfterPrint);
       if (typeof document !== "undefined") {
         document.body.classList.remove("print-spm-modal-active");
+        if (originalTitle) {
+          document.title = originalTitle;
+        }
       }
     };
   }, []);
@@ -54,9 +67,16 @@ export function ModalPrintLaporanSpm({
   const handlePrint = () => {
     if (typeof document !== "undefined") {
       document.body.classList.add("print-spm-modal-active");
+      const currentTitle = document.title;
+      document.title = "";
       setTimeout(() => {
         window.print();
-      }, 50);
+        setTimeout(() => {
+          if (currentTitle) {
+            document.title = currentTitle;
+          }
+        }, 1000);
+      }, 60);
     }
   };
 
@@ -69,6 +89,7 @@ export function ModalPrintLaporanSpm({
         filename: fileName,
         title: `Laporan SPM ${laporan.posyandu_nama}`,
         orientation: "portrait",
+        marginMm: 16,
       });
 
       if (!result.success) {
@@ -168,55 +189,54 @@ export function ModalPrintLaporanSpm({
           <div
             ref={printContentRef}
             style={{ backgroundColor: "#ffffff", color: "#0f172a" }}
-            className="modal-print-spm-paper mx-auto max-w-2xl bg-white text-slate-900 p-6 sm:p-10 rounded-2xl shadow-sm border border-slate-200 print:shadow-none print:border-none print:p-0 print:m-0 print:max-w-none print:w-full text-xs sm:text-sm font-serif leading-relaxed"
+            className="modal-print-spm-paper mx-auto max-w-2xl bg-white text-slate-900 p-8 sm:p-12 rounded-2xl shadow-sm border border-slate-200 print:shadow-none print:border-none print:p-0 print:m-0 print:max-w-none print:w-full text-sm sm:text-base font-serif leading-relaxed"
           >
             {/* 1. KOP SURAT RESMI POSYANDU KOTA TEGAL */}
-            <div className="text-center space-y-1 pb-3 border-b-4 border-double border-slate-900 mb-5">
-
-              <h1 className="text-base sm:text-lg font-black uppercase tracking-wide font-sans text-blue-900">
+            <div className="text-center space-y-1.5 pb-4 border-b-4 border-double border-slate-900 mb-8">
+              <h1 className="text-xl sm:text-2xl font-black uppercase tracking-wide font-sans text-blue-900">
                 POS PELAYANAN TERPADU - {laporan.posyandu_nama.toUpperCase()}
               </h1>
-              <p className="text-[11px] sm:text-xs font-sans text-slate-700">
+              <p className="text-sm sm:text-base font-sans text-slate-700">
                 Kelurahan {laporan.kelurahan}, Kecamatan {laporan.kecamatan}, Kota Tegal, Jawa Tengah
               </p>
             </div>
 
-            {/* 2. JUDUL LAPORAN */}
-            <div className="text-center my-4 space-y-1">
-              <h3 className="text-sm sm:text-base font-black uppercase font-sans tracking-wide underline underline-offset-4">
+            {/* 2. JUDUL LAPORAN (DITURUNKAN 1 KALI ENTER / JARAK LEBAR DARI KOP) */}
+            <div className="text-center mt-7 mb-7 space-y-2">
+              <h3 className="text-lg sm:text-xl font-black uppercase font-sans tracking-wide underline underline-offset-4">
                 LAPORAN BULANAN KADER POSYANDU 6 BIDANG SPM
               </h3>
-              <p className="text-xs font-sans font-bold text-slate-700">
+              <p className="text-sm sm:text-base font-sans font-bold text-slate-700">
                 Periode Bulan: <span className="uppercase text-blue-900">{laporan.bulan} {laporan.tahun}</span> &bull; Bidang:{" "}
                 <span className="text-blue-900"> {laporan.bidang}</span>
               </p>
             </div>
 
             {/* 3. IDENTITAS & DATA UMUM */}
-            <div className="my-4 p-3.5 rounded-xl bg-slate-50 border border-slate-200 font-sans text-xs space-y-1.5 print:bg-slate-50">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div className="my-5 p-4 rounded-xl bg-slate-50 border border-slate-200 font-sans text-sm sm:text-base space-y-2 print:bg-slate-50">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <span className="text-slate-500 font-semibold block text-[11px]">NAMA POSYANDU:</span>
-                  <span className="font-bold text-slate-900">{laporan.posyandu_nama}</span>
+                  <span className="text-slate-500 font-semibold block text-xs sm:text-sm">NAMA POSYANDU:</span>
+                  <span className="font-bold text-slate-900 text-sm sm:text-base">{laporan.posyandu_nama}</span>
                 </div>
                 <div>
-                  <span className="text-slate-500 font-semibold block text-[11px]">WILAYAH:</span>
-                  <span className="font-bold text-slate-900">
+                  <span className="text-slate-500 font-semibold block text-xs sm:text-sm">WILAYAH:</span>
+                  <span className="font-bold text-slate-900 text-sm sm:text-base">
                     Kel. {laporan.kelurahan}, Kec. {laporan.kecamatan}
                   </span>
                 </div>
                 <div>
-                  <span className="text-slate-500 font-semibold block text-[11px]">NAMA KADER PELAPOR:</span>
-                  <span className="font-bold text-slate-900">{laporan.nama_kader}</span>
+                  <span className="text-slate-500 font-semibold block text-xs sm:text-sm">NAMA KADER PELAPOR:</span>
+                  <span className="font-bold text-slate-900 text-sm sm:text-base">{laporan.nama_kader}</span>
                   {laporan.nomor_hp_kader && (
-                    <span className="text-slate-500 text-[11px] block">
+                    <span className="text-slate-500 text-xs sm:text-sm block">
                       No. HP: {laporan.nomor_hp_kader}
                     </span>
                   )}
                 </div>
                 <div>
-                  <span className="text-slate-500 font-semibold block text-[11px]">TANGGAL PELAPORAN:</span>
-                  <span className="font-bold text-slate-900">
+                  <span className="text-slate-500 font-semibold block text-xs sm:text-sm">TANGGAL PELAPORAN:</span>
+                  <span className="font-bold text-slate-900 text-sm sm:text-base">
                     {new Date(laporan.tanggal_laporan || laporan.created_at).toLocaleDateString("id-ID", {
                       weekday: "long",
                       day: "numeric",
@@ -229,21 +249,21 @@ export function ModalPrintLaporanSpm({
             </div>
 
             {/* 4. URAIAN KEGIATAN KADER 6 BIDANG SPM */}
-            <div className="space-y-4 my-5 font-sans">
-              <h4 className="text-xs sm:text-sm font-black uppercase tracking-wider text-slate-900 border-b border-slate-300 pb-1 flex items-center gap-1.5">
+            <div className="space-y-5 my-6 font-sans">
+              <h4 className="text-sm sm:text-base font-black uppercase tracking-wider text-slate-900 border-b border-slate-300 pb-1.5 flex items-center gap-2">
                 <span>URAIAN HASIL PELAKSANAAN TUGAS KADER</span>
               </h4>
 
               {/* Butir 1: Pendataan */}
               {laporan.narasi_pendataan && (
-                <div className="space-y-1">
-                  <div className="flex items-center gap-1.5 font-bold text-xs sm:text-sm text-blue-900">
-                    <span className="h-5 w-5 rounded-full bg-blue-100 text-blue-800 flex items-center justify-center text-xs font-black shrink-0">
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-2 font-bold text-sm sm:text-base text-blue-900">
+                    <span className="h-6 w-6 rounded-full bg-blue-100 text-blue-800 flex items-center justify-center text-sm font-black shrink-0">
                       1
                     </span>
                     <span>Kegiatan Pendataan:</span>
                   </div>
-                  <div className="pl-6 text-xs sm:text-sm text-slate-800 font-serif whitespace-pre-wrap leading-relaxed bg-slate-50/50 p-2.5 rounded-lg border border-slate-100">
+                  <div className="pl-8 text-sm sm:text-base text-slate-800 font-serif whitespace-pre-wrap leading-relaxed bg-slate-50/50 p-3.5 rounded-lg border border-slate-100">
                     {laporan.narasi_pendataan}
                   </div>
                 </div>
@@ -251,14 +271,14 @@ export function ModalPrintLaporanSpm({
 
               {/* Butir 2: Verifikasi dan Validasi */}
               {laporan.narasi_verifikasi_validasi && (
-                <div className="space-y-1">
-                  <div className="flex items-center gap-1.5 font-bold text-xs sm:text-sm text-emerald-900">
-                    <span className="h-5 w-5 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center text-xs font-black shrink-0">
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-2 font-bold text-sm sm:text-base text-emerald-900">
+                    <span className="h-6 w-6 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center text-sm font-black shrink-0">
                       2
                     </span>
                     <span>Kegiatan Verifikasi dan Validasi:</span>
                   </div>
-                  <div className="pl-6 text-xs sm:text-sm text-slate-800 font-serif whitespace-pre-wrap leading-relaxed bg-slate-50/50 p-2.5 rounded-lg border border-slate-100">
+                  <div className="pl-8 text-sm sm:text-base text-slate-800 font-serif whitespace-pre-wrap leading-relaxed bg-slate-50/50 p-3.5 rounded-lg border border-slate-100">
                     {laporan.narasi_verifikasi_validasi}
                   </div>
                 </div>
@@ -266,14 +286,14 @@ export function ModalPrintLaporanSpm({
 
               {/* Butir 3: Penyuluhan, Edukasi dan Motivasi */}
               {laporan.narasi_penyuluhan_edukasi && (
-                <div className="space-y-1">
-                  <div className="flex items-center gap-1.5 font-bold text-xs sm:text-sm text-purple-900">
-                    <span className="h-5 w-5 rounded-full bg-purple-100 text-purple-800 flex items-center justify-center text-xs font-black shrink-0">
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-2 font-bold text-sm sm:text-base text-purple-900">
+                    <span className="h-6 w-6 rounded-full bg-purple-100 text-purple-800 flex items-center justify-center text-sm font-black shrink-0">
                       3
                     </span>
                     <span>Kegiatan Penyuluhan, Edukasi dan Motivasi:</span>
                   </div>
-                  <div className="pl-6 text-xs sm:text-sm text-slate-800 font-serif whitespace-pre-wrap leading-relaxed bg-slate-50/50 p-2.5 rounded-lg border border-slate-100">
+                  <div className="pl-8 text-sm sm:text-base text-slate-800 font-serif whitespace-pre-wrap leading-relaxed bg-slate-50/50 p-3.5 rounded-lg border border-slate-100">
                     {laporan.narasi_penyuluhan_edukasi}
                   </div>
                 </div>
@@ -281,14 +301,14 @@ export function ModalPrintLaporanSpm({
 
               {/* Butir 4: Penyaluran Aspirasi */}
               {laporan.narasi_penyaluran_aspirasi && (
-                <div className="space-y-1">
-                  <div className="flex items-center gap-1.5 font-bold text-xs sm:text-sm text-amber-900">
-                    <span className="h-5 w-5 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center text-xs font-black shrink-0">
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-2 font-bold text-sm sm:text-base text-amber-900">
+                    <span className="h-6 w-6 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center text-sm font-black shrink-0">
                       4
                     </span>
                     <span>Kegiatan Penyaluran Aspirasi &amp; Aduan Warga:</span>
                   </div>
-                  <div className="pl-6 text-xs sm:text-sm text-slate-800 font-serif whitespace-pre-wrap leading-relaxed bg-slate-50/50 p-2.5 rounded-lg border border-slate-100">
+                  <div className="pl-8 text-sm sm:text-base text-slate-800 font-serif whitespace-pre-wrap leading-relaxed bg-slate-50/50 p-3.5 rounded-lg border border-slate-100">
                     {laporan.narasi_penyaluran_aspirasi}
                   </div>
                 </div>
@@ -296,10 +316,10 @@ export function ModalPrintLaporanSpm({
             </div>
 
             {/* 5. LEMBAR PENGESAHAN & TANDA TANGAN */}
-            <div className="mt-8 pt-4 font-sans text-xs">
+            <div className="mt-10 pt-4 font-sans text-sm sm:text-base">
               <div className="grid grid-cols-2 gap-4 text-center">
                 {/* Kiri: Mengetahui Ketua Posyandu / Kelurahan */}
-                <div className="space-y-16">
+                <div className="space-y-20">
                   <div>
                     <p className="font-semibold text-slate-600">Mengetahui,</p>
                     <p className="font-bold text-slate-900">
@@ -310,12 +330,12 @@ export function ModalPrintLaporanSpm({
                     <p className="font-bold text-slate-900 underline underline-offset-4">
                       ( ..................................................... )
                     </p>
-                    <p className="text-[11px] text-slate-500">NIP / Jabatan</p>
+                    <p className="text-xs sm:text-sm text-slate-500">NIP / Jabatan</p>
                   </div>
                 </div>
 
                 {/* Kanan: Tanggal & Nama Kader Pelapor */}
-                <div className="space-y-16">
+                <div className="space-y-20">
                   <div>
                     <p className="font-semibold text-slate-600">
                       Tegal,{" "}
@@ -333,14 +353,14 @@ export function ModalPrintLaporanSpm({
                     <p className="font-bold text-slate-900 underline underline-offset-4">
                       {laporan.nama_kader}
                     </p>
-                    <p className="text-[11px] text-slate-500">Kader Posyandu</p>
+                    <p className="text-xs sm:text-sm text-slate-500">Kader Posyandu</p>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Footer Cetak */}
-            <div className="mt-8 pt-3 border-t border-slate-200 text-[10px] font-sans text-slate-400 flex items-center justify-between">
+            <div className="mt-10 pt-3 border-t border-slate-200 text-xs font-sans text-slate-400 flex items-center justify-between">
               <span>Sistem Informasi Posyandu Jarimas Kota Tegal</span>
               <span>Dokumen Laporan 6 Bidang SPM</span>
             </div>

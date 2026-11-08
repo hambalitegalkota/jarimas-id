@@ -35,7 +35,7 @@ export async function exportElementToPdf(
     const isLandscape = orientation === "landscape";
     const pdfWidthMm = isLandscape ? 297 : 210;
     const pdfHeightMm = isLandscape ? 210 : 297;
-    const marginMm = options?.marginMm !== undefined ? options?.marginMm : 8;
+    const marginMm = options?.marginMm !== undefined ? options?.marginMm : 16;
 
     // Bersihkan nama file agar aman untuk seluruh sistem operasi
     const rawFilename = options?.filename || options?.title || "Dokumen_Jarimas";
