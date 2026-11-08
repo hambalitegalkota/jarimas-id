@@ -1,8 +1,5 @@
 "use client";
 
-import html2canvas from "html2canvas";
-import { jsPDF } from "jspdf";
-
 export interface ExportPdfOptions {
   filename?: string;
   title?: string;
@@ -15,12 +12,25 @@ export interface ExportPdfOptions {
  * Mengonversi elemen HTML menjadi berkas PDF A4 utuh dan langsung mengunduhnya ke perangkat pengguna.
  * Menjamin dokumen tidak terpotong, resolusi tajam (retina scale: 2), tanpa latar website yang bocor,
  * dan terbagi secara rapi per halaman A4.
+ *
+ * Menggunakan dynamic import untuk html2canvas dan jspdf agar:
+ * 1. Tidak membebani bundle awal halaman (code-splitting / on-demand load).
+ * 2. Mencegah eksekusi DOM di sisi Server-Side Rendering (SSR).
  */
 export async function exportElementToPdf(
   element: HTMLElement,
   options?: ExportPdfOptions
 ): Promise<{ success: boolean; filename: string; error?: string }> {
   try {
+    if (typeof window === "undefined" || typeof document === "undefined") {
+      throw new Error("Ekspor PDF hanya dapat dilakukan di peramban (browser).");
+    }
+
+    // Dynamic import client-only libraries
+    const html2canvasModule = await import("html2canvas");
+    const html2canvas = html2canvasModule.default || html2canvasModule;
+    const { jsPDF } = await import("jspdf");
+
     const orientation = options?.orientation || "portrait";
     const isLandscape = orientation === "landscape";
     const pdfWidthMm = isLandscape ? 297 : 210;
