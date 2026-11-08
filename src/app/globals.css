@@ -250,12 +250,12 @@ button, input, select, textarea {
 @media print {
   @page {
     size: A4 portrait;
-    margin: 20mm 20mm 15mm 20mm;
+    margin: 0 !important; /* Margin 0 menonaktifkan header/footer otomatis browser (tanggal, jam, URL, judul) */
   }
 
   @page landscape {
     size: A4 landscape;
-    margin: 15mm 20mm 15mm 20mm;
+    margin: 0 !important;
   }
 
   .print-landscape {
@@ -472,11 +472,12 @@ button, input, select, textarea {
   body.print-spm-modal-active .modal-print-spm-paper {
     box-shadow: none !important;
     border: none !important;
-    padding: 0 !important;
-    margin: 0 !important;
+    padding: 10mm 18mm 12mm 18mm !important;
+    margin: 0 auto !important;
     max-width: 100% !important;
     width: 100% !important;
     background: #ffffff !important;
     color: #000000 !important;
+    box-sizing: border-box !important;
   }
 }

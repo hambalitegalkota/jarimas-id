@@ -42,7 +42,9 @@ export function ModalPrintLaporanSpm({
     let originalTitle = "";
     const handleBeforePrint = () => {
       originalTitle = document.title;
-      document.title = "";
+      if (laporan) {
+        document.title = `Laporan_SPM_${laporan.posyandu_nama}_${laporan.bidang}_${laporan.bulan}_${laporan.tahun}`.replace(/\s+/g, "_");
+      }
     };
     const handleAfterPrint = () => {
       document.body.classList.remove("print-spm-modal-active");
@@ -62,13 +64,15 @@ export function ModalPrintLaporanSpm({
         }
       }
     };
-  }, []);
+  }, [laporan]);
 
   const handlePrint = () => {
     if (typeof document !== "undefined") {
       document.body.classList.add("print-spm-modal-active");
       const currentTitle = document.title;
-      document.title = "";
+      if (laporan) {
+        document.title = `Laporan_SPM_${laporan.posyandu_nama}_${laporan.bidang}_${laporan.bulan}_${laporan.tahun}`.replace(/\s+/g, "_");
+      }
       setTimeout(() => {
         window.print();
         setTimeout(() => {
@@ -89,7 +93,7 @@ export function ModalPrintLaporanSpm({
         filename: fileName,
         title: `Laporan SPM ${laporan.posyandu_nama}`,
         orientation: "portrait",
-        marginMm: 16,
+        marginMm: 12,
       });
 
       if (!result.success) {
@@ -189,7 +193,7 @@ export function ModalPrintLaporanSpm({
           <div
             ref={printContentRef}
             style={{ backgroundColor: "#ffffff", color: "#0f172a" }}
-            className="modal-print-spm-paper mx-auto max-w-2xl bg-white text-slate-900 p-8 sm:p-12 rounded-2xl shadow-sm border border-slate-200 print:shadow-none print:border-none print:p-0 print:m-0 print:max-w-none print:w-full text-sm sm:text-base font-serif leading-relaxed"
+            className="modal-print-spm-paper mx-auto max-w-2xl bg-white text-slate-900 pt-6 pb-8 px-8 sm:pt-8 sm:pb-12 sm:px-12 rounded-2xl shadow-sm border border-slate-200 print:shadow-none print:border-none print:pt-[10mm] print:pb-[12mm] print:px-[18mm] print:m-0 print:max-w-none print:w-full text-sm sm:text-base font-serif leading-relaxed"
           >
             {/* 1. KOP SURAT RESMI POSYANDU KOTA TEGAL */}
             <div className="text-center space-y-1.5 pb-4 border-b-4 border-double border-slate-900 mb-8">
