@@ -87,7 +87,7 @@ export function RekapLaporanKaderWilayahCard({
   });
 
   const [loading, setLoading] = useState<boolean>(true);
-  const [isOpen, setIsOpen] = useState<boolean>(false); // Default sembunyi agar rapi
+  const [isOpen, setIsOpen] = useState<boolean>(true);
 
   // Filters
   const [activeBidang, setActiveBidang] = useState<string>("semua");
