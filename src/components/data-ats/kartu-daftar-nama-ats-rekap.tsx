@@ -6,6 +6,8 @@ import {
   Users,
   Search,
   Printer,
+  Download,
+  Loader2,
   ChevronDown,
   ChevronUp,
   ShieldCheck,
@@ -34,6 +36,7 @@ import {
 import { normalizeKeinginanSekolah } from "@/lib/ats-helpers";
 import { ModalKembaliBersekolah } from "./modal-kembali-bersekolah";
 import { ModalEditAts } from "./modal-edit-ats";
+import { exportElementToPdf } from "@/lib/pdf-export";
 import type { DataAtsItem } from "@/types/database";
 
 function itemToDataAts(item: DaftarNamaAtsItem): DataAtsItem {
@@ -215,6 +218,23 @@ export function KartuDaftarNamaAtsRekap({
       document.body.classList.remove("print-daftar-nama-only");
     };
   }, []);
+
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleExportPdf = async () => {
+    if (!cardRef.current) return;
+    setIsExporting(true);
+    try {
+      await exportElementToPdf(cardRef.current, {
+        filename: `daftar-nama-ats-${currentWilayahNama.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.pdf`,
+        title: `Daftar Nama Anak Tidak Sekolah - ${currentWilayahNama}`,
+      });
+    } catch (err) {
+      console.error("Gagal export PDF:", err);
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   const handlePrint = () => {
     cardRef.current?.classList.add("print-target-active");
@@ -400,15 +420,30 @@ export function KartuDaftarNamaAtsRekap({
                 </button>
               </div>
 
-              {/* Print Button */}
+              {/* Unduh & Cetak Buttons */}
+              <button
+                type="button"
+                onClick={handleExportPdf}
+                disabled={isExporting}
+                className="flex h-9 items-center gap-1.5 px-3 rounded-lg border border-primary/30 bg-primary/10 text-xs font-bold text-primary hover:bg-primary/20 transition-colors cursor-pointer disabled:opacity-50"
+                title="Unduh Berkas PDF Resmi"
+              >
+                {isExporting ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Download className="h-3.5 w-3.5" />
+                )}
+                <span className="hidden sm:inline">{isExporting ? "Mengunduh..." : "Unduh PDF"}</span>
+              </button>
+
               <button
                 type="button"
                 onClick={handlePrint}
-                className="flex h-9 items-center gap-1.5 px-3 rounded-lg border border-border bg-background text-xs font-bold text-foreground hover:bg-muted transition-colors cursor-pointer"
-                title="Cetak / Simpan PDF"
+                className="flex h-9 items-center gap-1.5 px-2.5 rounded-lg border border-border bg-background text-xs font-semibold text-muted-foreground hover:bg-muted transition-colors cursor-pointer"
+                title="Cetak via Printer"
               >
                 <Printer className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">Cetak / Simpan PDF</span>
+                <span className="sr-only sm:not-sr-only sm:inline">Cetak</span>
               </button>
             </div>
           </div>

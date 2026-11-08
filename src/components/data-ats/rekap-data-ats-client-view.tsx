@@ -17,6 +17,7 @@ import {
   Layers,
   AlertCircle,
   Printer,
+  Download,
   HeartHandshake,
   CheckCircle2,
   Clock,
@@ -675,9 +676,10 @@ export function RekapDataAtsClientView({
               type="button"
               onClick={() => window.print()}
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white/10 hover:bg-white/20 border border-white/20 text-xs font-bold text-white transition-all cursor-pointer backdrop-blur-md active:scale-98 shadow-sm"
+              title="Unduh / Cetak Dokumen PDF"
             >
-              <Printer className="h-4 w-4 text-amber-300" />
-              <span>Cetak / Simpan PDF</span>
+              <Download className="h-4 w-4 text-amber-300" />
+              <span>Unduh / Cetak PDF</span>
             </button>
             <div className="text-2xs text-slate-400 font-medium hidden md:block">
               {initialData.totalLiveRecords} data valid di database

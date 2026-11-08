@@ -11,6 +11,7 @@ import {
   Sparkles,
   MapPin,
   Printer,
+  Download,
   ChevronDown,
   ChevronUp,
   Eye,
@@ -983,16 +984,16 @@ export function DataAtsClientView({
         <span>Dokumen Laporan Warga Kota Tegal (A4)</span>
       </div>
 
-      {/* 6. MENU CETAK PDF DATA ATS (HANYA 1 MENU, DI PALING BAWAH HALAMAN) */}
+      {/* 6. MENU CETAK / UNDUH PDF DATA ATS */}
       <div className="rounded-2xl border-2 border-slate-200 bg-white p-5 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xs print:hidden">
         <div className="flex items-center gap-4 w-full sm:w-auto">
           <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-amber-800">
-            <Printer className="h-6 w-6" />
+            <Download className="h-6 w-6" />
           </div>
           <div className="space-y-1">
             <div className="flex items-center gap-2">
               <h4 className="text-base font-bold text-slate-900">
-                Cetak / Simpan PDF Data ATS
+                Unduh / Cetak PDF Data ATS
               </h4>
               <span className="rounded-md bg-amber-50 px-2 py-0.5 text-xs font-bold text-amber-800 border border-amber-200">
                 A4 Resmi
@@ -1000,8 +1001,8 @@ export function DataAtsClientView({
             </div>
             <p className="text-sm text-slate-600 leading-relaxed">
               {canAccessDaftarNama
-                ? `Mencetak seluruh data, statistik, dan grafik ATS yang tampil di layar (${filteredAts.length} anak) ke dalam berkas PDF ukuran A4.`
-                : "Mencetak ringkasan statistik dan grafik pemetaan analitik ATS ke dalam berkas PDF ukuran A4."}
+                ? `Mengunduh atau mencetak seluruh data, statistik, dan grafik ATS yang tampil di layar (${filteredAts.length} anak) ke dalam berkas PDF ukuran A4.`
+                : "Mengunduh atau mencetak ringkasan statistik dan grafik pemetaan analitik ATS ke dalam berkas PDF ukuran A4."}
             </p>
           </div>
         </div>
@@ -1011,8 +1012,8 @@ export function DataAtsClientView({
           onClick={() => window.print()}
           className="w-full sm:w-auto flex min-h-[48px] h-12 items-center justify-center gap-2 rounded-xl bg-amber-600 hover:bg-amber-700 active:scale-98 text-white px-6 text-base font-bold shadow-xs transition-all shrink-0 cursor-pointer"
         >
-          <Printer className="h-5 w-5" />
-          <span>Cetak / Simpan PDF</span>
+          <Download className="h-5 w-5" />
+          <span>Unduh / Cetak PDF</span>
         </button>
       </div>
 

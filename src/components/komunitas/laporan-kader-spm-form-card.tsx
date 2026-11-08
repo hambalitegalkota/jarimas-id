@@ -9,6 +9,7 @@ import {
   AlertCircle,
   Clock,
   Printer,
+  Download,
   GraduationCap,
   HeartPulse,
   Wrench,
@@ -426,7 +427,7 @@ export function LaporanKaderSpmFormCard({
                   : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
               )}
             >
-              <span>Riwayat &amp; Cetak</span>
+              <span>Riwayat &amp; Unduh PDF</span>
               <span className="px-1.5 py-0.2 rounded-md bg-emerald-100 text-emerald-800 text-[10px] font-mono">
                 {riwayatList.length}
               </span>
@@ -778,14 +779,14 @@ export function LaporanKaderSpmFormCard({
 
               {/* Submit & Preview Buttons */}
               <div className="flex flex-wrap items-center justify-end gap-2.5 pt-2">
-                {/* Tombol Pratinjau PDF Format Resmi */}
+                {/* Tombol Pratinjau & Unduh PDF Format Resmi */}
                 <button
                   type="button"
                   onClick={() => setSelectedPrintLaporan(getCurrentDraftLaporan())}
-                  className="inline-flex min-h-[44px] items-center justify-center gap-1.5 px-4 py-2 rounded-xl border-2 border-blue-600 bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950/40 text-blue-700 dark:text-blue-300 font-bold text-xs shadow-2xs transition-all active:scale-98 cursor-pointer"
+                  className="inline-flex min-h-[44px] items-center justify-center gap-1.5 px-4 py-2 rounded-xl border-2 border-emerald-600 bg-white dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 font-bold text-xs shadow-2xs transition-all active:scale-98 cursor-pointer"
                 >
-                  <Eye className="h-4 w-4 text-blue-600" />
-                  <span>Pratinjau Format PDF</span>
+                  <Eye className="h-4 w-4 text-emerald-600" />
+                  <span>Pratinjau &amp; Unduh PDF</span>
                 </button>
 
                 {/* Tombol Simpan Laporan */}
@@ -871,10 +872,10 @@ export function LaporanKaderSpmFormCard({
                           <button
                             type="button"
                             onClick={() => setSelectedPrintLaporan(item)}
-                            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-blue-600 bg-blue-50 hover:bg-blue-100 text-blue-800 text-xs font-bold transition-all shadow-2xs cursor-pointer active:scale-95"
+                            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-emerald-600 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-bold transition-all shadow-2xs cursor-pointer active:scale-95"
                           >
-                            <Printer className="h-3.5 w-3.5 text-blue-700" />
-                            <span>Cetak / Simpan PDF</span>
+                            <Download className="h-3.5 w-3.5 text-emerald-700" />
+                            <span>Unduh / Cetak PDF</span>
                           </button>
 
                           {(isAdminOrKader || item.user_id === currentUserId) && (

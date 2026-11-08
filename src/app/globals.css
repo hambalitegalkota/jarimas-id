@@ -414,4 +414,37 @@ button, input, select, textarea {
   body:not(.print-daftar-nama-only) .print-daftar-nama-container:not(.is-open) {
     display: none !important;
   }
+
+  /* Khusus Modal Print Laporan SPM (Terisolasi Penuh Tanpa Latar Web) */
+  body.print-spm-modal-active main,
+  body.print-spm-modal-active nav,
+  body.print-spm-modal-active aside,
+  body.print-spm-modal-active header,
+  body.print-spm-modal-active footer {
+    display: none !important;
+  }
+
+  body.print-spm-modal-active .modal-print-spm-backdrop {
+    position: static !important;
+    background: transparent !important;
+    backdrop-filter: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: visible !important;
+    display: block !important;
+    width: 100% !important;
+  }
+
+  body.print-spm-modal-active .modal-print-spm-dialog {
+    border: none !important;
+    box-shadow: none !important;
+    max-height: none !important;
+    overflow: visible !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
 }

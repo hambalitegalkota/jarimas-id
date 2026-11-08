@@ -1,11 +1,12 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 import {
   Printer,
   X,
   FileText,
   Download,
+  Loader2,
   GraduationCap,
   HeartPulse,
   Wrench,
@@ -18,6 +19,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import type { LaporanKaderSpmItem } from "@/types/database";
+import { exportElementToPdf } from "@/lib/pdf-export";
 
 interface ModalPrintLaporanSpmProps {
   laporan: LaporanKaderSpmItem | null;
@@ -31,11 +33,41 @@ export function ModalPrintLaporanSpm({
   onClose,
 }: ModalPrintLaporanSpmProps) {
   const printContentRef = useRef<HTMLDivElement>(null);
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  useEffect(() => {
+    return () => {
+      if (typeof document !== "undefined") {
+        document.body.classList.remove("print-spm-modal-active");
+      }
+    };
+  }, []);
 
   if (!isOpen || !laporan) return null;
 
+  const handleDownloadPdf = async () => {
+    if (!printContentRef.current || !laporan) return;
+    setIsDownloading(true);
+    try {
+      const fileName = `Laporan_SPM_${laporan.posyandu_nama}_${laporan.bidang}_${laporan.bulan}_${laporan.tahun}`;
+      await exportElementToPdf(printContentRef.current, {
+        filename: fileName,
+        title: `Laporan SPM ${laporan.posyandu_nama}`,
+        orientation: "portrait",
+      });
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
   const handlePrint = () => {
-    window.print();
+    if (typeof document !== "undefined") {
+      document.body.classList.add("print-spm-modal-active");
+      window.print();
+      setTimeout(() => {
+        document.body.classList.remove("print-spm-modal-active");
+      }, 2000);
+    }
   };
 
   const getBidangIcon = (bidang: string) => {
@@ -58,39 +90,56 @@ export function ModalPrintLaporanSpm({
   };
 
   return (
-    <div className="fixed inset-0 z-[120] flex items-center justify-center p-2 sm:p-4 bg-slate-900/70 backdrop-blur-xs animate-in fade-in duration-200 overflow-y-auto">
+    <div className="modal-print-spm-backdrop fixed inset-0 z-[120] flex items-center justify-center p-2 sm:p-4 bg-slate-900/70 backdrop-blur-xs animate-in fade-in duration-200 overflow-y-auto">
       {/* Container Dialog */}
-      <div className="relative w-full max-w-3xl my-6 rounded-3xl border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-2xl z-10 flex flex-col max-h-[92dvh] overflow-hidden">
+      <div className="modal-print-spm-dialog relative w-full max-w-3xl my-6 rounded-3xl border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-2xl z-10 flex flex-col max-h-[92dvh] overflow-hidden">
         {/* Modal Top Bar (Hidden on Print) */}
-        <div className="print:hidden flex items-center justify-between gap-3 px-5 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/80">
+        <div className="print:hidden flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-5 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/80">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-100 text-blue-700">
-              <Printer className="h-5 w-5" />
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400">
+              <FileText className="h-5 w-5" />
             </div>
             <div>
               <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-slate-100">
-                Pratinjau Cetak Laporan Kader 6 Bidang SPM
+                Dokumen Laporan Kader 6 Bidang SPM
               </h3>
               <p className="text-xs text-slate-500">
-                Format surat laporan Posyandu Kota Tegal (Siap Cetak / Save to PDF)
+                Format surat resmi Posyandu Kota Tegal (Unduh PDF Utuh &amp; Siap Cetak)
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 self-end sm:self-auto flex-wrap">
+            {/* Tombol Utama: Unduh Berkas PDF Utuh */}
+            <button
+              type="button"
+              onClick={handleDownloadPdf}
+              disabled={isDownloading}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs transition-all cursor-pointer active:scale-95 disabled:opacity-60"
+            >
+              {isDownloading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Download className="h-4 w-4" />
+              )}
+              <span>{isDownloading ? "Menyiapkan PDF..." : "Unduh Dokumen PDF"}</span>
+            </button>
+
+            {/* Tombol Cadangan: Cetak Fisik Kertas */}
             <button
               type="button"
               onClick={handlePrint}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-700 hover:bg-blue-800 text-white text-xs font-bold shadow-xs transition-all cursor-pointer active:scale-95"
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 text-slate-700 dark:text-slate-200 text-xs font-bold shadow-2xs transition-all cursor-pointer active:scale-95"
             >
-              <Printer className="h-4 w-4" />
-              <span>Cetak / Simpan PDF</span>
+              <Printer className="h-4 w-4 text-slate-600 dark:text-slate-300" />
+              <span>Cetak</span>
             </button>
 
             <button
               type="button"
               onClick={onClose}
-              className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              title="Tutup Pratinjau"
+              className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
             >
               <X className="h-4 w-4" />
             </button>

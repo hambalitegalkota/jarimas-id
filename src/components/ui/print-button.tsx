@@ -1,8 +1,9 @@
 "use client";
 
-import React from "react";
-import { Printer } from "lucide-react";
+import React, { useState } from "react";
+import { Download, Printer, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { exportElementToPdf } from "@/lib/pdf-export";
 
 export interface PrintButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   label?: string;
@@ -10,24 +11,49 @@ export interface PrintButtonProps extends React.ButtonHTMLAttributes<HTMLButtonE
   size?: "xs" | "sm" | "md" | "lg";
   iconClassName?: string;
   hideTextOnMobile?: boolean;
+  targetId?: string;
+  filename?: string;
 }
 
 export function PrintButton({
-  label = "Cetak / Simpan PDF",
+  label = "Unduh / Cetak PDF",
   variant = "outline",
   size = "sm",
   className,
   iconClassName,
   hideTextOnMobile = false,
+  targetId,
+  filename,
   onClick,
   ...props
 }: PrintButtonProps) {
-  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
     if (onClick) {
       onClick(e);
-    } else {
-      window.print();
+      return;
     }
+
+    if (targetId && typeof document !== "undefined") {
+      const targetEl = document.getElementById(targetId);
+      if (targetEl) {
+        setIsExporting(true);
+        try {
+          await exportElementToPdf(targetEl, {
+            filename: filename || "Dokumen_Jarimas",
+            orientation: "portrait",
+          });
+          return;
+        } catch (err) {
+          console.warn("Gagal ekspor target ke PDF, menggunakan browser print:", err);
+        } finally {
+          setIsExporting(false);
+        }
+      }
+    }
+
+    window.print();
   };
 
   const variantStyles = {
@@ -56,19 +82,24 @@ export function PrintButton({
     <button
       type="button"
       onClick={handleClick}
-      title="Cetak / Simpan PDF"
-      aria-label="Cetak / Simpan PDF"
+      disabled={isExporting}
+      title="Unduh / Cetak Dokumen PDF"
+      aria-label="Unduh / Cetak Dokumen PDF"
       className={cn(
-        "inline-flex items-center justify-center border font-bold transition-all cursor-pointer active:scale-98 select-none print:hidden",
+        "inline-flex items-center justify-center border font-bold transition-all cursor-pointer active:scale-98 select-none print:hidden disabled:opacity-60",
         variantStyles[variant],
         sizeStyles[size],
         className
       )}
       {...props}
     >
-      <Printer className={cn("h-4 w-4 shrink-0", iconClassName)} />
+      {isExporting ? (
+        <Loader2 className={cn("h-4 w-4 shrink-0 animate-spin", iconClassName)} />
+      ) : (
+        <Download className={cn("h-4 w-4 shrink-0", iconClassName)} />
+      )}
       <span className={cn(hideTextOnMobile ? "hidden sm:inline" : "inline")}>
-        {label}
+        {isExporting ? "Menyiapkan PDF..." : label}
       </span>
     </button>
   );

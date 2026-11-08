@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import {
   FileText,
   Printer,
+  Download,
   Search,
   Filter,
   Eye,
@@ -424,8 +425,8 @@ export function RekapLaporanKaderWilayahCard({
                         onClick={() => setSelectedPrintLaporan(item)}
                         className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-blue-700 hover:bg-blue-800 text-white text-xs font-bold shadow-xs transition-all cursor-pointer active:scale-95"
                       >
-                        <Printer className="h-3.5 w-3.5" />
-                        <span>Cetak / Simpan PDF</span>
+                        <Download className="h-3.5 w-3.5" />
+                        <span>Unduh / Cetak PDF</span>
                       </button>
                     </div>
                   </div>
