@@ -780,6 +780,33 @@ export function parseCakupanWilayah(komunitas?: {
     }
   }
 
+  // Khusus Kelurahan Mangkukusuman (Kecamatan Tegal Timur)
+  if (kelClean.includes("mangkukusuman") || namaClean.includes("mangkukusuman")) {
+    if (namaClean.includes("kenanga")) {
+      return "Melayani Warga RW 01 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("cempaka")) {
+      return "Melayani Warga RW 01 (RT 06, RT 07, RT 08, RT 09, RT 10 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("melati")) {
+      return "Melayani Warga RW 02 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08, RT 09, RT 10 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("fatmawati")) {
+      return "Melayani Warga RW 03 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08, RT 09, RT 10, RT 11 dan RW - RT Tidak Tahu)";
+    }
+    const rtMapMangkukusuman: Record<string, number> = {
+      "01": 10,
+      "02": 10,
+      "03": 11,
+      "04": 14,
+    };
+    const count = rtMapMangkukusuman[rw];
+    if (count) {
+      const rtList = Array.from({ length: count }, (_, i) => `RT ${String(i + 1).padStart(2, "0")}`);
+      return `Melayani Warga RW ${rw} (${rtList.join(", ")} dan RW - RT Tidak Tahu)`;
+    }
+  }
+
   const isOldSingleRtFormat = customCakupan && /^Melayani\s+Warga\s+RW\s+\d+\s*\(RT\s+\d+\)$/i.test(customCakupan);
   if (customCakupan && !isOldSingleRtFormat) {
     return customCakupan;

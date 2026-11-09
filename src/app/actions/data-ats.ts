@@ -12,6 +12,7 @@ import {
   getPosyanduCakupanRw,
   getPosyanduCakupanWilayah,
   isValidBandungRtRw,
+  isValidMangkukusumanRtRw,
   isValidKejambonRtRw,
   isValidKalinyamatWetanRtRw,
   isValidKalinyamatKulonRtRw,
@@ -1561,6 +1562,11 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
           rawItemRt === "-" ||
           rawItemRt === "0" ||
           rawItemRt === "00";
+
+        // Ketentuan Khusus Kelurahan Mangkukusuman:
+        if (!isValidMangkukusumanRtRw(itemKel, itemRw, itemRt)) {
+          return false;
+        }
 
         // Ketentuan Khusus Kelurahan Kejambon:
         if (!isValidKejambonRtRw(itemKel, itemRw, itemRt)) {

@@ -197,7 +197,6 @@ export const KOTA_TEGAL_DATA: Record<string, KecamatanData> = {
         "posyandu": [
           "Posyandu Cempaka",
           "Posyandu Fatmawati",
-          "Posyandu Kartini",
           "Posyandu Kenanga",
           "Posyandu Melati"
         ],
@@ -682,6 +681,7 @@ export const DAFTAR_KECAMATAN_TEGAL = Object.keys(KOTA_TEGAL_DATA);
  * - Kelurahan lainnya: Dikembalikan ke kondisi default sebelumnya (15 RW dan 15 RT per RW) hingga pemetaan selesai.
  */
 export const DATA_RW_PER_KELURAHAN: Record<string, number> = {
+  "Mangkukusuman": 4,
   "Kaligangsa": 7,
   "Kalinyamat Kulon": 4,
   "Kalinyamat Wetan": 4,
@@ -1011,6 +1011,27 @@ export const DATA_RT_PER_RW_MARGADANA: Record<string, number> = {
  * Tetap pertahankan pilihan "Belum Tahu" untuk RW dan RT
  */
 /**
+ * Ketentuan Khusus RT per RW di Kelurahan Mangkukusuman, Kecamatan Tegal Timur:
+ * - Jumlah RW ada 4
+ * - RW 1: Jumlah RT 10 (RT 1 s/d 10)
+ * - RW 2: Jumlah RT 10 (RT 1 s/d 10)
+ * - RW 3: Jumlah RT 11 (RT 1 s/d 11)
+ * - RW 4: Jumlah RT 14 (RT 1 s/d 14)
+ * Total RW resmi: 4 RW, Total RT: 45 RT (10 + 10 + 11 + 14)
+ * Tetap pertahankan pilihan "Belum Tahu" untuk RW dan RT
+ */
+export const DATA_RT_PER_RW_MANGKUKUSUMAN: Record<string, number> = {
+  "01": 10,
+  "1": 10,
+  "02": 10,
+  "2": 10,
+  "03": 11,
+  "3": 11,
+  "04": 14,
+  "4": 14,
+};
+
+/**
  * Ketentuan Khusus RT per RW di Kelurahan Kejambon, Kecamatan Tegal Timur:
  * - Jumlah RW ada 6
  * - RW 1: Jumlah RT 6 (RT 1 s/d 6)
@@ -1142,6 +1163,9 @@ export const TOTAL_KOMUNITAS_RT_KOTA_TEGAL = 1712;
 export function getJumlahRwByKelurahan(kelurahan?: string | null): number {
   if (!kelurahan) return 15;
   const clean = kelurahan.replace(/^(kelurahan|kel\.)\s+/i, "").trim().toLowerCase();
+  if (clean === "mangkukusuman") {
+    return 4;
+  }
   if (clean === "kejambon") {
     return 6;
   }
@@ -1186,6 +1210,16 @@ export function getJumlahRwByKelurahan(kelurahan?: string | null): number {
 export function getJumlahRtPerRwByKelurahan(kelurahan?: string | null, rw?: string | null): number {
   if (!kelurahan) return RT_PER_RW_DEFAULT;
   const clean = kelurahan.replace(/^(kelurahan|kel\.)\s+/i, "").trim().toLowerCase();
+  if (clean === "mangkukusuman") {
+    if (rw && rw !== "Belum Tahu") {
+      const cleanRw = rw.replace(/^(rw|rt)\s*/i, "").trim();
+      const normRw = String(parseInt(cleanRw, 10)).padStart(2, "0");
+      if (DATA_RT_PER_RW_MANGKUKUSUMAN[normRw] || DATA_RT_PER_RW_MANGKUKUSUMAN[cleanRw]) {
+        return DATA_RT_PER_RW_MANGKUKUSUMAN[normRw] || DATA_RT_PER_RW_MANGKUKUSUMAN[cleanRw];
+      }
+    }
+    return 14; // Default max RT di RW 4 Mangkukusuman (14 RT)
+  }
   if (clean === "kejambon") {
     if (rw && rw !== "Belum Tahu") {
       const cleanRw = rw.replace(/^(rw|rt)\s*/i, "").trim();
@@ -1321,6 +1355,10 @@ export function getJumlahRtPerRwByKelurahan(kelurahan?: string | null, rw?: stri
 export function getTotalRtByKelurahan(kelurahan?: string | null): number {
   if (!kelurahan) return 15 * RT_PER_RW_DEFAULT;
   const clean = kelurahan.replace(/^(kelurahan|kel\.)\s+/i, "").trim().toLowerCase();
+  if (clean === "mangkukusuman") {
+    // RW 1: 10 RT, RW 2: 10 RT, RW 3: 11 RT, RW 4: 14 RT -> Total 45 RT
+    return 10 + 10 + 11 + 14;
+  }
   if (clean === "kejambon") {
     // RW 1: 6, RW 2: 6, RW 3: 9, RW 4: 7, RW 5: 8, RW 6: 8 -> Total 44 RT
     return 6 + 6 + 9 + 7 + 8 + 8;
@@ -1392,6 +1430,10 @@ export function getRwListByKelurahan(kelurahan?: string | null): string[] {
     return [...list, "Belum Tahu"];
   }
   const clean = kelurahan.replace(/^(kelurahan|kel\.)\s+/i, "").trim().toLowerCase();
+  if (clean === "mangkukusuman") {
+    const list = Array.from({ length: 4 }, (_, i) => String(i + 1).padStart(2, "0"));
+    return [...list, "Belum Tahu"];
+  }
   if (clean === "kejambon") {
     const list = Array.from({ length: 6 }, (_, i) => String(i + 1).padStart(2, "0"));
     return [...list, "Belum Tahu"];
@@ -1461,6 +1503,17 @@ export function getRtListByKelurahan(kelurahan?: string | null, rw?: string | nu
     return [...list, "Belum Tahu"];
   }
   const clean = kelurahan.replace(/^(kelurahan|kel\.)\s+/i, "").trim().toLowerCase();
+  if (clean === "mangkukusuman") {
+    if (rw && rw !== "Belum Tahu") {
+      const cleanRw = rw.replace(/^(rw|rt)\s*/i, "").trim();
+      const normRw = String(parseInt(cleanRw, 10)).padStart(2, "0");
+      const count = DATA_RT_PER_RW_MANGKUKUSUMAN[normRw] || DATA_RT_PER_RW_MANGKUKUSUMAN[cleanRw] || 14;
+      const list = Array.from({ length: count }, (_, i) => String(i + 1).padStart(2, "0"));
+      return [...list, "Belum Tahu"];
+    }
+    const list = Array.from({ length: 14 }, (_, i) => String(i + 1).padStart(2, "0"));
+    return [...list, "Belum Tahu"];
+  }
   if (clean === "kejambon") {
     if (rw && rw !== "Belum Tahu") {
       const cleanRw = rw.replace(/^(rw|rt)\s*/i, "").trim();

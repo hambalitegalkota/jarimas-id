@@ -17,6 +17,7 @@ import {
   normalizeWilayah,
   parseAtsDetails,
   normalizeKeinginanSekolah,
+  isValidMangkukusumanRtRw,
   isValidKejambonRtRw,
   isValidBandungRtRw,
   isValidKalinyamatWetanRtRw,
@@ -456,8 +457,26 @@ async function fetchAndComputeRekapDataAts(): Promise<RekapDataAtsResult> {
       }
     }
 
-    // Filter ketat: Hanya data yang merupakan data ATS riil dan bukan data dummy
-    const validLiveAtsRecords = allDbChildren.filter((c) => isDataAtsRecord(c) && !isDummyDataAnak(c));
+    // Filter ketat: Hanya data yang merupakan data ATS riil, bukan data dummy, dan sesuai ketentuan RT/RW
+    const validLiveAtsRecords = allDbChildren.filter((c) => {
+      if (!isDataAtsRecord(c) || isDummyDataAnak(c)) return false;
+      const parsed = parseAtsDetails(c.alasan_sekolah);
+      const kel = parsed.kelurahan;
+      const rw = parsed.rw;
+      const rt = parsed.rt;
+      if (!isValidMangkukusumanRtRw(kel, rw, rt)) return false;
+      if (!isValidKejambonRtRw(kel, rw, rt)) return false;
+      if (!isValidBandungRtRw(kel, rw, rt)) return false;
+      if (!isValidKalinyamatWetanRtRw(kel, rw, rt)) return false;
+      if (!isValidKeturenRtRw(kel, rw, rt)) return false;
+      if (!isValidDebongKulonRtRw(kel, rw, rt)) return false;
+      if (!isValidDebongLorRtRw(kel, rw, rt)) return false;
+      if (!isValidTunonRtRw(kel, rw, rt)) return false;
+      if (!isValidPekaumanRtRw(kel, rw, rt)) return false;
+      if (!isValidPanggungRtRw(kel, rw, rt)) return false;
+      if (!isValidTegalsariRtRw(kel, rw, rt)) return false;
+      return true;
+    });
     const totalLiveRecords = validLiveAtsRecords.length;
 
     // 2. Inisialisasi seluruh 27 Kelurahan resmi Kota Tegal (0 data awal)
@@ -930,6 +949,9 @@ export async function getDaftarNamaAtsRekapAction(params: {
       const itemKel = normalizeWilayah(parsed.kelurahan || kom?.kelurahan || "");
 
       // Filter Tingkat Wilayah
+      if (!isValidMangkukusumanRtRw(itemKel, parsed.rw, parsed.rt)) {
+        continue;
+      }
       if (params.tingkat === "kecamatan" && params.kecamatan) {
         const targetKec = normalizeWilayah(params.kecamatan);
         if (!itemKec.includes(targetKec) && !targetKec.includes(itemKec)) {

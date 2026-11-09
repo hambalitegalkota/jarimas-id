@@ -1094,6 +1094,72 @@ export function getPosyanduCakupanWilayah(targetKomunitas: any): PosyanduCakupan
   }
 
 
+  // Khusus Kelurahan Mangkukusuman (Kecamatan Tegal Timur)
+  // - Posyandu Kenanga: RW 1 (RT 01 s/d RT 05)
+  // - Posyandu Cempaka: RW 1 (RT 06 s/d RT 10)
+  // - Posyandu Melati: RW 2 (RT 01 s/d RT 10)
+  // - Posyandu Fatmawati: RW 3 (RT 01 s/d RT 11)
+  const isMangkukusumanPosyandu =
+    kel.includes("mangkukusuman") ||
+    nama.includes("mangkukusuman") ||
+    targetKomunitas?.id === "a0d414e2-df5d-448c-88df-e60568a22dc1" ||
+    targetKomunitas?.id === "c933d5bb-5789-47de-8375-c15d0136b676" ||
+    targetKomunitas?.id === "eba39233-1cd5-47f4-8c44-30b15ba67820" ||
+    targetKomunitas?.id === "6f3d79cf-9ab4-436b-8cfe-59751a6b3a6d";
+
+  if (isMangkukusumanPosyandu) {
+    if (
+      targetKomunitas?.id === "a0d414e2-df5d-448c-88df-e60568a22dc1" ||
+      nama.includes("kenanga")
+    ) {
+      return {
+        rw: "01",
+        rtList: ["01", "02", "03", "04", "05", "1", "2", "3", "4", "5"],
+      };
+    }
+    if (
+      targetKomunitas?.id === "c933d5bb-5789-47de-8375-c15d0136b676" ||
+      nama.includes("cempaka")
+    ) {
+      return {
+        rw: "01",
+        rtList: ["06", "07", "08", "09", "10", "6", "7", "8", "9", "10"],
+      };
+    }
+    if (
+      targetKomunitas?.id === "eba39233-1cd5-47f4-8c44-30b15ba67820" ||
+      nama.includes("melati")
+    ) {
+      return {
+        rw: "02",
+        rtList: [
+          "01", "02", "03", "04", "05", "06", "07", "08", "09", "10",
+          "1", "2", "3", "4", "5", "6", "7", "8", "9", "10",
+        ],
+      };
+    }
+    if (
+      targetKomunitas?.id === "6f3d79cf-9ab4-436b-8cfe-59751a6b3a6d" ||
+      nama.includes("fatmawati")
+    ) {
+      return {
+        rw: "03",
+        rtList: [
+          "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11",
+          "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11",
+        ],
+      };
+    }
+    if (targetKomunitas?.rw === "04" || targetKomunitas?.rw === "4") {
+      return {
+        rw: "04",
+        rtList: Array.from({ length: 14 }, (_, i) => String(i + 1).padStart(2, "0")).concat(
+          Array.from({ length: 14 }, (_, i) => String(i + 1))
+        ),
+      };
+    }
+  }
+
   // Khusus Kelurahan Kejambon (Kecamatan Tegal Timur)
   // - Posyandu Teratai Merah: RW 1 (RT 01 s/d RT 06)
   // - Posyandu Kamboja 1: RW 2 (RT 01, RT 02, RT 03)
@@ -2348,6 +2414,7 @@ export function getPosyanduCoverageDisplay(komunitas: any): PosyanduCoverageResu
       .trim()
       .toLowerCase();
     const MAPPED_KELURAHAN_SET = new Set([
+      "mangkukusuman",
       "debong lor",
       "debong kidul",
       "debong kulon",
@@ -2494,6 +2561,62 @@ export function isValidDebongLorRtRw(
   };
 
   const maxRt = maxRtMap[rwNum] || 8;
+  return rtNum >= 1 && rtNum <= maxRt;
+}
+
+/**
+ * Validasi ketentuan khusus RW & RT di Kelurahan Mangkukusuman, Kecamatan Tegal Timur:
+ * - Jumlah RW ada 4 (RW 1 s/d 4)
+ * - RW 1 Jumlah RT 10 (RT 1 s/d 10)
+ * - RW 2 Jumlah RT 10 (RT 1 s/d 10)
+ * - RW 3 Jumlah RT 11 (RT 1 s/d 11)
+ * - RW 4 Jumlah RT 14 (RT 1 s/d 14)
+ * - Tetap mempertahankan RW "Belum Tahu" dan RT "Belum Tahu"
+ */
+export function isValidMangkukusumanRtRw(
+  kel?: string | null,
+  rw?: string | null,
+  rt?: string | null
+): boolean {
+  if (!kel) return true;
+  const cleanKel = normalizeWilayah(kel);
+  if (!cleanKel.includes("mangkukusuman")) return true;
+
+  const rawRw = (rw || "").trim().toLowerCase();
+  const rawRt = (rt || "").trim().toLowerCase();
+
+  const isRwBelumTahu =
+    !rawRw ||
+    rawRw.includes("belum") ||
+    rawRw.includes("tidak") ||
+    rawRw === "-" ||
+    rawRw === "0" ||
+    rawRw === "00";
+  if (isRwBelumTahu) return true;
+
+  const rwNum = parseInt(rawRw.replace(/\D/g, ""), 10);
+  if (isNaN(rwNum) || rwNum < 1 || rwNum > 4) return false;
+
+  const isRtBelumTahu =
+    !rawRt ||
+    rawRt.includes("belum") ||
+    rawRt.includes("tidak") ||
+    rawRt === "-" ||
+    rawRt === "0" ||
+    rawRt === "00";
+  if (isRtBelumTahu) return true;
+
+  const rtNum = parseInt(rawRt.replace(/\D/g, ""), 10);
+  if (isNaN(rtNum)) return false;
+
+  const maxRtMap: Record<number, number> = {
+    1: 10,
+    2: 10,
+    3: 11,
+    4: 14,
+  };
+
+  const maxRt = maxRtMap[rwNum] || 10;
   return rtNum >= 1 && rtNum <= maxRt;
 }
 
@@ -3164,6 +3287,22 @@ export function isDataAnakMatchingKomunitas(
 ): boolean {
   // Abaikan data anak yang sudah dihapus atau dicatat keluar dari sistem
   if (item.status_approval === "deleted" || item.status_approval === "keluar") {
+    return false;
+  }
+
+  // Ketentuan Khusus Kelurahan Mangkukusuman: Hapus/abaikan data yang tidak sesuai ketentuan resmi RW & RT Mangkukusuman
+  const isDomMangkukusuman = (item.domisili_kelurahan || "").toLowerCase().includes("mangkukusuman");
+  const isKkMangkukusuman = (item.kk_kelurahan || "").toLowerCase().includes("mangkukusuman");
+  if (isDomMangkukusuman && !isValidMangkukusumanRtRw(item.domisili_kelurahan, item.domisili_rw, item.domisili_rt)) {
+    return false;
+  }
+  if (isKkMangkukusuman && !isValidMangkukusumanRtRw(item.kk_kelurahan, item.kk_rw, item.kk_rt)) {
+    return false;
+  }
+  if (
+    !isValidMangkukusumanRtRw(item.domisili_kelurahan, item.domisili_rw, item.domisili_rt) &&
+    !isValidMangkukusumanRtRw(item.kk_kelurahan, item.kk_rw, item.kk_rt)
+  ) {
     return false;
   }
 
