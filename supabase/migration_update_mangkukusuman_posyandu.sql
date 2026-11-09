@@ -100,3 +100,4 @@ WHERE kelurahan ILIKE '%mangkukusuman%'
     OR
     (rw ILIKE '%4%' AND regexp_replace(rw, '\D', '', 'g')::int = 4 AND rt IS NOT NULL AND rt != '' AND rt NOT ILIKE '%belum%' AND rt != '0' AND rt != '00' AND rt != '-' AND regexp_replace(rt, '\D', '', 'g')::int > 14)
   );
+
