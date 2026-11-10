@@ -79,6 +79,11 @@ import {
   computeTierAndApprover,
   extractKomunitasMetadata,
 } from "@/lib/admin-helpers";
+import {
+  syncPosyanduMemberToWargaAndBerjenjang,
+  syncPosyanduCoverageToAllMembers,
+  syncAllPosyanduMembers,
+} from "@/lib/posyandu-sync-helpers";
 import type {
   KomunitasWithMembership,
   AnggotaKomunitasDetail,
@@ -2679,12 +2684,24 @@ export async function requestJoinKomunitas({
       if (insertError) throw insertError;
     }
 
-    // CASCADE JOIN: Apabila bergabung di Komunitas Posyandu atau Satuan PAUD,
-    // otomatis tergabung di Komunitas Kelurahan, Kecamatan, dan Kota Tegal sesuai wilayahnya.
-    const isPosyanduOrPaud =
-      seedItem?.jenis === "posyandu" || seedItem?.jenis === "satuan_paud";
+    // CASCADE JOIN: Apabila bergabung di Komunitas Posyandu,
+    // otomatis tergabung ke Komunitas Posyandu Berjenjang dan Komunitas Warga Kita (RT, RW, Kelurahan, Kecamatan, Kota).
+    // Apabila bergabung di Satuan PAUD, otomatis tergabung di Komunitas Kelurahan, Kecamatan, dan Kota Tegal.
+    const isPosyandu = seedItem?.jenis === "posyandu";
+    const isPaud = seedItem?.jenis === "satuan_paud";
 
-    if (isPosyanduOrPaud) {
+    if (isPosyandu) {
+      try {
+        await syncPosyanduMemberToWargaAndBerjenjang({
+          userId: user.id,
+          posyanduId: dbKomunitasId,
+          role: appliedRole || initialActiveRole,
+          client: supabase,
+        });
+      } catch (posSyncErr) {
+        console.warn("Notice: syncPosyanduMemberToWargaAndBerjenjang in requestJoinKomunitas error:", posSyncErr);
+      }
+    } else if (isPaud) {
       let targetKecamatan = seedItem?.kecamatan;
       let targetKelurahan = seedItem?.kelurahan;
 
@@ -2774,7 +2791,9 @@ export async function requestJoinKomunitas({
     revalidatePath("/profil");
     revalidatePath("/admin/approval");
 
-    const cascadeWilayahNote = isPosyanduOrPaud
+    const cascadeWilayahNote = isPosyandu
+      ? " Anda juga otomatis terhubung ke Komunitas Posyandu Berjenjang dan Komunitas Warga Kita sesuai cakupan wilayah."
+      : isPaud
       ? " Anda juga otomatis terhubung ke Komunitas Kelurahan, Kecamatan, dan Kota Tegal sesuai wilayah."
       : "";
 
@@ -5700,6 +5719,15 @@ export async function updateKomunitasInformasiOperasional({
       throw upsertErr;
     }
 
+    // Jika komunitas posyandu, otomatis sinkronkan seluruh anggotanya ke Warga Kita dan Posyandu Berjenjang
+    if (seedItem?.jenis === "posyandu" || updatePayload.jenis === "posyandu") {
+      try {
+        await syncPosyanduCoverageToAllMembers(dbKomunitasId);
+      } catch (syncMembersErr) {
+        console.warn("Notice: syncPosyanduCoverageToAllMembers error:", syncMembersErr);
+      }
+    }
+
     revalidatePath(`/komunitas/${komunitasId}`);
     revalidatePath(`/komunitas/${dbKomunitasId}`);
     revalidatePath("/komunitas");
@@ -6066,6 +6094,16 @@ export async function getPaudKomunitasRekapTableAction(): Promise<{
   }
 }
 
-
-
+/**
+ * Server Action: Sinkronkan seluruh anggota posyandu aktif ke Komunitas Warga Kita (RT, RW, Kelurahan, Kecamatan, Kota)
+ * dan Komunitas Posyandu Berjenjang (Kelurahan, Kecamatan, Kota Tegal).
+ */
+export async function syncAllPosyanduMembersAction(): Promise<{
+  success: boolean;
+  totalMembers: number;
+  totalSynced: number;
+  message: string;
+}> {
+  return syncAllPosyanduMembers();
+}
 

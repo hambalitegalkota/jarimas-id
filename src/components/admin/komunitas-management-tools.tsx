@@ -28,6 +28,7 @@ import {
   createKomunitasAdminAction,
   updateKomunitasAdminAction,
   deleteKomunitasAdminAction,
+  syncAllPosyanduMembersAction,
 } from "@/app/actions/komunitas";
 import { ManageGrupMembersModal } from "@/components/kabar/manage-grup-members-modal";
 import type { KomunitasWithMembership } from "@/types/database";
@@ -64,6 +65,25 @@ export function KomunitasManagementTools() {
   const [editItem, setEditItem] = useState<KomunitasWithMembership | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<KomunitasWithMembership | null>(null);
   const [memberManageTarget, setMemberManageTarget] = useState<KomunitasWithMembership | null>(null);
+  const [isSyncing, setIsSyncing] = useState(false);
+
+  const handleSyncAllPosyandu = async () => {
+    setIsSyncing(true);
+    setFeedback(null);
+    try {
+      const res = await syncAllPosyanduMembersAction();
+      if (res.success) {
+        setFeedback({ type: "success", message: res.message });
+        fetchList(page);
+      } else {
+        setFeedback({ type: "error", message: res.message });
+      }
+    } catch (err: any) {
+      setFeedback({ type: "error", message: err.message || "Gagal menyinkronkan data." });
+    } finally {
+      setIsSyncing(false);
+    }
+  };
 
   // Load komunitas list dengan parameter filter dan pengurutan
   const fetchList = async (
@@ -233,6 +253,21 @@ export function KomunitasManagementTools() {
           >
             <RefreshCw className={`h-4 w-4 ${loadingList ? "animate-spin text-primary" : ""}`} />
             <span>Segarkan</span>
+          </button>
+
+          <button
+            type="button"
+            disabled={isSyncing}
+            onClick={handleSyncAllPosyandu}
+            className="inline-flex min-h-[42px] h-10 items-center gap-2 px-3.5 rounded-lg border border-primary/30 bg-primary/5 hover:bg-primary/10 text-primary text-xs font-bold transition-all disabled:opacity-50 cursor-pointer active:scale-98"
+            title="Sinkronkan seluruh kader & anggota posyandu ke Komunitas Posyandu Berjenjang dan Warga Kita (RT, RW, Kelurahan, Kecamatan, Kota)"
+          >
+            {isSyncing ? (
+              <Loader2 className="h-4 w-4 animate-spin text-primary" />
+            ) : (
+              <Sparkles className="h-4 w-4 text-primary" />
+            )}
+            <span>{isSyncing ? "Menyinkronkan..." : "Sinkronkan Anggota Posyandu"}</span>
           </button>
 
           <button

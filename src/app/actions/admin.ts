@@ -13,6 +13,7 @@ import {
   isProtectedSuperAdmin,
 } from "@/lib/utils";
 import { findOrGenerateKomunitasSeed } from "@/lib/constants/tegal-data";
+import { syncPosyanduMemberToWargaAndBerjenjang } from "@/lib/posyandu-sync-helpers";
 import {
   computeTierAndApprover,
   checkUserCanApproveItem,
@@ -604,6 +605,20 @@ export async function approveMemberRole(anggotaId: string): Promise<{
         }
       } catch {
         // Abaikan jika cascade sync role gagal
+      }
+    }
+
+    // Jika permohonan keanggotaan Posyandu disetujui, otomatis sinkronkan ke Warga Kita dan Posyandu Berjenjang
+    if (komInfo?.jenis === "posyandu") {
+      try {
+        await syncPosyanduMemberToWargaAndBerjenjang({
+          userId: memberTarget.user_id,
+          posyanduId: memberTarget.komunitas_id,
+          role: targetPeran,
+          client: activeWriteClient,
+        });
+      } catch (syncPosErr) {
+        console.warn("Notice: syncPosyanduMemberToWargaAndBerjenjang in approve error:", syncPosErr);
       }
     }
 
