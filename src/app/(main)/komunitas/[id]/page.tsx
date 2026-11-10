@@ -22,7 +22,9 @@ import {
 import {
   getKomunitasDetail,
   getAnggotaKomunitas,
+  getKomunitasBerjenjangMemberSummary,
 } from "@/app/actions/komunitas";
+import { isAnyKomunitasBerjenjang } from "@/lib/constants/tegal-data";
 import { getDataAnakByKomunitas } from "@/app/actions/data-anak";
 import { getDataAtsByKomunitas } from "@/app/actions/data-ats";
 import { getKabarFeed } from "@/app/actions/kabar";
@@ -74,7 +76,11 @@ export default async function KomunitasDetailPage({
     notFound();
   }
 
-  const { canShowDataAnak, canShowDataAts } = getKomunitasFeatureCards(komunitas);
+  const isBerjenjang = isAnyKomunitasBerjenjang(id) || isAnyKomunitasBerjenjang(komunitas.id);
+  const { canShowDataAnak: canShowDataAnakRaw, canShowDataAts: canShowDataAtsRaw } = getKomunitasFeatureCards(komunitas);
+  // Komunitas berjenjang fokus pada 3 Tab: Anggota (dengan rekapitulasi basis), Kabar, dan Percakapan
+  const canShowDataAnak = isBerjenjang ? false : canShowDataAnakRaw;
+  const canShowDataAts = isBerjenjang ? false : canShowDataAtsRaw;
   const isPaud = isKomunitasLayananPaud(komunitas, komunitas.nama, komunitas.jenis);
   const hasRootAccess = Boolean(isSuperOrAdminPusat || isSuperAdmin || isAdminPusat);
 
@@ -104,6 +110,7 @@ export default async function KomunitasDetailPage({
     canManageAdminsRes,
     rekapDataAtsRes,
     rekapAtsAuthAccess,
+    berjenjangSummaryRes,
   ] = await Promise.all([
     getAnggotaKomunitas(id),
     canShowDataAnak
@@ -140,6 +147,7 @@ export default async function KomunitasDetailPage({
     currentUserId ? checkCanManageKomunitasAdminsAction(id) : Promise.resolve(false),
     needsAtsRekap ? getRekapDataAtsAction() : Promise.resolve({ data: null }),
     needsAtsRekap ? checkUserRekapAdminAccess() : Promise.resolve({ canAccess: false, userPeran: undefined }),
+    isBerjenjang ? getKomunitasBerjenjangMemberSummary(id) : Promise.resolve(null),
   ]);
 
   const canAssignAdmin = hasRootAccess ? true : Boolean(canManageAdminsRes);
@@ -218,6 +226,7 @@ export default async function KomunitasDetailPage({
         userRoleDataAnak={dataAnakRes?.userRole}
         scopedRekapResult={scopedRekapCalc}
         canAssignAdmin={canAssignAdmin}
+        berjenjangSummary={berjenjangSummaryRes}
       />
     </div>
   );

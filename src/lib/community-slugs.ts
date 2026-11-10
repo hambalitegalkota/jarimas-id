@@ -277,6 +277,65 @@ export function resolveKomunitasIdBySlug(slug: string): string | null {
     }
   }
 
+  // 4. Pola Komunitas Berjenjang Posyandu
+  if (cleanSlug === "posyandu-kota-tegal" || cleanSlug === "komunitas-posyandu-kota-tegal") {
+    return "kom-posyandu-kota-tegal";
+  }
+  const posKecMatch = cleanSlug.match(/^posyandu-kecamatan-(.+)$/);
+  if (posKecMatch) {
+    const kecSlug = posKecMatch[1];
+    for (const kecName of Object.keys(KOTA_TEGAL_DATA)) {
+      if (slugify(kecName) === kecSlug) {
+        return `kom-posyandu-${kecSlug}`;
+      }
+    }
+  }
+  const posKelMatch = cleanSlug.match(/^posyandu-kelurahan-(.+)$/);
+  if (posKelMatch) {
+    const kelSlug = posKelMatch[1];
+    for (const [kecName, kecData] of Object.entries(KOTA_TEGAL_DATA)) {
+      for (const kelName of Object.keys(kecData.kelurahan)) {
+        if (slugify(kelName) === kelSlug) {
+          return `kom-posyandu-${slugify(kecName)}-${kelSlug}`;
+        }
+      }
+    }
+  }
+
+  // 5. Pola Komunitas Berjenjang PAUD
+  const paudPrefixes = [
+    { prefix: "paud-", idPrefix: "kom-paud-" },
+    { prefix: "paud-tk-", idPrefix: "kom-paud-tk-" },
+    { prefix: "paud-ra-", idPrefix: "kom-paud-ra-" },
+    { prefix: "paud-pnf-", idPrefix: "kom-paud-pnf-" },
+  ];
+
+  for (const p of paudPrefixes) {
+    if (cleanSlug === `${p.prefix}kota-tegal` || cleanSlug === `komunitas-${p.prefix}kota-tegal`) {
+      return `${p.idPrefix}kota-tegal`;
+    }
+    const paudKecMatch = cleanSlug.match(new RegExp(`^${p.prefix}kecamatan-(.+)$`));
+    if (paudKecMatch) {
+      const kecSlug = paudKecMatch[1];
+      for (const kecName of Object.keys(KOTA_TEGAL_DATA)) {
+        if (slugify(kecName) === kecSlug) {
+          return `${p.idPrefix}${kecSlug}`;
+        }
+      }
+    }
+    const paudKelMatch = cleanSlug.match(new RegExp(`^${p.prefix}kelurahan-(.+)$`));
+    if (paudKelMatch) {
+      const kelSlug = paudKelMatch[1];
+      for (const [kecName, kecData] of Object.entries(KOTA_TEGAL_DATA)) {
+        for (const kelName of Object.keys(kecData.kelurahan)) {
+          if (slugify(kelName) === kelSlug) {
+            return `${p.idPrefix}${slugify(kecName)}-${kelSlug}`;
+          }
+        }
+      }
+    }
+  }
+
   return null;
 }
 

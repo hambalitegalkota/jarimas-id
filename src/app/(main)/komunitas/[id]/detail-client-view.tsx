@@ -62,6 +62,10 @@ import { CreateKabarModal } from "@/components/kabar/create-kabar-modal";
 import { LaporanKaderSpmFormCard } from "@/components/komunitas/laporan-kader-spm-form-card";
 import { RekapLaporanKaderWilayahCard } from "@/components/komunitas/rekap-laporan-kader-wilayah-card";
 import { KomunitasPercakapanTab } from "@/components/komunitas/komunitas-percakapan-tab";
+import {
+  KomunitasBerjenjangAnggotaTab,
+  type KomunitasBerjenjangMemberSummaryResult,
+} from "@/components/komunitas/komunitas-berjenjang-anggota-tab";
 import { useGlobalMessageNotification } from "@/components/notifications/global-message-notification-provider";
 import { AjukanPerubahanPeranModal } from "@/components/komunitas/ajukan-perubahan-peran-modal";
 import { PermohonanAnggotaModal } from "@/components/komunitas/permohonan-anggota-modal";
@@ -145,6 +149,7 @@ interface KomunitasDetailClientViewProps {
   rekapDataAts?: RekapDataAtsResult | null;
   canAccessRekapNamesAts?: boolean;
   rekapAtsUserPeran?: string;
+  berjenjangSummary?: KomunitasBerjenjangMemberSummaryResult | null;
 }
 
 export function KomunitasDetailClientView({
@@ -175,6 +180,7 @@ export function KomunitasDetailClientView({
   rekapDataAts,
   canAccessRekapNamesAts,
   rekapAtsUserPeran,
+  berjenjangSummary,
 }: KomunitasDetailClientViewProps) {
   const [komunitasData, setKomunitasData] = useState(komunitas);
 
@@ -244,7 +250,14 @@ export function KomunitasDetailClientView({
     | "kabar"
     | "percakapan";
 
+  const isBerjenjang = Boolean(berjenjangSummary?.isBerjenjang);
+
   const [activeMainTab, setActiveMainTab] = useState<KomunitasMainTab>(() => {
+    if (isBerjenjang) {
+      if (currentSubtab === "kabar") return "kabar";
+      if (currentSubtab === "percakapan") return "percakapan";
+      return "anggota";
+    }
     if (currentSubtab === "rekap") return "rekap";
     if (currentSubtab === "ats") return "ats";
     if (currentSubtab === "laporan_spm" || currentSubtab === "spm") return "laporan_spm";
@@ -1519,6 +1532,105 @@ export function KomunitasDetailClientView({
                 (meta.hasKel || Boolean(meta.rawKec) || (!meta.hasRt && !meta.hasRw)))
           );
 
+          if (isBerjenjang) {
+            return (
+              <div className="pb-2 border-b border-border/80 flex flex-wrap items-center gap-1.5 sm:gap-2 w-full">
+                {/* Tab Anggota */}
+                <button
+                  type="button"
+                  onClick={() => setActiveMainTab("anggota")}
+                  className={cn(
+                    "flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-2xs sm:text-xs font-semibold transition-all cursor-pointer border flex-1 sm:flex-initial min-w-[fit-content] whitespace-nowrap",
+                    activeMainTab === "anggota"
+                      ? "bg-primary text-primary-foreground border-primary shadow-xs font-bold"
+                      : "bg-card text-muted-foreground border-border hover:bg-muted hover:text-foreground"
+                  )}
+                >
+                  <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+                  <span>
+                    {isPosyandu ? (
+                      <>
+                        <span className="sm:hidden">Kader</span>
+                        <span className="hidden sm:inline">Daftar Kader</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="sm:hidden">Pendidik</span>
+                        <span className="hidden sm:inline">Anggota &amp; Pendidik</span>
+                      </>
+                    )}
+                  </span>
+                  <span
+                    className={cn(
+                      "px-1.5 py-0.5 rounded-full font-mono text-2xs font-bold leading-none shrink-0",
+                      activeMainTab === "anggota"
+                        ? "bg-white/25 text-white"
+                        : "bg-muted text-muted-foreground"
+                    )}
+                  >
+                    {berjenjangSummary ? berjenjangSummary.totalAnggota : approvedMembers.length}
+                  </span>
+                </button>
+
+                {/* Tab Kabar */}
+                <button
+                  type="button"
+                  onClick={() => setActiveMainTab("kabar")}
+                  className={cn(
+                    "flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-2xs sm:text-xs font-semibold transition-all cursor-pointer border flex-1 sm:flex-initial min-w-[fit-content] whitespace-nowrap",
+                    activeMainTab === "kabar"
+                      ? "bg-primary text-primary-foreground border-primary shadow-xs font-bold"
+                      : "bg-card text-muted-foreground border-border hover:bg-muted hover:text-foreground"
+                  )}
+                >
+                  <MessageSquare className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+                  <span>
+                    Kabar<span className="hidden md:inline"> Komunitas</span>
+                  </span>
+                  <span
+                    className={cn(
+                      "px-1.5 py-0.5 rounded-full font-mono text-2xs font-bold leading-none shrink-0",
+                      activeMainTab === "kabar"
+                        ? "bg-white/25 text-white"
+                        : "bg-muted text-muted-foreground"
+                    )}
+                  >
+                    {kabarKomunitas.length}
+                  </span>
+                </button>
+
+                {/* Tab Percakapan */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveMainTab("percakapan");
+                    markGroupAsRead(komunitasData.id);
+                    const validId = toValidUUID(komunitasData.id);
+                    if (validId && validId !== komunitasData.id) {
+                      markGroupAsRead(validId);
+                    }
+                  }}
+                  className={cn(
+                    "flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-2xs sm:text-xs font-semibold transition-all cursor-pointer border flex-1 sm:flex-initial min-w-[fit-content] whitespace-nowrap",
+                    activeMainTab === "percakapan"
+                      ? "bg-primary text-primary-foreground border-primary shadow-xs font-bold"
+                      : "bg-card text-muted-foreground border-border hover:bg-muted hover:text-foreground"
+                  )}
+                >
+                  <MessageCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+                  <span>
+                    Percakapan<span className="hidden md:inline"> Komunitas</span>
+                  </span>
+                  {communityUnreadCount > 0 && (
+                    <span className="px-1.5 py-0.5 rounded-full font-mono text-2xs bg-rose-500 text-white font-bold animate-pulse leading-none shrink-0">
+                      {communityUnreadCount}
+                    </span>
+                  )}
+                </button>
+              </div>
+            );
+          }
+
           return (
             <div className="pb-2 border-b border-border/80 flex flex-wrap items-center gap-1.5 sm:gap-2 w-full">
               {/* Tab 1: Data Anak (0-6 Thn) / Balita / Siswa */}
@@ -2323,6 +2435,15 @@ export function KomunitasDetailClientView({
 
         {/* TAB 5: DAFTAR ANGGOTA */}
         {activeMainTab === "anggota" && (
+          isBerjenjang && berjenjangSummary ? (
+            <div className="animate-in fade-in duration-150 pb-8">
+              <KomunitasBerjenjangAnggotaTab
+                summary={berjenjangSummary}
+                komunitasNama={komunitasData.nama}
+                currentUserId={currentUserId}
+              />
+            </div>
+          ) : (
           <div className="space-y-4 animate-in fade-in duration-150 pb-8">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 bg-card p-3 sm:p-3.5 rounded-xl border border-border shadow-2xs">
               <div className="space-y-0.5">
@@ -2857,6 +2978,7 @@ export function KomunitasDetailClientView({
               </div>
             )}
           </div>
+          )
         )}
 
         {/* TAB 6: KABAR KOMUNITAS */}

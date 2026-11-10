@@ -2163,6 +2163,341 @@ export function generateWargaKomunitasHierarchy({
   return items;
 }
 
+/**
+ * Generator Komunitas Berjenjang Posyandu Kota Tegal:
+ * Menghimpun kader posyandu dari tingkat Kelurahan, Kecamatan, hingga Kota Tegal.
+ */
+export function generatePosyanduKomunitasHierarchy({
+  kecamatan,
+  kelurahan,
+}: {
+  kecamatan?: string;
+  kelurahan?: string;
+}): MasterKomunitasSeedItem[] {
+  const hasKec = Boolean(kecamatan && kecamatan !== "semua");
+  const hasKel = Boolean(kelurahan && kelurahan !== "semua");
+
+  // 1. Kasus Kelurahan Terpilih: 1 Komunitas Posyandu Kelurahan
+  if (hasKec && hasKel) {
+    const kecSlug = slugify(kecamatan!);
+    const kelSlug = slugify(kelurahan!);
+    return [
+      {
+        id: `kom-posyandu-${kecSlug}-${kelSlug}`,
+        nama: `Komunitas Posyandu Kelurahan: ${kelurahan}, Kecamatan: ${kecamatan}`,
+        jenis: "posyandu",
+        kecamatan: kecamatan!,
+        kelurahan: kelurahan!,
+        lokasi: `Kelurahan ${kelurahan}, Kecamatan ${kecamatan}, Kota Tegal`,
+        deskripsi: `Komunitas koordinasi kader Posyandu tingkat Kelurahan ${kelurahan}, Kecamatan ${kecamatan}, Kota Tegal yang menghimpun kader dari seluruh Posyandu di wilayah ini.`,
+        kontak: `Forum Kader Posyandu Kelurahan ${kelurahan}`,
+        jadwal: `Pertemuan Rutin Kader Posyandu Kelurahan ${kelurahan}`,
+      },
+    ];
+  }
+
+  // 2. Kasus Kecamatan Terpilih (Kecamatan != "Kota Tegal", Kelurahan == "semua"):
+  // Komunitas Posyandu Kecamatan + Komunitas Posyandu seluruh Kelurahan di kecamatan ini
+  if (hasKec && kecamatan !== "Kota Tegal" && kecamatan !== "kota-tegal") {
+    const kecSlug = slugify(kecamatan!);
+    const items: MasterKomunitasSeedItem[] = [
+      {
+        id: `kom-posyandu-${kecSlug}`,
+        nama: `Komunitas Posyandu Kecamatan: ${kecamatan}`,
+        jenis: "posyandu",
+        kecamatan: kecamatan!,
+        kelurahan: "Semua Kelurahan",
+        lokasi: `Kecamatan ${kecamatan}, Kota Tegal`,
+        deskripsi: `Komunitas koordinasi kader Posyandu se-Kecamatan ${kecamatan}, Kota Tegal yang menghimpun seluruh posyandu di wilayah ini.`,
+        kontak: `Pengurus Forum Posyandu Kecamatan ${kecamatan}`,
+        jadwal: `Rakor Posyandu Tingkat Kecamatan Bulanan`,
+      },
+    ];
+
+    const kecData = KOTA_TEGAL_DATA[kecamatan!];
+    if (kecData && kecData.kelurahan) {
+      Object.keys(kecData.kelurahan).forEach((kel) => {
+        const kelSlug = slugify(kel);
+        items.push({
+          id: `kom-posyandu-${kecSlug}-${kelSlug}`,
+          nama: `Komunitas Posyandu Kelurahan: ${kel}, Kecamatan: ${kecamatan}`,
+          jenis: "posyandu",
+          kecamatan: kecamatan!,
+          kelurahan: kel,
+          lokasi: `Kelurahan ${kel}, Kecamatan ${kecamatan}, Kota Tegal`,
+          deskripsi: `Komunitas koordinasi kader Posyandu tingkat Kelurahan ${kel}, Kecamatan ${kecamatan}, Kota Tegal.`,
+          kontak: `Forum Kader Posyandu Kelurahan ${kel}`,
+          jadwal: `Pertemuan Rutin Kader Posyandu Kelurahan ${kel}`,
+        });
+      });
+    }
+
+    return items;
+  }
+
+  // 3. Kasus Tingkat Kota Tegal (Seluruh Kota)
+  const items: MasterKomunitasSeedItem[] = [
+    {
+      id: "kom-posyandu-kota-tegal",
+      nama: "Komunitas Posyandu Kota Tegal",
+      jenis: "posyandu",
+      kecamatan: "Kota Tegal",
+      kelurahan: "Semua Kelurahan",
+      lokasi: "Kota Tegal, Jawa Tengah",
+      deskripsi:
+        "Forum komunikasi dan koordinasi kader Posyandu tingkat Kota Tegal yang menghimpun seluruh kader posyandu dari 4 kecamatan dan 27 kelurahan se-Kota Tegal.",
+      kontak: "Forum Komunikasi Posyandu Kota Tegal",
+      jadwal: "Forum Koordinasi Kader Posyandu Kota Tegal",
+    },
+  ];
+
+  const kecamatans = ["Tegal Timur", "Tegal Barat", "Tegal Selatan", "Margadana"];
+  kecamatans.forEach((kec) => {
+    items.push({
+      id: `kom-posyandu-${slugify(kec)}`,
+      nama: `Komunitas Posyandu Kecamatan: ${kec}`,
+      jenis: "posyandu",
+      kecamatan: kec,
+      kelurahan: "Semua Kelurahan",
+      lokasi: `Kecamatan ${kec}, Kota Tegal`,
+      deskripsi: `Komunitas koordinasi kader Posyandu se-Kecamatan ${kec}, Kota Tegal.`,
+      kontak: `Pengurus Forum Posyandu Kecamatan ${kec}`,
+      jadwal: `Rakor Posyandu Tingkat Kecamatan Bulanan`,
+    });
+  });
+
+  return items;
+}
+
+/**
+ * Generator Komunitas Berjenjang PAUD Kota Tegal:
+ * Menghimpun pendidik PAUD dari tingkat Kelurahan, Kecamatan, hingga Kota Tegal,
+ * dengan pengelompokan 3 bentuk PAUD (TK, RA, PAUD Non Formal) serta satu Komunitas Terpadu yang menyatukan ketiganya.
+ */
+export function generatePaudKomunitasHierarchy({
+  kecamatan,
+  kelurahan,
+  bentuk,
+}: {
+  kecamatan?: string;
+  kelurahan?: string;
+  bentuk?: string;
+}): MasterKomunitasSeedItem[] {
+  const hasKec = Boolean(kecamatan && kecamatan !== "semua");
+  const hasKel = Boolean(kelurahan && kelurahan !== "semua");
+  const cleanBentuk = (bentuk || "semua").toUpperCase();
+
+  const createPaudItem = (
+    level: "kota" | "kecamatan" | "kelurahan",
+    kec?: string,
+    kel?: string,
+    kelompokBentuk: "all" | "TK" | "RA" | "PNF" = "all"
+  ): MasterKomunitasSeedItem => {
+    const kecSlug = kec ? slugify(kec) : "kota-tegal";
+    const kelSlug = kel ? slugify(kel) : "";
+
+    let idSuffix = "";
+    let labelBentuk = "";
+    let descBentuk = "";
+
+    if (kelompokBentuk === "TK") {
+      idSuffix = "-tk";
+      labelBentuk = " TK";
+      descBentuk = "khusus satuan Taman Kanak-Kanak (TK)";
+    } else if (kelompokBentuk === "RA") {
+      idSuffix = "-ra";
+      labelBentuk = " RA";
+      descBentuk = "khusus satuan Raudhatul Athfal (RA)";
+    } else if (kelompokBentuk === "PNF") {
+      idSuffix = "-pnf";
+      labelBentuk = " Non Formal (KB, SPS, TPA, PKBM, SKB)";
+      descBentuk = "khusus satuan PAUD Non Formal (KB, SPS, TPA, PKBM, dan SKB)";
+    } else {
+      labelBentuk = " Terpadu";
+      descBentuk = "yang menyatukan 3 bentuk satuan PAUD: TK, RA, dan PAUD Non Formal (KB, SPS, TPA, PKBM, SKB)";
+    }
+
+    if (level === "kota") {
+      return {
+        id: `kom-paud${idSuffix}-kota-tegal`,
+        nama: `Komunitas PAUD${labelBentuk} Kota Tegal`,
+        jenis: "satuan_paud",
+        kecamatan: "Kota Tegal",
+        kelurahan: "Semua Kelurahan",
+        lokasi: "Kota Tegal, Jawa Tengah",
+        deskripsi: `Wadah silaturahmi, kolaborasi, dan koordinasi pendidik PAUD se-Kota Tegal ${descBentuk}.`,
+        kontak: `Forum Pendidik PAUD Kota Tegal`,
+        jadwal: `Pertemuan Rutin Pendidik PAUD Tingkat Kota Tegal`,
+      };
+    }
+
+    if (level === "kecamatan") {
+      return {
+        id: `kom-paud${idSuffix}-${kecSlug}`,
+        nama: `Komunitas PAUD${labelBentuk} Kecamatan: ${kec}`,
+        jenis: "satuan_paud",
+        kecamatan: kec!,
+        kelurahan: "Semua Kelurahan",
+        lokasi: `Kecamatan ${kec}, Kota Tegal`,
+        deskripsi: `Komunitas koordinasi pendidik PAUD se-Kecamatan ${kec}, Kota Tegal ${descBentuk}.`,
+        kontak: `Forum Komunikasi Pendidik PAUD Kecamatan ${kec}`,
+        jadwal: `Rakor Pendidik PAUD Kecamatan ${kec} Bulanan`,
+      };
+    }
+
+    return {
+      id: `kom-paud${idSuffix}-${kecSlug}-${kelSlug}`,
+      nama: `Komunitas PAUD${labelBentuk} Kelurahan: ${kel}, Kecamatan: ${kec}`,
+      jenis: "satuan_paud",
+      kecamatan: kec!,
+      kelurahan: kel!,
+      lokasi: `Kelurahan ${kel}, Kecamatan ${kec}, Kota Tegal`,
+      deskripsi: `Komunitas koordinasi pendidik PAUD tingkat Kelurahan ${kel}, Kecamatan ${kec}, Kota Tegal ${descBentuk}.`,
+      kontak: `Gugus PAUD Kelurahan ${kel}`,
+      jadwal: `Pertemuan Rutin Gugus PAUD Kelurahan ${kel}`,
+    };
+  };
+
+  const getShapes = (): ("all" | "TK" | "RA" | "PNF")[] => {
+    if (cleanBentuk === "TK") return ["all", "TK"];
+    if (cleanBentuk === "RA") return ["all", "RA"];
+    if (
+      cleanBentuk === "KB" ||
+      cleanBentuk === "SPS" ||
+      cleanBentuk === "TPA" ||
+      cleanBentuk === "PNF" ||
+      cleanBentuk.includes("NON FORMAL") ||
+      cleanBentuk === "PKBM" ||
+      cleanBentuk === "SKB"
+    ) {
+      return ["all", "PNF"];
+    }
+    return ["all", "TK", "RA", "PNF"];
+  };
+
+  const shapes = getShapes();
+
+  // 1. Kasus Kelurahan Terpilih
+  if (hasKec && hasKel) {
+    return shapes.map((sh) => createPaudItem("kelurahan", kecamatan, kelurahan, sh));
+  }
+
+  // 2. Kasus Kecamatan Terpilih (Kecamatan != "Kota Tegal", Kelurahan == "semua")
+  if (hasKec && kecamatan !== "Kota Tegal" && kecamatan !== "kota-tegal") {
+    const items: MasterKomunitasSeedItem[] = [];
+    shapes.forEach((sh) => {
+      items.push(createPaudItem("kecamatan", kecamatan, undefined, sh));
+    });
+
+    const kecData = KOTA_TEGAL_DATA[kecamatan!];
+    if (kecData && kecData.kelurahan) {
+      Object.keys(kecData.kelurahan).forEach((kel) => {
+        shapes.forEach((sh) => {
+          items.push(createPaudItem("kelurahan", kecamatan, kel, sh));
+        });
+      });
+    }
+    return items;
+  }
+
+  // 3. Kasus Tingkat Kota Tegal (Seluruh Kota)
+  const items: MasterKomunitasSeedItem[] = [];
+  shapes.forEach((sh) => {
+    items.push(createPaudItem("kota", undefined, undefined, sh));
+  });
+
+  const kecamatans = ["Tegal Timur", "Tegal Barat", "Tegal Selatan", "Margadana"];
+  kecamatans.forEach((kec) => {
+    shapes.forEach((sh) => {
+      items.push(createPaudItem("kecamatan", kec, undefined, sh));
+    });
+  });
+
+  return items;
+}
+
+/**
+ * Cek apakah komunitas merupakan komunitas berjenjang Posyandu
+ */
+export function isKomunitasBerjenjangPosyandu(komunitasIdOrObj?: any): boolean {
+  if (!komunitasIdOrObj) return false;
+  const id = typeof komunitasIdOrObj === "string" ? komunitasIdOrObj : komunitasIdOrObj?.id || "";
+  const nama = typeof komunitasIdOrObj === "object" ? komunitasIdOrObj?.nama || "" : "";
+  const cleanId = id.toLowerCase();
+  const cleanNama = nama.toLowerCase();
+
+  if (cleanId === "kom-posyandu-kota-tegal" || cleanId.startsWith("kom-posyandu-")) return true;
+  if (cleanNama.includes("komunitas posyandu kota tegal")) return true;
+  if (cleanNama.includes("komunitas posyandu kecamatan")) return true;
+  if (cleanNama.includes("komunitas posyandu kelurahan")) return true;
+
+  const posyanduHierarchyIds = [
+    "kom-posyandu-kota-tegal",
+    "kom-posyandu-tegal-timur",
+    "kom-posyandu-tegal-barat",
+    "kom-posyandu-tegal-selatan",
+    "kom-posyandu-margadana",
+  ];
+  if (posyanduHierarchyIds.some((hid) => toValidUUID(hid) === id)) return true;
+
+  for (const [kecName, kecData] of Object.entries(KOTA_TEGAL_DATA)) {
+    const kecSlug = slugify(kecName);
+    for (const kelName of Object.keys(kecData.kelurahan)) {
+      const kelSlug = slugify(kelName);
+      const hid = `kom-posyandu-${kecSlug}-${kelSlug}`;
+      if (hid === cleanId || toValidUUID(hid) === id) return true;
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Cek apakah komunitas merupakan komunitas berjenjang PAUD
+ */
+export function isKomunitasBerjenjangPaud(komunitasIdOrObj?: any): boolean {
+  if (!komunitasIdOrObj) return false;
+  const id = typeof komunitasIdOrObj === "string" ? komunitasIdOrObj : komunitasIdOrObj?.id || "";
+  const nama = typeof komunitasIdOrObj === "object" ? komunitasIdOrObj?.nama || "" : "";
+  const cleanId = id.toLowerCase();
+  const cleanNama = nama.toLowerCase();
+
+  if (cleanId === "kom-paud-kota-tegal" || cleanId.startsWith("kom-paud-")) return true;
+  if (
+    cleanNama.includes("komunitas paud terpadu") ||
+    cleanNama.includes("komunitas paud tk") ||
+    cleanNama.includes("komunitas paud ra") ||
+    cleanNama.includes("komunitas paud non formal")
+  ) {
+    return true;
+  }
+  if (cleanNama.includes("komunitas paud kota tegal")) return true;
+  if (cleanNama.includes("komunitas paud kecamatan")) return true;
+  if (cleanNama.includes("komunitas paud kelurahan")) return true;
+
+  const prefixes = ["kom-paud-", "kom-paud-tk-", "kom-paud-ra-", "kom-paud-pnf-"];
+  const baseKecs = ["tegal-timur", "tegal-barat", "tegal-selatan", "margadana"];
+  for (const p of prefixes) {
+    if (toValidUUID(`${p}kota-tegal`) === id) return true;
+    for (const k of baseKecs) {
+      if (toValidUUID(`${p}${k}`) === id) return true;
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Cek umum apakah suatu komunitas merupakan Komunitas Berjenjang (Posyandu atau PAUD)
+ */
+export function isAnyKomunitasBerjenjang(komunitasIdOrObj?: any): boolean {
+  if (!komunitasIdOrObj) return false;
+  return (
+    isKomunitasBerjenjangPosyandu(komunitasIdOrObj) ||
+    isKomunitasBerjenjangPaud(komunitasIdOrObj)
+  );
+}
+
 const seedCache = new Map<string, MasterKomunitasSeedItem | null>();
 let masterSeedMap: Map<string, MasterKomunitasSeedItem> | null = null;
 
@@ -2336,6 +2671,159 @@ export function findOrGenerateKomunitasSeed(
               jadwal: "Pertemuan Rutin Warga Setiap Bulan",
             });
           }
+        }
+      }
+    }
+  }
+
+  // A. PENCCOKAN KOMUNITAS BERJENJANG POSYANDU
+  if (
+    komunitasId === "kom-posyandu-kota-tegal" ||
+    toValidUUID("kom-posyandu-kota-tegal") === targetUuid ||
+    toValidUUID("kom-posyandu-kota-tegal") === komunitasId
+  ) {
+    return setAndReturn({
+      id: "kom-posyandu-kota-tegal",
+      nama: "Komunitas Posyandu Kota Tegal",
+      jenis: "posyandu",
+      kecamatan: "Kota Tegal",
+      kelurahan: "Semua Kelurahan",
+      lokasi: "Kota Tegal, Jawa Tengah",
+      deskripsi:
+        "Forum komunikasi dan koordinasi kader Posyandu tingkat Kota Tegal yang menghimpun seluruh kader posyandu dari 4 kecamatan dan 27 kelurahan se-Kota Tegal.",
+      kontak: "Forum Komunikasi Posyandu Kota Tegal",
+      jadwal: "Forum Koordinasi Kader Posyandu Kota Tegal",
+    });
+  }
+
+  for (const [kecName, kecData] of Object.entries(KOTA_TEGAL_DATA)) {
+    const kecSlug = slugify(kecName);
+    const kecPosId = `kom-posyandu-${kecSlug}`;
+    if (
+      komunitasId === kecPosId ||
+      toValidUUID(kecPosId) === targetUuid ||
+      toValidUUID(kecPosId) === komunitasId
+    ) {
+      return setAndReturn({
+        id: kecPosId,
+        nama: `Komunitas Posyandu Kecamatan: ${kecName}`,
+        jenis: "posyandu",
+        kecamatan: kecName,
+        kelurahan: "Semua Kelurahan",
+        lokasi: `Kecamatan ${kecName}, Kota Tegal`,
+        deskripsi: `Komunitas koordinasi kader Posyandu se-Kecamatan ${kecName}, Kota Tegal yang menghimpun seluruh posyandu di wilayah ini.`,
+        kontak: `Pengurus Forum Posyandu Kecamatan ${kecName}`,
+        jadwal: `Rakor Posyandu Tingkat Kecamatan Bulanan`,
+      });
+    }
+
+    for (const kelName of Object.keys(kecData.kelurahan)) {
+      const kelSlug = slugify(kelName);
+      const kelPosId = `kom-posyandu-${kecSlug}-${kelSlug}`;
+      if (
+        komunitasId === kelPosId ||
+        toValidUUID(kelPosId) === targetUuid ||
+        toValidUUID(kelPosId) === komunitasId
+      ) {
+        return setAndReturn({
+          id: kelPosId,
+          nama: `Komunitas Posyandu Kelurahan: ${kelName}, Kecamatan: ${kecName}`,
+          jenis: "posyandu",
+          kecamatan: kecName,
+          kelurahan: kelName,
+          lokasi: `Kelurahan ${kelName}, Kecamatan ${kecName}, Kota Tegal`,
+          deskripsi: `Komunitas koordinasi kader Posyandu tingkat Kelurahan ${kelName}, Kecamatan ${kecName}, Kota Tegal yang menghimpun kader dari seluruh Posyandu di wilayah ini.`,
+          kontak: `Forum Kader Posyandu Kelurahan ${kelName}`,
+          jadwal: `Pertemuan Rutin Kader Posyandu Kelurahan ${kelName}`,
+        });
+      }
+    }
+  }
+
+  // B. PENCCOKAN KOMUNITAS BERJENJANG PAUD (Terpadu, TK, RA, PAUD Non Formal)
+  const paudShapes: { suffix: string; label: string; desc: string }[] = [
+    {
+      suffix: "",
+      label: " Terpadu",
+      desc: "yang menyatukan 3 bentuk satuan PAUD: TK, RA, dan PAUD Non Formal (KB, SPS, TPA, PKBM, SKB)",
+    },
+    {
+      suffix: "-tk",
+      label: " TK",
+      desc: "khusus satuan Taman Kanak-Kanak (TK)",
+    },
+    {
+      suffix: "-ra",
+      label: " RA",
+      desc: "khusus satuan Raudhatul Athfal (RA)",
+    },
+    {
+      suffix: "-pnf",
+      label: " Non Formal (KB, SPS, TPA, PKBM, SKB)",
+      desc: "khusus satuan PAUD Non Formal (KB, SPS, TPA, PKBM, dan SKB)",
+    },
+  ];
+
+  for (const sh of paudShapes) {
+    const kotaPaudId = `kom-paud${sh.suffix}-kota-tegal`;
+    if (
+      komunitasId === kotaPaudId ||
+      toValidUUID(kotaPaudId) === targetUuid ||
+      toValidUUID(kotaPaudId) === komunitasId
+    ) {
+      return setAndReturn({
+        id: kotaPaudId,
+        nama: `Komunitas PAUD${sh.label} Kota Tegal`,
+        jenis: "satuan_paud",
+        kecamatan: "Kota Tegal",
+        kelurahan: "Semua Kelurahan",
+        lokasi: "Kota Tegal, Jawa Tengah",
+        deskripsi: `Wadah silaturahmi, kolaborasi, dan koordinasi pendidik PAUD se-Kota Tegal ${sh.desc}.`,
+        kontak: `Forum Pendidik PAUD Kota Tegal`,
+        jadwal: `Pertemuan Rutin Pendidik PAUD Tingkat Kota Tegal`,
+      });
+    }
+
+    for (const [kecName, kecData] of Object.entries(KOTA_TEGAL_DATA)) {
+      const kecSlug = slugify(kecName);
+      const kecPaudId = `kom-paud${sh.suffix}-${kecSlug}`;
+      if (
+        komunitasId === kecPaudId ||
+        toValidUUID(kecPaudId) === targetUuid ||
+        toValidUUID(kecPaudId) === komunitasId
+      ) {
+        return setAndReturn({
+          id: kecPaudId,
+          nama: `Komunitas PAUD${sh.label} Kecamatan: ${kecName}`,
+          jenis: "satuan_paud",
+          kecamatan: kecName,
+          kelurahan: "Semua Kelurahan",
+          lokasi: `Kecamatan ${kecName}, Kota Tegal`,
+          deskripsi: `Komunitas koordinasi pendidik PAUD se-Kecamatan ${kecName}, Kota Tegal ${sh.desc}.`,
+          kontak: `Forum Komunikasi Pendidik PAUD Kecamatan ${kecName}`,
+          jadwal: `Rakor Pendidik PAUD Kecamatan ${kecName} Bulanan`,
+        });
+      }
+
+      for (const kelName of Object.keys(kecData.kelurahan)) {
+        const kelSlug = slugify(kelName);
+        const kelPaudId = `kom-paud${sh.suffix}-${kecSlug}-${kelSlug}`;
+        if (
+          komunitasId === kelPaudId ||
+          toValidUUID(kelPaudId) === targetUuid ||
+          toValidUUID(kelPaudId) === komunitasId
+        ) {
+          return setAndReturn({
+            id: kelPaudId,
+            nama: `Komunitas PAUD${sh.label} Kelurahan: ${kelName}, Kecamatan: ${kecName}`,
+            jenis: "satuan_paud",
+            kecamatan: kecName,
+            kelurahan: kelName,
+            lokasi: `Kelurahan ${kelName}, Kecamatan ${kecName}, Kota Tegal`,
+            deskripsi: `Komunitas koordinasi pendidik PAUD tingkat Kelurahan ${kelName}, Kecamatan ${kecName}, Kota Tegal ${sh.desc}.`,
+            kontak: `Gugus PAUD Kelurahan ${kelName}`,
+            jadwal: `Pertemuan Rutin Gugus PAUD Kelurahan ${kelName}`,
+          });
         }
       }
     }

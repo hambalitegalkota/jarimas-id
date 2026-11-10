@@ -264,13 +264,13 @@ export function KomunitasFilter({
       case "posyandu":
         return {
           title: "Selamat Datang Di Komunitas Posyandu",
-          tag: "LAYANAN KESEHATAN IBU, BAYI & BALITA KOTA TEGAL",
+          tag: "STRUKTUR KOMUNITAS POSYANDU BERJENJANG KOTA TEGAL",
           desc: (
             <>
-              Saat ini terdapat <strong className="text-foreground">209 Posyandu</strong> yang tersebar di 27 Kelurahan dan 4 Kecamatan se-Kota Tegal untuk pemantauan tumbuh kembang, gizi, dan imunisasi balita.
+              Menghimpun kader posyandu secara berjenjang dari <strong className="text-foreground">Tingkat Kota Tegal</strong>, <strong className="text-foreground">4 Komunitas Kecamatan</strong>, <strong className="text-foreground">27 Komunitas Kelurahan</strong>, hingga <strong className="text-foreground">209 Posyandu</strong> se-Kota Tegal.
             </>
           ),
-          prompt: "Posyandu mana yang akan anda kunjungi, silakan cari di sini atau gunakan filter di bawah ini.",
+          prompt: "Komunitas posyandu berjenjang atau posyandu mana yang akan anda kunjungi, silakan cari di sini atau gunakan filter di bawah ini.",
           icon: HeartPulse,
           iconBg: "bg-teal-700 text-white",
           tagColor: "text-teal-700 dark:text-teal-400",
@@ -279,13 +279,13 @@ export function KomunitasFilter({
       case "satuan_paud":
         return {
           title: "Selamat Datang Di Komunitas PAUD",
-          tag: "PENDIDIKAN ANAK USIA DINI (0–6 TAHUN) KOTA TEGAL",
+          tag: "STRUKTUR KOMUNITAS PENDIDIK PAUD BERJENJANG KOTA TEGAL",
           desc: (
             <>
-              Saat ini terdapat <strong className="text-foreground">208 Satuan PAUD</strong> (TK, KB, TPA, SPS, RA, PKBM Star of Tomorrow &amp; SKB Mitra) se-Kota Tegal yang melayani pendidikan ramah anak.
+              Menghimpun pendidik PAUD secara berjenjang (Kota, Kecamatan, Kelurahan) yang dikelompokkan dalam <strong className="text-foreground">3 Bentuk PAUD (TK, RA, dan PAUD Non Formal)</strong> serta <strong className="text-foreground">Komunitas Terpadu</strong> yang menyatukan 208 Satuan PAUD se-Kota Tegal.
             </>
           ),
-          prompt: "Lembaga PAUD mana yang akan anda kunjungi, silakan cari di sini atau gunakan filter di bawah ini.",
+          prompt: "Komunitas PAUD berjenjang atau lembaga PAUD mana yang akan anda kunjungi, silakan cari di sini atau gunakan filter di bawah ini.",
           icon: GraduationCap,
           iconBg: "bg-emerald-700 text-white",
           tagColor: "text-emerald-700 dark:text-emerald-400",
@@ -409,14 +409,19 @@ export function KomunitasFilter({
                   disabled={isPending}
                   className="w-full min-h-[42px] h-10 rounded-lg border border-border bg-background px-3 text-xs sm:text-sm font-medium text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/30 disabled:opacity-60 cursor-pointer"
                 >
-                  <option value="semua">Semua Bentuk (208)</option>
-                  <option value="TK">TK - Taman Kanak-Kanak (75)</option>
-                  <option value="KB">KB - Kelompok Bermain (58)</option>
-                  <option value="SPS">SPS - Pos PAUD / SPS (51)</option>
-                  <option value="RA">RA - Raudhatul Athfal (18)</option>
-                  <option value="TPA">TPA - Taman Penitipan Anak (4)</option>
-                  <option value="PKBM">PKBM - Star of Tomorrow (1)</option>
-                  <option value="SKB">SKB - Sanggar Kegiatan Belajar (1)</option>
+                  <option value="semua">Semua Bentuk (Menyatukan 3 Bentuk PAUD)</option>
+                  <optgroup label="3 Bentuk Utama PAUD">
+                    <option value="TK">TK - Taman Kanak-Kanak (75 Satuan)</option>
+                    <option value="RA">RA - Raudhatul Athfal (18 Satuan)</option>
+                    <option value="PNF">PAUD Non Formal (KB, SPS, TPA, PKBM, SKB - 115 Satuan)</option>
+                  </optgroup>
+                  <optgroup label="Rincian Satuan PAUD Non Formal">
+                    <option value="KB">KB - Kelompok Bermain (58 Satuan)</option>
+                    <option value="SPS">SPS - Pos PAUD / SPS (51 Satuan)</option>
+                    <option value="TPA">TPA - Taman Penitipan Anak (4 Satuan)</option>
+                    <option value="PKBM">PKBM - Star of Tomorrow (1 Satuan)</option>
+                    <option value="SKB">SKB - Sanggar Kegiatan Belajar (1 Satuan)</option>
+                  </optgroup>
                 </select>
               </div>
             </div>
@@ -456,7 +461,7 @@ export function KomunitasFilter({
                 className="w-full min-h-[42px] h-10 rounded-lg border border-border bg-background px-3 text-xs sm:text-sm font-medium text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/30 disabled:opacity-60 cursor-pointer"
               >
                 <option value="semua">Semua Kecamatan</option>
-                {isWargaKita && (
+                {(isWargaKita || activeTab === "posyandu" || isPaudTab) && (
                   <option value="Kota Tegal">🏙️ Tingkat Kota Tegal (Seluruh Kota)</option>
                 )}
                 {DAFTAR_KECAMATAN_TEGAL.map((kec) => (

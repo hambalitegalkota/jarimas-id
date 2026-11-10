@@ -23,6 +23,11 @@ import {
 } from "@/lib/constants/seed-paud-tegal";
 import {
   generateWargaKomunitasHierarchy,
+  generatePosyanduKomunitasHierarchy,
+  generatePaudKomunitasHierarchy,
+  isKomunitasBerjenjangPosyandu,
+  isKomunitasBerjenjangPaud,
+  isAnyKomunitasBerjenjang,
   findOrGenerateKomunitasSeed,
   slugify,
   KOTA_TEGAL_DATA,
@@ -93,6 +98,90 @@ export type {
   HierarchyAdminTierInfo,
   WargaHierarchyAdmins,
 };
+
+export interface BerjenjangLembagaDetail {
+  id: string;
+  nama: string;
+  jenis: "posyandu" | "satuan_paud";
+  bentuk?: string;
+  kelompokBentuk?: "TK" | "RA" | "PNF";
+  kecamatan: string;
+  kelurahan: string;
+  rw?: string;
+  rt?: string;
+  jumlahAnggota: number;
+  anggotaList: {
+    userId: string;
+    namaLengkap: string;
+    email: string;
+    nomorHp: string | null;
+    avatarUrl: string | null;
+    peran: string;
+  }[];
+  isBergabung: boolean;
+}
+
+export interface BerjenjangMemberItem {
+  id: string;
+  userId: string;
+  namaLengkap: string;
+  email: string;
+  nomorHp: string | null;
+  avatarUrl: string | null;
+  peran: string;
+  peranDiajukan: string | null;
+  status: string;
+  createdAt: string;
+  asalLembaga: {
+    id: string;
+    nama: string;
+    jenis: "posyandu" | "satuan_paud";
+    bentuk?: string;
+    kelompokBentuk?: "TK" | "RA" | "PNF";
+    kecamatan: string;
+    kelurahan: string;
+    rw?: string;
+    rt?: string;
+  } | null;
+}
+
+export interface KomunitasBerjenjangMemberSummaryResult {
+  isBerjenjang: boolean;
+  type: "posyandu" | "satuan_paud" | null;
+  level: "kota" | "kecamatan" | "kelurahan" | null;
+  kelompokBentuk?: "all" | "TK" | "RA" | "PNF";
+  kecamatan?: string;
+  kelurahan?: string;
+  totalAnggota: number;
+  totalLembaga: number;
+  jumlahLembagaBergabung: number;
+  jumlahLembagaBelumBergabung: number;
+  persentaseBergabung: number;
+  daftarLembagaBergabung: BerjenjangLembagaDetail[];
+  daftarLembagaBelumBergabung: BerjenjangLembagaDetail[];
+  semuaLembaga: BerjenjangLembagaDetail[];
+  anggotaList: BerjenjangMemberItem[];
+  rekapBentukPaud?: {
+    tk: {
+      totalLembaga: number;
+      bergabung: number;
+      belumBergabung: number;
+      totalAnggota: number;
+    };
+    ra: {
+      totalLembaga: number;
+      bergabung: number;
+      belumBergabung: number;
+      totalAnggota: number;
+    };
+    pnf: {
+      totalLembaga: number;
+      bergabung: number;
+      belumBergabung: number;
+      totalAnggota: number;
+    };
+  };
+}
 
 export interface GetKomunitasListParams {
   jenis?: JenisKomunitas | "semua";
@@ -550,9 +639,22 @@ export async function getKomunitasList(
     if (params.jenis === "pkbm_skb") {
       baseList = SEED_PKBM_SKB_TEGAL;
     } else if (params.jenis === "satuan_paud") {
-      baseList = SEED_PAUD_TEGAL;
+      const berjenjangPaud = generatePaudKomunitasHierarchy({
+        kecamatan: params.kecamatan,
+        kelurahan: params.kelurahan,
+        bentuk: params.bentuk,
+      });
+      baseList = [
+        ...berjenjangPaud,
+        ...SEED_PAUD_TEGAL,
+        ...SEED_PKBM_SKB_TEGAL.filter((p) => !SEED_PAUD_TEGAL.some((x) => x.id === p.id)),
+      ];
     } else if (params.jenis === "posyandu") {
-      baseList = SEED_POSYANDU_TEGAL;
+      const berjenjangPosyandu = generatePosyanduKomunitasHierarchy({
+        kecamatan: params.kecamatan,
+        kelurahan: params.kelurahan,
+      });
+      baseList = [...berjenjangPosyandu, ...SEED_POSYANDU_TEGAL];
     } else {
       // jenis "semua"
       const hierarchyWarga = generateWargaKomunitasHierarchy({
@@ -561,8 +663,19 @@ export async function getKomunitasList(
         rw: params.rw,
         rt: params.rt,
       });
+      const berjenjangPosyandu = generatePosyanduKomunitasHierarchy({
+        kecamatan: params.kecamatan,
+        kelurahan: params.kelurahan,
+      });
+      const berjenjangPaud = generatePaudKomunitasHierarchy({
+        kecamatan: params.kecamatan,
+        kelurahan: params.kelurahan,
+        bentuk: params.bentuk,
+      });
       baseList = [
         ...hierarchyWarga,
+        ...berjenjangPosyandu,
+        ...berjenjangPaud,
         ...SEED_POSYANDU_TEGAL,
         ...SEED_PAUD_TEGAL,
         ...SEED_PKBM_SKB_TEGAL.filter((p) => !SEED_PAUD_TEGAL.some((x) => x.id === p.id)),
@@ -778,9 +891,15 @@ export async function getKomunitasList(
 
     if (params.kecamatan && params.kecamatan !== "semua") {
       const kecLow = params.kecamatan.toLowerCase().trim();
+      const isKotaTegalFilter = kecLow === "kota tegal" || kecLow === "kota-tegal";
       filteredList = filteredList.filter((item) => {
+        if (isKotaTegalFilter) {
+          return true;
+        }
         const itemKec = findKecamatanByKelurahan(item.kelurahan) || item.kecamatan;
-        return itemKec && itemKec.toLowerCase().trim() === kecLow;
+        if (!itemKec) return false;
+        const itemKecLow = itemKec.toLowerCase().trim();
+        return itemKecLow === kecLow || itemKecLow === "kota tegal" || itemKecLow === "kota-tegal";
       });
     }
 
@@ -791,16 +910,30 @@ export async function getKomunitasList(
       );
     }
 
-    // Filter bentuk institusi khusus PAUD & PKBM (TK, RA, KB, SPS, TPA, PKBM, SKB)
+    // Filter bentuk institusi khusus PAUD & PKBM (TK, RA, PNF, KB, SPS, TPA, PKBM, SKB)
     if (params.bentuk && params.bentuk !== "semua") {
       const bTarget = params.bentuk.toUpperCase().trim();
       filteredList = filteredList.filter((item) => {
+        const itemBentuk = (item.jenis_institusi || resolveJenisInstitusi(item.nama) || "").toUpperCase();
+        if (bTarget === "PNF") {
+          if (["KB", "SPS", "TPA", "PKBM", "SKB"].includes(itemBentuk)) return true;
+          if (item.id && (item.id.includes("-pnf") || (item.nama && item.nama.toLowerCase().includes("non formal")))) return true;
+          return false;
+        }
+        if (bTarget === "TK") {
+          if (itemBentuk === "TK") return true;
+          if (item.id && (item.id.includes("-tk") || (item.nama && item.nama.toLowerCase().includes(" tk ")))) return true;
+          return false;
+        }
+        if (bTarget === "RA") {
+          if (itemBentuk === "RA") return true;
+          if (item.id && (item.id.includes("-ra") || (item.nama && item.nama.toLowerCase().includes(" ra ")))) return true;
+          return false;
+        }
         if (item.jenis_institusi) {
           return item.jenis_institusi.toUpperCase() === bTarget;
         }
         const upNama = (item.nama || "").toUpperCase().trim();
-        if (bTarget === "TK" && (upNama.startsWith("TK ") || upNama.includes(" TK "))) return true;
-        if (bTarget === "RA" && (upNama.startsWith("RA ") || upNama.includes(" RA "))) return true;
         if (bTarget === "KB" && (upNama.startsWith("KB ") || upNama.includes(" KB "))) return true;
         if (bTarget === "SPS" && (upNama.startsWith("SPS ") || upNama.startsWith("POS PAUD") || upNama.includes("POS PAUD"))) return true;
         if (bTarget === "PKBM" && (upNama.startsWith("PKBM ") || upNama.includes(" PKBM "))) return true;
@@ -1428,9 +1561,20 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
         komunitas.cakupan_wilayah = kratonInfo.cakupan_wilayah;
         posyanduCanonicalRw = kratonInfo.rw;
       } else {
-        const coreName = extractCorePosyanduName(nama);
-        nama = coreName ? `Posyandu ${coreName}` : "Posyandu";
-        posyanduCanonicalRw = getPosyanduCakupanRw({ ...komunitas, nama });
+        const isBerjenjangPos =
+          isKomunitasBerjenjangPosyandu(komunitas.id) ||
+          isKomunitasBerjenjangPosyandu(komunitasId) ||
+          isKomunitasBerjenjangPosyandu(resolvedKomunitasId) ||
+          Boolean(seedItem?.id && isKomunitasBerjenjangPosyandu(seedItem.id));
+        if (isBerjenjangPos) {
+          nama = seedItem?.nama || komunitas.nama || nama;
+          komunitas.nama = nama;
+          posyanduCanonicalRw = null;
+        } else {
+          const coreName = extractCorePosyanduName(nama);
+          nama = coreName ? `Posyandu ${coreName}` : "Posyandu";
+          posyanduCanonicalRw = getPosyanduCakupanRw({ ...komunitas, nama });
+        }
       }
     }
     const lokasi =
@@ -2017,6 +2161,363 @@ export async function getAnggotaKomunitas(komunitasId: string): Promise<{
       message: err.message || "Gagal memuat anggota komunitas.",
       data: [],
     };
+  }
+}
+
+/**
+ * Server Action: Mengambil ringkasan anggota dan rekapitulasi keikutsertaan lembaga basis
+ * untuk Komunitas Berjenjang (Posyandu & PAUD di tingkat Kota, Kecamatan, atau Kelurahan).
+ */
+export async function getKomunitasBerjenjangMemberSummary(
+  komunitasId: string
+): Promise<KomunitasBerjenjangMemberSummaryResult> {
+  const emptyResult: KomunitasBerjenjangMemberSummaryResult = {
+    isBerjenjang: false,
+    type: null,
+    level: null,
+    totalAnggota: 0,
+    totalLembaga: 0,
+    jumlahLembagaBergabung: 0,
+    jumlahLembagaBelumBergabung: 0,
+    persentaseBergabung: 0,
+    daftarLembagaBergabung: [],
+    daftarLembagaBelumBergabung: [],
+    semuaLembaga: [],
+    anggotaList: [],
+  };
+
+  try {
+    const resolvedKomunitasId = resolveKomunitasIdBySlug(komunitasId) || komunitasId;
+    const seed =
+      findOrGenerateKomunitasSeed(resolvedKomunitasId) ||
+      findOrGenerateKomunitasSeed(komunitasId);
+
+    const checkId = seed?.id || resolvedKomunitasId;
+    const isPos = isKomunitasBerjenjangPosyandu(checkId);
+    const isPaud = isKomunitasBerjenjangPaud(checkId);
+
+    if (!isPos && !isPaud) {
+      return emptyResult;
+    }
+
+    const type: "posyandu" | "satuan_paud" = isPos ? "posyandu" : "satuan_paud";
+    const kec = (seed?.kecamatan || "").trim();
+    const kel = (seed?.kelurahan || "").trim();
+
+    let level: "kota" | "kecamatan" | "kelurahan" = "kota";
+    if (kel && kel.toLowerCase() !== "semua kelurahan") {
+      level = "kelurahan";
+    } else if (kec && kec.toLowerCase() !== "kota tegal" && kec.toLowerCase() !== "kota-tegal") {
+      level = "kecamatan";
+    } else {
+      level = "kota";
+    }
+
+    let kelompokBentuk: "all" | "TK" | "RA" | "PNF" = "all";
+    if (type === "satuan_paud") {
+      if (checkId.includes("-tk-") || checkId.endsWith("-tk")) {
+        kelompokBentuk = "TK";
+      } else if (checkId.includes("-ra-") || checkId.endsWith("-ra")) {
+        kelompokBentuk = "RA";
+      } else if (checkId.includes("-pnf-") || checkId.endsWith("-pnf")) {
+        kelompokBentuk = "PNF";
+      } else {
+        kelompokBentuk = "all";
+      }
+    }
+
+    // 1. Kumpulkan daftar lembaga basis yang berada dalam cakupan wilayah ini
+    let basisList: any[] = [];
+    const allInvalidIds = [...(INVALID_POSYANDU_IDS || []), ...(INVALID_PAUD_IDS || [])];
+    const invalidIdsSet = new Set(allInvalidIds.map((id) => toValidUUID(id)));
+    allInvalidIds.forEach((id) => invalidIdsSet.add(id));
+
+    if (type === "posyandu") {
+      basisList = SEED_POSYANDU_TEGAL.filter((item) => {
+        const normId = toValidUUID(item.id);
+        if (invalidIdsSet.has(item.id) || invalidIdsSet.has(normId)) return false;
+
+        const itemKec = findKecamatanByKelurahan(item.kelurahan) || item.kecamatan;
+        if (level === "kelurahan") {
+          return item.kelurahan && item.kelurahan.toLowerCase().trim() === kel.toLowerCase();
+        }
+        if (level === "kecamatan") {
+          return itemKec && itemKec.toLowerCase().trim() === kec.toLowerCase();
+        }
+        return true;
+      });
+    } else {
+      // Satuan PAUD: gabungkan SEED_PAUD_TEGAL dengan SEED_PKBM_SKB_TEGAL
+      const rawPaudList = [
+        ...SEED_PAUD_TEGAL,
+        ...SEED_PKBM_SKB_TEGAL.filter((p) => !SEED_PAUD_TEGAL.some((x) => x.id === p.id)),
+      ];
+
+      basisList = rawPaudList.filter((item) => {
+        const normId = toValidUUID(item.id);
+        if (invalidIdsSet.has(item.id) || invalidIdsSet.has(normId)) return false;
+
+        const itemKec = findKecamatanByKelurahan(item.kelurahan) || item.kecamatan;
+        if (level === "kelurahan") {
+          if (!item.kelurahan || item.kelurahan.toLowerCase().trim() !== kel.toLowerCase()) return false;
+        } else if (level === "kecamatan") {
+          if (!itemKec || itemKec.toLowerCase().trim() !== kec.toLowerCase()) return false;
+        }
+
+        // Filter bentuk PAUD jika komunitas berjenjang adalah per-bentuk (TK, RA, atau PNF)
+        const itemBentuk = (item.jenis_institusi || resolveJenisInstitusi(item.nama) || "").toUpperCase();
+        if (kelompokBentuk === "TK") {
+          return itemBentuk === "TK";
+        }
+        if (kelompokBentuk === "RA") {
+          return itemBentuk === "RA";
+        }
+        if (kelompokBentuk === "PNF") {
+          return ["KB", "SPS", "TPA", "PKBM", "SKB"].includes(itemBentuk);
+        }
+        return true;
+      });
+    }
+
+    // 2. Kumpulkan seluruh ID komunitas basis dan komunitas berjenjang itu sendiri
+    const dbBerjenjangId = toValidUUID(checkId);
+    const scopeKomunitasIds = new Set<string>([
+      checkId,
+      dbBerjenjangId,
+      komunitasId,
+      toValidUUID(komunitasId),
+      resolvedKomunitasId,
+      toValidUUID(resolvedKomunitasId),
+    ]);
+
+    const basisMap = new Map<string, any>();
+    basisList.forEach((b) => {
+      basisMap.set(b.id, b);
+      basisMap.set(toValidUUID(b.id), b);
+      scopeKomunitasIds.add(b.id);
+      scopeKomunitasIds.add(toValidUUID(b.id));
+    });
+
+    const supabase = await createClient();
+
+    // 3. Ambil seluruh anggota berstatus 'approved' dalam cakupan
+    const { data: rawMembers, error } = await supabase
+      .from("anggota_komunitas")
+      .select("id, user_id, komunitas_id, peran, peran_diajukan, status, created_at")
+      .in("komunitas_id", Array.from(scopeKomunitasIds))
+      .eq("status", "approved")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.warn("getKomunitasBerjenjangMemberSummary error:", error.message);
+    }
+
+    const memberRows = rawMembers || [];
+    const userIds = Array.from(new Set(memberRows.map((m: any) => m.user_id).filter(Boolean)));
+
+    const { data: profilesData } =
+      userIds.length > 0
+        ? await supabase
+            .from("profiles")
+            .select("id, is_super_admin, is_admin_pusat, nama_lengkap, email, nomor_hp, avatar_url")
+            .in("id", userIds)
+        : { data: [] };
+
+    const profileMap = new Map((profilesData || []).map((p: any) => [p.id, p]));
+
+    // Saring Super Admin dan Admin Pusat dari daftar publik
+    const validMemberRows = memberRows.filter((row: any) => {
+      const prof = profileMap.get(row.user_id);
+      const isSuper = prof ? checkIsSuperAdmin({ ...prof, id: row.user_id }) : false;
+      const isPusat = prof ? checkIsAdminPusat({ ...prof, id: row.user_id }) : false;
+      const roleLower = (row.peran || "").toLowerCase();
+      if (
+        isSuper ||
+        isPusat ||
+        roleLower === "super admin" ||
+        roleLower === "admin pusat" ||
+        roleLower === "super_admin" ||
+        roleLower === "admin_pusat"
+      ) {
+        return false;
+      }
+      return true;
+    });
+
+    // 4. Petakan anggota ke masing-masing lembaga basis
+    const lembagaMembersMap = new Map<string, any[]>();
+    basisList.forEach((b) => {
+      lembagaMembersMap.set(b.id, []);
+    });
+
+    const userBasisAssociation = new Map<string, any>();
+    validMemberRows.forEach((row: any) => {
+      const matchedBasis = basisMap.get(row.komunitas_id);
+      if (matchedBasis) {
+        userBasisAssociation.set(row.user_id, matchedBasis);
+        const list = lembagaMembersMap.get(matchedBasis.id) || [];
+        const prof = profileMap.get(row.user_id);
+        const memberInfo = {
+          userId: row.user_id,
+          namaLengkap: prof?.nama_lengkap || "Pengguna JARIMAS",
+          email: prof?.email || "-",
+          nomorHp: prof?.nomor_hp || null,
+          avatarUrl: prof?.avatar_url || null,
+          peran: formatPeranDisplay(row.peran),
+        };
+        if (!list.some((m: any) => m.userId === row.user_id)) {
+          list.push(memberInfo);
+          lembagaMembersMap.set(matchedBasis.id, list);
+        }
+      }
+    });
+
+    // 5. Susun daftar anggota unik komunitas berjenjang
+    const seenUserIds = new Set<string>();
+    const anggotaList: BerjenjangMemberItem[] = [];
+
+    validMemberRows.forEach((row: any) => {
+      if (seenUserIds.has(row.user_id)) return;
+      seenUserIds.add(row.user_id);
+
+      const prof = profileMap.get(row.user_id);
+      const matchedBasis = userBasisAssociation.get(row.user_id) || basisMap.get(row.komunitas_id);
+
+      let asalLembagaObj: BerjenjangMemberItem["asalLembaga"] = null;
+      if (matchedBasis) {
+        const bBentuk =
+          type === "satuan_paud"
+            ? (matchedBasis.jenis_institusi || resolveJenisInstitusi(matchedBasis.nama) || "KB")
+            : undefined;
+        let bKelompok: "TK" | "RA" | "PNF" | undefined = undefined;
+        if (bBentuk === "TK") bKelompok = "TK";
+        else if (bBentuk === "RA") bKelompok = "RA";
+        else if (bBentuk) bKelompok = "PNF";
+
+        asalLembagaObj = {
+          id: toValidUUID(matchedBasis.id),
+          nama: matchedBasis.nama,
+          jenis: type,
+          bentuk: bBentuk,
+          kelompokBentuk: bKelompok,
+          kecamatan: matchedBasis.kecamatan || kec,
+          kelurahan: matchedBasis.kelurahan || kel,
+          rw: matchedBasis.rw,
+          rt: matchedBasis.rt,
+        };
+      }
+
+      anggotaList.push({
+        id: row.id,
+        userId: row.user_id,
+        namaLengkap: prof?.nama_lengkap || "Pengguna JARIMAS",
+        email: prof?.email || "-",
+        nomorHp: prof?.nomor_hp || null,
+        avatarUrl: prof?.avatar_url || null,
+        peran: formatPeranDisplay(row.peran),
+        peranDiajukan: row.peran_diajukan || null,
+        status: row.status,
+        createdAt: row.created_at,
+        asalLembaga: asalLembagaObj,
+      });
+    });
+
+    // 6. Susun rincian seluruh lembaga basis
+    const semuaLembaga: BerjenjangLembagaDetail[] = basisList.map((item) => {
+      const members = lembagaMembersMap.get(item.id) || [];
+      const bBentuk =
+        type === "satuan_paud"
+          ? (item.jenis_institusi || resolveJenisInstitusi(item.nama) || "KB")
+          : undefined;
+      let bKelompok: "TK" | "RA" | "PNF" | undefined = undefined;
+      if (bBentuk === "TK") bKelompok = "TK";
+      else if (bBentuk === "RA") bKelompok = "RA";
+      else if (bBentuk) bKelompok = "PNF";
+
+      return {
+        id: toValidUUID(item.id),
+        nama: item.nama,
+        jenis: type,
+        bentuk: bBentuk,
+        kelompokBentuk: bKelompok,
+        kecamatan: item.kecamatan || kec,
+        kelurahan: item.kelurahan || kel,
+        rw: item.rw,
+        rt: item.rt,
+        jumlahAnggota: members.length,
+        anggotaList: members,
+        isBergabung: members.length > 0,
+      };
+    });
+
+    const daftarLembagaBergabung = semuaLembaga.filter((l) => l.isBergabung);
+    const daftarLembagaBelumBergabung = semuaLembaga.filter((l) => !l.isBergabung);
+
+    const totalAnggota = anggotaList.length;
+    const totalLembaga = semuaLembaga.length;
+    const jumlahLembagaBergabung = daftarLembagaBergabung.length;
+    const jumlahLembagaBelumBergabung = daftarLembagaBelumBergabung.length;
+    const persentaseBergabung =
+      totalLembaga > 0 ? Math.round((jumlahLembagaBergabung / totalLembaga) * 100) : 0;
+
+    // 7. Hitung rekap 3 bentuk khusus PAUD
+    let rekapBentukPaud: KomunitasBerjenjangMemberSummaryResult["rekapBentukPaud"] = undefined;
+    if (type === "satuan_paud") {
+      const tkList = semuaLembaga.filter((l) => l.kelompokBentuk === "TK");
+      const raList = semuaLembaga.filter((l) => l.kelompokBentuk === "RA");
+      const pnfList = semuaLembaga.filter((l) => l.kelompokBentuk === "PNF");
+
+      const tkBergabung = tkList.filter((l) => l.isBergabung).length;
+      const raBergabung = raList.filter((l) => l.isBergabung).length;
+      const pnfBergabung = pnfList.filter((l) => l.isBergabung).length;
+
+      const tkAnggota = tkList.reduce((acc, curr) => acc + curr.jumlahAnggota, 0);
+      const raAnggota = raList.reduce((acc, curr) => acc + curr.jumlahAnggota, 0);
+      const pnfAnggota = pnfList.reduce((acc, curr) => acc + curr.jumlahAnggota, 0);
+
+      rekapBentukPaud = {
+        tk: {
+          totalLembaga: tkList.length,
+          bergabung: tkBergabung,
+          belumBergabung: tkList.length - tkBergabung,
+          totalAnggota: tkAnggota,
+        },
+        ra: {
+          totalLembaga: raList.length,
+          bergabung: raBergabung,
+          belumBergabung: raList.length - raBergabung,
+          totalAnggota: raAnggota,
+        },
+        pnf: {
+          totalLembaga: pnfList.length,
+          bergabung: pnfBergabung,
+          belumBergabung: pnfList.length - pnfBergabung,
+          totalAnggota: pnfAnggota,
+        },
+      };
+    }
+
+    return {
+      isBerjenjang: true,
+      type,
+      level,
+      kelompokBentuk,
+      kecamatan: kec || undefined,
+      kelurahan: kel || undefined,
+      totalAnggota,
+      totalLembaga,
+      jumlahLembagaBergabung,
+      jumlahLembagaBelumBergabung,
+      persentaseBergabung,
+      daftarLembagaBergabung,
+      daftarLembagaBelumBergabung,
+      semuaLembaga,
+      anggotaList,
+      rekapBentukPaud,
+    };
+  } catch (err: any) {
+    console.error("getKomunitasBerjenjangMemberSummary error:", err);
+    return emptyResult;
   }
 }
 
