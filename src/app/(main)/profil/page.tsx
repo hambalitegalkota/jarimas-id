@@ -33,7 +33,7 @@ import {
   isAdminPusat as checkIsAdminPusat,
 } from "@/lib/utils";
 import { extractKomunitasMetadata, getUserAdminInfo } from "@/lib/admin-helpers";
-import { getWargaHierarchyChain, findKecamatanByKelurahan, slugify } from "@/lib/constants/tegal-data";
+import { getWargaHierarchyChain, findKecamatanByKelurahan, slugify, findOrGenerateKomunitasSeed } from "@/lib/constants/tegal-data";
 import { UserCheck, Users } from "lucide-react";
 import { type WargaTierItem } from "@/components/komunitas/unified-warga-card";
 import { ProfilKomunitasSection } from "@/components/profil/profil-komunitas-section";
@@ -231,12 +231,19 @@ export default async function ProfilePage() {
 
     userCommunities = rawUserCommunities.map((row: any) => {
       const kom = komMap.get(row.komunitas_id);
+      const seedItem = findOrGenerateKomunitasSeed(row.komunitas_id);
 
-      const namaKomunitas = kom?.nama || "Komunitas Tegal";
-      const jenisKomunitas = kom?.jenis || "posyandu";
+      const namaKomunitas = kom?.nama || seedItem?.nama || "Komunitas Tegal";
+      const jenisKomunitas = kom?.jenis || seedItem?.jenis || "posyandu";
+      const rawKel = kom?.kelurahan || seedItem?.kelurahan || null;
+      const rawKec =
+        kom?.kecamatan ||
+        seedItem?.kecamatan ||
+        (rawKel ? findKecamatanByKelurahan(rawKel) : null);
       const lokasiKomunitas =
         kom?.lokasi ||
-        [kom?.kelurahan, kom?.kecamatan, "Kota Tegal"].filter(Boolean).join(", ") ||
+        seedItem?.lokasi ||
+        [rawKel, rawKec, "Kota Tegal"].filter(Boolean).join(", ") ||
         "Kota Tegal";
 
       return {
@@ -251,12 +258,12 @@ export default async function ProfilePage() {
           id: row.komunitas_id,
           nama: namaKomunitas,
           jenis: jenisKomunitas,
-          kecamatan: kom?.kecamatan || null,
-          kelurahan: kom?.kelurahan || null,
-          rw: kom?.rw || null,
-          rt: kom?.rt || null,
+          kecamatan: rawKec,
+          kelurahan: rawKel,
+          rw: kom?.rw || seedItem?.rw || null,
+          rt: kom?.rt || seedItem?.rt || null,
           lokasi: lokasiKomunitas,
-          deskripsi: kom?.deskripsi || null,
+          deskripsi: kom?.deskripsi || seedItem?.deskripsi || null,
           created_by: kom?.created_by || null,
           jumlah_anggota: countMap.get(row.komunitas_id) || 1,
         },

@@ -378,13 +378,22 @@ export function KomunitasSayaSection({
         {otherItems.map((item) => {
           let formattedTitle = item.nama;
           const isItemBerjenjang =
+            (item.nama || "").toLowerCase().includes("komunitas posyandu") ||
+            (item.nama || "").toLowerCase().includes("komunitas paud") ||
             (item.nama || "").toLowerCase().startsWith("komunitas") ||
-            item.id.startsWith("kom-posyandu-") ||
-            item.id.startsWith("kom-paud-");
+            (typeof item.id === "string" && (
+              item.id.startsWith("kom-posyandu-") ||
+              item.id.startsWith("kom-paud-")
+            ));
+
+          const itemKecamatan = item.kecamatan || (item.kelurahan ? findKecamatanByKelurahan(item.kelurahan) : null) || "tegal-timur";
+          const itemKelurahan = item.kelurahan;
 
           if (item.jenis === "posyandu") {
             const rawNama = (item.nama || "").trim();
-            if (rawNama.toLowerCase().startsWith("komunitas")) {
+            if (rawNama.toLowerCase().includes("komunitas posyandu")) {
+              formattedTitle = rawNama.replace(/^(posyandu\s+)+(komunitas\s+posyandu)/i, "$2");
+            } else if (rawNama.toLowerCase().startsWith("komunitas")) {
               formattedTitle = rawNama;
             } else {
               const cleanName = rawNama.replace(/^(Posyandu\s*)+/gi, "").trim();
@@ -502,6 +511,126 @@ export function KomunitasSayaSection({
                   <div className="flex items-center gap-2 rounded-xl bg-slate-50 border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700">
                     <Calendar className="h-4 w-4 text-blue-700 shrink-0" />
                     <span className="truncate">{item.jadwal}</span>
+                  </div>
+                )}
+
+                {/* Forum Koordinasi Berjenjang untuk Kader Posyandu */}
+                {item.jenis === "posyandu" && !isItemBerjenjang && (
+                  <div className="rounded-xl border border-blue-200 bg-blue-50/60 p-3.5 space-y-2.5">
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                      <span className="text-xs font-bold text-blue-900 uppercase tracking-wider flex items-center gap-1.5">
+                        <Sparkles className="h-3.5 w-3.5 text-blue-700 shrink-0" />
+                        Komunitas Berjenjang yang Diikuti (Forum Koordinasi Kader)
+                      </span>
+                      <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded border border-emerald-300">
+                        Otomatis Terhubung
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-600 leading-relaxed">
+                      Sebagai kader/anggota posyandu ini, Anda terhubung dalam forum koordinasi kader berjenjang:
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-0.5 text-xs font-bold">
+                      {itemKelurahan && (
+                        <Link
+                          href={`/komunitas/kom-posyandu-${slugify(itemKecamatan)}-${slugify(itemKelurahan)}`}
+                          className="flex items-center justify-between p-2.5 rounded-lg bg-white border border-blue-200 hover:border-blue-400 hover:bg-blue-50 transition-all text-slate-800 group shadow-2xs"
+                        >
+                          <div className="min-w-0 pr-1">
+                            <span className="block text-[10px] font-medium text-slate-500 uppercase">Tingkat Kelurahan</span>
+                            <span className="block truncate text-xs font-bold text-slate-900 group-hover:text-blue-700">
+                              Kel. {itemKelurahan}
+                            </span>
+                          </div>
+                          <ArrowRight className="h-3.5 w-3.5 text-slate-400 group-hover:text-blue-700 shrink-0 group-hover:translate-x-0.5 transition-transform" />
+                        </Link>
+                      )}
+                      {itemKecamatan && (
+                        <Link
+                          href={`/komunitas/kom-posyandu-${slugify(itemKecamatan)}`}
+                          className="flex items-center justify-between p-2.5 rounded-lg bg-white border border-blue-200 hover:border-blue-400 hover:bg-blue-50 transition-all text-slate-800 group shadow-2xs"
+                        >
+                          <div className="min-w-0 pr-1">
+                            <span className="block text-[10px] font-medium text-slate-500 uppercase">Tingkat Kecamatan</span>
+                            <span className="block truncate text-xs font-bold text-slate-900 group-hover:text-blue-700">
+                              Kec. {itemKecamatan}
+                            </span>
+                          </div>
+                          <ArrowRight className="h-3.5 w-3.5 text-slate-400 group-hover:text-blue-700 shrink-0 group-hover:translate-x-0.5 transition-transform" />
+                        </Link>
+                      )}
+                      <Link
+                        href="/komunitas/kom-posyandu-kota-tegal"
+                        className="flex items-center justify-between p-2.5 rounded-lg bg-white border border-blue-200 hover:border-blue-400 hover:bg-blue-50 transition-all text-slate-800 group shadow-2xs"
+                      >
+                        <div className="min-w-0 pr-1">
+                          <span className="block text-[10px] font-medium text-slate-500 uppercase">Tingkat Kota</span>
+                          <span className="block truncate text-xs font-bold text-slate-900 group-hover:text-blue-700">
+                            Kota Tegal
+                          </span>
+                        </div>
+                        <ArrowRight className="h-3.5 w-3.5 text-slate-400 group-hover:text-blue-700 shrink-0 group-hover:translate-x-0.5 transition-transform" />
+                      </Link>
+                    </div>
+                  </div>
+                )}
+
+                {/* Forum Koordinasi Berjenjang untuk Satuan PAUD */}
+                {item.jenis === "satuan_paud" && !isItemBerjenjang && (
+                  <div className="rounded-xl border border-sky-200 bg-sky-50/60 p-3.5 space-y-2.5">
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                      <span className="text-xs font-bold text-sky-900 uppercase tracking-wider flex items-center gap-1.5">
+                        <Sparkles className="h-3.5 w-3.5 text-sky-700 shrink-0" />
+                        Komunitas Berjenjang yang Diikuti (Forum Satuan PAUD)
+                      </span>
+                      <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded border border-emerald-300">
+                        Otomatis Terhubung
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-600 leading-relaxed">
+                      Sebagai pendidik/anggota satuan PAUD ini, Anda terhubung dalam forum koordinasi berjenjang:
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-0.5 text-xs font-bold">
+                      {itemKelurahan && (
+                        <Link
+                          href={`/komunitas/kom-paud-${slugify(itemKecamatan)}-${slugify(itemKelurahan)}`}
+                          className="flex items-center justify-between p-2.5 rounded-lg bg-white border border-sky-200 hover:border-sky-400 hover:bg-sky-50 transition-all text-slate-800 group shadow-2xs"
+                        >
+                          <div className="min-w-0 pr-1">
+                            <span className="block text-[10px] font-medium text-slate-500 uppercase">Tingkat Kelurahan</span>
+                            <span className="block truncate text-xs font-bold text-slate-900 group-hover:text-sky-700">
+                              Kel. {itemKelurahan}
+                            </span>
+                          </div>
+                          <ArrowRight className="h-3.5 w-3.5 text-slate-400 group-hover:text-sky-700 shrink-0 group-hover:translate-x-0.5 transition-transform" />
+                        </Link>
+                      )}
+                      {itemKecamatan && (
+                        <Link
+                          href={`/komunitas/kom-paud-${slugify(itemKecamatan)}`}
+                          className="flex items-center justify-between p-2.5 rounded-lg bg-white border border-sky-200 hover:border-sky-400 hover:bg-sky-50 transition-all text-slate-800 group shadow-2xs"
+                        >
+                          <div className="min-w-0 pr-1">
+                            <span className="block text-[10px] font-medium text-slate-500 uppercase">Tingkat Kecamatan</span>
+                            <span className="block truncate text-xs font-bold text-slate-900 group-hover:text-sky-700">
+                              Kec. {itemKecamatan}
+                            </span>
+                          </div>
+                          <ArrowRight className="h-3.5 w-3.5 text-slate-400 group-hover:text-sky-700 shrink-0 group-hover:translate-x-0.5 transition-transform" />
+                        </Link>
+                      )}
+                      <Link
+                        href="/komunitas/kom-paud-kota-tegal"
+                        className="flex items-center justify-between p-2.5 rounded-lg bg-white border border-sky-200 hover:border-sky-400 hover:bg-sky-50 transition-all text-slate-800 group shadow-2xs"
+                      >
+                        <div className="min-w-0 pr-1">
+                          <span className="block text-[10px] font-medium text-slate-500 uppercase">Tingkat Kota</span>
+                          <span className="block truncate text-xs font-bold text-slate-900 group-hover:text-sky-700">
+                            Kota Tegal
+                          </span>
+                        </div>
+                        <ArrowRight className="h-3.5 w-3.5 text-slate-400 group-hover:text-sky-700 shrink-0 group-hover:translate-x-0.5 transition-transform" />
+                      </Link>
+                    </div>
                   </div>
                 )}
               </div>

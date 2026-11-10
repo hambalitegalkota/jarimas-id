@@ -25,6 +25,13 @@ import { ManageGrupMembersModal } from "@/components/kabar/manage-grup-members-m
 import { getPosyanduCoverageDisplay } from "@/lib/data-anak-helpers";
 import type { RegisteredUserItem } from "@/types/database";
 
+function slugify(text: string): string {
+  return (text || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 export interface ProfilCommunityItem {
   id: string;
   komunitas_id: string;
@@ -156,10 +163,21 @@ export function ProfilKomunitasSection({
               item.peran?.toLowerCase().includes("admin") ||
               item.peran?.toLowerCase().includes("pengurus");
 
+            const isBerjenjangItem =
+              cleanName.includes("komunitas posyandu") ||
+              cleanName.includes("komunitas paud") ||
+              cleanName.startsWith("komunitas") ||
+              (typeof item.komunitas_id === "string" && (
+                item.komunitas_id.startsWith("kom-posyandu-") ||
+                item.komunitas_id.startsWith("kom-paud-")
+              ));
+
             let formattedKomNama = kom.nama || "Komunitas";
             if (kom.jenis === "posyandu") {
               const rawNama = (kom.nama || "").trim();
-              if (rawNama.toLowerCase().startsWith("komunitas")) {
+              if (rawNama.toLowerCase().includes("komunitas posyandu")) {
+                formattedKomNama = rawNama.replace(/^(posyandu\s+)+(komunitas\s+posyandu)/i, "$2");
+              } else if (rawNama.toLowerCase().startsWith("komunitas")) {
                 formattedKomNama = rawNama;
               } else {
                 const coreName = rawNama.replace(/^(Posyandu\s*)+/gi, "").trim();
@@ -223,7 +241,7 @@ export function ProfilKomunitasSection({
                             "Kota Tegal"}
                         </span>
                       </span>
-                      {kom.jenis === "posyandu" && (() => {
+                      {kom.jenis === "posyandu" && !isBerjenjangItem && (() => {
                         const cov = getPosyanduCoverageDisplay(kom);
                         return cov.isMapped ? (
                           <>
@@ -282,6 +300,126 @@ export function ProfilKomunitasSection({
                   <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed italic bg-muted/30 p-3 rounded-lg border border-border">
                     &ldquo;{kom.deskripsi}&rdquo;
                   </p>
+                )}
+
+                {/* Forum Koordinasi Berjenjang untuk Kader Posyandu */}
+                {kom.jenis === "posyandu" && !isBerjenjangItem && (
+                  <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 sm:p-3.5 space-y-2.5">
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                      <span className="text-xs font-bold text-primary uppercase tracking-wider flex items-center gap-1.5">
+                        <Sparkles className="h-3.5 w-3.5 text-primary shrink-0" />
+                        Komunitas Berjenjang yang Diikuti (Forum Koordinasi Kader)
+                      </span>
+                      <span className="text-[10px] font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-100/70 dark:bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-300/50">
+                        Otomatis Terhubung
+                      </span>
+                    </div>
+                    <p className="text-2xs text-muted-foreground leading-relaxed">
+                      Sebagai kader/anggota posyandu ini, Anda terhubung dalam forum koordinasi kader berjenjang tingkat Kelurahan, Kecamatan, dan Kota Tegal:
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-0.5 text-xs font-bold">
+                      {kom.kelurahan && (
+                        <Link
+                          href={`/komunitas/kom-posyandu-${slugify(kom.kecamatan || "tegal-timur")}-${slugify(kom.kelurahan)}`}
+                          className="flex items-center justify-between p-2.5 rounded-lg bg-card border border-border hover:border-primary/50 hover:bg-accent transition-all text-foreground group shadow-2xs"
+                        >
+                          <div className="min-w-0 pr-1">
+                            <span className="block text-[10px] font-medium text-muted-foreground uppercase">Tingkat Kelurahan</span>
+                            <span className="block truncate text-xs font-bold text-foreground group-hover:text-primary">
+                              Kel. {kom.kelurahan}
+                            </span>
+                          </div>
+                          <ArrowRight className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary shrink-0 group-hover:translate-x-0.5 transition-transform" />
+                        </Link>
+                      )}
+                      {kom.kecamatan && (
+                        <Link
+                          href={`/komunitas/kom-posyandu-${slugify(kom.kecamatan)}`}
+                          className="flex items-center justify-between p-2.5 rounded-lg bg-card border border-border hover:border-primary/50 hover:bg-accent transition-all text-foreground group shadow-2xs"
+                        >
+                          <div className="min-w-0 pr-1">
+                            <span className="block text-[10px] font-medium text-muted-foreground uppercase">Tingkat Kecamatan</span>
+                            <span className="block truncate text-xs font-bold text-foreground group-hover:text-primary">
+                              Kec. {kom.kecamatan}
+                            </span>
+                          </div>
+                          <ArrowRight className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary shrink-0 group-hover:translate-x-0.5 transition-transform" />
+                        </Link>
+                      )}
+                      <Link
+                        href="/komunitas/kom-posyandu-kota-tegal"
+                        className="flex items-center justify-between p-2.5 rounded-lg bg-card border border-border hover:border-primary/50 hover:bg-accent transition-all text-foreground group shadow-2xs"
+                      >
+                        <div className="min-w-0 pr-1">
+                          <span className="block text-[10px] font-medium text-muted-foreground uppercase">Tingkat Kota</span>
+                          <span className="block truncate text-xs font-bold text-foreground group-hover:text-primary">
+                            Kota Tegal
+                          </span>
+                        </div>
+                        <ArrowRight className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary shrink-0 group-hover:translate-x-0.5 transition-transform" />
+                      </Link>
+                    </div>
+                  </div>
+                )}
+
+                {/* Forum Koordinasi Berjenjang untuk Pendidik Satuan PAUD */}
+                {kom.jenis === "satuan_paud" && !isBerjenjangItem && (
+                  <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 sm:p-3.5 space-y-2.5">
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                      <span className="text-xs font-bold text-primary uppercase tracking-wider flex items-center gap-1.5">
+                        <School className="h-3.5 w-3.5 text-primary shrink-0" />
+                        Komunitas Berjenjang yang Diikuti (Forum Satuan PAUD)
+                      </span>
+                      <span className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-100/70 dark:bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-300/50">
+                        Otomatis Terhubung
+                      </span>
+                    </div>
+                    <p className="text-2xs text-muted-foreground leading-relaxed">
+                      Sebagai pendidik/anggota satuan PAUD ini, Anda terhubung dalam forum koordinasi berjenjang tingkat Kelurahan, Kecamatan, dan Kota Tegal:
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-0.5 text-xs font-bold">
+                      {kom.kelurahan && (
+                        <Link
+                          href={`/komunitas/kom-paud-${slugify(kom.kecamatan || "tegal-timur")}-${slugify(kom.kelurahan)}`}
+                          className="flex items-center justify-between p-2.5 rounded-lg bg-card border border-border hover:border-primary/50 hover:bg-accent transition-all text-foreground group shadow-2xs"
+                        >
+                          <div className="min-w-0 pr-1">
+                            <span className="block text-[10px] font-medium text-muted-foreground uppercase">Tingkat Kelurahan</span>
+                            <span className="block truncate text-xs font-bold text-foreground group-hover:text-primary">
+                              Kel. {kom.kelurahan}
+                            </span>
+                          </div>
+                          <ArrowRight className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary shrink-0 group-hover:translate-x-0.5 transition-transform" />
+                        </Link>
+                      )}
+                      {kom.kecamatan && (
+                        <Link
+                          href={`/komunitas/kom-paud-${slugify(kom.kecamatan)}`}
+                          className="flex items-center justify-between p-2.5 rounded-lg bg-card border border-border hover:border-primary/50 hover:bg-accent transition-all text-foreground group shadow-2xs"
+                        >
+                          <div className="min-w-0 pr-1">
+                            <span className="block text-[10px] font-medium text-muted-foreground uppercase">Tingkat Kecamatan</span>
+                            <span className="block truncate text-xs font-bold text-foreground group-hover:text-primary">
+                              Kec. {kom.kecamatan}
+                            </span>
+                          </div>
+                          <ArrowRight className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary shrink-0 group-hover:translate-x-0.5 transition-transform" />
+                        </Link>
+                      )}
+                      <Link
+                        href="/komunitas/kom-paud-kota-tegal"
+                        className="flex items-center justify-between p-2.5 rounded-lg bg-card border border-border hover:border-primary/50 hover:bg-accent transition-all text-foreground group shadow-2xs"
+                      >
+                        <div className="min-w-0 pr-1">
+                          <span className="block text-[10px] font-medium text-muted-foreground uppercase">Tingkat Kota</span>
+                          <span className="block truncate text-xs font-bold text-foreground group-hover:text-primary">
+                            Kota Tegal
+                          </span>
+                        </div>
+                        <ArrowRight className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary shrink-0 group-hover:translate-x-0.5 transition-transform" />
+                      </Link>
+                    </div>
+                  </div>
                 )}
 
                 {/* Action Buttons: Tambah Anggota, Percakapan, dan Buka Halaman */}

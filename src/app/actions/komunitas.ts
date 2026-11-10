@@ -1674,12 +1674,17 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
 
     const dbKomMap = new Map((dbRelevantKomunitas || []).map((k) => [k.id, k]));
 
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    const validRelevantKomIds = Array.from(relevantKomIds)
+      .map((id) => toValidUUID(id))
+      .filter((id) => uuidRegex.test(id));
+
     // 2. Ambil data anggota approved HANYA untuk komunitas terkait, data user, dan hitungan secara paralel
     const [relevantMembersRes, userMemRes, countRes] = await Promise.all([
       supabase
         .from("anggota_komunitas")
         .select("id, komunitas_id, user_id, peran, status")
-        .in("komunitas_id", Array.from(relevantKomIds))
+        .in("komunitas_id", validRelevantKomIds)
         .eq("status", "approved"),
       currentUserId
         ? supabase
@@ -2296,22 +2301,26 @@ export async function getKomunitasBerjenjangMemberSummary(
 
     // 2. Kumpulkan seluruh ID komunitas basis dan komunitas berjenjang itu sendiri
     const dbBerjenjangId = toValidUUID(checkId);
-    const scopeKomunitasIds = new Set<string>([
-      checkId,
-      dbBerjenjangId,
-      komunitasId,
-      toValidUUID(komunitasId),
-      resolvedKomunitasId,
-      toValidUUID(resolvedKomunitasId),
-    ]);
-
+    const scopeKomunitasIds = new Set<string>();
     const basisMap = new Map<string, any>();
-    basisList.forEach((b) => {
-      basisMap.set(b.id, b);
-      basisMap.set(toValidUUID(b.id), b);
-      scopeKomunitasIds.add(b.id);
-      scopeKomunitasIds.add(toValidUUID(b.id));
+
+    // Tambahkan komunitas berjenjang itu sendiri dalam format UUID
+    [checkId, dbBerjenjangId, komunitasId, resolvedKomunitasId].forEach((raw) => {
+      if (raw) {
+        scopeKomunitasIds.add(toValidUUID(raw));
+      }
     });
+
+    basisList.forEach((b) => {
+      const normId = toValidUUID(b.id);
+      basisMap.set(b.id.toLowerCase(), b);
+      basisMap.set(normId.toLowerCase(), b);
+      scopeKomunitasIds.add(normId);
+    });
+
+    // Pastikan hanya format UUID valid yang dikirim ke Supabase postgres
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    const validScopeUuids = Array.from(scopeKomunitasIds).filter((id) => uuidRegex.test(id));
 
     const supabase = await createClient();
 
@@ -2319,7 +2328,7 @@ export async function getKomunitasBerjenjangMemberSummary(
     const { data: rawMembers, error } = await supabase
       .from("anggota_komunitas")
       .select("id, user_id, komunitas_id, peran, peran_diajukan, status, created_at")
-      .in("komunitas_id", Array.from(scopeKomunitasIds))
+      .in("komunitas_id", validScopeUuids)
       .eq("status", "approved")
       .order("created_at", { ascending: false });
 
@@ -2367,7 +2376,8 @@ export async function getKomunitasBerjenjangMemberSummary(
 
     const userBasisAssociation = new Map<string, any>();
     validMemberRows.forEach((row: any) => {
-      const matchedBasis = basisMap.get(row.komunitas_id);
+      const rowKomId = (row.komunitas_id || "").toLowerCase();
+      const matchedBasis = basisMap.get(rowKomId) || basisMap.get(toValidUUID(rowKomId).toLowerCase());
       if (matchedBasis) {
         userBasisAssociation.set(row.user_id, matchedBasis);
         const list = lembagaMembersMap.get(matchedBasis.id) || [];
@@ -2396,7 +2406,8 @@ export async function getKomunitasBerjenjangMemberSummary(
       seenUserIds.add(row.user_id);
 
       const prof = profileMap.get(row.user_id);
-      const matchedBasis = userBasisAssociation.get(row.user_id) || basisMap.get(row.komunitas_id);
+      const rowKomId = (row.komunitas_id || "").toLowerCase();
+      const matchedBasis = userBasisAssociation.get(row.user_id) || basisMap.get(rowKomId) || basisMap.get(toValidUUID(rowKomId).toLowerCase());
 
       let asalLembagaObj: BerjenjangMemberItem["asalLembaga"] = null;
       if (matchedBasis) {
