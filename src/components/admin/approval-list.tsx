@@ -403,8 +403,12 @@ export function ApprovalList({
             const komunitasJenis = item.komunitas?.jenis || "warga_kita";
             let komunitasNama = rawKomNama;
             if (komunitasJenis === "posyandu") {
-              const cleanName = rawKomNama.replace(/^(Posyandu\s*)+/gi, "").trim();
-              komunitasNama = cleanName ? `Posyandu ${cleanName}` : "Posyandu";
+              if (rawKomNama.toLowerCase().startsWith("komunitas")) {
+                komunitasNama = rawKomNama;
+              } else {
+                const cleanName = rawKomNama.replace(/^(Posyandu\s*)+/gi, "").trim();
+                komunitasNama = cleanName ? `Posyandu ${cleanName}` : "Posyandu";
+              }
             }
             const komunitasLokasi = item.komunitas?.lokasi || "Kota Tegal";
             const isProcessing = loadingId === item.id && isPending;

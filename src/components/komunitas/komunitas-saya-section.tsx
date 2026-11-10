@@ -377,9 +377,19 @@ export function KomunitasSayaSection({
         {/* 2. Kartu Komunitas Lainnya (Posyandu, PAUD, PKBM & SKB) */}
         {otherItems.map((item) => {
           let formattedTitle = item.nama;
+          const isItemBerjenjang =
+            (item.nama || "").toLowerCase().startsWith("komunitas") ||
+            item.id.startsWith("kom-posyandu-") ||
+            item.id.startsWith("kom-paud-");
+
           if (item.jenis === "posyandu") {
-            const cleanName = (item.nama || "").replace(/^(Posyandu\s*)+/gi, "").trim();
-            formattedTitle = cleanName ? `Posyandu ${cleanName}` : "Posyandu";
+            const rawNama = (item.nama || "").trim();
+            if (rawNama.toLowerCase().startsWith("komunitas")) {
+              formattedTitle = rawNama;
+            } else {
+              const cleanName = rawNama.replace(/^(Posyandu\s*)+/gi, "").trim();
+              formattedTitle = cleanName ? `Posyandu ${cleanName}` : "Posyandu";
+            }
           } else if (item.jenis === "satuan_paud") {
             formattedTitle = item.nama;
           } else if (item.jenis === "pkbm_skb") {
@@ -462,7 +472,7 @@ export function KomunitasSayaSection({
                       <MapPin className="h-3.5 w-3.5 text-slate-500" />
                       {item.kelurahan || "Tegal"}, {item.kecamatan || "Kota Tegal"}
                     </span>
-                    {item.jenis === "posyandu" && (() => {
+                    {item.jenis === "posyandu" && !isItemBerjenjang && (() => {
                       const cov = getPosyanduCoverageDisplay(item);
                       return cov.isMapped ? (
                         <>

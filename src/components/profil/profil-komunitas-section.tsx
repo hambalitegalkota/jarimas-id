@@ -158,8 +158,13 @@ export function ProfilKomunitasSection({
 
             let formattedKomNama = kom.nama || "Komunitas";
             if (kom.jenis === "posyandu") {
-              const coreName = (kom.nama || "").replace(/^(Posyandu\s*)+/gi, "").trim();
-              formattedKomNama = coreName ? `Posyandu ${coreName}` : "Posyandu";
+              const rawNama = (kom.nama || "").trim();
+              if (rawNama.toLowerCase().startsWith("komunitas")) {
+                formattedKomNama = rawNama;
+              } else {
+                const coreName = rawNama.replace(/^(Posyandu\s*)+/gi, "").trim();
+                formattedKomNama = coreName ? `Posyandu ${coreName}` : "Posyandu";
+              }
             }
 
             return (

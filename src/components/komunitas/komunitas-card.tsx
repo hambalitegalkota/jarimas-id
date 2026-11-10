@@ -37,7 +37,11 @@ export function KomunitasCard({
   const membership = komunitas.currentUserMembership;
   const isApprovedMember = membership?.status === "approved";
   const isPosyandu = komunitas.jenis === "posyandu";
-  const coverage = isPosyandu ? getPosyanduCoverageDisplay(komunitas) : null;
+  const isBerjenjang =
+    (komunitas.nama || "").toLowerCase().startsWith("komunitas") ||
+    komunitas.id.startsWith("kom-posyandu-") ||
+    komunitas.id.startsWith("kom-paud-");
+  const coverage = isPosyandu && !isBerjenjang ? getPosyanduCoverageDisplay(komunitas) : null;
 
   // Hanya Komunitas RT, Posyandu, dan Satuan PAUD yang dapat digabung secara langsung.
   // Komunitas RW, Kelurahan, Kecamatan, dan Kota Tegal tidak memiliki tombol gabung langsung.
@@ -69,8 +73,13 @@ export function KomunitasCard({
       }
     }
   } else if (komunitas.jenis === "posyandu") {
-    const cleanName = (komunitas.nama || "").replace(/^(Posyandu\s*)+/gi, "").trim();
-    formattedTitle = cleanName ? `Posyandu ${cleanName}` : "Posyandu";
+    const rawNama = (komunitas.nama || "").trim();
+    if (rawNama.toLowerCase().startsWith("komunitas")) {
+      formattedTitle = rawNama;
+    } else {
+      const cleanName = rawNama.replace(/^(Posyandu\s*)+/gi, "").trim();
+      formattedTitle = cleanName ? `Posyandu ${cleanName}` : "Posyandu";
+    }
   } else if (komunitas.jenis === "satuan_paud" || komunitas.jenis === "pkbm_skb") {
     formattedTitle = komunitas.nama;
   }
@@ -176,6 +185,22 @@ export function KomunitasCard({
                     : "Kota Tegal, Jawa Tengah"}
                 </span>
               </div>
+
+              {isBerjenjang && (
+                <>
+                  <span className="text-muted-foreground/40 hidden xs:inline">•</span>
+                  <span className="inline-flex items-center gap-1 rounded-md bg-teal-50 text-teal-800 dark:bg-teal-950/50 dark:text-teal-300 font-semibold px-2 py-0.5 text-[11px] border border-teal-200 dark:border-teal-800 shadow-2xs">
+                    <Sparkles className="h-3 w-3 shrink-0 text-teal-600 dark:text-teal-400" />
+                    <span>
+                      {komunitas.kelurahan && komunitas.kelurahan !== "Semua Kelurahan"
+                        ? "Tingkat Kelurahan"
+                        : komunitas.kecamatan && komunitas.kecamatan !== "Kota Tegal"
+                        ? "Tingkat Kecamatan"
+                        : "Tingkat Kota Tegal"}
+                    </span>
+                  </span>
+                </>
+              )}
 
               {isPosyandu && coverage && (
                 <>

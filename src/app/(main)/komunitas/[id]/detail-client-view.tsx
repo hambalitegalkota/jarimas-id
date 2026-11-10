@@ -600,8 +600,13 @@ export function KomunitasDetailClientView({
 
   let formattedTitle = komunitasData.nama;
   if (komunitasData.jenis === "posyandu") {
-    const cleanName = (komunitasData.nama || "").replace(/^(Posyandu\s*)+/gi, "").trim();
-    formattedTitle = cleanName ? `Posyandu ${cleanName}` : "Posyandu";
+    const rawNama = (komunitasData.nama || "").trim();
+    if (rawNama.toLowerCase().startsWith("komunitas")) {
+      formattedTitle = rawNama;
+    } else {
+      const cleanName = rawNama.replace(/^(Posyandu\s*)+/gi, "").trim();
+      formattedTitle = cleanName ? `Posyandu ${cleanName}` : "Posyandu";
+    }
   }
 
   const myProfileName = useMemo(() => {

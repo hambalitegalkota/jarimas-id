@@ -864,8 +864,10 @@ export async function getKomunitasList(
           dbNama = dbNama.replace(/Bina Iman Anak Sholeh/gi, "Bina Anak Sholeh");
         }
         if (itemJenis === "posyandu") {
-          const core = extractCorePosyanduName(dbNama);
-          dbNama = core ? `Posyandu ${core}` : dbNama;
+          if (!dbNama.toLowerCase().startsWith("komunitas")) {
+            const core = extractCorePosyanduName(dbNama);
+            dbNama = core ? `Posyandu ${core}` : dbNama;
+          }
         }
         const officialKec = findKecamatanByKelurahan(dbItem.kelurahan);
         mergedList.push({

@@ -167,8 +167,13 @@ export function KomunitasProfilCharts({
 
   let displayKomNama = komunitas.nama;
   if (komunitas.jenis === "posyandu") {
-    const cleanName = (komunitas.nama || "").replace(/^(Posyandu\s*)+/gi, "").trim();
-    displayKomNama = cleanName ? `Posyandu ${cleanName}` : "Posyandu";
+    const rawNama = (komunitas.nama || "").trim();
+    if (rawNama.toLowerCase().startsWith("komunitas")) {
+      displayKomNama = rawNama;
+    } else {
+      const cleanName = rawNama.replace(/^(Posyandu\s*)+/gi, "").trim();
+      displayKomNama = cleanName ? `Posyandu ${cleanName}` : "Posyandu";
+    }
   }
 
   return (
