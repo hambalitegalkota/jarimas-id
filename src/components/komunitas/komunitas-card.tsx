@@ -38,9 +38,12 @@ export function KomunitasCard({
   const isApprovedMember = membership?.status === "approved";
   const isPosyandu = komunitas.jenis === "posyandu";
   const isBerjenjang =
+    (komunitas.nama || "").toLowerCase().includes("komunitas posyandu") ||
     (komunitas.nama || "").toLowerCase().startsWith("komunitas") ||
-    komunitas.id.startsWith("kom-posyandu-") ||
-    komunitas.id.startsWith("kom-paud-");
+    (typeof komunitas.id === "string" && (
+      komunitas.id.startsWith("kom-posyandu-") ||
+      komunitas.id.startsWith("kom-paud-")
+    ));
   const coverage = isPosyandu && !isBerjenjang ? getPosyanduCoverageDisplay(komunitas) : null;
 
   // Hanya Komunitas RT, Posyandu, dan Satuan PAUD yang dapat digabung secara langsung.
@@ -74,7 +77,9 @@ export function KomunitasCard({
     }
   } else if (komunitas.jenis === "posyandu") {
     const rawNama = (komunitas.nama || "").trim();
-    if (rawNama.toLowerCase().startsWith("komunitas")) {
+    if (rawNama.toLowerCase().includes("komunitas posyandu")) {
+      formattedTitle = rawNama.replace(/^(posyandu\s+)+(komunitas\s+posyandu)/i, "$2");
+    } else if (rawNama.toLowerCase().startsWith("komunitas")) {
       formattedTitle = rawNama;
     } else {
       const cleanName = rawNama.replace(/^(Posyandu\s*)+/gi, "").trim();
@@ -202,7 +207,7 @@ export function KomunitasCard({
                 </>
               )}
 
-              {isPosyandu && coverage && (
+              {isPosyandu && !isBerjenjang && coverage && (
                 <>
                   <span className="text-muted-foreground/40 hidden xs:inline">•</span>
                   {coverage.isMapped ? (

@@ -250,7 +250,14 @@ export function KomunitasDetailClientView({
     | "kabar"
     | "percakapan";
 
-  const isBerjenjang = Boolean(berjenjangSummary?.isBerjenjang);
+  const isBerjenjang =
+    Boolean(berjenjangSummary?.isBerjenjang) ||
+    (komunitasData.nama || "").toLowerCase().includes("komunitas posyandu") ||
+    (komunitasData.nama || "").toLowerCase().startsWith("komunitas") ||
+    (typeof komunitasData.id === "string" && (
+      komunitasData.id.startsWith("kom-posyandu-") ||
+      komunitasData.id.startsWith("kom-paud-")
+    ));
 
   const [activeMainTab, setActiveMainTab] = useState<KomunitasMainTab>(() => {
     if (isBerjenjang) {
@@ -601,7 +608,9 @@ export function KomunitasDetailClientView({
   let formattedTitle = komunitasData.nama;
   if (komunitasData.jenis === "posyandu") {
     const rawNama = (komunitasData.nama || "").trim();
-    if (rawNama.toLowerCase().startsWith("komunitas")) {
+    if (rawNama.toLowerCase().includes("komunitas posyandu")) {
+      formattedTitle = rawNama.replace(/^(posyandu\s+)+(komunitas\s+posyandu)/i, "$2");
+    } else if (rawNama.toLowerCase().startsWith("komunitas")) {
       formattedTitle = rawNama;
     } else {
       const cleanName = rawNama.replace(/^(Posyandu\s*)+/gi, "").trim();
@@ -1305,6 +1314,15 @@ export function KomunitasDetailClientView({
               <span className="font-semibold text-foreground">
                 {isPosyandu
                   ? (() => {
+                      if (isBerjenjang) {
+                        return `Forum Koordinasi Kader Posyandu • ${
+                          komunitas.kelurahan && komunitas.kelurahan !== "Semua Kelurahan"
+                            ? `Tingkat Kelurahan ${komunitas.kelurahan}`
+                            : komunitas.kecamatan && komunitas.kecamatan !== "Kota Tegal"
+                            ? `Tingkat Kecamatan ${komunitas.kecamatan}`
+                            : "Tingkat Kota Tegal"
+                        }`;
+                      }
                       const cov = getPosyanduCoverageDisplay(komunitasData);
                       return `Posyandu Siklus Hidup Terpadu (ILP) • ${cov.isMapped ? cov.label : "Cakupan RW/RT Belum Dipetakan"} • Kel. ${komunitas.kelurahan || "Kota Tegal"}`;
                     })()
@@ -1381,12 +1399,12 @@ export function KomunitasDetailClientView({
             <div className="p-3 rounded-lg bg-card border border-border space-y-1">
               <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
                 <MapPin className="h-3.5 w-3.5 text-primary" />
-                {isPosyandu ? "Alamat & Cakupan Posyandu" : isWargaKita ? "Alamat / Sekretariat" : "Alamat Lembaga"}
+                {isPosyandu && !isBerjenjang ? "Alamat & Cakupan Posyandu" : isWargaKita ? "Alamat / Sekretariat" : isPosyandu && isBerjenjang ? "Wilayah Koordinasi" : "Alamat Lembaga"}
               </span>
               <p className="font-semibold text-foreground leading-relaxed">
                 {komunitasData.lokasi || "Alamat belum dicantumkan"}
               </p>
-              {isPosyandu && (() => {
+              {isPosyandu && !isBerjenjang && (() => {
                 const cov = getPosyanduCoverageDisplay(komunitasData);
                 return (
                   <div className="pt-1">

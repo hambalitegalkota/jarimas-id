@@ -21,6 +21,13 @@ export function extractCorePosyanduName(rawName: string): string {
 }
 
 export function formatPosyanduName(rawName: string): string {
+  const trimmed = (rawName || "").trim();
+  if (
+    trimmed.toLowerCase().includes("komunitas posyandu") ||
+    trimmed.toLowerCase().startsWith("komunitas")
+  ) {
+    return trimmed.replace(/^(posyandu\s+)+(komunitas\s+posyandu)/i, "$2");
+  }
   const core = extractCorePosyanduName(rawName);
   return core ? `Posyandu ${core}` : "Posyandu";
 }

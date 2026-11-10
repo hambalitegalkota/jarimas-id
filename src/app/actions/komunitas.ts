@@ -427,9 +427,9 @@ export async function getKomunitasList(
       const { data: adminProfilesData } =
         adminUserIds.size > 0
           ? await supabase
-              .from("profiles")
-              .select("id, nama_lengkap, email, nomor_hp, avatar_url")
-              .in("id", Array.from(adminUserIds))
+            .from("profiles")
+            .select("id, nama_lengkap, email, nomor_hp, avatar_url")
+            .in("id", Array.from(adminUserIds))
           : { data: [] };
 
       const adminProfileMap = new Map(
@@ -521,9 +521,9 @@ export async function getKomunitasList(
       const { data: dbWargaKomunitas } =
         pagedKelurahans.length > 0
           ? await supabase
-              .from("komunitas")
-              .select("id, nama, jenis, kecamatan, kelurahan, rw, rt")
-              .in("kelurahan", pagedKelurahans)
+            .from("komunitas")
+            .select("id, nama, jenis, kecamatan, kelurahan, rw, rt")
+            .in("kelurahan", pagedKelurahans)
           : { data: [] };
 
       // Kumpulkan ID calon anggota dari pagedWarga dan matching DB komunitas
@@ -995,7 +995,7 @@ export async function getKomunitasList(
       const kkInfo = KALINYAMAT_KULON_POSYANDU_MAP[item.id] || KALINYAMAT_KULON_POSYANDU_MAP[normId];
       if (kkInfo) coreNama = kkInfo.nama.toLowerCase();
       const kgInfo = KALIGANGSA_POSYANDU_MAP[item.id] || KALIGANGSA_POSYANDU_MAP[normId];
-            const kratonInfo = KRATON_POSYANDU_MAP[item.id] || KRATON_POSYANDU_MAP[normId];
+      const kratonInfo = KRATON_POSYANDU_MAP[item.id] || KRATON_POSYANDU_MAP[normId];
       if (kgInfo) coreNama = kgInfo.nama.toLowerCase();
 
       const key = `${item.jenis}|${kelClean}|${coreNama}`;
@@ -1061,12 +1061,22 @@ export async function getKomunitasList(
           itemNama = kgInfo.nama;
           itemRw = kgInfo.rw;
         } else if (kratonInfo) {
-              itemNama = kratonInfo.nama;
-              itemRw = kratonInfo.rw;
-              item.rt = kratonInfo.rt;
-            } else {
-          const coreName = extractCorePosyanduName(item.nama);
-          itemNama = coreName ? `Posyandu ${coreName}` : "Posyandu";
+          itemNama = kratonInfo.nama;
+          itemRw = kratonInfo.rw;
+          item.rt = kratonInfo.rt;
+        } else {
+          const isBerjenjangItem =
+            (item.nama || "").toLowerCase().includes("komunitas posyandu") ||
+            (item.nama || "").toLowerCase().startsWith("komunitas") ||
+            (typeof item.id === "string" && item.id.startsWith("kom-posyandu-")) ||
+            isKomunitasBerjenjangPosyandu(item.id);
+
+          if (isBerjenjangItem) {
+            itemNama = (item.nama || "").replace(/^(posyandu\s+)+(komunitas\s+posyandu)/i, "$2");
+          } else {
+            const coreName = extractCorePosyanduName(item.nama);
+            itemNama = coreName ? `Posyandu ${coreName}` : "Posyandu";
+          }
         }
         if (itemDeskripsi) {
           itemDeskripsi = itemDeskripsi.replace(/Posyandu\s+Posyandu/gi, "Posyandu");
@@ -1224,9 +1234,9 @@ export async function getUserJoinedKomunitas(): Promise<{
     const { data: joinedAdminProfiles } =
       joinedAdminUserIds.size > 0
         ? await supabase
-            .from("profiles")
-            .select("id, nama_lengkap, nomor_hp")
-            .in("id", Array.from(joinedAdminUserIds))
+          .from("profiles")
+          .select("id, nama_lengkap, nomor_hp")
+          .in("id", Array.from(joinedAdminUserIds))
         : { data: [] };
 
     const joinedProfileMap = new Map(
@@ -1567,9 +1577,12 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
           isKomunitasBerjenjangPosyandu(komunitas.id) ||
           isKomunitasBerjenjangPosyandu(komunitasId) ||
           isKomunitasBerjenjangPosyandu(resolvedKomunitasId) ||
+          (nama || "").toLowerCase().includes("komunitas posyandu") ||
+          (nama || "").toLowerCase().startsWith("komunitas") ||
           Boolean(seedItem?.id && isKomunitasBerjenjangPosyandu(seedItem.id));
         if (isBerjenjangPos) {
-          nama = seedItem?.nama || komunitas.nama || nama;
+          const rawBerjenjangNama = seedItem?.nama || komunitas.nama || nama;
+          nama = rawBerjenjangNama.replace(/^(posyandu\s+)+(komunitas\s+posyandu)/i, "$2");
           komunitas.nama = nama;
           posyanduCanonicalRw = null;
         } else {
@@ -1670,9 +1683,9 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
         .eq("status", "approved"),
       currentUserId
         ? supabase
-            .from("anggota_komunitas")
-            .select("id, komunitas_id, peran, peran_diajukan, status, berdomisili, kk_terdaftar")
-            .eq("user_id", currentUserId)
+          .from("anggota_komunitas")
+          .select("id, komunitas_id, peran, peran_diajukan, status, berdomisili, kk_terdaftar")
+          .eq("user_id", currentUserId)
         : Promise.resolve({ data: [] }),
       supabase
         .from("anggota_komunitas")
@@ -1693,9 +1706,9 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
     const { data: chainProfiles } =
       adminUserIds.length > 0
         ? await supabase
-            .from("profiles")
-            .select("id, nama_lengkap, email, nomor_hp, avatar_url")
-            .in("id", adminUserIds)
+          .from("profiles")
+          .select("id, nama_lengkap, email, nomor_hp, avatar_url")
+          .in("id", adminUserIds)
         : { data: [] };
 
     const chainProfileMap = new Map(
@@ -1874,10 +1887,10 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
           canApply: !hasAdminTier,
           userStatusAtTier: userAtTier
             ? {
-                status: userAtTier.status,
-                peran: userAtTier.peran,
-                peran_diajukan: userAtTier.peran_diajukan || null,
-              }
+              status: userAtTier.status,
+              peran: userAtTier.peran,
+              peran_diajukan: userAtTier.peran_diajukan || null,
+            }
             : null,
         };
 
@@ -2112,9 +2125,9 @@ export async function getAnggotaKomunitas(komunitasId: string): Promise<{
     const { data: profilesData } =
       userIds.length > 0
         ? await supabase
-            .from("profiles")
-            .select("id, is_super_admin, is_admin_pusat, nama_lengkap, email, nomor_hp, avatar_url")
-            .in("id", userIds)
+          .from("profiles")
+          .select("id, is_super_admin, is_admin_pusat, nama_lengkap, email, nomor_hp, avatar_url")
+          .in("id", userIds)
         : { data: [] };
 
     const profileMap = new Map((profilesData || []).map((p: any) => [p.id, p]));
@@ -2320,9 +2333,9 @@ export async function getKomunitasBerjenjangMemberSummary(
     const { data: profilesData } =
       userIds.length > 0
         ? await supabase
-            .from("profiles")
-            .select("id, is_super_admin, is_admin_pusat, nama_lengkap, email, nomor_hp, avatar_url")
-            .in("id", userIds)
+          .from("profiles")
+          .select("id, is_super_admin, is_admin_pusat, nama_lengkap, email, nomor_hp, avatar_url")
+          .in("id", userIds)
         : { data: [] };
 
     const profileMap = new Map((profilesData || []).map((p: any) => [p.id, p]));
@@ -3445,8 +3458,8 @@ export async function applyForAdminKomunitas({
       seed?.jenis === "warga_kita"
         ? "Pengurus"
         : seed?.jenis === "posyandu"
-        ? "Kader"
-        : "Admin";
+          ? "Kader"
+          : "Admin";
 
     const { error: updateErr } = await supabase
       .from("anggota_komunitas")
@@ -3654,10 +3667,10 @@ export async function resignAdminKomunitas({
         myMember.berdomisili && myMember.kk_terdaftar
           ? "Penduduk"
           : myMember.kk_terdaftar
-          ? "Penduduk Berdomisili Luar Kota"
-          : myMember.berdomisili
-          ? "Pendatang"
-          : "Pengunjung";
+            ? "Penduduk Berdomisili Luar Kota"
+            : myMember.berdomisili
+              ? "Pendatang"
+              : "Pengunjung";
     } else if (seed?.jenis === "posyandu") {
       fallbackRole = "Pengunjung";
     } else {
@@ -4048,7 +4061,7 @@ export async function cleanupDuplicatePosyanduAction(): Promise<{
               .from("anggota_komunitas")
               .update({ komunitas_id: master.id })
               .eq("komunitas_id", dup.id);
-          } catch {}
+          } catch { }
         }
       }
     }
@@ -4546,7 +4559,7 @@ export async function getKomunitasAdminListAction(params: GetKomunitasAdminListP
           let itemRw = item.rw;
           if (item.jenis === "posyandu") {
             const normId = toValidUUID(item.id);
-const bandungInfo = BANDUNG_POSYANDU_MAP[item.id] || BANDUNG_POSYANDU_MAP[normId];
+            const bandungInfo = BANDUNG_POSYANDU_MAP[item.id] || BANDUNG_POSYANDU_MAP[normId];
             const kwInfo = KALINYAMAT_WETAN_POSYANDU_MAP[item.id] || KALINYAMAT_WETAN_POSYANDU_MAP[normId];
             const kkInfo = KALINYAMAT_KULON_POSYANDU_MAP[item.id] || KALINYAMAT_KULON_POSYANDU_MAP[normId];
             const kgInfo = KALIGANGSA_POSYANDU_MAP[item.id] || KALIGANGSA_POSYANDU_MAP[normId];
@@ -4570,8 +4583,18 @@ const bandungInfo = BANDUNG_POSYANDU_MAP[item.id] || BANDUNG_POSYANDU_MAP[normId
               itemRw = kratonInfo.rw;
               item.rt = kratonInfo.rt;
             } else {
-              const coreName = extractCorePosyanduName(itemNama);
-              itemNama = coreName ? `Posyandu ${coreName}` : "Posyandu";
+              const isBerjenjangItem =
+                (itemNama || "").toLowerCase().includes("komunitas posyandu") ||
+                (itemNama || "").toLowerCase().startsWith("komunitas") ||
+                (typeof item.id === "string" && item.id.startsWith("kom-posyandu-")) ||
+                isKomunitasBerjenjangPosyandu(item.id);
+
+              if (isBerjenjangItem) {
+                itemNama = (itemNama || "").replace(/^(posyandu\s+)+(komunitas\s+posyandu)/i, "$2");
+              } else {
+                const coreName = extractCorePosyanduName(itemNama);
+                itemNama = coreName ? `Posyandu ${coreName}` : "Posyandu";
+              }
             }
             if (itemDeskripsi) {
               itemDeskripsi = itemDeskripsi.replace(/Posyandu\s+Posyandu/gi, "Posyandu");
@@ -4592,15 +4615,15 @@ const bandungInfo = BANDUNG_POSYANDU_MAP[item.id] || BANDUNG_POSYANDU_MAP[normId
             kecamatan: meta.kecamatan || item.kecamatan,
             kelurahan: meta.kelurahan || item.kelurahan,
             rw: itemRw,
-          rt: item.rt,
-          lokasi: item.lokasi || "Kota Tegal",
-          deskripsi: itemDeskripsi,
-          kontak: item.kontak,
-          jadwal: item.jadwal,
-          created_at: item.created_at,
-          jumlah_anggota: countsMap[item.id] || 0,
-        };
-      });
+            rt: item.rt,
+            lokasi: item.lokasi || "Kota Tegal",
+            deskripsi: itemDeskripsi,
+            kontak: item.kontak,
+            jadwal: item.jadwal,
+            created_at: item.created_at,
+            jumlah_anggota: countsMap[item.id] || 0,
+          };
+        });
 
       allItems.sort((a, b) => {
         const diff = (a.jumlah_anggota || 0) - (b.jumlah_anggota || 0);
@@ -4673,7 +4696,7 @@ const bandungInfo = BANDUNG_POSYANDU_MAP[item.id] || BANDUNG_POSYANDU_MAP[normId
           let itemRw = item.rw;
           if (item.jenis === "posyandu") {
             const normId = toValidUUID(item.id);
-const bandungInfo = BANDUNG_POSYANDU_MAP[item.id] || BANDUNG_POSYANDU_MAP[normId];
+            const bandungInfo = BANDUNG_POSYANDU_MAP[item.id] || BANDUNG_POSYANDU_MAP[normId];
             const kwInfo = KALINYAMAT_WETAN_POSYANDU_MAP[item.id] || KALINYAMAT_WETAN_POSYANDU_MAP[normId];
             const kkInfo = KALINYAMAT_KULON_POSYANDU_MAP[item.id] || KALINYAMAT_KULON_POSYANDU_MAP[normId];
             const kgInfo = KALIGANGSA_POSYANDU_MAP[item.id] || KALIGANGSA_POSYANDU_MAP[normId];
@@ -4697,8 +4720,18 @@ const bandungInfo = BANDUNG_POSYANDU_MAP[item.id] || BANDUNG_POSYANDU_MAP[normId
               itemRw = kratonInfo.rw;
               item.rt = kratonInfo.rt;
             } else {
-              const coreName = extractCorePosyanduName(itemNama);
-              itemNama = coreName ? `Posyandu ${coreName}` : "Posyandu";
+              const isBerjenjangItem =
+                (itemNama || "").toLowerCase().includes("komunitas posyandu") ||
+                (itemNama || "").toLowerCase().startsWith("komunitas") ||
+                (typeof item.id === "string" && item.id.startsWith("kom-posyandu-")) ||
+                isKomunitasBerjenjangPosyandu(item.id);
+
+              if (isBerjenjangItem) {
+                itemNama = (itemNama || "").replace(/^(posyandu\s+)+(komunitas\s+posyandu)/i, "$2");
+              } else {
+                const coreName = extractCorePosyanduName(itemNama);
+                itemNama = coreName ? `Posyandu ${coreName}` : "Posyandu";
+              }
             }
             if (itemDeskripsi) {
               itemDeskripsi = itemDeskripsi.replace(/Posyandu\s+Posyandu/gi, "Posyandu");
@@ -4714,15 +4747,15 @@ const bandungInfo = BANDUNG_POSYANDU_MAP[item.id] || BANDUNG_POSYANDU_MAP[normId
             kecamatan: meta.kecamatan || item.kecamatan,
             kelurahan: meta.kelurahan || item.kelurahan,
             rw: itemRw,
-          rt: item.rt,
-          lokasi: item.lokasi || "Kota Tegal",
-          deskripsi: itemDeskripsi,
-          kontak: item.kontak,
-          jadwal: item.jadwal,
-          created_at: item.created_at,
-          jumlah_anggota: countsMap[item.id] || 0,
-        };
-      });
+            rt: item.rt,
+            lokasi: item.lokasi || "Kota Tegal",
+            deskripsi: itemDeskripsi,
+            kontak: item.kontak,
+            jadwal: item.jadwal,
+            created_at: item.created_at,
+            jumlah_anggota: countsMap[item.id] || 0,
+          };
+        });
 
       return {
         success: true,
@@ -5276,9 +5309,9 @@ export async function getHierarchicalActiveKomunitasAction(): Promise<{
     // 3. Ambil data anak per komunitas
     const { data: rawChildren } = activeKomIds.length > 0
       ? await supabase
-          .from("data_anak")
-          .select("komunitas_id")
-          .in("komunitas_id", activeKomIds)
+        .from("data_anak")
+        .select("komunitas_id")
+        .in("komunitas_id", activeKomIds)
       : { data: [] };
 
     const dataAnakCountMap: Record<string, number> = {};
@@ -5334,8 +5367,18 @@ export async function getHierarchicalActiveKomunitasAction(): Promise<{
       let itemNama = kom?.nama || "Komunitas Tegal";
       const itemJenis = kom?.jenis || "posyandu";
       if (itemJenis === "posyandu") {
-        const coreName = extractCorePosyanduName(itemNama);
-        if (coreName) itemNama = `Posyandu ${coreName}`;
+        const isBerjenjangItem =
+          (itemNama || "").toLowerCase().includes("komunitas posyandu") ||
+          (itemNama || "").toLowerCase().startsWith("komunitas") ||
+          (typeof kId === "string" && kId.startsWith("kom-posyandu-")) ||
+          isKomunitasBerjenjangPosyandu(kId);
+
+        if (isBerjenjangItem) {
+          itemNama = (itemNama || "").replace(/^(posyandu\s+)+(komunitas\s+posyandu)/i, "$2");
+        } else {
+          const coreName = extractCorePosyanduName(itemNama);
+          if (coreName) itemNama = `Posyandu ${coreName}`;
+        }
       }
 
       const rawKec = meta.kecamatan || kom?.kecamatan || "Kota Tegal";
@@ -5747,9 +5790,9 @@ export async function getPaudKomunitasRekapTableAction(): Promise<{
     const { data: profilesData } =
       userIds.length > 0
         ? await supabase
-            .from("profiles")
-            .select("id, nama_lengkap, email, avatar_url")
-            .in("id", userIds)
+          .from("profiles")
+          .select("id, nama_lengkap, email, avatar_url")
+          .in("id", userIds)
         : { data: [] };
 
     const profileMap = new Map<string, any>(

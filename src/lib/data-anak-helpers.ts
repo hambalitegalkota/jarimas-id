@@ -2347,6 +2347,24 @@ export function getPosyanduCoverageDisplay(komunitas: any): PosyanduCoverageResu
     };
   }
 
+  // Komunitas Posyandu Berjenjang (Kelurahan, Kecamatan, Kota) merupakan forum koordinasi wilayah, bukan posyandu basis RW/RT.
+  const rawNama = (komunitas.nama || "").toLowerCase();
+  const idStr = String(komunitas.id || "");
+  const isBerjenjang =
+    rawNama.includes("komunitas posyandu") ||
+    rawNama.startsWith("komunitas") ||
+    idStr.startsWith("kom-posyandu-") ||
+    idStr.startsWith("kom-paud-");
+
+  if (isBerjenjang) {
+    return {
+      isMapped: false,
+      label: "",
+      rwLabel: null,
+      rtLabel: null,
+    };
+  }
+
   // 1. Ambil dari canonical rule di data-anak-helpers
   const canon = getPosyanduCakupanWilayah(komunitas);
 
