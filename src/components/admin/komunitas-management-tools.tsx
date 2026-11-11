@@ -22,6 +22,10 @@ import {
   ArrowDown,
   UserPlus,
   Sparkles,
+  HeartPulse,
+  GraduationCap,
+  Home,
+  BookOpen,
 } from "lucide-react";
 import {
   getKomunitasAdminListAction,
@@ -30,11 +34,19 @@ import {
   deleteKomunitasAdminAction,
   syncAllPosyanduMembersAction,
 } from "@/app/actions/komunitas";
+import { getRegisteredUsers } from "@/app/actions/pertemanan";
 import { ManageGrupMembersModal } from "@/components/kabar/manage-grup-members-modal";
-import type { KomunitasWithMembership } from "@/types/database";
+import type { KomunitasWithMembership, RegisteredUserItem } from "@/types/database";
 import { KOTA_TEGAL_DATA } from "@/lib/constants/tegal-data";
+import { cn } from "@/lib/utils";
 
-export function KomunitasManagementTools() {
+export interface KomunitasManagementToolsProps {
+  registeredUsers?: RegisteredUserItem[];
+}
+
+export function KomunitasManagementTools({
+  registeredUsers,
+}: KomunitasManagementToolsProps = {}) {
   // State List, Filter & Sort
   const [items, setItems] = useState<KomunitasWithMembership[]>([]);
   const [totalCount, setTotalCount] = useState(0);
@@ -48,6 +60,67 @@ export function KomunitasManagementTools() {
   const [filterKelurahan, setFilterKelurahan] = useState<string>("semua");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [appliedSearch, setAppliedSearch] = useState<string>("");
+  const [showAllCommunities, setShowAllCommunities] = useState<boolean>(false);
+
+  // Registered Users Data & Metrics (TOTAL REGISTRASI, WARGA POSYANDU, WARGA PAUD, WARGA KITA, PKBM)
+  const [usersData, setUsersData] = useState<RegisteredUserItem[]>(registeredUsers || []);
+
+  useEffect(() => {
+    if (registeredUsers && registeredUsers.length > 0) {
+      setUsersData(registeredUsers);
+    } else {
+      getRegisteredUsers()
+        .then((res) => {
+          if (res && res.users) {
+            setUsersData(res.users);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [registeredUsers]);
+
+  const userMetrics = useMemo(() => {
+    const users = usersData || [];
+    const totalRegistrasi = users.length;
+    const wargaPosyandu = users.filter((u) =>
+      u.komunitas_list?.some((c) => c.jenis === "posyandu")
+    ).length;
+    const wargaPaud = users.filter((u) =>
+      u.komunitas_list?.some((c) => {
+        if (c.jenis !== "satuan_paud") return false;
+        const lower = (c.nama || "").toLowerCase();
+        return !lower.includes("pkbm") && !lower.includes("skb");
+      })
+    ).length;
+    const wargaKita = users.filter((u) =>
+      u.komunitas_list?.some((c) => c.jenis === "warga_kita")
+    ).length;
+    const wargaPkbm = users.filter((u) =>
+      u.komunitas_list?.some((c) => {
+        const lower = (c.nama || "").toLowerCase();
+        return c.jenis === "pkbm_skb" || lower.includes("pkbm") || lower.includes("skb");
+      })
+    ).length;
+
+    return {
+      totalRegistrasi,
+      wargaPosyandu,
+      wargaPaud,
+      wargaKita,
+      wargaPkbm,
+    };
+  }, [usersData]);
+
+  // Cek apakah ada pencarian atau kategori/filter aktif untuk menampilkan tabel
+  const hasActiveSearchOrFilter = useMemo(() => {
+    return Boolean(
+      appliedSearch.trim() ||
+      (filterJenis && filterJenis !== "semua") ||
+      (filterKecamatan && filterKecamatan !== "semua") ||
+      (filterKelurahan && filterKelurahan !== "semua") ||
+      showAllCommunities
+    );
+  }, [appliedSearch, filterJenis, filterKecamatan, filterKelurahan, showAllCommunities]);
 
   // Kriteria dan Arah Pengurutan (Ascending / Descending)
   const [sortBy, setSortBy] = useState<"nama" | "jenis" | "kecamatan" | "kelurahan" | "created_at" | "jumlah_anggota">("created_at");
@@ -156,6 +229,7 @@ export function KomunitasManagementTools() {
     setFilterKelurahan("semua");
     setSearchQuery("");
     setAppliedSearch("");
+    setShowAllCommunities(false);
     setSortBy("created_at");
     setSortOrder("desc");
   };
@@ -165,6 +239,7 @@ export function KomunitasManagementTools() {
     filterKecamatan !== "semua" ||
     filterKelurahan !== "semua" ||
     appliedSearch !== "" ||
+    showAllCommunities ||
     sortBy !== "created_at" ||
     sortOrder !== "desc";
 
@@ -281,6 +356,149 @@ export function KomunitasManagementTools() {
         </div>
       </div>
 
+      {/* Quick Metrics Bar (TOTAL REGISTRASI, WARGA POSYANDU, WARGA PAUD, WARGA KITA, PKBM) */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+        {/* 1. TOTAL REGISTRASI */}
+        <div
+          onClick={() => {
+            setFilterJenis("semua");
+            setShowAllCommunities(true);
+          }}
+          className={cn(
+            "p-3.5 rounded-xl border space-y-1 transition-all cursor-pointer active:scale-98",
+            showAllCommunities && filterJenis === "semua"
+              ? "border-primary bg-primary/10 ring-2 ring-primary/20 shadow-xs"
+              : "border-border bg-card hover:bg-muted/40 hover:border-primary/40"
+          )}
+          title="Klik untuk menampilkan seluruh komunitas terdaftar"
+        >
+          <div className="flex items-center justify-between text-muted-foreground">
+            <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider block">
+              Total Registrasi
+            </span>
+            <Users className="h-3.5 w-3.5 text-primary shrink-0" />
+          </div>
+          <div className="flex items-baseline gap-1.5 pt-0.5">
+            <span className="text-xl sm:text-2xl font-black font-mono text-foreground tracking-tight">
+              {userMetrics.totalRegistrasi}
+            </span>
+            <span className="text-xs text-muted-foreground font-medium">Akun</span>
+          </div>
+        </div>
+
+        {/* 2. WARGA POSYANDU */}
+        <div
+          onClick={() => {
+            setFilterJenis("posyandu");
+            setShowAllCommunities(false);
+          }}
+          className={cn(
+            "p-3.5 rounded-xl border space-y-1 transition-all cursor-pointer active:scale-98",
+            filterJenis === "posyandu"
+              ? "border-teal-500 bg-teal-500/15 ring-2 ring-teal-500/30 shadow-xs"
+              : "border-teal-500/25 bg-teal-500/5 hover:bg-teal-500/10 hover:border-teal-500/40"
+          )}
+          title="Klik untuk memfilter komunitas Posyandu"
+        >
+          <div className="flex items-center justify-between text-teal-700 dark:text-teal-300">
+            <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider block">
+              Warga Posyandu
+            </span>
+            <HeartPulse className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400 shrink-0" />
+          </div>
+          <div className="flex items-baseline gap-1.5 pt-0.5">
+            <span className="text-xl sm:text-2xl font-black font-mono text-teal-900 dark:text-teal-100 tracking-tight">
+              {userMetrics.wargaPosyandu}
+            </span>
+            <span className="text-xs text-teal-700/80 dark:text-teal-300/80 font-medium">Kader / Warga</span>
+          </div>
+        </div>
+
+        {/* 3. WARGA PAUD */}
+        <div
+          onClick={() => {
+            setFilterJenis("satuan_paud");
+            setShowAllCommunities(false);
+          }}
+          className={cn(
+            "p-3.5 rounded-xl border space-y-1 transition-all cursor-pointer active:scale-98",
+            filterJenis === "satuan_paud"
+              ? "border-amber-500 bg-amber-500/15 ring-2 ring-amber-500/30 shadow-xs"
+              : "border-amber-500/25 bg-amber-500/5 hover:bg-amber-500/10 hover:border-amber-500/40"
+          )}
+          title="Klik untuk memfilter komunitas Satuan PAUD"
+        >
+          <div className="flex items-center justify-between text-amber-700 dark:text-amber-300">
+            <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider block">
+              Warga PAUD
+            </span>
+            <GraduationCap className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+          </div>
+          <div className="flex items-baseline gap-1.5 pt-0.5">
+            <span className="text-xl sm:text-2xl font-black font-mono text-amber-900 dark:text-amber-100 tracking-tight">
+              {userMetrics.wargaPaud}
+            </span>
+            <span className="text-xs text-amber-700/80 dark:text-amber-300/80 font-medium">Guru / Wali</span>
+          </div>
+        </div>
+
+        {/* 4. WARGA KITA */}
+        <div
+          onClick={() => {
+            setFilterJenis("warga_kita");
+            setShowAllCommunities(false);
+          }}
+          className={cn(
+            "p-3.5 rounded-xl border space-y-1 transition-all cursor-pointer active:scale-98",
+            filterJenis === "warga_kita"
+              ? "border-blue-500 bg-blue-500/15 ring-2 ring-blue-500/30 shadow-xs"
+              : "border-blue-500/25 bg-blue-500/5 hover:bg-blue-500/10 hover:border-blue-500/40"
+          )}
+          title="Klik untuk memfilter komunitas Warga Kita"
+        >
+          <div className="flex items-center justify-between text-blue-700 dark:text-blue-300">
+            <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider block">
+              Warga Kita
+            </span>
+            <Home className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
+          </div>
+          <div className="flex items-baseline gap-1.5 pt-0.5">
+            <span className="text-xl sm:text-2xl font-black font-mono text-blue-900 dark:text-blue-100 tracking-tight">
+              {userMetrics.wargaKita}
+            </span>
+            <span className="text-xs text-blue-700/80 dark:text-blue-300/80 font-medium">Penduduk</span>
+          </div>
+        </div>
+
+        {/* 5. PKBM */}
+        <div
+          onClick={() => {
+            setFilterJenis("pkbm_skb");
+            setShowAllCommunities(false);
+          }}
+          className={cn(
+            "p-3.5 rounded-xl border space-y-1 transition-all cursor-pointer active:scale-98",
+            filterJenis === "pkbm_skb"
+              ? "border-purple-500 bg-purple-500/15 ring-2 ring-purple-500/30 shadow-xs"
+              : "border-purple-500/25 bg-purple-500/5 hover:bg-purple-500/10 hover:border-purple-500/40"
+          )}
+          title="Klik untuk memfilter komunitas PKBM & SKB"
+        >
+          <div className="flex items-center justify-between text-purple-700 dark:text-purple-300">
+            <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider block">
+              PKBM &amp; SKB
+            </span>
+            <BookOpen className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400 shrink-0" />
+          </div>
+          <div className="flex items-baseline gap-1.5 pt-0.5">
+            <span className="text-xl sm:text-2xl font-black font-mono text-purple-900 dark:text-purple-100 tracking-tight">
+              {userMetrics.wargaPkbm}
+            </span>
+            <span className="text-xs text-purple-700/80 dark:text-purple-300/80 font-medium">Tutor / Siswa</span>
+          </div>
+        </div>
+      </div>
+
       {/* Controls: Search & Filters */}
       <div className="space-y-3">
         {/* Search bar */}
@@ -322,12 +540,16 @@ export function KomunitasManagementTools() {
             </label>
             <select
               value={filterJenis}
-              onChange={(e) => setFilterJenis(e.target.value)}
+              onChange={(e) => {
+                setFilterJenis(e.target.value);
+                setShowAllCommunities(false);
+              }}
               className="w-full min-h-[40px] h-10 px-3 rounded-lg border border-border bg-background text-xs font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer"
             >
-              <option value="semua">Semua Kategori</option>
+              <option value="semua">Semua Kategori (Pilih Kategori)</option>
               <option value="posyandu">Posyandu</option>
-              <option value="satuan_paud">Satuan PAUD &amp; PKBM</option>
+              <option value="satuan_paud">Satuan PAUD (TK, KB, RA, SPS, TPA)</option>
+              <option value="pkbm_skb">PKBM &amp; SKB</option>
               <option value="warga_kita">Warga Kita</option>
               <option value="kegiatan">Grup Kegiatan</option>
             </select>
@@ -411,8 +633,75 @@ export function KomunitasManagementTools() {
         </div>
       </div>
 
-      {/* Komunitas Table */}
-      {loadingList ? (
+      {/* Komunitas Table (Sembunyikan tabel Nama Komunitas, tampilkan ketika pencarian atau kategori sudah dipilih) */}
+      {!hasActiveSearchOrFilter ? (
+        <div className="flex flex-col items-center justify-center py-12 px-4 text-center rounded-xl border border-dashed border-border/80 bg-muted/20 space-y-3.5">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+            <Search className="h-6 w-6" />
+          </div>
+          <div className="space-y-1.5 max-w-md">
+            <h4 className="font-bold text-foreground text-sm sm:text-base">
+              Daftar Komunitas Disembunyikan
+            </h4>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Tabel data komunitas disembunyikan secara default. Silakan pilih <strong>Kategori</strong>, tentukan wilayah <strong>Kecamatan / Kelurahan</strong>, gunakan kotak pencarian di atas, atau klik salah satu kotak metrik di atas untuk menampilkan komunitas.
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
+            <button
+              type="button"
+              onClick={() => {
+                setFilterJenis("posyandu");
+                setShowAllCommunities(false);
+              }}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-teal-500/30 bg-teal-500/10 hover:bg-teal-500/20 text-teal-700 dark:text-teal-300 text-xs font-bold transition-all cursor-pointer shadow-2xs"
+            >
+              <HeartPulse className="h-3.5 w-3.5" />
+              <span>Lihat Posyandu</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setFilterJenis("satuan_paud");
+                setShowAllCommunities(false);
+              }}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-300 text-xs font-bold transition-all cursor-pointer shadow-2xs"
+            >
+              <GraduationCap className="h-3.5 w-3.5" />
+              <span>Lihat Satuan PAUD</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setFilterJenis("warga_kita");
+                setShowAllCommunities(false);
+              }}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/20 text-blue-700 dark:text-blue-300 text-xs font-bold transition-all cursor-pointer shadow-2xs"
+            >
+              <Home className="h-3.5 w-3.5" />
+              <span>Lihat Warga Kita</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setFilterJenis("pkbm_skb");
+                setShowAllCommunities(false);
+              }}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-purple-500/30 bg-purple-500/10 hover:bg-purple-500/20 text-purple-700 dark:text-purple-300 text-xs font-bold transition-all cursor-pointer shadow-2xs"
+            >
+              <BookOpen className="h-3.5 w-3.5" />
+              <span>Lihat PKBM &amp; SKB</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowAllCommunities(true)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-card hover:bg-muted text-foreground text-xs font-bold transition-all cursor-pointer shadow-2xs"
+            >
+              <span>Tampilkan Semua Komunitas ({totalCount})</span>
+            </button>
+          </div>
+        </div>
+      ) : loadingList ? (
         <div className="flex flex-col items-center justify-center py-16 text-muted-foreground gap-3 border-t border-border">
           <Loader2 className="h-6 w-6 animate-spin text-primary" />
           <span className="text-xs sm:text-sm font-medium">Memuat data komunitas...</span>

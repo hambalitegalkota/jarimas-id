@@ -4533,7 +4533,11 @@ export async function getKomunitasAdminListAction(params: GetKomunitasAdminListP
     const invalidSet = new Set(allInvalidIds);
 
     if (params.jenis && params.jenis !== "semua") {
-      query = query.eq("jenis", params.jenis);
+      if (params.jenis === "pkbm_skb" || params.jenis === "pkbm") {
+        query = query.or("jenis.eq.pkbm_skb,nama.ilike.%pkbm%,nama.ilike.%skb%");
+      } else {
+        query = query.eq("jenis", params.jenis);
+      }
     }
     if (params.kecamatan && params.kecamatan !== "semua") {
       query = query.eq("kecamatan", params.kecamatan);

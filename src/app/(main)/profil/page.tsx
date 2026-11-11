@@ -22,7 +22,6 @@ import { getRegisteredUsers } from "@/app/actions/pertemanan";
 import { ApprovalList } from "@/components/admin/approval-list";
 import { CleanupTestDataTool } from "@/components/admin/cleanup-test-data-tool";
 import { KecamatanMonitoringAccordion } from "@/components/admin/kecamatan-monitoring-accordion";
-import { SuperAdminWargaMonitoringTool } from "@/components/admin/super-admin-warga-monitoring-tool";
 import { AdminBidangManagementCard } from "@/components/admin/admin-bidang-management-card";
 import { KomunitasManagementTools } from "@/components/admin/komunitas-management-tools";
 import {
@@ -610,17 +609,6 @@ export default async function ProfilePage() {
             />
           )}
 
-          {/* Monitoring Warga Realtime: Ditampilkan untuk Super Admin, Admin Pusat, dan Admin Kota */}
-          {(userAdminInfo.tierLevel === "super_admin" ||
-            userAdminInfo.tierLevel === "admin_pusat" ||
-            userAdminInfo.tierLevel === "admin_kota") && (
-            <SuperAdminWargaMonitoringTool
-              initialUsers={registeredUsersResult.users || []}
-              currentUserId={user.id}
-              viewerTier={userAdminInfo.tierLevel}
-            />
-          )}
-
           {/* Pengangkatan & Manajemen Admin Bidang (SPM 6 Bidang): Super Admin, Admin Pusat, Admin Kota */}
           {(userAdminInfo.tierLevel === "super_admin" ||
             userAdminInfo.tierLevel === "admin_pusat" ||
@@ -636,7 +624,7 @@ export default async function ProfilePage() {
           {(userAdminInfo.tierLevel === "super_admin" ||
             userAdminInfo.tierLevel === "admin_pusat" ||
             userAdminInfo.tierLevel === "admin_kota") && (
-            <KomunitasManagementTools />
+            <KomunitasManagementTools registeredUsers={registeredUsersResult.users || []} />
           )}
 
           {/* Pembersih Data Uji Coba: HANYA untuk Super Admin */}
