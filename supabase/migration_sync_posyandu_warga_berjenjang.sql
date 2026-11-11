@@ -203,14 +203,15 @@ SELECT DISTINCT
     WHEN ak.peran ILIKE '%kader%' OR ak.peran ILIKE '%pengurus%' OR ak.peran ILIKE '%admin%' THEN 'Kader'
     ELSE 'Anggota'
   END AS peran,
-  'approved' AS status,
+  ak.status AS status,
   now(),
   now()
 FROM public.anggota_komunitas ak
 JOIN public.komunitas k ON ak.komunitas_id = k.id
 WHERE k.jenis = 'posyandu'
-  AND ak.status = 'approved'
+  AND ak.status::text = 'approved'
   AND ak.komunitas_id != '4559e31a-8079-4146-8aa4-87150211f8cd'::UUID
 ON CONFLICT (user_id, komunitas_id) DO UPDATE SET
-  status = 'approved',
+  status = EXCLUDED.status,
   updated_at = now();
+
