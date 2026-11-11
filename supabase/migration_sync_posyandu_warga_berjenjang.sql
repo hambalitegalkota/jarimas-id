@@ -196,7 +196,7 @@ ON CONFLICT (id) DO NOTHING;
 
 -- 4. Sinkronisasi Instan Seluruh Kader/Anggota Posyandu yang ada saat ini ke Komunitas Posyandu Kota Tegal
 INSERT INTO public.anggota_komunitas (user_id, komunitas_id, peran, status, created_at, updated_at)
-SELECT DISTINCT 
+SELECT DISTINCT ON (ak.user_id)
   ak.user_id,
   '4559e31a-8079-4146-8aa4-87150211f8cd'::UUID AS komunitas_id,
   CASE 
@@ -211,6 +211,8 @@ JOIN public.komunitas k ON ak.komunitas_id = k.id
 WHERE k.jenis = 'posyandu'
   AND ak.status::text = 'approved'
   AND ak.komunitas_id != '4559e31a-8079-4146-8aa4-87150211f8cd'::UUID
+ORDER BY ak.user_id, 
+  CASE WHEN ak.peran ILIKE '%kader%' OR ak.peran ILIKE '%pengurus%' OR ak.peran ILIKE '%admin%' THEN 1 ELSE 2 END ASC
 ON CONFLICT (user_id, komunitas_id) DO UPDATE SET
   status = EXCLUDED.status,
   updated_at = now();
