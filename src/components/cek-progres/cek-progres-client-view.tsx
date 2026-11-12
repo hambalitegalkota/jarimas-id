@@ -24,6 +24,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { PrintButton } from "@/components/ui/print-button";
+import { ProgresTimelineChart } from "@/components/cek-progres/progres-timeline-chart";
 import { cn } from "@/lib/utils";
 import type {
   ProgresPaudItem,
@@ -592,6 +593,14 @@ export function CekProgresClientView({
           </div>
         </div>
       </div>
+
+      {/* ========================================================= */}
+      {/* 3B. GRAFIK TREN PROGRES PENYELESAIAN HARIAN (25 OKT - TUNTAS) */}
+      {/* ========================================================= */}
+      <ProgresTimelineChart
+        totalSasaranSiswa={summary.totalPesertaDidik}
+        totalSatuanPaud={summary.totalPaud}
+      />
 
       {/* ========================================================= */}
       {/* 4. FILTER CONTROLS & SEARCH BAR                            */}
