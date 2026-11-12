@@ -25,7 +25,6 @@ SET
   rw = '01',
   rt = '01',
   lokasi = 'Balai Posyandu / RW 01, Muarareja, Tegal Barat, Kota Tegal',
-  cakupan_wilayah = 'Melayani Warga RW 01 (RT 01, RT 03, RT 05 dan RW - RT Tidak Tahu)',
   deskripsi = 'Layanan terpadu Posyandu Mawar Muarareja cakupan sinkronisasi wilayah RW 01 (RT 01, RT 03, RT 05 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.'
 WHERE id = '194a821a-cb4f-4146-89f9-ad0901f6527d';
 
@@ -35,7 +34,6 @@ SET
   rw = '01',
   rt = '02',
   lokasi = 'Balai Posyandu / RW 01, Muarareja, Tegal Barat, Kota Tegal',
-  cakupan_wilayah = 'Melayani Warga RW 01 (RT 02 dan RW - RT Tidak Tahu)',
   deskripsi = 'Layanan terpadu Posyandu Dahlia Muarareja cakupan sinkronisasi wilayah RW 01 (RT 02 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.'
 WHERE id = '5202b90c-adfb-499b-8af9-f099b059869b';
 
@@ -45,7 +43,6 @@ SET
   rw = '01',
   rt = '02',
   lokasi = 'Balai Posyandu / RW 01, Muarareja, Tegal Barat, Kota Tegal',
-  cakupan_wilayah = 'Melayani Warga RW 01 (RT 02, RT 04 dan RW - RT Tidak Tahu)',
   deskripsi = 'Layanan terpadu Posyandu Anggrek Muarareja cakupan sinkronisasi wilayah RW 01 (RT 02, RT 04 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.'
 WHERE id = '55c8f953-cbdd-4afc-805f-f601f5ae4c98';
 
@@ -55,7 +52,6 @@ SET
   rw = '02',
   rt = '02',
   lokasi = 'Balai Posyandu / RW 02, Muarareja, Tegal Barat, Kota Tegal',
-  cakupan_wilayah = 'Melayani Warga RW 02 (RT 02, RT 03 dan RW - RT Tidak Tahu)',
   deskripsi = 'Layanan terpadu Posyandu Nusa Indah Muarareja cakupan sinkronisasi wilayah RW 02 (RT 02, RT 03 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.'
 WHERE id = '1452e8c7-e16c-4ca1-85a3-d075a51fe415';
 
@@ -65,7 +61,6 @@ SET
   rw = '02',
   rt = '01',
   lokasi = 'Balai Posyandu / RW 02, Muarareja, Tegal Barat, Kota Tegal',
-  cakupan_wilayah = 'Melayani Warga RW 02 (RT 01, RT 04 dan RW - RT Tidak Tahu)',
   deskripsi = 'Layanan terpadu Posyandu Cempaka Muarareja cakupan sinkronisasi wilayah RW 02 (RT 01, RT 04 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.'
 WHERE id = 'ecfde3e3-a736-444c-8310-b0e5008e3b41';
 
@@ -75,7 +70,6 @@ SET
   rw = '03',
   rt = '01',
   lokasi = 'Balai Posyandu / RW 03, Muarareja, Tegal Barat, Kota Tegal',
-  cakupan_wilayah = 'Melayani Warga RW 03 (RT 01, RT 02, RT 03 dan RW - RT Tidak Tahu)',
   deskripsi = 'Layanan terpadu Posyandu Melati Muarareja cakupan sinkronisasi wilayah RW 03 (RT 01, RT 02, RT 03 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.'
 WHERE id = '39ac7bb4-e16c-4ca1-8115-3ddd135c84d4';
 
@@ -85,7 +79,6 @@ SET
   rw = '03',
   rt = '03',
   lokasi = 'Balai Posyandu / RW 03, Muarareja, Tegal Barat, Kota Tegal',
-  cakupan_wilayah = 'Melayani Warga RW 03 (RT 03, RT 05 dan RW - RT Tidak Tahu)',
   deskripsi = 'Layanan terpadu Posyandu Kemuning Muarareja cakupan sinkronisasi wilayah RW 03 (RT 03, RT 05 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.'
 WHERE id = '125776d0-a736-444c-80bc-68ad6ecadc00';
 
