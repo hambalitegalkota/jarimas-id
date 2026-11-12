@@ -1326,6 +1326,7 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
   isSuperAdmin?: boolean;
   isAdminPusat?: boolean;
   isSuperOrAdminPusat?: boolean;
+  isJoinedAnyCommunity?: boolean;
 }> {
   try {
     const supabase = await createClient();
@@ -2044,6 +2045,27 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
       }
     }
 
+    // Hitung apakah pengguna yang sedang aktif telah bergabung di setidaknya satu komunitas
+    const userApprovedCommunities = (userMembershipsList || []).filter(
+      (m: any) =>
+        m.status === "approved" &&
+        m.peran?.toLowerCase() !== "pendatang" &&
+        m.peran?.toLowerCase() !== "pengunjung"
+    );
+    const isJoinedAnyCommunity = Boolean(isSuperOrPusat || userApprovedCommunities.length > 0);
+
+    // Pengguna yang sudah registrasi tetapi belum bergabung dalam komunitas manapun ditetapkan status perannya menjadi Pendatang
+    if (currentUserId && !isSuperOrPusat && !currentUserMembership) {
+      currentUserMembership = {
+        id: `pendatang-${currentUserId}`,
+        status: "approved" as MembershipStatus,
+        peran: "Pendatang",
+        peran_diajukan: null,
+        berdomisili: false,
+        kk_terdaftar: false,
+      };
+    }
+
     const fullData: KomunitasWithMembership = {
       id: dbKomunitasId,
       nama,
@@ -2081,6 +2103,7 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
       isSuperAdmin,
       isAdminPusat: isUserAdminPusat,
       isSuperOrAdminPusat: isSuperOrPusat,
+      isJoinedAnyCommunity,
     };
   } catch (err: any) {
     console.error("Error getKomunitasDetail:", err);
@@ -3619,6 +3642,36 @@ export async function leaveKomunitas({
           .eq("user_id", user.id)
           .in("komunitas_id", chainIds);
       }
+    }
+
+    // Ketentuan: Ketika pengguna pernah bergabung namun keluar dan tidak tergabung di komunitas manapun lagi,
+    // tetapkan status perannya menjadi 'Pendatang' di Komunitas Warga Kota Tegal.
+    const kotaTegalId = toValidUUID("kom-warga-kota-tegal");
+    const { data: remainingMemberships } = await supabase
+      .from("anggota_komunitas")
+      .select("id, komunitas_id, peran, status")
+      .eq("user_id", user.id)
+      .eq("status", "approved")
+      .neq("komunitas_id", kotaTegalId);
+
+    const activeRemaining = (remainingMemberships || []).filter(
+      (m) =>
+        m.peran?.toLowerCase() !== "pendatang" &&
+        m.peran?.toLowerCase() !== "pengunjung"
+    );
+
+    if (activeRemaining.length === 0) {
+      await supabase.from("anggota_komunitas").upsert(
+        {
+          user_id: user.id,
+          komunitas_id: kotaTegalId,
+          peran: "Pendatang",
+          status: "approved",
+          peran_diajukan: null,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "user_id,komunitas_id" }
+      );
     }
 
     revalidatePath("/komunitas");

@@ -14,6 +14,8 @@ import {
   Compass,
   ArrowRight,
   Sparkles,
+  Users,
+  UserCheck,
 } from "lucide-react";
 import { createClient, createAdminClient } from "@/utils/supabase/server";
 import { logoutUser } from "@/app/actions/auth";
@@ -33,7 +35,6 @@ import {
 } from "@/lib/utils";
 import { extractKomunitasMetadata, getUserAdminInfo } from "@/lib/admin-helpers";
 import { getWargaHierarchyChain, findKecamatanByKelurahan, slugify, findOrGenerateKomunitasSeed } from "@/lib/constants/tegal-data";
-import { UserCheck, Users } from "lucide-react";
 import { type WargaTierItem } from "@/components/komunitas/unified-warga-card";
 import { ProfilKomunitasSection } from "@/components/profil/profil-komunitas-section";
 import { PrintButton } from "@/components/ui/print-button";
@@ -554,6 +555,11 @@ export default async function ProfilePage() {
                       <ShieldCheck className="h-3.5 w-3.5 text-secondary" />
                     )}
                     {userAdminInfo.tierBadgeLabel.toUpperCase()}
+                  </span>
+                ) : wargaKitaSummary?.highestRole?.toLowerCase() === "pendatang" || userCommunities.length === 0 ? (
+                  <span className="inline-flex items-center gap-1.5 rounded-md border border-border bg-muted px-2.5 py-1 text-xs font-bold text-muted-foreground shadow-2xs">
+                    <Users className="h-3.5 w-3.5 text-muted-foreground" />
+                    PENDATANG
                   </span>
                 ) : (
                   <span className="inline-flex items-center gap-1.5 rounded-md border border-primary/20 bg-primary/10 px-2.5 py-1 text-xs font-bold text-primary">

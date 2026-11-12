@@ -111,12 +111,14 @@ interface KomunitasBerjenjangAnggotaTabProps {
   summary: KomunitasBerjenjangMemberSummaryResult;
   currentUserId?: string | null;
   komunitasNama?: string;
+  canChatWithMembers?: boolean;
 }
 
 export function KomunitasBerjenjangAnggotaTab({
   summary,
   currentUserId,
   komunitasNama = "Komunitas",
+  canChatWithMembers = false,
 }: KomunitasBerjenjangAnggotaTabProps) {
   const { openChatWithUser } = useGlobalMessageNotification();
   const [isRincianOpen, setIsRincianOpen] = useState(false);
@@ -581,7 +583,7 @@ export function KomunitasBerjenjangAnggotaTab({
 
                     <div className="min-w-0 space-y-0.5">
                       <div className="flex items-center gap-2">
-                        {isMe ? (
+                        {isMe || !canChatWithMembers ? (
                           <h4 className="text-xs sm:text-sm font-bold text-foreground truncate">
                             {name}
                           </h4>
@@ -646,7 +648,7 @@ export function KomunitasBerjenjangAnggotaTab({
 
                   {/* Tombol Aksi: Chat */}
                   <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
-                    {!isMe && (
+                    {!isMe && canChatWithMembers && (
                       <button
                         type="button"
                         onClick={() => openChatWithUser(member.userId)}

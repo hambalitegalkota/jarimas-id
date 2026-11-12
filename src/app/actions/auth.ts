@@ -10,7 +10,7 @@ import {
   ResetPasswordSchema,
 } from "@/lib/zod-schemas";
 import { sendJarimasWelcomeGreeting } from "@/app/actions/pertemanan";
-import { isSuperAdmin as checkIsSuperAdmin } from "@/lib/utils";
+import { isSuperAdmin as checkIsSuperAdmin, toValidUUID } from "@/lib/utils";
 import type { AuthActionState } from "@/types/database";
 
 const NETWORK_ERROR_MESSAGE =
@@ -123,6 +123,21 @@ export async function registerUser(
             updated_at: new Date().toISOString(),
           },
           { onConflict: "id" }
+        );
+
+        // Setiap pengguna yang mendaftar dan belum bergabung ke komunitas manapun ditetapkan statusnya sebagai Pendatang di Komunitas Warga Kota Tegal
+        const kotaTegalId = toValidUUID("kom-warga-kota-tegal");
+        await adminClient.from("anggota_komunitas").upsert(
+          {
+            user_id: authData.user.id,
+            komunitas_id: kotaTegalId,
+            peran: "Pendatang",
+            status: "approved",
+            peran_diajukan: null,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "user_id,komunitas_id" }
         );
       } catch (profileErr) {
         console.warn("Gagal menyinkronkan profil pengguna:", profileErr);

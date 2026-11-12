@@ -150,6 +150,7 @@ interface KomunitasDetailClientViewProps {
   canAccessRekapNamesAts?: boolean;
   rekapAtsUserPeran?: string;
   berjenjangSummary?: KomunitasBerjenjangMemberSummaryResult | null;
+  isJoinedAnyCommunity?: boolean;
 }
 
 export function KomunitasDetailClientView({
@@ -159,6 +160,7 @@ export function KomunitasDetailClientView({
   isSuperAdmin: isSuperAdminProp,
   isAdminPusat: isAdminPusatProp,
   isSuperOrAdminPusat: isSuperOrAdminPusatProp,
+  isJoinedAnyCommunity,
   currentSubtab,
   anggotaList,
   kabarKomunitas,
@@ -491,8 +493,8 @@ export function KomunitasDetailClientView({
 
   const membership = membershipState;
   const isApprovedMember = membership?.status === "approved";
-  const userPeran = membership?.peran || "Pengunjung";
-  const roleLower = userPeran.toLowerCase().trim();
+  const rawRole = membership?.peran || "";
+  const roleLower = rawRole.toLowerCase().trim();
 
   // Root Authority: Super Admin & Admin Pusat memiliki akses bebas mutlak ke seluruh komunitas tanpa harus bergabung
   const isSuperOrPusat = Boolean(
@@ -505,6 +507,14 @@ export function KomunitasDetailClientView({
     roleLower === "admin_pusat" ||
     (membership && isSuperAdmin(membership as any))
   );
+
+  const isUserJoinedAny = Boolean(isSuperOrPusat || isJoinedAnyCommunity);
+
+  // Jika pengguna belum bergabung dalam komunitas manapun, status perannya ditetapkan menjadi "Pendatang"
+  const userPeran = membership?.peran || (isUserJoinedAny ? "Pengunjung" : "Pendatang");
+
+  // Untuk pengguna yang sudah registrasi tetapi belum bergabung dalam komunitas manapun, sembunyikan fitur chat anggota
+  const canChatWithMembers = Boolean(currentUserId && isUserJoinedAny);
   const isActualSuperAdmin = Boolean(
     isSuperAdminProp ||
     roleLower === "super admin" ||
@@ -734,7 +744,14 @@ export function KomunitasDetailClientView({
       const res = await leaveKomunitas({ komunitasId: komunitas.id });
       if (res.success) {
         setActionFeedback({ type: "success", message: res.message });
-        setMembershipState(null);
+        setMembershipState({
+          id: `pendatang-${currentUserId}`,
+          status: "approved",
+          peran: "Pendatang",
+          peran_diajukan: null,
+          berdomisili: false,
+          kk_terdaftar: false,
+        } as any);
         setKomunitasData((prev) => ({
           ...prev,
           jumlah_anggota: Math.max(0, prev.jumlah_anggota - 1),
@@ -2464,6 +2481,7 @@ export function KomunitasDetailClientView({
                 summary={berjenjangSummary}
                 komunitasNama={komunitasData.nama}
                 currentUserId={currentUserId}
+                canChatWithMembers={canChatWithMembers}
               />
             </div>
           ) : (
@@ -2623,7 +2641,7 @@ export function KomunitasDetailClientView({
                           </div>
                           <div className="min-w-0 space-y-0.5 flex-1">
                             <div className="flex items-center gap-1.5 flex-wrap">
-                              {isAdminMe ? (
+                              {isAdminMe || !canChatWithMembers ? (
                                 <p className="text-xs sm:text-sm font-bold text-foreground truncate">
                                   {adminName}
                                 </p>
@@ -2660,7 +2678,7 @@ export function KomunitasDetailClientView({
                           </div>
                         </div>
 
-                        {!isAdminMe && (
+                        {!isAdminMe && canChatWithMembers && (
                           <div className="shrink-0 pt-0.5">
                             <button
                               type="button"
@@ -2894,7 +2912,7 @@ export function KomunitasDetailClientView({
                         </div>
                         <div className="min-w-0">
                           <div className="flex items-center gap-1.5">
-                            {isMe ? (
+                            {isMe || !canChatWithMembers ? (
                               <h4 className="text-xs sm:text-sm font-bold text-foreground truncate">
                                 {name}
                               </h4>
@@ -2971,7 +2989,7 @@ export function KomunitasDetailClientView({
                           </button>
                         )}
 
-                        {!isMe && (
+                        {!isMe && canChatWithMembers && (
                           <button
                             type="button"
                             onClick={() => openChatWithUser(member.user_id)}

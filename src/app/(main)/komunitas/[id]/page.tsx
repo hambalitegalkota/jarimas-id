@@ -70,6 +70,7 @@ export default async function KomunitasDetailPage({
     isSuperAdmin,
     isAdminPusat,
     isSuperOrAdminPusat,
+    isJoinedAnyCommunity,
   } = await getKomunitasDetail(id);
 
   if (!komunitas) {
@@ -205,6 +206,7 @@ export default async function KomunitasDetailPage({
         isSuperAdmin={isSuperAdmin}
         isAdminPusat={isAdminPusat}
         isSuperOrAdminPusat={isSuperOrAdminPusat}
+        isJoinedAnyCommunity={isJoinedAnyCommunity}
         currentSubtab={currentSubtab}
         anggotaList={anggotaList}
         kabarKomunitas={kabarKomunitas}
