@@ -698,6 +698,7 @@ export const DATA_RW_PER_KELURAHAN: Record<string, number> = {
   "Tegalsari": 13,
   "Kraton": 9,
   "Kejambon": 6,
+  "Muarareja": 3,
 };
 
 export const RT_PER_RW_DEFAULT = 15;
@@ -1157,12 +1158,32 @@ export const DATA_RT_PER_RW_KRATON: Record<string, number> = {
   "9": 6,
 };
 
+/**
+ * Ketentuan Khusus RT per RW di Kelurahan Muarareja, Kecamatan Tegal Barat:
+ * - Jumlah RW ada 3:
+ *   - RW 1: Jumlah RT 5 (Posyandu Mawar [RT 1, 3, 5], Dahlia [RT 2], Anggrek [RT 2, 4])
+ *   - RW 2: Jumlah RT 5 (Posyandu Nusa Indah [RT 2, 3], Cempaka [RT 1, 4])
+ *   - RW 3: Jumlah RT 5 (Posyandu Melati [RT 1, 2, 3], Kemuning [RT 3, 5])
+ * - Tetap mempertahankan RW "Belum Tahu" dan RT "Belum Tahu"
+ */
+export const DATA_RT_PER_RW_MUARAREJA: Record<string, number> = {
+  "01": 5,
+  "1": 5,
+  "02": 5,
+  "2": 5,
+  "03": 5,
+  "3": 5,
+};
+
 export const TOTAL_KOMUNITAS_RW_KOTA_TEGAL = 167;
 export const TOTAL_KOMUNITAS_RT_KOTA_TEGAL = 1712;
 
 export function getJumlahRwByKelurahan(kelurahan?: string | null): number {
   if (!kelurahan) return 15;
   const clean = kelurahan.replace(/^(kelurahan|kel\.)\s+/i, "").trim().toLowerCase();
+  if (clean === "muarareja") {
+    return 3;
+  }
   if (clean === "mangkukusuman") {
     return 4;
   }
@@ -1210,6 +1231,16 @@ export function getJumlahRwByKelurahan(kelurahan?: string | null): number {
 export function getJumlahRtPerRwByKelurahan(kelurahan?: string | null, rw?: string | null): number {
   if (!kelurahan) return RT_PER_RW_DEFAULT;
   const clean = kelurahan.replace(/^(kelurahan|kel\.)\s+/i, "").trim().toLowerCase();
+  if (clean === "muarareja") {
+    if (rw && rw !== "Belum Tahu") {
+      const cleanRw = rw.replace(/^(rw|rt)\s*/i, "").trim();
+      const normRw = String(parseInt(cleanRw, 10)).padStart(2, "0");
+      if (DATA_RT_PER_RW_MUARAREJA[normRw] || DATA_RT_PER_RW_MUARAREJA[cleanRw]) {
+        return DATA_RT_PER_RW_MUARAREJA[normRw] || DATA_RT_PER_RW_MUARAREJA[cleanRw];
+      }
+    }
+    return 5; // RW 1, 2, 3 masing-masing 5 RT
+  }
   if (clean === "mangkukusuman") {
     if (rw && rw !== "Belum Tahu") {
       const cleanRw = rw.replace(/^(rw|rt)\s*/i, "").trim();
@@ -1355,6 +1386,10 @@ export function getJumlahRtPerRwByKelurahan(kelurahan?: string | null, rw?: stri
 export function getTotalRtByKelurahan(kelurahan?: string | null): number {
   if (!kelurahan) return 15 * RT_PER_RW_DEFAULT;
   const clean = kelurahan.replace(/^(kelurahan|kel\.)\s+/i, "").trim().toLowerCase();
+  if (clean === "muarareja") {
+    // 3 RW x 5 RT -> Total 15 RT
+    return 3 * 5;
+  }
   if (clean === "mangkukusuman") {
     // RW 1: 10 RT, RW 2: 10 RT, RW 3: 11 RT, RW 4: 14 RT -> Total 45 RT
     return 10 + 10 + 11 + 14;
@@ -1430,6 +1465,10 @@ export function getRwListByKelurahan(kelurahan?: string | null): string[] {
     return [...list, "Belum Tahu"];
   }
   const clean = kelurahan.replace(/^(kelurahan|kel\.)\s+/i, "").trim().toLowerCase();
+  if (clean === "muarareja") {
+    const list = Array.from({ length: 3 }, (_, i) => String(i + 1).padStart(2, "0"));
+    return [...list, "Belum Tahu"];
+  }
   if (clean === "mangkukusuman") {
     const list = Array.from({ length: 4 }, (_, i) => String(i + 1).padStart(2, "0"));
     return [...list, "Belum Tahu"];
@@ -1503,6 +1542,10 @@ export function getRtListByKelurahan(kelurahan?: string | null, rw?: string | nu
     return [...list, "Belum Tahu"];
   }
   const clean = kelurahan.replace(/^(kelurahan|kel\.)\s+/i, "").trim().toLowerCase();
+  if (clean === "muarareja") {
+    const list = Array.from({ length: 5 }, (_, i) => String(i + 1).padStart(2, "0"));
+    return [...list, "Belum Tahu"];
+  }
   if (clean === "mangkukusuman") {
     if (rw && rw !== "Belum Tahu") {
       const cleanRw = rw.replace(/^(rw|rt)\s*/i, "").trim();

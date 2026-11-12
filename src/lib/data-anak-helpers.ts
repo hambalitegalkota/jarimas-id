@@ -2284,6 +2284,91 @@ export function getPosyanduCakupanWilayah(targetKomunitas: any): PosyanduCakupan
     }
   }
 
+  // Khusus Kelurahan Muarareja (Kecamatan Tegal Barat)
+  // 1. Posyandu Mawar: RW 1 (RT 1, 3, 5)
+  // 2. Posyandu Dahlia: RW 1 (RT 2)
+  // 3. Posyandu Anggrek: RW 1 (RT 2, 4)
+  // 4. Posyandu Nusa Indah: RW 2 (RT 2, 3)
+  // 5. Posyandu Cempaka: RW 2 (RT 1, 4)
+  // 6. Posyandu Melati: RW 3 (RT 1, 2, 3)
+  // 7. Posyandu Kemuning: RW 3 (RT 3, 5)
+  const isMuararejaPosyandu =
+    kel.includes("muarareja") ||
+    (nama.includes("muarareja") && !kel.includes("kraton") && !kel.includes("debong")) ||
+    targetKomunitas?.id === "194a821a-cb4f-4146-89f9-ad0901f6527d" ||
+    targetKomunitas?.id === "5202b90c-adfb-499b-8af9-f099b059869b" ||
+    targetKomunitas?.id === "55c8f953-cbdd-4afc-805f-f601f5ae4c98" ||
+    targetKomunitas?.id === "1452e8c7-e16c-4ca1-85a3-d075a51fe415" ||
+    targetKomunitas?.id === "ecfde3e3-a736-444c-8310-b0e5008e3b41" ||
+    targetKomunitas?.id === "39ac7bb4-e16c-4ca1-8115-3ddd135c84d4" ||
+    targetKomunitas?.id === "125776d0-a736-444c-80bc-68ad6ecadc00";
+
+  if (isMuararejaPosyandu) {
+    if (
+      targetKomunitas?.id === "194a821a-cb4f-4146-89f9-ad0901f6527d" ||
+      nama.includes("mawar")
+    ) {
+      return {
+        rw: "01",
+        rtList: ["01", "03", "05", "1", "3", "5"],
+      };
+    }
+    if (
+      targetKomunitas?.id === "5202b90c-adfb-499b-8af9-f099b059869b" ||
+      nama.includes("dahlia")
+    ) {
+      return {
+        rw: "01",
+        rtList: ["02", "2"],
+      };
+    }
+    if (
+      targetKomunitas?.id === "55c8f953-cbdd-4afc-805f-f601f5ae4c98" ||
+      nama.includes("anggrek")
+    ) {
+      return {
+        rw: "01",
+        rtList: ["02", "04", "2", "4"],
+      };
+    }
+    if (
+      targetKomunitas?.id === "1452e8c7-e16c-4ca1-85a3-d075a51fe415" ||
+      nama.includes("nusa indah")
+    ) {
+      return {
+        rw: "02",
+        rtList: ["02", "03", "2", "3"],
+      };
+    }
+    if (
+      targetKomunitas?.id === "ecfde3e3-a736-444c-8310-b0e5008e3b41" ||
+      nama.includes("cempaka")
+    ) {
+      return {
+        rw: "02",
+        rtList: ["01", "04", "1", "4"],
+      };
+    }
+    if (
+      targetKomunitas?.id === "39ac7bb4-e16c-4ca1-8115-3ddd135c84d4" ||
+      nama.includes("melati")
+    ) {
+      return {
+        rw: "03",
+        rtList: ["01", "02", "03", "1", "2", "3"],
+      };
+    }
+    if (
+      targetKomunitas?.id === "125776d0-a736-444c-80bc-68ad6ecadc00" ||
+      nama.includes("kemuning")
+    ) {
+      return {
+        rw: "03",
+        rtList: ["03", "05", "3", "5"],
+      };
+    }
+  }
+
   // Posyandu umum berdasarkan kolom rw
   if (targetKomunitas.rw) {
     const rawRw = String(targetKomunitas.rw).replace(/^(rw|rt)\s*/i, "").trim();
@@ -2449,6 +2534,7 @@ export function getPosyanduCoverageDisplay(komunitas: any): PosyanduCoverageResu
       "kalinyamat wetan",
       "kejambon",
       "bandung",
+      "muarareja",
     ]);
 
     if (MAPPED_KELURAHAN_SET.has(kel)) {
@@ -3294,6 +3380,58 @@ export function isValidTunonRtRw(
 }
 
 /**
+ * Memvalidasi apakah kombinasi RW & RT valid untuk Kelurahan Muarareja (Tegal Barat)
+ * Ketentuan Resmi:
+ * - Jumlah RW: 3 (RW 1, RW 2, RW 3)
+ * - RW 1 Jumlah RT 5 (RT 1 s/d 5)
+ * - RW 2 Jumlah RT 5 (RT 1 s/d 5)
+ * - RW 3 Jumlah RT 5 (RT 1 s/d 5)
+ * - Tetap mempertahankan RW "Belum Tahu" dan RT "Belum Tahu"
+ */
+export function isValidMuararejaRtRw(
+  kel?: string | null,
+  rw?: string | null,
+  rt?: string | null
+): boolean {
+  if (!kel) return true;
+  const cleanKel = normalizeWilayah(kel);
+  if (!cleanKel.includes("muarareja")) return true;
+
+  const rawRw = (rw || "").trim().toLowerCase();
+  const rawRt = (rt || "").trim().toLowerCase();
+
+  const isRwBelumTahu =
+    !rawRw ||
+    rawRw.includes("belum") ||
+    rawRw.includes("tidak") ||
+    rawRw === "-" ||
+    rawRw === "0" ||
+    rawRw === "00";
+  if (isRwBelumTahu) return true;
+
+  const rwNum = parseInt(rawRw.replace(/\D/g, ""), 10);
+  if (isNaN(rwNum) || rwNum < 1 || rwNum > 3) return false;
+
+  const isRtBelumTahu =
+    !rawRt ||
+    rawRt.includes("belum") ||
+    rawRt.includes("tidak") ||
+    rawRt === "-" ||
+    rawRt === "0" ||
+    rawRt === "00";
+  if (isRtBelumTahu) return true;
+
+  const rtNum = parseInt(rawRt.replace(/\D/g, ""), 10);
+  if (isNaN(rtNum)) return false;
+
+  if (rwNum === 1 && (rtNum < 1 || rtNum > 5)) return false;
+  if (rwNum === 2 && (rtNum < 1 || rtNum > 5)) return false;
+  if (rwNum === 3 && (rtNum < 1 || rtNum > 5)) return false;
+
+  return true;
+}
+
+/**
  * Filter logika hierarkis: Apakah data anak sesuai dan harus muncul di komunitas target?
  * Mencakup Komunitas PAUD, Posyandu, RT, RW, Kelurahan, Kecamatan, dan Kabupaten/Kota.
  */
@@ -3414,6 +3552,21 @@ export function isDataAnakMatchingKomunitas(
   if (
     !isValidTegalsariRtRw(item.domisili_kelurahan, item.domisili_rw, item.domisili_rt) &&
     !isValidTegalsariRtRw(item.kk_kelurahan, item.kk_rw, item.kk_rt)
+  ) {
+    return false;
+  }
+  // Ketentuan Khusus Kelurahan Muarareja: Hapus/abaikan data yang tidak sesuai ketentuan resmi RW & RT Muarareja
+  const isDomMuarareja = (item.domisili_kelurahan || "").toLowerCase().includes("muarareja");
+  const isKkMuarareja = (item.kk_kelurahan || "").toLowerCase().includes("muarareja");
+  if (isDomMuarareja && !isValidMuararejaRtRw(item.domisili_kelurahan, item.domisili_rw, item.domisili_rt)) {
+    return false;
+  }
+  if (isKkMuarareja && !isValidMuararejaRtRw(item.kk_kelurahan, item.kk_rw, item.kk_rt)) {
+    return false;
+  }
+  if (
+    !isValidMuararejaRtRw(item.domisili_kelurahan, item.domisili_rw, item.domisili_rt) &&
+    !isValidMuararejaRtRw(item.kk_kelurahan, item.kk_rw, item.kk_rt)
   ) {
     return false;
   }

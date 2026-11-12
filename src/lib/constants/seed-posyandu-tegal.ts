@@ -187,13 +187,13 @@ export const RAW_POSYANDU_TEGAL: RawPosyanduItem[] = [
   { id: "d3af708d-5195-41eb-80aa-72ad29d264c4", nama: "Posyandu Dewi Sartika", kecamatan: "Tegal Barat", kelurahan: "Kraton", rw: "09", rt: "01", lokasi: "Balai Posyandu / RW 09, Kraton, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Dewi Sartika Kraton cakupan sinkronisasi wilayah RW 09 (RT 01 s/d RT 06): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
 
   // Muarareja (7 Posyandu)
-  { id: "55c8f953-cbdd-4afc-805f-f601f5ae4c98", nama: "Posyandu Anggrek", kecamatan: "Tegal Barat", kelurahan: "Muarareja", rw: "03", rt: "03", lokasi: "Balai Posyandu / RW 03, Muarareja, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Pelabuhan Asri Muarareja: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "ecfde3e3-a736-444c-8310-b0e5008e3b41", nama: "Posyandu Cempaka", kecamatan: "Tegal Barat", kelurahan: "Muarareja", rw: "02", rt: "02", lokasi: "Balai Posyandu / RW 02, Muarareja, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Muara Sejahtera 1 Muarareja: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "5202b90c-adfb-499b-8af9-f099b059869b", nama: "Posyandu Dahlia", kecamatan: "Tegal Barat", kelurahan: "Muarareja", rw: "04", rt: "04", lokasi: "Balai Posyandu / RW 04, Muarareja, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Cemara Pesisir Muarareja: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "125776d0-a736-444c-80bc-68ad6ecadc00", nama: "Posyandu Kemuning", kecamatan: "Tegal Barat", kelurahan: "Muarareja", rw: "02", rt: "04", lokasi: "Balai Posyandu / RW 02, Muarareja, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Muara Sejahtera 2 Muarareja: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "194a821a-cb4f-4146-89f9-ad0901f6527d", nama: "Posyandu Mawar", kecamatan: "Tegal Barat", kelurahan: "Muarareja", rw: "03", rt: "01", lokasi: "Balai Posyandu / RW 03, Muarareja, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Bintang Bahari Muarareja: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "39ac7bb4-e16c-4ca1-8115-3ddd135c84d4", nama: "Posyandu Melati", kecamatan: "Tegal Barat", kelurahan: "Muarareja", rw: "01", rt: "01", lokasi: "Balai Posyandu / RW 01, Muarareja, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Pesisir 1 Muarareja: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "1452e8c7-e16c-4ca1-85a3-d075a51fe415", nama: "Posyandu Nusa Indah", kecamatan: "Tegal Barat", kelurahan: "Muarareja", rw: "01", rt: "03", lokasi: "Balai Posyandu / RW 01, Muarareja, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Pesisir 2 Muarareja: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "194a821a-cb4f-4146-89f9-ad0901f6527d", nama: "Posyandu Mawar", kecamatan: "Tegal Barat", kelurahan: "Muarareja", rw: "01", rt: "01", lokasi: "Balai Posyandu / RW 01, Muarareja, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Mawar Muarareja cakupan sinkronisasi wilayah RW 01 (RT 01, RT 03, RT 05 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", cakupan_wilayah: "Melayani Warga RW 01 (RT 01, RT 03, RT 05 dan RW - RT Tidak Tahu)", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "5202b90c-adfb-499b-8af9-f099b059869b", nama: "Posyandu Dahlia", kecamatan: "Tegal Barat", kelurahan: "Muarareja", rw: "01", rt: "02", lokasi: "Balai Posyandu / RW 01, Muarareja, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Dahlia Muarareja cakupan sinkronisasi wilayah RW 01 (RT 02 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", cakupan_wilayah: "Melayani Warga RW 01 (RT 02 dan RW - RT Tidak Tahu)", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "55c8f953-cbdd-4afc-805f-f601f5ae4c98", nama: "Posyandu Anggrek", kecamatan: "Tegal Barat", kelurahan: "Muarareja", rw: "01", rt: "02", lokasi: "Balai Posyandu / RW 01, Muarareja, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Anggrek Muarareja cakupan sinkronisasi wilayah RW 01 (RT 02, RT 04 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", cakupan_wilayah: "Melayani Warga RW 01 (RT 02, RT 04 dan RW - RT Tidak Tahu)", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "1452e8c7-e16c-4ca1-85a3-d075a51fe415", nama: "Posyandu Nusa Indah", kecamatan: "Tegal Barat", kelurahan: "Muarareja", rw: "02", rt: "02", lokasi: "Balai Posyandu / RW 02, Muarareja, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Nusa Indah Muarareja cakupan sinkronisasi wilayah RW 02 (RT 02, RT 03 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", cakupan_wilayah: "Melayani Warga RW 02 (RT 02, RT 03 dan RW - RT Tidak Tahu)", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "ecfde3e3-a736-444c-8310-b0e5008e3b41", nama: "Posyandu Cempaka", kecamatan: "Tegal Barat", kelurahan: "Muarareja", rw: "02", rt: "01", lokasi: "Balai Posyandu / RW 02, Muarareja, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Cempaka Muarareja cakupan sinkronisasi wilayah RW 02 (RT 01, RT 04 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", cakupan_wilayah: "Melayani Warga RW 02 (RT 01, RT 04 dan RW - RT Tidak Tahu)", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "39ac7bb4-e16c-4ca1-8115-3ddd135c84d4", nama: "Posyandu Melati", kecamatan: "Tegal Barat", kelurahan: "Muarareja", rw: "03", rt: "01", lokasi: "Balai Posyandu / RW 03, Muarareja, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Melati Muarareja cakupan sinkronisasi wilayah RW 03 (RT 01, RT 02, RT 03 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", cakupan_wilayah: "Melayani Warga RW 03 (RT 01, RT 02, RT 03 dan RW - RT Tidak Tahu)", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "125776d0-a736-444c-80bc-68ad6ecadc00", nama: "Posyandu Kemuning", kecamatan: "Tegal Barat", kelurahan: "Muarareja", rw: "03", rt: "03", lokasi: "Balai Posyandu / RW 03, Muarareja, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Kemuning Muarareja cakupan sinkronisasi wilayah RW 03 (RT 03, RT 05 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", cakupan_wilayah: "Melayani Warga RW 03 (RT 03, RT 05 dan RW - RT Tidak Tahu)", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
 
   // Pekauman (7 Posyandu)
   { id: "1ba20db1-a59e-4198-8a8c-42e1c533e3e6", nama: "Posyandu Tunas", kecamatan: "Tegal Barat", kelurahan: "Pekauman", rw: "01 & 08", rt: "01", lokasi: "Balai Posyandu / RW 01 & RW 08, Pekauman, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Tunas Pekauman cakupan sinkronisasi wilayah RW 01 (RT 01 s/d RT 05) dan RW 08 (RT 01 s/d RT 05): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
@@ -649,6 +649,54 @@ export const KRATON_POSYANDU_MAP: Record<
     rw: "09",
     rt: "01",
     cakupan_wilayah: "Melayani Warga RW 09 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06 dan RW - RT Tidak Tahu)",
+  },
+};
+
+export const MUARAREJA_POSYANDU_MAP: Record<
+  string,
+  { nama: string; rw: string; rt: string; cakupan_wilayah: string }
+> = {
+  "194a821a-cb4f-4146-89f9-ad0901f6527d": {
+    nama: "Posyandu Mawar",
+    rw: "01",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 01 (RT 01, RT 03, RT 05 dan RW - RT Tidak Tahu)",
+  },
+  "5202b90c-adfb-499b-8af9-f099b059869b": {
+    nama: "Posyandu Dahlia",
+    rw: "01",
+    rt: "02",
+    cakupan_wilayah: "Melayani Warga RW 01 (RT 02 dan RW - RT Tidak Tahu)",
+  },
+  "55c8f953-cbdd-4afc-805f-f601f5ae4c98": {
+    nama: "Posyandu Anggrek",
+    rw: "01",
+    rt: "02",
+    cakupan_wilayah: "Melayani Warga RW 01 (RT 02, RT 04 dan RW - RT Tidak Tahu)",
+  },
+  "1452e8c7-e16c-4ca1-85a3-d075a51fe415": {
+    nama: "Posyandu Nusa Indah",
+    rw: "02",
+    rt: "02",
+    cakupan_wilayah: "Melayani Warga RW 02 (RT 02, RT 03 dan RW - RT Tidak Tahu)",
+  },
+  "ecfde3e3-a736-444c-8310-b0e5008e3b41": {
+    nama: "Posyandu Cempaka",
+    rw: "02",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 02 (RT 01, RT 04 dan RW - RT Tidak Tahu)",
+  },
+  "39ac7bb4-e16c-4ca1-8115-3ddd135c84d4": {
+    nama: "Posyandu Melati",
+    rw: "03",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 03 (RT 01, RT 02, RT 03 dan RW - RT Tidak Tahu)",
+  },
+  "125776d0-a736-444c-80bc-68ad6ecadc00": {
+    nama: "Posyandu Kemuning",
+    rw: "03",
+    rt: "03",
+    cakupan_wilayah: "Melayani Warga RW 03 (RT 03, RT 05 dan RW - RT Tidak Tahu)",
   },
 };
 

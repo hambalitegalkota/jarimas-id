@@ -731,7 +731,42 @@ export function parseCakupanWilayah(komunitas?: {
   }
 
   // Jika customCakupan sudah ada dan bukan format lama "Melayani Warga RW xx (RT xx)", gunakan customCakupan
-    // Khusus Kelurahan Kraton (Kecamatan Tegal Barat)
+  // Khusus Kelurahan Muarareja (Kecamatan Tegal Barat)
+  if (kelClean.includes("muarareja") || namaClean.includes("muarareja")) {
+    if (namaClean.includes("mawar")) {
+      return "Melayani Warga RW 01 (RT 01, RT 03, RT 05 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("dahlia")) {
+      return "Melayani Warga RW 01 (RT 02 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("anggrek")) {
+      return "Melayani Warga RW 01 (RT 02, RT 04 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("nusa indah")) {
+      return "Melayani Warga RW 02 (RT 02, RT 03 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("cempaka")) {
+      return "Melayani Warga RW 02 (RT 01, RT 04 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("melati")) {
+      return "Melayani Warga RW 03 (RT 01, RT 02, RT 03 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("kemuning")) {
+      return "Melayani Warga RW 03 (RT 03, RT 05 dan RW - RT Tidak Tahu)";
+    }
+    const rtMapMuarareja: Record<string, number> = {
+      "01": 5,
+      "02": 5,
+      "03": 5,
+    };
+    const count = rtMapMuarareja[rw];
+    if (count) {
+      const rtList = Array.from({ length: count }, (_, i) => `RT ${String(i + 1).padStart(2, "0")}`);
+      return `Melayani Warga RW ${rw} (${rtList.join(", ")} dan RW - RT Tidak Tahu)`;
+    }
+  }
+
+  // Khusus Kelurahan Kraton (Kecamatan Tegal Barat)
   if (kelClean.includes("kraton") || namaClean.includes("kraton")) {
     if (namaClean.includes("nusa indah")) {
       return "Melayani Warga RW 01 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08, RT 09 dan RW - RT Tidak Tahu)";

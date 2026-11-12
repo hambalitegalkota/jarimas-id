@@ -46,3 +46,4 @@ INSERT INTO public.data_anak (
 ('Raya Andini Putri', '2021-06-18', 'P', 'Nur Fadilah', '', 'Orang Tua', 1.0, true, 'TK Permata Ibu', '[ALASAN:Sudah Usia PAUD] [KK_KAB:Kota Tegal] [KK_KEC:Tegal Timur] [KK_KEL:Kejambon] [DOM_KAB:Kota Tegal] [DOM_KEC:Tegal Timur] [DOM_KEL:Kejambon]', 'c69d3cf3-a1fd-4050-8331-edd90acfd933', 'approved', '351d6f61-0fc5-420e-9520-dba829cddff1', now(), '1d827e22-9253-486a-a948-3fac6d01ae38', true, now(), '351d6f61-0fc5-420e-9520-dba829cddff1', now(), now()),
 ('Reiga Putra Syarif', '2021-07-19', 'L', 'Syarifatul Ulya', '', 'Orang Tua', 1.0, true, 'TK Permata Ibu', '[ALASAN:Sudah Usia PAUD] [KK_KAB:Kota Tegal] [KK_KEC:Tegal Timur] [KK_KEL:Kejambon] [DOM_KAB:Kota Tegal] [DOM_KEC:Tegal Timur] [DOM_KEL:Kejambon]', 'c69d3cf3-a1fd-4050-8331-edd90acfd933', 'approved', '351d6f61-0fc5-420e-9520-dba829cddff1', now(), '1d827e22-9253-486a-a948-3fac6d01ae38', true, now(), '351d6f61-0fc5-420e-9520-dba829cddff1', now(), now())
 ON CONFLICT DO NOTHING;
+
