@@ -1435,6 +1435,19 @@ export function getPosyanduCakupanWilayah(targetKomunitas: any): PosyanduCakupan
     }
   }
 
+  // Khusus Kelurahan Pesurungan Kidul
+  if (
+    targetKomunitas?.id === "5128e73f-508b-4787-8667-a691c6d133ac" ||
+    ((kel.includes("pesurungan kidul") || nama.includes("pesurungan kidul")) &&
+      (nama.includes("melati 5") || nama.includes("melati v") || nama.includes("melati 05")))
+  ) {
+    return {
+      rw: "06",
+      rwList: ["06", "6"],
+      rtList: ["01", "02", "03", "04", "05", "1", "2", "3", "4", "5"],
+    };
+  }
+
   // Khusus Kelurahan Margadana
   if (
     kel === "margadana" ||

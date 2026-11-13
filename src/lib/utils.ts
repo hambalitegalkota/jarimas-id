@@ -704,6 +704,15 @@ export function parseCakupanWilayah(komunitas?: {
     else if (namaClean.includes("permata")) rw = "04";
   }
 
+  // Khusus Pesurungan Kidul: Sinkronisasi Posyandu Melati 5 dengan RW 06
+  if (
+    komunitas.id === "5128e73f-508b-4787-8667-a691c6d133ac" ||
+    ((kelClean.includes("pesurungan kidul") || namaClean.includes("pesurungan kidul")) &&
+      (namaClean.includes("melati 5") || namaClean.includes("melati v") || namaClean.includes("melati 05")))
+  ) {
+    rw = "06";
+  }
+
   // Pemetaan Khusus Kelurahan yang sudah disesuaikan cakupan RW & RT-nya:
   // Kalinyamat Kulon (Kecamatan Margadana)
   if (kelClean.includes("kalinyamat kulon") || namaClean.includes("kalinyamat kulon") || (namaClean.includes("melati") && kelClean.includes("kalinyamat"))) {
@@ -739,6 +748,15 @@ export function parseCakupanWilayah(komunitas?: {
   }
 
   // Jika customCakupan sudah ada dan bukan format lama "Melayani Warga RW xx (RT xx)", gunakan customCakupan
+  // Khusus Kelurahan Pesurungan Kidul (Posyandu Melati 5)
+  if (
+    komunitas.id === "5128e73f-508b-4787-8667-a691c6d133ac" ||
+    ((kelClean.includes("pesurungan kidul") || namaClean.includes("pesurungan kidul")) &&
+      (namaClean.includes("melati 5") || namaClean.includes("melati v") || namaClean.includes("melati 05")))
+  ) {
+    return "Melayani Warga RW 06 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu)";
+  }
+
   // Khusus Kelurahan Krandon (Kecamatan Margadana)
   if (kelClean.includes("krandon") || namaClean.includes("krandon")) {
     if (namaClean.includes("berlian")) {

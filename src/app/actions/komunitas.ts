@@ -14,6 +14,7 @@ import {
   KRATON_POSYANDU_MAP,
   MUARAREJA_POSYANDU_MAP,
   KRANDON_POSYANDU_MAP,
+  PESURUNGAN_KIDUL_POSYANDU_MAP,
 } from "@/lib/constants/seed-posyandu-tegal";
 import {
   RAW_PAUD_PKBM_TEGAL,
@@ -764,6 +765,7 @@ export async function getKomunitasList(
         const kratonConfig = KRATON_POSYANDU_MAP[dbItem.id] || KRATON_POSYANDU_MAP[normId];
         const muararejaConfig = MUARAREJA_POSYANDU_MAP[dbItem.id] || MUARAREJA_POSYANDU_MAP[normId];
         const krandonConfig = KRANDON_POSYANDU_MAP[dbItem.id] || KRANDON_POSYANDU_MAP[normId];
+        const pesurunganKidulConfig = PESURUNGAN_KIDUL_POSYANDU_MAP[dbItem.id] || PESURUNGAN_KIDUL_POSYANDU_MAP[normId];
 
         if (itemJenis === "posyandu" && bandungConfig) {
           matched.nama = bandungConfig.nama;
@@ -814,6 +816,15 @@ export async function getKomunitasList(
           matched.cakupan_wilayah = krandonConfig.cakupan_wilayah;
           matched.kecamatan = "Margadana";
           matched.kelurahan = "Krandon";
+        } else if (itemJenis === "posyandu" && pesurunganKidulConfig) {
+          matched.nama = pesurunganKidulConfig.nama;
+          matched.rw = pesurunganKidulConfig.rw;
+          matched.rt = pesurunganKidulConfig.rt;
+          matched.cakupan_wilayah = pesurunganKidulConfig.cakupan_wilayah;
+          if (pesurunganKidulConfig.lokasi) matched.lokasi = pesurunganKidulConfig.lokasi;
+          if (pesurunganKidulConfig.deskripsi) matched.deskripsi = pesurunganKidulConfig.deskripsi;
+          matched.kecamatan = "Tegal Barat";
+          matched.kelurahan = "Pesurungan Kidul";
         } else {
           if (dbItem.nama) {
             let itemNama = dbItem.nama;
@@ -1029,6 +1040,8 @@ export async function getKomunitasList(
       if (muararejaInfo) coreNama = muararejaInfo.nama.toLowerCase();
       const krandonInfo = KRANDON_POSYANDU_MAP[item.id] || KRANDON_POSYANDU_MAP[normId];
       if (krandonInfo) coreNama = krandonInfo.nama.toLowerCase();
+      const pesurunganKidulInfo = PESURUNGAN_KIDUL_POSYANDU_MAP[item.id] || PESURUNGAN_KIDUL_POSYANDU_MAP[normId];
+      if (pesurunganKidulInfo) coreNama = pesurunganKidulInfo.nama.toLowerCase();
 
       const key = `${item.jenis}|${kelClean}|${coreNama}`;
       if (seenKomunitasKeys.has(normId) || seenKomunitasKeys.has(key)) {
@@ -1080,6 +1093,7 @@ export async function getKomunitasList(
         const kratonInfo = KRATON_POSYANDU_MAP[item.id] || KRATON_POSYANDU_MAP[normId];
         const muararejaInfo = MUARAREJA_POSYANDU_MAP[item.id] || MUARAREJA_POSYANDU_MAP[normId];
         const krandonInfo = KRANDON_POSYANDU_MAP[item.id] || KRANDON_POSYANDU_MAP[normId];
+        const pesurunganKidulInfo = PESURUNGAN_KIDUL_POSYANDU_MAP[item.id] || PESURUNGAN_KIDUL_POSYANDU_MAP[normId];
         if (bandungInfo) {
           itemNama = bandungInfo.nama;
           itemRw = bandungInfo.rw;
@@ -1106,6 +1120,13 @@ export async function getKomunitasList(
           itemNama = krandonInfo.nama;
           itemRw = krandonInfo.rw;
           item.rt = krandonInfo.rt;
+        } else if (pesurunganKidulInfo) {
+          itemNama = pesurunganKidulInfo.nama;
+          itemRw = pesurunganKidulInfo.rw;
+          item.rt = pesurunganKidulInfo.rt;
+          if (pesurunganKidulInfo.deskripsi) itemDeskripsi = pesurunganKidulInfo.deskripsi;
+          if (pesurunganKidulInfo.lokasi) item.lokasi = pesurunganKidulInfo.lokasi;
+          item.cakupan_wilayah = pesurunganKidulInfo.cakupan_wilayah;
         } else {
           const isBerjenjangItem =
             (item.nama || "").toLowerCase().includes("komunitas posyandu") ||
@@ -1579,6 +1600,11 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
         KRANDON_POSYANDU_MAP[normId] ||
         KRANDON_POSYANDU_MAP[komunitasId] ||
         KRANDON_POSYANDU_MAP[dbKomunitasId];
+      const pesurunganKidulInfo =
+        PESURUNGAN_KIDUL_POSYANDU_MAP[komunitas.id] ||
+        PESURUNGAN_KIDUL_POSYANDU_MAP[normId] ||
+        PESURUNGAN_KIDUL_POSYANDU_MAP[komunitasId] ||
+        PESURUNGAN_KIDUL_POSYANDU_MAP[dbKomunitasId];
 
       if (bandungInfo) {
         nama = bandungInfo.nama;
@@ -1643,6 +1669,17 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
         komunitas.rt = krandonInfo.rt;
         komunitas.cakupan_wilayah = krandonInfo.cakupan_wilayah;
         posyanduCanonicalRw = krandonInfo.rw;
+      } else if (pesurunganKidulInfo) {
+        nama = pesurunganKidulInfo.nama;
+        komunitas.nama = pesurunganKidulInfo.nama;
+        komunitas.kelurahan = "Pesurungan Kidul";
+        komunitas.kecamatan = "Tegal Barat";
+        komunitas.rw = pesurunganKidulInfo.rw;
+        komunitas.rt = pesurunganKidulInfo.rt;
+        komunitas.cakupan_wilayah = pesurunganKidulInfo.cakupan_wilayah;
+        if (pesurunganKidulInfo.lokasi) komunitas.lokasi = pesurunganKidulInfo.lokasi;
+        if (pesurunganKidulInfo.deskripsi) komunitas.deskripsi = pesurunganKidulInfo.deskripsi;
+        posyanduCanonicalRw = pesurunganKidulInfo.rw;
       } else {
         const isBerjenjangPos =
           isKomunitasBerjenjangPosyandu(komunitas.id) ||
@@ -4717,6 +4754,7 @@ export async function getKomunitasAdminListAction(params: GetKomunitasAdminListP
             const kratonInfo = KRATON_POSYANDU_MAP[item.id] || KRATON_POSYANDU_MAP[normId];
             const muararejaInfo = MUARAREJA_POSYANDU_MAP[item.id] || MUARAREJA_POSYANDU_MAP[normId];
             const krandonInfo = KRANDON_POSYANDU_MAP[item.id] || KRANDON_POSYANDU_MAP[normId];
+            const pesurunganKidulInfo = PESURUNGAN_KIDUL_POSYANDU_MAP[item.id] || PESURUNGAN_KIDUL_POSYANDU_MAP[normId];
             if (bandungInfo) {
               itemNama = bandungInfo.nama;
               itemRw = bandungInfo.rw;
@@ -4743,6 +4781,12 @@ export async function getKomunitasAdminListAction(params: GetKomunitasAdminListP
               itemNama = krandonInfo.nama;
               itemRw = krandonInfo.rw;
               item.rt = krandonInfo.rt;
+            } else if (pesurunganKidulInfo) {
+              itemNama = pesurunganKidulInfo.nama;
+              itemRw = pesurunganKidulInfo.rw;
+              item.rt = pesurunganKidulInfo.rt;
+              if (pesurunganKidulInfo.deskripsi) itemDeskripsi = pesurunganKidulInfo.deskripsi;
+              if (pesurunganKidulInfo.lokasi) item.lokasi = pesurunganKidulInfo.lokasi;
             } else {
               const isBerjenjangItem =
                 (itemNama || "").toLowerCase().includes("komunitas posyandu") ||
@@ -4864,6 +4908,7 @@ export async function getKomunitasAdminListAction(params: GetKomunitasAdminListP
             const kratonInfo = KRATON_POSYANDU_MAP[item.id] || KRATON_POSYANDU_MAP[normId];
             const muararejaInfo = MUARAREJA_POSYANDU_MAP[item.id] || MUARAREJA_POSYANDU_MAP[normId];
             const krandonInfo = KRANDON_POSYANDU_MAP[item.id] || KRANDON_POSYANDU_MAP[normId];
+            const pesurunganKidulInfo = PESURUNGAN_KIDUL_POSYANDU_MAP[item.id] || PESURUNGAN_KIDUL_POSYANDU_MAP[normId];
             if (bandungInfo) {
               itemNama = bandungInfo.nama;
               itemRw = bandungInfo.rw;
@@ -4890,6 +4935,12 @@ export async function getKomunitasAdminListAction(params: GetKomunitasAdminListP
               itemNama = krandonInfo.nama;
               itemRw = krandonInfo.rw;
               item.rt = krandonInfo.rt;
+            } else if (pesurunganKidulInfo) {
+              itemNama = pesurunganKidulInfo.nama;
+              itemRw = pesurunganKidulInfo.rw;
+              item.rt = pesurunganKidulInfo.rt;
+              if (pesurunganKidulInfo.deskripsi) itemDeskripsi = pesurunganKidulInfo.deskripsi;
+              if (pesurunganKidulInfo.lokasi) item.lokasi = pesurunganKidulInfo.lokasi;
             } else {
               const isBerjenjangItem =
                 (itemNama || "").toLowerCase().includes("komunitas posyandu") ||

@@ -209,7 +209,7 @@ export const RAW_POSYANDU_TEGAL: RawPosyanduItem[] = [
   { id: "fda49368-f156-42f2-8d30-8389350dd46b", nama: "Posyandu Melati 2", kecamatan: "Tegal Barat", kelurahan: "Pesurungan Kidul", rw: "02", rt: "01", lokasi: "Balai Posyandu / RW 02, Pesurungan Kidul, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Melati 2 Pesurungan Kidul: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
   { id: "9bdc0d19-f156-42f2-81bf-1621d2a8c882", nama: "Posyandu Melati 3", kecamatan: "Tegal Barat", kelurahan: "Pesurungan Kidul", rw: "03", rt: "01", lokasi: "Balai Posyandu / RW 03, Pesurungan Kidul, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Melati 3 Pesurungan Kidul: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
   { id: "b2f16d8e-508b-4787-81d9-13f9589492ed", nama: "Posyandu Melati 4", kecamatan: "Tegal Barat", kelurahan: "Pesurungan Kidul", rw: "04", rt: "01", lokasi: "Balai Posyandu / RW 04, Pesurungan Kidul, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Melati 4 Pesurungan Kidul: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "5128e73f-508b-4787-8667-a691c6d133ac", nama: "Posyandu Melati 5", kecamatan: "Tegal Barat", kelurahan: "Pesurungan Kidul", rw: "05", rt: "01", lokasi: "Balai Posyandu / RW 05, Pesurungan Kidul, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Melati 5 Pesurungan Kidul: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "5128e73f-508b-4787-8667-a691c6d133ac", nama: "Posyandu Melati 5", kecamatan: "Tegal Barat", kelurahan: "Pesurungan Kidul", rw: "06", rt: "01", lokasi: "Balai Posyandu / RW 06, Pesurungan Kidul, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Melati 5 Pesurungan Kidul cakupan sinkronisasi wilayah RW 06 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", cakupan_wilayah: "Melayani Warga RW 06 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu)", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
   { id: "76827a2c-508b-4787-8af6-39294cbcfe17", nama: "Posyandu Melati 6", kecamatan: "Tegal Barat", kelurahan: "Pesurungan Kidul", rw: "06", rt: "01", lokasi: "Balai Posyandu / RW 06, Pesurungan Kidul, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Melati 6 Pesurungan Kidul: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
 
   // Tegalsari (18 Posyandu)
@@ -727,6 +727,20 @@ export const KRANDON_POSYANDU_MAP: Record<
     rw: "04",
     rt: "01",
     cakupan_wilayah: "Melayani Warga RW 04 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07 dan RW - RT Tidak Tahu)",
+  },
+};
+
+export const PESURUNGAN_KIDUL_POSYANDU_MAP: Record<
+  string,
+  { nama: string; rw: string; rt: string; cakupan_wilayah: string; lokasi?: string; deskripsi?: string }
+> = {
+  "5128e73f-508b-4787-8667-a691c6d133ac": {
+    nama: "Posyandu Melati 5",
+    rw: "06",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 06 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 06, Pesurungan Kidul, Tegal Barat, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Melati 5 Pesurungan Kidul cakupan sinkronisasi wilayah RW 06 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
   },
 };
 

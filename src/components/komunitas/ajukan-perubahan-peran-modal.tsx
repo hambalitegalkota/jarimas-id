@@ -404,7 +404,7 @@ export function AjukanPerubahanPeranModal({
                           >
                             {item.role}
                           </h4>
-                          {item.badge && (
+                          {item.badge && item.badge.toLowerCase() !== item.role.toLowerCase() && (
                             <span className="text-2xs font-extrabold px-1.5 py-0.5 rounded-md bg-muted text-muted-foreground border border-border">
                               {item.badge}
                             </span>
