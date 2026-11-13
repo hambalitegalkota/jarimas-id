@@ -20,6 +20,8 @@ import {
   isValidPekaumanRtRw,
   isValidPanggungRtRw,
   isValidTegalsariRtRw,
+  isValidMuararejaRtRw,
+  isValidKrandonRtRw,
 } from "@/lib/data-anak-helpers";
 import { isAdminPusat, isSuperAdmin as checkIsSuperAdmin } from "@/lib/utils";
 
@@ -125,6 +127,8 @@ async function fetchAndComputeRekapDataAnak(): Promise<RekapDataAnakUsiaDiniResu
       if (!isValidPekaumanRtRw(kel, rw, rt)) return false;
       if (!isValidPanggungRtRw(kel, rw, rt)) return false;
       if (!isValidTegalsariRtRw(kel, rw, rt)) return false;
+      if (!isValidMuararejaRtRw(kel, rw, rt)) return false;
+      if (!isValidKrandonRtRw(kel, rw, rt)) return false;
       return true;
     });
     const totalLiveRecords = validLiveChildren.length;
@@ -723,6 +727,11 @@ export async function getDaftarNamaAnakRekapAction(params: {
 
       const itemKec = normalizeWilayah(parsed.domisiliKecamatan || parsed.kkKecamatan || kom?.kecamatan || "");
       const itemKel = normalizeWilayah(parsed.domisiliKelurahan || parsed.kkKelurahan || kom?.kelurahan || "");
+      const itemRw = parsed.domisiliRw || parsed.kkRw;
+      const itemRt = parsed.domisiliRt || parsed.kkRt;
+
+      if (!isValidMuararejaRtRw(itemKel, itemRw, itemRt)) continue;
+      if (!isValidKrandonRtRw(itemKel, itemRw, itemRt)) continue;
 
       // Filter Tingkat Wilayah
       if (params.tingkat === "kecamatan" && params.kecamatan) {

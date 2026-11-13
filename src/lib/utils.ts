@@ -696,6 +696,14 @@ export function parseCakupanWilayah(komunitas?: {
     else if (namaClean.includes("rosela")) rw = "07";
   }
 
+  // Khusus Krandon: Sinkronisasi Posyandu dengan RW resmi
+  if (kelClean.includes("krandon") || namaClean.includes("krandon")) {
+    if (namaClean.includes("berlian")) rw = "01";
+    else if (namaClean.includes("intan")) rw = "02";
+    else if (namaClean.includes("mutiara")) rw = "03";
+    else if (namaClean.includes("permata")) rw = "04";
+  }
+
   // Pemetaan Khusus Kelurahan yang sudah disesuaikan cakupan RW & RT-nya:
   // Kalinyamat Kulon (Kecamatan Margadana)
   if (kelClean.includes("kalinyamat kulon") || namaClean.includes("kalinyamat kulon") || (namaClean.includes("melati") && kelClean.includes("kalinyamat"))) {
@@ -731,6 +739,33 @@ export function parseCakupanWilayah(komunitas?: {
   }
 
   // Jika customCakupan sudah ada dan bukan format lama "Melayani Warga RW xx (RT xx)", gunakan customCakupan
+  // Khusus Kelurahan Krandon (Kecamatan Margadana)
+  if (kelClean.includes("krandon") || namaClean.includes("krandon")) {
+    if (namaClean.includes("berlian")) {
+      return "Melayani Warga RW 01 (RT 01, RT 02, RT 03, RT 04, RT 05), RW 08 dan RW - RT Tidak Tahu";
+    }
+    if (namaClean.includes("intan")) {
+      return "Melayani Warga RW 02 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("mutiara")) {
+      return "Melayani Warga RW 03 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("permata")) {
+      return "Melayani Warga RW 04 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07 dan RW - RT Tidak Tahu)";
+    }
+    const rtMapKrandon: Record<string, number> = {
+      "01": 5,
+      "02": 7,
+      "03": 5,
+      "04": 7,
+    };
+    const count = rtMapKrandon[rw];
+    if (count) {
+      const rtList = Array.from({ length: count }, (_, i) => `RT ${String(i + 1).padStart(2, "0")}`);
+      return `Melayani Warga RW ${rw} (${rtList.join(", ")} dan RW - RT Tidak Tahu)`;
+    }
+  }
+
   // Khusus Kelurahan Muarareja (Kecamatan Tegal Barat)
   if (kelClean.includes("muarareja") || namaClean.includes("muarareja")) {
     if (namaClean.includes("mawar")) {

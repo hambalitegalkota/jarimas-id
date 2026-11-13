@@ -28,6 +28,8 @@ import {
   isValidPekaumanRtRw,
   isValidPanggungRtRw,
   isValidTegalsariRtRw,
+  isValidMuararejaRtRw,
+  isValidKrandonRtRw,
 } from "@/lib/data-anak-helpers";
 import { DAFTAR_15_KELAS_ATS, classifyKelasAts } from "@/lib/ats-helpers";
 import { checkUserRekapAdminAccess } from "@/app/actions/rekap-data-anak";
@@ -475,6 +477,8 @@ async function fetchAndComputeRekapDataAts(): Promise<RekapDataAtsResult> {
       if (!isValidPekaumanRtRw(kel, rw, rt)) return false;
       if (!isValidPanggungRtRw(kel, rw, rt)) return false;
       if (!isValidTegalsariRtRw(kel, rw, rt)) return false;
+      if (!isValidMuararejaRtRw(kel, rw, rt)) return false;
+      if (!isValidKrandonRtRw(kel, rw, rt)) return false;
       return true;
     });
     const totalLiveRecords = validLiveAtsRecords.length;
@@ -950,6 +954,12 @@ export async function getDaftarNamaAtsRekapAction(params: {
 
       // Filter Tingkat Wilayah
       if (!isValidMangkukusumanRtRw(itemKel, parsed.rw, parsed.rt)) {
+        continue;
+      }
+      if (!isValidMuararejaRtRw(itemKel, parsed.rw, parsed.rt)) {
+        continue;
+      }
+      if (!isValidKrandonRtRw(itemKel, parsed.rw, parsed.rt)) {
         continue;
       }
       if (params.tingkat === "kecamatan" && params.kecamatan) {

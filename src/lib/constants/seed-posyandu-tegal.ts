@@ -330,10 +330,10 @@ export const RAW_POSYANDU_TEGAL: RawPosyanduItem[] = [
   { id: "6fa19fca-928b-42d6-8823-1a9d1a6ff64e", nama: "Posyandu Rosela", kecamatan: "Margadana", kelurahan: "Kaligangsa", rw: "07", rt: "01", lokasi: "Balai Posyandu / RW 07, Kaligangsa, Margadana, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Rosela Kaligangsa: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
 
   // Krandon (4 Posyandu)
-  { id: "1eb438e4-059f-4c39-8218-79a51f09901f", nama: "Posyandu Berlian", kecamatan: "Margadana", kelurahan: "Krandon", rw: "03", rt: "03", lokasi: "Balai Posyandu / RW 03, Krandon, Margadana, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Cempaka Krandon Krandon: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "1d1ed8dd-17b4-4cc7-8710-4c61752f5c2a", nama: "Posyandu Intan", kecamatan: "Margadana", kelurahan: "Krandon", rw: "04", rt: "02", lokasi: "Balai Posyandu / RW 04, Krandon, Margadana, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Dahlia Krandon Krandon: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "c3066451-dac3-47fc-82bf-41258f2cfb7f", nama: "Posyandu Mutiara", kecamatan: "Margadana", kelurahan: "Krandon", rw: "01", rt: "01", lokasi: "Balai Posyandu / RW 01, Krandon, Margadana, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Kenanga Krandon 1 Krandon: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "613dde02-dac3-47fc-806a-f8ed1518c5ea", nama: "Posyandu Permata", kecamatan: "Margadana", kelurahan: "Krandon", rw: "01", rt: "03", lokasi: "Balai Posyandu / RW 01, Krandon, Margadana, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Kenanga Krandon 2 Krandon: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "1eb438e4-059f-4c39-8218-79a51f09901f", nama: "Posyandu Berlian", kecamatan: "Margadana", kelurahan: "Krandon", rw: "01", rt: "01", lokasi: "Balai Posyandu / RW 01, Krandon, Margadana, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Berlian Krandon cakupan sinkronisasi wilayah RW 01 (RT 01, RT 02, RT 03, RT 04, RT 05), RW 08 dan RW - RT Tidak Tahu: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", cakupan_wilayah: "Melayani Warga RW 01 (RT 01, RT 02, RT 03, RT 04, RT 05), RW 08 dan RW - RT Tidak Tahu", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "1d1ed8dd-17b4-4cc7-8710-4c61752f5c2a", nama: "Posyandu Intan", kecamatan: "Margadana", kelurahan: "Krandon", rw: "02", rt: "01", lokasi: "Balai Posyandu / RW 02, Krandon, Margadana, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Intan Krandon cakupan sinkronisasi wilayah RW 02 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", cakupan_wilayah: "Melayani Warga RW 02 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07 dan RW - RT Tidak Tahu)", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "c3066451-dac3-47fc-82bf-41258f2cfb7f", nama: "Posyandu Mutiara", kecamatan: "Margadana", kelurahan: "Krandon", rw: "03", rt: "01", lokasi: "Balai Posyandu / RW 03, Krandon, Margadana, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Mutiara Krandon cakupan sinkronisasi wilayah RW 03 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", cakupan_wilayah: "Melayani Warga RW 03 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu)", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "613dde02-dac3-47fc-806a-f8ed1518c5ea", nama: "Posyandu Permata", kecamatan: "Margadana", kelurahan: "Krandon", rw: "04", rt: "01", lokasi: "Balai Posyandu / RW 04, Krandon, Margadana, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Permata Krandon cakupan sinkronisasi wilayah RW 04 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", cakupan_wilayah: "Melayani Warga RW 04 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07 dan RW - RT Tidak Tahu)", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
 
   // Margadana (14 Posyandu)
   { id: "27d67053-6b98-45f4-8cf6-fa9d16bdda32", nama: "Posyandu Bougenville", kecamatan: "Margadana", kelurahan: "Margadana", rw: "01", rt: "01", lokasi: "Balai Posyandu / RW 01, Margadana, Margadana, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Bougenville Margadana cakupan sinkronisasi wilayah RW 01 (RT 01 s/d RT 04): layanan kesehatan balita, penimbangan, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
@@ -697,6 +697,36 @@ export const MUARAREJA_POSYANDU_MAP: Record<
     rw: "03",
     rt: "03",
     cakupan_wilayah: "Melayani Warga RW 03 (RT 03, RT 05 dan RW - RT Tidak Tahu)",
+  },
+};
+
+export const KRANDON_POSYANDU_MAP: Record<
+  string,
+  { nama: string; rw: string; rt: string; cakupan_wilayah: string }
+> = {
+  "1eb438e4-059f-4c39-8218-79a51f09901f": {
+    nama: "Posyandu Berlian",
+    rw: "01",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 01 (RT 01, RT 02, RT 03, RT 04, RT 05), RW 08 dan RW - RT Tidak Tahu",
+  },
+  "1d1ed8dd-17b4-4cc7-8710-4c61752f5c2a": {
+    nama: "Posyandu Intan",
+    rw: "02",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 02 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07 dan RW - RT Tidak Tahu)",
+  },
+  "c3066451-dac3-47fc-82bf-41258f2cfb7f": {
+    nama: "Posyandu Mutiara",
+    rw: "03",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 03 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu)",
+  },
+  "613dde02-dac3-47fc-806a-f8ed1518c5ea": {
+    nama: "Posyandu Permata",
+    rw: "04",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 04 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07 dan RW - RT Tidak Tahu)",
   },
 };
 

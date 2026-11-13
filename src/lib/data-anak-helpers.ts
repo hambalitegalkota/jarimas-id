@@ -2369,6 +2369,62 @@ export function getPosyanduCakupanWilayah(targetKomunitas: any): PosyanduCakupan
     }
   }
 
+  // Khusus Kelurahan Krandon (Kecamatan Margadana)
+  // 1. Posyandu Berlian: RW 1 (RT 1 s/d RT 5) & RW 8
+  // 2. Posyandu Intan: RW 2 (RT 1 s/d RT 7)
+  // 3. Posyandu Mutiara: RW 3 (RT 1 s/d RT 5)
+  // 4. Posyandu Permata: RW 4 (RT 1 s/d RT 7)
+  const isKrandonPosyandu =
+    kel.includes("krandon") ||
+    (nama.includes("krandon") && !kel.includes("kraton") && !kel.includes("debong")) ||
+    targetKomunitas?.id === "1eb438e4-059f-4c39-8218-79a51f09901f" ||
+    targetKomunitas?.id === "1d1ed8dd-17b4-4cc7-8710-4c61752f5c2a" ||
+    targetKomunitas?.id === "c3066451-dac3-47fc-82bf-41258f2cfb7f" ||
+    targetKomunitas?.id === "613dde02-dac3-47fc-806a-f8ed1518c5ea";
+
+  if (isKrandonPosyandu) {
+    if (
+      targetKomunitas?.id === "1eb438e4-059f-4c39-8218-79a51f09901f" ||
+      nama.includes("berlian")
+    ) {
+      return {
+        rw: "01",
+        rwList: ["01", "1", "08", "8"],
+        rtList: ["01", "02", "03", "04", "05", "1", "2", "3", "4", "5"],
+      };
+    }
+    if (
+      targetKomunitas?.id === "1d1ed8dd-17b4-4cc7-8710-4c61752f5c2a" ||
+      nama.includes("intan")
+    ) {
+      return {
+        rw: "02",
+        rwList: ["02", "2"],
+        rtList: ["01", "02", "03", "04", "05", "06", "07", "1", "2", "3", "4", "5", "6", "7"],
+      };
+    }
+    if (
+      targetKomunitas?.id === "c3066451-dac3-47fc-82bf-41258f2cfb7f" ||
+      nama.includes("mutiara")
+    ) {
+      return {
+        rw: "03",
+        rwList: ["03", "3"],
+        rtList: ["01", "02", "03", "04", "05", "1", "2", "3", "4", "5"],
+      };
+    }
+    if (
+      targetKomunitas?.id === "613dde02-dac3-47fc-806a-f8ed1518c5ea" ||
+      nama.includes("permata")
+    ) {
+      return {
+        rw: "04",
+        rwList: ["04", "4"],
+        rtList: ["01", "02", "03", "04", "05", "06", "07", "1", "2", "3", "4", "5", "6", "7"],
+      };
+    }
+  }
+
   // Posyandu umum berdasarkan kolom rw
   if (targetKomunitas.rw) {
     const rawRw = String(targetKomunitas.rw).replace(/^(rw|rt)\s*/i, "").trim();
@@ -2535,6 +2591,7 @@ export function getPosyanduCoverageDisplay(komunitas: any): PosyanduCoverageResu
       "kejambon",
       "bandung",
       "muarareja",
+      "krandon",
     ]);
 
     if (MAPPED_KELURAHAN_SET.has(kel)) {
@@ -3432,6 +3489,63 @@ export function isValidMuararejaRtRw(
 }
 
 /**
+ * Memvalidasi apakah kombinasi RW & RT valid untuk Kelurahan Krandon (Margadana)
+ * Ketentuan Resmi:
+ * - Jumlah RW: 4 (RW 1, RW 2, RW 3, RW 4)
+ * - RW 1 Jumlah RT 5 (RT 1 s/d 5)
+ * - RW 2 Jumlah RT 7 (RT 1 s/d 7)
+ * - RW 3 Jumlah RT 5 (RT 1 s/d 5)
+ * - RW 4 Jumlah RT 7 (RT 1 s/d 7)
+ * - RW 8 diperbolehkan (cakupan khusus Posyandu Berlian)
+ * - Tetap mempertahankan RW "Belum Tahu" dan RT "Belum Tahu"
+ */
+export function isValidKrandonRtRw(
+  kel?: string | null,
+  rw?: string | null,
+  rt?: string | null
+): boolean {
+  if (!kel) return true;
+  const cleanKel = normalizeWilayah(kel);
+  if (!cleanKel.includes("krandon")) return true;
+
+  const rawRw = (rw || "").trim().toLowerCase();
+  const rawRt = (rt || "").trim().toLowerCase();
+
+  const isRwBelumTahu =
+    !rawRw ||
+    rawRw.includes("belum") ||
+    rawRw.includes("tidak") ||
+    rawRw === "-" ||
+    rawRw === "0" ||
+    rawRw === "00";
+  if (isRwBelumTahu) return true;
+
+  const rwNum = parseInt(rawRw.replace(/\D/g, ""), 10);
+  if (isNaN(rwNum)) return false;
+  // RW yang valid: 1, 2, 3, 4, atau 8
+  if ((rwNum < 1 || rwNum > 4) && rwNum !== 8) return false;
+
+  const isRtBelumTahu =
+    !rawRt ||
+    rawRt.includes("belum") ||
+    rawRt.includes("tidak") ||
+    rawRt === "-" ||
+    rawRt === "0" ||
+    rawRt === "00";
+  if (isRtBelumTahu) return true;
+
+  const rtNum = parseInt(rawRt.replace(/\D/g, ""), 10);
+  if (isNaN(rtNum)) return false;
+
+  if (rwNum === 1 && (rtNum < 1 || rtNum > 5)) return false;
+  if (rwNum === 2 && (rtNum < 1 || rtNum > 7)) return false;
+  if (rwNum === 3 && (rtNum < 1 || rtNum > 5)) return false;
+  if (rwNum === 4 && (rtNum < 1 || rtNum > 7)) return false;
+
+  return true;
+}
+
+/**
  * Filter logika hierarkis: Apakah data anak sesuai dan harus muncul di komunitas target?
  * Mencakup Komunitas PAUD, Posyandu, RT, RW, Kelurahan, Kecamatan, dan Kabupaten/Kota.
  */
@@ -3567,6 +3681,22 @@ export function isDataAnakMatchingKomunitas(
   if (
     !isValidMuararejaRtRw(item.domisili_kelurahan, item.domisili_rw, item.domisili_rt) &&
     !isValidMuararejaRtRw(item.kk_kelurahan, item.kk_rw, item.kk_rt)
+  ) {
+    return false;
+  }
+
+  // Ketentuan Khusus Kelurahan Krandon: Hapus/abaikan data yang tidak sesuai ketentuan resmi RW & RT Krandon
+  const isDomKrandon = (item.domisili_kelurahan || "").toLowerCase().includes("krandon");
+  const isKkKrandon = (item.kk_kelurahan || "").toLowerCase().includes("krandon");
+  if (isDomKrandon && !isValidKrandonRtRw(item.domisili_kelurahan, item.domisili_rw, item.domisili_rt)) {
+    return false;
+  }
+  if (isKkKrandon && !isValidKrandonRtRw(item.kk_kelurahan, item.kk_rw, item.kk_rt)) {
+    return false;
+  }
+  if (
+    !isValidKrandonRtRw(item.domisili_kelurahan, item.domisili_rw, item.domisili_rt) &&
+    !isValidKrandonRtRw(item.kk_kelurahan, item.kk_rw, item.kk_rt)
   ) {
     return false;
   }
@@ -3718,11 +3848,13 @@ export function isDataAnakMatchingKomunitas(
           item.kk_rt === "0";
 
         const normRtList = cakupan.rtList.map((r) => normalizeRtRwNum(r));
+        const isDomRw8 = (domRw === "08" || domRw === "8" || normalizeRtRwNum(domRw) === "08");
+        const isKkRw8 = (kkRw === "08" || kkRw === "8" || normalizeRtRwNum(kkRw) === "08");
         const domRtMatch = Boolean(
-          (domRt && (cakupan.rtList.includes(domRt) || normRtList.includes(domRt))) || isDomRtBelumTahu
+          isDomRw8 || (domRt && (cakupan.rtList.includes(domRt) || normRtList.includes(domRt))) || isDomRtBelumTahu
         );
         const kkRtMatch = Boolean(
-          (kkRt && (cakupan.rtList.includes(kkRt) || normRtList.includes(kkRt))) || isKkRtBelumTahu
+          isKkRw8 || (kkRt && (cakupan.rtList.includes(kkRt) || normRtList.includes(kkRt))) || isKkRtBelumTahu
         );
 
         domRwMatch = domRwMatch && domRtMatch;
@@ -3760,11 +3892,13 @@ export function isDataAnakMatchingKomunitas(
           item.kk_rt === "0";
 
         const normRtList = cakupan.rtList.map((r) => normalizeRtRwNum(r));
+        const isDomRw8 = (domRw === "08" || domRw === "8" || normalizeRtRwNum(domRw) === "08");
+        const isKkRw8 = (kkRw === "08" || kkRw === "8" || normalizeRtRwNum(kkRw) === "08");
         const domRtMatch = Boolean(
-          (domRt && (cakupan.rtList.includes(domRt) || normRtList.includes(domRt))) || isDomRtBelumTahu
+          isDomRw8 || (domRt && (cakupan.rtList.includes(domRt) || normRtList.includes(domRt))) || isDomRtBelumTahu
         );
         const kkRtMatch = Boolean(
-          (kkRt && (cakupan.rtList.includes(kkRt) || normRtList.includes(kkRt))) || isKkRtBelumTahu
+          isKkRw8 || (kkRt && (cakupan.rtList.includes(kkRt) || normRtList.includes(kkRt))) || isKkRtBelumTahu
         );
 
         domRwMatch = domRwMatch && domRtMatch;
