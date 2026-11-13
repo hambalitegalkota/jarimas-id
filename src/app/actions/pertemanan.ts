@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient, createAdminClient } from "@/utils/supabase/server";
 import { toValidUUID, isAdminPusat, isAdminKota as checkIsAdminKota, isSuperOrAdminPusat, isSuperAdmin as checkIsSuperAdmin } from "@/lib/utils";
 import { extractKomunitasMetadata } from "@/lib/admin-helpers";
+import { findOrGenerateKomunitasSeed } from "@/lib/constants/tegal-data";
 import type {
   GetRegisteredUsersResult,
   RegisteredUserItem,
@@ -1653,6 +1654,26 @@ export async function getGroupMessages(komunitasId: string): Promise<{
       .in("id", [komunitasId, dbKomunitasId])
       .maybeSingle();
 
+    let activeCommunity = community;
+    if (!activeCommunity) {
+      const seedItem =
+        findOrGenerateKomunitasSeed(komunitasId) ||
+        findOrGenerateKomunitasSeed(dbKomunitasId);
+      if (seedItem) {
+        activeCommunity = {
+          id: dbKomunitasId,
+          nama: seedItem.nama,
+          jenis: seedItem.jenis,
+          kecamatan: seedItem.kecamatan,
+          kelurahan: seedItem.kelurahan,
+          rw: seedItem.rw || null,
+          rt: seedItem.rt || null,
+          logo_url: null,
+          deskripsi: seedItem.deskripsi || null,
+        } as any;
+      }
+    }
+
     // Ambil peranan anggota di komunitas ini untuk role badge
     const { data: memberRoles } = await supabase
       .from("anggota_komunitas")
@@ -1692,7 +1713,7 @@ export async function getGroupMessages(komunitasId: string): Promise<{
       return {
         success: true,
         messages: [],
-        komunitas: community as any,
+        komunitas: activeCommunity as any,
         currentUserId,
       };
     }
@@ -1707,7 +1728,7 @@ export async function getGroupMessages(komunitasId: string): Promise<{
     return {
       success: true,
       messages: formattedMessages as any,
-      komunitas: community as any,
+      komunitas: activeCommunity as any,
       currentUserId,
     };
   } catch (err: any) {
@@ -1802,7 +1823,42 @@ export async function sendGroupMessage(params: {
       }
     }
 
-    const { data: inserted, error: insertErr } = await supabase
+    // Pastikan komunitas terdaftar di tabel public.komunitas untuk menghindari foreign key violation
+    const clientToEnsureKom = createAdminClient() || supabase;
+    const { data: existingKom } = await clientToEnsureKom
+      .from("komunitas")
+      .select("id")
+      .eq("id", dbKomunitasId)
+      .maybeSingle();
+
+    if (!existingKom) {
+      const seedItem =
+        findOrGenerateKomunitasSeed(komunitasId) ||
+        findOrGenerateKomunitasSeed(dbKomunitasId);
+
+      await clientToEnsureKom.from("komunitas").upsert(
+        {
+          id: dbKomunitasId,
+          nama: seedItem?.nama || "Komunitas",
+          nama_komunitas: seedItem?.nama || "Komunitas",
+          jenis: seedItem?.jenis || "posyandu",
+          jenis_komunitas: seedItem?.jenis || "posyandu",
+          kecamatan: seedItem?.kecamatan || "Kota Tegal",
+          kelurahan: seedItem?.kelurahan || "Semua Kelurahan",
+          rt: seedItem?.rt || null,
+          rw: seedItem?.rw || null,
+          lokasi: seedItem?.lokasi || "Kota Tegal",
+          deskripsi: seedItem?.deskripsi || "",
+          kontak: seedItem?.kontak || null,
+          jadwal: seedItem?.jadwal || null,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "id" }
+      );
+    }
+
+    let { data: inserted, error: insertErr } = await supabase
       .from("pesan_grup")
       .insert({
         komunitas_id: dbKomunitasId,
@@ -1823,6 +1879,59 @@ export async function sendGroupMessage(params: {
         )
       `)
       .single();
+
+    // Auto-heal: Jika masih terjadi kegagalan foreign key constraint (code 23503 atau contains foreign key)
+    if (insertErr && (insertErr.code === "23503" || insertErr.message?.includes("foreign key"))) {
+      const seedItem =
+        findOrGenerateKomunitasSeed(komunitasId) ||
+        findOrGenerateKomunitasSeed(dbKomunitasId);
+
+      await clientToEnsureKom.from("komunitas").upsert(
+        {
+          id: dbKomunitasId,
+          nama: seedItem?.nama || "Komunitas",
+          nama_komunitas: seedItem?.nama || "Komunitas",
+          jenis: seedItem?.jenis || "posyandu",
+          jenis_komunitas: seedItem?.jenis || "posyandu",
+          kecamatan: seedItem?.kecamatan || "Kota Tegal",
+          kelurahan: seedItem?.kelurahan || "Semua Kelurahan",
+          rt: seedItem?.rt || null,
+          rw: seedItem?.rw || null,
+          lokasi: seedItem?.lokasi || "Kota Tegal",
+          deskripsi: seedItem?.deskripsi || "",
+          kontak: seedItem?.kontak || null,
+          jadwal: seedItem?.jadwal || null,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "id" }
+      );
+
+      const retryRes = await supabase
+        .from("pesan_grup")
+        .insert({
+          komunitas_id: dbKomunitasId,
+          user_id: user.id,
+          pesan: cleanPesan,
+        })
+        .select(`
+          id,
+          komunitas_id,
+          user_id,
+          pesan,
+          created_at,
+          profiles (
+            id,
+            nama_lengkap,
+            avatar_url,
+            is_super_admin
+          )
+        `)
+        .single();
+
+      inserted = retryRes.data;
+      insertErr = retryRes.error;
+    }
 
     if (insertErr) {
       const isTableMissing =

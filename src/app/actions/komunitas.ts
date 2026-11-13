@@ -1485,6 +1485,32 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
         };
 
         komunitas = insertPayload as any;
+
+        // Auto-persist ke database public.komunitas agar relasi foreign key valid
+        try {
+          const clientToUse = createAdminClient() || supabase;
+          await clientToUse.from("komunitas").upsert(
+            {
+              id: dbKomunitasId,
+              nama: seedItem.nama,
+              nama_komunitas: seedItem.nama,
+              jenis: seedItem.jenis,
+              jenis_komunitas: seedItem.jenis,
+              kecamatan: seedItem.kecamatan || "Kota Tegal",
+              kelurahan: seedItem.kelurahan || "Semua Kelurahan",
+              rt: seedItem.rt || null,
+              rw: seedItem.rw || null,
+              lokasi: seedItem.lokasi,
+              deskripsi: seedItem.deskripsi,
+              kontak: seedItem.kontak || null,
+              jadwal: seedItem.jadwal || null,
+              updated_at: new Date().toISOString(),
+            },
+            { onConflict: "id" }
+          );
+        } catch (persistErr) {
+          console.warn("Auto-persist seed komunitas error:", persistErr);
+        }
       }
     }
 
@@ -3044,6 +3070,35 @@ export async function requestPerubahanPeran({
 
       if (updateErr) throw updateErr;
     } else {
+      // Pastikan komunitas ada di tabel public.komunitas
+      try {
+        const seedItem = findOrGenerateKomunitasSeed(komunitasId) || findOrGenerateKomunitasSeed(dbKomunitasId);
+        if (seedItem) {
+          const clientToUse = createAdminClient() || supabase;
+          await clientToUse.from("komunitas").upsert(
+            {
+              id: dbKomunitasId,
+              nama: seedItem.nama,
+              nama_komunitas: seedItem.nama,
+              jenis: seedItem.jenis,
+              jenis_komunitas: seedItem.jenis,
+              kecamatan: seedItem.kecamatan || "Kota Tegal",
+              kelurahan: seedItem.kelurahan || "Semua Kelurahan",
+              rt: seedItem.rt || null,
+              rw: seedItem.rw || null,
+              lokasi: seedItem.lokasi,
+              deskripsi: seedItem.deskripsi,
+              kontak: seedItem.kontak || null,
+              jadwal: seedItem.jadwal || null,
+              updated_at: new Date().toISOString(),
+            },
+            { onConflict: "id" }
+          );
+        }
+      } catch (e) {
+        console.warn("Ensure komunitas in requestPerubahanPeran error:", e);
+      }
+
       // Jika belum terdaftar, buat keanggotaan sebagai Pengunjung dengan peran_diajukan
       const { error: insertErr } = await supabase
         .from("anggota_komunitas")
