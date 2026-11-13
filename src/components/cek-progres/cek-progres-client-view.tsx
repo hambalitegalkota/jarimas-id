@@ -346,7 +346,7 @@ export function CekProgresClientView({
             </span>
           </div>
           <p className="text-2xs text-muted-foreground border-t border-border pt-2 truncate">
-            TK, KB, RA, SPS &amp; TPA Terpantau
+            TK, KB, RA, SPS, TPA, PKBM &amp; SKB Terpantau
           </p>
         </div>
 

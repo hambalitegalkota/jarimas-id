@@ -17,6 +17,7 @@ import {
   isRoleAdmin,
 } from "@/lib/utils";
 import { getUserAdminInfo, extractKomunitasMetadata } from "@/lib/admin-helpers";
+import { isKomunitasBerjenjangPaud } from "@/lib/constants/tegal-data";
 import {
   cleanBaseSchoolName,
   isSchoolNameMatching,
@@ -58,15 +59,44 @@ const DEFAULT_KEGIATAN_PAUD: KegiatanAdministratif = {
 };
 
 /**
- * Filter Satuan Pendidikan:
- * Hanya menyertakan seluruh TK, KB, RA, SPS/Pos PAUD, TPA, SKB,
- * dan HANYA PKBM Star of Tomorrow (PKBM umum lainnya dilepas).
+ * Filter Satuan Pendidikan untuk Cek Progres:
+ * Khusus untuk Satuan PAUD (TK, KB, RA, SPS/Pos PAUD, TPA),
+ * PKBM Star of Tomorrow, dan SKB (UPTD SPNF Sanggar Kegiatan Belajar) yang memiliki layanan PAUD.
+ * Mengeluarkan seluruh akun Komunitas Kecamatan, Kelurahan, dan komunitas PAUD berjenjang lainnya.
  */
-function isAllowedPaudInstitution(nama: string): boolean {
-  const n = (nama || "").toUpperCase();
+function isAllowedPaudInstitution(item: any): boolean {
+  if (!item) return false;
+  const nama = typeof item === "string" ? item : item.nama || "";
+  const id = typeof item === "string" ? "" : item.id || "";
+  const n = (nama || "").toUpperCase().trim();
+  const lowerNama = (nama || "").toLowerCase().trim();
+  const lowerId = (id || "").toLowerCase().trim();
+
+  // 1. Keluarkan Komunitas Kecamatan, Kelurahan dan akun berjenjang komunitas PAUD lainnya
+  if (
+    isKomunitasBerjenjangPaud(typeof item === "string" ? { nama } : item) ||
+    lowerId.startsWith("kom-paud-") ||
+    lowerNama.startsWith("komunitas paud") ||
+    lowerNama.includes("komunitas paud") ||
+    lowerNama.includes("paud kecamatan:") ||
+    lowerNama.includes("paud kelurahan:") ||
+    lowerNama.includes("paud kecamatan") ||
+    lowerNama.includes("paud kelurahan")
+  ) {
+    return false;
+  }
+
+  // 2. PKBM: Lepaskan seluruh PKBM KECUALI 'PKBM Star of Tomorrow' (yang memiliki layanan PAUD)
   if (n.includes("PKBM")) {
     return n.includes("STAR OF TOMORROW") || n.includes("STAR");
   }
+
+  // 3. SKB: UPTD SPNF Sanggar Kegiatan Belajar / SKB yang memiliki layanan PAUD diperbolehkan
+  if (n.includes("SKB") || n.includes("SANGGAR KEGIATAN BELAJAR")) {
+    return true;
+  }
+
+  // 4. Seluruh Satuan PAUD resmi (TK, KB, RA, SPS, TPA, Pos PAUD)
   return true;
 }
 
@@ -258,8 +288,8 @@ async function computeAllProgresPaud(supabase: any): Promise<ProgresPaudItem[]> 
     return [];
   }
 
-  // Filter: Lepaskan seluruh PKBM KECUALI 'PKBM Star of Tomorrow' dan SKB
-  const paudList = rawPaudList.filter((p: any) => isAllowedPaudInstitution(p.nama));
+  // Filter: Khusus satuan PAUD, PKBM Star of Tomorrow, dan SKB (keluarkan berjenjang & PKBM non-PAUD)
+  const paudList = rawPaudList.filter((p: any) => isAllowedPaudInstitution(p));
 
   const allowedIds = paudList.map((p: any) => p.id);
 

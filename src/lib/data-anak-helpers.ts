@@ -5,6 +5,7 @@ import {
   MASTER_KOMUNITAS_SEED,
   findOrGenerateKomunitasSeed,
   getJumlahRtPerRwByKelurahan,
+  isKomunitasBerjenjangPaud,
 } from "@/lib/constants/tegal-data";
 import type { DataAnakItem } from "@/types/database";
 
@@ -108,8 +109,23 @@ export function isKomunitasLayananPaud(
   const nama = String(komunitas?.nama || fallbackNama || "").toLowerCase().trim();
   const institusi = String(komunitas?.jenis_institusi || "").toLowerCase().trim();
 
+  // Keluarkan komunitas berjenjang PAUD (Kecamatan, Kelurahan, Kota, Gugus, dll)
+  if (
+    isKomunitasBerjenjangPaud(komunitas) ||
+    nama.startsWith("komunitas paud") ||
+    nama.includes("komunitas paud") ||
+    nama.includes("paud kecamatan:") ||
+    nama.includes("paud kelurahan:")
+  ) {
+    return false;
+  }
+
   // 1. Seluruh Satuan PAUD Resmi (TK, KB, RA, SPS, TPA)
   if (jenis === "satuan_paud") {
+    // Keluarkan PKBM selain Star of Tomorrow
+    if (nama.includes("pkbm") && !nama.includes("star of tomorrow") && !nama.includes("star")) {
+      return false;
+    }
     return true;
   }
 

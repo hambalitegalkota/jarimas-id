@@ -2618,6 +2618,8 @@ export function isKomunitasBerjenjangPaud(komunitasIdOrObj?: any): boolean {
   const cleanNama = nama.toLowerCase();
 
   if (cleanId === "kom-paud-kota-tegal" || cleanId.startsWith("kom-paud-")) return true;
+  if (cleanNama.startsWith("komunitas paud") || cleanNama.includes("komunitas paud")) return true;
+  if (cleanNama.includes("paud kecamatan:") || cleanNama.includes("paud kelurahan:")) return true;
   if (
     cleanNama.includes("komunitas paud terpadu") ||
     cleanNama.includes("komunitas paud tk") ||
