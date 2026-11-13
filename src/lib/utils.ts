@@ -713,6 +713,18 @@ export function parseCakupanWilayah(komunitas?: {
     rw = "06";
   }
 
+  // Khusus Debong Tengah: Sinkronisasi Posyandu dengan RW resmi
+  if (kelClean.includes("debong tengah") || namaClean.includes("debong tengah")) {
+    if (namaClean.includes("anggrek 1")) rw = "01";
+    else if (namaClean.includes("anggrek 2")) rw = "02";
+    else if (namaClean.includes("lengkeng")) rw = "02";
+    else if (namaClean.includes("teratai")) rw = "03";
+    else if (namaClean.includes("anyelir a")) rw = "04";
+    else if (namaClean.includes("anyelir b")) rw = "04";
+    else if (namaClean.includes("bougenvil")) rw = "05";
+    else if (namaClean.includes("tulip")) rw = "06";
+  }
+
   // Pemetaan Khusus Kelurahan yang sudah disesuaikan cakupan RW & RT-nya:
   // Kalinyamat Kulon (Kecamatan Margadana)
   if (kelClean.includes("kalinyamat kulon") || namaClean.includes("kalinyamat kulon") || (namaClean.includes("melati") && kelClean.includes("kalinyamat"))) {
@@ -778,6 +790,47 @@ export function parseCakupanWilayah(komunitas?: {
       "04": 7,
     };
     const count = rtMapKrandon[rw];
+    if (count) {
+      const rtList = Array.from({ length: count }, (_, i) => `RT ${String(i + 1).padStart(2, "0")}`);
+      return `Melayani Warga RW ${rw} (${rtList.join(", ")} dan RW - RT Tidak Tahu)`;
+    }
+  }
+
+  // Khusus Kelurahan Debong Tengah (Kecamatan Tegal Selatan)
+  if (kelClean.includes("debong tengah") || namaClean.includes("debong tengah")) {
+    if (namaClean.includes("anggrek 1")) {
+      return "Melayani Warga RW 01 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("anggrek 2")) {
+      return "Melayani Warga RW 02 (RT 01, RT 02, RT 03, RT 04 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("lengkeng")) {
+      return "Melayani Warga RW 02 (RT 05, RT 06 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("teratai")) {
+      return "Melayani Warga RW 03 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("anyelir a")) {
+      return "Melayani Warga RW 04 (RT 01, RT 02, RT 03, RT 05 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("anyelir b")) {
+      return "Melayani Warga RW 04 (RT 04, RT 06, RT 07 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("bougenvil") || namaClean.includes("bougenville")) {
+      return "Melayani Warga RW 05 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("tulip")) {
+      return "Melayani Warga RW 06 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06 dan RW - RT Tidak Tahu)";
+    }
+    const rtMapDebongTengah: Record<string, number> = {
+      "01": 5,
+      "02": 6,
+      "03": 5,
+      "04": 7,
+      "05": 6,
+      "06": 6,
+    };
+    const count = rtMapDebongTengah[rw];
     if (count) {
       const rtList = Array.from({ length: count }, (_, i) => `RT ${String(i + 1).padStart(2, "0")}`);
       return `Melayani Warga RW ${rw} (${rtList.join(", ")} dan RW - RT Tidak Tahu)`;

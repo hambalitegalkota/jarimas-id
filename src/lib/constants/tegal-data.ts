@@ -700,6 +700,7 @@ export const DATA_RW_PER_KELURAHAN: Record<string, number> = {
   "Kejambon": 6,
   "Muarareja": 3,
   "Krandon": 4,
+  "Debong Tengah": 6,
 };
 
 export const RT_PER_RW_DEFAULT = 15;
@@ -1196,12 +1197,41 @@ export const DATA_RT_PER_RW_KRANDON: Record<string, number> = {
   "4": 7,
 };
 
+/**
+ * Ketentuan Khusus RT per RW di Kelurahan Debong Tengah, Kecamatan Tegal Selatan:
+ * - Jumlah RW = 6
+ *   - RW 1: Jumlah RT 5 (Posyandu Anggrek 1 [RW 1 RT 1-5])
+ *   - RW 2: Jumlah RT 6 (Posyandu Anggrek 2 [RW 2 RT 1-4] & Posyandu Lengkeng [RW 2 RT 5-6])
+ *   - RW 3: Jumlah RT 5 (Posyandu Teratai [RW 3 RT 1-5])
+ *   - RW 4: Jumlah RT 7 (Posyandu Anyelir A [RW 4 RT 1-3, 5] & Posyandu Anyelir B [RW 4 RT 4, 6-7])
+ *   - RW 5: Jumlah RT 6 (Posyandu Bougenvil [RW 5 RT 1-6])
+ *   - RW 6: Jumlah RT 6 (Posyandu Tulip [RW 6 RT 1-6])
+ * - Tetap mempertahankan RW "Belum Tahu" dan RT "Belum Tahu"
+ */
+export const DATA_RT_PER_RW_DEBONG_TENGAH: Record<string, number> = {
+  "01": 5,
+  "1": 5,
+  "02": 6,
+  "2": 6,
+  "03": 5,
+  "3": 5,
+  "04": 7,
+  "4": 7,
+  "05": 6,
+  "5": 6,
+  "06": 6,
+  "6": 6,
+};
+
 export const TOTAL_KOMUNITAS_RW_KOTA_TEGAL = 167;
 export const TOTAL_KOMUNITAS_RT_KOTA_TEGAL = 1712;
 
 export function getJumlahRwByKelurahan(kelurahan?: string | null): number {
   if (!kelurahan) return 15;
   const clean = kelurahan.replace(/^(kelurahan|kel\.)\s+/i, "").trim().toLowerCase();
+  if (clean === "debong tengah") {
+    return 6;
+  }
   if (clean === "krandon") {
     return 4;
   }
@@ -1255,6 +1285,16 @@ export function getJumlahRwByKelurahan(kelurahan?: string | null): number {
 export function getJumlahRtPerRwByKelurahan(kelurahan?: string | null, rw?: string | null): number {
   if (!kelurahan) return RT_PER_RW_DEFAULT;
   const clean = kelurahan.replace(/^(kelurahan|kel\.)\s+/i, "").trim().toLowerCase();
+  if (clean === "debong tengah") {
+    if (rw && rw !== "Belum Tahu") {
+      const cleanRw = rw.replace(/^(rw|rt)\s*/i, "").trim();
+      const normRw = String(parseInt(cleanRw, 10)).padStart(2, "0");
+      if (DATA_RT_PER_RW_DEBONG_TENGAH[normRw] || DATA_RT_PER_RW_DEBONG_TENGAH[cleanRw]) {
+        return DATA_RT_PER_RW_DEBONG_TENGAH[normRw] || DATA_RT_PER_RW_DEBONG_TENGAH[cleanRw];
+      }
+    }
+    return 7; // Max RT di RW 4 (7 RT)
+  }
   if (clean === "krandon") {
     if (rw && rw !== "Belum Tahu") {
       const cleanRw = rw.replace(/^(rw|rt)\s*/i, "").trim();
@@ -1488,6 +1528,10 @@ export function getTotalRtByKelurahan(kelurahan?: string | null): number {
     // RW 1: 6, RW 2: 6, RW 3: 7, RW 4: 9, RW 5: 4, RW 6: 3, RW 7: 3 -> Total 38 RT
     return 6 + 6 + 7 + 9 + 4 + 3 + 3;
   }
+  if (clean === "debong tengah") {
+    // RW 1: 5, RW 2: 6, RW 3: 5, RW 4: 7, RW 5: 6, RW 6: 6 -> Total 35 RT
+    return 5 + 6 + 5 + 7 + 6 + 6;
+  }
   if (clean === "kraton") {
     // RW 1: 9, RW 2: 9, RW 3: 8, RW 4: 10, RW 5: 11, RW 6: 8, RW 7: 8, RW 8: 5, RW 9: 6 = 74 RT
     return 9 + 9 + 8 + 10 + 11 + 8 + 8 + 5 + 6;
@@ -1525,6 +1569,10 @@ export function getRwListByKelurahan(kelurahan?: string | null): string[] {
   }
   if (clean === "kalinyamat wetan") {
     const list = Array.from({ length: 4 }, (_, i) => String(i + 1).padStart(2, "0"));
+    return [...list, "Belum Tahu"];
+  }
+  if (clean === "debong tengah") {
+    const list = Array.from({ length: 6 }, (_, i) => String(i + 1).padStart(2, "0"));
     return [...list, "Belum Tahu"];
   }
   if (clean === "kraton") {
@@ -1635,6 +1683,17 @@ export function getRtListByKelurahan(kelurahan?: string | null, rw?: string | nu
 
   if (clean === "kalinyamat wetan") {
     const list = Array.from({ length: 5 }, (_, i) => String(i + 1).padStart(2, "0"));
+    return [...list, "Belum Tahu"];
+  }
+  if (clean === "debong tengah") {
+    if (rw && rw !== "Belum Tahu") {
+      const cleanRw = rw.replace(/^(rw|rt)\s*/i, "").trim();
+      const normRw = String(parseInt(cleanRw, 10)).padStart(2, "0");
+      const count = DATA_RT_PER_RW_DEBONG_TENGAH[normRw] || DATA_RT_PER_RW_DEBONG_TENGAH[cleanRw] || 7;
+      const list = Array.from({ length: count }, (_, i) => String(i + 1).padStart(2, "0"));
+      return [...list, "Belum Tahu"];
+    }
+    const list = Array.from({ length: 7 }, (_, i) => String(i + 1).padStart(2, "0"));
     return [...list, "Belum Tahu"];
   }
   if (clean === "kraton") {

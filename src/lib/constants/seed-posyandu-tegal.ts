@@ -256,14 +256,14 @@ export const RAW_POSYANDU_TEGAL: RawPosyanduItem[] = [
   { id: "06e8fa37-05e8-4ae9-82dd-ac2d08bd809a", nama: "Posyandu Nusa Indah", kecamatan: "Tegal Selatan", kelurahan: "Debong Kulon", rw: "04", rt: "01", cakupan_wilayah: "RW 04 (RT 01 s/d RT 04)", lokasi: "Balai Posyandu / RW 04, Debong Kulon, Tegal Selatan, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Nusa Indah Debong Kulon cakupan sinkronisasi wilayah RW 04 (RT 01 s/d RT 04): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
 
   // Debong Tengah (8 Posyandu)
-  { id: "e03b01d3-de95-4180-851b-be5148b17b34", nama: "Posyandu Anggrek 1", kecamatan: "Tegal Selatan", kelurahan: "Debong Tengah", rw: "04", rt: "04", lokasi: "Balai Posyandu / RW 04, Debong Tengah, Tegal Selatan, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Anggrek Asri Debong Tengah: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "26de4aa8-7853-41e6-8af1-fc857630ef1b", nama: "Posyandu Anggrek 2", kecamatan: "Tegal Selatan", kelurahan: "Debong Tengah", rw: "01", rt: "01", lokasi: "Balai Posyandu / RW 01, Debong Tengah, Tegal Selatan, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Cempaka 1 Debong Tengah: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "0184b7bb-7853-41e6-889d-b44d13cbe332", nama: "Posyandu Anyelir A", kecamatan: "Tegal Selatan", kelurahan: "Debong Tengah", rw: "01", rt: "03", lokasi: "Balai Posyandu / RW 01, Debong Tengah, Tegal Selatan, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Cempaka 2 Debong Tengah: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "634d3e0a-7853-41e6-840f-21b599b7ad9d", nama: "Posyandu Anyelir B", kecamatan: "Tegal Selatan", kelurahan: "Debong Tengah", rw: "02", rt: "02", lokasi: "Balai Posyandu / RW 02, Debong Tengah, Tegal Selatan, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Cempaka 3 Debong Tengah: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "80974cfd-c23e-451b-8aaf-9de95d19441d", nama: "Posyandu Bougenville", kecamatan: "Tegal Selatan", kelurahan: "Debong Tengah", rw: "02", rt: "04", lokasi: "Balai Posyandu / RW 02, Debong Tengah, Tegal Selatan, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Mawar Sejati 1 Debong Tengah: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "1ecec6ae-c23e-451b-8621-0b51d72d79b2", nama: "Posyandu Lengkeng", kecamatan: "Tegal Selatan", kelurahan: "Debong Tengah", rw: "03", rt: "01", lokasi: "Balai Posyandu / RW 03, Debong Tengah, Tegal Selatan, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Mawar Sejati 2 Debong Tengah: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "56f2303c-d42d-430f-825f-447d2446bc00", nama: "Posyandu Teratai", kecamatan: "Tegal Selatan", kelurahan: "Debong Tengah", rw: "03", rt: "03", lokasi: "Balai Posyandu / RW 03, Debong Tengah, Tegal Selatan, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Melati Tengah 1 Debong Tengah: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "31989d4f-d42d-430f-86ed-d715b60a1b41", nama: "Posyandu Tulip", kecamatan: "Tegal Selatan", kelurahan: "Debong Tengah", rw: "04", rt: "02", lokasi: "Balai Posyandu / RW 04, Debong Tengah, Tegal Selatan, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Melati Tengah 2 Debong Tengah: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "e03b01d3-de95-4180-851b-be5148b17b34", nama: "Posyandu Anggrek 1", kecamatan: "Tegal Selatan", kelurahan: "Debong Tengah", rw: "01", rt: "01", cakupan_wilayah: "Melayani Warga RW 01 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 01, Debong Tengah, Tegal Selatan, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Anggrek 1 Debong Tengah cakupan sinkronisasi wilayah RW 01 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "26de4aa8-7853-41e6-8af1-fc857630ef1b", nama: "Posyandu Anggrek 2", kecamatan: "Tegal Selatan", kelurahan: "Debong Tengah", rw: "02", rt: "01", cakupan_wilayah: "Melayani Warga RW 02 (RT 01, RT 02, RT 03, RT 04 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 02, Debong Tengah, Tegal Selatan, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Anggrek 2 Debong Tengah cakupan sinkronisasi wilayah RW 02 (RT 01, RT 02, RT 03, RT 04 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "1ecec6ae-c23e-451b-8621-0b51d72d79b2", nama: "Posyandu Lengkeng", kecamatan: "Tegal Selatan", kelurahan: "Debong Tengah", rw: "02", rt: "05", cakupan_wilayah: "Melayani Warga RW 02 (RT 05, RT 06 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 02, Debong Tengah, Tegal Selatan, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Lengkeng Debong Tengah cakupan sinkronisasi wilayah RW 02 (RT 05, RT 06 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "56f2303c-d42d-430f-825f-447d2446bc00", nama: "Posyandu Teratai", kecamatan: "Tegal Selatan", kelurahan: "Debong Tengah", rw: "03", rt: "01", cakupan_wilayah: "Melayani Warga RW 03 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 03, Debong Tengah, Tegal Selatan, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Teratai Debong Tengah cakupan sinkronisasi wilayah RW 03 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "0184b7bb-7853-41e6-889d-b44d13cbe332", nama: "Posyandu Anyelir A", kecamatan: "Tegal Selatan", kelurahan: "Debong Tengah", rw: "04", rt: "01", cakupan_wilayah: "Melayani Warga RW 04 (RT 01, RT 02, RT 03, RT 05 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 04, Debong Tengah, Tegal Selatan, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Anyelir A Debong Tengah cakupan sinkronisasi wilayah RW 04 (RT 01, RT 02, RT 03, RT 05 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "634d3e0a-7853-41e6-840f-21b599b7ad9d", nama: "Posyandu Anyelir B", kecamatan: "Tegal Selatan", kelurahan: "Debong Tengah", rw: "04", rt: "04", cakupan_wilayah: "Melayani Warga RW 04 (RT 04, RT 06, RT 07 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 04, Debong Tengah, Tegal Selatan, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Anyelir B Debong Tengah cakupan sinkronisasi wilayah RW 04 (RT 04, RT 06, RT 07 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "80974cfd-c23e-451b-8aaf-9de95d19441d", nama: "Posyandu Bougenvil", kecamatan: "Tegal Selatan", kelurahan: "Debong Tengah", rw: "05", rt: "01", cakupan_wilayah: "Melayani Warga RW 05 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 05, Debong Tengah, Tegal Selatan, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Bougenvil Debong Tengah cakupan sinkronisasi wilayah RW 05 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "31989d4f-d42d-430f-86ed-d715b60a1b41", nama: "Posyandu Tulip", kecamatan: "Tegal Selatan", kelurahan: "Debong Tengah", rw: "06", rt: "01", cakupan_wilayah: "Melayani Warga RW 06 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 06, Debong Tengah, Tegal Selatan, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Tulip Debong Tengah cakupan sinkronisasi wilayah RW 06 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
 
 
 
@@ -741,6 +741,84 @@ export const PESURUNGAN_KIDUL_POSYANDU_MAP: Record<
     cakupan_wilayah: "Melayani Warga RW 06 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu)",
     lokasi: "Balai Posyandu / RW 06, Pesurungan Kidul, Tegal Barat, Kota Tegal",
     deskripsi: "Layanan terpadu Posyandu Melati 5 Pesurungan Kidul cakupan sinkronisasi wilayah RW 06 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+  },
+};
+
+export const DEBONG_TENGAH_POSYANDU_MAP: Record<
+  string,
+  { nama: string; rw: string; rt: string; cakupan_wilayah: string; lokasi?: string; deskripsi?: string; allowedRts?: string[] }
+> = {
+  "e03b01d3-de95-4180-851b-be5148b17b34": {
+    nama: "Posyandu Anggrek 1",
+    rw: "01",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 01 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 01, Debong Tengah, Tegal Selatan, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Anggrek 1 Debong Tengah cakupan sinkronisasi wilayah RW 01 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["01", "02", "03", "04", "05"],
+  },
+  "26de4aa8-7853-41e6-8af1-fc857630ef1b": {
+    nama: "Posyandu Anggrek 2",
+    rw: "02",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 02 (RT 01, RT 02, RT 03, RT 04 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 02, Debong Tengah, Tegal Selatan, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Anggrek 2 Debong Tengah cakupan sinkronisasi wilayah RW 02 (RT 01, RT 02, RT 03, RT 04 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["01", "02", "03", "04"],
+  },
+  "1ecec6ae-c23e-451b-8621-0b51d72d79b2": {
+    nama: "Posyandu Lengkeng",
+    rw: "02",
+    rt: "05",
+    cakupan_wilayah: "Melayani Warga RW 02 (RT 05, RT 06 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 02, Debong Tengah, Tegal Selatan, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Lengkeng Debong Tengah cakupan sinkronisasi wilayah RW 02 (RT 05, RT 06 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["05", "06"],
+  },
+  "56f2303c-d42d-430f-825f-447d2446bc00": {
+    nama: "Posyandu Teratai",
+    rw: "03",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 03 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 03, Debong Tengah, Tegal Selatan, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Teratai Debong Tengah cakupan sinkronisasi wilayah RW 03 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["01", "02", "03", "04", "05"],
+  },
+  "0184b7bb-7853-41e6-889d-b44d13cbe332": {
+    nama: "Posyandu Anyelir A",
+    rw: "04",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 04 (RT 01, RT 02, RT 03, RT 05 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 04, Debong Tengah, Tegal Selatan, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Anyelir A Debong Tengah cakupan sinkronisasi wilayah RW 04 (RT 01, RT 02, RT 03, RT 05 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["01", "02", "03", "05"],
+  },
+  "634d3e0a-7853-41e6-840f-21b599b7ad9d": {
+    nama: "Posyandu Anyelir B",
+    rw: "04",
+    rt: "04",
+    cakupan_wilayah: "Melayani Warga RW 04 (RT 04, RT 06, RT 07 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 04, Debong Tengah, Tegal Selatan, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Anyelir B Debong Tengah cakupan sinkronisasi wilayah RW 04 (RT 04, RT 06, RT 07 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["04", "06", "07"],
+  },
+  "80974cfd-c23e-451b-8aaf-9de95d19441d": {
+    nama: "Posyandu Bougenvil",
+    rw: "05",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 05 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 05, Debong Tengah, Tegal Selatan, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Bougenvil Debong Tengah cakupan sinkronisasi wilayah RW 05 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["01", "02", "03", "04", "05", "06"],
+  },
+  "31989d4f-d42d-430f-86ed-d715b60a1b41": {
+    nama: "Posyandu Tulip",
+    rw: "06",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 06 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 06, Debong Tengah, Tegal Selatan, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Tulip Debong Tengah cakupan sinkronisasi wilayah RW 06 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["01", "02", "03", "04", "05", "06"],
   },
 };
 

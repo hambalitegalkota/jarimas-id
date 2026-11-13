@@ -2438,6 +2438,117 @@ export function getPosyanduCakupanWilayah(targetKomunitas: any): PosyanduCakupan
     }
   }
 
+  // Khusus Kelurahan Debong Tengah (Kecamatan Tegal Selatan)
+  // 1. Posyandu Anggrek 1: RW 1 (RT 1 s/d RT 5)
+  // 2. Posyandu Anggrek 2: RW 2 (RT 1 s/d RT 4)
+  // 3. Posyandu Lengkeng: RW 2 (RT 5, RT 6)
+  // 4. Posyandu Teratai: RW 3 (RT 1 s/d RT 5)
+  // 5. Posyandu Anyelir A: RW 4 (RT 1, RT 2, RT 3, RT 5)
+  // 6. Posyandu Anyelir B: RW 4 (RT 4, RT 6, RT 7)
+  // 7. Posyandu Bougenvil: RW 5 (RT 1 s/d RT 6)
+  // 8. Posyandu Tulip: RW 6 (RT 1 s/d RT 6)
+  const isDebongTengahPosyandu =
+    kel.includes("debong tengah") ||
+    (nama.includes("debong tengah") && !kel.includes("debong lor") && !kel.includes("debong kidul") && !kel.includes("debong kulon")) ||
+    targetKomunitas?.id === "e03b01d3-de95-4180-851b-be5148b17b34" ||
+    targetKomunitas?.id === "26de4aa8-7853-41e6-8af1-fc857630ef1b" ||
+    targetKomunitas?.id === "1ecec6ae-c23e-451b-8621-0b51d72d79b2" ||
+    targetKomunitas?.id === "56f2303c-d42d-430f-825f-447d2446bc00" ||
+    targetKomunitas?.id === "0184b7bb-7853-41e6-889d-b44d13cbe332" ||
+    targetKomunitas?.id === "634d3e0a-7853-41e6-840f-21b599b7ad9d" ||
+    targetKomunitas?.id === "80974cfd-c23e-451b-8aaf-9de95d19441d" ||
+    targetKomunitas?.id === "31989d4f-d42d-430f-86ed-d715b60a1b41";
+
+  if (isDebongTengahPosyandu) {
+    if (
+      targetKomunitas?.id === "e03b01d3-de95-4180-851b-be5148b17b34" ||
+      nama.includes("anggrek 1") ||
+      nama.includes("anggrek i") ||
+      (nama.includes("anggrek") && !nama.includes("anggrek 2") && !nama.includes("anggrek ii"))
+    ) {
+      return {
+        rw: "01",
+        rwList: ["01", "1"],
+        rtList: ["01", "02", "03", "04", "05", "1", "2", "3", "4", "5"],
+      };
+    }
+    if (
+      targetKomunitas?.id === "26de4aa8-7853-41e6-8af1-fc857630ef1b" ||
+      nama.includes("anggrek 2") ||
+      nama.includes("anggrek ii")
+    ) {
+      return {
+        rw: "02",
+        rwList: ["02", "2"],
+        rtList: ["01", "02", "03", "04", "1", "2", "3", "4"],
+      };
+    }
+    if (
+      targetKomunitas?.id === "1ecec6ae-c23e-451b-8621-0b51d72d79b2" ||
+      nama.includes("lengkeng")
+    ) {
+      return {
+        rw: "02",
+        rwList: ["02", "2"],
+        rtList: ["05", "06", "5", "6"],
+      };
+    }
+    if (
+      targetKomunitas?.id === "56f2303c-d42d-430f-825f-447d2446bc00" ||
+      nama.includes("teratai")
+    ) {
+      return {
+        rw: "03",
+        rwList: ["03", "3"],
+        rtList: ["01", "02", "03", "04", "05", "1", "2", "3", "4", "5"],
+      };
+    }
+    if (
+      targetKomunitas?.id === "0184b7bb-7853-41e6-889d-b44d13cbe332" ||
+      nama.includes("anyelir a") ||
+      nama.includes("anyelir 1") ||
+      (nama.includes("anyelir") && !nama.includes("anyelir b") && !nama.includes("anyelir 2"))
+    ) {
+      return {
+        rw: "04",
+        rwList: ["04", "4"],
+        rtList: ["01", "02", "03", "05", "1", "2", "3", "5"],
+      };
+    }
+    if (
+      targetKomunitas?.id === "634d3e0a-7853-41e6-840f-21b599b7ad9d" ||
+      nama.includes("anyelir b") ||
+      nama.includes("anyelir 2")
+    ) {
+      return {
+        rw: "04",
+        rwList: ["04", "4"],
+        rtList: ["04", "06", "07", "4", "6", "7"],
+      };
+    }
+    if (
+      targetKomunitas?.id === "80974cfd-c23e-451b-8aaf-9de95d19441d" ||
+      nama.includes("bougenvil") ||
+      nama.includes("bougenville")
+    ) {
+      return {
+        rw: "05",
+        rwList: ["05", "5"],
+        rtList: ["01", "02", "03", "04", "05", "06", "1", "2", "3", "4", "5", "6"],
+      };
+    }
+    if (
+      targetKomunitas?.id === "31989d4f-d42d-430f-86ed-d715b60a1b41" ||
+      nama.includes("tulip")
+    ) {
+      return {
+        rw: "06",
+        rwList: ["06", "6"],
+        rtList: ["01", "02", "03", "04", "05", "06", "1", "2", "3", "4", "5", "6"],
+      };
+    }
+  }
+
   // Posyandu umum berdasarkan kolom rw
   if (targetKomunitas.rw) {
     const rawRw = String(targetKomunitas.rw).replace(/^(rw|rt)\s*/i, "").trim();
@@ -2605,6 +2716,7 @@ export function getPosyanduCoverageDisplay(komunitas: any): PosyanduCoverageResu
       "bandung",
       "muarareja",
       "krandon",
+      "debong tengah",
     ]);
 
     if (MAPPED_KELURAHAN_SET.has(kel)) {
