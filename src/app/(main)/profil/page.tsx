@@ -556,10 +556,10 @@ export default async function ProfilePage() {
                     )}
                     {userAdminInfo.tierBadgeLabel.toUpperCase()}
                   </span>
-                ) : wargaKitaSummary?.highestRole?.toLowerCase() === "pendatang" || userCommunities.length === 0 ? (
+                ) : wargaKitaSummary?.highestRole?.toLowerCase() === "pengunjung" || userCommunities.length === 0 ? (
                   <span className="inline-flex items-center gap-1.5 rounded-md border border-border bg-muted px-2.5 py-1 text-xs font-bold text-muted-foreground shadow-2xs">
                     <Users className="h-3.5 w-3.5 text-muted-foreground" />
-                    PENDATANG
+                    PENGUNJUNG
                   </span>
                 ) : (
                   <span className="inline-flex items-center gap-1.5 rounded-md border border-primary/20 bg-primary/10 px-2.5 py-1 text-xs font-bold text-primary">

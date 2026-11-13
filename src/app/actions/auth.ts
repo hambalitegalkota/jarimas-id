@@ -125,13 +125,13 @@ export async function registerUser(
           { onConflict: "id" }
         );
 
-        // Setiap pengguna yang mendaftar dan belum bergabung ke komunitas manapun ditetapkan statusnya sebagai Pendatang di Komunitas Warga Kota Tegal
+        // Setiap pengguna yang mendaftar dan belum bergabung ke komunitas manapun ditetapkan statusnya sebagai Pengunjung di Komunitas Warga Kota Tegal
         const kotaTegalId = toValidUUID("kom-warga-kota-tegal");
         await adminClient.from("anggota_komunitas").upsert(
           {
             user_id: authData.user.id,
             komunitas_id: kotaTegalId,
-            peran: "Pendatang",
+            peran: "Pengunjung",
             status: "approved",
             peran_diajukan: null,
             created_at: new Date().toISOString(),

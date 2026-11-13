@@ -510,8 +510,8 @@ export function KomunitasDetailClientView({
 
   const isUserJoinedAny = Boolean(isSuperOrPusat || isJoinedAnyCommunity);
 
-  // Jika pengguna belum bergabung dalam komunitas manapun, status perannya ditetapkan menjadi "Pendatang"
-  const userPeran = membership?.peran || (isUserJoinedAny ? "Pengunjung" : "Pendatang");
+  // Jika pengguna belum bergabung dalam komunitas manapun, status perannya ditetapkan menjadi "Pengunjung"
+  const userPeran = membership?.peran || "Pengunjung";
 
   // Untuk pengguna yang sudah registrasi tetapi belum bergabung dalam komunitas manapun, sembunyikan fitur chat anggota
   const canChatWithMembers = Boolean(currentUserId && isUserJoinedAny);
@@ -745,9 +745,9 @@ export function KomunitasDetailClientView({
       if (res.success) {
         setActionFeedback({ type: "success", message: res.message });
         setMembershipState({
-          id: `pendatang-${currentUserId}`,
+          id: `pengunjung-${currentUserId}`,
           status: "approved",
-          peran: "Pendatang",
+          peran: "Pengunjung",
           peran_diajukan: null,
           berdomisili: false,
           kk_terdaftar: false,

@@ -2119,12 +2119,12 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
     );
     const isJoinedAnyCommunity = Boolean(isSuperOrPusat || userApprovedCommunities.length > 0);
 
-    // Pengguna yang sudah registrasi tetapi belum bergabung dalam komunitas manapun ditetapkan status perannya menjadi Pendatang
+    // Pengguna yang sudah registrasi tetapi belum bergabung dalam komunitas manapun ditetapkan status perannya menjadi Pengunjung
     if (currentUserId && !isSuperOrPusat && !currentUserMembership) {
       currentUserMembership = {
-        id: `pendatang-${currentUserId}`,
+        id: `pengunjung-${currentUserId}`,
         status: "approved" as MembershipStatus,
-        peran: "Pendatang",
+        peran: "Pengunjung",
         peran_diajukan: null,
         berdomisili: false,
         kk_terdaftar: false,
@@ -3710,7 +3710,7 @@ export async function leaveKomunitas({
     }
 
     // Ketentuan: Ketika pengguna pernah bergabung namun keluar dan tidak tergabung di komunitas manapun lagi,
-    // tetapkan status perannya menjadi 'Pendatang' di Komunitas Warga Kota Tegal.
+    // tetapkan status perannya menjadi 'Pengunjung' di Komunitas Warga Kota Tegal.
     const kotaTegalId = toValidUUID("kom-warga-kota-tegal");
     const { data: remainingMemberships } = await supabase
       .from("anggota_komunitas")
@@ -3721,7 +3721,6 @@ export async function leaveKomunitas({
 
     const activeRemaining = (remainingMemberships || []).filter(
       (m) =>
-        m.peran?.toLowerCase() !== "pendatang" &&
         m.peran?.toLowerCase() !== "pengunjung"
     );
 
@@ -3730,7 +3729,7 @@ export async function leaveKomunitas({
         {
           user_id: user.id,
           komunitas_id: kotaTegalId,
-          peran: "Pendatang",
+          peran: "Pengunjung",
           status: "approved",
           peran_diajukan: null,
           updated_at: new Date().toISOString(),
