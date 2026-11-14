@@ -36,6 +36,7 @@ import {
 import {
   getPosyanduCoverageDisplay,
   getPosyanduCakupanWilayah,
+  getPosyanduCakupanRw,
   isDataAnakMatchingKomunitas,
   normalizeWilayah,
 } from "@/lib/data-anak-helpers";
@@ -307,19 +308,44 @@ export function KomunitasPosyanduBerjenjangDataSection({
         }
 
         if (matches) {
-          if (cakupan?.rwList && cakupan.rwList.length > 0) {
-            const atsRw = (ats.rw || "").replace(/\D/g, "");
-            const isRwBelum = !atsRw || String(ats.rw).toLowerCase().includes("belum") || ats.rw === "0";
-            if (!isRwBelum) {
-              const normRwList = cakupan.rwList.map((r: string) => String(parseInt(r, 10)));
+          const atsRw = (ats.rw || "").replace(/\D/g, "");
+          const rawAtsRw = String(ats.rw || "").toLowerCase();
+          const isRwBelum = !atsRw || rawAtsRw.includes("belum") || rawAtsRw === "-" || atsRw === "0" || atsRw === "00";
+
+          // Sesuai ketentuan: Data dengan isian RW “Belum Tahu” tetap dialirkan ke seluruh Posyandu di wilayah kelurahan
+          if (isRwBelum) {
+            matches = true;
+          } else {
+            const posyanduRw = cakupan?.rw || getPosyanduCakupanRw(p) || p.rw;
+            const normPosRw = posyanduRw ? String(parseInt(posyanduRw.replace(/\D/g, ""), 10)) : "";
+
+            if (cakupan?.rwList && cakupan.rwList.length > 0) {
+              const normRwList = cakupan.rwList.map((r: string) => String(parseInt(r.replace(/\D/g, ""), 10)));
               const cleanAtsRw = String(parseInt(atsRw, 10));
               if (!normRwList.includes(cleanAtsRw)) {
                 matches = false;
               } else if (cakupan.rtList && cakupan.rtList.length > 0) {
                 const atsRt = (ats.rt || "").replace(/\D/g, "");
-                const isRtBelum = !atsRt || String(ats.rt).toLowerCase().includes("belum") || ats.rt === "0";
+                const rawAtsRt = String(ats.rt || "").toLowerCase();
+                const isRtBelum = !atsRt || rawAtsRt.includes("belum") || rawAtsRt === "-" || atsRt === "0" || atsRt === "00";
                 if (!isRtBelum) {
-                  const normRtList = cakupan.rtList.map((r: string) => String(parseInt(r, 10)));
+                  const normRtList = cakupan.rtList.map((r: string) => String(parseInt(r.replace(/\D/g, ""), 10)));
+                  const cleanAtsRt = String(parseInt(atsRt, 10));
+                  if (!normRtList.includes(cleanAtsRt)) {
+                    matches = false;
+                  }
+                }
+              }
+            } else if (normPosRw) {
+              const cleanAtsRw = String(parseInt(atsRw, 10));
+              if (cleanAtsRw !== normPosRw) {
+                matches = false;
+              } else if (cakupan?.rtList && cakupan.rtList.length > 0) {
+                const atsRt = (ats.rt || "").replace(/\D/g, "");
+                const rawAtsRt = String(ats.rt || "").toLowerCase();
+                const isRtBelum = !atsRt || rawAtsRt.includes("belum") || rawAtsRt === "-" || atsRt === "0" || atsRt === "00";
+                if (!isRtBelum) {
+                  const normRtList = cakupan.rtList.map((r: string) => String(parseInt(r.replace(/\D/g, ""), 10)));
                   const cleanAtsRt = String(parseInt(atsRt, 10));
                   if (!normRtList.includes(cleanAtsRt)) {
                     matches = false;

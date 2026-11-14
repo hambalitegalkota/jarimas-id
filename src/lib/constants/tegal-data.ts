@@ -2578,14 +2578,24 @@ export function generatePaudKomunitasHierarchy({
 export function isKomunitasBerjenjangPosyandu(komunitasIdOrObj?: any): boolean {
   if (!komunitasIdOrObj) return false;
   const id = typeof komunitasIdOrObj === "string" ? komunitasIdOrObj : komunitasIdOrObj?.id || "";
-  const nama = typeof komunitasIdOrObj === "object" ? komunitasIdOrObj?.nama || "" : "";
+  const nama =
+    typeof komunitasIdOrObj === "object"
+      ? komunitasIdOrObj?.nama || komunitasIdOrObj?.nama_komunitas || ""
+      : "";
   const cleanId = id.toLowerCase();
   const cleanNama = nama.toLowerCase();
 
-  if (cleanId === "kom-posyandu-kota-tegal" || cleanId.startsWith("kom-posyandu-")) return true;
+  if (
+    cleanId === "4559e31a-8079-4146-8aa4-87150211f8cd" ||
+    cleanId === "kom-posyandu-kota-tegal" ||
+    cleanId.startsWith("kom-posyandu-")
+  ) {
+    return true;
+  }
   if (cleanNama.includes("komunitas posyandu kota tegal")) return true;
   if (cleanNama.includes("komunitas posyandu kecamatan")) return true;
   if (cleanNama.includes("komunitas posyandu kelurahan")) return true;
+  if (cleanNama.includes("komunitas posyandu")) return true;
 
   const posyanduHierarchyIds = [
     "kom-posyandu-kota-tegal",

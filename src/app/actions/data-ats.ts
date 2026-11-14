@@ -1242,7 +1242,13 @@ export async function deleteDataAts(
  * - Komunitas Kelurahan: Tampilkan seluruh data Anak ATS di Kelurahan tersebut (semua RW & RT di Kelurahan itu) & tombol Validasi tersembunyi
  * - Komunitas Kecamatan: Tampilkan seluruh data Anak ATS di Kecamatan tersebut & tombol Validasi tersembunyi
  */
-export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
+export async function getDataAtsByKomunitas(
+  komunitasId: string,
+  options?: {
+    preloadedKomunitas?: any;
+    isAdminOrKader?: boolean;
+  }
+): Promise<{
   success: boolean;
   data: DataAtsItem[];
   canValidate: boolean;
@@ -1322,17 +1328,21 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
     }
 
     // 1. Ekstraksi informasi tingkat wilayah komunitas target (RT, RW, Kelurahan, Kecamatan)
-    let targetKomunitas: any = null;
-    const { data: dbKom } = await supabase
-      .from("komunitas")
-      .select("*")
-      .eq("id", toValidKomunitasUUID(komunitasId))
-      .maybeSingle();
+    let targetKomunitas: any = options?.preloadedKomunitas || null;
+    let dbKom: any = null;
+    if (!targetKomunitas) {
+      const { data } = await supabase
+        .from("komunitas")
+        .select("*")
+        .eq("id", toValidKomunitasUUID(komunitasId))
+        .maybeSingle();
+      dbKom = data;
 
-    if (dbKom) {
-      targetKomunitas = dbKom;
-    } else {
-      targetKomunitas = findOrGenerateKomunitasSeed(komunitasId);
+      if (dbKom) {
+        targetKomunitas = dbKom;
+      } else {
+        targetKomunitas = findOrGenerateKomunitasSeed(komunitasId);
+      }
     }
 
     const cleanNama = (targetKomunitas?.nama || "").toLowerCase().trim();
@@ -1388,7 +1398,10 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
     );
     const isPosBerjenjang =
       isPosyanduCommunity &&
-      (isKomunitasBerjenjangPosyandu(targetKomunitas) || isKomunitasBerjenjangPosyandu(komunitasId));
+      (isKomunitasBerjenjangPosyandu(targetKomunitas) ||
+        isKomunitasBerjenjangPosyandu(komunitasId) ||
+        (targetKomunitas?.nama || "").toLowerCase().includes("komunitas posyandu") ||
+        (targetKomunitas?.nama_komunitas || "").toLowerCase().includes("komunitas posyandu"));
 
     canValidate =
       isSuperAdmin ||
@@ -1413,11 +1426,17 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
     // 3. Query data ATS dari data_anak dengan filter wilayah target
     const validKomId = toValidKomunitasUUID(komunitasId);
     const targetKel =
-      meta.rawKel && meta.rawKel !== "semua" && meta.rawKel !== "Semua Kelurahan"
+      meta.rawKel &&
+      meta.rawKel !== "semua" &&
+      meta.rawKel !== "Semua Kelurahan" &&
+      normalizeWilayah(meta.rawKel) !== "semua kelurahan"
         ? meta.rawKel
         : null;
     const targetKec =
-      meta.rawKec && meta.rawKec !== "semua" && meta.rawKec !== "Kota Tegal"
+      meta.rawKec &&
+      meta.rawKec !== "semua" &&
+      meta.rawKec !== "Kota Tegal" &&
+      normalizeWilayah(meta.rawKec) !== "kota tegal"
         ? meta.rawKec
         : null;
 
@@ -1579,10 +1598,22 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
         const itemRw = normalizeRtRwNum(item.rw);
         const itemRt = normalizeRtRwNum(item.rt);
 
-        const targetKec = normalizeWilayah(meta.rawKec);
-        const targetKel = normalizeWilayah(meta.rawKel);
-        const targetRw = normalizeRtRwNum(meta.rawRw);
-        const targetRt = normalizeRtRwNum(meta.rawRt);
+        const filterTargetKec =
+          meta.rawKec &&
+          meta.rawKec !== "semua" &&
+          meta.rawKec !== "Kota Tegal" &&
+          normalizeWilayah(meta.rawKec) !== "kota tegal"
+            ? normalizeWilayah(meta.rawKec)
+            : null;
+        const filterTargetKel =
+          meta.rawKel &&
+          meta.rawKel !== "semua" &&
+          meta.rawKel !== "Semua Kelurahan" &&
+          normalizeWilayah(meta.rawKel) !== "semua kelurahan"
+            ? normalizeWilayah(meta.rawKel)
+            : null;
+        const filterTargetRw = normalizeRtRwNum(meta.rawRw);
+        const filterTargetRt = normalizeRtRwNum(meta.rawRt);
 
         const rawItemRw = (item.rw || "").trim().toLowerCase();
         const rawItemRt = (item.rt || "").trim().toLowerCase();
@@ -1684,33 +1715,35 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
         if (meta.jenis === "posyandu" || targetKomunitas?.jenis === "posyandu") {
           const isPosBerjenjangItem =
             isKomunitasBerjenjangPosyandu(targetKomunitas) ||
-            isKomunitasBerjenjangPosyandu(komunitasId);
+            isKomunitasBerjenjangPosyandu(komunitasId) ||
+            (targetKomunitas?.nama || "").toLowerCase().includes("komunitas posyandu") ||
+            (targetKomunitas?.nama_komunitas || "").toLowerCase().includes("komunitas posyandu");
 
           if (isPosBerjenjangItem) {
             // Posyandu Berjenjang Tingkat Kota: loloskan semua ATS Kota Tegal
-            if (!targetKel && !targetKec) return true;
+            if (!filterTargetKel && !filterTargetKec) return true;
             // Posyandu Berjenjang Tingkat Kecamatan: cocokkan kecamatan
-            if (targetKec && !targetKel) {
-              return Boolean(!itemKec || itemKec === targetKec || itemKec.includes(targetKec) || targetKec.includes(itemKec));
+            if (filterTargetKec && !filterTargetKel) {
+              return Boolean(!itemKec || itemKec === filterTargetKec || itemKec.includes(filterTargetKec) || filterTargetKec.includes(itemKec));
             }
             // Posyandu Berjenjang Tingkat Kelurahan: cocokkan kelurahan
-            if (targetKel) {
-              return Boolean(!itemKel || itemKel === targetKel || itemKel.includes(targetKel) || targetKel.includes(itemKel));
+            if (filterTargetKel) {
+              return Boolean(!itemKel || itemKel === filterTargetKel || itemKel.includes(filterTargetKel) || filterTargetKel.includes(itemKel));
             }
             return true;
           }
 
           const matchKel =
-            !targetKel ||
-            itemKel === targetKel ||
-            itemKel.includes(targetKel) ||
-            targetKel.includes(itemKel);
+            !filterTargetKel ||
+            itemKel === filterTargetKel ||
+            (Boolean(filterTargetKel) &&
+              (itemKel.includes(filterTargetKel!) || filterTargetKel!.includes(itemKel)));
           const matchKec =
-            !targetKec ||
+            !filterTargetKec ||
             !itemKec ||
-            itemKec === targetKec ||
-            itemKec.includes(targetKec) ||
-            targetKec.includes(itemKec);
+            itemKec === filterTargetKec ||
+            (Boolean(filterTargetKec) &&
+              (itemKec.includes(filterTargetKec!) || filterTargetKec!.includes(itemKec)));
 
           if (!matchKel || !matchKec) return false;
 
@@ -1720,7 +1753,7 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
           }
 
           const cakupan = getPosyanduCakupanWilayah(targetKomunitas);
-          const posyanduRw = cakupan?.rw || getPosyanduCakupanRw(targetKomunitas) || targetRw;
+          const posyanduRw = cakupan?.rw || getPosyanduCakupanRw(targetKomunitas) || filterTargetRw;
           const normPosyanduRw = normalizeRtRwNum(posyanduRw);
 
           if (cakupan?.rwList && cakupan.rwList.length > 0) {
@@ -1741,7 +1774,14 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
             }
             return true;
           } else if (posyanduRw) {
-            if (itemRw !== posyanduRw && itemRw !== normPosyanduRw) return false;
+            let rwMatch = false;
+            if (posyanduRw.includes("&") || posyanduRw.includes(",")) {
+              const rws = posyanduRw.split(/[&,]+/).map((r) => normalizeRtRwNum(r.trim())).filter(Boolean);
+              rwMatch = Boolean(itemRw && rws.includes(itemRw));
+            } else {
+              rwMatch = Boolean(itemRw === posyanduRw || itemRw === normPosyanduRw);
+            }
+            if (!rwMatch) return false;
             // Jika RT Belum Tahu, tetap lolos ke Posyandu yang sesuai RW tersebut
             if (isRtBelumTahu || !itemRt) return true;
             // Jika RW 08 (Posyandu Berlian Krandon), loloskan semua RT
@@ -1761,17 +1801,17 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
         // 1. Komunitas RT: Tampilkan data jika RT cocok, ATAU jika RW/RT Belum Tahu di Kelurahan yang sama
         if (meta.hasRt && meta.hasRw) {
           const matchKel =
-            !targetKel ||
+            !filterTargetKel ||
             !itemKel ||
-            itemKel === targetKel ||
-            itemKel.includes(targetKel) ||
-            targetKel.includes(itemKel);
+            itemKel === filterTargetKel ||
+            (Boolean(filterTargetKel) &&
+              (itemKel.includes(filterTargetKel!) || filterTargetKel!.includes(itemKel)));
           const matchKec =
-            !targetKec ||
+            !filterTargetKec ||
             !itemKec ||
-            itemKec === targetKec ||
-            itemKec.includes(targetKec) ||
-            targetKec.includes(itemKec);
+            itemKec === filterTargetKec ||
+            (Boolean(filterTargetKec) &&
+              (itemKec.includes(filterTargetKec!) || filterTargetKec!.includes(itemKec)));
 
           if (!matchKel || !matchKec) return false;
 
@@ -1781,7 +1821,7 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
           }
 
           // Jika RW spesifik tetapi tidak sama dengan RW komunitas ini, jangan tampilkan
-          if (itemRw !== targetRw) {
+          if (itemRw !== filterTargetRw) {
             return false;
           }
 
@@ -1791,23 +1831,23 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
           }
 
           // Jika RW sama dan RT spesifik, hanya tampilkan jika RT sama persis
-          return itemRt === targetRt;
+          return itemRt === filterTargetRt;
         }
 
         // 2. Komunitas RW: Tampilkan data jika RW cocok, ATAU jika RW Belum Tahu di Kelurahan yang sama
         if (meta.hasRw && !meta.hasRt) {
           const matchKel =
-            !targetKel ||
+            !filterTargetKel ||
             !itemKel ||
-            itemKel === targetKel ||
-            itemKel.includes(targetKel) ||
-            targetKel.includes(itemKel);
+            itemKel === filterTargetKel ||
+            (Boolean(filterTargetKel) &&
+              (itemKel.includes(filterTargetKel!) || filterTargetKel!.includes(itemKel)));
           const matchKec =
-            !targetKec ||
+            !filterTargetKec ||
             !itemKec ||
-            itemKec === targetKec ||
-            itemKec.includes(targetKec) ||
-            targetKec.includes(itemKec);
+            itemKec === filterTargetKec ||
+            (Boolean(filterTargetKec) &&
+              (itemKec.includes(filterTargetKec!) || filterTargetKec!.includes(itemKec)));
 
           if (!matchKel || !matchKec) return false;
 
@@ -1817,31 +1857,34 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
           }
 
           // Hanya tampilkan jika RW sama persis
-          return itemRw === targetRw;
+          return itemRw === filterTargetRw;
         }
 
         // 3. Komunitas Kelurahan: Tampilkan seluruh data Anak ATS di Kelurahan tersebut
         if (meta.hasKel && !meta.hasRw && !meta.hasRt) {
           const matchKel =
-            itemKel === targetKel ||
-            itemKel.includes(targetKel) ||
-            targetKel.includes(itemKel);
+            Boolean(
+              filterTargetKel &&
+                (itemKel === filterTargetKel ||
+                  itemKel.includes(filterTargetKel) ||
+                  filterTargetKel.includes(itemKel))
+            );
           const matchKec =
-            !targetKec ||
+            !filterTargetKec ||
             !itemKec ||
-            itemKec === targetKec ||
-            itemKec.includes(targetKec) ||
-            targetKec.includes(itemKec);
+            itemKec === filterTargetKec ||
+            (Boolean(filterTargetKec) &&
+              (itemKec.includes(filterTargetKec!) || filterTargetKec!.includes(itemKec)));
 
-          return matchKel && matchKec;
+          return Boolean(matchKel && matchKec);
         }
 
         // 4. Komunitas Kecamatan: Tampilkan data Anak ATS di Kecamatan tersebut
-        if (targetKec && targetKec !== "kota tegal" && targetKec !== "semua") {
+        if (filterTargetKec && filterTargetKec !== "kota tegal" && filterTargetKec !== "semua") {
           return (
-            itemKec === targetKec ||
-            itemKec.includes(targetKec) ||
-            targetKec.includes(itemKec)
+            itemKec === filterTargetKec ||
+            itemKec.includes(filterTargetKec) ||
+            filterTargetKec.includes(itemKec)
           );
         }
 

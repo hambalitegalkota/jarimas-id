@@ -81,8 +81,14 @@ export default async function KomunitasDetailPage({
     notFound();
   }
 
-  const isBerjenjang = isAnyKomunitasBerjenjang(id) || isAnyKomunitasBerjenjang(komunitas.id);
-  const isBerjenjangPos = isKomunitasBerjenjangPosyandu(id) || isKomunitasBerjenjangPosyandu(komunitas.id);
+  const isBerjenjang =
+    isAnyKomunitasBerjenjang(id) ||
+    isAnyKomunitasBerjenjang(komunitas.id) ||
+    isAnyKomunitasBerjenjang(komunitas);
+  const isBerjenjangPos =
+    isKomunitasBerjenjangPosyandu(id) ||
+    isKomunitasBerjenjangPosyandu(komunitas.id) ||
+    isKomunitasBerjenjangPosyandu(komunitas);
   const { canShowDataAnak: canShowDataAnakRaw, canShowDataAts: canShowDataAtsRaw } = getKomunitasFeatureCards(komunitas);
   // Komunitas Posyandu Berjenjang menampilkan Tab Data Anak dan Tab Data ATS
   const canShowDataAnak = isBerjenjangPos ? true : (isBerjenjang ? false : canShowDataAnakRaw);
@@ -140,7 +146,10 @@ export default async function KomunitasDetailPage({
           userRole: "Pengunjung",
         }),
     canShowDataAts && !isRekapOnlyTier
-      ? getDataAtsByKomunitas(id)
+      ? getDataAtsByKomunitas(id, {
+          preloadedKomunitas: komunitas,
+          isAdminOrKader,
+        })
       : Promise.resolve({
           success: true,
           data: [],

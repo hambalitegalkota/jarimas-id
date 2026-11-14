@@ -222,6 +222,8 @@ export function KomunitasDetailClientView({
     (Boolean(berjenjangSummary?.isBerjenjang) ||
       isKomunitasBerjenjangPosyandu(komunitasData.id) ||
       isKomunitasBerjenjangPosyandu(komunitas.id) ||
+      isKomunitasBerjenjangPosyandu(komunitasData) ||
+      isKomunitasBerjenjangPosyandu(komunitas) ||
       (komunitasData.nama || "").toLowerCase().includes("komunitas posyandu") ||
       (typeof komunitasData.id === "string" && komunitasData.id.startsWith("kom-posyandu-")));
 
