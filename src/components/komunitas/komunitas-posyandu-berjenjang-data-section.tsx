@@ -37,6 +37,7 @@ import {
   getPosyanduCoverageDisplay,
   getPosyanduCakupanWilayah,
   isDataAnakMatchingKomunitas,
+  normalizeWilayah,
 } from "@/lib/data-anak-helpers";
 import { extractKomunitasMetadata } from "@/lib/admin-helpers";
 
@@ -147,8 +148,8 @@ export function KomunitasPosyanduBerjenjangDataSection({
     });
   }, [allPosyandusInScope, selectedKecamatan, selectedKelurahan, pemetaanFilter]);
 
-  // Pemetaan Posyandu dan Agregasi Anak & ATS
-  const posyanduDataMap = useMemo(() => {
+  // Pemetaan Posyandu dan Agregasi Anak & ATS secara Terindeks O(N) Super Cepat
+  const { posyanduDataMap, childBadgeMap, atsBadgeMap } = useMemo(() => {
     const map = new Map<
       string,
       {
@@ -164,60 +165,45 @@ export function KomunitasPosyanduBerjenjangDataSection({
       }
     >();
 
+    const childBadgeMap = new Map<
+      string,
+      {
+        nama: string;
+        coverage: string;
+        isMapped: boolean;
+        id: string | null;
+      }
+    >();
+
+    const atsBadgeMap = new Map<
+      string,
+      {
+        nama: string;
+        coverage: string;
+        isMapped: boolean;
+        id: string | null;
+      }
+    >();
+
+    // 1. Inisialisasi seluruh posyandu dan indeks berdasarkan nama kelurahan
+    const posyandusByKelurahan = new Map<
+      string,
+      Array<{
+        posyandu: any;
+        meta: any;
+        cov: any;
+        cakupan: any;
+        pKel: string;
+        pKec: string;
+      }>
+    >();
+
     allPosyandusInScope.forEach((p) => {
       const cov = getPosyanduCoverageDisplay(p);
       const meta = extractKomunitasMetadata(p);
-
-      // Saring anak usia dini (0-6 tahun) yang bernaung di posyandu ini
-      const matchedAnak = dataAnakList.filter((child) => {
-        return isDataAnakMatchingKomunitas(child, p, meta, p.id);
-      });
-
-      // Saring kasus ATS yang bernaung di posyandu ini
-      const pKel = (p.kelurahan || "").toLowerCase().trim();
-      const pKec = (findKecamatanByKelurahan(p.kelurahan) || p.kecamatan || "").toLowerCase().trim();
       const cakupan = getPosyanduCakupanWilayah(p);
-
-      const matchedAts = dataAtsList.filter((ats) => {
-        const atsKel = (ats.kelurahan || "").toLowerCase().trim();
-        const atsKec = (ats.kecamatan || "").toLowerCase().trim();
-        if (atsKel && pKel && atsKel !== pKel && !atsKel.includes(pKel) && !pKel.includes(atsKel)) {
-          return false;
-        }
-        if (atsKec && pKec && atsKec !== pKec && !atsKec.includes(pKec) && !pKec.includes(atsKec)) {
-          return false;
-        }
-
-        // Jika Posyandu terpetakan cakupan RW/RT-nya
-        if (cakupan?.rwList && cakupan.rwList.length > 0) {
-          const atsRw = (ats.rw || "").replace(/\D/g, "");
-          const isRwBelum = !atsRw || String(ats.rw).toLowerCase().includes("belum") || ats.rw === "0";
-          if (isRwBelum) return true;
-
-          const normRwList = cakupan.rwList.map((r) => String(parseInt(r, 10)));
-          const cleanAtsRw = String(parseInt(atsRw, 10));
-          if (!normRwList.includes(cleanAtsRw)) return false;
-
-          if (cakupan.rtList && cakupan.rtList.length > 0) {
-            const atsRt = (ats.rt || "").replace(/\D/g, "");
-            const isRtBelum = !atsRt || String(ats.rt).toLowerCase().includes("belum") || ats.rt === "0";
-            if (isRtBelum) return true;
-            const normRtList = cakupan.rtList.map((r) => String(parseInt(r, 10)));
-            const cleanAtsRt = String(parseInt(atsRt, 10));
-            return normRtList.includes(cleanAtsRt);
-          }
-          return true;
-        }
-
-        // Posyandu belum dipetakan: menampung seluruh kelurahan
-        return true;
-      });
-
-      const anakSekolah = matchedAnak.filter(
-        (c) => c.is_sekolah === true || (c.nama_sekolah && !c.nama_sekolah.toLowerCase().includes("belum"))
-      ).length;
-
-      const anakBelum = matchedAnak.length - anakSekolah;
+      const pKel = normalizeWilayah(p.kelurahan);
+      const pKec = normalizeWilayah(findKecamatanByKelurahan(p.kelurahan) || p.kecamatan || "");
 
       map.set(p.id, {
         posyandu: p,
@@ -225,14 +211,144 @@ export function KomunitasPosyanduBerjenjangDataSection({
         coverageLabel: cov.isMapped ? cov.label : "Cakupan Belum Dipetakan (Wilayah Kelurahan)",
         rwLabel: cov.rwLabel,
         rtLabel: cov.rtLabel,
-        anakList: matchedAnak,
-        atsList: matchedAts,
-        anakSekolahCount: anakSekolah,
-        anakBelumSekolahCount: anakBelum,
+        anakList: [],
+        atsList: [],
+        anakSekolahCount: 0,
+        anakBelumSekolahCount: 0,
+      });
+
+      if (!posyandusByKelurahan.has(pKel)) {
+        posyandusByKelurahan.set(pKel, []);
+      }
+      posyandusByKelurahan.get(pKel)!.push({
+        posyandu: p,
+        meta,
+        cov,
+        cakupan,
+        pKel,
+        pKec,
       });
     });
 
-    return map;
+    // 2. Loop Data Anak Usia Dini (Single-Pass O(N) dengan Kandidat Kelurahan Terindeks)
+    for (let i = 0; i < dataAnakList.length; i++) {
+      const child = dataAnakList[i];
+      const domKel = normalizeWilayah(child.domisili_kelurahan);
+      const kkKel = normalizeWilayah(child.kk_kelurahan);
+
+      const candsDom = domKel ? posyandusByKelurahan.get(domKel) : null;
+      const candsKk = kkKel && kkKel !== domKel ? posyandusByKelurahan.get(kkKel) : null;
+
+      let candidateList: Array<{
+        posyandu: any;
+        meta: any;
+        cov: any;
+        cakupan: any;
+        pKel: string;
+        pKec: string;
+      }> = [];
+
+      if (candsDom && candsKk) {
+        candidateList = [...candsDom, ...candsKk];
+      } else if (candsDom) {
+        candidateList = candsDom;
+      } else if (candsKk) {
+        candidateList = candsKk;
+      }
+
+      let badgeAssigned = false;
+
+      for (let j = 0; j < candidateList.length; j++) {
+        const item = candidateList[j];
+        if (isDataAnakMatchingKomunitas(child, item.posyandu, item.meta, item.posyandu.id)) {
+          const bucket = map.get(item.posyandu.id);
+          if (bucket) {
+            bucket.anakList.push(child);
+            const isSekolah =
+              child.is_sekolah === true ||
+              (child.nama_sekolah && !child.nama_sekolah.toLowerCase().includes("belum"));
+            if (isSekolah) {
+              bucket.anakSekolahCount++;
+            } else {
+              bucket.anakBelumSekolahCount++;
+            }
+
+            if (item.cov.isMapped && !badgeAssigned) {
+              childBadgeMap.set(child.id, {
+                nama: item.posyandu.nama,
+                coverage: item.cov.label,
+                isMapped: true,
+                id: item.posyandu.id,
+              });
+              badgeAssigned = true;
+            }
+          }
+        }
+      }
+    }
+
+    // 3. Loop Data ATS (Single-Pass O(ATS) dengan Kandidat Kelurahan Terindeks)
+    for (let i = 0; i < dataAtsList.length; i++) {
+      const ats = dataAtsList[i];
+      const atsKel = normalizeWilayah(ats.kelurahan);
+      const atsKec = normalizeWilayah(ats.kecamatan);
+      const candidateList = atsKel ? posyandusByKelurahan.get(atsKel) || [] : [];
+
+      let badgeAssigned = false;
+
+      for (let j = 0; j < candidateList.length; j++) {
+        const item = candidateList[j];
+        const p = item.posyandu;
+        const cakupan = item.cakupan;
+
+        let matches = true;
+        if (item.pKec && atsKec && !item.pKec.includes(atsKec) && !atsKec.includes(item.pKec)) {
+          matches = false;
+        }
+
+        if (matches) {
+          if (cakupan?.rwList && cakupan.rwList.length > 0) {
+            const atsRw = (ats.rw || "").replace(/\D/g, "");
+            const isRwBelum = !atsRw || String(ats.rw).toLowerCase().includes("belum") || ats.rw === "0";
+            if (!isRwBelum) {
+              const normRwList = cakupan.rwList.map((r: string) => String(parseInt(r, 10)));
+              const cleanAtsRw = String(parseInt(atsRw, 10));
+              if (!normRwList.includes(cleanAtsRw)) {
+                matches = false;
+              } else if (cakupan.rtList && cakupan.rtList.length > 0) {
+                const atsRt = (ats.rt || "").replace(/\D/g, "");
+                const isRtBelum = !atsRt || String(ats.rt).toLowerCase().includes("belum") || ats.rt === "0";
+                if (!isRtBelum) {
+                  const normRtList = cakupan.rtList.map((r: string) => String(parseInt(r, 10)));
+                  const cleanAtsRt = String(parseInt(atsRt, 10));
+                  if (!normRtList.includes(cleanAtsRt)) {
+                    matches = false;
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        if (matches) {
+          const bucket = map.get(p.id);
+          if (bucket) {
+            bucket.atsList.push(ats);
+            if (item.cov.isMapped && !badgeAssigned) {
+              atsBadgeMap.set(ats.id, {
+                nama: p.nama,
+                coverage: item.cov.label,
+                isMapped: true,
+                id: p.id,
+              });
+              badgeAssigned = true;
+            }
+          }
+        }
+      }
+    }
+
+    return { posyanduDataMap: map, childBadgeMap, atsBadgeMap };
   }, [allPosyandusInScope, dataAnakList, dataAtsList]);
 
   // Hitung total posyandu terpetakan vs belum dipetakan dalam cakupan
@@ -413,18 +529,10 @@ export function KomunitasPosyanduBerjenjangDataSection({
     return filteredDataAts.slice(0, visibleCount);
   }, [filteredDataAts, visibleCount]);
 
-  // Cari nama posyandu tempat bernaung untuk kartu anak
+  // Cari nama posyandu tempat bernaung untuk kartu anak (O(1) Instant Lookup)
   const findChildPosyanduBadge = (child: DataAnakItem) => {
-    for (const [posId, info] of posyanduDataMap.entries()) {
-      if (info.isMapped && info.anakList.some((c) => c.id === child.id)) {
-        return {
-          nama: info.posyandu.nama,
-          coverage: info.coverageLabel,
-          isMapped: true,
-          id: posId,
-        };
-      }
-    }
+    const cached = childBadgeMap.get(child.id);
+    if (cached) return cached;
     // Jika belum bernaung di posyandu terpetakan
     const kel = child.domisili_kelurahan || child.kk_kelurahan || "Kelurahan";
     return {
@@ -436,16 +544,8 @@ export function KomunitasPosyanduBerjenjangDataSection({
   };
 
   const findAtsPosyanduBadge = (ats: DataAtsItem) => {
-    for (const [posId, info] of posyanduDataMap.entries()) {
-      if (info.isMapped && info.atsList.some((a) => a.id === ats.id)) {
-        return {
-          nama: info.posyandu.nama,
-          coverage: info.coverageLabel,
-          isMapped: true,
-          id: posId,
-        };
-      }
-    }
+    const cached = atsBadgeMap.get(ats.id);
+    if (cached) return cached;
     const kel = ats.kelurahan || "Kelurahan";
     return {
       nama: `Posyandu di Kel. ${kel}`,

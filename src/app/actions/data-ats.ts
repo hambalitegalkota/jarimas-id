@@ -39,8 +39,19 @@ import { checkIsPkbmOrSkb } from "@/lib/ats-helpers";
 import { invalidateRekapDataAtsCache } from "@/app/actions/rekap-data-ats";
 import { invalidateRekapDataAnakCache } from "@/app/actions/rekap-data-anak";
 
+let cachedTegalCityDataAts: {
+  timestamp: number;
+  data: any[];
+} | null = null;
+const CACHE_TEGAL_CITY_ATS_TTL_MS = 60 * 1000; // 60 detik
+
+export async function invalidateTegalCityDataAtsCache() {
+  cachedTegalCityDataAts = null;
+}
+
 async function triggerAtsCacheInvalidation() {
   try {
+    cachedTegalCityDataAts = null;
     await Promise.allSettled([
       invalidateRekapDataAtsCache(),
       invalidateRekapDataAnakCache(),
@@ -1413,46 +1424,61 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
     const queryLimit = isPkbmOrSkb || (isPosBerjenjang && !targetKel && !targetKec) ? 2500 : isPosBerjenjang ? 1000 : 150;
     let dbChildren: any[] | null = null;
     try {
-      let atsQuery = supabase
-        .from("data_anak")
-        .select(`
-          id,
-          nama_lengkap,
-          tanggal_lahir,
-          jenis_kelamin,
-          nama_orangtua,
-          nomor_hp,
-          tinggal_bersama,
-          jarak_rumah_km,
-          is_sekolah,
-          nama_sekolah,
-          alasan_sekolah,
-          komunitas_id,
-          status_approval,
-          validated_by,
-          validated_at,
-          created_by,
-          created_at
-        `)
-        .or("is_sekolah.eq.false,is_sekolah.is.null,nama_sekolah.ilike.%ATS%,alasan_sekolah.ilike.%KEINGINAN%")
-        .order("created_at", { ascending: false });
-
-      if (isPkbmOrSkb || (isPosBerjenjang && !targetKel && !targetKec)) {
-        // Untuk PKBM, SKB dan Posyandu Berjenjang Tingkat Kota: Ambil seluruh Data ATS se-Kota Tegal
-      } else if (targetKel) {
-        atsQuery = atsQuery.or(`komunitas_id.eq.${validKomId},alasan_sekolah.ilike.%${targetKel}%`);
-      } else if (targetKec) {
-        atsQuery = atsQuery.or(`komunitas_id.eq.${validKomId},alasan_sekolah.ilike.%${targetKec}%`);
+      if (
+        (isPkbmOrSkb || (isPosBerjenjang && !targetKel && !targetKec)) &&
+        cachedTegalCityDataAts &&
+        Date.now() - cachedTegalCityDataAts.timestamp < CACHE_TEGAL_CITY_ATS_TTL_MS &&
+        cachedTegalCityDataAts.data.length > 0
+      ) {
+        dbChildren = cachedTegalCityDataAts.data;
       } else {
-        atsQuery = atsQuery.eq("komunitas_id", validKomId);
-      }
+        let atsQuery = supabase
+          .from("data_anak")
+          .select(`
+            id,
+            nama_lengkap,
+            tanggal_lahir,
+            jenis_kelamin,
+            nama_orangtua,
+            nomor_hp,
+            tinggal_bersama,
+            jarak_rumah_km,
+            is_sekolah,
+            nama_sekolah,
+            alasan_sekolah,
+            komunitas_id,
+            status_approval,
+            validated_by,
+            validated_at,
+            created_by,
+            created_at
+          `)
+          .or("is_sekolah.eq.false,is_sekolah.is.null,nama_sekolah.ilike.%ATS%,alasan_sekolah.ilike.%KEINGINAN%")
+          .order("created_at", { ascending: false });
 
-      const { data, error: childError } = await atsQuery.limit(queryLimit);
+        if (isPkbmOrSkb || (isPosBerjenjang && !targetKel && !targetKec)) {
+          // Untuk PKBM, SKB dan Posyandu Berjenjang Tingkat Kota: Ambil seluruh Data ATS se-Kota Tegal
+        } else if (targetKel) {
+          atsQuery = atsQuery.or(`komunitas_id.eq.${validKomId},alasan_sekolah.ilike.%${targetKel}%`);
+        } else if (targetKec) {
+          atsQuery = atsQuery.or(`komunitas_id.eq.${validKomId},alasan_sekolah.ilike.%${targetKec}%`);
+        } else {
+          atsQuery = atsQuery.eq("komunitas_id", validKomId);
+        }
 
-      if (childError) {
-        console.warn("Query data_ats with relation error:", childError.message);
-      } else {
-        dbChildren = data;
+        const { data, error: childError } = await atsQuery.limit(queryLimit);
+
+        if (childError) {
+          console.warn("Query data_ats with relation error:", childError.message);
+        } else {
+          dbChildren = data;
+          if (isPkbmOrSkb || (isPosBerjenjang && !targetKel && !targetKec)) {
+            cachedTegalCityDataAts = {
+              timestamp: Date.now(),
+              data: data || [],
+            };
+          }
+        }
       }
     } catch (e) {
       console.warn("Exception querying data_anak with relation:", e);

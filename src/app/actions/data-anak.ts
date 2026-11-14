@@ -26,8 +26,19 @@ import type {
 import { invalidateRekapDataAnakCache } from "@/app/actions/rekap-data-anak";
 import { invalidateCekProgresCache } from "@/app/actions/cek-progres";
 
+let cachedTegalCityDataAnak: {
+  timestamp: number;
+  data: any[];
+} | null = null;
+const CACHE_TEGAL_CITY_TTL_MS = 60 * 1000; // 60 detik
+
+export async function invalidateTegalCityDataAnakCache() {
+  cachedTegalCityDataAnak = null;
+}
+
 async function triggerDataAnakCacheInvalidation() {
   try {
+    cachedTegalCityDataAnak = null;
     await Promise.allSettled([
       invalidateRekapDataAnakCache(),
       invalidateCekProgresCache(),
@@ -1004,24 +1015,37 @@ export async function getDataAnakByKomunitas(
         : null;
 
       if (isPosBerjenjangTarget && !targetKel && !targetKec) {
-        // Posyandu Berjenjang Tingkat Kota Tegal: Ambil seluruh data anak usia dini se-Kota Tegal secara paralel chunk
-        const CHUNK_SIZE = 1000;
-        const numChunks = 11;
-        const chunkPromises = [];
-        for (let i = 0; i < numChunks; i++) {
-          chunkPromises.push(
-            supabase
-              .from("data_anak")
-              .select(selectFields)
-              .neq("status_approval", "deleted")
-              .order("created_at", { ascending: false })
-              .range(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE - 1)
-          );
-        }
-        const chunkRes = await Promise.all(chunkPromises);
-        const allFetched = chunkRes.flatMap((r) => r.data || []);
-        if (allFetched.length > 0) {
-          dbChildren = allFetched;
+        // Cek in-memory cache untuk Posyandu Berjenjang Tingkat Kota Tegal
+        if (
+          cachedTegalCityDataAnak &&
+          Date.now() - cachedTegalCityDataAnak.timestamp < CACHE_TEGAL_CITY_TTL_MS &&
+          cachedTegalCityDataAnak.data.length > 0
+        ) {
+          dbChildren = cachedTegalCityDataAnak.data;
+        } else {
+          // Posyandu Berjenjang Tingkat Kota Tegal: Ambil seluruh data anak usia dini se-Kota Tegal secara paralel chunk
+          const CHUNK_SIZE = 1000;
+          const numChunks = 11;
+          const chunkPromises = [];
+          for (let i = 0; i < numChunks; i++) {
+            chunkPromises.push(
+              supabase
+                .from("data_anak")
+                .select(selectFields)
+                .neq("status_approval", "deleted")
+                .order("created_at", { ascending: false })
+                .range(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE - 1)
+            );
+          }
+          const chunkRes = await Promise.all(chunkPromises);
+          const allFetched = chunkRes.flatMap((r) => r.data || []);
+          if (allFetched.length > 0) {
+            dbChildren = allFetched;
+            cachedTegalCityDataAnak = {
+              timestamp: Date.now(),
+              data: allFetched,
+            };
+          }
         }
       } else if (isPosBerjenjangTarget && targetKec && !targetKel) {
         // Posyandu Berjenjang Tingkat Kecamatan: Ambil data anak di kecamatan secara paralel chunk
