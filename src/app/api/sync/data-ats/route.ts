@@ -272,7 +272,7 @@ export async function POST(req: NextRequest) {
       const targetRt = normalizeRtRwNum(item.rt);
 
       // Cari Komunitas Warga Kita yang paling cocok untuk ATS
-      let targetKomunitasId = "79c0e0c1-d8a9-41b8-8e0a-f9a5e581e703"; // Default Komunitas Warga Kota Tegal
+      let targetKomunitasId = "cb45f6c3-efbf-404c-8fba-4a39299b710f"; // Default Komunitas Warga Kota Tegal
 
       if (dbWargaKomunitas && dbWargaKomunitas.length > 0) {
         const normKel = normalizeWilayah(targetKelurahan);
@@ -290,7 +290,7 @@ export async function POST(req: NextRequest) {
         }
 
         // 2. Coba cocokkan tingkat RW jika belum cocok
-        if (targetKomunitasId === "79c0e0c1-d8a9-41b8-8e0a-f9a5e581e703" && targetRw) {
+        if (targetKomunitasId === "cb45f6c3-efbf-404c-8fba-4a39299b710f" && targetRw) {
           const matchRw = dbWargaKomunitas.find(
             (k: any) =>
               normalizeWilayah(k.kelurahan) === normKel &&
@@ -301,7 +301,7 @@ export async function POST(req: NextRequest) {
         }
 
         // 3. Cocokkan tingkat Kelurahan (rw is null, rt is null)
-        if (targetKomunitasId === "79c0e0c1-d8a9-41b8-8e0a-f9a5e581e703" && targetKelurahan) {
+        if (targetKomunitasId === "cb45f6c3-efbf-404c-8fba-4a39299b710f" && targetKelurahan) {
           const matchKel = dbWargaKomunitas.find(
             (k: any) =>
               normalizeWilayah(k.kelurahan) === normKel &&

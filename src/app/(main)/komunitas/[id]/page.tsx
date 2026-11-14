@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import {
   ArrowLeft,
   MapPin,
@@ -44,6 +44,7 @@ import { buildKomunitasScopedRekap } from "@/lib/komunitas-rekap-calculator";
 import { checkCanManageKomunitasAdminsAction } from "@/app/actions/admin";
 import { getRekapDataAtsAction } from "@/app/actions/rekap-data-ats";
 import { checkUserRekapAdminAccess } from "@/app/actions/rekap-data-anak";
+import { CANONICAL_COMMUNITY_REDIRECTS } from "@/lib/community-slugs";
 
 interface KomunitasDetailPageProps {
   params: Promise<{
@@ -60,6 +61,9 @@ export default async function KomunitasDetailPage({
   searchParams,
 }: KomunitasDetailPageProps) {
   const { id } = await params;
+  if (CANONICAL_COMMUNITY_REDIRECTS[id]) {
+    redirect(`/komunitas/${CANONICAL_COMMUNITY_REDIRECTS[id]}`);
+  }
   const { subtab, tab } = await searchParams;
   const currentSubtab = subtab || tab || null;
 

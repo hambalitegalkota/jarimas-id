@@ -6,6 +6,7 @@ import {
   RAW_POSYANDU_TEGAL,
   SEED_POSYANDU_TEGAL,
   INVALID_POSYANDU_IDS,
+  INVALID_WARGA_IDS,
   extractCorePosyanduName,
   BANDUNG_POSYANDU_MAP,
   KALINYAMAT_WETAN_POSYANDU_MAP,
@@ -279,10 +280,38 @@ function isInvalidDebongKidulWarga(item: { kelurahan?: string | null; rw?: strin
   return false;
 }
 
-function isInvalidWargaCommunity(item: { kelurahan?: string | null; rw?: string | null; rt?: string | null; nama?: string | null }): boolean {
-  if (isInvalidMargadanaWarga(item) || isInvalidDebongKidulWarga(item)) return true;
+function isInvalidWargaCommunity(item: { id?: string | null; kelurahan?: string | null; rw?: string | null; rt?: string | null; nama?: string | null; kecamatan?: string | null }): boolean {
+  if (item.id && INVALID_WARGA_IDS.includes(item.id)) return true;
 
   const kel = (item.kelurahan || "").trim();
+  const cleanKel = kel.toLowerCase().replace(/^(kelurahan|kel\.)\s+/i, "").trim();
+  const kec = (item.kecamatan || "").toLowerCase().trim();
+
+  // Pesurungan Kidul resmi berada di Kecamatan Tegal Barat, bukan Margadana
+  if (cleanKel.includes("pesurungan kidul") && kec.includes("margadana")) return true;
+
+  // Kalinyamat Kulon resmi berada di Kecamatan Margadana, bukan Tegal Selatan
+  if (cleanKel.includes("kalinyamat kulon") && kec.includes("selatan")) return true;
+
+  // Komunitas anomali yang berjudul 'Warga Kelurahan [Nama]' padahal memiliki kolom RT/RW
+  const namaTrim = (item.nama || "").trim().toLowerCase();
+  if (
+    namaTrim.startsWith("warga kelurahan") &&
+    !namaTrim.includes("rt") &&
+    !namaTrim.includes("rw")
+  ) {
+    const rawRwClean = (item.rw || "").toString().trim().toLowerCase();
+    const rawRtClean = (item.rt || "").toString().trim().toLowerCase();
+    if (
+      (rawRwClean && rawRwClean !== "belum tahu" && rawRwClean !== "semua" && rawRwClean !== "00") ||
+      (rawRtClean && rawRtClean !== "belum tahu" && rawRtClean !== "semua" && rawRtClean !== "00")
+    ) {
+      return true;
+    }
+  }
+
+  if (isInvalidMargadanaWarga(item) || isInvalidDebongKidulWarga(item)) return true;
+
   let rawRw = item.rw;
   let rawRt = item.rt;
 
@@ -314,7 +343,6 @@ function isInvalidWargaCommunity(item: { kelurahan?: string | null; rw?: string 
   if (!isValidKrandonRtRw(kel, rawRw, rawRt)) return true;
 
   // 2. Validasi khusus Debong Lor (RW 1: 8 RT, RW 2: 5 RT, RW 3: 4 RT -> Max 3 RW)
-  const cleanKel = kel.toLowerCase().replace(/^(kelurahan|kel\.)\s+/i, "").trim();
   if (cleanKel === "debong lor") {
     if (rawRw && !String(rawRw).toLowerCase().includes("belum")) {
       const rwNum = parseInt(String(rawRw).replace(/\D/g, ""), 10);
@@ -711,7 +739,11 @@ export async function getKomunitasList(
 
     const { data: dbKomunitasRaw } = await dbKomunitasQuery;
 
-    const allInvalidIds = [...(INVALID_POSYANDU_IDS || []), ...(INVALID_PAUD_IDS || [])];
+    const allInvalidIds = [
+      ...(INVALID_POSYANDU_IDS || []),
+      ...(INVALID_PAUD_IDS || []),
+      ...(INVALID_WARGA_IDS || []),
+    ];
     const invalidIdsSet = new Set(allInvalidIds.map((id) => toValidUUID(id)));
     allInvalidIds.forEach((id) => invalidIdsSet.add(id));
 
@@ -1442,7 +1474,11 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
       // User tamu
     }
 
-    const allInvalidIds = [...(INVALID_POSYANDU_IDS || []), ...(INVALID_PAUD_IDS || [])];
+    const allInvalidIds = [
+      ...(INVALID_POSYANDU_IDS || []),
+      ...(INVALID_PAUD_IDS || []),
+      ...(INVALID_WARGA_IDS || []),
+    ];
     const invalidIdsSet = new Set(allInvalidIds.map((id) => toValidUUID(id)));
     allInvalidIds.forEach((id) => invalidIdsSet.add(id));
 
@@ -2441,7 +2477,11 @@ export async function getKomunitasBerjenjangMemberSummary(
 
     // 1. Kumpulkan daftar lembaga basis yang berada dalam cakupan wilayah ini
     let basisList: any[] = [];
-    const allInvalidIds = [...(INVALID_POSYANDU_IDS || []), ...(INVALID_PAUD_IDS || [])];
+    const allInvalidIds = [
+      ...(INVALID_POSYANDU_IDS || []),
+      ...(INVALID_PAUD_IDS || []),
+      ...(INVALID_WARGA_IDS || []),
+    ];
     const invalidIdsSet = new Set(allInvalidIds.map((id) => toValidUUID(id)));
     allInvalidIds.forEach((id) => invalidIdsSet.add(id));
 
@@ -4664,7 +4704,11 @@ export async function getKomunitasAuditSummaryAction(): Promise<{
     const adminClient = createAdminClient();
     const supabase = adminClient || (await createClient());
 
-    const allInvalidIds = [...(INVALID_POSYANDU_IDS || []), ...(INVALID_PAUD_IDS || [])];
+    const allInvalidIds = [
+      ...(INVALID_POSYANDU_IDS || []),
+      ...(INVALID_PAUD_IDS || []),
+      ...(INVALID_WARGA_IDS || []),
+    ];
     const invalidSet = new Set(allInvalidIds);
 
     // Query exact database items efficiently in 1 single lightweight query
@@ -4775,7 +4819,11 @@ export async function getKomunitasAdminListAction(params: GetKomunitasAdminListP
       .from("komunitas")
       .select("id, nama, jenis, kecamatan, kelurahan, rw, rt, lokasi, deskripsi, kontak, jadwal, created_at", { count: "estimated" });
 
-    const allInvalidIds = [...(INVALID_POSYANDU_IDS || []), ...(INVALID_PAUD_IDS || [])];
+    const allInvalidIds = [
+      ...(INVALID_POSYANDU_IDS || []),
+      ...(INVALID_PAUD_IDS || []),
+      ...(INVALID_WARGA_IDS || []),
+    ];
     const invalidSet = new Set(allInvalidIds);
 
     if (params.jenis && params.jenis !== "semua") {

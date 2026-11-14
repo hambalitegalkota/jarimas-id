@@ -196,7 +196,33 @@ function initializeSlugMaps() {
   slugToIdMap.set("kb-bina-anak-sholeh-bias-tt", biasPanggungId);
   slugToIdMap.set("kb-bina-iman-anak-sholeh-bias-tt", biasPanggungId);
   idToSlugMap.set(biasPanggungId, "kb-bina-anak-sholeh-bias-panggung");
+
+  // 5. Explicit mapping untuk slug Bandung RT 03 RW 04 dan Kelurahan Bandung
+  const rt03rw04BandungId = "e8f203be-a1d7-4477-8eea-cd7d31f2dcce";
+  const kelurahanBandungId = "9f2aa63a-53d9-47a6-81ec-f8c5bb6bbbc9";
+
+  slugToIdMap.set("rt-03-rw-04-bandung", rt03rw04BandungId);
+  idToSlugMap.set(rt03rw04BandungId, "rt-03-rw-04-bandung");
+  idToSlugMap.set("79c0e0c1-d8a9-41b8-8e0a-f9a5e581e703", "rt-03-rw-04-bandung");
+
+  slugToIdMap.set("kelurahan-bandung", kelurahanBandungId);
+  idToSlugMap.set(kelurahanBandungId, "kelurahan-bandung");
 }
+
+/**
+ * Pemetaan Pengalihan ID Komunitas Anomali / Duplikat ke ID Resmi (Canonical)
+ */
+export const CANONICAL_COMMUNITY_REDIRECTS: Record<string, string> = {
+  // Anomali RT 03 RW 04 Bandung (sebelumnya salah judul 'Warga Kelurahan Bandung')
+  "79c0e0c1-d8a9-41b8-8e0a-f9a5e581e703": "e8f203be-a1d7-4477-8eea-cd7d31f2dcce",
+  // Duplikasi Posyandu Kecamatan
+  "c334b071-ea9d-4340-84cf-2d583095aa7a": "c6189d8f-5cc2-4843-86a8-ae91e332e65c", // Margadana
+  "a5069904-747f-4318-8686-2af5f58c7414": "d31326ff-4fb9-4f2f-895e-abc9be006e7f", // Tegal Barat
+  "f7f6a707-ea26-4702-861c-0cfa0b3297a7": "f596cdcb-c354-424e-89a3-ceb10711c668", // Tegal Selatan
+  "adca4334-912b-40fa-8c70-179ad2ae3a6c": "68a40f1c-a475-4b4f-8cd0-3521c0cb3ea4", // Tegal Timur
+  // Kelurahan Kalinyamat Kulon anomali di Tegal Selatan dialihkan ke Margadana resmi
+  "ec243c90-1023-45c4-80bc-aa413edbc3f4": "12686d54-9eee-4025-8d47-8dc12952d0c4",
+};
 
 /**
  * Mencari ID Komunitas berdasarkan slug unik
@@ -205,6 +231,11 @@ function initializeSlugMaps() {
 export function resolveKomunitasIdBySlug(slug: string): string | null {
   if (!slug) return null;
   const cleanSlug = slug.toLowerCase().trim();
+
+  // 0. Cek pengalihan ID canonical
+  if (CANONICAL_COMMUNITY_REDIRECTS[cleanSlug]) {
+    return CANONICAL_COMMUNITY_REDIRECTS[cleanSlug];
+  }
 
   initializeSlugMaps();
 

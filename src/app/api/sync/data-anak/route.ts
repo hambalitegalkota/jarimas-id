@@ -277,7 +277,7 @@ export async function POST(req: NextRequest) {
       const targetKelurahan = paudLoc?.kelurahan || item.kelurahan || "Semua Kelurahan";
 
       // Cari Komunitas yang paling cocok: Prioritas utama Komunitas PAUD jika anak bersekolah
-      let targetKomunitasId = "79c0e0c1-d8a9-41b8-8e0a-f9a5e581e703"; // Default Komunitas
+      let targetKomunitasId = "cb45f6c3-efbf-404c-8fba-4a39299b710f"; // Default Komunitas Warga Kota Tegal
 
       if (isSekolah && dbPauds && dbPauds.length > 0) {
         const matchPaudKom = (dbPauds as any[]).find((k: any) =>
@@ -289,7 +289,7 @@ export async function POST(req: NextRequest) {
       }
 
       if (
-        targetKomunitasId === "79c0e0c1-d8a9-41b8-8e0a-f9a5e581e703" &&
+        targetKomunitasId === "cb45f6c3-efbf-404c-8fba-4a39299b710f" &&
         targetKelurahan !== "Semua Kelurahan" &&
         dbKelKomunitas &&
         dbKelKomunitas.length > 0

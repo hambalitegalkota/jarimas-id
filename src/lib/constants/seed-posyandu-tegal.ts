@@ -76,6 +76,27 @@ export const INVALID_POSYANDU_IDS = [
   "92230c5c-c934-4527-8ff0-a80520c5909b",
   "d7527926-042e-45a9-8509-c455f7653f1d",
   "391aff75-042e-45a9-807b-31bd4df2b630",
+
+  // Komunitas Posyandu Kecamatan Duplikat
+  "c334b071-ea9d-4340-84cf-2d583095aa7a", // Duplikat Posyandu Kec. Margadana
+  "a5069904-747f-4318-8686-2af5f58c7414", // Duplikat Posyandu Kec. Tegal Barat
+  "f7f6a707-ea26-4702-861c-0cfa0b3297a7", // Duplikat Posyandu Kec. Tegal Selatan
+  "adca4334-912b-40fa-8c70-179ad2ae3a6c", // Duplikat Posyandu Kec. Tegal Timur
+];
+
+/**
+ * Daftar ID Komunitas Warga Duplikat / Anomali yang Telah Dihapus
+ */
+export const INVALID_WARGA_IDS: string[] = [
+  "79c0e0c1-d8a9-41b8-8e0a-f9a5e581e703", // Duplikat Bandung RT 03 RW 04 anomali nama 'Warga Kelurahan Bandung'
+  "57fd21e3-fba0-4d44-8b40-d00135b83564", // Duplikat Debong Kidul RT 05 RW 01 anomali 'Warga Kelurahan Debong Kidul'
+  "490a35cf-bafb-42a7-817b-03813d15afb8", // Duplikat Debong Kulon RT 03 RW 04 anomali 'Warga Kelurahan Debong Kulon'
+  "137f1c1d-6827-4783-86bb-6fbdc778392c", // Duplikat Debong Tengah RT 05 RW 06 anomali 'Warga Kelurahan Debong Tengah'
+  "e2ec7341-6f14-48a0-89c2-73d10368059e", // Duplikat Kalinyamat Wetan RT 03 RW 01 anomali 'Warga Kelurahan Kalinyamat Wetan'
+  "31e8cd32-5776-4a2c-8552-127db1271f06", // Duplikat Keturen RT 03 RW 03 anomali 'Warga Kelurahan Keturen'
+  "1a751c90-16e5-41bc-82ff-97d9effae113", // Duplikat Randugunting RT 02 RW 10 anomali 'Warga Kelurahan Randugunting'
+  "fe22007a-f1a9-4ef6-8a96-5625f55ec725", // Duplikat Tunon RT 01 RW 01 anomali 'Warga Kelurahan Tunon'
+  "ec243c90-1023-45c4-80bc-aa413edbc3f4", // Duplikat Kalinyamat Kulon anomali di Kecamatan Tegal Selatan (resmi Margadana)
 ];
 
 // Data Lengkap 209 Posyandu Resmi se-Kota Tegal (4 Kecamatan, 27 Kelurahan)

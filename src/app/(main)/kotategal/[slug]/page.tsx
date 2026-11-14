@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import {
   getKomunitasDetail,
@@ -27,6 +27,7 @@ import { buildKomunitasScopedRekap } from "@/lib/komunitas-rekap-calculator";
 import { checkCanManageKomunitasAdminsAction } from "@/app/actions/admin";
 import { getRekapDataAtsAction } from "@/app/actions/rekap-data-ats";
 import { checkUserRekapAdminAccess } from "@/app/actions/rekap-data-anak";
+import { CANONICAL_COMMUNITY_REDIRECTS, getKomunitasSlug } from "@/lib/community-slugs";
 
 interface KotaTegalKomunitasPageProps {
   params: Promise<{
@@ -43,6 +44,10 @@ export default async function KotaTegalKomunitasPage({
   searchParams,
 }: KotaTegalKomunitasPageProps) {
   const { slug } = await params;
+  if (CANONICAL_COMMUNITY_REDIRECTS[slug]) {
+    const targetSlug = getKomunitasSlug(CANONICAL_COMMUNITY_REDIRECTS[slug]);
+    redirect(`/kotategal/${targetSlug}`);
+  }
   const { subtab, tab } = await searchParams;
   const currentSubtab = subtab || tab || null;
 
