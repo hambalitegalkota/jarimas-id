@@ -66,7 +66,7 @@ UPDATE public.pesan_grup
 SET komunitas_id = 'e8f203be-a1d7-4477-8eea-cd7d31f2dcce'::uuid
 WHERE komunitas_id = '79c0e0c1-d8a9-41b8-8e0a-f9a5e581e703'::uuid;
 
-UPDATE public.kabar
+UPDATE public.kabar_jarimas
 SET komunitas_id = 'e8f203be-a1d7-4477-8eea-cd7d31f2dcce'::uuid
 WHERE komunitas_id = '79c0e0c1-d8a9-41b8-8e0a-f9a5e581e703'::uuid;
 
@@ -101,7 +101,7 @@ UPDATE public.pesan_grup
 SET komunitas_id = '68a40f1c-a475-4b4f-8cd0-3521c0cb3ea4'::uuid
 WHERE komunitas_id = 'adca4334-912b-40fa-8c70-179ad2ae3a6c'::uuid;
 
-UPDATE public.kabar
+UPDATE public.kabar_jarimas
 SET komunitas_id = '68a40f1c-a475-4b4f-8cd0-3521c0cb3ea4'::uuid
 WHERE komunitas_id = 'adca4334-912b-40fa-8c70-179ad2ae3a6c'::uuid;
 
