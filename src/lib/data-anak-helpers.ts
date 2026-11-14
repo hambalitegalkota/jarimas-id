@@ -89,6 +89,55 @@ export function isDataAtsRecord(row: any): boolean {
 }
 
 /**
+ * Mengelompokkan data ATS ke dalam 3 kategori resmi:
+ * 1. "Belum Pernah Bersekolah"
+ * 2. "Drop Out" (Putus Sekolah)
+ * 3. "Lulus Tidak Melanjutkan"
+ */
+export function classifyAtsCategory(
+  jenjangAsal?: string | null,
+  alasan?: string | null,
+  namaSekolah?: string | null
+): "Belum Pernah Bersekolah" | "Drop Out" | "Lulus Tidak Melanjutkan" {
+  const text = `${jenjangAsal || ""} ${alasan || ""} ${namaSekolah || ""}`.toLowerCase();
+  if (text.includes("belum pernah") || text.includes("bpb")) {
+    return "Belum Pernah Bersekolah";
+  }
+  if (
+    text.includes("putus sekolah") ||
+    text.includes("drop out") ||
+    text.includes("/ do") ||
+    text.includes(" do")
+  ) {
+    return "Drop Out";
+  }
+  if (
+    text.includes("lulus tidak melanjutkan") ||
+    text.includes("ltm") ||
+    text.includes("tidak melanjutkan")
+  ) {
+    return "Lulus Tidak Melanjutkan";
+  }
+  return "Belum Pernah Bersekolah";
+}
+
+/**
+ * Menghitung usia numerik anak ATS berdasarkan tanggal lahir
+ */
+export function getNumericAgeAts(tanggalLahir?: string | null): number {
+  if (!tanggalLahir) return 0;
+  const birth = new Date(tanggalLahir);
+  if (isNaN(birth.getTime())) return 0;
+  const now = new Date();
+  let age = now.getFullYear() - birth.getFullYear();
+  const m = now.getMonth() - birth.getMonth();
+  if (m < 0 || (m === 0 && now.getDate() < birth.getDate())) {
+    age--;
+  }
+  return age >= 0 ? age : 0;
+}
+
+/**
  * Memeriksa apakah suatu komunitas berhak menyelenggarakan dan mengisikan data peserta didik PAUD aktif (sudah bersekolah).
  * Meliputi:
  * 1. Satuan PAUD Resmi (jenis === "satuan_paud")

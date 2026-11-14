@@ -9,6 +9,8 @@ import {
   normalizeKeinginanSekolah,
   serializeDataAtsAlasan,
   isDataAtsRecord,
+  classifyAtsCategory,
+  getNumericAgeAts,
   getPosyanduCakupanRw,
   getPosyanduCakupanWilayah,
   isValidBandungRtRw,
@@ -1394,14 +1396,24 @@ export async function getDataAtsByKomunitas(
         (targetKomunitas?.rt && targetKomunitas?.rw))
     );
     const isPosyanduCommunity = Boolean(
-      meta.jenis === "posyandu" || targetKomunitas?.jenis === "posyandu"
+      meta.jenis === "posyandu" ||
+      meta.jenis === "posyandu_ilp" ||
+      targetKomunitas?.jenis === "posyandu" ||
+      targetKomunitas?.jenis === "posyandu_ilp" ||
+      targetKomunitas?.jenis_komunitas === "posyandu" ||
+      targetKomunitas?.jenis_komunitas === "posyandu_ilp" ||
+      (targetKomunitas?.nama || "").toLowerCase().includes("posyandu") ||
+      (targetKomunitas?.nama_komunitas || "").toLowerCase().includes("posyandu") ||
+      isKomunitasBerjenjangPosyandu(targetKomunitas) ||
+      isKomunitasBerjenjangPosyandu(komunitasId)
     );
     const isPosBerjenjang =
       isPosyanduCommunity &&
       (isKomunitasBerjenjangPosyandu(targetKomunitas) ||
         isKomunitasBerjenjangPosyandu(komunitasId) ||
         (targetKomunitas?.nama || "").toLowerCase().includes("komunitas posyandu") ||
-        (targetKomunitas?.nama_komunitas || "").toLowerCase().includes("komunitas posyandu"));
+        (targetKomunitas?.nama_komunitas || "").toLowerCase().includes("komunitas posyandu") ||
+        (typeof komunitasId === "string" && komunitasId.toLowerCase().includes("kom-posyandu")));
 
     canValidate =
       isSuperAdmin ||
@@ -1475,12 +1487,14 @@ export async function getDataAtsByKomunitas(
           .or("is_sekolah.eq.false,is_sekolah.is.null,nama_sekolah.ilike.%ATS%,alasan_sekolah.ilike.%KEINGINAN%")
           .order("created_at", { ascending: false });
 
-        if (isPkbmOrSkb || (isPosBerjenjang && !targetKel && !targetKec)) {
+        if (isPkbmOrSkb || ((isPosyanduCommunity || isPosBerjenjang) && !targetKel && !targetKec)) {
           // Untuk PKBM, SKB dan Posyandu Berjenjang Tingkat Kota: Ambil seluruh Data ATS se-Kota Tegal
         } else if (targetKel) {
           atsQuery = atsQuery.or(`komunitas_id.eq.${validKomId},alasan_sekolah.ilike.%${targetKel}%`);
         } else if (targetKec) {
           atsQuery = atsQuery.or(`komunitas_id.eq.${validKomId},alasan_sekolah.ilike.%${targetKec}%`);
+        } else if (isPosyanduCommunity) {
+          // Untuk Posyandu yang belum diset kelurahan atau tingkat kota: Jangan potong datanya
         } else {
           atsQuery = atsQuery.eq("komunitas_id", validKomId);
         }
@@ -1528,12 +1542,14 @@ export async function getDataAtsByKomunitas(
         .or("is_sekolah.eq.false,is_sekolah.is.null,nama_sekolah.ilike.%ATS%,alasan_sekolah.ilike.%KEINGINAN%")
         .order("created_at", { ascending: false });
 
-      if (isPkbmOrSkb || (isPosBerjenjang && !targetKel && !targetKec)) {
+      if (isPkbmOrSkb || ((isPosyanduCommunity || isPosBerjenjang) && !targetKel && !targetKec)) {
         // Untuk PKBM, SKB dan Posyandu Berjenjang Tingkat Kota: Ambil seluruh Data ATS se-Kota Tegal
       } else if (targetKel) {
         fallbackQuery = fallbackQuery.or(`komunitas_id.eq.${validKomId},alasan_sekolah.ilike.%${targetKel}%`);
       } else if (targetKec) {
         fallbackQuery = fallbackQuery.or(`komunitas_id.eq.${validKomId},alasan_sekolah.ilike.%${targetKec}%`);
+      } else if (isPosyanduCommunity) {
+        // Untuk Posyandu yang belum diset kelurahan atau tingkat kota: Jangan potong datanya
       } else {
         fallbackQuery = fallbackQuery.eq("komunitas_id", validKomId);
       }
@@ -1562,11 +1578,15 @@ export async function getDataAtsByKomunitas(
           findOrGenerateKomunitasSeed(row.komunitas_id) ||
           { id: row.komunitas_id };
         const parsed = parseAtsDetails(row.alasan_sekolah, childKomObj);
+        const ageNum = getNumericAgeAts(row.tanggal_lahir);
+        const kategoriAts = classifyAtsCategory(parsed.jenjangAsal, parsed.alasan, row.nama_sekolah);
 
         return {
           id: row.id,
           nama_lengkap: row.nama_lengkap,
           tanggal_lahir: row.tanggal_lahir,
+          usia: String(ageNum),
+          kategori_ats: kategoriAts,
           jenis_kelamin: row.jenis_kelamin,
           nama_orangtua: row.nama_orangtua,
           nomor_hp: row.nomor_hp,
@@ -1712,10 +1732,18 @@ export async function getDataAtsByKomunitas(
         }
 
         // 0. Komunitas Posyandu: Tampilkan data Anak ATS yang sesuai cakupan wilayah Posyandu
-        if (meta.jenis === "posyandu" || targetKomunitas?.jenis === "posyandu") {
+        if (
+          meta.jenis === "posyandu" ||
+          meta.jenis === "posyandu_ilp" ||
+          targetKomunitas?.jenis === "posyandu" ||
+          targetKomunitas?.jenis === "posyandu_ilp" ||
+          isPosyanduCommunity
+        ) {
           const isPosBerjenjangItem =
+            isPosBerjenjang ||
             isKomunitasBerjenjangPosyandu(targetKomunitas) ||
             isKomunitasBerjenjangPosyandu(komunitasId) ||
+            isKomunitasBerjenjangPosyandu(validKomId) ||
             (targetKomunitas?.nama || "").toLowerCase().includes("komunitas posyandu") ||
             (targetKomunitas?.nama_komunitas || "").toLowerCase().includes("komunitas posyandu");
 

@@ -1047,9 +1047,9 @@ export function KomunitasDetailClientView({
               : `Pantau hasil pendataan kasus anak tidak sekolah ${tierLevelLabel}`,
             badgeText: isRekapOnlyTier
               ? "Data Rekapitulasi"
-              : isPkbmOrSkb
-              ? `${dataAtsState.length} Kasus ATS (Se-Kota Tegal)`
-              : `${dataAtsState.length} Kasus ATS`,
+              : isPkbmOrSkb || isBerjenjangPos
+              ? `${dataAtsState.length.toLocaleString("id-ID")} Kasus ATS (Se-Kota Tegal)`
+              : `${dataAtsState.length.toLocaleString("id-ID")} Kasus ATS`,
             icon: GraduationCap,
             hoverBorder: "hover:border-secondary/40",
             hoverBg: "hover:bg-secondary/10",
@@ -1649,7 +1649,7 @@ export function KomunitasDetailClientView({
                           : "bg-muted text-muted-foreground"
                       )}
                     >
-                      {dataAtsState.length}
+                      {dataAtsState.length.toLocaleString("id-ID")}
                     </span>
                   </button>
 
@@ -1932,7 +1932,7 @@ export function KomunitasDetailClientView({
                         : "bg-muted text-muted-foreground"
                     )}
                   >
-                    {dataAtsState.length}
+                    {dataAtsState.length.toLocaleString("id-ID")}
                   </span>
                 </button>
               )}

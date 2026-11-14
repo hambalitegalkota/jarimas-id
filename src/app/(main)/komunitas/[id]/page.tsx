@@ -88,7 +88,9 @@ export default async function KomunitasDetailPage({
   const isBerjenjangPos =
     isKomunitasBerjenjangPosyandu(id) ||
     isKomunitasBerjenjangPosyandu(komunitas.id) ||
-    isKomunitasBerjenjangPosyandu(komunitas);
+    isKomunitasBerjenjangPosyandu(komunitas) ||
+    (komunitas.nama || "").toLowerCase().includes("komunitas posyandu") ||
+    ((komunitas as any).nama_komunitas || "").toLowerCase().includes("komunitas posyandu");
   const { canShowDataAnak: canShowDataAnakRaw, canShowDataAts: canShowDataAtsRaw } = getKomunitasFeatureCards(komunitas);
   // Komunitas Posyandu Berjenjang menampilkan Tab Data Anak dan Tab Data ATS
   const canShowDataAnak = isBerjenjangPos ? true : (isBerjenjang ? false : canShowDataAnakRaw);

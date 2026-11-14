@@ -418,6 +418,7 @@ export interface DataAtsItem {
   nama_lengkap: string;
   tanggal_lahir: string;
   usia?: string;
+  kategori_ats?: "Belum Pernah Bersekolah" | "Drop Out" | "Lulus Tidak Melanjutkan" | string;
   jenis_kelamin: "L" | "P" | "Laki-laki" | "Perempuan" | string;
   nama_orangtua: string;
   nomor_hp: string;

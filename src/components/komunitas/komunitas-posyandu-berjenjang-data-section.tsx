@@ -39,6 +39,8 @@ import {
   getPosyanduCakupanRw,
   isDataAnakMatchingKomunitas,
   normalizeWilayah,
+  classifyAtsCategory,
+  getNumericAgeAts,
 } from "@/lib/data-anak-helpers";
 import { extractKomunitasMetadata } from "@/lib/admin-helpers";
 
@@ -92,6 +94,14 @@ export function KomunitasPosyanduBerjenjangDataSection({
 
   // State Filter Kategori (mode anak: semua vs bersekolah vs belum_bersekolah)
   const [statusSekolahFilter, setStatusSekolahFilter] = useState<"semua" | "bersekolah" | "belum_bersekolah">("semua");
+
+  // State Filter Kategori ATS (mode ats: semua vs Belum Pernah Bersekolah vs Drop Out vs Lulus Tidak Melanjutkan)
+  const [statusAtsFilter, setStatusAtsFilter] = useState<
+    "semua" | "Belum Pernah Bersekolah" | "Drop Out" | "Lulus Tidak Melanjutkan"
+  >("semua");
+
+  // State Filter Usia ATS Pertahun (6 s/d 18 Tahun, atau 19+)
+  const [selectedUsiaFilter, setSelectedUsiaFilter] = useState<number | "semua">("semua");
 
   // State Filter Pemetaan Posyandu (semua vs terpetakan vs belum_terpetakan)
   const [pemetaanFilter, setPemetaanFilter] = useState<"semua" | "terpetakan" | "belum_terpetakan">("semua");
@@ -505,6 +515,25 @@ export function KomunitasPosyanduBerjenjangDataSection({
       list = list.filter((a) => allowedAtsIds.has(a.id));
     }
 
+    // Filter Kategori ATS (Belum Pernah Bersekolah, Drop Out, Lulus Tidak Melanjutkan)
+    if (statusAtsFilter !== "semua") {
+      list = list.filter((a) => {
+        const kat = (a as any).kategori_ats || classifyAtsCategory(a.jenjang_asal, a.alasan_tidak_sekolah, a.sekolah_sebelumnya);
+        return kat.toLowerCase() === statusAtsFilter.toLowerCase();
+      });
+    }
+
+    // Filter Usia ATS Pertahun (6 - 18 Tahun, atau 19+)
+    if (selectedUsiaFilter !== "semua") {
+      list = list.filter((a) => {
+        const u = parseInt((a as any).usia || (a.tanggal_lahir ? String(getNumericAgeAts(a.tanggal_lahir)) : "0"), 10);
+        if (selectedUsiaFilter === 19) {
+          return u >= 19;
+        }
+        return u === selectedUsiaFilter;
+      });
+    }
+
     // Pencarian Teks
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
@@ -513,7 +542,14 @@ export function KomunitasPosyanduBerjenjangDataSection({
         const ortu = (a.nama_orangtua || "").toLowerCase();
         const alasan = (a.alasan_tidak_sekolah || "").toLowerCase();
         const kel = (a.kelurahan || "").toLowerCase();
-        return nama.includes(q) || ortu.includes(q) || alasan.includes(q) || kel.includes(q);
+        const kat = ((a as any).kategori_ats || "").toLowerCase();
+        return (
+          nama.includes(q) ||
+          ortu.includes(q) ||
+          alasan.includes(q) ||
+          kel.includes(q) ||
+          kat.includes(q)
+        );
       });
     }
 
@@ -526,7 +562,87 @@ export function KomunitasPosyanduBerjenjangDataSection({
     posyanduDataMap,
     pemetaanFilter,
     filteredPosyandus,
+    statusAtsFilter,
+    selectedUsiaFilter,
     searchQuery,
+  ]);
+
+  // Statistik ATS komprehensif (Scope Wilayah & Posyandu)
+  const atsStats = useMemo(() => {
+    let scopedList = dataAtsList;
+
+    if (selectedKecamatan !== "semua") {
+      const cleanKec = selectedKecamatan.toLowerCase().trim();
+      scopedList = scopedList.filter((a) => (a.kecamatan || "").toLowerCase().includes(cleanKec));
+    }
+
+    if (selectedKelurahan !== "semua") {
+      const cleanKel = selectedKelurahan.toLowerCase().trim();
+      scopedList = scopedList.filter((a) => (a.kelurahan || "").toLowerCase().includes(cleanKel));
+    }
+
+    if (selectedPosyanduId !== "semua") {
+      const targetPosInfo = posyanduDataMap.get(selectedPosyanduId);
+      if (targetPosInfo) scopedList = targetPosInfo.atsList;
+    } else if (pemetaanFilter !== "semua") {
+      const allowedAtsIds = new Set<string>();
+      filteredPosyandus.forEach((p) => {
+        const info = posyanduDataMap.get(p.id);
+        info?.atsList.forEach((a) => allowedAtsIds.add(a.id));
+      });
+      scopedList = scopedList.filter((a) => allowedAtsIds.has(a.id));
+    }
+
+    const totalScoped = scopedList.length;
+    let bpbCount = 0;
+    let doCount = 0;
+    let ltmCount = 0;
+
+    const ageMap: Record<number, number> = {};
+    for (let i = 6; i <= 19; i++) {
+      ageMap[i] = 0;
+    }
+
+    scopedList.forEach((a) => {
+      const kat = (a as any).kategori_ats || classifyAtsCategory(a.jenjang_asal, a.alasan_tidak_sekolah, a.sekolah_sebelumnya);
+      if (kat === "Belum Pernah Bersekolah") {
+        bpbCount++;
+      } else if (kat === "Drop Out") {
+        doCount++;
+      } else if (kat === "Lulus Tidak Melanjutkan") {
+        ltmCount++;
+      }
+
+      const u = parseInt((a as any).usia || (a.tanggal_lahir ? String(getNumericAgeAts(a.tanggal_lahir)) : "0"), 10);
+      if (u >= 6 && u <= 18) {
+        ageMap[u] = (ageMap[u] || 0) + 1;
+      } else if (u >= 19) {
+        ageMap[19] = (ageMap[19] || 0) + 1;
+      }
+    });
+
+    const pctBpb = totalScoped > 0 ? ((bpbCount / totalScoped) * 100).toFixed(1) : "0";
+    const pctDo = totalScoped > 0 ? ((doCount / totalScoped) * 100).toFixed(1) : "0";
+    const pctLtm = totalScoped > 0 ? ((ltmCount / totalScoped) * 100).toFixed(1) : "0";
+
+    return {
+      totalScoped,
+      bpbCount,
+      doCount,
+      ltmCount,
+      pctBpb,
+      pctDo,
+      pctLtm,
+      ageMap,
+    };
+  }, [
+    dataAtsList,
+    selectedKecamatan,
+    selectedKelurahan,
+    selectedPosyanduId,
+    pemetaanFilter,
+    filteredPosyandus,
+    posyanduDataMap,
   ]);
 
   // Statistik untuk Metrik
@@ -609,27 +725,27 @@ export function KomunitasPosyanduBerjenjangDataSection({
       </div>
 
       {/* 2. STATISTIK UTAMA (METRIC CARDS) */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5">
-        {/* Metric 1: Total Sasaran */}
-        <div className="rounded-xl border border-border bg-card p-3.5 sm:p-4 shadow-2xs space-y-1">
-          <div className="flex items-center justify-between">
-            <span className="text-2xs font-extrabold uppercase tracking-wider text-muted-foreground">
-              {mode === "anak" ? "Total Anak (0–6 Thn)" : "Total Kasus ATS"}
-            </span>
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10 text-primary">
-              {mode === "anak" ? <Baby className="h-4 w-4" /> : <GraduationCap className="h-4 w-4" />}
+      {mode === "anak" ? (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5">
+          {/* Metric 1: Total Sasaran */}
+          <div className="rounded-xl border border-border bg-card p-3.5 sm:p-4 shadow-2xs space-y-1">
+            <div className="flex items-center justify-between">
+              <span className="text-2xs font-extrabold uppercase tracking-wider text-muted-foreground">
+                Total Anak (0–6 Thn)
+              </span>
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <Baby className="h-4 w-4" />
+              </div>
             </div>
+            <div className="text-xl sm:text-2xl font-black text-foreground font-mono">
+              {stats.total.toLocaleString("id-ID")}
+            </div>
+            <p className="text-[11px] text-muted-foreground truncate">
+              Seluruh anak usia dini terdata
+            </p>
           </div>
-          <div className="text-xl sm:text-2xl font-black text-foreground font-mono">
-            {stats.total.toLocaleString("id-ID")}
-          </div>
-          <p className="text-[11px] text-muted-foreground truncate">
-            {mode === "anak" ? "Seluruh anak usia dini terdata" : "Kasus anak tidak sekolah"}
-          </p>
-        </div>
 
-        {/* Metric 2: Bersekolah di PAUD / Kelompok Umur ATS */}
-        {mode === "anak" ? (
+          {/* Metric 2: Bersekolah di PAUD */}
           <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-3.5 sm:p-4 shadow-2xs space-y-1">
             <div className="flex items-center justify-between">
               <span className="text-2xs font-extrabold uppercase tracking-wider text-emerald-800 dark:text-emerald-300">
@@ -646,28 +762,8 @@ export function KomunitasPosyanduBerjenjangDataSection({
               {stats.pctSekolah}% dari total anak
             </p>
           </div>
-        ) : (
-          <div className="rounded-xl border border-secondary/30 bg-secondary/5 p-3.5 sm:p-4 shadow-2xs space-y-1">
-            <div className="flex items-center justify-between">
-              <span className="text-2xs font-extrabold uppercase tracking-wider text-secondary">
-                Kelompok Usia SD (7–12)
-              </span>
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-secondary/15 text-secondary">
-                <Users className="h-4 w-4" />
-              </div>
-            </div>
-            <div className="text-xl sm:text-2xl font-black text-foreground font-mono">
-              {filteredDataAts.filter((a) => {
-                const us = parseInt((a as any).usia || "0", 10);
-                return us >= 7 && us <= 12;
-              }).length}
-            </div>
-            <p className="text-[11px] text-muted-foreground truncate">Usia wajib pendidikan dasar</p>
-          </div>
-        )}
 
-        {/* Metric 3: Belum Bersekolah / Kelompok Usia SMP-SMA */}
-        {mode === "anak" ? (
+          {/* Metric 3: Belum Bersekolah */}
           <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-3.5 sm:p-4 shadow-2xs space-y-1">
             <div className="flex items-center justify-between">
               <span className="text-2xs font-extrabold uppercase tracking-wider text-amber-800 dark:text-amber-300">
@@ -684,48 +780,188 @@ export function KomunitasPosyanduBerjenjangDataSection({
               {stats.pctBelum}% balita / belum PAUD
             </p>
           </div>
-        ) : (
-          <div className="rounded-xl border border-secondary/30 bg-secondary/5 p-3.5 sm:p-4 shadow-2xs space-y-1">
+
+          {/* Metric 4: Status Posyandu Terpetakan vs Belum Dipetakan */}
+          <div className="rounded-xl border border-border bg-card p-3.5 sm:p-4 shadow-2xs space-y-1">
             <div className="flex items-center justify-between">
-              <span className="text-2xs font-extrabold uppercase tracking-wider text-secondary">
-                Usia SMP &amp; SMA (13–18)
+              <span className="text-2xs font-extrabold uppercase tracking-wider text-muted-foreground">
+                Posyandu Terpetakan
+              </span>
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-teal-500/10 text-teal-700 dark:text-teal-300">
+                <Layers className="h-4 w-4" />
+              </div>
+            </div>
+            <div className="text-xl sm:text-2xl font-black text-foreground font-mono">
+              <span className="text-emerald-700 dark:text-emerald-400">{totalMappedPosyandu}</span>
+              <span className="text-muted-foreground/50 text-base font-normal"> / </span>
+              <span className="text-amber-700 dark:text-amber-400 text-sm font-bold" title={`${totalUnmappedPosyandu} Posyandu Belum Dipetakan`}>
+                {totalUnmappedPosyandu} Belum
+              </span>
+            </div>
+            <p className="text-[11px] text-muted-foreground truncate">
+              {totalMappedPosyandu} siap sinkron, {totalUnmappedPosyandu} menanti pemetaan
+            </p>
+          </div>
+        </div>
+      ) : (
+        /* METRIC CARDS KHUSUS DATA ATS SESUAI KETENTUAN USER (3 KATEGORI RESMI) */
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5">
+          {/* Card 1: Total Kasus ATS */}
+          <div className="rounded-xl border border-border bg-card p-3.5 sm:p-4 shadow-2xs space-y-1">
+            <div className="flex items-center justify-between">
+              <span className="text-2xs font-extrabold uppercase tracking-wider text-muted-foreground">
+                Total Kasus ATS
               </span>
               <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-secondary/15 text-secondary">
                 <GraduationCap className="h-4 w-4" />
               </div>
             </div>
             <div className="text-xl sm:text-2xl font-black text-foreground font-mono">
-              {filteredDataAts.filter((a) => {
-                const us = parseInt((a as any).usia || "0", 10);
-                return us >= 13 && us <= 18;
-              }).length}
+              {atsStats.totalScoped.toLocaleString("id-ID")}
             </div>
-            <p className="text-[11px] text-muted-foreground truncate">Pendidikan menengah &amp; kesetaraan</p>
+            <p className="text-[11px] text-muted-foreground truncate">
+              Kasus anak tidak sekolah terdata
+            </p>
           </div>
-        )}
 
-        {/* Metric 4: Status Posyandu Terpetakan vs Belum Dipetakan */}
-        <div className="rounded-xl border border-border bg-card p-3.5 sm:p-4 shadow-2xs space-y-1">
-          <div className="flex items-center justify-between">
-            <span className="text-2xs font-extrabold uppercase tracking-wider text-muted-foreground">
-              Posyandu Terpetakan
-            </span>
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-teal-500/10 text-teal-700 dark:text-teal-300">
-              <Layers className="h-4 w-4" />
+          {/* Card 2: Belum Pernah Bersekolah (BPB) */}
+          <div className="rounded-xl border border-rose-500/30 bg-rose-500/5 p-3.5 sm:p-4 shadow-2xs space-y-1">
+            <div className="flex items-center justify-between">
+              <span className="text-2xs font-extrabold uppercase tracking-wider text-rose-800 dark:text-rose-300">
+                Belum Pernah Sekolah
+              </span>
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-rose-500/20 text-rose-700 dark:text-rose-300">
+                <AlertCircle className="h-4 w-4" />
+              </div>
             </div>
+            <div className="text-xl sm:text-2xl font-black text-rose-800 dark:text-rose-300 font-mono">
+              {atsStats.bpbCount.toLocaleString("id-ID")}
+            </div>
+            <p className="text-[11px] text-rose-700/80 dark:text-rose-400 font-medium truncate">
+              {atsStats.pctBpb}% dari total kasus ATS
+            </p>
           </div>
-          <div className="text-xl sm:text-2xl font-black text-foreground font-mono">
-            <span className="text-emerald-700 dark:text-emerald-400">{totalMappedPosyandu}</span>
-            <span className="text-muted-foreground/50 text-base font-normal"> / </span>
-            <span className="text-amber-700 dark:text-amber-400 text-sm font-bold" title={`${totalUnmappedPosyandu} Posyandu Belum Dipetakan`}>
-              {totalUnmappedPosyandu} Belum
-            </span>
+
+          {/* Card 3: Drop Out / Putus Sekolah (DO) */}
+          <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-3.5 sm:p-4 shadow-2xs space-y-1">
+            <div className="flex items-center justify-between">
+              <span className="text-2xs font-extrabold uppercase tracking-wider text-amber-800 dark:text-amber-300">
+                Drop Out (Putus Sekolah)
+              </span>
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-500/20 text-amber-700 dark:text-amber-300">
+                <Users className="h-4 w-4" />
+              </div>
+            </div>
+            <div className="text-xl sm:text-2xl font-black text-amber-800 dark:text-amber-300 font-mono">
+              {atsStats.doCount.toLocaleString("id-ID")}
+            </div>
+            <p className="text-[11px] text-amber-700/80 dark:text-amber-400 font-medium truncate">
+              {atsStats.pctDo}% kasus putus sekolah
+            </p>
           </div>
-          <p className="text-[11px] text-muted-foreground truncate">
-            {totalMappedPosyandu} siap sinkron, {totalUnmappedPosyandu} menanti pemetaan
-          </p>
+
+          {/* Card 4: Lulus Tidak Melanjutkan (LTM) */}
+          <div className="rounded-xl border border-blue-500/30 bg-blue-500/5 p-3.5 sm:p-4 shadow-2xs space-y-1">
+            <div className="flex items-center justify-between">
+              <span className="text-2xs font-extrabold uppercase tracking-wider text-blue-800 dark:text-blue-300">
+                Lulus Tdk Melanjutkan
+              </span>
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-500/20 text-blue-700 dark:text-blue-300">
+                <GraduationCap className="h-4 w-4" />
+              </div>
+            </div>
+            <div className="text-xl sm:text-2xl font-black text-blue-800 dark:text-blue-300 font-mono">
+              {atsStats.ltmCount.toLocaleString("id-ID")}
+            </div>
+            <p className="text-[11px] text-blue-700/80 dark:text-blue-400 font-medium truncate">
+              {atsStats.pctLtm}% lulusan tanpa jenjang lanjut
+            </p>
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* 2.5 CAKUPAN USIA ATS PERTAHUN (6 - 18 TAHUN) INTERAKTIF */}
+      {mode === "ats" && (
+        <div className="rounded-xl border border-secondary/30 bg-secondary/5 p-4 sm:p-5 shadow-2xs space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border/70 pb-3">
+            <div className="flex items-center gap-2">
+              <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-secondary shrink-0" />
+              <div>
+                <h4 className="text-xs sm:text-sm font-black text-foreground">
+                  Cakupan Usia ATS Pertahun (Usia 6 s/d 18 Tahun)
+                </h4>
+                <p className="text-2xs text-muted-foreground">
+                  Pilih kelompok usia pertahun di bawah ini untuk melihat rincian kasus dan menyaring daftar anak
+                </p>
+              </div>
+            </div>
+            {selectedUsiaFilter !== "semua" && (
+              <button
+                type="button"
+                onClick={() => setSelectedUsiaFilter("semua")}
+                className="text-2xs font-bold text-secondary bg-secondary/10 hover:bg-secondary/20 px-2.5 py-1 rounded-md border border-secondary/30 transition-all cursor-pointer self-start sm:self-auto"
+              >
+                Tampilkan Semua Usia
+              </button>
+            )}
+          </div>
+
+          {/* Baris Tombol Usia Pertahun: 6 s/d 18 Tahun */}
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+            <button
+              type="button"
+              onClick={() => setSelectedUsiaFilter("semua")}
+              className={cn(
+                "px-2.5 py-1.5 rounded-lg text-2xs font-extrabold transition-all border cursor-pointer flex items-center gap-1.5",
+                selectedUsiaFilter === "semua"
+                  ? "bg-foreground text-background border-foreground shadow-2xs"
+                  : "bg-card text-muted-foreground border-border hover:text-foreground hover:bg-muted"
+              )}
+            >
+              <span>Semua Usia</span>
+              <span className="px-1.5 py-0.2 rounded-full font-mono text-[10px] bg-background/20">
+                {atsStats.totalScoped}
+              </span>
+            </button>
+
+            {[6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19].map((age) => {
+              const count = atsStats.ageMap[age] || 0;
+              const isSelected = selectedUsiaFilter === age;
+              const label = age === 19 ? "19+ Thn" : `${age} Thn`;
+
+              return (
+                <button
+                  key={age}
+                  type="button"
+                  onClick={() => setSelectedUsiaFilter(isSelected ? "semua" : age)}
+                  className={cn(
+                    "px-2.5 py-1.5 rounded-lg text-2xs font-bold transition-all border cursor-pointer flex items-center gap-1.5",
+                    isSelected
+                      ? "bg-secondary text-secondary-foreground border-secondary shadow-xs scale-102"
+                      : count > 0
+                      ? "bg-card text-foreground border-border hover:border-secondary/50 hover:bg-muted"
+                      : "bg-muted/50 text-muted-foreground/60 border-border/50 cursor-not-allowed"
+                  )}
+                  disabled={count === 0}
+                  title={`Kasus ATS Usia ${label}: ${count} anak`}
+                >
+                  <span className="font-semibold">Usia {label}</span>
+                  <span
+                    className={cn(
+                      "px-1.5 py-0.2 rounded-full font-mono text-[10px] font-black",
+                      isSelected
+                        ? "bg-white/25 text-white"
+                        : "bg-secondary/15 text-secondary"
+                    )}
+                  >
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* 3. ALAT FILTER & NAVIGASI BERJENJANG */}
       <section className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
@@ -888,6 +1124,70 @@ export function KomunitasPosyanduBerjenjangDataSection({
             </div>
           )}
 
+          {/* Filter Kategori ATS (Mode ATS: 3 Kategori Resmi Sesuai Ketentuan) */}
+          {mode === "ats" && (
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="text-[11px] font-bold text-muted-foreground mr-1">Kategori ATS:</span>
+              <button
+                type="button"
+                onClick={() => setStatusAtsFilter("semua")}
+                className={cn(
+                  "px-2.5 py-1 rounded-lg text-2xs font-bold transition-all border cursor-pointer",
+                  statusAtsFilter === "semua"
+                    ? "bg-foreground text-background border-foreground shadow-2xs"
+                    : "bg-muted text-muted-foreground border-border hover:text-foreground"
+                )}
+              >
+                Semua Status ({atsStats.totalScoped})
+              </button>
+              <button
+                type="button"
+                onClick={() => setStatusAtsFilter("Belum Pernah Bersekolah")}
+                className={cn(
+                  "px-2.5 py-1 rounded-lg text-2xs font-bold transition-all border cursor-pointer flex items-center gap-1",
+                  statusAtsFilter === "Belum Pernah Bersekolah"
+                    ? "bg-rose-600 text-white border-rose-600 shadow-2xs"
+                    : "bg-muted text-muted-foreground border-border hover:text-foreground"
+                )}
+              >
+                <span>Belum Pernah Bersekolah</span>
+                <span className="px-1.5 py-0.2 rounded-full font-mono text-[10px] bg-background/20">
+                  {atsStats.bpbCount}
+                </span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setStatusAtsFilter("Drop Out")}
+                className={cn(
+                  "px-2.5 py-1 rounded-lg text-2xs font-bold transition-all border cursor-pointer flex items-center gap-1",
+                  statusAtsFilter === "Drop Out"
+                    ? "bg-amber-600 text-white border-amber-600 shadow-2xs"
+                    : "bg-muted text-muted-foreground border-border hover:text-foreground"
+                )}
+              >
+                <span>Drop Out</span>
+                <span className="px-1.5 py-0.2 rounded-full font-mono text-[10px] bg-background/20">
+                  {atsStats.doCount}
+                </span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setStatusAtsFilter("Lulus Tidak Melanjutkan")}
+                className={cn(
+                  "px-2.5 py-1 rounded-lg text-2xs font-bold transition-all border cursor-pointer flex items-center gap-1",
+                  statusAtsFilter === "Lulus Tidak Melanjutkan"
+                    ? "bg-blue-600 text-white border-blue-600 shadow-2xs"
+                    : "bg-muted text-muted-foreground border-border hover:text-foreground"
+                )}
+              >
+                <span>Lulus Tidak Melanjutkan</span>
+                <span className="px-1.5 py-0.2 rounded-full font-mono text-[10px] bg-background/20">
+                  {atsStats.ltmCount}
+                </span>
+              </button>
+            </div>
+          )}
+
           {/* Filter Pemetaan Posyandu */}
           <div className="flex items-center gap-1.5 flex-wrap ml-auto">
             <span className="text-[11px] font-bold text-muted-foreground mr-1">Pemetaan:</span>
@@ -1041,9 +1341,21 @@ export function KomunitasPosyanduBerjenjangDataSection({
                         </span>
                       </div>
                     ) : (
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-bold text-secondary">
                           {info?.atsList.length || 0} Kasus ATS
+                        </span>
+                        <span className="text-muted-foreground">•</span>
+                        <span className="text-rose-700 dark:text-rose-400 font-semibold text-[11px]">
+                          {info?.atsList.filter(a => ((a as any).kategori_ats || classifyAtsCategory(a.jenjang_asal, a.alasan_tidak_sekolah, a.sekolah_sebelumnya)) === "Belum Pernah Bersekolah").length || 0} BPB
+                        </span>
+                        <span className="text-muted-foreground">•</span>
+                        <span className="text-amber-700 dark:text-amber-400 font-semibold text-[11px]">
+                          {info?.atsList.filter(a => ((a as any).kategori_ats || classifyAtsCategory(a.jenjang_asal, a.alasan_tidak_sekolah, a.sekolah_sebelumnya)) === "Drop Out").length || 0} DO
+                        </span>
+                        <span className="text-muted-foreground">•</span>
+                        <span className="text-blue-700 dark:text-blue-400 font-semibold text-[11px]">
+                          {info?.atsList.filter(a => ((a as any).kategori_ats || classifyAtsCategory(a.jenjang_asal, a.alasan_tidak_sekolah, a.sekolah_sebelumnya)) === "Lulus Tidak Melanjutkan").length || 0} LTM
                         </span>
                       </div>
                     )}
@@ -1272,6 +1584,18 @@ export function KomunitasPosyanduBerjenjangDataSection({
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
                     {paginatedAts.map((ats, idx) => {
                       const posBadge = findAtsPosyanduBadge(ats);
+                      const atsCat = ats.kategori_ats || classifyAtsCategory(ats.jenjang_asal, ats.alasan_tidak_sekolah, ats.sekolah_sebelumnya || (ats as any).nama_sekolah);
+                      const numAge = ats.usia ? parseInt(ats.usia, 10) : getNumericAgeAts(ats.tanggal_lahir);
+                      const displayAge = !isNaN(numAge) && numAge > 0 ? `${numAge} Tahun` : null;
+
+                      let catBadgeStyle = "bg-secondary/15 text-secondary border-secondary/30";
+                      if (atsCat === "Belum Pernah Bersekolah") {
+                        catBadgeStyle = "bg-rose-500/15 text-rose-700 dark:text-rose-400 border-rose-500/30";
+                      } else if (atsCat === "Drop Out") {
+                        catBadgeStyle = "bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30";
+                      } else if (atsCat === "Lulus Tidak Melanjutkan") {
+                        catBadgeStyle = "bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/30";
+                      }
 
                       return (
                         <div
@@ -1279,7 +1603,7 @@ export function KomunitasPosyanduBerjenjangDataSection({
                           className="rounded-xl border border-border bg-card p-3.5 sm:p-4 shadow-2xs space-y-3 hover:border-secondary/40 transition-all flex flex-col justify-between"
                         >
                           <div className="space-y-2">
-                            {/* Baris Atas: Nama Anak & Jenjang Asal */}
+                            {/* Baris Atas: Nama Anak, Jenis Kelamin, Usia & Kategori ATS */}
                             <div className="flex items-start justify-between gap-2">
                               <div className="space-y-0.5 min-w-0 flex-1">
                                 <div className="flex items-center gap-1.5 flex-wrap">
@@ -1296,14 +1620,19 @@ export function KomunitasPosyanduBerjenjangDataSection({
                                   >
                                     {ats.jenis_kelamin === "L" ? "Laki-laki" : "Perempuan"}
                                   </span>
+                                  {displayAge && (
+                                    <span className="px-1.5 py-0.2 rounded-md text-[10px] font-extrabold bg-muted text-foreground border border-border/80">
+                                      Usia {displayAge}
+                                    </span>
+                                  )}
                                 </div>
                                 <p className="text-2xs text-muted-foreground">
                                   Lahir: {ats.tanggal_lahir || "-"}
                                 </p>
                               </div>
 
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-secondary/15 text-secondary border border-secondary/30 shrink-0">
-                                <span>{ats.jenjang_asal || "Putus Sekolah"}</span>
+                              <span className={cn("inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-extrabold border shrink-0", catBadgeStyle)}>
+                                <span>{atsCat}</span>
                               </span>
                             </div>
 
