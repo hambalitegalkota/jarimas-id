@@ -350,7 +350,7 @@ export function GrafikFilterAts({
   }
 
   return (
-    <div className="rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-6 space-y-6 shadow-xs break-inside-avoid print:bg-white print:border-gray-300 print:text-black">
+    <div className="rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-6 space-y-6 shadow-xs break-inside-avoid print:break-inside-auto print:bg-white print:border-gray-300 print:text-black">
       {/* Header Grafik & Petunjuk Interaktif */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
         <div className="space-y-1">
@@ -373,7 +373,7 @@ export function GrafikFilterAts({
         <div className="flex flex-wrap items-center gap-2 self-start sm:self-center">
           {hasActiveFilters ? (
             <>
-              <div className="flex flex-wrap items-center gap-1.5">
+              <div className="flex flex-wrap items-center gap-1.5 print:hidden">
                 {activeFilters.age !== null && activeFilters.age !== undefined && (
                   <button
                     type="button"
@@ -594,12 +594,19 @@ export function GrafikFilterAts({
                 }
 
                 return (
-                  <button
+                  <div
                     key={uItem.usia}
-                    type="button"
+                    role="button"
+                    tabIndex={0}
                     onClick={() => onSelectAge?.(isSelected ? null : uItem.usia)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        onSelectAge?.(isSelected ? null : uItem.usia);
+                      }
+                    }}
                     className={cn(
-                      "flex-1 flex flex-col items-center justify-end h-full group relative cursor-pointer transition-all rounded-lg p-0.5 print-keep print:flex",
+                      "flex-1 flex flex-col items-center justify-end h-full group relative cursor-pointer transition-all rounded-lg p-0.5 select-none print-keep print:flex",
                       isSelected
                         ? "bg-indigo-100/70 dark:bg-indigo-950/80 ring-2 ring-indigo-500 shadow-xs"
                         : "hover:bg-slate-50 dark:hover:bg-slate-800"
@@ -655,7 +662,7 @@ export function GrafikFilterAts({
                         {uItem.usia}
                       </span>
                     </div>
-                  </button>
+                  </div>
                 );
               })}
             </div>
@@ -663,11 +670,18 @@ export function GrafikFilterAts({
             {/* 4 Tombol Kategori: Total ATS, Belum Pernah Bersekolah, Drop Out, Lulus Tidak Melanjutkan */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-2.5 pt-1">
               {/* 1. Tombol Total ATS */}
-              <button
-                type="button"
+              <div
+                role="button"
+                tabIndex={0}
                 onClick={() => handleSelectKategori("semua")}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    handleSelectKategori("semua");
+                  }
+                }}
                 className={cn(
-                  "p-2.5 sm:p-3 rounded-xl border-2 transition-all text-center cursor-pointer flex flex-col justify-between relative group",
+                  "p-2.5 sm:p-3 rounded-xl border-2 transition-all text-center cursor-pointer flex flex-col justify-between relative group select-none",
                   currentKategori === "semua"
                     ? "bg-indigo-50/90 dark:bg-indigo-950/80 border-indigo-600 dark:border-indigo-500 shadow-xs ring-2 ring-indigo-600/30 dark:ring-indigo-400/30"
                     : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-700 hover:bg-indigo-50/30"
@@ -705,16 +719,23 @@ export function GrafikFilterAts({
                     Aktif
                   </span>
                 )}
-              </button>
+              </div>
 
               {/* 2. Tombol Belum Pernah Bersekolah */}
-              <button
-                type="button"
+              <div
+                role="button"
+                tabIndex={0}
                 onClick={() =>
                   handleSelectKategori(currentKategori === "bpb" ? "semua" : "bpb")
                 }
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    handleSelectKategori(currentKategori === "bpb" ? "semua" : "bpb");
+                  }
+                }}
                 className={cn(
-                  "p-2.5 sm:p-3 rounded-xl border-2 transition-all text-center cursor-pointer flex flex-col justify-between relative group",
+                  "p-2.5 sm:p-3 rounded-xl border-2 transition-all text-center cursor-pointer flex flex-col justify-between relative group select-none",
                   currentKategori === "bpb"
                     ? "bg-emerald-50/90 dark:bg-emerald-950/80 border-emerald-600 dark:border-emerald-500 shadow-xs ring-2 ring-emerald-600/30 dark:ring-emerald-400/30"
                     : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-emerald-300 dark:hover:border-emerald-700 hover:bg-emerald-50/30"
@@ -752,16 +773,23 @@ export function GrafikFilterAts({
                     Aktif
                   </span>
                 )}
-              </button>
+              </div>
 
               {/* 3. Tombol Drop Out */}
-              <button
-                type="button"
+              <div
+                role="button"
+                tabIndex={0}
                 onClick={() =>
                   handleSelectKategori(currentKategori === "do" ? "semua" : "do")
                 }
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    handleSelectKategori(currentKategori === "do" ? "semua" : "do");
+                  }
+                }}
                 className={cn(
-                  "p-2.5 sm:p-3 rounded-xl border-2 transition-all text-center cursor-pointer flex flex-col justify-between relative group",
+                  "p-2.5 sm:p-3 rounded-xl border-2 transition-all text-center cursor-pointer flex flex-col justify-between relative group select-none",
                   currentKategori === "do"
                     ? "bg-rose-50/90 dark:bg-rose-950/80 border-rose-600 dark:border-rose-500 shadow-xs ring-2 ring-rose-600/30 dark:ring-rose-400/30"
                     : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-rose-300 dark:hover:border-rose-700 hover:bg-rose-50/30"
@@ -799,16 +827,23 @@ export function GrafikFilterAts({
                     Aktif
                   </span>
                 )}
-              </button>
+              </div>
 
               {/* 4. Tombol Lulus Tidak Melanjutkan */}
-              <button
-                type="button"
+              <div
+                role="button"
+                tabIndex={0}
                 onClick={() =>
                   handleSelectKategori(currentKategori === "ltm" ? "semua" : "ltm")
                 }
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    handleSelectKategori(currentKategori === "ltm" ? "semua" : "ltm");
+                  }
+                }}
                 className={cn(
-                  "p-2.5 sm:p-3 rounded-xl border-2 transition-all text-center cursor-pointer flex flex-col justify-between relative group",
+                  "p-2.5 sm:p-3 rounded-xl border-2 transition-all text-center cursor-pointer flex flex-col justify-between relative group select-none",
                   currentKategori === "ltm"
                     ? "bg-sky-50/90 dark:bg-sky-950/80 border-sky-600 dark:border-sky-500 shadow-xs ring-2 ring-sky-600/30 dark:ring-sky-400/30"
                     : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-sky-300 dark:hover:border-sky-700 hover:bg-sky-50/30"
@@ -846,7 +881,7 @@ export function GrafikFilterAts({
                     Aktif
                   </span>
                 )}
-              </button>
+              </div>
             </div>
           </div>
           )}
@@ -950,12 +985,19 @@ export function GrafikFilterAts({
                 }
 
                 return (
-                  <button
+                  <div
                     key={kItem.key}
-                    type="button"
+                    role="button"
+                    tabIndex={0}
                     onClick={() => onSelectKelasAts?.(isSelected ? null : kItem.key)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        onSelectKelasAts?.(isSelected ? null : kItem.key);
+                      }
+                    }}
                     className={cn(
-                      "flex-1 flex flex-col items-center justify-end h-full group relative cursor-pointer transition-all rounded-lg p-0.5 print-keep print:flex",
+                      "flex-1 flex flex-col items-center justify-end h-full group relative cursor-pointer transition-all rounded-lg p-0.5 select-none print-keep print:flex",
                       isSelected
                         ? "bg-indigo-100/70 dark:bg-indigo-950/80 ring-2 ring-indigo-500 shadow-xs"
                         : "hover:bg-slate-50 dark:hover:bg-slate-800"
@@ -1011,18 +1053,25 @@ export function GrafikFilterAts({
                         {kItem.shortLabel}
                       </span>
                     </div>
-                  </button>
+                  </div>
                 );
               })}
             </div>
 
             {/* Jenjang Badges Sub-summary (Clickable buttons to filter by Jenjang) */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              <button
-                type="button"
+              <div
+                role="button"
+                tabIndex={0}
                 onClick={() => onSelectKelasAts?.(activeFilters.kelasAts === "bpb" ? null : "bpb")}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    onSelectKelasAts?.(activeFilters.kelasAts === "bpb" ? null : "bpb");
+                  }
+                }}
                 className={cn(
-                  "p-2.5 rounded-xl border-2 transition-all text-center cursor-pointer",
+                  "p-2.5 rounded-xl border-2 transition-all text-center cursor-pointer select-none",
                   activeFilters.kelasAts === "bpb"
                     ? "bg-blue-100 border-blue-600 shadow-xs ring-2 ring-blue-600/30"
                     : "bg-white dark:bg-slate-900 border-blue-200 dark:border-blue-800/60 hover:bg-blue-50"
@@ -1034,13 +1083,20 @@ export function GrafikFilterAts({
                 <span className="text-xs sm:text-sm font-black font-mono text-blue-700 dark:text-blue-400">
                   {kelasAkhirStats.totalBPB} Anak
                 </span>
-              </button>
+              </div>
 
-              <button
-                type="button"
+              <div
+                role="button"
+                tabIndex={0}
                 onClick={() => onSelectJenjang?.(activeFilters.jenjang === "sd" ? "semua" : "sd")}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    onSelectJenjang?.(activeFilters.jenjang === "sd" ? "semua" : "sd");
+                  }
+                }}
                 className={cn(
-                  "p-2.5 rounded-xl border-2 transition-all text-center cursor-pointer",
+                  "p-2.5 rounded-xl border-2 transition-all text-center cursor-pointer select-none",
                   activeFilters.jenjang === "sd"
                     ? "bg-emerald-100 border-emerald-600 shadow-xs ring-2 ring-emerald-600/30"
                     : "bg-white dark:bg-slate-900 border-emerald-200 dark:border-emerald-800/60 hover:bg-emerald-50"
@@ -1052,13 +1108,20 @@ export function GrafikFilterAts({
                 <span className="text-xs sm:text-sm font-black font-mono text-emerald-700 dark:text-emerald-400">
                   {kelasAkhirStats.totalSD} Anak
                 </span>
-              </button>
+              </div>
 
-              <button
-                type="button"
+              <div
+                role="button"
+                tabIndex={0}
                 onClick={() => onSelectJenjang?.(activeFilters.jenjang === "smp" ? "semua" : "smp")}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    onSelectJenjang?.(activeFilters.jenjang === "smp" ? "semua" : "smp");
+                  }
+                }}
                 className={cn(
-                  "p-2.5 rounded-xl border-2 transition-all text-center cursor-pointer",
+                  "p-2.5 rounded-xl border-2 transition-all text-center cursor-pointer select-none",
                   activeFilters.jenjang === "smp"
                     ? "bg-sky-100 border-sky-600 shadow-xs ring-2 ring-sky-600/30"
                     : "bg-white dark:bg-slate-900 border-sky-200 dark:border-sky-800/60 hover:bg-sky-50"
@@ -1070,13 +1133,20 @@ export function GrafikFilterAts({
                 <span className="text-xs sm:text-sm font-black font-mono text-sky-700 dark:text-sky-400">
                   {kelasAkhirStats.totalSMP} Anak
                 </span>
-              </button>
+              </div>
 
-              <button
-                type="button"
+              <div
+                role="button"
+                tabIndex={0}
                 onClick={() => onSelectJenjang?.(activeFilters.jenjang === "sma" ? "semua" : "sma")}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    onSelectJenjang?.(activeFilters.jenjang === "sma" ? "semua" : "sma");
+                  }
+                }}
                 className={cn(
-                  "p-2.5 rounded-xl border-2 transition-all text-center cursor-pointer",
+                  "p-2.5 rounded-xl border-2 transition-all text-center cursor-pointer select-none",
                   activeFilters.jenjang === "sma"
                     ? "bg-purple-100 border-purple-600 shadow-xs ring-2 ring-purple-600/30"
                     : "bg-white dark:bg-slate-900 border-purple-200 dark:border-purple-800/60 hover:bg-purple-50"
@@ -1088,7 +1158,7 @@ export function GrafikFilterAts({
                 <span className="text-xs sm:text-sm font-black font-mono text-purple-700 dark:text-purple-400">
                   {kelasAkhirStats.totalSMA} Anak
                 </span>
-              </button>
+              </div>
             </div>
           </div>
           )}
@@ -1172,12 +1242,19 @@ export function GrafikFilterAts({
                       : 0;
 
                   return (
-                    <button
+                    <div
                       key={item.alasan}
-                      type="button"
+                      role="button"
+                      tabIndex={0}
                       onClick={() => onSelectAlasan?.(isSelected ? "semua" : item.alasan)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          onSelectAlasan?.(isSelected ? "semua" : item.alasan);
+                        }
+                      }}
                       className={cn(
-                        "w-full text-left p-3 rounded-xl border-2 transition-all space-y-1.5 cursor-pointer block group print-keep print:block",
+                        "w-full text-left p-3 rounded-xl border-2 transition-all space-y-1.5 cursor-pointer block group select-none print-keep print:block",
                         isSelected
                           ? "bg-rose-100/90 dark:bg-rose-950/80 border-rose-600 shadow-xs ring-2 ring-rose-600/30"
                           : isTop1
@@ -1248,7 +1325,7 @@ export function GrafikFilterAts({
                           style={{ width: `${widthPct}%` }}
                         />
                       </div>
-                    </button>
+                    </div>
                   );
                 })}
               </div>
@@ -1308,12 +1385,19 @@ export function GrafikFilterAts({
             {jenjangStats.map((item) => {
               const isSelected = activeFilters.jenjang === item.id;
               return (
-                <button
+                <div
                   key={item.id}
-                  type="button"
+                  role="button"
+                  tabIndex={0}
                   onClick={() => onSelectJenjang?.(isSelected ? "semua" : item.id)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      onSelectJenjang?.(isSelected ? "semua" : item.id);
+                    }
+                  }}
                   className={cn(
-                    "w-full text-left p-2.5 rounded-xl border-2 transition-all space-y-1.5 cursor-pointer block print-keep print:block",
+                    "w-full text-left p-2.5 rounded-xl border-2 transition-all space-y-1.5 cursor-pointer block select-none print-keep print:block",
                     isSelected
                       ? "bg-emerald-100/90 dark:bg-emerald-950/80 border-emerald-600 shadow-xs ring-2 ring-emerald-600/30"
                       : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 hover:bg-slate-50"
@@ -1338,7 +1422,7 @@ export function GrafikFilterAts({
                       style={{ width: `${item.pct}%` }}
                     />
                   </div>
-                </button>
+                </div>
               );
             })}
           </div>
@@ -1397,23 +1481,25 @@ export function GrafikFilterAts({
               <div className="space-y-2">
                 <div className="h-4 w-full rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden flex p-0.5 border border-slate-300 dark:border-slate-600">
                   {keinginanStats.masihAda > 0 && (
-                    <button
-                      type="button"
+                    <div
+                      role="button"
+                      tabIndex={0}
                       onClick={() =>
                         onSelectKeinginan?.(activeFilters.keinginan === "Masih Ada" ? "semua" : "Masih Ada")
                       }
-                      className="h-full bg-emerald-500 rounded-l-full transition-all duration-500 cursor-pointer hover:brightness-110 print-keep print:block"
+                      className="h-full bg-emerald-500 rounded-l-full transition-all duration-500 cursor-pointer hover:brightness-110 select-none print-keep print:block"
                       style={{ width: `${keinginanStats.masihAdaPct}%` }}
                       title={`Masih Ada: ${keinginanStats.masihAda} anak (${keinginanStats.masihAdaPct}%)`}
                     />
                   )}
                   {keinginanStats.tidakAda > 0 && (
-                    <button
-                      type="button"
+                    <div
+                      role="button"
+                      tabIndex={0}
                       onClick={() =>
                         onSelectKeinginan?.(activeFilters.keinginan === "Tidak Ada" ? "semua" : "Tidak Ada")
                       }
-                      className="h-full bg-rose-500 rounded-r-full transition-all duration-500 cursor-pointer hover:brightness-110 print-keep print:block"
+                      className="h-full bg-rose-500 rounded-r-full transition-all duration-500 cursor-pointer hover:brightness-110 select-none print-keep print:block"
                       style={{ width: `${keinginanStats.tidakAdaPct}%` }}
                       title={`Tidak Ada: ${keinginanStats.tidakAda} anak (${keinginanStats.tidakAdaPct}%)`}
                     />
@@ -1427,13 +1513,20 @@ export function GrafikFilterAts({
 
               {/* Detail Cards */}
               <div className="grid grid-cols-2 gap-2.5 pt-1">
-                <button
-                  type="button"
+                <div
+                  role="button"
+                  tabIndex={0}
                   onClick={() =>
                     onSelectKeinginan?.(activeFilters.keinginan === "Masih Ada" ? "semua" : "Masih Ada")
                   }
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      onSelectKeinginan?.(activeFilters.keinginan === "Masih Ada" ? "semua" : "Masih Ada");
+                    }
+                  }}
                   className={cn(
-                    "rounded-xl border-2 p-3 text-left transition-all cursor-pointer",
+                    "rounded-xl border-2 p-3 text-left transition-all cursor-pointer select-none",
                     activeFilters.keinginan === "Masih Ada"
                       ? "bg-emerald-100 border-emerald-600 shadow-xs ring-2 ring-emerald-600/30"
                       : "bg-emerald-50/70 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100/50"
@@ -1453,15 +1546,22 @@ export function GrafikFilterAts({
                   <span className="text-[10px] text-emerald-700 font-medium block mt-0.5">
                     Prioritas Fasilitasi
                   </span>
-                </button>
+                </div>
 
-                <button
-                  type="button"
+                <div
+                  role="button"
+                  tabIndex={0}
                   onClick={() =>
                     onSelectKeinginan?.(activeFilters.keinginan === "Tidak Ada" ? "semua" : "Tidak Ada")
                   }
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      onSelectKeinginan?.(activeFilters.keinginan === "Tidak Ada" ? "semua" : "Tidak Ada");
+                    }
+                  }}
                   className={cn(
-                    "rounded-xl border-2 p-3 text-left transition-all cursor-pointer",
+                    "rounded-xl border-2 p-3 text-left transition-all cursor-pointer select-none",
                     activeFilters.keinginan === "Tidak Ada"
                       ? "bg-rose-100 border-rose-600 shadow-xs ring-2 ring-rose-600/30"
                       : "bg-rose-50/70 border-rose-200 dark:border-rose-800 hover:bg-rose-100/50"
@@ -1481,7 +1581,7 @@ export function GrafikFilterAts({
                   <span className="text-[10px] text-rose-700 font-medium block mt-0.5">
                     Perlu Konseling
                   </span>
-                </button>
+                </div>
               </div>
             </>
           )}
@@ -1500,7 +1600,7 @@ export function GrafikFilterAts({
               <button
                 type="button"
                 onClick={() => toggleChart("demografi")}
-                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700"
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700 print:hidden"
                 title={hiddenCharts.demografi ? "Tampilkan Grafik" : "Sembunyikan Grafik"}
               >
                 {hiddenCharts.demografi ? (
@@ -1545,11 +1645,18 @@ export function GrafikFilterAts({
               </div>
               <div className="h-4 w-full rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden flex p-0.5 border border-slate-200">
                 {genderStats.laki > 0 && (
-                  <button
-                    type="button"
+                  <div
+                    role="button"
+                    tabIndex={0}
                     onClick={() => onSelectGender?.(activeFilters.gender === "L" ? "semua" : "L")}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        onSelectGender?.(activeFilters.gender === "L" ? "semua" : "L");
+                      }
+                    }}
                     className={cn(
-                      "h-full rounded-l-full transition-all duration-500 cursor-pointer hover:brightness-110 print-keep print:block",
+                      "h-full rounded-l-full transition-all duration-500 cursor-pointer hover:brightness-110 select-none print-keep print:block",
                       activeFilters.gender === "L" ? "bg-sky-600 ring-2 ring-sky-300" : "bg-sky-500"
                     )}
                     style={{ width: `${genderStats.lakiPct}%` }}
@@ -1557,11 +1664,18 @@ export function GrafikFilterAts({
                   />
                 )}
                 {genderStats.perempuan > 0 && (
-                  <button
-                    type="button"
+                  <div
+                    role="button"
+                    tabIndex={0}
                     onClick={() => onSelectGender?.(activeFilters.gender === "P" ? "semua" : "P")}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        onSelectGender?.(activeFilters.gender === "P" ? "semua" : "P");
+                      }
+                    }}
                     className={cn(
-                      "h-full rounded-r-full transition-all duration-500 cursor-pointer hover:brightness-110 print-keep print:block",
+                      "h-full rounded-r-full transition-all duration-500 cursor-pointer hover:brightness-110 select-none print-keep print:block",
                       activeFilters.gender === "P" ? "bg-pink-600 ring-2 ring-pink-300" : "bg-pink-500"
                     )}
                     style={{ width: `${genderStats.perempuanPct}%` }}
@@ -1570,26 +1684,40 @@ export function GrafikFilterAts({
                 )}
               </div>
               <div className="flex items-center justify-between text-[11px] font-mono">
-                <button
-                  type="button"
+                <div
+                  role="button"
+                  tabIndex={0}
                   onClick={() => onSelectGender?.(activeFilters.gender === "L" ? "semua" : "L")}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      onSelectGender?.(activeFilters.gender === "L" ? "semua" : "L");
+                    }
+                  }}
                   className={cn(
-                    "font-bold cursor-pointer hover:underline",
+                    "font-bold cursor-pointer hover:underline select-none",
                     activeFilters.gender === "L" ? "text-sky-700 underline font-black" : "text-sky-600"
                   )}
                 >
                   Laki-laki: {genderStats.lakiPct}% ({genderStats.laki})
-                </button>
-                <button
-                  type="button"
+                </div>
+                <div
+                  role="button"
+                  tabIndex={0}
                   onClick={() => onSelectGender?.(activeFilters.gender === "P" ? "semua" : "P")}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      onSelectGender?.(activeFilters.gender === "P" ? "semua" : "P");
+                    }
+                  }}
                   className={cn(
-                    "font-bold cursor-pointer hover:underline",
+                    "font-bold cursor-pointer hover:underline select-none",
                     activeFilters.gender === "P" ? "text-pink-700 underline font-black" : "text-pink-600"
                   )}
                 >
                   Perempuan: {genderStats.perempuanPct}% ({genderStats.perempuan})
-                </button>
+                </div>
               </div>
             </div>
 
@@ -1603,13 +1731,20 @@ export function GrafikFilterAts({
               </div>
               <div className="h-4 w-full rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden flex p-0.5 border border-slate-200">
                 {statusStats.approved > 0 && (
-                  <button
-                    type="button"
+                  <div
+                    role="button"
+                    tabIndex={0}
                     onClick={() =>
                       onSelectStatus?.(activeFilters.status === "approved" ? "semua" : "approved")
                     }
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        onSelectStatus?.(activeFilters.status === "approved" ? "semua" : "approved");
+                      }
+                    }}
                     className={cn(
-                      "h-full rounded-l-full transition-all duration-500 cursor-pointer hover:brightness-110 print-keep print:block",
+                      "h-full rounded-l-full transition-all duration-500 cursor-pointer hover:brightness-110 select-none print-keep print:block",
                       activeFilters.status === "approved"
                         ? "bg-emerald-600 ring-2 ring-emerald-300"
                         : "bg-emerald-500"
@@ -1619,13 +1754,20 @@ export function GrafikFilterAts({
                   />
                 )}
                 {statusStats.pending > 0 && (
-                  <button
-                    type="button"
+                  <div
+                    role="button"
+                    tabIndex={0}
                     onClick={() =>
                       onSelectStatus?.(activeFilters.status === "pending" ? "semua" : "pending")
                     }
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        onSelectStatus?.(activeFilters.status === "pending" ? "semua" : "pending");
+                      }
+                    }}
                     className={cn(
-                      "h-full rounded-r-full transition-all duration-500 cursor-pointer hover:brightness-110 print-keep print:block",
+                      "h-full rounded-r-full transition-all duration-500 cursor-pointer hover:brightness-110 select-none print-keep print:block",
                       activeFilters.status === "pending"
                         ? "bg-amber-600 ring-2 ring-amber-300"
                         : "bg-amber-500"
@@ -1636,34 +1778,48 @@ export function GrafikFilterAts({
                 )}
               </div>
               <div className="flex items-center justify-between text-[11px] font-mono">
-                <button
-                  type="button"
+                <div
+                  role="button"
+                  tabIndex={0}
                   onClick={() =>
                     onSelectStatus?.(activeFilters.status === "approved" ? "semua" : "approved")
                   }
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      onSelectStatus?.(activeFilters.status === "approved" ? "semua" : "approved");
+                    }
+                  }}
                   className={cn(
-                    "font-bold cursor-pointer hover:underline",
+                    "font-bold cursor-pointer hover:underline select-none",
                     activeFilters.status === "approved"
                       ? "text-emerald-700 underline font-black"
                       : "text-emerald-600"
                   )}
                 >
                   Terverifikasi: {statusStats.approvedPct}%
-                </button>
-                <button
-                  type="button"
+                </div>
+                <div
+                  role="button"
+                  tabIndex={0}
                   onClick={() =>
                     onSelectStatus?.(activeFilters.status === "pending" ? "semua" : "pending")
                   }
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      onSelectStatus?.(activeFilters.status === "pending" ? "semua" : "pending");
+                    }
+                  }}
                   className={cn(
-                    "font-bold cursor-pointer hover:underline",
+                    "font-bold cursor-pointer hover:underline select-none",
                     activeFilters.status === "pending"
                       ? "text-amber-700 underline font-black"
                       : "text-amber-600"
                   )}
                 >
                   Menunggu: {statusStats.pendingPct}%
-                </button>
+                </div>
               </div>
             </div>
           </div>

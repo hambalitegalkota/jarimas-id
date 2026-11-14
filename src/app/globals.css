@@ -250,12 +250,12 @@ button, input, select, textarea {
 @media print {
   @page {
     size: A4 portrait;
-    margin: 8mm 10mm 10mm 10mm; /* Margin seimbang dan proporsional dokumen A4 resmi */
+    margin: 20mm 15mm 20mm 15mm; /* Margin standar dokumen resmi A4: Atas 20mm (2 cm), Bawah 20mm (2 cm), Kiri & Kanan 15mm (1.5 cm) */
   }
 
   @page landscape {
     size: A4 landscape;
-    margin: 8mm 10mm 8mm 10mm;
+    margin: 15mm 15mm 15mm 15mm;
   }
 
   .print-landscape {
@@ -318,13 +318,10 @@ button, input, select, textarea {
     display: none !important;
   }
 
-  /* Sembunyikan tombol aksi murni KECUALI tombol data/grafik/kartu yang memuat visualisasi */
-  button:not(.print-keep):not([class*="print-keep"]):not([class*="print:flex"]):not([class*="print:block"]):not([data-chart]) {
-    display: none !important;
-  }
-
   /* Pastikan elemen chart, diagram, dan kartu dengan .print-keep selalu tampil persis seperti di aplikasi */
   .print-keep,
+  div[class*="print-keep"],
+  div[class*="print:flex"],
   button.print-keep,
   button[class*="print-keep"],
   button[class*="print:flex"] {
@@ -333,6 +330,7 @@ button, input, select, textarea {
     opacity: 1 !important;
   }
 
+  div[class*="print:block"],
   button.print-keep.block,
   button.print-keep[class*="w-full"],
   button[class*="print:block"] {
