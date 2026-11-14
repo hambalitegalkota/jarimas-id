@@ -1927,24 +1927,24 @@ export function KomunitasPosyanduBerjenjangDataSection({
                               </span>
                             </div>
 
-                            {/* Baris 2: Alasan (hanya jika ada & tidak duplikat) & Keinginan Sekolah */}
-                            <div className="text-[11px] text-muted-foreground flex items-center justify-between gap-2 flex-wrap">
-                              {!isAlasanDuplicate ? (
-                                <span className="truncate">
-                                  Alasan: <strong className="text-foreground font-medium">{rawAlasan}</strong>
-                                </span>
-                              ) : (
-                                <span className="text-muted-foreground/80 truncate">
-                                  Kasus {atsCat}
-                                </span>
-                              )}
+                            {/* Baris 2: Alasan (hanya jika spesifik & bukan duplikasi kategori) / Keinginan Sekolah */}
+                            {(!isAlasanDuplicate || ats.keinginan_sekolah) && (
+                              <div className="text-[11px] text-muted-foreground flex items-center justify-between gap-2 flex-wrap">
+                                {!isAlasanDuplicate ? (
+                                  <span className="truncate">
+                                    Alasan: <strong className="text-foreground font-medium">{rawAlasan}</strong>
+                                  </span>
+                                ) : (
+                                  <span />
+                                )}
 
-                              {ats.keinginan_sekolah && (
-                                <span className="text-[10px] font-semibold text-secondary shrink-0">
-                                  Keinginan: {ats.keinginan_sekolah}
-                                </span>
-                              )}
-                            </div>
+                                {ats.keinginan_sekolah && (
+                                  <span className="text-[10px] font-semibold text-secondary shrink-0">
+                                    Keinginan: {ats.keinginan_sekolah}
+                                  </span>
+                                )}
+                              </div>
+                            )}
 
                             {/* Baris 3: Alamat & Orang Tua */}
                             <div className="text-[11px] text-muted-foreground flex items-center gap-1 truncate">
