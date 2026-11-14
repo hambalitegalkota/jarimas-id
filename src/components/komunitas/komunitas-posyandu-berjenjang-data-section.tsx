@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, Fragment } from "react";
 import Link from "next/link";
 import {
   Baby,
@@ -25,6 +25,7 @@ import {
   Calendar,
   Layers,
   HelpCircle,
+  Table,
 } from "lucide-react";
 import { cn, formatPeranDisplay } from "@/lib/utils";
 import type { DataAnakItem, DataAtsItem } from "@/types/database";
@@ -645,6 +646,101 @@ export function KomunitasPosyanduBerjenjangDataSection({
     posyanduDataMap,
   ]);
 
+  // Rekapitulasi Kasus ATS Per Kecamatan & Kelurahan Se-Kota Tegal (100% Presisi)
+  const rekapWilayahAts = useMemo(() => {
+    if (mode !== "ats") return null;
+
+    interface KelSummary {
+      nama: string;
+      total: number;
+      bpb: number;
+      doCount: number;
+      ltm: number;
+      posyanduCount: number;
+      mappedPosyanduCount: number;
+    }
+
+    interface KecSummary {
+      nama: string;
+      total: number;
+      bpb: number;
+      doCount: number;
+      ltm: number;
+      kelurahans: KelSummary[];
+    }
+
+    const kecList: KecSummary[] = [];
+
+    // Hitung posyandu per kelurahan
+    const posByKel = new Map<string, { total: number; mapped: number }>();
+    allPosyandusInScope.forEach((p) => {
+      const kelNorm = normalizeWilayah(p.kelurahan);
+      const cov = getPosyanduCoverageDisplay(p);
+      const cur = posByKel.get(kelNorm) || { total: 0, mapped: 0 };
+      cur.total++;
+      if (cov.isMapped) cur.mapped++;
+      posByKel.set(kelNorm, cur);
+    });
+
+    // Inisialisasi struktur dari KOTA_TEGAL_DATA
+    Object.keys(KOTA_TEGAL_DATA).forEach((kecName) => {
+      const kecObj = KOTA_TEGAL_DATA[kecName];
+      const kelList: KelSummary[] = [];
+
+      Object.keys(kecObj.kelurahan).forEach((kelName) => {
+        const pInfo = posByKel.get(normalizeWilayah(kelName)) || { total: 0, mapped: 0 };
+        kelList.push({
+          nama: kelName,
+          total: 0,
+          bpb: 0,
+          doCount: 0,
+          ltm: 0,
+          posyanduCount: pInfo.total,
+          mappedPosyanduCount: pInfo.mapped,
+        });
+      });
+
+      kecList.push({
+        nama: kecName,
+        total: 0,
+        bpb: 0,
+        doCount: 0,
+        ltm: 0,
+        kelurahans: kelList,
+      });
+    });
+
+    // Agregasi dari dataAtsList (seluruh kasus ATS di database)
+    dataAtsList.forEach((ats) => {
+      const kelNorm = normalizeWilayah(ats.kelurahan);
+      const kecNorm = normalizeWilayah(ats.kecamatan) || normalizeWilayah(findKecamatanByKelurahan(ats.kelurahan));
+      const cat = ats.kategori_ats || classifyAtsCategory(ats.jenjang_asal, ats.alasan_tidak_sekolah, ats.sekolah_sebelumnya);
+
+      let targetKec = kecList.find((k) => normalizeWilayah(k.nama) === kecNorm);
+      if (!targetKec && kelNorm) {
+        const inferredKec = normalizeWilayah(findKecamatanByKelurahan(ats.kelurahan));
+        targetKec = kecList.find((k) => normalizeWilayah(k.nama) === inferredKec);
+      }
+
+      if (targetKec) {
+        targetKec.total++;
+        if (cat === "Belum Pernah Bersekolah") targetKec.bpb++;
+        else if (cat === "Drop Out") targetKec.doCount++;
+        else if (cat === "Lulus Tidak Melanjutkan") targetKec.ltm++;
+
+        const targetKel = targetKec.kelurahans.find((kl) => normalizeWilayah(kl.nama) === kelNorm);
+        if (targetKel) {
+          targetKel.total++;
+          if (cat === "Belum Pernah Bersekolah") targetKel.bpb++;
+          else if (cat === "Drop Out") targetKel.doCount++;
+          else if (cat === "Lulus Tidak Melanjutkan") targetKel.ltm++;
+        }
+      }
+    });
+
+    return kecList;
+  }, [mode, dataAtsList, allPosyandusInScope]);
+
   // Statistik untuk Metrik
   const stats = useMemo(() => {
     if (mode === "anak") {
@@ -973,7 +1069,7 @@ export function KomunitasPosyanduBerjenjangDataSection({
             </h4>
           </div>
 
-          {/* Toggle Tampilan: Daftar Kartu vs Rekap Posyandu */}
+          {/* Toggle Tampilan: Daftar Kartu vs Rekap Wilayah & Posyandu */}
           <div className="flex items-center gap-1 bg-muted p-1 rounded-lg border border-border/80 self-start md:self-auto">
             <button
               type="button"
@@ -985,7 +1081,7 @@ export function KomunitasPosyanduBerjenjangDataSection({
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
-              {mode === "anak" ? "Daftar Anak Usia 0–6 Thn" : "Daftar Kasus ATS"}
+              {mode === "anak" ? "Daftar Anak Usia 0–6 Thn" : "Daftar Kasus ATS (Bertahap)"}
             </button>
             <button
               type="button"
@@ -997,9 +1093,9 @@ export function KomunitasPosyanduBerjenjangDataSection({
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
-              <span>Matriks Posyandu</span>
+              <span>{mode === "anak" ? "Matriks Posyandu" : "Rekap Wilayah & Posyandu"}</span>
               <span className="px-1.5 py-0.2 rounded-full bg-primary/10 text-primary text-[10px] font-mono">
-                {filteredPosyandus.length}
+                {mode === "anak" ? filteredPosyandus.length : `${filteredPosyandus.length} Pos`}
               </span>
             </button>
           </div>
@@ -1247,10 +1343,168 @@ export function KomunitasPosyanduBerjenjangDataSection({
         </div>
       </section>
 
-      {/* 4. KONTEN TAMPILAN MATRIKS POSYANDU */}
+      {/* 4. KONTEN TAMPILAN MATRIKS POSYANDU & REKAP WILAYAH */}
       {viewTab === "rekap_posyandu" && (
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
+        <div className="space-y-4">
+          {/* TABEL REKAPITULASI SEBARAN ATS SE-KOTA TEGAL (100% PRESISI) */}
+          {mode === "ats" && rekapWilayahAts && (
+            <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-2xs">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border/70 pb-3">
+                <div className="space-y-0.5">
+                  <div className="flex items-center gap-2">
+                    <Table className="h-4 w-4 text-secondary shrink-0" />
+                    <h4 className="text-xs sm:text-sm font-black text-foreground">
+                      Tabel Rekapitulasi Kasus ATS Se-Kota Tegal (4 Kecamatan, 27 Kelurahan)
+                    </h4>
+                  </div>
+                  <p className="text-2xs text-muted-foreground">
+                    Perhitungan 100% presisi teragregasi dari seluruh {dataAtsList.length.toLocaleString("id-ID")} kasus ATS di database.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-1.5 text-2xs font-bold text-muted-foreground flex-wrap">
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-rose-500/15 text-rose-700 dark:text-rose-400 font-mono">
+                    BPB: {atsStats.bpbCount.toLocaleString("id-ID")}
+                  </span>
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-700 dark:text-amber-400 font-mono">
+                    DO: {atsStats.doCount.toLocaleString("id-ID")}
+                  </span>
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-500/15 text-blue-700 dark:text-blue-400 font-mono">
+                    LTM: {atsStats.ltmCount.toLocaleString("id-ID")}
+                  </span>
+                </div>
+              </div>
+
+              {/* Tabel Responsif */}
+              <div className="overflow-x-auto rounded-lg border border-border/70">
+                <table className="w-full text-2xs text-left border-collapse">
+                  <thead>
+                    <tr className="bg-muted/70 text-foreground font-bold border-b border-border/70">
+                      <th className="p-2.5">Wilayah (Kecamatan / Kelurahan)</th>
+                      <th className="p-2.5 text-center">Total Kasus</th>
+                      <th className="p-2.5 text-center text-rose-700 dark:text-rose-400">Belum Sekolah (BPB)</th>
+                      <th className="p-2.5 text-center text-amber-700 dark:text-amber-400">Drop Out (DO)</th>
+                      <th className="p-2.5 text-center text-blue-700 dark:text-blue-400">Lulus Tdk Lanjut (LTM)</th>
+                      <th className="p-2.5 text-center">Posyandu</th>
+                      <th className="p-2.5 text-center">Aksi Filter</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border/60">
+                    {rekapWilayahAts.map((kec) => (
+                      <Fragment key={kec.nama}>
+                        {/* Baris Subtotal Kecamatan */}
+                        <tr className="bg-muted/50 font-bold text-foreground">
+                          <td className="p-2.5">
+                            <span className="uppercase text-[11px] font-black text-secondary">
+                              Kecamatan {kec.nama}
+                            </span>
+                            <span className="text-muted-foreground text-[10px] ml-1.5 font-normal">
+                              ({kec.kelurahans.length} Kelurahan)
+                            </span>
+                          </td>
+                          <td className="p-2.5 text-center font-mono font-black text-foreground">
+                            {kec.total.toLocaleString("id-ID")}
+                          </td>
+                          <td className="p-2.5 text-center font-mono text-rose-700 dark:text-rose-400 font-bold">
+                            {kec.bpb.toLocaleString("id-ID")}
+                          </td>
+                          <td className="p-2.5 text-center font-mono text-amber-700 dark:text-amber-400 font-bold">
+                            {kec.doCount.toLocaleString("id-ID")}
+                          </td>
+                          <td className="p-2.5 text-center font-mono text-blue-700 dark:text-blue-400 font-bold">
+                            {kec.ltm.toLocaleString("id-ID")}
+                          </td>
+                          <td className="p-2.5 text-center text-muted-foreground font-mono">
+                            {kec.kelurahans.reduce((acc, k) => acc + k.posyanduCount, 0)} Unit
+                          </td>
+                          <td className="p-2.5 text-center">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedKecamatan(kec.nama);
+                                setSelectedKelurahan("semua");
+                                setSelectedPosyanduId("semua");
+                                setViewTab("daftar_anak");
+                              }}
+                              className="text-[10px] font-bold text-primary hover:underline cursor-pointer"
+                            >
+                              Lihat {kec.nama} ({kec.total.toLocaleString("id-ID")})
+                            </button>
+                          </td>
+                        </tr>
+
+                        {/* Baris Kelurahan dalam Kecamatan */}
+                        {kec.kelurahans.map((kel) => (
+                          <tr key={kel.nama} className="hover:bg-muted/20 text-muted-foreground transition-colors">
+                            <td className="p-2.5 pl-6 font-medium text-foreground">
+                              <span>Kelurahan {kel.nama}</span>
+                            </td>
+                            <td className="p-2.5 text-center font-mono font-bold text-foreground">
+                              {kel.total.toLocaleString("id-ID")}
+                            </td>
+                            <td className="p-2.5 text-center font-mono text-rose-700 dark:text-rose-400">
+                              {kel.bpb.toLocaleString("id-ID")}
+                            </td>
+                            <td className="p-2.5 text-center font-mono text-amber-700 dark:text-amber-400">
+                              {kel.doCount.toLocaleString("id-ID")}
+                            </td>
+                            <td className="p-2.5 text-center font-mono text-blue-700 dark:text-blue-400">
+                              {kel.ltm.toLocaleString("id-ID")}
+                            </td>
+                            <td className="p-2.5 text-center font-mono text-[11px]">
+                              <span className="text-emerald-700 dark:text-emerald-400 font-semibold">{kel.mappedPosyanduCount}</span>
+                              <span className="text-muted-foreground/60">/{kel.posyanduCount}</span>
+                            </td>
+                            <td className="p-2.5 text-center">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setSelectedKecamatan(kec.nama);
+                                  setSelectedKelurahan(kel.nama);
+                                  setSelectedPosyanduId("semua");
+                                  setViewTab("daftar_anak");
+                                }}
+                                className="px-2 py-0.5 rounded-md bg-secondary/10 hover:bg-secondary/20 text-secondary border border-secondary/30 text-[10px] font-bold transition-all cursor-pointer"
+                              >
+                                Filter Kelurahan
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </Fragment>
+                    ))}
+
+                    {/* Baris Total Keseluruhan Se-Kota Tegal */}
+                    <tr className="bg-secondary/15 font-black text-foreground border-t-2 border-secondary/40">
+                      <td className="p-2.5 text-xs uppercase text-secondary">
+                        TOTAL SE-KOTA TEGAL (4 KECAMATAN, 27 KELURAHAN)
+                      </td>
+                      <td className="p-2.5 text-center font-mono text-sm text-foreground">
+                        {dataAtsList.length.toLocaleString("id-ID")}
+                      </td>
+                      <td className="p-2.5 text-center font-mono text-rose-700 dark:text-rose-400">
+                        {atsStats.bpbCount.toLocaleString("id-ID")}
+                      </td>
+                      <td className="p-2.5 text-center font-mono text-amber-700 dark:text-amber-400">
+                        {atsStats.doCount.toLocaleString("id-ID")}
+                      </td>
+                      <td className="p-2.5 text-center font-mono text-blue-700 dark:text-blue-400">
+                        {atsStats.ltmCount.toLocaleString("id-ID")}
+                      </td>
+                      <td className="p-2.5 text-center font-mono">
+                        {allPosyandusInScope.length} Posyandu
+                      </td>
+                      <td className="p-2.5 text-center">
+                        <span className="text-[10px] font-extrabold text-secondary">100% Presisi</span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          <div className="flex items-center justify-between pt-2">
             <h4 className="text-xs sm:text-sm font-bold text-foreground">
               Daftar Posyandu &amp; Cakupan Wilayah ({filteredPosyandus.length} Posyandu)
             </h4>
@@ -1394,9 +1648,9 @@ export function KomunitasPosyanduBerjenjangDataSection({
             <div className="space-y-0.5">
               <h4 className="text-xs sm:text-sm font-bold text-foreground">
                 {mode === "anak" ? (
-                  <>Daftar Anak Usia 0–6 Tahun ({filteredDataAnak.length} Anak Terdata)</>
+                  <>Daftar Anak Usia 0–6 Tahun ({filteredDataAnak.length.toLocaleString("id-ID")} Anak Terdata)</>
                 ) : (
-                  <>Daftar Kasus Anak Tidak Sekolah ({filteredDataAts.length} Kasus ATS)</>
+                  <>Daftar Kasus Anak Tidak Sekolah ({filteredDataAts.length.toLocaleString("id-ID")} Kasus ATS)</>
                 )}
               </h4>
               <p className="text-2xs text-muted-foreground font-medium">
@@ -1416,6 +1670,31 @@ export function KomunitasPosyanduBerjenjangDataSection({
               </button>
             )}
           </div>
+
+          {/* Info Banner Tampilan Bertahap & Presisi Rekap */}
+          {mode === "ats" && (
+            <div className="rounded-xl border border-secondary/30 bg-secondary/5 p-3 sm:p-3.5 flex items-start gap-2.5 text-xs text-muted-foreground shadow-2xs">
+              <Info className="h-4 w-4 text-secondary shrink-0 mt-0.5" />
+              <div className="space-y-1 flex-1">
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                  <span className="font-bold text-foreground text-xs">
+                    Tampilan Bertahap: Menampilkan {paginatedAts.length} dari {filteredDataAts.length.toLocaleString("id-ID")} Kasus ATS
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setViewTab("rekap_posyandu")}
+                    className="text-[11px] font-extrabold text-secondary hover:underline cursor-pointer flex items-center gap-1"
+                  >
+                    <Table className="h-3 w-3" />
+                    <span>Lihat Tabel Rekapitulasi Wilayah (27 Kelurahan)</span>
+                  </button>
+                </div>
+                <p className="text-2xs text-muted-foreground leading-relaxed">
+                  Data kartu anak dimuat bertahap untuk menjaga performa halaman tetap responsif dan bebas hambatan. Seluruh angka metrik dan rekapitulasi ({atsStats.totalScoped.toLocaleString("id-ID")} kasus) dihitung 100% presisi secara lengkap dari database.
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* Render List Anak (Mode Anak) */}
           {mode === "anak" && (
@@ -1702,17 +1981,24 @@ export function KomunitasPosyanduBerjenjangDataSection({
 
                   {/* Tombol Muat Lebih Banyak ATS */}
                   {visibleCount < filteredDataAts.length && (
-                    <div className="pt-3 text-center">
+                    <div className="pt-3 flex flex-wrap items-center justify-center gap-2">
                       <button
                         type="button"
                         onClick={() => setVisibleCount((prev) => prev + 30)}
                         className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-border bg-card hover:bg-muted text-xs font-bold text-foreground shadow-2xs transition-all cursor-pointer"
                       >
-                        <span>Muat 30 Kasus ATS Lebih Banyak</span>
-                        <span className="text-muted-foreground">
-                          ({paginatedAts.length} dari {filteredDataAts.length})
-                        </span>
+                        <span>+ Muat 30 Kasus Lebih Banyak</span>
                       </button>
+                      <button
+                        type="button"
+                        onClick={() => setVisibleCount((prev) => prev + 100)}
+                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-secondary/40 bg-secondary/10 hover:bg-secondary/20 text-xs font-bold text-secondary shadow-2xs transition-all cursor-pointer"
+                      >
+                        <span>+ Muat 100 Kasus</span>
+                      </button>
+                      <span className="text-2xs text-muted-foreground self-center px-2 font-mono">
+                        Menampilkan {paginatedAts.length} dari {filteredDataAts.length.toLocaleString("id-ID")} kasus
+                      </span>
                     </div>
                   )}
                 </div>

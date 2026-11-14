@@ -1452,11 +1452,12 @@ export async function getDataAtsByKomunitas(
         ? meta.rawKec
         : null;
 
-    const queryLimit = isPkbmOrSkb || (isPosBerjenjang && !targetKel && !targetKec) ? 2500 : isPosBerjenjang ? 1000 : 150;
+    const isCityWide = isPkbmOrSkb || ((isPosyanduCommunity || isPosBerjenjang) && !targetKel && !targetKec);
+    const maxFetch = isCityWide ? 5000 : isPosBerjenjang ? 2000 : 250;
     let dbChildren: any[] | null = null;
     try {
       if (
-        (isPkbmOrSkb || (isPosBerjenjang && !targetKel && !targetKec)) &&
+        isCityWide &&
         cachedTegalCityDataAts &&
         Date.now() - cachedTegalCityDataAts.timestamp < CACHE_TEGAL_CITY_ATS_TTL_MS &&
         cachedTegalCityDataAts.data.length > 0
@@ -1487,7 +1488,7 @@ export async function getDataAtsByKomunitas(
           .or("is_sekolah.eq.false,is_sekolah.is.null,nama_sekolah.ilike.%ATS%,alasan_sekolah.ilike.%KEINGINAN%")
           .order("created_at", { ascending: false });
 
-        if (isPkbmOrSkb || ((isPosyanduCommunity || isPosBerjenjang) && !targetKel && !targetKec)) {
+        if (isCityWide) {
           // Untuk PKBM, SKB dan Posyandu Berjenjang Tingkat Kota: Ambil seluruh Data ATS se-Kota Tegal
         } else if (targetKel) {
           atsQuery = atsQuery.or(`komunitas_id.eq.${validKomId},alasan_sekolah.ilike.%${targetKel}%`);
@@ -1499,25 +1500,36 @@ export async function getDataAtsByKomunitas(
           atsQuery = atsQuery.eq("komunitas_id", validKomId);
         }
 
-        const { data, error: childError } = await atsQuery.limit(queryLimit);
+        const batchSize = 1000;
+        let allFetchedRows: any[] = [];
+        let fromIdx = 0;
 
-        if (childError) {
-          console.warn("Query data_ats with relation error:", childError.message);
-        } else {
-          dbChildren = data;
-          if (isPkbmOrSkb || (isPosBerjenjang && !targetKel && !targetKec)) {
-            cachedTegalCityDataAts = {
-              timestamp: Date.now(),
-              data: data || [],
-            };
+        while (fromIdx < maxFetch) {
+          const toIdx = fromIdx + Math.min(batchSize, maxFetch - fromIdx) - 1;
+          const { data: pageData, error: pageErr } = await atsQuery.range(fromIdx, toIdx);
+          if (pageErr) {
+            console.warn("Query data_ats batch error:", pageErr.message);
+            break;
           }
+          if (!pageData || pageData.length === 0) break;
+          allFetchedRows.push(...pageData);
+          if (pageData.length < batchSize) break;
+          fromIdx += batchSize;
+        }
+
+        dbChildren = allFetchedRows;
+        if (isCityWide) {
+          cachedTegalCityDataAts = {
+            timestamp: Date.now(),
+            data: allFetchedRows || [],
+          };
         }
       }
     } catch (e) {
       console.warn("Exception querying data_anak with relation:", e);
     }
 
-    if (!dbChildren) {
+    if (!dbChildren || dbChildren.length === 0) {
       let fallbackQuery = supabase
         .from("data_anak")
         .select(`
@@ -1542,7 +1554,7 @@ export async function getDataAtsByKomunitas(
         .or("is_sekolah.eq.false,is_sekolah.is.null,nama_sekolah.ilike.%ATS%,alasan_sekolah.ilike.%KEINGINAN%")
         .order("created_at", { ascending: false });
 
-      if (isPkbmOrSkb || ((isPosyanduCommunity || isPosBerjenjang) && !targetKel && !targetKec)) {
+      if (isCityWide) {
         // Untuk PKBM, SKB dan Posyandu Berjenjang Tingkat Kota: Ambil seluruh Data ATS se-Kota Tegal
       } else if (targetKel) {
         fallbackQuery = fallbackQuery.or(`komunitas_id.eq.${validKomId},alasan_sekolah.ilike.%${targetKel}%`);
@@ -1554,8 +1566,24 @@ export async function getDataAtsByKomunitas(
         fallbackQuery = fallbackQuery.eq("komunitas_id", validKomId);
       }
 
-      const { data: fallbackData } = await fallbackQuery.limit(queryLimit);
-      dbChildren = fallbackData || [];
+      const batchSize = 1000;
+      let allFallbackRows: any[] = [];
+      let fromIdx = 0;
+
+      while (fromIdx < maxFetch) {
+        const toIdx = fromIdx + Math.min(batchSize, maxFetch - fromIdx) - 1;
+        const { data: pageData, error: pageErr } = await fallbackQuery.range(fromIdx, toIdx);
+        if (pageErr) {
+          console.warn("Fallback query data_ats batch error:", pageErr.message);
+          break;
+        }
+        if (!pageData || pageData.length === 0) break;
+        allFallbackRows.push(...pageData);
+        if (pageData.length < batchSize) break;
+        fromIdx += batchSize;
+      }
+
+      dbChildren = allFallbackRows;
     }
 
     const rows = (dbChildren || []).filter(
