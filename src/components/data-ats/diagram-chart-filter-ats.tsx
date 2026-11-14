@@ -276,7 +276,7 @@ export function DiagramChartFilterAts({
             type="button"
             onClick={toggleAll}
             className={cn(
-              "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-2xs font-bold transition-all border cursor-pointer",
+              "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-2xs font-bold transition-all border cursor-pointer print:hidden",
               isAllHidden
                 ? "bg-indigo-600 hover:bg-indigo-700 text-white border-indigo-600"
                 : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 shadow-2xs"
@@ -317,7 +317,7 @@ export function DiagramChartFilterAts({
               <button
                 type="button"
                 onClick={() => toggleChart("jenjang")}
-                className="inline-flex items-center gap-1 px-2 py-0.5 rounded border border-border bg-card text-foreground text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-muted"
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded border border-border bg-card text-foreground text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-muted print:hidden"
                 title={hiddenCharts.jenjang ? "Tampilkan Diagram" : "Sembunyikan Diagram"}
               >
                 {hiddenCharts.jenjang ? (
@@ -447,7 +447,7 @@ export function DiagramChartFilterAts({
               <button
                 type="button"
                 onClick={() => toggleChart("keinginan")}
-                className="inline-flex items-center gap-1 px-2 py-0.5 rounded border border-border bg-card text-foreground text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-muted"
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded border border-border bg-card text-foreground text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-muted print:hidden"
                 title={hiddenCharts.keinginan ? "Tampilkan Diagram" : "Sembunyikan Diagram"}
               >
                 {hiddenCharts.keinginan ? (
@@ -577,7 +577,7 @@ export function DiagramChartFilterAts({
               <button
                 type="button"
                 onClick={() => toggleChart("gender")}
-                className="inline-flex items-center gap-1 px-2 py-0.5 rounded border border-border bg-card text-foreground text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-muted"
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded border border-border bg-card text-foreground text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-muted print:hidden"
                 title={hiddenCharts.gender ? "Tampilkan Diagram" : "Sembunyikan Diagram"}
               >
                 {hiddenCharts.gender ? (

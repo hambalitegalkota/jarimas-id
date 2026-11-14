@@ -1826,7 +1826,7 @@ export function KomunitasPosyanduBerjenjangDataSection({
 
                   {/* Tombol Muat Lebih Banyak */}
                   {visibleCount < filteredDataAnak.length && (
-                    <div className="pt-3 text-center">
+                    <div className="pt-3 text-center print:hidden">
                       <button
                         type="button"
                         onClick={() => setVisibleCount((prev) => prev + 30)}
@@ -1994,7 +1994,7 @@ export function KomunitasPosyanduBerjenjangDataSection({
 
                   {/* Tombol Muat Lebih Banyak ATS */}
                   {visibleCount < filteredDataAts.length && (
-                    <div className="pt-3 flex flex-wrap items-center justify-center gap-2">
+                    <div className="pt-3 flex flex-wrap items-center justify-center gap-2 print:hidden">
                       <button
                         type="button"
                         onClick={() => setVisibleCount((prev) => prev + 30)}

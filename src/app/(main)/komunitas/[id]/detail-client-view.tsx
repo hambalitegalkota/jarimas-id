@@ -1194,7 +1194,7 @@ export function KomunitasDetailClientView({
                 <button
                   type="button"
                   onClick={() => setIsManageCardsOpen(true)}
-                  className="inline-flex items-center gap-1 rounded-md border border-border bg-muted hover:bg-muted/80 text-foreground px-2.5 py-1 text-xs font-bold shadow-2xs transition-all active:scale-98 cursor-pointer"
+                  className="inline-flex items-center gap-1 rounded-md border border-border bg-muted hover:bg-muted/80 text-foreground px-2.5 py-1 text-xs font-bold shadow-2xs transition-all active:scale-98 cursor-pointer print:hidden"
                   title="Kelola Kartu Layanan (Data Anak & ATS)"
                 >
                   <Settings2 className="h-3.5 w-3.5 text-muted-foreground" />
@@ -1272,7 +1272,7 @@ export function KomunitasDetailClientView({
             <button
               type="button"
               onClick={handleCopyLink}
-              className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card hover:bg-muted text-foreground px-2.5 py-1 text-xs font-bold shadow-2xs transition-all active:scale-98 cursor-pointer"
+              className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card hover:bg-muted text-foreground px-2.5 py-1 text-xs font-bold shadow-2xs transition-all active:scale-98 cursor-pointer print:hidden"
               title="Salin tautan profil komunitas ini"
             >
               {isCopied ? (
@@ -1292,7 +1292,7 @@ export function KomunitasDetailClientView({
             <button
               type="button"
               onClick={handleShareWhatsApp}
-              className="inline-flex items-center gap-1.5 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 sm:px-3 py-1 text-xs font-bold shadow-2xs transition-all active:scale-98 cursor-pointer"
+              className="inline-flex items-center gap-1.5 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 sm:px-3 py-1 text-xs font-bold shadow-2xs transition-all active:scale-98 cursor-pointer print:hidden"
               title="Bagikan profil komunitas ke grup WhatsApp"
             >
               <MessageCircle className="h-3.5 w-3.5" />
@@ -1304,7 +1304,7 @@ export function KomunitasDetailClientView({
               <button
                 type="button"
                 onClick={() => setIsEditOperasionalOpen(true)}
-                className="inline-flex items-center gap-1.5 rounded-md border border-primary/30 bg-primary/10 hover:bg-primary/20 text-primary px-3 py-1 text-xs font-bold shadow-2xs transition-all active:scale-98 cursor-pointer"
+                className="inline-flex items-center gap-1.5 rounded-md border border-primary/30 bg-primary/10 hover:bg-primary/20 text-primary px-3 py-1 text-xs font-bold shadow-2xs transition-all active:scale-98 cursor-pointer print:hidden"
                 title="Edit data dan informasi operasional komunitas/lembaga ini"
               >
                 <Pencil className="h-3.5 w-3.5" />

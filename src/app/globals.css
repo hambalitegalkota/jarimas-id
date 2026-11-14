@@ -250,12 +250,12 @@ button, input, select, textarea {
 @media print {
   @page {
     size: A4 portrait;
-    margin: 0 !important; /* Margin 0 menonaktifkan header/footer otomatis browser (tanggal, jam, URL, judul) */
+    margin: 8mm 10mm 10mm 10mm; /* Margin seimbang dan proporsional dokumen A4 resmi */
   }
 
   @page landscape {
     size: A4 landscape;
-    margin: 0 !important;
+    margin: 8mm 10mm 8mm 10mm;
   }
 
   .print-landscape {
@@ -264,12 +264,15 @@ button, input, select, textarea {
 
   html, body {
     background: #ffffff !important;
-    color: #000000 !important;
+    background-color: #ffffff !important;
+    color: #0f172a !important;
     padding: 0 !important;
     margin: 0 !important;
     min-height: auto !important;
-    font-size: 10pt;
+    font-size: 9.5pt;
+    line-height: 1.35;
     overflow: visible !important;
+    width: 100% !important;
   }
 
   main {
@@ -282,12 +285,14 @@ button, input, select, textarea {
   /* ======================================================== */
   /* ATURAN GLOBAL HASIL CETAK / PRINTING (A4 RESMI)          */
   /* Mencegah pemotongan kartu di tengah halaman (No Slicing) */
-  /* Lebih baik menyisakan space kosong di bawah daripada      */
-  /* memotong kartu / bagian secara tidak tepat               */
+  /* Menampilkan visual persis seperti tampilan aplikasi web   */
   /* ======================================================== */
-  * {
+  *,
+  *::before,
+  *::after {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
+    color-adjust: exact !important;
   }
 
   /* Pastikan seluruh container tidak membatasi overflow sehingga browser dapat membagi halaman secara alami */
@@ -296,7 +301,7 @@ button, input, select, textarea {
     max-height: none !important;
   }
 
-  /* Sembunyikan elemen navigasi, sidebar, footer, dan kontrol interaktif yang tidak relevan di kertas */
+  /* Sembunyikan elemen navigasi, sidebar, footer, dan kontrol aksi interaktif yang tidak relevan di kertas */
   nav,
   aside,
   header:not(.print-keep),
@@ -304,11 +309,36 @@ button, input, select, textarea {
   .print-hidden,
   .print\:hidden,
   [data-no-print="true"],
-  button:not(.print-keep),
+  .no-print,
+  button.no-print,
+  button.print-hidden,
+  button[class*="print:hidden"],
   input:not([type="checkbox"]):not([type="radio"]),
-  select,
-  .no-print {
+  select {
     display: none !important;
+  }
+
+  /* Sembunyikan tombol aksi murni KECUALI tombol data/grafik/kartu yang memuat visualisasi */
+  button:not(.print-keep):not([class*="print-keep"]):not([class*="print:flex"]):not([class*="print:block"]):not([data-chart]) {
+    display: none !important;
+  }
+
+  /* Pastikan elemen chart, diagram, dan kartu dengan .print-keep selalu tampil persis seperti di aplikasi */
+  .print-keep,
+  button.print-keep,
+  button[class*="print-keep"],
+  button[class*="print:flex"] {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+
+  button.print-keep.block,
+  button.print-keep[class*="w-full"],
+  button[class*="print:block"] {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
   }
 
   /* PENCEGAHAN PEMOTONGAN KARTU / PANEL / WIDGET / GRAFIK DI TENGAH HALAMAN */

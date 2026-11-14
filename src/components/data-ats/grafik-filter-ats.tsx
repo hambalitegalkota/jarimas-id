@@ -450,7 +450,7 @@ export function GrafikFilterAts({
                 <button
                   type="button"
                   onClick={onResetFilters}
-                  className="rounded-lg bg-slate-100 dark:bg-slate-800 px-2.5 py-1 text-2xs font-bold text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700 hover:bg-slate-200 transition-colors cursor-pointer"
+                  className="rounded-lg bg-slate-100 dark:bg-slate-800 px-2.5 py-1 text-2xs font-bold text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700 hover:bg-slate-200 transition-colors cursor-pointer print:hidden"
                 >
                   Reset Filter
                 </button>
@@ -467,7 +467,7 @@ export function GrafikFilterAts({
             type="button"
             onClick={toggleAll}
             className={cn(
-              "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-2xs font-bold transition-all border cursor-pointer",
+              "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-2xs font-bold transition-all border cursor-pointer print:hidden",
               isAllHidden
                 ? "bg-indigo-600 hover:bg-indigo-700 text-white border-indigo-600"
                 : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 shadow-2xs"
@@ -516,7 +516,7 @@ export function GrafikFilterAts({
               <button
                 type="button"
                 onClick={() => toggleChart("usia")}
-                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700"
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700 print:hidden"
                 title={hiddenCharts.usia ? "Tampilkan Grafik" : "Sembunyikan Grafik"}
               >
                 {hiddenCharts.usia ? (
@@ -535,7 +535,7 @@ export function GrafikFilterAts({
                 <button
                   type="button"
                   onClick={() => handleSelectKategori("semua")}
-                  className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 cursor-pointer hover:bg-slate-300 transition-colors"
+                  className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 cursor-pointer hover:bg-slate-300 transition-colors print:hidden"
                   title="Kembali ke Total ATS"
                 >
                   {currentKategori === "bpb" && "BPB"}
@@ -548,7 +548,7 @@ export function GrafikFilterAts({
                 <button
                   type="button"
                   onClick={() => onSelectAge?.(null)}
-                  className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-indigo-600 text-white cursor-pointer hover:bg-indigo-700"
+                  className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-indigo-600 text-white cursor-pointer hover:bg-indigo-700 print:hidden"
                 >
                   Usia {activeFilters.age} Thn Aktif ✕
                 </button>
@@ -599,7 +599,7 @@ export function GrafikFilterAts({
                     type="button"
                     onClick={() => onSelectAge?.(isSelected ? null : uItem.usia)}
                     className={cn(
-                      "flex-1 flex flex-col items-center justify-end h-full group relative cursor-pointer transition-all rounded-lg p-0.5",
+                      "flex-1 flex flex-col items-center justify-end h-full group relative cursor-pointer transition-all rounded-lg p-0.5 print-keep print:flex",
                       isSelected
                         ? "bg-indigo-100/70 dark:bg-indigo-950/80 ring-2 ring-indigo-500 shadow-xs"
                         : "hover:bg-slate-50 dark:hover:bg-slate-800"
@@ -870,7 +870,7 @@ export function GrafikFilterAts({
               <button
                 type="button"
                 onClick={() => toggleChart("kelas")}
-                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700"
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700 print:hidden"
                 title={hiddenCharts.kelas ? "Tampilkan Grafik" : "Sembunyikan Grafik"}
               >
                 {hiddenCharts.kelas ? (
@@ -889,7 +889,7 @@ export function GrafikFilterAts({
                 <button
                   type="button"
                   onClick={() => onSelectKelasAts?.(null)}
-                  className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-indigo-600 text-white cursor-pointer hover:bg-indigo-700"
+                  className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-indigo-600 text-white cursor-pointer hover:bg-indigo-700 print:hidden"
                 >
                   Kelas {DAFTAR_15_KELAS_ATS.find((k) => k.key === activeFilters.kelasAts)?.shortLabel || activeFilters.kelasAts} Aktif ✕
                 </button>
@@ -955,7 +955,7 @@ export function GrafikFilterAts({
                     type="button"
                     onClick={() => onSelectKelasAts?.(isSelected ? null : kItem.key)}
                     className={cn(
-                      "flex-1 flex flex-col items-center justify-end h-full group relative cursor-pointer transition-all rounded-lg p-0.5",
+                      "flex-1 flex flex-col items-center justify-end h-full group relative cursor-pointer transition-all rounded-lg p-0.5 print-keep print:flex",
                       isSelected
                         ? "bg-indigo-100/70 dark:bg-indigo-950/80 ring-2 ring-indigo-500 shadow-xs"
                         : "hover:bg-slate-50 dark:hover:bg-slate-800"
@@ -1112,7 +1112,7 @@ export function GrafikFilterAts({
               <button
                 type="button"
                 onClick={() => toggleChart("alasan")}
-                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700"
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700 print:hidden"
                 title={hiddenCharts.alasan ? "Tampilkan Grafik" : "Sembunyikan Grafik"}
               >
                 {hiddenCharts.alasan ? (
@@ -1131,7 +1131,7 @@ export function GrafikFilterAts({
                 <button
                   type="button"
                   onClick={() => onSelectAlasan?.("semua")}
-                  className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-rose-600 text-white cursor-pointer hover:bg-rose-700"
+                  className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-rose-600 text-white cursor-pointer hover:bg-rose-700 print:hidden"
                 >
                   Filter Aktif ✕
                 </button>
@@ -1159,7 +1159,7 @@ export function GrafikFilterAts({
             (() => {
               const maxReasonCount = Math.max(...alasanStats.map((r) => r.count), 1);
             return (
-              <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
+              <div className="space-y-2 max-h-72 overflow-y-auto pr-1 print:max-h-none print:overflow-visible">
                 {alasanStats.map((item, idx) => {
                   const isSelected =
                     activeFilters.alasan.toLowerCase() === item.alasan.toLowerCase();
@@ -1177,7 +1177,7 @@ export function GrafikFilterAts({
                       type="button"
                       onClick={() => onSelectAlasan?.(isSelected ? "semua" : item.alasan)}
                       className={cn(
-                        "w-full text-left p-3 rounded-xl border-2 transition-all space-y-1.5 cursor-pointer block group",
+                        "w-full text-left p-3 rounded-xl border-2 transition-all space-y-1.5 cursor-pointer block group print-keep print:block",
                         isSelected
                           ? "bg-rose-100/90 dark:bg-rose-950/80 border-rose-600 shadow-xs ring-2 ring-rose-600/30"
                           : isTop1
@@ -1270,7 +1270,7 @@ export function GrafikFilterAts({
               <button
                 type="button"
                 onClick={() => toggleChart("jenjang")}
-                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700"
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700 print:hidden"
                 title={hiddenCharts.jenjang ? "Tampilkan Grafik" : "Sembunyikan Grafik"}
               >
                 {hiddenCharts.jenjang ? (
@@ -1313,7 +1313,7 @@ export function GrafikFilterAts({
                   type="button"
                   onClick={() => onSelectJenjang?.(isSelected ? "semua" : item.id)}
                   className={cn(
-                    "w-full text-left p-2.5 rounded-xl border-2 transition-all space-y-1.5 cursor-pointer block",
+                    "w-full text-left p-2.5 rounded-xl border-2 transition-all space-y-1.5 cursor-pointer block print-keep print:block",
                     isSelected
                       ? "bg-emerald-100/90 dark:bg-emerald-950/80 border-emerald-600 shadow-xs ring-2 ring-emerald-600/30"
                       : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 hover:bg-slate-50"
@@ -1358,7 +1358,7 @@ export function GrafikFilterAts({
               <button
                 type="button"
                 onClick={() => toggleChart("keinginan")}
-                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700"
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xs font-bold transition-all cursor-pointer shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-700 print:hidden"
                 title={hiddenCharts.keinginan ? "Tampilkan Grafik" : "Sembunyikan Grafik"}
               >
                 {hiddenCharts.keinginan ? (
@@ -1402,7 +1402,7 @@ export function GrafikFilterAts({
                       onClick={() =>
                         onSelectKeinginan?.(activeFilters.keinginan === "Masih Ada" ? "semua" : "Masih Ada")
                       }
-                      className="h-full bg-emerald-500 rounded-l-full transition-all duration-500 cursor-pointer hover:brightness-110"
+                      className="h-full bg-emerald-500 rounded-l-full transition-all duration-500 cursor-pointer hover:brightness-110 print-keep print:block"
                       style={{ width: `${keinginanStats.masihAdaPct}%` }}
                       title={`Masih Ada: ${keinginanStats.masihAda} anak (${keinginanStats.masihAdaPct}%)`}
                     />
@@ -1413,7 +1413,7 @@ export function GrafikFilterAts({
                       onClick={() =>
                         onSelectKeinginan?.(activeFilters.keinginan === "Tidak Ada" ? "semua" : "Tidak Ada")
                       }
-                      className="h-full bg-rose-500 rounded-r-full transition-all duration-500 cursor-pointer hover:brightness-110"
+                      className="h-full bg-rose-500 rounded-r-full transition-all duration-500 cursor-pointer hover:brightness-110 print-keep print:block"
                       style={{ width: `${keinginanStats.tidakAdaPct}%` }}
                       title={`Tidak Ada: ${keinginanStats.tidakAda} anak (${keinginanStats.tidakAdaPct}%)`}
                     />
@@ -1549,7 +1549,7 @@ export function GrafikFilterAts({
                     type="button"
                     onClick={() => onSelectGender?.(activeFilters.gender === "L" ? "semua" : "L")}
                     className={cn(
-                      "h-full rounded-l-full transition-all duration-500 cursor-pointer hover:brightness-110",
+                      "h-full rounded-l-full transition-all duration-500 cursor-pointer hover:brightness-110 print-keep print:block",
                       activeFilters.gender === "L" ? "bg-sky-600 ring-2 ring-sky-300" : "bg-sky-500"
                     )}
                     style={{ width: `${genderStats.lakiPct}%` }}
@@ -1561,7 +1561,7 @@ export function GrafikFilterAts({
                     type="button"
                     onClick={() => onSelectGender?.(activeFilters.gender === "P" ? "semua" : "P")}
                     className={cn(
-                      "h-full rounded-r-full transition-all duration-500 cursor-pointer hover:brightness-110",
+                      "h-full rounded-r-full transition-all duration-500 cursor-pointer hover:brightness-110 print-keep print:block",
                       activeFilters.gender === "P" ? "bg-pink-600 ring-2 ring-pink-300" : "bg-pink-500"
                     )}
                     style={{ width: `${genderStats.perempuanPct}%` }}
@@ -1609,7 +1609,7 @@ export function GrafikFilterAts({
                       onSelectStatus?.(activeFilters.status === "approved" ? "semua" : "approved")
                     }
                     className={cn(
-                      "h-full rounded-l-full transition-all duration-500 cursor-pointer hover:brightness-110",
+                      "h-full rounded-l-full transition-all duration-500 cursor-pointer hover:brightness-110 print-keep print:block",
                       activeFilters.status === "approved"
                         ? "bg-emerald-600 ring-2 ring-emerald-300"
                         : "bg-emerald-500"
@@ -1625,7 +1625,7 @@ export function GrafikFilterAts({
                       onSelectStatus?.(activeFilters.status === "pending" ? "semua" : "pending")
                     }
                     className={cn(
-                      "h-full rounded-r-full transition-all duration-500 cursor-pointer hover:brightness-110",
+                      "h-full rounded-r-full transition-all duration-500 cursor-pointer hover:brightness-110 print-keep print:block",
                       activeFilters.status === "pending"
                         ? "bg-amber-600 ring-2 ring-amber-300"
                         : "bg-amber-500"
