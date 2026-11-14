@@ -48,6 +48,7 @@ import {
   Share2,
 } from "lucide-react";
 import { getKomunitasSlug } from "@/lib/community-slugs";
+import { isKomunitasBerjenjangPosyandu } from "@/lib/constants/tegal-data";
 import {
   getPosyanduCoverageDisplay,
   isKomunitasLayananPaud,
@@ -66,6 +67,7 @@ import {
   KomunitasBerjenjangAnggotaTab,
   type KomunitasBerjenjangMemberSummaryResult,
 } from "@/components/komunitas/komunitas-berjenjang-anggota-tab";
+import { KomunitasPosyanduBerjenjangDataSection } from "@/components/komunitas/komunitas-posyandu-berjenjang-data-section";
 import { useGlobalMessageNotification } from "@/components/notifications/global-message-notification-provider";
 import { AjukanPerubahanPeranModal } from "@/components/komunitas/ajukan-perubahan-peran-modal";
 import { PermohonanAnggotaModal } from "@/components/komunitas/permohonan-anggota-modal";
@@ -211,13 +213,25 @@ export function KomunitasDetailClientView({
     setDataAtsState(dataAtsList);
   }, [dataAtsList]);
 
+  const isPosyandu =
+    komunitasData.jenis === "posyandu" ||
+    (komunitasData.nama || "").toLowerCase().includes("posyandu");
+
+  const isBerjenjangPos =
+    isPosyandu &&
+    (Boolean(berjenjangSummary?.isBerjenjang) ||
+      isKomunitasBerjenjangPosyandu(komunitasData.id) ||
+      isKomunitasBerjenjangPosyandu(komunitas.id) ||
+      (komunitasData.nama || "").toLowerCase().includes("komunitas posyandu") ||
+      (typeof komunitasData.id === "string" && komunitasData.id.startsWith("kom-posyandu-")));
+
   // Helper identifikasi fitur & kartu komunitas
   const featureCards = useMemo(
     () => getKomunitasFeatureCards(komunitasData),
     [komunitasData]
   );
-  const canShowDataAnakCard = featureCards.canShowDataAnak;
-  const canShowDataAtsCard = featureCards.canShowDataAts;
+  const canShowDataAnakCard = isBerjenjangPos || featureCards.canShowDataAnak;
+  const canShowDataAtsCard = isBerjenjangPos || featureCards.canShowDataAts;
   const isTheOrbitSixty = featureCards.isTheOrbitSixty;
 
   const cleanKomNama = (komunitasData.nama || "").toLowerCase().trim();
@@ -254,6 +268,7 @@ export function KomunitasDetailClientView({
 
   const isBerjenjang =
     Boolean(berjenjangSummary?.isBerjenjang) ||
+    isBerjenjangPos ||
     (komunitasData.nama || "").toLowerCase().includes("komunitas posyandu") ||
     (komunitasData.nama || "").toLowerCase().startsWith("komunitas") ||
     (typeof komunitasData.id === "string" && (
@@ -262,17 +277,21 @@ export function KomunitasDetailClientView({
     ));
 
   const [activeMainTab, setActiveMainTab] = useState<KomunitasMainTab>(() => {
-    if (isBerjenjang) {
-      if (currentSubtab === "kabar") return "kabar";
-      if (currentSubtab === "percakapan") return "percakapan";
-      return "anggota";
-    }
-    if (currentSubtab === "rekap") return "rekap";
+    if (currentSubtab === "anak" || currentSubtab === "data") return "anak";
     if (currentSubtab === "ats") return "ats";
-    if (currentSubtab === "laporan_spm" || currentSubtab === "spm") return "laporan_spm";
-    if (currentSubtab === "anggota") return "anggota";
     if (currentSubtab === "kabar") return "kabar";
     if (currentSubtab === "percakapan") return "percakapan";
+    if (currentSubtab === "anggota") return "anggota";
+    if (currentSubtab === "rekap") return "rekap";
+    if (currentSubtab === "laporan_spm" || currentSubtab === "spm") return "laporan_spm";
+
+    if (isBerjenjangPos) {
+      return "anak";
+    }
+
+    if (isBerjenjang) {
+      return "anggota";
+    }
     if (canShowDataAnakCard) return "anak";
     if (canShowDataAtsCard) return "ats";
     return "kabar";
@@ -528,7 +547,7 @@ export function KomunitasDetailClientView({
 
   const isWargaKita = komunitasData.jenis === "warga_kita";
   const isPaud = komunitasData.jenis === "satuan_paud";
-  const isPosyandu = komunitasData.jenis === "posyandu";
+  // isPosyandu sudah dideklarasikan di bagian atas komponen
 
   const meta = useMemo(() => extractKomunitasMetadata(komunitasData), [komunitasData]);
   const isRt = isWargaKita && Boolean(komunitasData.rt && komunitasData.rt.trim() !== "" && komunitasData.rt !== "semua" && komunitasData.rt !== "00");
@@ -1573,6 +1592,152 @@ export function KomunitasDetailClientView({
           );
 
           if (isBerjenjang) {
+            if (isPosyandu) {
+              return (
+                <div className="pb-2 border-b border-border/80 flex flex-wrap items-center gap-1.5 sm:gap-2 w-full">
+                  {/* Tab 1: Data Anak Usia 0-6 Tahun */}
+                  <button
+                    type="button"
+                    onClick={() => setActiveMainTab("anak")}
+                    className={cn(
+                      "flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-2xs sm:text-xs font-semibold transition-all cursor-pointer border flex-1 sm:flex-initial min-w-[fit-content] whitespace-nowrap",
+                      activeMainTab === "anak"
+                        ? "bg-primary text-primary-foreground border-primary shadow-xs font-bold"
+                        : "bg-card text-muted-foreground border-border hover:bg-muted hover:text-foreground"
+                    )}
+                  >
+                    <Baby className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+                    <span>
+                      <span className="sm:hidden">Anak (0–6 Thn)</span>
+                      <span className="hidden sm:inline">Data Anak (0–6 Thn)</span>
+                    </span>
+                    <span
+                      className={cn(
+                        "px-1.5 py-0.5 rounded-full font-mono text-2xs font-bold leading-none shrink-0",
+                        activeMainTab === "anak"
+                          ? "bg-white/25 text-white"
+                          : "bg-muted text-muted-foreground"
+                      )}
+                    >
+                      {totalChildren}
+                    </span>
+                  </button>
+
+                  {/* Tab 2: Data ATS */}
+                  <button
+                    type="button"
+                    onClick={() => setActiveMainTab("ats")}
+                    className={cn(
+                      "flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-2xs sm:text-xs font-semibold transition-all cursor-pointer border flex-1 sm:flex-initial min-w-[fit-content] whitespace-nowrap",
+                      activeMainTab === "ats"
+                        ? "bg-secondary text-secondary-foreground border-secondary shadow-xs font-bold"
+                        : "bg-card text-muted-foreground border-border hover:bg-muted hover:text-foreground"
+                    )}
+                  >
+                    <GraduationCap className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+                    <span>
+                      <span className="sm:hidden">ATS</span>
+                      <span className="hidden sm:inline">Data ATS</span>
+                    </span>
+                    <span
+                      className={cn(
+                        "px-1.5 py-0.5 rounded-full font-mono text-2xs font-bold leading-none shrink-0",
+                        activeMainTab === "ats"
+                          ? "bg-white/25 text-white"
+                          : "bg-muted text-muted-foreground"
+                      )}
+                    >
+                      {dataAtsState.length}
+                    </span>
+                  </button>
+
+                  {/* Tab 3: Daftar Kader */}
+                  <button
+                    type="button"
+                    onClick={() => setActiveMainTab("anggota")}
+                    className={cn(
+                      "flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-2xs sm:text-xs font-semibold transition-all cursor-pointer border flex-1 sm:flex-initial min-w-[fit-content] whitespace-nowrap",
+                      activeMainTab === "anggota"
+                        ? "bg-primary text-primary-foreground border-primary shadow-xs font-bold"
+                        : "bg-card text-muted-foreground border-border hover:bg-muted hover:text-foreground"
+                    )}
+                  >
+                    <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+                    <span>
+                      <span className="sm:hidden">Kader</span>
+                      <span className="hidden sm:inline">Daftar Kader</span>
+                    </span>
+                    <span
+                      className={cn(
+                        "px-1.5 py-0.5 rounded-full font-mono text-2xs font-bold leading-none shrink-0",
+                        activeMainTab === "anggota"
+                          ? "bg-white/25 text-white"
+                          : "bg-muted text-muted-foreground"
+                      )}
+                    >
+                      {berjenjangSummary ? berjenjangSummary.totalAnggota : approvedMembers.length}
+                    </span>
+                  </button>
+
+                  {/* Tab 4: Kabar Komunitas */}
+                  <button
+                    type="button"
+                    onClick={() => setActiveMainTab("kabar")}
+                    className={cn(
+                      "flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-2xs sm:text-xs font-semibold transition-all cursor-pointer border flex-1 sm:flex-initial min-w-[fit-content] whitespace-nowrap",
+                      activeMainTab === "kabar"
+                        ? "bg-primary text-primary-foreground border-primary shadow-xs font-bold"
+                        : "bg-card text-muted-foreground border-border hover:bg-muted hover:text-foreground"
+                    )}
+                  >
+                    <MessageSquare className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+                    <span>
+                      Kabar<span className="hidden md:inline"> Komunitas</span>
+                    </span>
+                    <span
+                      className={cn(
+                        "px-1.5 py-0.5 rounded-full font-mono text-2xs font-bold leading-none shrink-0",
+                        activeMainTab === "kabar"
+                          ? "bg-white/25 text-white"
+                          : "bg-muted text-muted-foreground"
+                      )}
+                    >
+                      {kabarKomunitas.length}
+                    </span>
+                  </button>
+
+                  {/* Tab 5: Percakapan Komunitas */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveMainTab("percakapan");
+                      markGroupAsRead(komunitasData.id);
+                      const validId = toValidUUID(komunitasData.id);
+                      if (validId && validId !== komunitasData.id) {
+                        markGroupAsRead(validId);
+                      }
+                    }}
+                    className={cn(
+                      "flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-2xs sm:text-xs font-semibold transition-all cursor-pointer border flex-1 sm:flex-initial min-w-[fit-content] whitespace-nowrap",
+                      activeMainTab === "percakapan"
+                        ? "bg-primary text-primary-foreground border-primary shadow-xs font-bold"
+                        : "bg-card text-muted-foreground border-border hover:bg-muted hover:text-foreground"
+                    )}
+                  >
+                    <MessageCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+                    <span>
+                      Percakapan<span className="hidden md:inline"> Komunitas</span>
+                    </span>
+                    {communityUnreadCount > 0 && (
+                      <span className="px-1.5 py-0.5 rounded-full font-mono text-2xs bg-rose-500 text-white font-bold animate-pulse leading-none shrink-0">
+                        {communityUnreadCount}
+                      </span>
+                    )}
+                  </button>
+                </div>
+              );
+            }
+
             return (
               <div className="pb-2 border-b border-border/80 flex flex-wrap items-center gap-1.5 sm:gap-2 w-full">
                 {/* Tab Anggota */}
@@ -1910,6 +2075,20 @@ export function KomunitasDetailClientView({
         {/* 3. KONTEN TAB AKTIF TERPADU */}
         {/* TAB 1: DATA ANAK (0-6 TAHUN) / BALITA / SISWA */}
         {activeMainTab === "anak" && (
+          isBerjenjangPos ? (
+            <KomunitasPosyanduBerjenjangDataSection
+              mode="anak"
+              komunitas={komunitasData}
+              dataAnakList={dataAnakState}
+              dataAtsList={dataAtsState}
+              currentUserId={currentUserId}
+              isAdminOrKader={isAdminOrKader}
+              canViewDetail={canViewDetailDataAnak || isSuperOrPusat}
+              canValidate={canValidateDataAnak}
+              canCreate={canCreateDataAnak}
+              userRole={userRoleDataAnak || userPeran}
+            />
+          ) : (
           <div className="space-y-4 animate-in fade-in duration-150">
             {/* Notice Banner Keterangan Akses & Integrasi Data */}
             {isWargaKita ? (
@@ -2370,6 +2549,7 @@ export function KomunitasDetailClientView({
               </div>
             )}
           </div>
+          )
         )}
 
         {/* TAB 2: REKAP, GRAFIK & DIAGRAM */}
@@ -2395,6 +2575,20 @@ export function KomunitasDetailClientView({
 
         {/* TAB 3: DATA ATS (ANAK TIDAK SEKOLAH) */}
         {activeMainTab === "ats" && (
+          isBerjenjangPos ? (
+            <KomunitasPosyanduBerjenjangDataSection
+              mode="ats"
+              komunitas={komunitasData}
+              dataAnakList={dataAnakState}
+              dataAtsList={dataAtsState}
+              currentUserId={currentUserId}
+              isAdminOrKader={isAdminOrKader}
+              canViewDetail={canAccessDaftarNamaAts || isSuperOrPusat}
+              canValidate={canValidateDataAts}
+              canCreate={false}
+              userRole={userRoleDataAnak || userPeran}
+            />
+          ) : (
           <div className="space-y-4 animate-in fade-in duration-150 pb-8">
             {isRekapOnlyTier && rekapDataAts ? (
               <RekapDataAtsClientView
@@ -2449,6 +2643,7 @@ export function KomunitasDetailClientView({
               />
             )}
           </div>
+          )
         )}
 
         {/* TAB 4: LAPORAN KADER SPM */}

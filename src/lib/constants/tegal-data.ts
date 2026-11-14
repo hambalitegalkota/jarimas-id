@@ -12,6 +12,7 @@ import { toValidUUID } from "@/lib/utils";
 import type { JenisKomunitas } from "@/types/database";
 
 export {
+  SEED_POSYANDU_TEGAL,
   SEED_PAUD_PKBM_TEGAL,
   SEED_PAUD_TEGAL,
   SEED_PKBM_SKB_TEGAL,

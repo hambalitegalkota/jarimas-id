@@ -7,7 +7,9 @@ import { ArrowLeft } from "lucide-react";
 import {
   getKomunitasDetail,
   getAnggotaKomunitas,
+  getKomunitasBerjenjangMemberSummary,
 } from "@/app/actions/komunitas";
+import { isAnyKomunitasBerjenjang, isKomunitasBerjenjangPosyandu } from "@/lib/constants/tegal-data";
 import { getDataAnakByKomunitas } from "@/app/actions/data-anak";
 import { getDataAtsByKomunitas } from "@/app/actions/data-ats";
 import { getKabarFeed } from "@/app/actions/kabar";
@@ -57,7 +59,11 @@ export default async function KotaTegalKomunitasPage({
     notFound();
   }
 
-  const { canShowDataAnak, canShowDataAts } = getKomunitasFeatureCards(komunitas);
+  const isBerjenjang = isAnyKomunitasBerjenjang(slug) || isAnyKomunitasBerjenjang(komunitas.id);
+  const isBerjenjangPos = isKomunitasBerjenjangPosyandu(slug) || isKomunitasBerjenjangPosyandu(komunitas.id);
+  const { canShowDataAnak: canShowDataAnakRaw, canShowDataAts: canShowDataAtsRaw } = getKomunitasFeatureCards(komunitas);
+  const canShowDataAnak = isBerjenjangPos ? true : (isBerjenjang ? false : canShowDataAnakRaw);
+  const canShowDataAts = isBerjenjangPos ? true : (isBerjenjang ? false : canShowDataAtsRaw);
   const hasRootAccess = Boolean(isSuperOrAdminPusat || isSuperAdmin || isAdminPusat);
 
   const meta = extractKomunitasMetadata(komunitas);
@@ -82,6 +88,7 @@ export default async function KotaTegalKomunitasPage({
     canManageAdminsRes,
     rekapDataAtsRes,
     rekapAtsAuthAccess,
+    berjenjangSummaryRes,
   ] = await Promise.all([
     getAnggotaKomunitas(komunitas.id),
     canShowDataAnak
@@ -118,6 +125,7 @@ export default async function KotaTegalKomunitasPage({
     currentUserId ? checkCanManageKomunitasAdminsAction(komunitas.id) : Promise.resolve(false),
     needsAtsRekap ? getRekapDataAtsAction() : Promise.resolve({ data: null }),
     needsAtsRekap ? checkUserRekapAdminAccess() : Promise.resolve({ canAccess: false, userPeran: undefined }),
+    isBerjenjang ? getKomunitasBerjenjangMemberSummary(komunitas.id) : Promise.resolve(null),
   ]);
 
   const canAssignAdmin = hasRootAccess ? true : Boolean(canManageAdminsRes);
@@ -193,6 +201,7 @@ export default async function KotaTegalKomunitasPage({
         userRoleDataAnak={dataAnakRes?.userRole}
         scopedRekapResult={scopedRekapCalc}
         canAssignAdmin={canAssignAdmin}
+        berjenjangSummary={berjenjangSummaryRes}
       />
     </div>
   );

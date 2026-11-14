@@ -24,7 +24,7 @@ import {
   getAnggotaKomunitas,
   getKomunitasBerjenjangMemberSummary,
 } from "@/app/actions/komunitas";
-import { isAnyKomunitasBerjenjang } from "@/lib/constants/tegal-data";
+import { isAnyKomunitasBerjenjang, isKomunitasBerjenjangPosyandu } from "@/lib/constants/tegal-data";
 import { getDataAnakByKomunitas } from "@/app/actions/data-anak";
 import { getDataAtsByKomunitas } from "@/app/actions/data-ats";
 import { getKabarFeed } from "@/app/actions/kabar";
@@ -78,10 +78,11 @@ export default async function KomunitasDetailPage({
   }
 
   const isBerjenjang = isAnyKomunitasBerjenjang(id) || isAnyKomunitasBerjenjang(komunitas.id);
+  const isBerjenjangPos = isKomunitasBerjenjangPosyandu(id) || isKomunitasBerjenjangPosyandu(komunitas.id);
   const { canShowDataAnak: canShowDataAnakRaw, canShowDataAts: canShowDataAtsRaw } = getKomunitasFeatureCards(komunitas);
-  // Komunitas berjenjang fokus pada 3 Tab: Anggota (dengan rekapitulasi basis), Kabar, dan Percakapan
-  const canShowDataAnak = isBerjenjang ? false : canShowDataAnakRaw;
-  const canShowDataAts = isBerjenjang ? false : canShowDataAtsRaw;
+  // Komunitas Posyandu Berjenjang menampilkan Tab Data Anak dan Tab Data ATS
+  const canShowDataAnak = isBerjenjangPos ? true : (isBerjenjang ? false : canShowDataAnakRaw);
+  const canShowDataAts = isBerjenjangPos ? true : (isBerjenjang ? false : canShowDataAtsRaw);
   const isPaud = isKomunitasLayananPaud(komunitas, komunitas.nama, komunitas.jenis);
   const hasRootAccess = Boolean(isSuperOrAdminPusat || isSuperAdmin || isAdminPusat);
 

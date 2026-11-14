@@ -6,7 +6,7 @@ import { DataAnakSchema } from "@/lib/zod-schemas";
 import { toValidUUID, isSuperAdmin as checkIsSuperAdmin, isAdminPusat as checkIsAdminPusat, isSuperOrAdminPusat, isRoleAdmin } from "@/lib/utils";
 import { toValidKomunitasUUID } from "@/lib/community-slugs";
 import { extractKomunitasMetadata } from "@/lib/admin-helpers";
-import { findOrGenerateKomunitasSeed } from "@/lib/constants/tegal-data";
+import { findOrGenerateKomunitasSeed, isKomunitasBerjenjangPosyandu } from "@/lib/constants/tegal-data";
 import {
   serializeDataAnakAlasan,
   parseDataAnakDetails,
@@ -695,14 +695,55 @@ export async function getDataAnakByKomunitas(
           }
         } else {
           // Selain admin dan pengguna yang telah bergabung (Tamu/Publik, belum bergabung, atau pending):
-          // TIDAK BISA MELIHAT DATA DETAIL
-          canViewDetail = false;
-          canCreate = false;
-          canEdit = false;
-          canDelete = false;
-          canValidate = false;
-          canEditDdks = false;
-          isReadOnly = true;
+          // Cek khusus Komunitas Posyandu Berjenjang: Jika pengguna adalah Kader/Admin di komunitas Posyandu manapun, berikan akses penuh!
+          const isPosBerjenjangCheck =
+            targetJenis === "posyandu" &&
+            (isKomunitasBerjenjangPosyandu(targetKomunitas) || isKomunitasBerjenjangPosyandu(komunitasId));
+
+          if (isPosBerjenjangCheck && user) {
+            const { data: anyKaderList } = await supabase
+              .from("anggota_komunitas")
+              .select("peran")
+              .eq("user_id", user.id)
+              .eq("status", "approved")
+              .limit(10);
+
+            if (
+              anyKaderList &&
+              anyKaderList.some((m: any) => {
+                const p = (m.peran || "").toLowerCase();
+                return (
+                  p.includes("kader") ||
+                  p.includes("admin") ||
+                  p.includes("nakes") ||
+                  p.includes("bidan") ||
+                  p.includes("pengurus")
+                );
+              })
+            ) {
+              canViewDetail = true;
+              canValidate = true;
+              canEditDdks = true;
+              isReadOnly = false;
+              userRole = "Kader Posyandu";
+            } else {
+              canViewDetail = false;
+              canCreate = false;
+              canEdit = false;
+              canDelete = false;
+              canValidate = false;
+              canEditDdks = false;
+              isReadOnly = true;
+            }
+          } else {
+            canViewDetail = false;
+            canCreate = false;
+            canEdit = false;
+            canDelete = false;
+            canValidate = false;
+            canEditDdks = false;
+            isReadOnly = true;
+          }
         }
       }
     } catch {
@@ -951,6 +992,10 @@ export async function getDataAnakByKomunitas(
       }
     } else {
       // Komunitas Posyandu, Warga Kita, SPM: filter targeted per komunitas_id, kelurahan, atau kecamatan
+      const isPosBerjenjangTarget =
+        targetJenis === "posyandu" &&
+        (isKomunitasBerjenjangPosyandu(targetKomunitas) || isKomunitasBerjenjangPosyandu(komunitasId));
+
       const targetKel = targetKomunitas?.kelurahan && targetKomunitas.kelurahan !== "semua" && targetKomunitas.kelurahan !== "Semua Kelurahan"
         ? targetKomunitas.kelurahan
         : null;
@@ -958,25 +1003,68 @@ export async function getDataAnakByKomunitas(
         ? targetKomunitas.kecamatan
         : null;
 
-      let directQuery = supabase
-        .from("data_anak")
-        .select(selectFields)
-        .neq("status_approval", "deleted")
-        .order("created_at", { ascending: false });
-
-      if (targetKel) {
-        directQuery = directQuery.or(`komunitas_id.eq.${validKomId},alasan_sekolah.ilike.%${targetKel}%`).limit(1500);
-      } else if (targetKec) {
-        directQuery = directQuery.or(`komunitas_id.eq.${validKomId},alasan_sekolah.ilike.%${targetKec}%`).limit(3000);
+      if (isPosBerjenjangTarget && !targetKel && !targetKec) {
+        // Posyandu Berjenjang Tingkat Kota Tegal: Ambil seluruh data anak usia dini se-Kota Tegal secara paralel chunk
+        const CHUNK_SIZE = 1000;
+        const numChunks = 11;
+        const chunkPromises = [];
+        for (let i = 0; i < numChunks; i++) {
+          chunkPromises.push(
+            supabase
+              .from("data_anak")
+              .select(selectFields)
+              .neq("status_approval", "deleted")
+              .order("created_at", { ascending: false })
+              .range(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE - 1)
+          );
+        }
+        const chunkRes = await Promise.all(chunkPromises);
+        const allFetched = chunkRes.flatMap((r) => r.data || []);
+        if (allFetched.length > 0) {
+          dbChildren = allFetched;
+        }
+      } else if (isPosBerjenjangTarget && targetKec && !targetKel) {
+        // Posyandu Berjenjang Tingkat Kecamatan: Ambil data anak di kecamatan secara paralel chunk
+        const CHUNK_SIZE = 1000;
+        const numChunks = 4;
+        const chunkPromises = [];
+        for (let i = 0; i < numChunks; i++) {
+          chunkPromises.push(
+            supabase
+              .from("data_anak")
+              .select(selectFields)
+              .neq("status_approval", "deleted")
+              .or(`komunitas_id.eq.${validKomId},alasan_sekolah.ilike.%${targetKec}%`)
+              .order("created_at", { ascending: false })
+              .range(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE - 1)
+          );
+        }
+        const chunkRes = await Promise.all(chunkPromises);
+        const allFetched = chunkRes.flatMap((r) => r.data || []);
+        if (allFetched.length > 0) {
+          dbChildren = allFetched;
+        }
       } else {
-        directQuery = directQuery.limit(5000);
-      }
+        let directQuery = supabase
+          .from("data_anak")
+          .select(selectFields)
+          .neq("status_approval", "deleted")
+          .order("created_at", { ascending: false });
 
-      const { data: directData, error: directErr } = await directQuery;
-      if (directErr) {
-        childError = directErr;
-      } else if (directData && directData.length > 0) {
-        dbChildren = directData;
+        if (targetKel) {
+          directQuery = directQuery.or(`komunitas_id.eq.${validKomId},alasan_sekolah.ilike.%${targetKel}%`).limit(1500);
+        } else if (targetKec) {
+          directQuery = directQuery.or(`komunitas_id.eq.${validKomId},alasan_sekolah.ilike.%${targetKec}%`).limit(3000);
+        } else {
+          directQuery = directQuery.limit(5000);
+        }
+
+        const { data: directData, error: directErr } = await directQuery;
+        if (directErr) {
+          childError = directErr;
+        } else if (directData && directData.length > 0) {
+          dbChildren = directData;
+        }
       }
     }
 

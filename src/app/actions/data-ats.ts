@@ -28,7 +28,7 @@ import {
   isValidKrandonRtRw,
 } from "@/lib/data-anak-helpers";
 import { extractKomunitasMetadata } from "@/lib/admin-helpers";
-import { findOrGenerateKomunitasSeed, RAW_PKBM_SKB_TEGAL } from "@/lib/constants/tegal-data";
+import { findOrGenerateKomunitasSeed, isKomunitasBerjenjangPosyandu, RAW_PKBM_SKB_TEGAL } from "@/lib/constants/tegal-data";
 import { getKomunitasDetail } from "./komunitas";
 import type {
   DataAtsItem,
@@ -1375,6 +1375,10 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
     const isPosyanduCommunity = Boolean(
       meta.jenis === "posyandu" || targetKomunitas?.jenis === "posyandu"
     );
+    const isPosBerjenjang =
+      isPosyanduCommunity &&
+      (isKomunitasBerjenjangPosyandu(targetKomunitas) || isKomunitasBerjenjangPosyandu(komunitasId));
+
     canValidate =
       isSuperAdmin ||
       ((isRtCommunity || isPosyanduCommunity || isPkbmOrSkb) && canManage);
@@ -1387,7 +1391,7 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
     } else if (isPkbmOrSkb) {
       // Komunitas PKBM dan SKB di Kota Tegal dapat melihat seluruh rincian anak ATS untuk intervensi
       canAccessDaftarNama = true;
-    } else if (isPosyanduCommunity && canManage) {
+    } else if (isPosyanduCommunity && (canManage || isPosBerjenjang || Boolean(currentUserId))) {
       canAccessDaftarNama = true;
     } else if (isRtCommunity && canManage) {
       canAccessDaftarNama = true;
@@ -1401,8 +1405,12 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
       meta.rawKel && meta.rawKel !== "semua" && meta.rawKel !== "Semua Kelurahan"
         ? meta.rawKel
         : null;
+    const targetKec =
+      meta.rawKec && meta.rawKec !== "semua" && meta.rawKec !== "Kota Tegal"
+        ? meta.rawKec
+        : null;
 
-    const queryLimit = isPkbmOrSkb ? 2500 : 150;
+    const queryLimit = isPkbmOrSkb || (isPosBerjenjang && !targetKel && !targetKec) ? 2500 : isPosBerjenjang ? 1000 : 150;
     let dbChildren: any[] | null = null;
     try {
       let atsQuery = supabase
@@ -1429,10 +1437,12 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
         .or("is_sekolah.eq.false,is_sekolah.is.null,nama_sekolah.ilike.%ATS%,alasan_sekolah.ilike.%KEINGINAN%")
         .order("created_at", { ascending: false });
 
-      if (isPkbmOrSkb) {
-        // Untuk PKBM dan SKB: Ambil seluruh Data ATS se-Kota Tegal tanpa memisahkan berdasarkan alamat kelurahan/komunitas
+      if (isPkbmOrSkb || (isPosBerjenjang && !targetKel && !targetKec)) {
+        // Untuk PKBM, SKB dan Posyandu Berjenjang Tingkat Kota: Ambil seluruh Data ATS se-Kota Tegal
       } else if (targetKel) {
         atsQuery = atsQuery.or(`komunitas_id.eq.${validKomId},alasan_sekolah.ilike.%${targetKel}%`);
+      } else if (targetKec) {
+        atsQuery = atsQuery.or(`komunitas_id.eq.${validKomId},alasan_sekolah.ilike.%${targetKec}%`);
       } else {
         atsQuery = atsQuery.eq("komunitas_id", validKomId);
       }
@@ -1473,10 +1483,12 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
         .or("is_sekolah.eq.false,is_sekolah.is.null,nama_sekolah.ilike.%ATS%,alasan_sekolah.ilike.%KEINGINAN%")
         .order("created_at", { ascending: false });
 
-      if (isPkbmOrSkb) {
-        // Untuk PKBM dan SKB: Ambil seluruh Data ATS se-Kota Tegal tanpa filter
+      if (isPkbmOrSkb || (isPosBerjenjang && !targetKel && !targetKec)) {
+        // Untuk PKBM, SKB dan Posyandu Berjenjang Tingkat Kota: Ambil seluruh Data ATS se-Kota Tegal
       } else if (targetKel) {
         fallbackQuery = fallbackQuery.or(`komunitas_id.eq.${validKomId},alasan_sekolah.ilike.%${targetKel}%`);
+      } else if (targetKec) {
+        fallbackQuery = fallbackQuery.or(`komunitas_id.eq.${validKomId},alasan_sekolah.ilike.%${targetKec}%`);
       } else {
         fallbackQuery = fallbackQuery.eq("komunitas_id", validKomId);
       }
@@ -1644,6 +1656,24 @@ export async function getDataAtsByKomunitas(komunitasId: string): Promise<{
 
         // 0. Komunitas Posyandu: Tampilkan data Anak ATS yang sesuai cakupan wilayah Posyandu
         if (meta.jenis === "posyandu" || targetKomunitas?.jenis === "posyandu") {
+          const isPosBerjenjangItem =
+            isKomunitasBerjenjangPosyandu(targetKomunitas) ||
+            isKomunitasBerjenjangPosyandu(komunitasId);
+
+          if (isPosBerjenjangItem) {
+            // Posyandu Berjenjang Tingkat Kota: loloskan semua ATS Kota Tegal
+            if (!targetKel && !targetKec) return true;
+            // Posyandu Berjenjang Tingkat Kecamatan: cocokkan kecamatan
+            if (targetKec && !targetKel) {
+              return Boolean(!itemKec || itemKec === targetKec || itemKec.includes(targetKec) || targetKec.includes(itemKec));
+            }
+            // Posyandu Berjenjang Tingkat Kelurahan: cocokkan kelurahan
+            if (targetKel) {
+              return Boolean(!itemKel || itemKel === targetKel || itemKel.includes(targetKel) || targetKel.includes(itemKel));
+            }
+            return true;
+          }
+
           const matchKel =
             !targetKel ||
             itemKel === targetKel ||
