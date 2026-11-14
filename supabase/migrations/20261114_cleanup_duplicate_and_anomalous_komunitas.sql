@@ -46,11 +46,11 @@ INSERT INTO public.anggota_komunitas (komunitas_id, user_id, peran, status, berd
 SELECT 
   '9f2aa63a-53d9-47a6-81ec-f8c5bb6bbbc9'::uuid,
   user_id,
-  'penduduk',
-  'disetujui',
+  peran,
+  status,
   berdomisili,
   kk_terdaftar,
-  NULL,
+  peran_diajukan,
   created_at,
   updated_at
 FROM public.anggota_komunitas
