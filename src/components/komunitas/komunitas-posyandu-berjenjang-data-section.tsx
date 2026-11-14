@@ -1717,106 +1717,105 @@ export function KomunitasPosyanduBerjenjangDataSection({
                       const isSekolah =
                         child.is_sekolah === true ||
                         (child.nama_sekolah && !child.nama_sekolah.toLowerCase().includes("belum"));
+                      const childAge = child.tanggal_lahir ? getNumericAgeAts(child.tanggal_lahir) : null;
+                      const displayChildAge = childAge !== null && childAge >= 0 && childAge <= 7 ? `Usia ${childAge} Thn` : null;
 
                       return (
                         <div
                           key={child.id || `child-${idx}`}
-                          className="rounded-xl border border-border bg-card p-3.5 sm:p-4 shadow-2xs space-y-3 hover:border-primary/40 transition-all flex flex-col justify-between"
+                          className="rounded-lg border border-border bg-card p-2.5 sm:p-3 shadow-2xs hover:border-primary/40 transition-all flex flex-col justify-between gap-1.5"
                         >
-                          <div className="space-y-2">
-                            {/* Baris Atas: Nama Anak, Jenis Kelamin & Status Sekolah */}
-                            <div className="flex items-start justify-between gap-2">
-                              <div className="space-y-0.5 min-w-0 flex-1">
+                          <div className="space-y-1.5">
+                            {/* Baris Atas: Nama Anak, Gender, Usia & Status Sekolah */}
+                            <div className="flex items-start justify-between gap-1.5">
+                              <div className="min-w-0 flex-1">
                                 <div className="flex items-center gap-1.5 flex-wrap">
                                   <h5 className="text-xs sm:text-sm font-bold text-foreground truncate">
                                     {child.nama_lengkap}
                                   </h5>
                                   <span
                                     className={cn(
-                                      "px-1.5 py-0.2 rounded-md text-[10px] font-bold font-mono",
+                                      "px-1.5 py-0.2 rounded text-[10px] font-semibold font-mono",
                                       child.jenis_kelamin === "L"
-                                        ? "bg-blue-500/15 text-blue-700 dark:text-blue-300"
-                                        : "bg-pink-500/15 text-pink-700 dark:text-pink-300"
+                                        ? "bg-blue-500/10 text-blue-700 dark:text-blue-300"
+                                        : "bg-pink-500/10 text-pink-700 dark:text-pink-300"
                                     )}
                                   >
-                                    {child.jenis_kelamin === "L" ? "Laki-laki" : "Perempuan"}
+                                    {child.jenis_kelamin === "L" ? "L" : "P"}
                                   </span>
+                                  {displayChildAge && (
+                                    <span className="text-[11px] font-semibold text-muted-foreground font-mono">
+                                      • {displayChildAge}
+                                    </span>
+                                  )}
                                 </div>
-                                <p className="text-2xs text-muted-foreground flex items-center gap-1">
-                                  <Calendar className="h-3 w-3 text-muted-foreground shrink-0" />
-                                  <span>Lahir: {child.tanggal_lahir || "-"}</span>
-                                </p>
                               </div>
 
-                              {/* Status Sekolah Badge */}
                               {isSekolah ? (
-                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30 shrink-0">
-                                  <School className="h-3 w-3 text-emerald-600" />
-                                  <span>Bersekolah</span>
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30 shrink-0">
+                                  <School className="h-2.5 w-2.5 text-emerald-600" />
+                                  <span>PAUD</span>
                                 </span>
                               ) : (
-                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/30 shrink-0">
-                                  <HeartPulse className="h-3 w-3 text-amber-600" />
-                                  <span>Belum Bersekolah</span>
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/30 shrink-0">
+                                  <HeartPulse className="h-2.5 w-2.5 text-amber-600" />
+                                  <span>Belum PAUD</span>
                                 </span>
                               )}
                             </div>
 
-                            {/* Info Sekolah / Alasan */}
-                            <div className="rounded-lg bg-muted/40 p-2 text-2xs space-y-0.5 border border-border/50">
-                              <span className="text-[10px] font-bold text-muted-foreground uppercase block">
-                                {isSekolah ? "Satuan PAUD / Sekolah:" : "Keterangan / Alasan Belum Sekolah:"}
+                            {/* Info Sekolah / Keterangan */}
+                            <div className="text-[11px] text-muted-foreground truncate">
+                              <span className="text-muted-foreground/80 font-normal">
+                                {isSekolah ? "Satuan: " : "Status: "}
                               </span>
-                              <p className="text-foreground font-semibold truncate">
+                              <span className="text-foreground font-medium">
                                 {isSekolah
                                   ? child.nama_sekolah || "Satuan PAUD Terdaftar"
-                                  : child.alasan_sekolah || "Belum Cukup Umur / Belum Masuk PAUD"}
-                              </p>
+                                  : child.alasan_sekolah || "Belum Masuk PAUD"}
+                              </span>
                             </div>
 
                             {/* Alamat Domisili & KK */}
-                            <div className="text-2xs text-muted-foreground space-y-0.5">
-                              <div className="flex items-center gap-1 text-foreground font-medium">
-                                <MapPin className="h-3 w-3 text-primary shrink-0" />
-                                <span className="truncate">
-                                  {child.domisili_kelurahan || child.kk_kelurahan || "Kota Tegal"}, RW{" "}
-                                  {child.domisili_rw || child.kk_rw || "-"}, RT{" "}
-                                  {child.domisili_rt || child.kk_rt || "-"}
-                                </span>
-                              </div>
-                              {child.nama_orangtua && (
-                                <div className="text-[11px] text-muted-foreground pl-4">
-                                  Orang Tua: <span className="text-foreground font-medium">{child.nama_orangtua}</span>
-                                </div>
-                              )}
+                            <div className="text-[11px] text-muted-foreground flex items-center gap-1 truncate">
+                              <MapPin className="h-3 w-3 text-primary shrink-0" />
+                              <span className="truncate">
+                                {child.domisili_kelurahan || child.kk_kelurahan || "Kota Tegal"}, RW{" "}
+                                {child.domisili_rw || child.kk_rw || "-"}, RT{" "}
+                                {child.domisili_rt || child.kk_rt || "-"}
+                                {child.nama_orangtua && (
+                                  <span className="text-muted-foreground/80 font-normal">
+                                    {" "}• Ortu: <span className="text-foreground font-medium">{child.nama_orangtua}</span>
+                                  </span>
+                                )}
+                              </span>
                             </div>
                           </div>
 
                           {/* Posyandu Yang Menaungi Badge */}
-                          <div className="pt-2 border-t border-border/60 flex items-center justify-between gap-2 text-2xs">
-                            <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                          <div className="pt-1.5 border-t border-border/50 flex items-center justify-between gap-2 text-[10px]">
+                            <div className="flex items-center gap-1 min-w-0 flex-1 truncate text-muted-foreground">
                               <HeartPulse className="h-3 w-3 text-teal-600 shrink-0" />
-                              <span className="text-muted-foreground truncate">
-                                Posyandu:{" "}
-                                <strong className="text-foreground">{posBadge.nama}</strong>{" "}
+                              <span className="truncate">
+                                Posyandu: <strong className="text-foreground font-semibold">{posBadge.nama}</strong>{" "}
                                 <span
                                   className={cn(
-                                    "text-[10px] font-bold",
+                                    "font-semibold",
                                     posBadge.isMapped ? "text-emerald-700 dark:text-emerald-400" : "text-amber-700 dark:text-amber-400"
                                   )}
                                 >
-                                  ({posBadge.isMapped ? "Terpetakan" : "Belum Dipetakan"})
+                                  ({posBadge.isMapped ? "Terpetakan" : "Belum"})
                                 </span>
                               </span>
                             </div>
 
                             {child.status_approval === "approved" ? (
                               <span className="inline-flex items-center gap-0.5 text-[10px] font-bold text-emerald-700 dark:text-emerald-400 shrink-0">
-                                <Check className="h-3 w-3" /> Terverifikasi
+                                <Check className="h-2.5 w-2.5" /> Valid
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-0.5 text-[10px] font-bold text-muted-foreground shrink-0">
-                                <Clock className="h-3 w-3" /> Menunggu
+                              <span className="inline-flex items-center gap-0.5 text-[10px] font-medium text-muted-foreground shrink-0">
+                                <Clock className="h-2.5 w-2.5" /> Menunggu
                               </span>
                             )}
                           </div>
@@ -1865,7 +1864,7 @@ export function KomunitasPosyanduBerjenjangDataSection({
                       const posBadge = findAtsPosyanduBadge(ats);
                       const atsCat = ats.kategori_ats || classifyAtsCategory(ats.jenjang_asal, ats.alasan_tidak_sekolah, ats.sekolah_sebelumnya || (ats as any).nama_sekolah);
                       const numAge = ats.usia ? parseInt(ats.usia, 10) : getNumericAgeAts(ats.tanggal_lahir);
-                      const displayAge = !isNaN(numAge) && numAge > 0 ? `${numAge} Tahun` : null;
+                      const displayAge = !isNaN(numAge) && numAge > 0 ? `Usia ${numAge} Thn` : null;
 
                       let catBadgeStyle = "bg-secondary/15 text-secondary border-secondary/30";
                       if (atsCat === "Belum Pernah Bersekolah") {
@@ -1876,101 +1875,115 @@ export function KomunitasPosyanduBerjenjangDataSection({
                         catBadgeStyle = "bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/30";
                       }
 
+                      // Cek apakah alasan redundan dengan kategori ATS
+                      const rawAlasan = (ats.alasan_tidak_sekolah || "").trim();
+                      const lowerAlasan = rawAlasan.toLowerCase();
+                      const isAlasanDuplicate =
+                        !rawAlasan ||
+                        lowerAlasan === atsCat.toLowerCase() ||
+                        lowerAlasan.includes("belum pernah bersekolah") ||
+                        lowerAlasan.includes("belum pernah sekolah") ||
+                        lowerAlasan.includes("lulus tidak melanjutkan") ||
+                        (atsCat === "Drop Out" && (lowerAlasan.includes("drop out") || lowerAlasan.includes("putus sekolah")));
+
                       return (
                         <div
                           key={ats.id || `ats-${idx}`}
-                          className="rounded-xl border border-border bg-card p-3.5 sm:p-4 shadow-2xs space-y-3 hover:border-secondary/40 transition-all flex flex-col justify-between"
+                          className="rounded-lg border border-border bg-card p-2.5 sm:p-3 shadow-2xs hover:border-secondary/50 transition-all flex flex-col justify-between gap-1.5"
                         >
-                          <div className="space-y-2">
-                            {/* Baris Atas: Nama Anak, Jenis Kelamin, Usia & Kategori ATS */}
-                            <div className="flex items-start justify-between gap-2">
-                              <div className="space-y-0.5 min-w-0 flex-1">
+                          <div className="space-y-1.5">
+                            {/* Baris 1: Nama Anak, Gender, Usia & Kategori ATS */}
+                            <div className="flex items-start justify-between gap-1.5">
+                              <div className="min-w-0 flex-1">
                                 <div className="flex items-center gap-1.5 flex-wrap">
                                   <h5 className="text-xs sm:text-sm font-bold text-foreground truncate">
                                     {ats.nama_lengkap}
                                   </h5>
                                   <span
                                     className={cn(
-                                      "px-1.5 py-0.2 rounded-md text-[10px] font-bold font-mono",
+                                      "px-1.5 py-0.2 rounded text-[10px] font-semibold font-mono",
                                       ats.jenis_kelamin === "L"
-                                        ? "bg-blue-500/15 text-blue-700 dark:text-blue-300"
-                                        : "bg-pink-500/15 text-pink-700 dark:text-pink-300"
+                                        ? "bg-blue-500/10 text-blue-700 dark:text-blue-300"
+                                        : "bg-pink-500/10 text-pink-700 dark:text-pink-300"
                                     )}
                                   >
-                                    {ats.jenis_kelamin === "L" ? "Laki-laki" : "Perempuan"}
+                                    {ats.jenis_kelamin === "L" ? "L" : "P"}
                                   </span>
                                   {displayAge && (
-                                    <span className="px-1.5 py-0.2 rounded-md text-[10px] font-extrabold bg-muted text-foreground border border-border/80">
-                                      Usia {displayAge}
+                                    <span className="text-[11px] font-semibold text-muted-foreground font-mono">
+                                      • {displayAge}
                                     </span>
                                   )}
                                 </div>
-                                <p className="text-2xs text-muted-foreground">
-                                  Lahir: {ats.tanggal_lahir || "-"}
-                                </p>
                               </div>
 
-                              <span className={cn("inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-extrabold border shrink-0", catBadgeStyle)}>
-                                <span>{atsCat}</span>
+                              <span
+                                className={cn(
+                                  "inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold border shrink-0",
+                                  catBadgeStyle
+                                )}
+                              >
+                                {atsCat}
                               </span>
                             </div>
 
-                            {/* Alasan Tidak Sekolah & Keinginan Kembali Sekolah */}
-                            <div className="rounded-lg bg-muted/40 p-2.5 text-2xs space-y-1 border border-border/50">
-                              <div className="flex items-center justify-between">
-                                <span className="text-[10px] font-bold text-muted-foreground uppercase">
-                                  Alasan Tidak Sekolah:
+                            {/* Baris 2: Alasan (hanya jika ada & tidak duplikat) & Keinginan Sekolah */}
+                            <div className="text-[11px] text-muted-foreground flex items-center justify-between gap-2 flex-wrap">
+                              {!isAlasanDuplicate ? (
+                                <span className="truncate">
+                                  Alasan: <strong className="text-foreground font-medium">{rawAlasan}</strong>
                                 </span>
-                                <span className="text-[10px] font-extrabold text-secondary">
-                                  Keinginan: {ats.keinginan_sekolah || "Ada"}
+                              ) : (
+                                <span className="text-muted-foreground/80 truncate">
+                                  Kasus {atsCat}
                                 </span>
-                              </div>
-                              <p className="text-foreground font-semibold">
-                                {ats.alasan_tidak_sekolah || "Keterbatasan Biaya / Kondisi Keluarga"}
-                              </p>
+                              )}
+
+                              {ats.keinginan_sekolah && (
+                                <span className="text-[10px] font-semibold text-secondary shrink-0">
+                                  Keinginan: {ats.keinginan_sekolah}
+                                </span>
+                              )}
                             </div>
 
-                            {/* Alamat */}
-                            <div className="text-2xs text-muted-foreground space-y-0.5">
-                              <div className="flex items-center gap-1 text-foreground font-medium">
-                                <MapPin className="h-3 w-3 text-secondary shrink-0" />
-                                <span className="truncate">
-                                  {ats.alamat || `Kelurahan ${ats.kelurahan || "-"}, RW ${ats.rw || "-"}, RT ${ats.rt || "-"}`}
-                                </span>
-                              </div>
-                              {ats.nama_orangtua && (
-                                <div className="text-[11px] text-muted-foreground pl-4">
-                                  Orang Tua: <span className="text-foreground font-medium">{ats.nama_orangtua}</span>
-                                </div>
-                              )}
+                            {/* Baris 3: Alamat & Orang Tua */}
+                            <div className="text-[11px] text-muted-foreground flex items-center gap-1 truncate">
+                              <MapPin className="h-3 w-3 text-secondary shrink-0" />
+                              <span className="truncate">
+                                {ats.alamat || `Kel. ${ats.kelurahan || "-"}, RW ${ats.rw || "-"}, RT ${ats.rt || "-"}`}
+                                {ats.nama_orangtua && (
+                                  <span className="text-muted-foreground/80 font-normal">
+                                    {" "}• Ortu: <span className="text-foreground font-medium">{ats.nama_orangtua}</span>
+                                  </span>
+                                )}
+                              </span>
                             </div>
                           </div>
 
-                          {/* Posyandu Penanggung Jawab */}
-                          <div className="pt-2 border-t border-border/60 flex items-center justify-between gap-2 text-2xs">
-                            <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                          {/* Baris 4: Posyandu Wilayah & Status Validasi */}
+                          <div className="pt-1.5 border-t border-border/50 flex items-center justify-between gap-2 text-[10px]">
+                            <div className="flex items-center gap-1 min-w-0 flex-1 truncate text-muted-foreground">
                               <HeartPulse className="h-3 w-3 text-teal-600 shrink-0" />
-                              <span className="text-muted-foreground truncate">
-                                Wilayah:{" "}
-                                <strong className="text-foreground">{posBadge.nama}</strong>{" "}
+                              <span className="truncate">
+                                Posyandu: <strong className="text-foreground font-semibold">{posBadge.nama}</strong>{" "}
                                 <span
                                   className={cn(
-                                    "text-[10px] font-bold",
+                                    "font-semibold",
                                     posBadge.isMapped ? "text-emerald-700 dark:text-emerald-400" : "text-amber-700 dark:text-amber-400"
                                   )}
                                 >
-                                  ({posBadge.isMapped ? "Terpetakan" : "Belum Dipetakan"})
+                                  ({posBadge.isMapped ? "Terpetakan" : "Belum"})
                                 </span>
                               </span>
                             </div>
 
                             {ats.status_approval === "approved" ? (
                               <span className="inline-flex items-center gap-0.5 text-[10px] font-bold text-emerald-700 dark:text-emerald-400 shrink-0">
-                                <Check className="h-3 w-3" /> Valid
+                                <Check className="h-2.5 w-2.5" /> Valid
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-0.5 text-[10px] font-bold text-muted-foreground shrink-0">
-                                <Clock className="h-3 w-3" /> Menunggu
+                              <span className="inline-flex items-center gap-0.5 text-[10px] font-medium text-muted-foreground shrink-0">
+                                <Clock className="h-2.5 w-2.5" /> Menunggu
                               </span>
                             )}
                           </div>
