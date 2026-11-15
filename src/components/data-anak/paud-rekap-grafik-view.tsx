@@ -9,12 +9,6 @@ import {
   Baby,
   Sparkles,
   BarChart3,
-  Search,
-  Filter,
-  CheckCircle2,
-  Building2,
-  PieChart as PieChartIcon,
-  RotateCcw,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { calculateAgeFromBirthDate, ALASAN_SEKOLAH_PAUD, normalizeReasonBersekolah } from "@/lib/rekap-data-anak-shared";
@@ -24,47 +18,6 @@ export interface PaudRekapGrafikViewProps {
   childrenList: DataAnakItem[];
   komunitasNama: string;
 }
-
-// 27 Kelurahan Resmi se-Kota Tegal
-export const DAFTAR_27_KELURAHAN_TEGAL: Array<{
-  kelurahan: string;
-  kecamatan: "Tegal Timur" | "Tegal Barat" | "Tegal Selatan" | "Margadana";
-}> = [
-  // Tegal Timur (5)
-  { kelurahan: "Kejambon", kecamatan: "Tegal Timur" },
-  { kelurahan: "Panggung", kecamatan: "Tegal Timur" },
-  { kelurahan: "Slerok", kecamatan: "Tegal Timur" },
-  { kelurahan: "Mintaragen", kecamatan: "Tegal Timur" },
-  { kelurahan: "Mangkukusuman", kecamatan: "Tegal Timur" },
-
-  // Tegal Barat (7)
-  { kelurahan: "Kraton", kecamatan: "Tegal Barat" },
-  { kelurahan: "Tegalsari", kecamatan: "Tegal Barat" },
-  { kelurahan: "Kemandungan", kecamatan: "Tegal Barat" },
-  { kelurahan: "Pekauman", kecamatan: "Tegal Barat" },
-  { kelurahan: "Muarareja", kecamatan: "Tegal Barat" },
-  { kelurahan: "Pesurungan Kidul", kecamatan: "Tegal Barat" },
-  { kelurahan: "Debong Lor", kecamatan: "Tegal Barat" },
-
-  // Tegal Selatan (8)
-  { kelurahan: "Bandung", kecamatan: "Tegal Selatan" },
-  { kelurahan: "Debong Kidul", kecamatan: "Tegal Selatan" },
-  { kelurahan: "Debong Kulon", kecamatan: "Tegal Selatan" },
-  { kelurahan: "Debong Tengah", kecamatan: "Tegal Selatan" },
-  { kelurahan: "Kalinyamat Wetan", kecamatan: "Tegal Selatan" },
-  { kelurahan: "Keturen", kecamatan: "Tegal Selatan" },
-  { kelurahan: "Randugunting", kecamatan: "Tegal Selatan" },
-  { kelurahan: "Tunon", kecamatan: "Tegal Selatan" },
-
-  // Margadana (7)
-  { kelurahan: "Margadana", kecamatan: "Margadana" },
-  { kelurahan: "Cabawan", kecamatan: "Margadana" },
-  { kelurahan: "Kaligangsa", kecamatan: "Margadana" },
-  { kelurahan: "Kalinyamat Kulon", kecamatan: "Margadana" },
-  { kelurahan: "Krandon", kecamatan: "Margadana" },
-  { kelurahan: "Pesurungan Lor", kecamatan: "Margadana" },
-  { kelurahan: "Sumurpanggang", kecamatan: "Margadana" },
-];
 
 const KECAMATAN_PALETTE: Record<string, { bg: string; fill: string; text: string; border: string }> = {
   "Kecamatan Tegal Timur": {
@@ -131,9 +84,6 @@ export function PaudRekapGrafikView({
   komunitasNama,
 }: PaudRekapGrafikViewProps) {
   const [viewModeUsia, setViewModeUsia] = useState<"diagram" | "matriks">("diagram");
-  const [tableSearch, setTableSearch] = useState("");
-  const [filterKecamatanTable, setFilterKecamatanTable] = useState<string>("semua");
-  const [onlyShowWithStudents, setOnlyShowWithStudents] = useState(false);
 
   // 1. Perhitungan Dasar
   const totalMurid = childrenList.length;
@@ -303,108 +253,6 @@ export function PaudRekapGrafikView({
 
     return entries;
   }, [childrenList, totalMurid]);
-
-  // 8. Tabel Sebaran 27 Kelurahan Alamat KK
-  const kelurahanTableData = useMemo(() => {
-    const list: Array<{
-      no: number;
-      kelurahan: string;
-      kecamatan: string;
-      l: number;
-      p: number;
-      total: number;
-      pct: number;
-    }> = [];
-
-    // Inisialisasi 27 Kelurahan Kota Tegal
-    DAFTAR_27_KELURAHAN_TEGAL.forEach((item, idx) => {
-      list.push({
-        no: idx + 1,
-        kelurahan: item.kelurahan,
-        kecamatan: item.kecamatan,
-        l: 0,
-        p: 0,
-        total: 0,
-        pct: 0,
-      });
-    });
-
-    // Baris Khusus Luar Kota Tegal
-    let luarKotaL = 0;
-    let luarKotaP = 0;
-
-    childrenList.forEach((c) => {
-      const isL = (c.jenis_kelamin || "").toUpperCase().startsWith("L");
-      const isLuar = categorizeWilayah(c.kk_kecamatan, c.kk_kabupaten) === "Luar Kota";
-
-      if (isLuar) {
-        if (isL) luarKotaL++;
-        else luarKotaP++;
-        return;
-      }
-
-      const kelStr = (c.kk_kelurahan || "").toLowerCase().trim();
-      const target = list.find(
-        (k) =>
-          k.kelurahan.toLowerCase() === kelStr ||
-          kelStr.includes(k.kelurahan.toLowerCase()) ||
-          k.kelurahan.toLowerCase().includes(kelStr)
-      );
-
-      if (target) {
-        target.total++;
-        if (isL) target.l++;
-        else target.p++;
-      } else {
-        // Jika tidak cocok dengan kelurahan yang mana pun di Tegal, masukkan ke Luar Kota
-        if (isL) luarKotaL++;
-        else luarKotaP++;
-      }
-    });
-
-    // Hitung persentase untuk masing-masing kelurahan
-    list.forEach((item) => {
-      item.pct = totalMurid > 0 ? Math.round((item.total / totalMurid) * 100) : 0;
-    });
-
-    // Tambahkan baris Luar Kota Tegal jika ada
-    if (luarKotaL + luarKotaP > 0) {
-      list.push({
-        no: list.length + 1,
-        kelurahan: "Luar Kota Tegal",
-        kecamatan: "Luar Kota",
-        l: luarKotaL,
-        p: luarKotaP,
-        total: luarKotaL + luarKotaP,
-        pct: totalMurid > 0 ? Math.round(((luarKotaL + luarKotaP) / totalMurid) * 100) : 0,
-      });
-    }
-
-    return list;
-  }, [childrenList, totalMurid]);
-
-  // Filter Tabel Kelurahan
-  const filteredKelurahanRows = useMemo(() => {
-    return kelurahanTableData.filter((item) => {
-      // Filter teks pencarian
-      if (tableSearch.trim()) {
-        const q = tableSearch.toLowerCase().trim();
-        const match =
-          item.kelurahan.toLowerCase().includes(q) ||
-          item.kecamatan.toLowerCase().includes(q);
-        if (!match) return false;
-      }
-      // Filter kecamatan
-      if (filterKecamatanTable !== "semua") {
-        if (item.kecamatan !== filterKecamatanTable) return false;
-      }
-      // Filter hanya yang ada muridnya
-      if (onlyShowWithStudents && item.total === 0) {
-        return false;
-      }
-      return true;
-    });
-  }, [kelurahanTableData, tableSearch, filterKecamatanTable, onlyShowWithStudents]);
 
   return (
     <div className="space-y-6">
@@ -963,150 +811,6 @@ export function PaudRekapGrafikView({
               </div>
             </div>
           ))}
-        </div>
-      </div>
-
-      {/* ========================================================= */}
-      {/* 7. ROW 5: TABEL JUMLAH MURID BERDASARKAN ALAMAT KK DARI   */}
-      {/*    27 KELURAHAN SE-KOTA TEGAL                            */}
-      {/* ========================================================= */}
-      <div className="rounded-lg border border-border bg-card p-5 sm:p-6 space-y-4 shadow-xs">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border pb-3.5">
-          <div className="flex items-center gap-2.5">
-            <div className="h-8 w-8 rounded-lg bg-teal-500/10 text-teal-700 dark:text-teal-300 flex items-center justify-center shrink-0">
-              <Building2 className="h-4 w-4" />
-            </div>
-            <div>
-              <h3 className="text-sm sm:text-base font-extrabold text-foreground">
-                Tabel Jumlah Murid Berdasarkan Alamat KK (27 Kelurahan)
-              </h3>
-              <p className="text-2xs sm:text-xs text-muted-foreground font-medium">
-                Rincian sebaran asal Kartu Keluarga murid dari 27 Kelurahan di Kota Tegal dan Luar Kota
-              </p>
-            </div>
-          </div>
-          <span className="text-xs font-black px-2.5 py-1 rounded-md bg-teal-500/10 text-teal-700 dark:text-teal-300 border border-teal-500/20 font-mono">
-            {filteredKelurahanRows.length} Wilayah Ditampilkan
-          </span>
-        </div>
-
-        {/* Filter Bar Tabel */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-            <input
-              type="text"
-              placeholder="Cari nama kelurahan atau kecamatan..."
-              value={tableSearch}
-              onChange={(e) => setTableSearch(e.target.value)}
-              className="w-full h-9 pl-9 pr-3 rounded-lg border border-border bg-background text-xs font-medium text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-teal-500"
-            />
-          </div>
-
-          <div className="flex items-center gap-2">
-            <select
-              value={filterKecamatanTable}
-              onChange={(e) => setFilterKecamatanTable(e.target.value)}
-              className="h-9 px-3 rounded-lg border border-border bg-background text-xs font-semibold text-foreground focus:outline-none focus:border-teal-500 cursor-pointer"
-            >
-              <option value="semua">Semua Kecamatan</option>
-              <option value="Tegal Timur">Tegal Timur</option>
-              <option value="Tegal Barat">Tegal Barat</option>
-              <option value="Tegal Selatan">Tegal Selatan</option>
-              <option value="Margadana">Margadana</option>
-              <option value="Luar Kota">Luar Kota</option>
-            </select>
-
-            <button
-              type="button"
-              onClick={() => setOnlyShowWithStudents(!onlyShowWithStudents)}
-              className={cn(
-                "h-9 px-3 rounded-lg border text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer",
-                onlyShowWithStudents
-                  ? "bg-teal-600 text-white border-teal-600"
-                  : "bg-muted text-muted-foreground border-border hover:bg-muted/80"
-              )}
-            >
-              <CheckCircle2 className="h-3.5 w-3.5" />
-              <span>Ada Murid</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Tabel Data Kelurahan */}
-        <div className="overflow-x-auto rounded-lg border border-border">
-          <table className="w-full text-xs text-left border-collapse">
-            <thead>
-              <tr className="bg-muted text-muted-foreground border-b border-border font-bold">
-                <th className="p-2.5 text-center w-12">No</th>
-                <th className="p-2.5">Kelurahan</th>
-                <th className="p-2.5">Kecamatan</th>
-                <th className="p-2.5 text-center text-sky-600 dark:text-sky-400">Laki-laki (L)</th>
-                <th className="p-2.5 text-center text-rose-600 dark:text-rose-400">Perempuan (P)</th>
-                <th className="p-2.5 text-center text-foreground font-black">Total Murid</th>
-                <th className="p-2.5 text-center text-foreground">Persentase</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {filteredKelurahanRows.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="p-6 text-center text-muted-foreground">
-                    Tidak ada kelurahan yang cocok dengan filter pencarian.
-                  </td>
-                </tr>
-              ) : (
-                filteredKelurahanRows.map((row, idx) => (
-                  <tr
-                    key={row.kelurahan}
-                    className={cn(
-                      "transition-colors",
-                      row.total > 0
-                        ? "bg-teal-500/5 hover:bg-teal-500/10 font-medium"
-                        : "hover:bg-muted/30 text-muted-foreground"
-                    )}
-                  >
-                    <td className="p-2.5 text-center font-mono">{idx + 1}</td>
-                    <td className="p-2.5 font-bold text-foreground flex items-center gap-1.5">
-                      {row.total > 0 && (
-                        <span className="h-1.5 w-1.5 rounded-full bg-teal-500 shrink-0" />
-                      )}
-                      <span>{row.kelurahan}</span>
-                    </td>
-                    <td className="p-2.5 font-medium">{row.kecamatan}</td>
-                    <td className="p-2.5 text-center font-mono text-sky-600 dark:text-sky-400 font-bold">
-                      {row.l > 0 ? row.l : "-"}
-                    </td>
-                    <td className="p-2.5 text-center font-mono text-rose-600 dark:text-rose-400 font-bold">
-                      {row.p > 0 ? row.p : "-"}
-                    </td>
-                    <td className="p-2.5 text-center font-mono font-black text-foreground">
-                      {row.total > 0 ? `${row.total} Siswa` : "0"}
-                    </td>
-                    <td className="p-2.5 text-center font-mono font-semibold">
-                      {row.pct > 0 ? `${row.pct}%` : "0%"}
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-            <tfoot>
-              <tr className="bg-muted/70 font-black border-t-2 border-border">
-                <td colSpan={3} className="p-2.5 text-left uppercase">
-                  TOTAL KESELURUHAN MURID
-                </td>
-                <td className="p-2.5 text-center font-mono text-sky-600 dark:text-sky-400">
-                  {genderStats.l}
-                </td>
-                <td className="p-2.5 text-center font-mono text-rose-600 dark:text-rose-400">
-                  {genderStats.p}
-                </td>
-                <td className="p-2.5 text-center font-mono text-teal-700 dark:text-teal-300">
-                  {totalMurid} Siswa
-                </td>
-                <td className="p-2.5 text-center font-mono">100%</td>
-              </tr>
-            </tfoot>
-          </table>
         </div>
       </div>
     </div>

@@ -1442,16 +1442,16 @@ export async function getDataAtsByKomunitas(
     const validKomId = toValidKomunitasUUID(komunitasId);
     const targetKel =
       meta.rawKel &&
-      meta.rawKel !== "semua" &&
-      meta.rawKel !== "Semua Kelurahan" &&
-      normalizeWilayah(meta.rawKel) !== "semua kelurahan"
+        meta.rawKel !== "semua" &&
+        meta.rawKel !== "Semua Kelurahan" &&
+        normalizeWilayah(meta.rawKel) !== "semua kelurahan"
         ? meta.rawKel
         : null;
     const targetKec =
       meta.rawKec &&
-      meta.rawKec !== "semua" &&
-      meta.rawKec !== "Kota Tegal" &&
-      normalizeWilayah(meta.rawKec) !== "kota tegal"
+        meta.rawKec !== "semua" &&
+        meta.rawKec !== "Kota Tegal" &&
+        normalizeWilayah(meta.rawKec) !== "kota tegal"
         ? meta.rawKec
         : null;
 
@@ -1652,16 +1652,16 @@ export async function getDataAtsByKomunitas(
 
         const filterTargetKec =
           meta.rawKec &&
-          meta.rawKec !== "semua" &&
-          meta.rawKec !== "Kota Tegal" &&
-          normalizeWilayah(meta.rawKec) !== "kota tegal"
+            meta.rawKec !== "semua" &&
+            meta.rawKec !== "Kota Tegal" &&
+            normalizeWilayah(meta.rawKec) !== "kota tegal"
             ? normalizeWilayah(meta.rawKec)
             : null;
         const filterTargetKel =
           meta.rawKel &&
-          meta.rawKel !== "semua" &&
-          meta.rawKel !== "Semua Kelurahan" &&
-          normalizeWilayah(meta.rawKel) !== "semua kelurahan"
+            meta.rawKel !== "semua" &&
+            meta.rawKel !== "Semua Kelurahan" &&
+            normalizeWilayah(meta.rawKel) !== "semua kelurahan"
             ? normalizeWilayah(meta.rawKel)
             : null;
         const filterTargetRw = normalizeRtRwNum(meta.rawRw);
@@ -1925,9 +1925,9 @@ export async function getDataAtsByKomunitas(
           const matchKel =
             Boolean(
               filterTargetKel &&
-                (itemKel === filterTargetKel ||
-                  itemKel.includes(filterTargetKel) ||
-                  filterTargetKel.includes(itemKel))
+              (itemKel === filterTargetKel ||
+                itemKel.includes(filterTargetKel) ||
+                filterTargetKel.includes(itemKel))
             );
           const matchKec =
             !filterTargetKec ||
