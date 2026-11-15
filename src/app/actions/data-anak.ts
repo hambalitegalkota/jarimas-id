@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient, createAdminClient } from "@/utils/supabase/server";
 import { DataAnakSchema } from "@/lib/zod-schemas";
-import { toValidUUID, isSuperAdmin as checkIsSuperAdmin, isAdminPusat as checkIsAdminPusat, isSuperOrAdminPusat, isRoleAdmin } from "@/lib/utils";
+import { toValidUUID, isSuperAdmin as checkIsSuperAdmin, isAdminPusat as checkIsAdminPusat, isSuperOrAdminPusat, isRoleAdmin, maskNama } from "@/lib/utils";
 import { toValidKomunitasUUID } from "@/lib/community-slugs";
 import { extractKomunitasMetadata } from "@/lib/admin-helpers";
 import { findOrGenerateKomunitasSeed, isKomunitasBerjenjangPosyandu } from "@/lib/constants/tegal-data";
@@ -1263,10 +1263,10 @@ export async function getDataAnakByKomunitas(
 
         return {
           id: row.id,
-          nama_lengkap: canViewDetail ? row.nama_lengkap : (row.nama_lengkap ? row.nama_lengkap.slice(0, 1) + "***" : "Anak"),
+          nama_lengkap: canViewDetail ? row.nama_lengkap : maskNama(row.nama_lengkap, "Anak"),
           tanggal_lahir: row.tanggal_lahir,
           jenis_kelamin: row.jenis_kelamin,
-          nama_orangtua: canViewDetail ? row.nama_orangtua : null,
+          nama_orangtua: canViewDetail ? row.nama_orangtua : maskNama(row.nama_orangtua, "-"),
           nomor_hp: canViewDetail ? row.nomor_hp : null,
           tinggal_bersama: canViewDetail ? row.tinggal_bersama : null,
           jarak_rumah_km: row.jarak_rumah_km,

@@ -941,6 +941,7 @@ export function DataAtsClientView({
                     komunitasNama={komunitas.nama}
                     canValidate={canValidate}
                     canManage={canManage}
+                    canAccessDaftarNama={Boolean(canAccessDaftarNama && currentUserId)}
                     currentUserId={currentUserId}
                     isSuperAdmin={isSuperAdmin}
                     onUpdate={handleUpdateItem}

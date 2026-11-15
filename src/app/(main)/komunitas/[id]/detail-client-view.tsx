@@ -2085,7 +2085,7 @@ export function KomunitasDetailClientView({
               dataAtsList={dataAtsState}
               currentUserId={currentUserId}
               isAdminOrKader={isAdminOrKader}
-              canViewDetail={canViewDetailDataAnak || isSuperOrPusat}
+              canViewDetail={Boolean(currentUserId && (canViewDetailDataAnak || isSuperOrPusat))}
               canValidate={canValidateDataAnak}
               canCreate={canCreateDataAnak}
               userRole={userRoleDataAnak || userPeran}
@@ -2435,7 +2435,8 @@ export function KomunitasDetailClientView({
                             key={child.id}
                             anak={child}
                             komunitas={komunitasData}
-                            canViewDetail={true}
+                            canViewDetail={Boolean(canViewDetailDataAnak && currentUserId)}
+                            currentUserId={currentUserId}
                             canValidate={canValidateForThisChild}
                             canEdit={canEditForThisChild}
                             canDelete={canDeleteForThisChild}
@@ -2585,7 +2586,7 @@ export function KomunitasDetailClientView({
               dataAtsList={dataAtsState}
               currentUserId={currentUserId}
               isAdminOrKader={isAdminOrKader}
-              canViewDetail={canAccessDaftarNamaAts || isSuperOrPusat}
+              canViewDetail={Boolean(currentUserId && (canAccessDaftarNamaAts || isSuperOrPusat))}
               canValidate={canValidateDataAts}
               canCreate={false}
               userRole={userRoleDataAnak || userPeran}
@@ -2595,7 +2596,7 @@ export function KomunitasDetailClientView({
             {isRekapOnlyTier && rekapDataAts ? (
               <RekapDataAtsClientView
                 initialData={rekapDataAts}
-                canAccessDaftarNamaAts={Boolean(isSuperOrPusat || canAccessRekapNamesAts)}
+                canAccessDaftarNamaAts={Boolean(currentUserId && (isSuperOrPusat || canAccessRekapNamesAts))}
                 userPeran={
                   isActualSuperAdmin
                     ? "Super Admin"
@@ -2632,11 +2633,12 @@ export function KomunitasDetailClientView({
                 }
                 canAccessDaftarNama={
                   Boolean(
-                    isSuperOrPusat ||
+                    currentUserId &&
+                    (isSuperOrPusat ||
                     canAccessDaftarNamaAts ||
                     canManageDataAts ||
                     isPkbmOrSkb ||
-                    (isApprovedMember && (isWargaKita || isPkbmOrSkb ? isUserAdmin : isKader || isUserAdmin))
+                    (isApprovedMember && (isWargaKita || isPkbmOrSkb ? isUserAdmin : isKader || isUserAdmin)))
                   )
                 }
                 currentUserId={currentUserId}

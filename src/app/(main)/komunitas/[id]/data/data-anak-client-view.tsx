@@ -560,6 +560,8 @@ export function DataAnakClientView({
                           key={child.id}
                           anak={child}
                           komunitas={komunitas}
+                          canViewDetail={Boolean(canViewDetail && isAuthenticated)}
+                          currentUserId={isAuthenticated ? "user" : null}
                           canValidate={canValidate}
                           canEdit={canEdit}
                           canDelete={canDelete}
@@ -809,6 +811,8 @@ export function DataAnakClientView({
                           key={child.id}
                           anak={child}
                           komunitas={komunitas}
+                          canViewDetail={Boolean(canViewDetail && isAuthenticated)}
+                          currentUserId={isAuthenticated ? "user" : null}
                           canValidate={false}
                           canEdit={!child.is_sekolah && canEdit}
                           canDelete={!child.is_sekolah && canDelete}

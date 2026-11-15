@@ -53,6 +53,34 @@ export function toValidUUID(input?: string | null): string {
 }
 
 /**
+ * Menyamarkan nama (anak maupun orang tua) untuk pengguna yang belum registrasi di aplikasi
+ * atau yang belum memiliki hak akses detail identitas:
+ * Memberikan tanda bintang 3 setelah huruf nama depan (misal: "SHINTA NUR RACHMAH" -> "S***", "TIKA MUSTIKA" -> "T***").
+ */
+export function maskNama(nama?: string | null, fallback = "-"): string {
+  if (!nama || !nama.trim()) return fallback;
+  const trimmed = nama.trim();
+  const lower = trimmed.toLowerCase();
+  if (
+    trimmed === "-" ||
+    trimmed === "0" ||
+    lower === "belum tahu" ||
+    lower === "tidak diketahui" ||
+    lower === "belum ada"
+  ) {
+    return fallback;
+  }
+  // Jika nama sudah disamarkan sebelumnya (misal "S***"), kembalikan langsung
+  if (trimmed.endsWith("***") && trimmed.length <= 5) {
+    return trimmed;
+  }
+  // Ambil karakter huruf/alfanumerik pertama
+  const match = trimmed.match(/[a-zA-Z0-9]/);
+  const firstChar = match ? match[0].toUpperCase() : trimmed.charAt(0).toUpperCase();
+  return `${firstChar}***`;
+}
+
+/**
  * Normalisasi nilai peran untuk tipe data enum Postgres user_role_enum
  * Postgres user_role_enum bertipe lowercase: 'kader' | 'pengurus' | 'anggota' | 'super_admin'
  */

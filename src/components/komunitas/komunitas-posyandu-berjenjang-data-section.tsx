@@ -27,7 +27,7 @@ import {
   HelpCircle,
   Table,
 } from "lucide-react";
-import { cn, formatPeranDisplay } from "@/lib/utils";
+import { cn, formatPeranDisplay, maskNama } from "@/lib/utils";
 import type { DataAnakItem, DataAtsItem } from "@/types/database";
 import {
   KOTA_TEGAL_DATA,
@@ -70,6 +70,9 @@ export function KomunitasPosyanduBerjenjangDataSection({
   canCreate = false,
   userRole = "Pengunjung",
 }: KomunitasPosyanduBerjenjangDataSectionProps) {
+  const isRegisteredUser = Boolean(currentUserId);
+  const hasDetailAccess = isRegisteredUser && Boolean(canViewDetail);
+
   // 1. Tentukan level hierarki komunitas berjenjang
   const rawKel = (komunitas.kelurahan || "").trim();
   const rawKec = (komunitas.kecamatan || "").trim();
@@ -1731,7 +1734,7 @@ export function KomunitasPosyanduBerjenjangDataSection({
                               <div className="min-w-0 flex-1">
                                 <div className="flex items-center gap-1.5 flex-wrap">
                                   <h5 className="text-xs sm:text-sm font-bold text-foreground truncate">
-                                    {child.nama_lengkap}
+                                    {hasDetailAccess ? child.nama_lengkap : maskNama(child.nama_lengkap, "Anak")}
                                   </h5>
                                   <span
                                     className={cn(
@@ -1785,7 +1788,7 @@ export function KomunitasPosyanduBerjenjangDataSection({
                                 {child.domisili_rt || child.kk_rt || "-"}
                                 {child.nama_orangtua && (
                                   <span className="text-muted-foreground/80 font-normal">
-                                    {" "}• Ortu: <span className="text-foreground font-medium">{child.nama_orangtua}</span>
+                                    {" "}• Ortu: <span className="text-foreground font-medium">{hasDetailAccess ? child.nama_orangtua : maskNama(child.nama_orangtua, "-")}</span>
                                   </span>
                                 )}
                               </span>
@@ -1897,7 +1900,7 @@ export function KomunitasPosyanduBerjenjangDataSection({
                               <div className="min-w-0 flex-1">
                                 <div className="flex items-center gap-1.5 flex-wrap">
                                   <h5 className="text-xs sm:text-sm font-bold text-foreground truncate">
-                                    {ats.nama_lengkap}
+                                    {hasDetailAccess ? ats.nama_lengkap : maskNama(ats.nama_lengkap, "Anak")}
                                   </h5>
                                   <span
                                     className={cn(
@@ -1953,7 +1956,7 @@ export function KomunitasPosyanduBerjenjangDataSection({
                                 {ats.alamat || `Kel. ${ats.kelurahan || "-"}, RW ${ats.rw || "-"}, RT ${ats.rt || "-"}`}
                                 {ats.nama_orangtua && (
                                   <span className="text-muted-foreground/80 font-normal">
-                                    {" "}• Ortu: <span className="text-foreground font-medium">{ats.nama_orangtua}</span>
+                                    {" "}• Ortu: <span className="text-foreground font-medium">{hasDetailAccess ? ats.nama_orangtua : maskNama(ats.nama_orangtua, "-")}</span>
                                   </span>
                                 )}
                               </span>

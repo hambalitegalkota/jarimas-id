@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/utils/supabase/server";
 import { DataAtsSchema } from "@/lib/zod-schemas";
-import { toValidUUID, isSuperAdmin as checkIsSuperAdmin, isAdminPusat as checkIsAdminPusat, isSuperOrAdminPusat, isRoleAdmin } from "@/lib/utils";
+import { toValidUUID, isSuperAdmin as checkIsSuperAdmin, isAdminPusat as checkIsAdminPusat, isSuperOrAdminPusat, isRoleAdmin, maskNama } from "@/lib/utils";
 import { toValidKomunitasUUID } from "@/lib/community-slugs";
 import {
   normalizeKeinginanSekolah,
@@ -1420,14 +1420,17 @@ export async function getDataAtsByKomunitas(
       ((isRtCommunity || isPosyanduCommunity || isPkbmOrSkb) && canManage);
 
     // 2. Otorisasi Daftar Rincian Lengkap Nama Anak:
-    // Sesuai ketentuan: Data lengkap dapat dilihat di level RT oleh Admin Komunitas Warga Kita,
-    // Admin di Posyandu, serta Admin, Pengurus, dan Tutor di seluruh PKBM dan SKB Kota Tegal.
-    if (isSuperAdmin) {
+    // Pengguna yang belum registrasi di aplikasi (guest / anonymous) TIDAK BOLEH melihat nama lengkap anak maupun orang tua.
+    // Data lengkap hanya dapat diakses oleh pengguna yang SUDAH REGISTRASI / LOGIN dan memiliki kewenangan:
+    // Super Admin / Admin Pusat, Admin/Tutor di PKBM/SKB, Kader/Admin di Posyandu, serta Admin di level RT.
+    const isRegisteredUser = Boolean(currentUserId);
+    if (!isRegisteredUser) {
+      canAccessDaftarNama = false;
+    } else if (isSuperAdmin) {
       canAccessDaftarNama = true;
     } else if (isPkbmOrSkb) {
-      // Komunitas PKBM dan SKB di Kota Tegal dapat melihat seluruh rincian anak ATS untuk intervensi
       canAccessDaftarNama = true;
-    } else if (isPosyanduCommunity && (canManage || isPosBerjenjang || Boolean(currentUserId))) {
+    } else if (isPosyanduCommunity && (canManage || isPosBerjenjang)) {
       canAccessDaftarNama = true;
     } else if (isRtCommunity && canManage) {
       canAccessDaftarNama = true;
@@ -1608,17 +1611,18 @@ export async function getDataAtsByKomunitas(
         const parsed = parseAtsDetails(row.alasan_sekolah, childKomObj);
         const ageNum = getNumericAgeAts(row.tanggal_lahir);
         const kategoriAts = classifyAtsCategory(parsed.jenjangAsal, parsed.alasan, row.nama_sekolah);
+        const shouldMask = !isRegisteredUser || !canAccessDaftarNama;
 
         return {
           id: row.id,
-          nama_lengkap: row.nama_lengkap,
+          nama_lengkap: shouldMask ? maskNama(row.nama_lengkap, "Anak") : row.nama_lengkap,
           tanggal_lahir: row.tanggal_lahir,
           usia: String(ageNum),
           kategori_ats: kategoriAts,
           jenis_kelamin: row.jenis_kelamin,
-          nama_orangtua: row.nama_orangtua,
-          nomor_hp: row.nomor_hp,
-          tinggal_bersama: row.tinggal_bersama || "Orang Tua",
+          nama_orangtua: shouldMask ? maskNama(row.nama_orangtua, "-") : (row.nama_orangtua || "-"),
+          nomor_hp: shouldMask ? null : row.nomor_hp,
+          tinggal_bersama: shouldMask ? "Orang Tua" : (row.tinggal_bersama || "Orang Tua"),
           alamat: parsed.alamat,
           rt: parsed.rt,
           rw: parsed.rw,
@@ -1950,10 +1954,10 @@ export async function getDataAtsByKomunitas(
 
     const sanitizedItems = canAccessDaftarNama
       ? items
-      : items.map((c, idx) => ({
+      : items.map((c) => ({
         ...c,
-        nama_lengkap: `Anak ATS #${idx + 1} (Terkunci)`,
-        nama_orangtua: "Dirahasiakan",
+        nama_lengkap: maskNama(c.nama_lengkap, "Anak"),
+        nama_orangtua: maskNama(c.nama_orangtua, "-"),
         nomor_hp: "-",
         alamat: "-",
         rt: "-",

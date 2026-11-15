@@ -28,12 +28,13 @@ import { formatNamaSekolahDisplay, isKomunitasLayananPaud } from "@/lib/data-ana
 import { ModalEditDataAnak } from "./modal-edit-data-anak";
 import { ModalKeluarDataAnak } from "./modal-keluar-data-anak";
 import type { DataAnakItem, KomunitasWithMembership } from "@/types/database";
-import { cn } from "@/lib/utils";
+import { cn, maskNama } from "@/lib/utils";
 
 interface CardDataAnakProps {
   anak: DataAnakItem;
   komunitas?: KomunitasWithMembership;
   canViewDetail?: boolean;
+  currentUserId?: string | null;
   canValidate: boolean;
   canEdit?: boolean;
   canDelete?: boolean;
@@ -110,6 +111,7 @@ export function CardDataAnak({
   anak,
   komunitas,
   canViewDetail = true,
+  currentUserId,
   canValidate,
   canEdit,
   canDelete,
@@ -134,6 +136,12 @@ export function CardDataAnak({
   );
   const isApproved = currentChild.status_approval === "approved";
   const ageString = calculateAge(currentChild.tanggal_lahir);
+
+  // Privasi nama anak & orang tua untuk pengguna yang belum registrasi atau tanpa akses detail
+  const isRegisteredUser = currentUserId === undefined ? true : Boolean(currentUserId);
+  const hasAccess = isRegisteredUser && Boolean(canViewDetail);
+  const displayNamaLengkap = hasAccess ? currentChild.nama_lengkap : maskNama(currentChild.nama_lengkap, "Anak");
+  const displayNamaOrangtua = hasAccess ? (currentChild.nama_orangtua || "-") : maskNama(currentChild.nama_orangtua, "-");
 
   const kkAddressStr = formatAddressString(
     currentChild.kk_jalan,
@@ -206,7 +214,7 @@ export function CardDataAnak({
 
             <div className="space-y-0.5 min-w-0">
               <h3 className="text-sm sm:base font-bold text-foreground tracking-tight leading-snug truncate">
-                {currentChild.nama_lengkap}
+                {displayNamaLengkap}
               </h3>
               <div className="flex flex-wrap items-center gap-1.5 text-xs font-medium text-muted-foreground">
                 <span className="font-semibold text-foreground" suppressHydrationWarning>
@@ -287,7 +295,7 @@ export function CardDataAnak({
                     Orang Tua / Wali
                   </span>
                   <span className="font-semibold text-foreground truncate block leading-snug">
-                    {currentChild.nama_orangtua || "-"}
+                    {displayNamaOrangtua}
                   </span>
                 </div>
               </div>

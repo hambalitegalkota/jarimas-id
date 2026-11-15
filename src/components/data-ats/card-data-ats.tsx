@@ -24,7 +24,7 @@ import { ModalEditAts } from "./modal-edit-ats";
 import { ModalHapusAts } from "./modal-hapus-ats";
 import { getJenjangAts, normalizeKeinginanSekolah, getNumericAgeAts } from "@/lib/ats-helpers";
 import type { DataAtsItem } from "@/types/database";
-import { cn } from "@/lib/utils";
+import { cn, maskNama } from "@/lib/utils";
 
 interface CardDataAtsProps {
   ats: DataAtsItem;
@@ -32,6 +32,7 @@ interface CardDataAtsProps {
   komunitasNama?: string;
   canValidate: boolean;
   canManage?: boolean;
+  canAccessDaftarNama?: boolean;
   currentUserId?: string | null;
   isSuperAdmin?: boolean;
   onUpdate?: (updatedItem: DataAtsItem) => void;
@@ -56,6 +57,7 @@ export function CardDataAts({
   komunitasNama,
   canValidate,
   canManage,
+  canAccessDaftarNama,
   currentUserId,
   isSuperAdmin,
   onUpdate,
@@ -74,6 +76,12 @@ export function CardDataAts({
   const isApproved = currentAts.status_approval === "approved";
   const ageString = calculateAge(currentAts);
   const jenjangInfo = getJenjangAts(currentAts);
+
+  // Privasi nama anak & orang tua untuk pengguna yang belum registrasi
+  const isRegisteredUser = Boolean(currentUserId);
+  const hasAccess = isRegisteredUser && Boolean(canAccessDaftarNama ?? canManage ?? isSuperAdmin);
+  const displayNamaLengkap = hasAccess ? currentAts.nama_lengkap : maskNama(currentAts.nama_lengkap, "Anak");
+  const displayNamaOrangtua = hasAccess ? (currentAts.nama_orangtua || "-") : maskNama(currentAts.nama_orangtua, "-");
 
   // Cek hak izin user untuk Edit & Hapus
   const isCreator = Boolean(currentUserId && currentAts.created_by === currentUserId);
@@ -167,7 +175,7 @@ export function CardDataAts({
             <div className="space-y-0.5 min-w-0">
               <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
                 <h3 className="text-xs sm:text-sm font-bold text-foreground leading-tight truncate">
-                  {currentAts.nama_lengkap}
+                  {displayNamaLengkap}
                 </h3>
                 {/* Jenjang Badge */}
                 <span className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] sm:text-2xs font-bold border border-primary/20 bg-primary/10 text-primary shrink-0">
@@ -246,9 +254,9 @@ export function CardDataAts({
               <span className="text-muted-foreground font-bold text-2xs shrink-0">WALI:</span>
               <span
                 className="font-bold text-foreground truncate"
-                title={`${currentAts.nama_orangtua} (${currentAts.tinggal_bersama})`}
+                title={`${displayNamaOrangtua} (${currentAts.tinggal_bersama})`}
               >
-                {currentAts.nama_orangtua} ({currentAts.tinggal_bersama})
+                {displayNamaOrangtua} ({currentAts.tinggal_bersama})
               </span>
             </div>
 

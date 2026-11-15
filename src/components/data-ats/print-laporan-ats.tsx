@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import { getJenjangAts, getWilayahScopeInfo, normalizeKeinginanSekolah } from "@/lib/ats-helpers";
+import { maskNama } from "@/lib/utils";
 import type { DataAtsItem, KomunitasWithMembership } from "@/types/database";
 
 export interface PrintLaporanAtsProps {
@@ -18,6 +19,8 @@ export interface PrintLaporanAtsProps {
   orientation?: "portrait" | "landscape";
   includeStats?: boolean;
   includeSignatures?: boolean;
+  canAccessDaftarNama?: boolean;
+  currentUserId?: string | null;
   customSigner1Title?: string;
   customSigner1Name?: string;
   customSigner2Title?: string;
@@ -33,12 +36,16 @@ export function PrintLaporanAts({
   orientation = "portrait",
   includeStats = true,
   includeSignatures = true,
+  canAccessDaftarNama,
+  currentUserId,
   customSigner1Title = "Ketua RT / RW / Tokoh Masyarakat",
   customSigner1Name = "",
   customSigner2Title = "Kader Pendata / Pengurus Jarimas",
   customSigner2Name = "",
   customDate,
 }: PrintLaporanAtsProps) {
+  const isRegisteredUser = Boolean(currentUserId);
+  const hasAccess = isRegisteredUser && (canAccessDaftarNama !== undefined ? canAccessDaftarNama : true);
   const scopeInfo = getWilayahScopeInfo(komunitas);
   const totalFiltered = filteredAts.length;
 
@@ -248,9 +255,9 @@ export function PrintLaporanAts({
                       {index + 1}
                     </td>
                     <td className="border border-black p-1 font-bold text-black">
-                      <div className="text-[9px]">{item.nama_lengkap}</div>
+                      <div className="text-[9px]">{hasAccess ? item.nama_lengkap : maskNama(item.nama_lengkap, "Anak")}</div>
                       <div className="text-[7.5px] font-mono text-gray-600 font-normal">
-                        Tgl: {item.tanggal_lahir || "-"} {item.usia ? `(${item.usia})` : ""}
+                        Tgl: {hasAccess ? (item.tanggal_lahir || "-") : "-"} {item.usia ? `(${item.usia})` : ""}
                       </div>
                     </td>
                     <td className="border border-black p-1 text-center font-mono font-bold">
@@ -260,9 +267,9 @@ export function PrintLaporanAts({
                         : "P"}
                     </td>
                     <td className="border border-black p-1">
-                      <div className="font-semibold">{item.nama_orangtua || "-"}</div>
+                      <div className="font-semibold">{hasAccess ? (item.nama_orangtua || "-") : maskNama(item.nama_orangtua, "-")}</div>
                       <div className="text-[7.5px] font-mono text-gray-600">
-                        HP: {item.nomor_hp || "-"}
+                        HP: {hasAccess ? (item.nomor_hp || "-") : "-"}
                       </div>
                     </td>
                     <td className="border border-black p-1 text-[8px]">
