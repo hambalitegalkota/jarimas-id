@@ -449,65 +449,153 @@ export function PaudRekapGrafikView({
           </div>
         </div>
 
-        {/* 3.2 Jumlah Murid Luar Kota dan Dalam Kota Menurut Alamat KK */}
+        {/* 3.2 Jumlah Murid Menurut Usia (Usia 0 s/d 6 Tahun) */}
         <div className="rounded-lg border border-border bg-card p-5 sm:p-6 space-y-4 shadow-xs">
-          <div className="flex items-center gap-2.5 border-b border-border pb-3.5">
-            <div className="h-8 w-8 rounded-lg bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 flex items-center justify-center shrink-0">
-              <MapPin className="h-4 w-4" />
-            </div>
-            <div>
-              <h3 className="text-sm sm:text-base font-extrabold text-foreground">
-                Murid Luar Kota &amp; Dalam Kota (Alamat KK)
-              </h3>
-              <p className="text-2xs sm:text-xs text-muted-foreground font-medium">
-                Proporsi kepemilikan Kartu Keluarga Kota Tegal vs Luar Kota
-              </p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3 sm:gap-4">
-            <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-4 text-center space-y-1">
-              <span className="text-xs font-bold text-emerald-700 dark:text-emerald-300 uppercase tracking-wider">
-                Dalam Kota Tegal
-              </span>
-              <div className="text-3xl font-black font-mono text-foreground">
-                {kkKotaStats.dalamKota}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border pb-3.5">
+            <div className="flex items-center gap-2.5">
+              <div className="h-8 w-8 rounded-lg bg-teal-500/10 text-teal-700 dark:text-teal-300 flex items-center justify-center shrink-0">
+                <Baby className="h-4 w-4" />
               </div>
-              <span className="text-xs font-semibold text-muted-foreground font-mono">
-                {kkKotaStats.pctDalam}% dari total
-              </span>
-            </div>
-
-            <div className="rounded-lg border border-rose-500/20 bg-rose-500/5 p-4 text-center space-y-1">
-              <span className="text-xs font-bold text-rose-700 dark:text-rose-300 uppercase tracking-wider">
-                Luar Kota Tegal
-              </span>
-              <div className="text-3xl font-black font-mono text-foreground">
-                {kkKotaStats.luarKota}
+              <div>
+                <h3 className="text-sm sm:text-base font-extrabold text-foreground">
+                  Jumlah Murid Menurut Usia (Usia 0 s/d 6 Tahun)
+                </h3>
+                <p className="text-2xs sm:text-xs text-muted-foreground font-medium">
+                  Sebaran usia tunggal siswa dari Usia 0, 1, 2, 3, 4, 5, hingga 6 Tahun
+                </p>
               </div>
-              <span className="text-xs font-semibold text-muted-foreground font-mono">
-                {kkKotaStats.pctLuar}% dari total
-              </span>
+            </div>
+
+            <div className="flex items-center gap-1.5 self-start sm:self-auto bg-muted p-1 rounded-lg">
+              <button
+                type="button"
+                onClick={() => setViewModeUsia("diagram")}
+                className={cn(
+                  "px-2.5 py-1 text-xs font-bold rounded-md transition-all cursor-pointer",
+                  viewModeUsia === "diagram"
+                    ? "bg-card text-foreground shadow-2xs"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                Diagram Grafik
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewModeUsia("matriks")}
+                className={cn(
+                  "px-2.5 py-1 text-xs font-bold rounded-md transition-all cursor-pointer",
+                  viewModeUsia === "matriks"
+                    ? "bg-card text-foreground shadow-2xs"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                Tabel Matriks
+              </button>
             </div>
           </div>
 
-          {/* Progress bar komparasi KK */}
-          <div className="space-y-1.5 pt-1">
-            <div className="flex justify-between text-2xs font-bold text-muted-foreground">
-              <span>Dalam Kota ({kkKotaStats.pctDalam}%)</span>
-              <span>Luar Kota ({kkKotaStats.pctLuar}%)</span>
+          {viewModeUsia === "diagram" ? (
+            <div className="space-y-3.5">
+              {usiaEntries.list.map((item) => {
+                const barHeightPct =
+                  usiaEntries.max > 0 ? Math.round((item.total / usiaEntries.max) * 100) : 0;
+
+                return (
+                  <div key={item.age} className="space-y-1">
+                    <div className="flex items-center justify-between text-xs font-bold">
+                      <span className="text-foreground w-28 truncate">{item.label}</span>
+                      <div className="flex items-center gap-2.5 font-mono">
+                        <span className="text-sky-600 dark:text-sky-400 text-2xs">
+                          L: {item.l}
+                        </span>
+                        <span className="text-rose-600 dark:text-rose-400 text-2xs">
+                          P: {item.p}
+                        </span>
+                        <span className="text-foreground font-black">
+                          {item.total} Siswa
+                        </span>
+                        <span className="text-2xs text-muted-foreground">
+                          ({item.pct}%)
+                        </span>
+                      </div>
+                    </div>
+                    <div className="h-3 w-full rounded-full bg-muted flex overflow-hidden">
+                      {item.total > 0 ? (
+                        <>
+                          <div
+                            className="h-full bg-sky-500 transition-all duration-500"
+                            style={{
+                              width: `${item.total > 0 ? (item.l / item.total) * barHeightPct : 0}%`,
+                            }}
+                            title={`Laki-laki: ${item.l}`}
+                          />
+                          <div
+                            className="h-full bg-rose-500 transition-all duration-500"
+                            style={{
+                              width: `${item.total > 0 ? (item.p / item.total) * barHeightPct : 0}%`,
+                            }}
+                            title={`Perempuan: ${item.p}`}
+                          />
+                        </>
+                      ) : (
+                        <div className="h-full w-0" />
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-            <div className="h-3 w-full flex rounded-full overflow-hidden bg-muted">
-              <div
-                className="h-full bg-emerald-500 transition-all duration-500"
-                style={{ width: `${kkKotaStats.pctDalam}%` }}
-              />
-              <div
-                className="h-full bg-rose-500 transition-all duration-500"
-                style={{ width: `${kkKotaStats.pctLuar}%` }}
-              />
+          ) : (
+            <div className="overflow-x-auto rounded-lg border border-border">
+              <table className="w-full text-xs text-center border-collapse">
+                <thead>
+                  <tr className="bg-muted text-muted-foreground border-b border-border font-bold">
+                    <th className="p-2.5 text-left">Kelompok Umur</th>
+                    <th className="p-2.5 text-sky-600 dark:text-sky-400">Laki-laki (L)</th>
+                    <th className="p-2.5 text-rose-600 dark:text-rose-400">Perempuan (P)</th>
+                    <th className="p-2.5 text-foreground">Total Siswa</th>
+                    <th className="p-2.5 text-foreground">Persentase</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {usiaEntries.list.map((item) => (
+                    <tr key={item.age} className="hover:bg-muted/40 transition-colors">
+                      <td className="p-2.5 text-left font-bold text-foreground">
+                        {item.label}
+                      </td>
+                      <td className="p-2.5 font-mono text-sky-600 dark:text-sky-400 font-bold">
+                        {item.l}
+                      </td>
+                      <td className="p-2.5 font-mono text-rose-600 dark:text-rose-400 font-bold">
+                        {item.p}
+                      </td>
+                      <td className="p-2.5 font-mono font-black text-foreground">
+                        {item.total}
+                      </td>
+                      <td className="p-2.5 font-mono text-muted-foreground">
+                        {item.pct}%
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot>
+                  <tr className="bg-muted/60 font-black border-t-2 border-border">
+                    <td className="p-2.5 text-left">TOTAL KESELURUHAN</td>
+                    <td className="p-2.5 text-sky-600 dark:text-sky-400 font-mono">
+                      {genderStats.l}
+                    </td>
+                    <td className="p-2.5 text-rose-600 dark:text-rose-400 font-mono">
+                      {genderStats.p}
+                    </td>
+                    <td className="p-2.5 font-mono text-teal-700 dark:text-teal-300">
+                      {totalMurid}
+                    </td>
+                    <td className="p-2.5 font-mono">100%</td>
+                  </tr>
+                </tfoot>
+              </table>
             </div>
-          </div>
+          )}
         </div>
       </div>
 
@@ -621,158 +709,7 @@ export function PaudRekapGrafikView({
       </div>
 
       {/* ========================================================= */}
-      {/* 5. ROW 3: JUMLAH MURID MENURUT USIA (0 - 6 TAHUN)         */}
-      {/* ========================================================= */}
-      <div className="rounded-lg border border-border bg-card p-5 sm:p-6 space-y-4 shadow-xs">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border pb-3.5">
-          <div className="flex items-center gap-2.5">
-            <div className="h-8 w-8 rounded-lg bg-teal-500/10 text-teal-700 dark:text-teal-300 flex items-center justify-center shrink-0">
-              <Baby className="h-4 w-4" />
-            </div>
-            <div>
-              <h3 className="text-sm sm:text-base font-extrabold text-foreground">
-                Jumlah Murid Menurut Usia (Usia 0 s/d 6 Tahun)
-              </h3>
-              <p className="text-2xs sm:text-xs text-muted-foreground font-medium">
-                Sebaran usia tunggal siswa dari Usia 0, 1, 2, 3, 4, 5, hingga 6 Tahun
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-1.5 self-start sm:self-auto bg-muted p-1 rounded-lg">
-            <button
-              type="button"
-              onClick={() => setViewModeUsia("diagram")}
-              className={cn(
-                "px-2.5 py-1 text-xs font-bold rounded-md transition-all cursor-pointer",
-                viewModeUsia === "diagram"
-                  ? "bg-card text-foreground shadow-2xs"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              Diagram Grafik
-            </button>
-            <button
-              type="button"
-              onClick={() => setViewModeUsia("matriks")}
-              className={cn(
-                "px-2.5 py-1 text-xs font-bold rounded-md transition-all cursor-pointer",
-                viewModeUsia === "matriks"
-                  ? "bg-card text-foreground shadow-2xs"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              Tabel Matriks
-            </button>
-          </div>
-        </div>
-
-        {viewModeUsia === "diagram" ? (
-          <div className="space-y-3.5">
-            {usiaEntries.list.map((item) => {
-              const barHeightPct =
-                usiaEntries.max > 0 ? Math.round((item.total / usiaEntries.max) * 100) : 0;
-
-              return (
-                <div key={item.age} className="space-y-1">
-                  <div className="flex items-center justify-between text-xs font-bold">
-                    <span className="text-foreground w-28 truncate">{item.label}</span>
-                    <div className="flex items-center gap-2.5 font-mono">
-                      <span className="text-sky-600 dark:text-sky-400 text-2xs">
-                        L: {item.l}
-                      </span>
-                      <span className="text-rose-600 dark:text-rose-400 text-2xs">
-                        P: {item.p}
-                      </span>
-                      <span className="text-foreground font-black">
-                        {item.total} Siswa
-                      </span>
-                      <span className="text-2xs text-muted-foreground">
-                        ({item.pct}%)
-                      </span>
-                    </div>
-                  </div>
-                  <div className="h-3 w-full rounded-full bg-muted flex overflow-hidden">
-                    {item.total > 0 ? (
-                      <>
-                        <div
-                          className="h-full bg-sky-500 transition-all duration-500"
-                          style={{
-                            width: `${item.total > 0 ? (item.l / item.total) * barHeightPct : 0}%`,
-                          }}
-                          title={`Laki-laki: ${item.l}`}
-                        />
-                        <div
-                          className="h-full bg-rose-500 transition-all duration-500"
-                          style={{
-                            width: `${item.total > 0 ? (item.p / item.total) * barHeightPct : 0}%`,
-                          }}
-                          title={`Perempuan: ${item.p}`}
-                        />
-                      </>
-                    ) : (
-                      <div className="h-full w-0" />
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          <div className="overflow-x-auto rounded-lg border border-border">
-            <table className="w-full text-xs text-center border-collapse">
-              <thead>
-                <tr className="bg-muted text-muted-foreground border-b border-border font-bold">
-                  <th className="p-2.5 text-left">Kelompok Umur</th>
-                  <th className="p-2.5 text-sky-600 dark:text-sky-400">Laki-laki (L)</th>
-                  <th className="p-2.5 text-rose-600 dark:text-rose-400">Perempuan (P)</th>
-                  <th className="p-2.5 text-foreground">Total Siswa</th>
-                  <th className="p-2.5 text-foreground">Persentase</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {usiaEntries.list.map((item) => (
-                  <tr key={item.age} className="hover:bg-muted/40 transition-colors">
-                    <td className="p-2.5 text-left font-bold text-foreground">
-                      {item.label}
-                    </td>
-                    <td className="p-2.5 font-mono text-sky-600 dark:text-sky-400 font-bold">
-                      {item.l}
-                    </td>
-                    <td className="p-2.5 font-mono text-rose-600 dark:text-rose-400 font-bold">
-                      {item.p}
-                    </td>
-                    <td className="p-2.5 font-mono font-black text-foreground">
-                      {item.total}
-                    </td>
-                    <td className="p-2.5 font-mono text-muted-foreground">
-                      {item.pct}%
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-              <tfoot>
-                <tr className="bg-muted/60 font-black border-t-2 border-border">
-                  <td className="p-2.5 text-left">TOTAL KESELURUHAN</td>
-                  <td className="p-2.5 text-sky-600 dark:text-sky-400 font-mono">
-                    {genderStats.l}
-                  </td>
-                  <td className="p-2.5 text-rose-600 dark:text-rose-400 font-mono">
-                    {genderStats.p}
-                  </td>
-                  <td className="p-2.5 font-mono text-teal-700 dark:text-teal-300">
-                    {totalMurid}
-                  </td>
-                  <td className="p-2.5 font-mono">100%</td>
-                </tr>
-              </tfoot>
-            </table>
-          </div>
-        )}
-      </div>
-
-      {/* ========================================================= */}
-      {/* 6. ROW 4: ALASAN / MOTIVASI BERSEKOLAH PAUD               */}
+      {/* 5. ROW 3: ALASAN / MOTIVASI BERSEKOLAH PAUD               */}
       {/* ========================================================= */}
       <div className="rounded-lg border border-border bg-card p-5 sm:p-6 space-y-4 shadow-xs">
         <div className="flex items-center gap-2.5 border-b border-border pb-3.5">
