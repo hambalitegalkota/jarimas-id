@@ -17,6 +17,7 @@ import {
   KRANDON_POSYANDU_MAP,
   PESURUNGAN_KIDUL_POSYANDU_MAP,
   DEBONG_TENGAH_POSYANDU_MAP,
+  SLEROK_POSYANDU_MAP,
 } from "@/lib/constants/seed-posyandu-tegal";
 import {
   RAW_PAUD_PKBM_TEGAL,
@@ -62,6 +63,7 @@ import {
   isValidKaligangsaRtRw,
   isValidMuararejaRtRw,
   isValidKrandonRtRw,
+  isValidSlerokRtRw,
   resolveJenisInstitusi,
 } from "@/lib/data-anak-helpers";
 import {
@@ -341,6 +343,7 @@ function isInvalidWargaCommunity(item: { id?: string | null; kelurahan?: string 
   if (!isValidTegalsariRtRw(kel, rawRw, rawRt)) return true;
   if (!isValidMuararejaRtRw(kel, rawRw, rawRt)) return true;
   if (!isValidKrandonRtRw(kel, rawRw, rawRt)) return true;
+  if (!isValidSlerokRtRw(kel, rawRw, rawRt)) return true;
 
   // 2. Validasi khusus Debong Lor (RW 1: 8 RT, RW 2: 5 RT, RW 3: 4 RT -> Max 3 RW)
   if (cleanKel === "debong lor") {
@@ -800,6 +803,7 @@ export async function getKomunitasList(
         const krandonConfig = KRANDON_POSYANDU_MAP[dbItem.id] || KRANDON_POSYANDU_MAP[normId];
         const pesurunganKidulConfig = PESURUNGAN_KIDUL_POSYANDU_MAP[dbItem.id] || PESURUNGAN_KIDUL_POSYANDU_MAP[normId];
         const debongTengahConfig = DEBONG_TENGAH_POSYANDU_MAP[dbItem.id] || DEBONG_TENGAH_POSYANDU_MAP[normId];
+        const slerokConfig = SLEROK_POSYANDU_MAP[dbItem.id] || SLEROK_POSYANDU_MAP[normId];
 
         if (itemJenis === "posyandu" && bandungConfig) {
           matched.nama = bandungConfig.nama;
@@ -868,6 +872,15 @@ export async function getKomunitasList(
           if (debongTengahConfig.deskripsi) matched.deskripsi = debongTengahConfig.deskripsi;
           matched.kecamatan = "Tegal Selatan";
           matched.kelurahan = "Debong Tengah";
+        } else if (itemJenis === "posyandu" && slerokConfig) {
+          matched.nama = slerokConfig.nama;
+          matched.rw = slerokConfig.rw;
+          matched.rt = slerokConfig.rt;
+          matched.cakupan_wilayah = slerokConfig.cakupan_wilayah;
+          if (slerokConfig.lokasi) matched.lokasi = slerokConfig.lokasi;
+          if (slerokConfig.deskripsi) matched.deskripsi = slerokConfig.deskripsi;
+          matched.kecamatan = "Tegal Timur";
+          matched.kelurahan = "Slerok";
         } else {
           if (dbItem.nama) {
             let itemNama = dbItem.nama;
@@ -1087,6 +1100,8 @@ export async function getKomunitasList(
       if (pesurunganKidulInfo) coreNama = pesurunganKidulInfo.nama.toLowerCase();
       const debongTengahInfo = DEBONG_TENGAH_POSYANDU_MAP[item.id] || DEBONG_TENGAH_POSYANDU_MAP[normId];
       if (debongTengahInfo) coreNama = debongTengahInfo.nama.toLowerCase();
+      const slerokInfo = SLEROK_POSYANDU_MAP[item.id] || SLEROK_POSYANDU_MAP[normId];
+      if (slerokInfo) coreNama = slerokInfo.nama.toLowerCase();
 
       const key = `${item.jenis}|${kelClean}|${coreNama}`;
       if (seenKomunitasKeys.has(normId) || seenKomunitasKeys.has(key)) {
@@ -1140,6 +1155,7 @@ export async function getKomunitasList(
         const krandonInfo = KRANDON_POSYANDU_MAP[item.id] || KRANDON_POSYANDU_MAP[normId];
         const pesurunganKidulInfo = PESURUNGAN_KIDUL_POSYANDU_MAP[item.id] || PESURUNGAN_KIDUL_POSYANDU_MAP[normId];
         const debongTengahInfo = DEBONG_TENGAH_POSYANDU_MAP[item.id] || DEBONG_TENGAH_POSYANDU_MAP[normId];
+        const slerokInfo = SLEROK_POSYANDU_MAP[item.id] || SLEROK_POSYANDU_MAP[normId];
         if (bandungInfo) {
           itemNama = bandungInfo.nama;
           itemRw = bandungInfo.rw;
@@ -1180,6 +1196,13 @@ export async function getKomunitasList(
           if (debongTengahInfo.deskripsi) itemDeskripsi = debongTengahInfo.deskripsi;
           if (debongTengahInfo.lokasi) item.lokasi = debongTengahInfo.lokasi;
           item.cakupan_wilayah = debongTengahInfo.cakupan_wilayah;
+        } else if (slerokInfo) {
+          itemNama = slerokInfo.nama;
+          itemRw = slerokInfo.rw;
+          item.rt = slerokInfo.rt;
+          if (slerokInfo.deskripsi) itemDeskripsi = slerokInfo.deskripsi;
+          if (slerokInfo.lokasi) item.lokasi = slerokInfo.lokasi;
+          item.cakupan_wilayah = slerokInfo.cakupan_wilayah;
         } else {
           const isBerjenjangItem =
             (item.nama || "").toLowerCase().includes("komunitas posyandu") ||
@@ -1693,6 +1716,11 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
         DEBONG_TENGAH_POSYANDU_MAP[normId] ||
         DEBONG_TENGAH_POSYANDU_MAP[komunitasId] ||
         DEBONG_TENGAH_POSYANDU_MAP[dbKomunitasId];
+      const slerokInfo =
+        SLEROK_POSYANDU_MAP[komunitas.id] ||
+        SLEROK_POSYANDU_MAP[normId] ||
+        SLEROK_POSYANDU_MAP[komunitasId] ||
+        SLEROK_POSYANDU_MAP[dbKomunitasId];
 
       if (bandungInfo) {
         nama = bandungInfo.nama;
@@ -1779,6 +1807,17 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
         if (debongTengahInfo.lokasi) komunitas.lokasi = debongTengahInfo.lokasi;
         if (debongTengahInfo.deskripsi) komunitas.deskripsi = debongTengahInfo.deskripsi;
         posyanduCanonicalRw = debongTengahInfo.rw;
+      } else if (slerokInfo) {
+        nama = slerokInfo.nama;
+        komunitas.nama = slerokInfo.nama;
+        komunitas.kelurahan = "Slerok";
+        komunitas.kecamatan = "Tegal Timur";
+        komunitas.rw = slerokInfo.rw;
+        komunitas.rt = slerokInfo.rt;
+        komunitas.cakupan_wilayah = slerokInfo.cakupan_wilayah;
+        if (slerokInfo.lokasi) komunitas.lokasi = slerokInfo.lokasi;
+        if (slerokInfo.deskripsi) komunitas.deskripsi = slerokInfo.deskripsi;
+        posyanduCanonicalRw = slerokInfo.rw;
       } else {
         const isBerjenjangPos =
           isKomunitasBerjenjangPosyandu(komunitas.id) ||
@@ -4896,6 +4935,7 @@ export async function getKomunitasAdminListAction(params: GetKomunitasAdminListP
             const krandonInfo = KRANDON_POSYANDU_MAP[item.id] || KRANDON_POSYANDU_MAP[normId];
             const pesurunganKidulInfo = PESURUNGAN_KIDUL_POSYANDU_MAP[item.id] || PESURUNGAN_KIDUL_POSYANDU_MAP[normId];
             const debongTengahInfo = DEBONG_TENGAH_POSYANDU_MAP[item.id] || DEBONG_TENGAH_POSYANDU_MAP[normId];
+        const slerokInfo = SLEROK_POSYANDU_MAP[item.id] || SLEROK_POSYANDU_MAP[normId];
             if (bandungInfo) {
               itemNama = bandungInfo.nama;
               itemRw = bandungInfo.rw;
@@ -4934,6 +4974,12 @@ export async function getKomunitasAdminListAction(params: GetKomunitasAdminListP
               item.rt = debongTengahInfo.rt;
               if (debongTengahInfo.deskripsi) itemDeskripsi = debongTengahInfo.deskripsi;
               if (debongTengahInfo.lokasi) item.lokasi = debongTengahInfo.lokasi;
+            } else if (slerokInfo) {
+              itemNama = slerokInfo.nama;
+              itemRw = slerokInfo.rw;
+              item.rt = slerokInfo.rt;
+              if (slerokInfo.deskripsi) itemDeskripsi = slerokInfo.deskripsi;
+              if (slerokInfo.lokasi) item.lokasi = slerokInfo.lokasi;
             } else {
               const isBerjenjangItem =
                 (itemNama || "").toLowerCase().includes("komunitas posyandu") ||
@@ -5057,6 +5103,7 @@ export async function getKomunitasAdminListAction(params: GetKomunitasAdminListP
             const krandonInfo = KRANDON_POSYANDU_MAP[item.id] || KRANDON_POSYANDU_MAP[normId];
             const pesurunganKidulInfo = PESURUNGAN_KIDUL_POSYANDU_MAP[item.id] || PESURUNGAN_KIDUL_POSYANDU_MAP[normId];
             const debongTengahInfo = DEBONG_TENGAH_POSYANDU_MAP[item.id] || DEBONG_TENGAH_POSYANDU_MAP[normId];
+        const slerokInfo = SLEROK_POSYANDU_MAP[item.id] || SLEROK_POSYANDU_MAP[normId];
             if (bandungInfo) {
               itemNama = bandungInfo.nama;
               itemRw = bandungInfo.rw;
@@ -5095,6 +5142,12 @@ export async function getKomunitasAdminListAction(params: GetKomunitasAdminListP
               item.rt = debongTengahInfo.rt;
               if (debongTengahInfo.deskripsi) itemDeskripsi = debongTengahInfo.deskripsi;
               if (debongTengahInfo.lokasi) item.lokasi = debongTengahInfo.lokasi;
+            } else if (slerokInfo) {
+              itemNama = slerokInfo.nama;
+              itemRw = slerokInfo.rw;
+              item.rt = slerokInfo.rt;
+              if (slerokInfo.deskripsi) itemDeskripsi = slerokInfo.deskripsi;
+              if (slerokInfo.lokasi) item.lokasi = slerokInfo.lokasi;
             } else {
               const isBerjenjangItem =
                 (itemNama || "").toLowerCase().includes("komunitas posyandu") ||

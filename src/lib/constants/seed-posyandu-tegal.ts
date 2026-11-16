@@ -156,20 +156,20 @@ export const RAW_POSYANDU_TEGAL: RawPosyanduItem[] = [
   { id: "3898c3f2-0122-4ddf-833d-99bfd5fb682c", nama: "Posyandu Teratai Putih", kecamatan: "Tegal Timur", kelurahan: "Panggung", rw: "14", rt: "01", lokasi: "Balai Posyandu / RW 14, Panggung, Tegal Timur, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Teratai Putih Panggung cakupan sinkronisasi wilayah RW 14 (RT 01 s/d RT 05): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
 
   // Slerok (14 Posyandu)
-  { id: "de34e3e2-7729-4b94-85b0-894d3ba1e1e6", nama: "Posyandu Abimanyu", kecamatan: "Tegal Timur", kelurahan: "Slerok", rw: "05", rt: "02", lokasi: "Balai Posyandu / RW 05, Slerok, Tegal Timur, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Abimanyu Slerok: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "fc0d4b29-1bc6-4d5a-826f-4f0570ceed2b", nama: "Posyandu Arjuna 1", kecamatan: "Tegal Timur", kelurahan: "Slerok", rw: "02", rt: "03", lokasi: "Balai Posyandu / RW 02, Slerok, Tegal Timur, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Arjuna 1 Slerok: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "9a44c4da-1bc6-4d5a-801b-06cdf6bab796", nama: "Posyandu Arjuna 2", kecamatan: "Tegal Timur", kelurahan: "Slerok", rw: "02", rt: "05", lokasi: "Balai Posyandu / RW 02, Slerok, Tegal Timur, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Arjuna 2 Slerok: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "23947aad-53e2-471f-812d-c8adfa8446a4", nama: "Posyandu Bima 1", kecamatan: "Tegal Timur", kelurahan: "Slerok", rw: "06", rt: "03", lokasi: "Balai Posyandu / RW 06, Slerok, Tegal Timur, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Bima 1 Slerok: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "c1cbf45e-53e2-471f-8382-10e5e67d8231", nama: "Posyandu Bima 2", kecamatan: "Tegal Timur", kelurahan: "Slerok", rw: "07", rt: "02", lokasi: "Balai Posyandu / RW 07, Slerok, Tegal Timur, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Bima 2 Slerok: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "8fe79aa6-7cc8-4085-8ed6-e4cdc804595e", nama: "Posyandu Nakula 1", kecamatan: "Tegal Timur", kelurahan: "Slerok", rw: "04", rt: "01", lokasi: "Balai Posyandu / RW 04, Slerok, Tegal Timur, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Nakula 1 Slerok: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "f1b020f5-7cc8-4085-812b-2d0542188ef3", nama: "Posyandu Nakula 2", kecamatan: "Tegal Timur", kelurahan: "Slerok", rw: "04", rt: "03", lokasi: "Balai Posyandu / RW 04, Slerok, Tegal Timur, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Nakula 2 Slerok: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "26d2a007-6226-4155-84bd-62f50cee561d", nama: "Posyandu Srikandi", kecamatan: "Tegal Timur", kelurahan: "Slerok", rw: "01", rt: "01", lokasi: "Balai Posyandu / RW 01, Slerok, Tegal Timur, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Srikandi Slerok: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "2b92f1b6-860e-4825-8c0e-56d577e46981", nama: "Posyandu Subali", kecamatan: "Tegal Timur", kelurahan: "Slerok", rw: "05", rt: "04", lokasi: "Balai Posyandu / RW 05, Slerok, Tegal Timur, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Subali Slerok: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "7874f15b-beb0-409e-8876-6851997409d8", nama: "Posyandu Sukosrono", kecamatan: "Tegal Timur", kelurahan: "Slerok", rw: "06", rt: "01", lokasi: "Balai Posyandu / RW 06, Slerok, Tegal Timur, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Sukosrono Slerok: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "e3081435-03be-4165-8288-fd7d2be9c8ec", nama: "Posyandu Sumbodro 1", kecamatan: "Tegal Timur", kelurahan: "Slerok", rw: "07", rt: "04", lokasi: "Balai Posyandu / RW 07, Slerok, Tegal Timur, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Sumbodro 1 Slerok: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "813f8de6-03be-4165-8717-9015a5fdfe81", nama: "Posyandu Sumbodro 2", kecamatan: "Tegal Timur", kelurahan: "Slerok", rw: "08", rt: "01", lokasi: "Balai Posyandu / RW 08, Slerok, Tegal Timur, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Sumbodro 2 Slerok: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "3ee611a2-4782-4d00-85cf-97016f75c646", nama: "Posyandu Werkudoro 1", kecamatan: "Tegal Timur", kelurahan: "Slerok", rw: "03", rt: "02", lokasi: "Balai Posyandu / RW 03, Slerok, Tegal Timur, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Werkudoro 1 Slerok: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "a0ae97f1-4782-4d00-8823-df39f56190b1", nama: "Posyandu Werkudoro 2", kecamatan: "Tegal Timur", kelurahan: "Slerok", rw: "03", rt: "04", lokasi: "Balai Posyandu / RW 03, Slerok, Tegal Timur, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Werkudoro 2 Slerok: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "de34e3e2-7729-4b94-85b0-894d3ba1e1e6", nama: "Posyandu Abimanyu", kecamatan: "Tegal Timur", kelurahan: "Slerok", rw: "01", rt: "01", cakupan_wilayah: "Melayani Warga RW 01 (RT 01, RT 02, RT 03, RT 04 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 01, Slerok, Tegal Timur, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Abimanyu Slerok cakupan sinkronisasi wilayah RW 01 (RT 01, RT 02, RT 03, RT 04 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "23947aad-53e2-471f-812d-c8adfa8446a4", nama: "Posyandu Bima 1", kecamatan: "Tegal Timur", kelurahan: "Slerok", rw: "02", rt: "04", cakupan_wilayah: "Melayani Warga RW 02 (RT 04, RT 05, RT 06, RT 07 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 02, Slerok, Tegal Timur, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Bima 1 Slerok cakupan sinkronisasi wilayah RW 02 (RT 04, RT 05, RT 06, RT 07 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "c1cbf45e-53e2-471f-8382-10e5e67d8231", nama: "Posyandu Bima 2", kecamatan: "Tegal Timur", kelurahan: "Slerok", rw: "02", rt: "01", cakupan_wilayah: "Melayani Warga RW 02 (RT 01, RT 02, RT 03 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 02, Slerok, Tegal Timur, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Bima 2 Slerok cakupan sinkronisasi wilayah RW 02 (RT 01, RT 02, RT 03 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "2b92f1b6-860e-4825-8c0e-56d577e46981", nama: "Posyandu Subali", kecamatan: "Tegal Timur", kelurahan: "Slerok", rw: "02", rt: "08", cakupan_wilayah: "Melayani Warga RW 02 (RT 08, RT 11, RT 12 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 02, Slerok, Tegal Timur, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Subali Slerok cakupan sinkronisasi wilayah RW 02 (RT 08, RT 11, RT 12 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "7874f15b-beb0-409e-8876-6851997409d8", nama: "Posyandu Sukosrono", kecamatan: "Tegal Timur", kelurahan: "Slerok", rw: "02", rt: "09", cakupan_wilayah: "Melayani Warga RW 02 (RT 09, RT 10 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 02, Slerok, Tegal Timur, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Sukosrono Slerok cakupan sinkronisasi wilayah RW 02 (RT 09, RT 10 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "fc0d4b29-1bc6-4d5a-826f-4f0570ceed2b", nama: "Posyandu Arjuna 1", kecamatan: "Tegal Timur", kelurahan: "Slerok", rw: "03", rt: "03", cakupan_wilayah: "Melayani Warga RW 03 (RT 03, RT 04 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 03, Slerok, Tegal Timur, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Arjuna 1 Slerok cakupan sinkronisasi wilayah RW 03 (RT 03, RT 04 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "9a44c4da-1bc6-4d5a-801b-06cdf6bab796", nama: "Posyandu Arjuna 2", kecamatan: "Tegal Timur", kelurahan: "Slerok", rw: "03", rt: "01", cakupan_wilayah: "Melayani Warga RW 03 (RT 01, RT 02, RT 05, RT 06 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 03, Slerok, Tegal Timur, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Arjuna 2 Slerok cakupan sinkronisasi wilayah RW 03 (RT 01, RT 02, RT 05, RT 06 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "26d2a007-6226-4155-84bd-62f50cee561d", nama: "Posyandu Srikandi", kecamatan: "Tegal Timur", kelurahan: "Slerok", rw: "03", rt: "07", cakupan_wilayah: "Melayani Warga RW 03 (RT 07, RT 08, RT 09 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 03, Slerok, Tegal Timur, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Srikandi Slerok cakupan sinkronisasi wilayah RW 03 (RT 07, RT 08, RT 09 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "e3081435-03be-4165-8288-fd7d2be9c8ec", nama: "Posyandu Sumbodro 1", kecamatan: "Tegal Timur", kelurahan: "Slerok", rw: "04", rt: "04", cakupan_wilayah: "Melayani Warga RW 04 (RT 04, RT 05, RT 06 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 04, Slerok, Tegal Timur, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Sumbodro 1 Slerok cakupan sinkronisasi wilayah RW 04 (RT 04, RT 05, RT 06 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "813f8de6-03be-4165-8717-9015a5fdfe81", nama: "Posyandu Sumbodro 2", kecamatan: "Tegal Timur", kelurahan: "Slerok", rw: "04", rt: "01", cakupan_wilayah: "Melayani Warga RW 04 (RT 01, RT 02, RT 03 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 04, Slerok, Tegal Timur, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Sumbodro 2 Slerok cakupan sinkronisasi wilayah RW 04 (RT 01, RT 02, RT 03 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "3ee611a2-4782-4d00-85cf-97016f75c646", nama: "Posyandu Werkudoro 1", kecamatan: "Tegal Timur", kelurahan: "Slerok", rw: "05", rt: "04", cakupan_wilayah: "Melayani Warga RW 05 (RT 04, RT 05, RT 06 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 05, Slerok, Tegal Timur, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Werkudoro 1 Slerok cakupan sinkronisasi wilayah RW 05 (RT 04, RT 05, RT 06 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "a0ae97f1-4782-4d00-8823-df39f56190b1", nama: "Posyandu Werkudoro 2", kecamatan: "Tegal Timur", kelurahan: "Slerok", rw: "05", rt: "01", cakupan_wilayah: "Melayani Warga RW 05 (RT 01, RT 02, RT 03 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 05, Slerok, Tegal Timur, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Werkudoro 2 Slerok cakupan sinkronisasi wilayah RW 05 (RT 01, RT 02, RT 03 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "8fe79aa6-7cc8-4085-8ed6-e4cdc804595e", nama: "Posyandu Nakula 1", kecamatan: "Tegal Timur", kelurahan: "Slerok", rw: "06", rt: "06", cakupan_wilayah: "Melayani Warga RW 06 (RT 06, RT 07, RT 08, RT 09 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 06, Slerok, Tegal Timur, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Nakula 1 Slerok cakupan sinkronisasi wilayah RW 06 (RT 06, RT 07, RT 08, RT 09 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "f1b020f5-7cc8-4085-812b-2d0542188ef3", nama: "Posyandu Nakula 2", kecamatan: "Tegal Timur", kelurahan: "Slerok", rw: "06", rt: "01", cakupan_wilayah: "Melayani Warga RW 06 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 06, Slerok, Tegal Timur, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Nakula 2 Slerok cakupan sinkronisasi wilayah RW 06 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
 
   // ==========================================
   // 2. KECAMATAN TEGAL BARAT (7 Kelurahan)
@@ -840,6 +840,152 @@ export const DEBONG_TENGAH_POSYANDU_MAP: Record<
     lokasi: "Balai Posyandu / RW 06, Debong Tengah, Tegal Selatan, Kota Tegal",
     deskripsi: "Layanan terpadu Posyandu Tulip Debong Tengah cakupan sinkronisasi wilayah RW 06 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
     allowedRts: ["01", "02", "03", "04", "05", "06"],
+  },
+};
+
+export const SLEROK_POSYANDU_MAP: Record<
+  string,
+  { nama: string; rw: string; rt: string; cakupan_wilayah: string; lokasi?: string; deskripsi?: string; allowedRts?: string[] }
+> = {
+  // 1. Posyandu Abimanyu (RW 1 RT 1, 2, 3, 4)
+  "de34e3e2-7729-4b94-85b0-894d3ba1e1e6": {
+    nama: "Posyandu Abimanyu",
+    rw: "01",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 01 (RT 01, RT 02, RT 03, RT 04 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 01, Slerok, Tegal Timur, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Abimanyu Slerok cakupan sinkronisasi wilayah RW 01 (RT 01, RT 02, RT 03, RT 04 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["01", "02", "03", "04"],
+  },
+  // 2. Posyandu Bima 1 (RW 2 RT 4, 5, 6, 7)
+  "23947aad-53e2-471f-812d-c8adfa8446a4": {
+    nama: "Posyandu Bima 1",
+    rw: "02",
+    rt: "04",
+    cakupan_wilayah: "Melayani Warga RW 02 (RT 04, RT 05, RT 06, RT 07 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 02, Slerok, Tegal Timur, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Bima 1 Slerok cakupan sinkronisasi wilayah RW 02 (RT 04, RT 05, RT 06, RT 07 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["04", "05", "06", "07"],
+  },
+  // 3. Posyandu Bima 2 (RW 2 RT 1, 2, 3)
+  "c1cbf45e-53e2-471f-8382-10e5e67d8231": {
+    nama: "Posyandu Bima 2",
+    rw: "02",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 02 (RT 01, RT 02, RT 03 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 02, Slerok, Tegal Timur, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Bima 2 Slerok cakupan sinkronisasi wilayah RW 02 (RT 01, RT 02, RT 03 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["01", "02", "03"],
+  },
+  // 4. Posyandu Subali (RW 2 RT 8, 11, 12)
+  "2b92f1b6-860e-4825-8c0e-56d577e46981": {
+    nama: "Posyandu Subali",
+    rw: "02",
+    rt: "08",
+    cakupan_wilayah: "Melayani Warga RW 02 (RT 08, RT 11, RT 12 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 02, Slerok, Tegal Timur, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Subali Slerok cakupan sinkronisasi wilayah RW 02 (RT 08, RT 11, RT 12 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["08", "11", "12"],
+  },
+  // 5. Posyandu Sukosrono (RW 2 RT 9, 10)
+  "7874f15b-beb0-409e-8876-6851997409d8": {
+    nama: "Posyandu Sukosrono",
+    rw: "02",
+    rt: "09",
+    cakupan_wilayah: "Melayani Warga RW 02 (RT 09, RT 10 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 02, Slerok, Tegal Timur, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Sukosrono Slerok cakupan sinkronisasi wilayah RW 02 (RT 09, RT 10 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["09", "10"],
+  },
+  // 6. Posyandu Arjuna 1 (RW 3 RT 3, 4)
+  "fc0d4b29-1bc6-4d5a-826f-4f0570ceed2b": {
+    nama: "Posyandu Arjuna 1",
+    rw: "03",
+    rt: "03",
+    cakupan_wilayah: "Melayani Warga RW 03 (RT 03, RT 04 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 03, Slerok, Tegal Timur, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Arjuna 1 Slerok cakupan sinkronisasi wilayah RW 03 (RT 03, RT 04 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["03", "04"],
+  },
+  // 7. Posyandu Arjuna 2 (RW 3 RT 1, 2, 5, 6)
+  "9a44c4da-1bc6-4d5a-801b-06cdf6bab796": {
+    nama: "Posyandu Arjuna 2",
+    rw: "03",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 03 (RT 01, RT 02, RT 05, RT 06 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 03, Slerok, Tegal Timur, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Arjuna 2 Slerok cakupan sinkronisasi wilayah RW 03 (RT 01, RT 02, RT 05, RT 06 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["01", "02", "05", "06"],
+  },
+  // 8. Posyandu Srikandi (RW 3 RT 7, 8, 9)
+  "26d2a007-6226-4155-84bd-62f50cee561d": {
+    nama: "Posyandu Srikandi",
+    rw: "03",
+    rt: "07",
+    cakupan_wilayah: "Melayani Warga RW 03 (RT 07, RT 08, RT 09 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 03, Slerok, Tegal Timur, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Srikandi Slerok cakupan sinkronisasi wilayah RW 03 (RT 07, RT 08, RT 09 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["07", "08", "09"],
+  },
+  // 9. Posyandu Sumbodro 1 (RW 4 RT 4, 5, 6)
+  "e3081435-03be-4165-8288-fd7d2be9c8ec": {
+    nama: "Posyandu Sumbodro 1",
+    rw: "04",
+    rt: "04",
+    cakupan_wilayah: "Melayani Warga RW 04 (RT 04, RT 05, RT 06 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 04, Slerok, Tegal Timur, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Sumbodro 1 Slerok cakupan sinkronisasi wilayah RW 04 (RT 04, RT 05, RT 06 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["04", "05", "06"],
+  },
+  // 10. Posyandu Sumbodro 2 (RW 4 RT 1, 2, 3)
+  "813f8de6-03be-4165-8717-9015a5fdfe81": {
+    nama: "Posyandu Sumbodro 2",
+    rw: "04",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 04 (RT 01, RT 02, RT 03 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 04, Slerok, Tegal Timur, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Sumbodro 2 Slerok cakupan sinkronisasi wilayah RW 04 (RT 01, RT 02, RT 03 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["01", "02", "03"],
+  },
+  // 11. Posyandu Werkudoro 1 (RW 5 RT 4, 5, 6)
+  "3ee611a2-4782-4d00-85cf-97016f75c646": {
+    nama: "Posyandu Werkudoro 1",
+    rw: "05",
+    rt: "04",
+    cakupan_wilayah: "Melayani Warga RW 05 (RT 04, RT 05, RT 06 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 05, Slerok, Tegal Timur, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Werkudoro 1 Slerok cakupan sinkronisasi wilayah RW 05 (RT 04, RT 05, RT 06 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["04", "05", "06"],
+  },
+  // 12. Posyandu Werkudoro 2 (RW 5 RT 1, 2, 3)
+  "a0ae97f1-4782-4d00-8823-df39f56190b1": {
+    nama: "Posyandu Werkudoro 2",
+    rw: "05",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 05 (RT 01, RT 02, RT 03 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 05, Slerok, Tegal Timur, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Werkudoro 2 Slerok cakupan sinkronisasi wilayah RW 05 (RT 01, RT 02, RT 03 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["01", "02", "03"],
+  },
+  // 13. Posyandu Nakula 1 (RW 6 RT 6, 7, 8, 9)
+  "8fe79aa6-7cc8-4085-8ed6-e4cdc804595e": {
+    nama: "Posyandu Nakula 1",
+    rw: "06",
+    rt: "06",
+    cakupan_wilayah: "Melayani Warga RW 06 (RT 06, RT 07, RT 08, RT 09 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 06, Slerok, Tegal Timur, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Nakula 1 Slerok cakupan sinkronisasi wilayah RW 06 (RT 06, RT 07, RT 08, RT 09 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["06", "07", "08", "09"],
+  },
+  // 14. Posyandu Nakula 2 (RW 6 RT 1, 2, 3, 4, 5)
+  "f1b020f5-7cc8-4085-812b-2d0542188ef3": {
+    nama: "Posyandu Nakula 2",
+    rw: "06",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 06 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 06, Slerok, Tegal Timur, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Nakula 2 Slerok cakupan sinkronisasi wilayah RW 06 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["01", "02", "03", "04", "05"],
   },
 };
 

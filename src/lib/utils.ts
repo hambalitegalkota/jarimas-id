@@ -865,6 +865,52 @@ export function parseCakupanWilayah(komunitas?: {
     }
   }
 
+  // Khusus Kelurahan Slerok (Kecamatan Tegal Timur)
+  if (kelClean.includes("slerok") || namaClean.includes("slerok")) {
+    if (namaClean.includes("abimanyu")) {
+      return "Melayani Warga RW 01 (RT 01, RT 02, RT 03, RT 04 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("bima 1") || (namaClean.includes("bima i") && !namaClean.includes("bima ii"))) {
+      return "Melayani Warga RW 02 (RT 04, RT 05, RT 06, RT 07 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("bima 2") || namaClean.includes("bima ii")) {
+      return "Melayani Warga RW 02 (RT 01, RT 02, RT 03 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("subali")) {
+      return "Melayani Warga RW 02 (RT 08, RT 11, RT 12 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("sukosrono") || namaClean.includes("sukrosono")) {
+      return "Melayani Warga RW 02 (RT 09, RT 10 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("arjuna 1") || (namaClean.includes("arjuna i") && !namaClean.includes("arjuna ii"))) {
+      return "Melayani Warga RW 03 (RT 03, RT 04 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("arjuna 2") || namaClean.includes("arjuna ii")) {
+      return "Melayani Warga RW 03 (RT 01, RT 02, RT 05, RT 06 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("srikandi")) {
+      return "Melayani Warga RW 03 (RT 07, RT 08, RT 09 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("sumbodro 1") || (namaClean.includes("sumbodro i") && !namaClean.includes("sumbodro ii"))) {
+      return "Melayani Warga RW 04 (RT 04, RT 05, RT 06 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("sumbodro 2") || namaClean.includes("sumbodro ii")) {
+      return "Melayani Warga RW 04 (RT 01, RT 02, RT 03 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("werkudoro 1") || (namaClean.includes("werkudoro i") && !namaClean.includes("werkudoro ii"))) {
+      return "Melayani Warga RW 05 (RT 04, RT 05, RT 06 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("werkudoro 2") || namaClean.includes("werkudoro ii")) {
+      return "Melayani Warga RW 05 (RT 01, RT 02, RT 03 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("nakula 1") || (namaClean.includes("nakula i") && !namaClean.includes("nakula ii"))) {
+      return "Melayani Warga RW 06 (RT 06, RT 07, RT 08, RT 09 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("nakula 2") || namaClean.includes("nakula ii")) {
+      return "Melayani Warga RW 06 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu)";
+    }
+  }
+
   // Khusus Kelurahan Muarareja (Kecamatan Tegal Barat)
   if (kelClean.includes("muarareja") || namaClean.includes("muarareja")) {
     if (namaClean.includes("mawar")) {

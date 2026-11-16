@@ -28,6 +28,7 @@ import {
   isValidTegalsariRtRw,
   isValidMuararejaRtRw,
   isValidKrandonRtRw,
+  isValidSlerokRtRw,
 } from "@/lib/data-anak-helpers";
 import { extractKomunitasMetadata } from "@/lib/admin-helpers";
 import { findOrGenerateKomunitasSeed, isKomunitasBerjenjangPosyandu, RAW_PKBM_SKB_TEGAL } from "@/lib/constants/tegal-data";
@@ -1773,6 +1774,11 @@ export async function getDataAtsByKomunitas(
 
         // Ketentuan Khusus Kelurahan Krandon: Hapus/abaikan data yang tidak sesuai ketentuan resmi RW & RT Krandon
         if (!isValidKrandonRtRw(itemKel, itemRw, itemRt)) {
+          return false;
+        }
+
+        // Ketentuan Khusus Kelurahan Slerok: Hapus/abaikan data yang tidak sesuai ketentuan resmi RW & RT Slerok
+        if (!isValidSlerokRtRw(itemKel, itemRw, itemRt)) {
           return false;
         }
 

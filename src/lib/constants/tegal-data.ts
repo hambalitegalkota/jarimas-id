@@ -702,6 +702,7 @@ export const DATA_RW_PER_KELURAHAN: Record<string, number> = {
   "Muarareja": 3,
   "Krandon": 4,
   "Debong Tengah": 6,
+  "Slerok": 6,
 };
 
 export const RT_PER_RW_DEFAULT = 15;
@@ -1224,12 +1225,41 @@ export const DATA_RT_PER_RW_DEBONG_TENGAH: Record<string, number> = {
   "6": 6,
 };
 
+/**
+ * Ketentuan Khusus RT per RW di Kelurahan Slerok, Kecamatan Tegal Timur:
+ * - Jumlah RW = 6
+ *   - RW 1: Jumlah RT 4 (Posyandu Abimanyu [RT 1, 2, 3, 4])
+ *   - RW 2: Jumlah RT 12 (Posyandu Bima 2 [RT 1, 2, 3], Bima 1 [RT 4, 5, 6, 7], Subali [RT 8, 11, 12], Sukosrono/Sukrosono [RT 9, 10])
+ *   - RW 3: Jumlah RT 9 (Posyandu Arjuna 2 [RT 1, 2, 5, 6], Arjuna 1 [RT 3, 4], Srikandi [RT 7, 8, 9])
+ *   - RW 4: Jumlah RT 6 (Posyandu Sumbodro 2 [RT 1, 2, 3], Sumbodro 1 [RT 4, 5, 6])
+ *   - RW 5: Jumlah RT 6 (Posyandu Werkudoro 2 [RT 1, 2, 3], Werkudoro 1 [RT 4, 5, 6])
+ *   - RW 6: Jumlah RT 9 (Posyandu Nakula 2 [RT 1, 2, 3, 4, 5], Nakula 1 [RT 6, 7, 8, 9])
+ * - Tetap mempertahankan RW "Belum Tahu" dan RT "Belum Tahu"
+ */
+export const DATA_RT_PER_RW_SLEROK: Record<string, number> = {
+  "01": 4,
+  "1": 4,
+  "02": 12,
+  "2": 12,
+  "03": 9,
+  "3": 9,
+  "04": 6,
+  "4": 6,
+  "05": 6,
+  "5": 6,
+  "06": 9,
+  "6": 9,
+};
+
 export const TOTAL_KOMUNITAS_RW_KOTA_TEGAL = 167;
 export const TOTAL_KOMUNITAS_RT_KOTA_TEGAL = 1712;
 
 export function getJumlahRwByKelurahan(kelurahan?: string | null): number {
   if (!kelurahan) return 15;
   const clean = kelurahan.replace(/^(kelurahan|kel\.)\s+/i, "").trim().toLowerCase();
+  if (clean === "slerok") {
+    return 6;
+  }
   if (clean === "debong tengah") {
     return 6;
   }
@@ -1286,6 +1316,16 @@ export function getJumlahRwByKelurahan(kelurahan?: string | null): number {
 export function getJumlahRtPerRwByKelurahan(kelurahan?: string | null, rw?: string | null): number {
   if (!kelurahan) return RT_PER_RW_DEFAULT;
   const clean = kelurahan.replace(/^(kelurahan|kel\.)\s+/i, "").trim().toLowerCase();
+  if (clean === "slerok") {
+    if (rw && rw !== "Belum Tahu") {
+      const cleanRw = rw.replace(/^(rw|rt)\s*/i, "").trim();
+      const normRw = String(parseInt(cleanRw, 10)).padStart(2, "0");
+      if (DATA_RT_PER_RW_SLEROK[normRw] || DATA_RT_PER_RW_SLEROK[cleanRw]) {
+        return DATA_RT_PER_RW_SLEROK[normRw] || DATA_RT_PER_RW_SLEROK[cleanRw];
+      }
+    }
+    return 12; // Max RT di RW 2 Slerok (12 RT)
+  }
   if (clean === "debong tengah") {
     if (rw && rw !== "Belum Tahu") {
       const cleanRw = rw.replace(/^(rw|rt)\s*/i, "").trim();
@@ -1461,6 +1501,10 @@ export function getJumlahRtPerRwByKelurahan(kelurahan?: string | null, rw?: stri
 export function getTotalRtByKelurahan(kelurahan?: string | null): number {
   if (!kelurahan) return 15 * RT_PER_RW_DEFAULT;
   const clean = kelurahan.replace(/^(kelurahan|kel\.)\s+/i, "").trim().toLowerCase();
+  if (clean === "slerok") {
+    // RW 1: 4, RW 2: 12, RW 3: 9, RW 4: 6, RW 5: 6, RW 6: 9 -> Total 46 RT
+    return 4 + 12 + 9 + 6 + 6 + 9;
+  }
   if (clean === "krandon") {
     // RW 1: 5 RT, RW 2: 7 RT, RW 3: 5 RT, RW 4: 7 RT -> Total 24 RT
     return 5 + 7 + 5 + 7;
@@ -1548,6 +1592,10 @@ export function getRwListByKelurahan(kelurahan?: string | null): string[] {
     return [...list, "Belum Tahu"];
   }
   const clean = kelurahan.replace(/^(kelurahan|kel\.)\s+/i, "").trim().toLowerCase();
+  if (clean === "slerok") {
+    const list = Array.from({ length: 6 }, (_, i) => String(i + 1).padStart(2, "0"));
+    return [...list, "Belum Tahu"];
+  }
   if (clean === "krandon") {
     const list = Array.from({ length: 4 }, (_, i) => String(i + 1).padStart(2, "0"));
     return [...list, "Belum Tahu"];
@@ -1633,6 +1681,17 @@ export function getRtListByKelurahan(kelurahan?: string | null, rw?: string | nu
     return [...list, "Belum Tahu"];
   }
   const clean = kelurahan.replace(/^(kelurahan|kel\.)\s+/i, "").trim().toLowerCase();
+  if (clean === "slerok") {
+    if (rw && rw !== "Belum Tahu") {
+      const cleanRw = rw.replace(/^(rw|rt)\s*/i, "").trim();
+      const normRw = String(parseInt(cleanRw, 10)).padStart(2, "0");
+      const count = DATA_RT_PER_RW_SLEROK[normRw] || DATA_RT_PER_RW_SLEROK[cleanRw] || 12;
+      const list = Array.from({ length: count }, (_, i) => String(i + 1).padStart(2, "0"));
+      return [...list, "Belum Tahu"];
+    }
+    const list = Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, "0"));
+    return [...list, "Belum Tahu"];
+  }
   if (clean === "krandon") {
     if (rw && rw !== "Belum Tahu") {
       const cleanRw = rw.replace(/^(rw|rt)\s*/i, "").trim();

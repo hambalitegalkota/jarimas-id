@@ -1,6 +1,6 @@
 import { extractKomunitasMetadata } from "@/lib/admin-helpers";
 import { RAW_PAUD_PKBM_TEGAL } from "@/lib/constants/seed-paud-tegal";
-import { RAW_POSYANDU_TEGAL } from "@/lib/constants/seed-posyandu-tegal";
+import { RAW_POSYANDU_TEGAL, SLEROK_POSYANDU_MAP } from "@/lib/constants/seed-posyandu-tegal";
 import {
   MASTER_KOMUNITAS_SEED,
   findOrGenerateKomunitasSeed,
@@ -1155,6 +1155,128 @@ export function getPosyanduCakupanWilayah(targetKomunitas: any): PosyanduCakupan
         rw: "09",
         rtList: ["01", "02", "03", "04", "05", "06", "1", "2", "3", "4", "5", "6"],
       };
+    }
+  }
+
+  // Khusus Kelurahan Slerok (Kecamatan Tegal Timur)
+  // - Posyandu Abimanyu: RW 1 (RT 1, 2, 3, 4)
+  // - Posyandu Bima 1: RW 2 (RT 4, 5, 6, 7)
+  // - Posyandu Bima 2: RW 2 (RT 1, 2, 3)
+  // - Posyandu Subali: RW 2 (RT 8, 11, 12)
+  // - Posyandu Sukosrono: RW 2 (RT 9, 10)
+  // - Posyandu Arjuna 1: RW 3 (RT 3, 4)
+  // - Posyandu Arjuna 2: RW 3 (RT 1, 2, 5, 6)
+  // - Posyandu Srikandi: RW 3 (RT 7, 8, 9)
+  // - Posyandu Sumbodro 1: RW 4 (RT 4, 5, 6)
+  // - Posyandu Sumbodro 2: RW 4 (RT 1, 2, 3)
+  // - Posyandu Werkudoro 1: RW 5 (RT 4, 5, 6)
+  // - Posyandu Werkudoro 2: RW 5 (RT 1, 2, 3)
+  // - Posyandu Nakula 1: RW 6 (RT 6, 7, 8, 9)
+  // - Posyandu Nakula 2: RW 6 (RT 1, 2, 3, 4, 5)
+  const isSlerokPosyandu =
+    kel.includes("slerok") ||
+    nama.includes("slerok") ||
+    Boolean(targetKomunitas?.id && SLEROK_POSYANDU_MAP[targetKomunitas.id]) ||
+    targetKomunitas?.id === "de34e3e2-7729-4b94-85b0-894d3ba1e1e6" ||
+    targetKomunitas?.id === "23947aad-53e2-471f-812d-c8adfa8446a4" ||
+    targetKomunitas?.id === "c1cbf45e-53e2-471f-8382-10e5e67d8231" ||
+    targetKomunitas?.id === "2b92f1b6-860e-4825-8c0e-56d577e46981" ||
+    targetKomunitas?.id === "7874f15b-beb0-409e-8876-6851997409d8" ||
+    targetKomunitas?.id === "fc0d4b29-1bc6-4d5a-826f-4f0570ceed2b" ||
+    targetKomunitas?.id === "9a44c4da-1bc6-4d5a-801b-06cdf6bab796" ||
+    targetKomunitas?.id === "26d2a007-6226-4155-84bd-62f50cee561d" ||
+    targetKomunitas?.id === "e3081435-03be-4165-8288-fd7d2be9c8ec" ||
+    targetKomunitas?.id === "813f8de6-03be-4165-8717-9015a5fdfe81" ||
+    targetKomunitas?.id === "3ee611a2-4782-4d00-85cf-97016f75c646" ||
+    targetKomunitas?.id === "a0ae97f1-4782-4d00-8823-df39f56190b1" ||
+    targetKomunitas?.id === "8fe79aa6-7cc8-4085-8ed6-e4cdc804595e" ||
+    targetKomunitas?.id === "f1b020f5-7cc8-4085-812b-2d0542188ef3";
+
+  if (isSlerokPosyandu) {
+    if (
+      targetKomunitas?.id === "de34e3e2-7729-4b94-85b0-894d3ba1e1e6" ||
+      nama.includes("abimanyu")
+    ) {
+      return { rw: "01", rtList: ["01", "02", "03", "04", "1", "2", "3", "4"] };
+    }
+    if (
+      targetKomunitas?.id === "23947aad-53e2-471f-812d-c8adfa8446a4" ||
+      (/\bbima\s*(1|i)\b/i.test(nama) && !/\bbima\s*(2|ii)\b/i.test(nama))
+    ) {
+      return { rw: "02", rtList: ["04", "05", "06", "07", "4", "5", "6", "7"] };
+    }
+    if (
+      targetKomunitas?.id === "c1cbf45e-53e2-471f-8382-10e5e67d8231" ||
+      /\bbima\s*(2|ii)\b/i.test(nama)
+    ) {
+      return { rw: "02", rtList: ["01", "02", "03", "1", "2", "3"] };
+    }
+    if (
+      targetKomunitas?.id === "2b92f1b6-860e-4825-8c0e-56d577e46981" ||
+      nama.includes("subali")
+    ) {
+      return { rw: "02", rtList: ["08", "11", "12", "8", "11", "12"] };
+    }
+    if (
+      targetKomunitas?.id === "7874f15b-beb0-409e-8876-6851997409d8" ||
+      nama.includes("sukosrono") ||
+      nama.includes("sukrosono")
+    ) {
+      return { rw: "02", rtList: ["09", "10", "9", "10"] };
+    }
+    if (
+      targetKomunitas?.id === "fc0d4b29-1bc6-4d5a-826f-4f0570ceed2b" ||
+      (/\barjuna\s*(1|i)\b/i.test(nama) && !/\barjuna\s*(2|ii)\b/i.test(nama))
+    ) {
+      return { rw: "03", rtList: ["03", "04", "3", "4"] };
+    }
+    if (
+      targetKomunitas?.id === "9a44c4da-1bc6-4d5a-801b-06cdf6bab796" ||
+      /\barjuna\s*(2|ii)\b/i.test(nama)
+    ) {
+      return { rw: "03", rtList: ["01", "02", "05", "06", "1", "2", "5", "6"] };
+    }
+    if (
+      targetKomunitas?.id === "26d2a007-6226-4155-84bd-62f50cee561d" ||
+      nama.includes("srikandi")
+    ) {
+      return { rw: "03", rtList: ["07", "08", "09", "7", "8", "9"] };
+    }
+    if (
+      targetKomunitas?.id === "e3081435-03be-4165-8288-fd7d2be9c8ec" ||
+      (/\bsumbodro\s*(1|i)\b/i.test(nama) && !/\bsumbodro\s*(2|ii)\b/i.test(nama))
+    ) {
+      return { rw: "04", rtList: ["04", "05", "06", "4", "5", "6"] };
+    }
+    if (
+      targetKomunitas?.id === "813f8de6-03be-4165-8717-9015a5fdfe81" ||
+      /\bsumbodro\s*(2|ii)\b/i.test(nama)
+    ) {
+      return { rw: "04", rtList: ["01", "02", "03", "1", "2", "3"] };
+    }
+    if (
+      targetKomunitas?.id === "3ee611a2-4782-4d00-85cf-97016f75c646" ||
+      (/\bwerkudoro\s*(1|i)\b/i.test(nama) && !/\bwerkudoro\s*(2|ii)\b/i.test(nama))
+    ) {
+      return { rw: "05", rtList: ["04", "05", "06", "4", "5", "6"] };
+    }
+    if (
+      targetKomunitas?.id === "a0ae97f1-4782-4d00-8823-df39f56190b1" ||
+      /\bwerkudoro\s*(2|ii)\b/i.test(nama)
+    ) {
+      return { rw: "05", rtList: ["01", "02", "03", "1", "2", "3"] };
+    }
+    if (
+      targetKomunitas?.id === "8fe79aa6-7cc8-4085-8ed6-e4cdc804595e" ||
+      (/\bnakula\s*(1|i)\b/i.test(nama) && !/\bnakula\s*(2|ii)\b/i.test(nama))
+    ) {
+      return { rw: "06", rtList: ["06", "07", "08", "09", "6", "7", "8", "9"] };
+    }
+    if (
+      targetKomunitas?.id === "f1b020f5-7cc8-4085-812b-2d0542188ef3" ||
+      /\bnakula\s*(2|ii)\b/i.test(nama)
+    ) {
+      return { rw: "06", rtList: ["01", "02", "03", "04", "05", "1", "2", "3", "4", "5"] };
     }
   }
 
@@ -2695,6 +2817,40 @@ export function getPosyanduCoverageDisplay(komunitas: any): PosyanduCoverageResu
     };
   }
 
+  // Khusus Kelurahan Slerok: format cakupan RT eksplisit berurutan sesuai jumlahnya + "dan RW - RT Tidak Tahu"
+  const kelCleanForCoverage = String(komunitas.kelurahan || "")
+    .replace(/^(kelurahan|kel\.)\s+/i, "")
+    .trim()
+    .toLowerCase();
+  const slerokSeedItem = komunitas.id ? RAW_POSYANDU_TEGAL.find((s) => s.id === komunitas.id) : null;
+  const isSlerokPosyandu =
+    kelCleanForCoverage.includes("slerok") ||
+    (slerokSeedItem?.kelurahan || "").toLowerCase().includes("slerok") ||
+    rawNama.includes("slerok") ||
+    Boolean(komunitas.id && SLEROK_POSYANDU_MAP[komunitas.id]);
+
+  if (isSlerokPosyandu) {
+    const slerokEntry =
+      (komunitas.id && SLEROK_POSYANDU_MAP[komunitas.id]) ||
+      Object.values(SLEROK_POSYANDU_MAP).find((s) => {
+        const sNorm = s.nama.toLowerCase().replace("posyandu ", "").trim();
+        return rawNama.includes(sNorm);
+      });
+
+    if (slerokEntry) {
+      const rwLabel = `RW ${slerokEntry.rw.padStart(2, "0")}`;
+      const rtListFormatted = (slerokEntry.allowedRts || []).map((r: string) => `RT ${r.padStart(2, "0")}`).join(", ");
+      const rtLabel = `${rtListFormatted} dan RW - RT Tidak Tahu`;
+      const fullLabel = `${rwLabel} (${rtLabel})`;
+      return {
+        isMapped: true,
+        label: fullLabel,
+        rwLabel,
+        rtLabel,
+      };
+    }
+  }
+
   // 1. Ambil dari canonical rule di data-anak-helpers
   const canon = getPosyanduCakupanWilayah(komunitas);
 
@@ -3736,6 +3892,66 @@ export function isValidKrandonRtRw(
 }
 
 /**
+ * Validasi ketentuan khusus RW & RT di Kelurahan Slerok, Kecamatan Tegal Timur:
+ * - Jumlah RW ada 6 (RW 1 s/d 6)
+ * - RW 1 Jumlah RT 4 (RT 1 s/d 4)
+ * - RW 2 Jumlah RT 12 (RT 1 s/d 12)
+ * - RW 3 Jumlah RT 9 (RT 1 s/d 9)
+ * - RW 4 Jumlah RT 6 (RT 1 s/d 6)
+ * - RW 5 Jumlah RT 6 (RT 1 s/d 6)
+ * - RW 6 Jumlah RT 9 (RT 1 s/d 9)
+ * - Tetap mempertahankan RW "Belum Tahu" dan RT "Belum Tahu"
+ */
+export function isValidSlerokRtRw(
+  kel?: string | null,
+  rw?: string | null,
+  rt?: string | null
+): boolean {
+  if (!kel) return true;
+  const cleanKel = normalizeWilayah(kel);
+  if (!cleanKel.includes("slerok")) return true;
+
+  const rawRw = (rw || "").trim().toLowerCase();
+  const rawRt = (rt || "").trim().toLowerCase();
+
+  const isRwBelumTahu =
+    !rawRw ||
+    rawRw.includes("belum") ||
+    rawRw.includes("tidak") ||
+    rawRw === "-" ||
+    rawRw === "0" ||
+    rawRw === "00";
+  if (isRwBelumTahu) return true;
+
+  const rwNum = parseInt(rawRw.replace(/\D/g, ""), 10);
+  if (isNaN(rwNum) || rwNum < 1 || rwNum > 6) return false;
+
+  const isRtBelumTahu =
+    !rawRt ||
+    rawRt.includes("belum") ||
+    rawRt.includes("tidak") ||
+    rawRt === "-" ||
+    rawRt === "0" ||
+    rawRt === "00";
+  if (isRtBelumTahu) return true;
+
+  const rtNum = parseInt(rawRt.replace(/\D/g, ""), 10);
+  if (isNaN(rtNum)) return false;
+
+  const maxRtMap: Record<number, number> = {
+    1: 4,
+    2: 12,
+    3: 9,
+    4: 6,
+    5: 6,
+    6: 9,
+  };
+
+  const maxRt = maxRtMap[rwNum] || 12;
+  return rtNum >= 1 && rtNum <= maxRt;
+}
+
+/**
  * Filter logika hierarkis: Apakah data anak sesuai dan harus muncul di komunitas target?
  * Mencakup Komunitas PAUD, Posyandu, RT, RW, Kelurahan, Kecamatan, dan Kabupaten/Kota.
  */
@@ -3887,6 +4103,22 @@ export function isDataAnakMatchingKomunitas(
   if (
     !isValidKrandonRtRw(item.domisili_kelurahan, item.domisili_rw, item.domisili_rt) &&
     !isValidKrandonRtRw(item.kk_kelurahan, item.kk_rw, item.kk_rt)
+  ) {
+    return false;
+  }
+
+  // Ketentuan Khusus Kelurahan Slerok: Hapus/abaikan data yang tidak sesuai ketentuan resmi RW & RT Slerok
+  const isDomSlerok = (item.domisili_kelurahan || "").toLowerCase().includes("slerok");
+  const isKkSlerok = (item.kk_kelurahan || "").toLowerCase().includes("slerok");
+  if (isDomSlerok && !isValidSlerokRtRw(item.domisili_kelurahan, item.domisili_rw, item.domisili_rt)) {
+    return false;
+  }
+  if (isKkSlerok && !isValidSlerokRtRw(item.kk_kelurahan, item.kk_rw, item.kk_rt)) {
+    return false;
+  }
+  if (
+    !isValidSlerokRtRw(item.domisili_kelurahan, item.domisili_rw, item.domisili_rt) &&
+    !isValidSlerokRtRw(item.kk_kelurahan, item.kk_rw, item.kk_rt)
   ) {
     return false;
   }
