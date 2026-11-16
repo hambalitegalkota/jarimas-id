@@ -141,9 +141,8 @@ export function FormDataAnak({
   const handleTanggalLahirChange = (dateVal: string) => {
     setTanggalLahir(dateVal);
     if (dateVal) {
-      const { years } = calculatePreciseAge(dateVal);
-      const clamped = Math.max(0, Math.min(6, years));
-      setUsia(String(clamped));
+      const ageFormatted = formatAgeDisplay(dateVal, { mode: "tahun_bulan" });
+      setUsia(ageFormatted);
     }
   };
 
@@ -446,33 +445,34 @@ export function FormDataAnak({
             </div>
 
             <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <label className="text-xs sm:text-sm font-bold text-foreground leading-snug block">
-                  Usia Anak <span className="text-destructive">*</span>
-                </label>
-                {tanggalLahir && (
-                  <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
-                    {formatAgeDisplay(tanggalLahir, { mode: "tahun_bulan" })}
-                  </span>
-                )}
-              </div>
+              <label className="text-xs sm:text-sm font-bold text-foreground leading-snug block">
+                Usia Anak <span className="text-destructive">*</span>
+              </label>
               <div className="relative">
                 <Calendar className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <select
+                <input
+                  type="text"
                   required
+                  list="usia-paud-options"
                   value={usia}
                   onChange={(e) => setUsia(e.target.value)}
-                  className="w-full min-h-[44px] h-11 rounded-lg border border-border bg-background pl-10 pr-8 text-xs sm:text-sm font-semibold text-foreground focus:border-primary focus:outline-none appearance-none cursor-pointer"
-                >
-                  <option value="" disabled>
-                    -- Pilih Usia Anak (0-6 Tahun) --
-                  </option>
-                  {USIA_ANAK_OPTIONS.map((opt) => (
-                    <option key={opt} value={opt}>
-                      {`${opt} Tahun`}
-                    </option>
-                  ))}
-                </select>
+                  placeholder="Pilih Tanggal Lahir atau ketik usia (contoh: 3 Tahun 9 Bulan)..."
+                  className={cn(
+                    "w-full min-h-[44px] h-11 rounded-lg border bg-background pl-10 pr-3 text-xs sm:text-sm font-semibold text-foreground focus:border-primary focus:outline-none",
+                    tanggalLahir
+                      ? "border-emerald-500/60 bg-emerald-500/5 text-emerald-950 dark:text-emerald-100 font-bold"
+                      : "border-border"
+                  )}
+                />
+                <datalist id="usia-paud-options">
+                  <option value="0 Tahun" />
+                  <option value="1 Tahun" />
+                  <option value="2 Tahun" />
+                  <option value="3 Tahun" />
+                  <option value="4 Tahun" />
+                  <option value="5 Tahun" />
+                  <option value="6 Tahun" />
+                </datalist>
               </div>
             </div>
           </div>

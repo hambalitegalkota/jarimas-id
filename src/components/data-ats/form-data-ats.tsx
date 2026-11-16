@@ -159,14 +159,8 @@ export function FormDataAts({
   const handleTanggalLahirChange = (dateVal: string) => {
     setTanggalLahir(dateVal);
     if (dateVal) {
-      const { years } = calculatePreciseAge(dateVal);
-      if (years >= 25) {
-        setUsia("25>");
-      } else if (years < 6) {
-        setUsia("6");
-      } else {
-        setUsia(String(years));
-      }
+      const ageFormatted = formatAgeDisplay(dateVal, { mode: "tahun_bulan" });
+      setUsia(ageFormatted);
     }
   };
 
@@ -429,33 +423,30 @@ export function FormDataAts({
           </div>
 
           <div className="space-y-1.5">
-            <div className="flex items-center justify-between">
-              <label className="text-xs sm:text-sm font-bold text-foreground block">
-                Usia Anak <span className="text-destructive">*</span>
-              </label>
-              {tanggalLahir && (
-                <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
-                  {formatAgeDisplay(tanggalLahir, { mode: "tahun_bulan" })}
-                </span>
-              )}
-            </div>
+            <label className="text-xs sm:text-sm font-bold text-foreground block">
+              Usia Anak <span className="text-destructive">*</span>
+            </label>
             <div className="relative">
               <Calendar className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <select
+              <input
+                type="text"
                 required
+                list="usia-ats-options"
                 value={usia}
                 onChange={(e) => setUsia(e.target.value)}
-                className="w-full min-h-[44px] h-11 rounded-lg border border-border bg-background pl-10 pr-8 text-xs sm:text-sm font-semibold text-foreground focus:border-primary focus:outline-none appearance-none cursor-pointer"
-              >
-                <option value="" disabled>
-                  -- Pilih Usia --
-                </option>
+                placeholder="Pilih Tanggal Lahir atau ketik usia (contoh: 10 Tahun 4 Bulan)..."
+                className={cn(
+                  "w-full min-h-[44px] h-11 rounded-lg border bg-background pl-10 pr-3 text-xs sm:text-sm font-semibold text-foreground focus:border-primary focus:outline-none",
+                  tanggalLahir
+                    ? "border-emerald-500/60 bg-emerald-500/5 text-emerald-950 dark:text-emerald-100 font-bold"
+                    : "border-border"
+                )}
+              />
+              <datalist id="usia-ats-options">
                 {USIA_ATS_OPTIONS.map((opt) => (
-                  <option key={opt} value={opt}>
-                    {opt === "25>" ? "25> (Lebih dari 25 Tahun)" : `${opt} Tahun`}
-                  </option>
+                  <option key={opt} value={opt === "25>" ? "> 24 Tahun" : `${opt} Tahun`} />
                 ))}
-              </select>
+              </datalist>
             </div>
           </div>
         </div>

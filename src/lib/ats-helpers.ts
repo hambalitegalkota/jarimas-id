@@ -147,6 +147,10 @@ export function getNumericAgeAts(ats: {
   if (rawAge === "24>" || rawAge === ">24" || rawAge.includes(">")) {
     return 25;
   }
+  const thnMatch = rawAge.match(/(\d+)\s*(?:thn|tahun)/i);
+  if (thnMatch) {
+    return parseInt(thnMatch[1], 10);
+  }
   if (/^\d+$/.test(rawAge)) {
     return parseInt(rawAge, 10);
   }

@@ -73,21 +73,39 @@ function parseUsiaToDate(usiaStr?: string | null, tanggalLahirStr?: string | nul
 
   const now = new Date();
   const currentYear = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, "0");
-  const day = String(now.getDate()).padStart(2, "0");
+  const currentMonth = now.getMonth() + 1;
+  const currentDay = now.getDate();
 
   const raw = (usiaStr || tanggalLahirStr || "0").toString().trim();
   if (raw === "25>" || raw === ">25" || raw === "24>" || raw === ">24" || raw.includes(">")) {
     return `${currentYear - 25}-01-01`;
   }
 
+  // Cek apakah ada format "X Tahun Y Bulan" atau "X Tahun" atau "Y Bulan"
+  const tahunMatch = raw.match(/(\d+)\s*(?:thn|tahun)/i);
+  const bulanMatch = raw.match(/(\d+)\s*(?:bln|bulan)/i);
+
+  if (tahunMatch || bulanMatch) {
+    const years = tahunMatch ? parseInt(tahunMatch[1], 10) : 0;
+    const months = bulanMatch ? parseInt(bulanMatch[1], 10) : 0;
+    const d = new Date(now);
+    d.setFullYear(d.getFullYear() - years);
+    d.setMonth(d.getMonth() - months);
+    const yStr = d.getFullYear();
+    const mStr = String(d.getMonth() + 1).padStart(2, "0");
+    const dStr = String(d.getDate()).padStart(2, "0");
+    return `${yStr}-${mStr}-${dStr}`;
+  }
+
   const ageNum = parseInt(raw, 10);
   if (!isNaN(ageNum)) {
     const birthYear = currentYear - Math.max(0, ageNum);
-    return `${birthYear}-${month}-${day}`;
+    const mStr = String(currentMonth).padStart(2, "0");
+    const dStr = String(currentDay).padStart(2, "0");
+    return `${birthYear}-${mStr}-${dStr}`;
   }
 
-  return `${currentYear}-${month}-${day}`;
+  return `${currentYear}-${String(currentMonth).padStart(2, "0")}-${String(currentDay).padStart(2, "0")}`;
 }
 
 export async function createDataAts(formData: FormData): Promise<{

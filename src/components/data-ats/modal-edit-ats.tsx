@@ -126,8 +126,14 @@ export function ModalEditAts({
 
   // Form Fields
   const [namaLengkap, setNamaLengkap] = useState(ats.nama_lengkap || "");
-  const [tanggalLahir, setTanggalLahir] = useState(formatDateForDateInput(ats.tanggal_lahir));
-  const [usia, setUsia] = useState(ats.usia || getUsiaFromBirthDate(ats.tanggal_lahir));
+  const initialDob = formatDateForDateInput(ats.tanggal_lahir);
+  const [tanggalLahir, setTanggalLahir] = useState(initialDob);
+  const [usia, setUsia] = useState(() => {
+    if (initialDob) {
+      return formatAgeDisplay(initialDob, { mode: "tahun_bulan" });
+    }
+    return ats.usia || `${getUsiaFromBirthDate(ats.tanggal_lahir)} Tahun`;
+  });
   const [jenisKelamin, setJenisKelamin] = useState<"L" | "P">(
     ats.jenis_kelamin === "P" || ats.jenis_kelamin === "Perempuan" ? "P" : "L"
   );
@@ -142,14 +148,8 @@ export function ModalEditAts({
   const handleTanggalLahirChange = (dateVal: string) => {
     setTanggalLahir(dateVal);
     if (dateVal) {
-      const { years } = calculatePreciseAge(dateVal);
-      if (years >= 25) {
-        setUsia("25>");
-      } else if (years < 6) {
-        setUsia("6");
-      } else {
-        setUsia(String(years));
-      }
+      const ageFormatted = formatAgeDisplay(dateVal, { mode: "tahun_bulan" });
+      setUsia(ageFormatted);
     }
   };
 
@@ -416,30 +416,30 @@ export function ModalEditAts({
                 </div>
 
                 <div className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <label className="text-xs font-medium text-muted-foreground">
-                      Usia *
-                    </label>
-                    {tanggalLahir && (
-                      <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
-                        {formatAgeDisplay(tanggalLahir, { mode: "tahun_bulan" })}
-                      </span>
-                    )}
-                  </div>
+                  <label className="text-xs font-medium text-muted-foreground">
+                    Usia *
+                  </label>
                   <div className="relative">
                     <Calendar className="pointer-events-none absolute left-3 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-                    <select
+                    <input
+                      type="text"
                       required
+                      list="edit-usia-ats-options"
                       value={usia}
                       onChange={(e) => setUsia(e.target.value)}
-                      className="w-full h-9 rounded-md border border-border bg-card pl-8 pr-8 text-xs font-medium text-foreground focus:border-amber-500 focus:outline-hidden appearance-none"
-                    >
+                      placeholder="Pilih Tanggal Lahir atau ketik usia (contoh: 10 Tahun 4 Bulan)..."
+                      className={cn(
+                        "w-full h-9 rounded-md border bg-card pl-8 pr-3 text-xs font-medium text-foreground focus:border-amber-500 focus:outline-hidden",
+                        tanggalLahir
+                          ? "border-emerald-500/60 bg-emerald-500/5 text-emerald-950 dark:text-emerald-100 font-bold"
+                          : "border-border"
+                      )}
+                    />
+                    <datalist id="edit-usia-ats-options">
                       {USIA_ATS_OPTIONS.map((opt) => (
-                        <option key={opt} value={opt}>
-                          {opt === "25>" ? "25> (Lebih dari 25 Tahun)" : `${opt} Tahun`}
-                        </option>
+                        <option key={opt} value={opt === "25>" ? "> 24 Tahun" : `${opt} Tahun`} />
                       ))}
-                    </select>
+                    </datalist>
                   </div>
                 </div>
               </div>
