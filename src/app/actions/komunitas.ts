@@ -18,6 +18,7 @@ import {
   PESURUNGAN_KIDUL_POSYANDU_MAP,
   DEBONG_TENGAH_POSYANDU_MAP,
   SLEROK_POSYANDU_MAP,
+  MARGADANA_POSYANDU_MAP,
 } from "@/lib/constants/seed-posyandu-tegal";
 import {
   RAW_PAUD_PKBM_TEGAL,
@@ -804,6 +805,7 @@ export async function getKomunitasList(
         const pesurunganKidulConfig = PESURUNGAN_KIDUL_POSYANDU_MAP[dbItem.id] || PESURUNGAN_KIDUL_POSYANDU_MAP[normId];
         const debongTengahConfig = DEBONG_TENGAH_POSYANDU_MAP[dbItem.id] || DEBONG_TENGAH_POSYANDU_MAP[normId];
         const slerokConfig = SLEROK_POSYANDU_MAP[dbItem.id] || SLEROK_POSYANDU_MAP[normId];
+        const margadanaConfig = MARGADANA_POSYANDU_MAP[dbItem.id] || MARGADANA_POSYANDU_MAP[normId];
 
         if (itemJenis === "posyandu" && bandungConfig) {
           matched.nama = bandungConfig.nama;
@@ -881,6 +883,15 @@ export async function getKomunitasList(
           if (slerokConfig.deskripsi) matched.deskripsi = slerokConfig.deskripsi;
           matched.kecamatan = "Tegal Timur";
           matched.kelurahan = "Slerok";
+        } else if (itemJenis === "posyandu" && margadanaConfig) {
+          matched.nama = margadanaConfig.nama;
+          matched.rw = margadanaConfig.rw;
+          matched.rt = margadanaConfig.rt;
+          matched.cakupan_wilayah = margadanaConfig.cakupan_wilayah;
+          if (margadanaConfig.lokasi) matched.lokasi = margadanaConfig.lokasi;
+          if (margadanaConfig.deskripsi) matched.deskripsi = margadanaConfig.deskripsi;
+          matched.kecamatan = "Margadana";
+          matched.kelurahan = "Margadana";
         } else {
           if (dbItem.nama) {
             let itemNama = dbItem.nama;
@@ -1102,6 +1113,8 @@ export async function getKomunitasList(
       if (debongTengahInfo) coreNama = debongTengahInfo.nama.toLowerCase();
       const slerokInfo = SLEROK_POSYANDU_MAP[item.id] || SLEROK_POSYANDU_MAP[normId];
       if (slerokInfo) coreNama = slerokInfo.nama.toLowerCase();
+      const margadanaInfo = MARGADANA_POSYANDU_MAP[item.id] || MARGADANA_POSYANDU_MAP[normId];
+      if (margadanaInfo) coreNama = margadanaInfo.nama.toLowerCase();
 
       const key = `${item.jenis}|${kelClean}|${coreNama}`;
       if (seenKomunitasKeys.has(normId) || seenKomunitasKeys.has(key)) {
@@ -1156,6 +1169,7 @@ export async function getKomunitasList(
         const pesurunganKidulInfo = PESURUNGAN_KIDUL_POSYANDU_MAP[item.id] || PESURUNGAN_KIDUL_POSYANDU_MAP[normId];
         const debongTengahInfo = DEBONG_TENGAH_POSYANDU_MAP[item.id] || DEBONG_TENGAH_POSYANDU_MAP[normId];
         const slerokInfo = SLEROK_POSYANDU_MAP[item.id] || SLEROK_POSYANDU_MAP[normId];
+        const margadanaInfo = MARGADANA_POSYANDU_MAP[item.id] || MARGADANA_POSYANDU_MAP[normId];
         if (bandungInfo) {
           itemNama = bandungInfo.nama;
           itemRw = bandungInfo.rw;
@@ -1203,6 +1217,13 @@ export async function getKomunitasList(
           if (slerokInfo.deskripsi) itemDeskripsi = slerokInfo.deskripsi;
           if (slerokInfo.lokasi) item.lokasi = slerokInfo.lokasi;
           item.cakupan_wilayah = slerokInfo.cakupan_wilayah;
+        } else if (margadanaInfo) {
+          itemNama = margadanaInfo.nama;
+          itemRw = margadanaInfo.rw;
+          item.rt = margadanaInfo.rt;
+          if (margadanaInfo.deskripsi) itemDeskripsi = margadanaInfo.deskripsi;
+          if (margadanaInfo.lokasi) item.lokasi = margadanaInfo.lokasi;
+          item.cakupan_wilayah = margadanaInfo.cakupan_wilayah;
         } else {
           const isBerjenjangItem =
             (item.nama || "").toLowerCase().includes("komunitas posyandu") ||
@@ -1721,6 +1742,11 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
         SLEROK_POSYANDU_MAP[normId] ||
         SLEROK_POSYANDU_MAP[komunitasId] ||
         SLEROK_POSYANDU_MAP[dbKomunitasId];
+      const margadanaInfo =
+        MARGADANA_POSYANDU_MAP[komunitas.id] ||
+        MARGADANA_POSYANDU_MAP[normId] ||
+        MARGADANA_POSYANDU_MAP[komunitasId] ||
+        MARGADANA_POSYANDU_MAP[dbKomunitasId];
 
       if (bandungInfo) {
         nama = bandungInfo.nama;
@@ -1818,6 +1844,17 @@ export async function getKomunitasDetail(komunitasId: string): Promise<{
         if (slerokInfo.lokasi) komunitas.lokasi = slerokInfo.lokasi;
         if (slerokInfo.deskripsi) komunitas.deskripsi = slerokInfo.deskripsi;
         posyanduCanonicalRw = slerokInfo.rw;
+      } else if (margadanaInfo) {
+        nama = margadanaInfo.nama;
+        komunitas.nama = margadanaInfo.nama;
+        komunitas.kelurahan = "Margadana";
+        komunitas.kecamatan = "Margadana";
+        komunitas.rw = margadanaInfo.rw;
+        komunitas.rt = margadanaInfo.rt;
+        komunitas.cakupan_wilayah = margadanaInfo.cakupan_wilayah;
+        if (margadanaInfo.lokasi) komunitas.lokasi = margadanaInfo.lokasi;
+        if (margadanaInfo.deskripsi) komunitas.deskripsi = margadanaInfo.deskripsi;
+        posyanduCanonicalRw = margadanaInfo.rw;
       } else {
         const isBerjenjangPos =
           isKomunitasBerjenjangPosyandu(komunitas.id) ||
@@ -4936,6 +4973,7 @@ export async function getKomunitasAdminListAction(params: GetKomunitasAdminListP
             const pesurunganKidulInfo = PESURUNGAN_KIDUL_POSYANDU_MAP[item.id] || PESURUNGAN_KIDUL_POSYANDU_MAP[normId];
             const debongTengahInfo = DEBONG_TENGAH_POSYANDU_MAP[item.id] || DEBONG_TENGAH_POSYANDU_MAP[normId];
         const slerokInfo = SLEROK_POSYANDU_MAP[item.id] || SLEROK_POSYANDU_MAP[normId];
+        const margadanaInfo = MARGADANA_POSYANDU_MAP[item.id] || MARGADANA_POSYANDU_MAP[normId];
             if (bandungInfo) {
               itemNama = bandungInfo.nama;
               itemRw = bandungInfo.rw;
@@ -4980,6 +5018,12 @@ export async function getKomunitasAdminListAction(params: GetKomunitasAdminListP
               item.rt = slerokInfo.rt;
               if (slerokInfo.deskripsi) itemDeskripsi = slerokInfo.deskripsi;
               if (slerokInfo.lokasi) item.lokasi = slerokInfo.lokasi;
+            } else if (margadanaInfo) {
+              itemNama = margadanaInfo.nama;
+              itemRw = margadanaInfo.rw;
+              item.rt = margadanaInfo.rt;
+              if (margadanaInfo.deskripsi) itemDeskripsi = margadanaInfo.deskripsi;
+              if (margadanaInfo.lokasi) item.lokasi = margadanaInfo.lokasi;
             } else {
               const isBerjenjangItem =
                 (itemNama || "").toLowerCase().includes("komunitas posyandu") ||
@@ -5104,6 +5148,7 @@ export async function getKomunitasAdminListAction(params: GetKomunitasAdminListP
             const pesurunganKidulInfo = PESURUNGAN_KIDUL_POSYANDU_MAP[item.id] || PESURUNGAN_KIDUL_POSYANDU_MAP[normId];
             const debongTengahInfo = DEBONG_TENGAH_POSYANDU_MAP[item.id] || DEBONG_TENGAH_POSYANDU_MAP[normId];
         const slerokInfo = SLEROK_POSYANDU_MAP[item.id] || SLEROK_POSYANDU_MAP[normId];
+        const margadanaInfo = MARGADANA_POSYANDU_MAP[item.id] || MARGADANA_POSYANDU_MAP[normId];
             if (bandungInfo) {
               itemNama = bandungInfo.nama;
               itemRw = bandungInfo.rw;
@@ -5148,6 +5193,12 @@ export async function getKomunitasAdminListAction(params: GetKomunitasAdminListP
               item.rt = slerokInfo.rt;
               if (slerokInfo.deskripsi) itemDeskripsi = slerokInfo.deskripsi;
               if (slerokInfo.lokasi) item.lokasi = slerokInfo.lokasi;
+            } else if (margadanaInfo) {
+              itemNama = margadanaInfo.nama;
+              itemRw = margadanaInfo.rw;
+              item.rt = margadanaInfo.rt;
+              if (margadanaInfo.deskripsi) itemDeskripsi = margadanaInfo.deskripsi;
+              if (margadanaInfo.lokasi) item.lokasi = margadanaInfo.lokasi;
             } else {
               const isBerjenjangItem =
                 (itemNama || "").toLowerCase().includes("komunitas posyandu") ||

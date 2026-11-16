@@ -1,6 +1,6 @@
 import { extractKomunitasMetadata } from "@/lib/admin-helpers";
 import { RAW_PAUD_PKBM_TEGAL } from "@/lib/constants/seed-paud-tegal";
-import { RAW_POSYANDU_TEGAL, SLEROK_POSYANDU_MAP } from "@/lib/constants/seed-posyandu-tegal";
+import { RAW_POSYANDU_TEGAL, SLEROK_POSYANDU_MAP, MARGADANA_POSYANDU_MAP } from "@/lib/constants/seed-posyandu-tegal";
 import {
   MASTER_KOMUNITAS_SEED,
   findOrGenerateKomunitasSeed,
@@ -1646,13 +1646,26 @@ export function getPosyanduCakupanWilayah(targetKomunitas: any): PosyanduCakupan
     if (nama.includes("jagadipa")) return { rw: "03" };
     if (nama.includes("kenanga")) return { rw: "04" };
     if (
+      targetKomunitas?.id === "85b90e85-83c5-4691-8362-e44de02b34d0" ||
       nama.includes("cempaka 1") ||
       nama.includes("cempaka i") ||
       (nama.includes("cempaka") && !nama.includes("cempaka 2") && !nama.includes("cempaka ii"))
     ) {
-      return { rw: "05" };
+      return {
+        rw: "05",
+        rtList: ["01", "02", "03", "04", "05", "1", "2", "3", "4", "5"],
+      };
     }
-    if (nama.includes("cempaka 2") || nama.includes("cempaka ii")) return { rw: "05" };
+    if (
+      targetKomunitas?.id === "4d300340-6b98-45f4-8185-8d357922e61b" ||
+      nama.includes("cempaka 2") ||
+      nama.includes("cempaka ii")
+    ) {
+      return {
+        rw: "05",
+        rtList: ["06", "07", "08", "6", "7", "8"],
+      };
+    }
     if (nama.includes("anyelir")) return { rw: "06" };
     if (nama.includes("sambisari") || nama.includes("kesambi sari") || nama.includes("kesambisari")) return { rw: "07" };
     if (nama.includes("suplir") || nama.includes("suflir")) return { rw: "08" };
@@ -2773,7 +2786,7 @@ export function formatRtList(rtList?: string[]): string {
 
   const min = nums[0];
   const max = nums[nums.length - 1];
-  const isConsecutive = nums.length > 3 && max - min + 1 === nums.length;
+  const isConsecutive = nums.length >= 3 && max - min + 1 === nums.length;
 
   if (isConsecutive) {
     return `RT ${String(min).padStart(2, "0")} s/d RT ${String(max).padStart(2, "0")}`;
@@ -2849,6 +2862,26 @@ export function getPosyanduCoverageDisplay(komunitas: any): PosyanduCoverageResu
         rtLabel,
       };
     }
+  }
+
+  // Khusus Posyandu Cempaka 1 & 2 di Kelurahan Margadana
+  const margadanaEntry =
+    (komunitas.id && MARGADANA_POSYANDU_MAP[komunitas.id]) ||
+    Object.values(MARGADANA_POSYANDU_MAP).find((m) => {
+      const mNorm = m.nama.toLowerCase().replace("posyandu ", "").trim();
+      return rawNama.includes(mNorm);
+    });
+
+  if (margadanaEntry) {
+    const rwLabel = `RW ${margadanaEntry.rw.padStart(2, "0")}`;
+    const rtLabel = formatRtList(margadanaEntry.allowedRts);
+    const fullLabel = `${rwLabel} (${rtLabel})`;
+    return {
+      isMapped: true,
+      label: fullLabel,
+      rwLabel,
+      rtLabel,
+    };
   }
 
   // 1. Ambil dari canonical rule di data-anak-helpers

@@ -361,8 +361,8 @@ export const RAW_POSYANDU_TEGAL: RawPosyanduItem[] = [
   { id: "15067d30-2514-4384-8dc6-3301267e3ff8", nama: "Posyandu Dahlia", kecamatan: "Margadana", kelurahan: "Margadana", rw: "02", rt: "01", lokasi: "Balai Posyandu / RW 02, Margadana, Margadana, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Dahlia Margadana cakupan sinkronisasi wilayah RW 02 (RT 01 s/d RT 03): layanan kesehatan balita, penimbangan, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
   { id: "efacea43-2514-4384-801a-7b39ac6a0a63", nama: "Posyandu Jagadipa", kecamatan: "Margadana", kelurahan: "Margadana", rw: "03", rt: "01", lokasi: "Balai Posyandu / RW 03, Margadana, Margadana, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Jagadipa Margadana cakupan sinkronisasi wilayah RW 03 (RT 01 s/d RT 03): layanan kesehatan balita, penimbangan, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
   { id: "754a89ca-c47f-437e-81e7-ecc52d87adbd", nama: "Posyandu Kenanga", kecamatan: "Margadana", kelurahan: "Margadana", rw: "04", rt: "01", lokasi: "Balai Posyandu / RW 04, Margadana, Margadana, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Kenanga Margadana cakupan sinkronisasi wilayah RW 04 (RT 01 s/d RT 04): layanan kesehatan balita, penimbangan, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "85b90e85-83c5-4691-8362-e44de02b34d0", nama: "Posyandu Cempaka 1", kecamatan: "Margadana", kelurahan: "Margadana", rw: "05", rt: "01", lokasi: "Balai Posyandu / RW 05, Margadana, Margadana, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Cempaka 1 Margadana cakupan sinkronisasi wilayah RW 05 (RT 01 s/d RT 08): layanan kesehatan balita, penimbangan, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "4d300340-6b98-45f4-8185-8d357922e61b", nama: "Posyandu Cempaka 2", kecamatan: "Margadana", kelurahan: "Margadana", rw: "05", rt: "01", lokasi: "Balai Posyandu / RW 05, Margadana, Margadana, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Cempaka 2 Margadana cakupan sinkronisasi wilayah RW 05 (RT 01 s/d RT 08): layanan kesehatan balita, penimbangan, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "85b90e85-83c5-4691-8362-e44de02b34d0", nama: "Posyandu Cempaka 1", kecamatan: "Margadana", kelurahan: "Margadana", rw: "05", rt: "01", cakupan_wilayah: "Melayani Warga RW 05 (RT 01 s/d RT 05)", lokasi: "Balai Posyandu / RW 05, Margadana, Margadana, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Cempaka 1 Margadana cakupan sinkronisasi wilayah RW 05 (RT 01 s/d RT 05): layanan kesehatan balita, penimbangan, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "4d300340-6b98-45f4-8185-8d357922e61b", nama: "Posyandu Cempaka 2", kecamatan: "Margadana", kelurahan: "Margadana", rw: "05", rt: "06", cakupan_wilayah: "Melayani Warga RW 05 (RT 06 s/d RT 08)", lokasi: "Balai Posyandu / RW 05, Margadana, Margadana, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Cempaka 2 Margadana cakupan sinkronisasi wilayah RW 05 (RT 06 s/d RT 08): layanan kesehatan balita, penimbangan, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
   { id: "3327785a-f4dd-420e-840a-a8f5a1a51f19", nama: "Posyandu Anyelir", kecamatan: "Margadana", kelurahan: "Margadana", rw: "06", rt: "01", lokasi: "Balai Posyandu / RW 06, Margadana, Margadana, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Anyelir Margadana cakupan sinkronisasi wilayah RW 06 (RT 01 s/d RT 04): layanan kesehatan balita, penimbangan, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
   { id: "ca8fcaf5-b790-4be1-8a59-7dd9ad19c6c1", nama: "Posyandu Sambisari", kecamatan: "Margadana", kelurahan: "Margadana", rw: "07", rt: "01", lokasi: "Balai Posyandu / RW 07, Margadana, Margadana, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Sambisari Margadana cakupan sinkronisasi wilayah RW 07 (RT 01 s/d RT 08): layanan kesehatan balita, penimbangan, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
   { id: "0ed7a033-6287-4764-8d76-c651610374dc", nama: "Posyandu Suplir", kecamatan: "Margadana", kelurahan: "Margadana", rw: "08", rt: "01", lokasi: "Balai Posyandu / RW 08, Margadana, Margadana, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Suplir Margadana cakupan sinkronisasi wilayah RW 08 (RT 01 s/d RT 05): layanan kesehatan balita, penimbangan, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
@@ -986,6 +986,32 @@ export const SLEROK_POSYANDU_MAP: Record<
     lokasi: "Balai Posyandu / RW 06, Slerok, Tegal Timur, Kota Tegal",
     deskripsi: "Layanan terpadu Posyandu Nakula 2 Slerok cakupan sinkronisasi wilayah RW 06 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
     allowedRts: ["01", "02", "03", "04", "05"],
+  },
+};
+
+export const MARGADANA_POSYANDU_MAP: Record<
+  string,
+  { nama: string; rw: string; rt: string; cakupan_wilayah: string; lokasi?: string; deskripsi?: string; allowedRts?: string[] }
+> = {
+  // Posyandu Cempaka 1: RW 05 (RT 1 s/d 5)
+  "85b90e85-83c5-4691-8362-e44de02b34d0": {
+    nama: "Posyandu Cempaka 1",
+    rw: "05",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 05 (RT 01 s/d RT 05)",
+    lokasi: "Balai Posyandu / RW 05, Margadana, Margadana, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Cempaka 1 Margadana cakupan sinkronisasi wilayah RW 05 (RT 01 s/d RT 05): layanan kesehatan balita, penimbangan, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["01", "02", "03", "04", "05"],
+  },
+  // Posyandu Cempaka 2: RW 05 (RT 6 s/d 8)
+  "4d300340-6b98-45f4-8185-8d357922e61b": {
+    nama: "Posyandu Cempaka 2",
+    rw: "05",
+    rt: "06",
+    cakupan_wilayah: "Melayani Warga RW 05 (RT 06 s/d RT 08)",
+    lokasi: "Balai Posyandu / RW 05, Margadana, Margadana, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Cempaka 2 Margadana cakupan sinkronisasi wilayah RW 05 (RT 06 s/d RT 08): layanan kesehatan balita, penimbangan, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["06", "07", "08"],
   },
 };
 

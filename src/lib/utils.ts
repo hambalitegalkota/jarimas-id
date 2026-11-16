@@ -1132,6 +1132,29 @@ export function parseCakupanWilayah(komunitas?: {
     }
   }
 
+  // 7b. Kelurahan Margadana (Kecamatan Margadana)
+  if (
+    kelClean === "margadana" ||
+    (kelClean.includes("margadana") && !kelClean.includes("pesurungan") && !kelClean.includes("cabawan") && !kelClean.includes("kaligangsa") && !kelClean.includes("krandon") && !kelClean.includes("sumurpanggang")) ||
+    (namaClean.includes("margadana") && !namaClean.includes("kecamatan"))
+  ) {
+    if (
+      komunitas.id === "85b90e85-83c5-4691-8362-e44de02b34d0" ||
+      namaClean.includes("cempaka 1") ||
+      namaClean.includes("cempaka i") ||
+      (namaClean.includes("cempaka") && !namaClean.includes("cempaka 2") && !namaClean.includes("cempaka ii"))
+    ) {
+      return "Melayani Warga RW 05 (RT 01 s/d RT 05)";
+    }
+    if (
+      komunitas.id === "4d300340-6b98-45f4-8185-8d357922e61b" ||
+      namaClean.includes("cempaka 2") ||
+      namaClean.includes("cempaka ii")
+    ) {
+      return "Melayani Warga RW 05 (RT 06 s/d RT 08)";
+    }
+  }
+
   // 8. Kelurahan Umum / Default Fallback
   if (rw && rt) {
     return `Melayani Warga RW ${rw} (RT ${rt})`;
