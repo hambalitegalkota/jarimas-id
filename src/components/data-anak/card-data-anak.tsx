@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useEffect, useTransition } from "react";
 import {
   Baby,
   Calendar,
@@ -28,7 +28,7 @@ import { formatNamaSekolahDisplay, isKomunitasLayananPaud } from "@/lib/data-ana
 import { ModalEditDataAnak } from "./modal-edit-data-anak";
 import { ModalKeluarDataAnak } from "./modal-keluar-data-anak";
 import type { DataAnakItem, KomunitasWithMembership } from "@/types/database";
-import { cn, maskNama } from "@/lib/utils";
+import { cn, maskNama, formatAgeDisplay } from "@/lib/utils";
 
 interface CardDataAnakProps {
   anak: DataAnakItem;
@@ -39,6 +39,7 @@ interface CardDataAnakProps {
   canEdit?: boolean;
   canDelete?: boolean;
   isReadOnly?: boolean;
+  ageFormat?: "tahun" | "tahun_bulan";
   onUpdate?: (updated: DataAnakItem) => void;
   onDelete?: (deletedId: string) => void;
 }
@@ -116,14 +117,24 @@ export function CardDataAnak({
   canEdit,
   canDelete,
   isReadOnly,
+  ageFormat = "tahun",
   onUpdate,
   onDelete,
 }: CardDataAnakProps) {
   const [currentChild, setCurrentChild] = useState<DataAnakItem>(anak);
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
+  const [localAgeFormat, setLocalAgeFormat] = useState<"tahun" | "tahun_bulan">(
+    ageFormat || "tahun"
+  );
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isKeluarModalOpen, setIsKeluarModalOpen] = useState(false);
   const [isPendingValidate, startValidateTransition] = useTransition();
+
+  useEffect(() => {
+    if (ageFormat) {
+      setLocalAgeFormat(ageFormat);
+    }
+  }, [ageFormat]);
 
   const canEditAllowed = Boolean(canEdit);
   const canDeleteAllowed = Boolean(canDelete);
@@ -135,7 +146,10 @@ export function CardDataAnak({
     komunitas?.jenis
   );
   const isApproved = currentChild.status_approval === "approved";
-  const ageString = calculateAge(currentChild.tanggal_lahir);
+  const ageString = formatAgeDisplay(currentChild.tanggal_lahir, {
+    mode: localAgeFormat,
+    rawUsia: (currentChild as any).usia,
+  });
 
   // Privasi nama anak & orang tua untuk pengguna yang belum registrasi atau tanpa akses detail
   const isRegisteredUser = currentUserId === undefined ? true : Boolean(currentUserId);
@@ -217,9 +231,19 @@ export function CardDataAnak({
                 {displayNamaLengkap}
               </h3>
               <div className="flex flex-wrap items-center gap-1.5 text-xs font-medium text-muted-foreground">
-                <span className="font-semibold text-foreground" suppressHydrationWarning>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setLocalAgeFormat((prev) =>
+                      prev === "tahun" ? "tahun_bulan" : "tahun"
+                    )
+                  }
+                  className="font-semibold text-foreground hover:text-primary transition-colors cursor-pointer text-left"
+                  title={`Format usia saat ini: ${localAgeFormat === "tahun" ? "Tahun" : "Tahun & Bulan"}. Klik untuk beralih format.`}
+                  suppressHydrationWarning
+                >
                   {ageString}
-                </span>
+                </button>
                 <span className="text-muted-foreground/40">•</span>
                 <span>
                   {currentChild.jenis_kelamin === "L" ||

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useEffect, useTransition } from "react";
 import {
   GraduationCap,
   User,
@@ -24,7 +24,7 @@ import { ModalEditAts } from "./modal-edit-ats";
 import { ModalHapusAts } from "./modal-hapus-ats";
 import { getJenjangAts, normalizeKeinginanSekolah, getNumericAgeAts } from "@/lib/ats-helpers";
 import type { DataAtsItem } from "@/types/database";
-import { cn, maskNama } from "@/lib/utils";
+import { cn, maskNama, formatAgeDisplay } from "@/lib/utils";
 
 interface CardDataAtsProps {
   ats: DataAtsItem;
@@ -35,6 +35,7 @@ interface CardDataAtsProps {
   canAccessDaftarNama?: boolean;
   currentUserId?: string | null;
   isSuperAdmin?: boolean;
+  ageFormat?: "tahun" | "tahun_bulan";
   onUpdate?: (updatedItem: DataAtsItem) => void;
   onDelete?: (deletedId: string) => void;
   onKembaliSekolah?: (atsId: string, namaSekolah: string) => void;
@@ -60,13 +61,23 @@ export function CardDataAts({
   canAccessDaftarNama,
   currentUserId,
   isSuperAdmin,
+  ageFormat = "tahun",
   onUpdate,
   onDelete,
   onKembaliSekolah,
 }: CardDataAtsProps) {
   const [currentAts, setCurrentAts] = useState<DataAtsItem>(ats);
   const [isExpanded, setIsExpanded] = useState<boolean>(true);
+  const [localAgeFormat, setLocalAgeFormat] = useState<"tahun" | "tahun_bulan">(
+    ageFormat || "tahun"
+  );
   const [isPendingValidate, startValidateTransition] = useTransition();
+
+  useEffect(() => {
+    if (ageFormat) {
+      setLocalAgeFormat(ageFormat);
+    }
+  }, [ageFormat]);
 
   // Modal States
   const [isKembaliSekolahOpen, setIsKembaliSekolahOpen] = useState(false);
@@ -74,7 +85,10 @@ export function CardDataAts({
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
   const isApproved = currentAts.status_approval === "approved";
-  const ageString = calculateAge(currentAts);
+  const ageString = formatAgeDisplay(currentAts.tanggal_lahir, {
+    mode: localAgeFormat,
+    rawUsia: currentAts.usia,
+  });
   const jenjangInfo = getJenjangAts(currentAts);
 
   // Privasi nama anak & orang tua untuk pengguna yang belum registrasi
@@ -185,9 +199,19 @@ export function CardDataAts({
               </div>
 
               <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-2xs sm:text-xs text-muted-foreground font-medium">
-                <span className="font-bold text-foreground font-mono" suppressHydrationWarning>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setLocalAgeFormat((prev) =>
+                      prev === "tahun" ? "tahun_bulan" : "tahun"
+                    )
+                  }
+                  className="font-bold text-foreground font-mono hover:text-primary transition-colors cursor-pointer text-left"
+                  title={`Format usia saat ini: ${localAgeFormat === "tahun" ? "Tahun" : "Tahun & Bulan"}. Klik untuk beralih format.`}
+                  suppressHydrationWarning
+                >
                   {ageString}
-                </span>
+                </button>
                 <span className="text-muted-foreground/40">•</span>
                 <span>
                   {currentAts.jenis_kelamin === "L" ||

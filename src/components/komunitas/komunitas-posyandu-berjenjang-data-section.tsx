@@ -27,7 +27,7 @@ import {
   HelpCircle,
   Table,
 } from "lucide-react";
-import { cn, formatPeranDisplay, maskNama } from "@/lib/utils";
+import { cn, formatPeranDisplay, maskNama, formatAgeDisplay } from "@/lib/utils";
 import type { DataAnakItem, DataAtsItem } from "@/types/database";
 import {
   KOTA_TEGAL_DATA,
@@ -114,6 +114,7 @@ export function KomunitasPosyanduBerjenjangDataSection({
   const [searchQuery, setSearchQuery] = useState("");
   const [viewTab, setViewTab] = useState<"daftar_anak" | "rekap_posyandu">("daftar_anak");
   const [visibleCount, setVisibleCount] = useState(30);
+  const [ageFormat, setAgeFormat] = useState<"tahun" | "tahun_bulan">("tahun");
 
   // Daftar Kecamatan & Kelurahan Kota Tegal
   const daftarKecamatan = useMemo(() => Object.keys(KOTA_TEGAL_DATA), []);
@@ -1663,15 +1664,46 @@ export function KomunitasPosyanduBerjenjangDataSection({
               </p>
             </div>
 
-            {selectedPosyanduId !== "semua" && (
-              <button
-                type="button"
-                onClick={() => setSelectedPosyanduId("semua")}
-                className="inline-flex items-center gap-1 text-2xs font-bold text-rose-600 dark:text-rose-400 bg-rose-500/10 border border-rose-500/30 px-2.5 py-1 rounded-md hover:bg-rose-500/20 cursor-pointer"
-              >
-                <span>Hapus Filter Posyandu</span>
-              </button>
-            )}
+            <div className="flex items-center gap-2 flex-wrap">
+              {/* Toggle Pilihan Format Usia */}
+              <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-lg border border-border">
+                <span className="text-[10px] font-semibold text-muted-foreground pl-1">Format Usia:</span>
+                <button
+                  type="button"
+                  onClick={() => setAgeFormat("tahun")}
+                  className={cn(
+                    "px-2 py-0.5 rounded text-[10px] font-bold transition-all cursor-pointer",
+                    ageFormat === "tahun"
+                      ? "bg-primary text-primary-foreground shadow-2xs"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  Tahun
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAgeFormat("tahun_bulan")}
+                  className={cn(
+                    "px-2 py-0.5 rounded text-[10px] font-bold transition-all cursor-pointer",
+                    ageFormat === "tahun_bulan"
+                      ? "bg-primary text-primary-foreground shadow-2xs"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  Tahun & Bulan
+                </button>
+              </div>
+
+              {selectedPosyanduId !== "semua" && (
+                <button
+                  type="button"
+                  onClick={() => setSelectedPosyanduId("semua")}
+                  className="inline-flex items-center gap-1 text-2xs font-bold text-rose-600 dark:text-rose-400 bg-rose-500/10 border border-rose-500/30 px-2.5 py-1 rounded-md hover:bg-rose-500/20 cursor-pointer"
+                >
+                  <span>Hapus Filter Posyandu</span>
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Info Banner Tampilan Bertahap & Presisi Rekap */}
@@ -1720,8 +1752,11 @@ export function KomunitasPosyanduBerjenjangDataSection({
                       const isSekolah =
                         child.is_sekolah === true ||
                         (child.nama_sekolah && !child.nama_sekolah.toLowerCase().includes("belum"));
-                      const childAge = child.tanggal_lahir ? getNumericAgeAts(child.tanggal_lahir) : null;
-                      const displayChildAge = childAge !== null && childAge >= 0 && childAge <= 7 ? `Usia ${childAge} Thn` : null;
+                      const displayChildAge = formatAgeDisplay(child.tanggal_lahir, {
+                        mode: ageFormat,
+                        rawUsia: (child as any).usia,
+                        short: true,
+                      });
 
                       return (
                         <div
@@ -1747,9 +1782,18 @@ export function KomunitasPosyanduBerjenjangDataSection({
                                     {child.jenis_kelamin === "L" ? "L" : "P"}
                                   </span>
                                   {displayChildAge && (
-                                    <span className="text-[11px] font-semibold text-muted-foreground font-mono">
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        setAgeFormat((prev) =>
+                                          prev === "tahun" ? "tahun_bulan" : "tahun"
+                                        )
+                                      }
+                                      className="text-[11px] font-semibold text-muted-foreground font-mono hover:text-foreground transition-colors cursor-pointer"
+                                      title="Klik untuk ubah format tampilan usia"
+                                    >
                                       • {displayChildAge}
-                                    </span>
+                                    </button>
                                   )}
                                 </div>
                               </div>
@@ -1866,8 +1910,11 @@ export function KomunitasPosyanduBerjenjangDataSection({
                     {paginatedAts.map((ats, idx) => {
                       const posBadge = findAtsPosyanduBadge(ats);
                       const atsCat = ats.kategori_ats || classifyAtsCategory(ats.jenjang_asal, ats.alasan_tidak_sekolah, ats.sekolah_sebelumnya || (ats as any).nama_sekolah);
-                      const numAge = ats.usia ? parseInt(ats.usia, 10) : getNumericAgeAts(ats.tanggal_lahir);
-                      const displayAge = !isNaN(numAge) && numAge > 0 ? `Usia ${numAge} Thn` : null;
+                      const displayAge = formatAgeDisplay(ats.tanggal_lahir, {
+                        mode: ageFormat,
+                        rawUsia: ats.usia,
+                        short: true,
+                      });
 
                       let catBadgeStyle = "bg-secondary/15 text-secondary border-secondary/30";
                       if (atsCat === "Belum Pernah Bersekolah") {
@@ -1913,9 +1960,18 @@ export function KomunitasPosyanduBerjenjangDataSection({
                                     {ats.jenis_kelamin === "L" ? "L" : "P"}
                                   </span>
                                   {displayAge && (
-                                    <span className="text-[11px] font-semibold text-muted-foreground font-mono">
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        setAgeFormat((prev) =>
+                                          prev === "tahun" ? "tahun_bulan" : "tahun"
+                                        )
+                                      }
+                                      className="text-[11px] font-semibold text-muted-foreground font-mono hover:text-foreground transition-colors cursor-pointer"
+                                      title="Klik untuk ubah format tampilan usia"
+                                    >
                                       • {displayAge}
-                                    </span>
+                                    </button>
                                   )}
                                 </div>
                               </div>

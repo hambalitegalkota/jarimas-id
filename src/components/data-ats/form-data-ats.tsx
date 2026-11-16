@@ -46,7 +46,7 @@ import type {
   KomunitasWithMembership,
   DataAtsItem,
 } from "@/types/database";
-import { cn } from "@/lib/utils";
+import { cn, formatDateForDateInput, calculatePreciseAge, formatAgeDisplay } from "@/lib/utils";
 
 interface FormDataAtsProps {
   komunitasId: string;
@@ -147,11 +147,28 @@ export function FormDataAts({
 
   // Identitas Anak
   const [namaLengkap, setNamaLengkap] = useState("");
+  const [tanggalLahir, setTanggalLahir] = useState("");
   const [usia, setUsia] = useState("10");
   const [jenisKelamin, setJenisKelamin] = useState<"L" | "P">("L");
   const [namaOrangtua, setNamaOrangtua] = useState("");
   const [nomorHp, setNomorHp] = useState("");
   const [tinggalBersama, setTinggalBersama] = useState("Orang Tua");
+
+  const todayString = formatDateForDateInput(new Date().toISOString());
+
+  const handleTanggalLahirChange = (dateVal: string) => {
+    setTanggalLahir(dateVal);
+    if (dateVal) {
+      const { years } = calculatePreciseAge(dateVal);
+      if (years >= 25) {
+        setUsia("25>");
+      } else if (years < 6) {
+        setUsia("6");
+      } else {
+        setUsia(String(years));
+      }
+    }
+  };
 
   // Riwayat Pendidikan Sebelumnya
   const [jenjangAsal, setJenjangAsal] = useState<string>(JENJANG_SEKOLAH_ASAL_OPTIONS[0]);
@@ -187,6 +204,7 @@ export function FormDataAts({
     formData.append("komunitasNama", komunitasNama);
     formData.append("namaLengkap", namaLengkap);
     formData.append("usia", usia);
+    formData.append("tanggalLahir", tanggalLahir);
     formData.append("jenisKelamin", jenisKelamin);
     formData.append("namaOrangtua", namaOrangtua);
     formData.append("nomorHp", nomorHp);
@@ -218,6 +236,7 @@ export function FormDataAts({
         });
         // Reset form input fields
         setNamaLengkap("");
+        setTanggalLahir("");
         setUsia("10");
         setJenisKelamin("L");
         setNamaOrangtua("");
@@ -386,12 +405,40 @@ export function FormDataAts({
           </div>
         </div>
 
-        {/* Usia & Jenis Kelamin */}
-        <div className="flex flex-col sm:grid sm:grid-cols-2 gap-3">
+        {/* Tanggal Lahir & Usia Anak */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="space-y-1.5">
-            <label className="text-xs sm:text-sm font-bold text-foreground block">
-              Usia Anak <span className="text-destructive">*</span>
-            </label>
+            <div className="flex items-center justify-between">
+              <label className="text-xs sm:text-sm font-bold text-foreground block">
+                Tanggal Lahir
+              </label>
+              <span className="text-[10px] text-muted-foreground font-medium">
+                (Otomatis sinkron usia)
+              </span>
+            </div>
+            <div className="relative">
+              <Calendar className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <input
+                type="date"
+                value={tanggalLahir}
+                max={todayString}
+                onChange={(e) => handleTanggalLahirChange(e.target.value)}
+                className="w-full min-h-[44px] h-11 rounded-lg border border-border bg-background pl-10 pr-3 text-xs sm:text-sm font-semibold text-foreground focus:border-primary focus:outline-none cursor-pointer"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <label className="text-xs sm:text-sm font-bold text-foreground block">
+                Usia Anak <span className="text-destructive">*</span>
+              </label>
+              {tanggalLahir && (
+                <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                  {formatAgeDisplay(tanggalLahir, { mode: "tahun_bulan" })}
+                </span>
+              )}
+            </div>
             <div className="relative">
               <Calendar className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <select
@@ -411,12 +458,14 @@ export function FormDataAts({
               </select>
             </div>
           </div>
+        </div>
 
-          <div className="space-y-1.5">
-            <label className="text-xs sm:text-sm font-bold text-foreground block">
-              Jenis Kelamin <span className="text-destructive">*</span>
-            </label>
-            <div className="grid grid-cols-2 gap-2.5">
+        {/* Jenis Kelamin */}
+        <div className="space-y-1.5">
+          <label className="text-xs sm:text-sm font-bold text-foreground block">
+            Jenis Kelamin <span className="text-destructive">*</span>
+          </label>
+          <div className="grid grid-cols-2 gap-2.5">
               <button
                 type="button"
                 onClick={() => setJenisKelamin("L")}
@@ -443,7 +492,6 @@ export function FormDataAts({
               </button>
             </div>
           </div>
-        </div>
 
         {/* Nama Orang Tua & Kontak HP */}
         <div className="flex flex-col sm:grid sm:grid-cols-2 gap-3">

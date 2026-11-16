@@ -1098,6 +1098,156 @@ export function parseCakupanWilayah(komunitas?: {
   return "Melayani Warga Lingkungan Sekitar";
 }
 
+export interface PreciseAgeResult {
+  years: number;
+  months: number;
+  days: number;
+  isEstimated: boolean;
+}
+
+/**
+ * Format string tanggal dari database / API menjadi format standar YYYY-MM-DD untuk <input type="date" />.
+ */
+export function formatDateForDateInput(val?: string | null): string {
+  if (!val) return "";
+  const trimmed = val.trim();
+  const match = trimmed.match(/^(\d{4}-\d{2}-\d{2})/);
+  if (match) return match[1];
+  const d = new Date(trimmed);
+  if (isNaN(d.getTime())) return "";
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+/**
+ * Menghitung usia secara presisi (tahun, bulan, dan hari) dari tanggal lahir relatif terhadap tanggal saat ini.
+ */
+export function calculatePreciseAge(
+  birthDateInput?: string | null,
+  referenceDate = new Date()
+): PreciseAgeResult {
+  if (!birthDateInput) {
+    return { years: 0, months: 0, days: 0, isEstimated: true };
+  }
+
+  const str = birthDateInput.trim();
+  if (str === "24>" || str === ">24" || str === "25>" || str === ">25" || str.includes(">")) {
+    return { years: 25, months: 0, days: 0, isEstimated: true };
+  }
+
+  // Jika hanya angka bulat (misal "3" atau "10")
+  if (/^\d{1,2}$/.test(str)) {
+    const num = parseInt(str, 10);
+    return { years: Math.max(0, num), months: 0, days: 0, isEstimated: true };
+  }
+
+  let birthDate: Date;
+  if (/^\d{4}-\d{2}-\d{2}/.test(str)) {
+    const [y, m, d] = str.slice(0, 10).split("-").map(Number);
+    birthDate = new Date(y, m - 1, d);
+  } else {
+    birthDate = new Date(str);
+  }
+
+  if (isNaN(birthDate.getTime())) {
+    const yearMatch = str.match(/\b(19\d{2}|20\d{2})\b/);
+    if (yearMatch) {
+      const y = parseInt(yearMatch[1], 10);
+      const estYears = Math.max(0, referenceDate.getFullYear() - y);
+      return { years: estYears, months: 0, days: 0, isEstimated: true };
+    }
+    return { years: 0, months: 0, days: 0, isEstimated: true };
+  }
+
+  let years = referenceDate.getFullYear() - birthDate.getFullYear();
+  let months = referenceDate.getMonth() - birthDate.getMonth();
+  let days = referenceDate.getDate() - birthDate.getDate();
+
+  if (days < 0) {
+    const prevMonthLastDay = new Date(
+      referenceDate.getFullYear(),
+      referenceDate.getMonth(),
+      0
+    ).getDate();
+    days += prevMonthLastDay;
+    months--;
+  }
+
+  if (months < 0) {
+    months += 12;
+    years--;
+  }
+
+  if (years < 0) {
+    years = 0;
+    months = 0;
+    days = 0;
+  }
+
+  return { years, months, days, isEstimated: false };
+}
+
+/**
+ * Format tampilan usia publik:
+ * - mode "tahun": contoh "3 Tahun", "10 Tahun", "> 24 Tahun"
+ * - mode "tahun_bulan": contoh "3 Tahun 4 Bulan", "5 Bulan", "< 1 Bulan"
+ */
+export function formatAgeDisplay(
+  birthDateInput?: string | null,
+  options?: {
+    mode?: "tahun" | "tahun_bulan";
+    rawUsia?: string | null;
+    short?: boolean;
+  }
+): string {
+  const mode = options?.mode || "tahun";
+  const short = options?.short ?? false;
+
+  const inputToUse =
+    birthDateInput &&
+    birthDateInput.trim() !== "-" &&
+    birthDateInput.trim() !== "0"
+      ? birthDateInput
+      : options?.rawUsia;
+
+  if (!inputToUse || !inputToUse.trim()) return "-";
+
+  const { years, months, isEstimated } = calculatePreciseAge(inputToUse);
+
+  if (years >= 25) {
+    return "> 24 Tahun";
+  }
+
+  if (mode === "tahun") {
+    return `${years} Tahun`;
+  }
+
+  // mode === "tahun_bulan"
+  if (isEstimated && months === 0) {
+    return `${years} Tahun`;
+  }
+
+  const thnLabel = short ? "Thn" : "Tahun";
+  const blnLabel = short ? "Bln" : "Bulan";
+
+  if (years === 0 && months === 0) {
+    return short ? "< 1 Bln" : "< 1 Bulan";
+  }
+
+  if (years === 0) {
+    return `${months} ${blnLabel}`;
+  }
+
+  if (months === 0) {
+    return `${years} ${thnLabel}`;
+  }
+
+  return `${years} ${thnLabel} ${months} ${blnLabel}`;
+}
+
+
 
 
 

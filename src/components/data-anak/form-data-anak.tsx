@@ -37,7 +37,7 @@ import {
   getRtListByKelurahan,
   findOrGenerateKomunitasSeed,
 } from "@/lib/constants/tegal-data";
-import { cn } from "@/lib/utils";
+import { cn, formatAgeDisplay, calculatePreciseAge, formatDateForDateInput } from "@/lib/utils";
 
 interface FormDataAnakProps {
   komunitasId: string;
@@ -128,12 +128,24 @@ export function FormDataAnak({
 
   // Identitas Dasar Anak
   const [namaLengkap, setNamaLengkap] = useState("");
+  const [tanggalLahir, setTanggalLahir] = useState("");
   const [usia, setUsia] = useState("3");
   const [jenisKelamin, setJenisKelamin] = useState<"L" | "P">("L");
   const [namaOrangtua, setNamaOrangtua] = useState("");
   const [nomorHp, setNomorHp] = useState("");
   const [tinggalBersama, setTinggalBersama] = useState("Orang Tua");
   const [jarakRumahKm, setJarakRumahKm] = useState("0.5");
+
+  const todayString = formatDateForDateInput(new Date().toISOString());
+
+  const handleTanggalLahirChange = (dateVal: string) => {
+    setTanggalLahir(dateVal);
+    if (dateVal) {
+      const { years } = calculatePreciseAge(dateVal);
+      const clamped = Math.max(0, Math.min(6, years));
+      setUsia(String(clamped));
+    }
+  };
 
   // Alamat Sesuai KK
   const [kkKabupatenChoice, setKkKabupatenChoice] = useState<
@@ -199,6 +211,7 @@ export function FormDataAnak({
 
     formData.append("namaLengkap", namaLengkap);
     formData.append("usia", usia);
+    formData.append("tanggalLahir", tanggalLahir);
     formData.append("jenisKelamin", jenisKelamin);
     formData.append("namaOrangtua", namaOrangtua);
     formData.append("nomorHp", nomorHp);
@@ -408,29 +421,59 @@ export function FormDataAnak({
           </div>
         </div>
 
-        {/* 3. Usia Anak & Jarak Rumah ke PAUD */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div className="space-y-1.5">
-            <label className="text-xs sm:text-sm font-bold text-foreground leading-snug block">
-              Usia Anak <span className="text-destructive">*</span>
-            </label>
-            <div className="relative">
-              <Calendar className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <select
-                required
-                value={usia}
-                onChange={(e) => setUsia(e.target.value)}
-                className="w-full min-h-[44px] h-11 rounded-lg border border-border bg-background pl-10 pr-8 text-xs sm:text-sm font-semibold text-foreground focus:border-primary focus:outline-none appearance-none cursor-pointer"
-              >
-                <option value="" disabled>
-                  -- Pilih Usia Anak (0-6 Tahun) --
-                </option>
-                {USIA_ANAK_OPTIONS.map((opt) => (
-                  <option key={opt} value={opt}>
-                    {`${opt} Tahun`}
+        {/* 3. Tanggal Lahir, Usia Anak & Jarak Rumah ke PAUD */}
+        <div className="space-y-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className="text-xs sm:text-sm font-bold text-foreground leading-snug block">
+                  Tanggal Lahir
+                </label>
+                <span className="text-[10px] text-muted-foreground font-medium">
+                  (Otomatis hitung usia)
+                </span>
+              </div>
+              <div className="relative">
+                <Calendar className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <input
+                  type="date"
+                  value={tanggalLahir}
+                  max={todayString}
+                  onChange={(e) => handleTanggalLahirChange(e.target.value)}
+                  className="w-full min-h-[44px] h-11 rounded-lg border border-border bg-background pl-10 pr-3 text-xs sm:text-sm font-semibold text-foreground focus:border-primary focus:outline-none cursor-pointer"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className="text-xs sm:text-sm font-bold text-foreground leading-snug block">
+                  Usia Anak <span className="text-destructive">*</span>
+                </label>
+                {tanggalLahir && (
+                  <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                    {formatAgeDisplay(tanggalLahir, { mode: "tahun_bulan" })}
+                  </span>
+                )}
+              </div>
+              <div className="relative">
+                <Calendar className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <select
+                  required
+                  value={usia}
+                  onChange={(e) => setUsia(e.target.value)}
+                  className="w-full min-h-[44px] h-11 rounded-lg border border-border bg-background pl-10 pr-8 text-xs sm:text-sm font-semibold text-foreground focus:border-primary focus:outline-none appearance-none cursor-pointer"
+                >
+                  <option value="" disabled>
+                    -- Pilih Usia Anak (0-6 Tahun) --
                   </option>
-                ))}
-              </select>
+                  {USIA_ANAK_OPTIONS.map((opt) => (
+                    <option key={opt} value={opt}>
+                      {`${opt} Tahun`}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
           </div>
 

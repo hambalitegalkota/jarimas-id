@@ -89,6 +89,7 @@ export function DataAtsClientView({
 
   // Default isListExpanded true agar kartu langsung terbuka
   const [isListExpanded, setIsListExpanded] = useState<boolean>(true);
+  const [ageFormat, setAgeFormat] = useState<"tahun" | "tahun_bulan">("tahun");
   const [feedbackToast, setFeedbackToast] = useState<{
     type: "success" | "info" | "error";
     message: string;
@@ -828,7 +829,36 @@ export function DataAtsClientView({
               </h3>
             </div>
 
-            <div className="flex items-center gap-2 print:hidden">
+            <div className="flex flex-wrap items-center gap-2 print:hidden">
+              {/* Toggle Pilihan Format Usia */}
+              <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-850 p-1 rounded-xl border border-slate-200 dark:border-slate-800">
+                <span className="text-[11px] font-semibold text-muted-foreground pl-1.5">Usia:</span>
+                <button
+                  type="button"
+                  onClick={() => setAgeFormat("tahun")}
+                  className={cn(
+                    "px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer",
+                    ageFormat === "tahun"
+                      ? "bg-blue-600 text-white shadow-2xs"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  Tahun
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAgeFormat("tahun_bulan")}
+                  className={cn(
+                    "px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer",
+                    ageFormat === "tahun_bulan"
+                      ? "bg-blue-600 text-white shadow-2xs"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  Tahun & Bulan
+                </button>
+              </div>
+
               <button
                 type="button"
                 onClick={() => setIsListExpanded((prev) => !prev)}
@@ -944,6 +974,7 @@ export function DataAtsClientView({
                     canAccessDaftarNama={Boolean(canAccessDaftarNama && currentUserId)}
                     currentUserId={currentUserId}
                     isSuperAdmin={isSuperAdmin}
+                    ageFormat={ageFormat}
                     onUpdate={handleUpdateItem}
                     onDelete={handleDeleteItem}
                     onKembaliSekolah={handleKembaliSekolah}

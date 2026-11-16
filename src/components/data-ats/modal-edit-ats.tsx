@@ -40,7 +40,7 @@ import {
 import { extractKomunitasMetadata } from "@/lib/admin-helpers";
 import { normalizeKeinginanSekolah } from "@/lib/ats-helpers";
 import { KELAS_TERAKHIR_OPTIONS } from "./form-data-ats";
-import { cn } from "@/lib/utils";
+import { cn, formatDateForDateInput, calculatePreciseAge, formatAgeDisplay } from "@/lib/utils";
 
 interface ModalEditAtsProps {
   isOpen: boolean;
@@ -101,14 +101,14 @@ export function ModalEditAts({
   const meta = extractKomunitasMetadata({ id: komunitasId, nama: komunitasNama });
   const isLockedKecamatan = Boolean(
     meta.rawKec &&
-      meta.rawKec !== "Kota Tegal" &&
-      meta.rawKec !== "Semua Kecamatan"
+    meta.rawKec !== "Kota Tegal" &&
+    meta.rawKec !== "Semua Kecamatan"
   );
   const isLockedKelurahan = Boolean(
     meta.hasKel &&
-      meta.rawKel &&
-      meta.rawKel !== "Semua Kelurahan" &&
-      meta.rawKel !== "Semua"
+    meta.rawKel &&
+    meta.rawKel !== "Semua Kelurahan" &&
+    meta.rawKel !== "Semua"
   );
   const isLockedRw = false;
   const isLockedRt = false;
@@ -126,6 +126,7 @@ export function ModalEditAts({
 
   // Form Fields
   const [namaLengkap, setNamaLengkap] = useState(ats.nama_lengkap || "");
+  const [tanggalLahir, setTanggalLahir] = useState(formatDateForDateInput(ats.tanggal_lahir));
   const [usia, setUsia] = useState(ats.usia || getUsiaFromBirthDate(ats.tanggal_lahir));
   const [jenisKelamin, setJenisKelamin] = useState<"L" | "P">(
     ats.jenis_kelamin === "P" || ats.jenis_kelamin === "Perempuan" ? "P" : "L"
@@ -135,6 +136,22 @@ export function ModalEditAts({
   const [tinggalBersama, setTinggalBersama] = useState(
     ats.tinggal_bersama || "Orang Tua"
   );
+
+  const todayString = formatDateForDateInput(new Date().toISOString());
+
+  const handleTanggalLahirChange = (dateVal: string) => {
+    setTanggalLahir(dateVal);
+    if (dateVal) {
+      const { years } = calculatePreciseAge(dateVal);
+      if (years >= 25) {
+        setUsia("25>");
+      } else if (years < 6) {
+        setUsia("6");
+      } else {
+        setUsia(String(years));
+      }
+    }
+  };
 
   // Riwayat Pendidikan Sebelumnya
   const [jenjangAsal, setJenjangAsal] = useState<string>(() => {
@@ -188,6 +205,7 @@ export function ModalEditAts({
     }
     formData.append("namaLengkap", namaLengkap);
     formData.append("usia", usia);
+    formData.append("tanggalLahir", tanggalLahir);
     formData.append("jenisKelamin", jenisKelamin);
     formData.append("namaOrangtua", namaOrangtua);
     formData.append("nomorHp", nomorHp);
@@ -374,12 +392,40 @@ export function ModalEditAts({
                 />
               </div>
 
-              {/* Usia & Jenis Kelamin */}
+              {/* Tanggal Lahir & Usia */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-muted-foreground">
-                    Usia *
-                  </label>
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-medium text-muted-foreground">
+                      Tanggal Lahir
+                    </label>
+                    <span className="text-[10px] text-muted-foreground">
+                      (Sinkron usia)
+                    </span>
+                  </div>
+                  <div className="relative">
+                    <Calendar className="pointer-events-none absolute left-3 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+                    <input
+                      type="date"
+                      value={tanggalLahir}
+                      max={todayString}
+                      onChange={(e) => handleTanggalLahirChange(e.target.value)}
+                      className="w-full h-9 rounded-md border border-border bg-card pl-8 pr-3 text-xs font-medium text-foreground focus:border-amber-500 focus:outline-hidden cursor-pointer"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-medium text-muted-foreground">
+                      Usia *
+                    </label>
+                    {tanggalLahir && (
+                      <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                        {formatAgeDisplay(tanggalLahir, { mode: "tahun_bulan" })}
+                      </span>
+                    )}
+                  </div>
                   <div className="relative">
                     <Calendar className="pointer-events-none absolute left-3 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
                     <select
@@ -396,37 +442,38 @@ export function ModalEditAts({
                     </select>
                   </div>
                 </div>
+              </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-muted-foreground">
-                    Jenis Kelamin *
-                  </label>
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setJenisKelamin("L")}
-                      className={cn(
-                        "flex h-9 items-center justify-center rounded-md border text-xs font-bold transition-all cursor-pointer",
-                        jenisKelamin === "L"
-                          ? "border-blue-500 bg-blue-500/15 text-blue-600 dark:text-blue-400 font-bold"
-                          : "border-border text-muted-foreground hover:bg-card"
-                      )}
-                    >
-                      Laki-laki (L)
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setJenisKelamin("P")}
-                      className={cn(
-                        "flex h-9 items-center justify-center rounded-md border text-xs font-bold transition-all cursor-pointer",
-                        jenisKelamin === "P"
-                          ? "border-rose-500 bg-rose-500/15 text-rose-600 dark:text-rose-400 font-bold"
-                          : "border-border text-muted-foreground hover:bg-card"
-                      )}
-                    >
-                      Perempuan (P)
-                    </button>
-                  </div>
+              {/* Jenis Kelamin */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-muted-foreground">
+                  Jenis Kelamin *
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setJenisKelamin("L")}
+                    className={cn(
+                      "flex h-9 items-center justify-center rounded-md border text-xs font-bold transition-all cursor-pointer",
+                      jenisKelamin === "L"
+                        ? "border-blue-500 bg-blue-500/15 text-blue-600 dark:text-blue-400 font-bold"
+                        : "border-border text-muted-foreground hover:bg-card"
+                    )}
+                  >
+                    Laki-laki (L)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setJenisKelamin("P")}
+                    className={cn(
+                      "flex h-9 items-center justify-center rounded-md border text-xs font-bold transition-all cursor-pointer",
+                      jenisKelamin === "P"
+                        ? "border-rose-500 bg-rose-500/15 text-rose-600 dark:text-rose-400 font-bold"
+                        : "border-border text-muted-foreground hover:bg-card"
+                    )}
+                  >
+                    Perempuan (P)
+                  </button>
                 </div>
               </div>
 

@@ -105,6 +105,9 @@ export function DataAnakClientView({
     "semua" | "bersekolah" | "belum_bersekolah"
   >("semua");
 
+  // Pilihan Format Tampilan Usia: "tahun" atau "tahun_bulan"
+  const [ageFormat, setAgeFormat] = useState<"tahun" | "tahun_bulan">("tahun");
+
   // Hitung ulang rekap scoped jika data anak diperbarui di client
   const rekapCalc: KomunitasScopedRekapResult = useMemo(() => {
     if (initialScopedRekap && initialSubTierItems) {
@@ -515,16 +518,49 @@ export function DataAnakClientView({
 
                 {/* 4. LIST DATA ANAK */}
                 <div className="space-y-2 sm:space-y-2.5 pb-16">
-                  <div className="flex items-center justify-between border-b border-border/60 pb-2">
-                    <h3 className="text-xs font-bold uppercase text-foreground tracking-wider flex items-center gap-1.5">
-                      <span>DAFTAR DETAIL ANAK</span>
-                      <span className="font-mono text-muted-foreground">
-                        ({paudDisplayedChildren.length} DATA)
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border/60 pb-2">
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-xs font-bold uppercase text-foreground tracking-wider flex items-center gap-1.5">
+                        <span>DAFTAR DETAIL ANAK</span>
+                        <span className="font-mono text-muted-foreground">
+                          ({paudDisplayedChildren.length} DATA)
+                        </span>
+                      </h3>
+                      <span className="text-xs font-mono font-bold text-muted-foreground hidden sm:inline">
+                        • {paudDisplayedChildren.length} dari total {totalChildren} anak
                       </span>
-                    </h3>
-                    <span className="text-xs font-mono font-bold text-muted-foreground">
-                      {paudDisplayedChildren.length} dari total {totalChildren} anak
-                    </span>
+                    </div>
+
+                    {/* Toggle Pilihan Format Usia */}
+                    <div className="flex items-center gap-1.5 self-start sm:self-center">
+                      <span className="text-[11px] font-semibold text-muted-foreground">Format Usia:</span>
+                      <div className="inline-flex rounded-lg border border-border p-0.5 bg-muted/40">
+                        <button
+                          type="button"
+                          onClick={() => setAgeFormat("tahun")}
+                          className={cn(
+                            "px-2 py-0.5 rounded-md text-[11px] font-bold transition-all cursor-pointer",
+                            ageFormat === "tahun"
+                              ? "bg-primary text-primary-foreground shadow-2xs"
+                              : "text-muted-foreground hover:text-foreground"
+                          )}
+                        >
+                          Tahun
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setAgeFormat("tahun_bulan")}
+                          className={cn(
+                            "px-2 py-0.5 rounded-md text-[11px] font-bold transition-all cursor-pointer",
+                            ageFormat === "tahun_bulan"
+                              ? "bg-primary text-primary-foreground shadow-2xs"
+                              : "text-muted-foreground hover:text-foreground"
+                          )}
+                        >
+                          Tahun & Bulan
+                        </button>
+                      </div>
+                    </div>
                   </div>
 
                   {paudDisplayedChildren.length === 0 ? (
@@ -566,6 +602,7 @@ export function DataAnakClientView({
                           canEdit={canEdit}
                           canDelete={canDelete}
                           isReadOnly={isReadOnly}
+                          ageFormat={ageFormat}
                           onUpdate={(updated) => {
                             setChildrenList((prev) =>
                               prev.map((c) => (c.id === updated.id ? updated : c))
@@ -774,16 +811,49 @@ export function DataAnakClientView({
 
                 {/* LIST KARTU DATA ANAK */}
                 <div className="space-y-2.5 pb-16">
-                  <div className="flex items-center justify-between border-b border-border/60 pb-2">
-                    <h3 className="text-xs font-bold uppercase text-foreground tracking-wider flex items-center gap-1.5">
-                      <span>DAFTAR RINCIAN ANAK</span>
-                      <span className="font-mono text-muted-foreground">
-                        ({displayedChildren.length} DATA)
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border/60 pb-2">
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-xs font-bold uppercase text-foreground tracking-wider flex items-center gap-1.5">
+                        <span>DAFTAR RINCIAN ANAK</span>
+                        <span className="font-mono text-muted-foreground">
+                          ({displayedChildren.length} DATA)
+                        </span>
+                      </h3>
+                      <span className="text-xs font-mono font-bold text-muted-foreground hidden sm:inline">
+                        • {displayedChildren.length} dari total {totalChildren} anak
                       </span>
-                    </h3>
-                    <span className="text-xs font-mono font-bold text-muted-foreground">
-                      {displayedChildren.length} dari total {totalChildren} anak
-                    </span>
+                    </div>
+
+                    {/* Toggle Pilihan Format Usia */}
+                    <div className="flex items-center gap-1.5 self-start sm:self-center">
+                      <span className="text-[11px] font-semibold text-muted-foreground">Format Usia:</span>
+                      <div className="inline-flex rounded-lg border border-border p-0.5 bg-muted/40">
+                        <button
+                          type="button"
+                          onClick={() => setAgeFormat("tahun")}
+                          className={cn(
+                            "px-2 py-0.5 rounded-md text-[11px] font-bold transition-all cursor-pointer",
+                            ageFormat === "tahun"
+                              ? "bg-primary text-primary-foreground shadow-2xs"
+                              : "text-muted-foreground hover:text-foreground"
+                          )}
+                        >
+                          Tahun
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setAgeFormat("tahun_bulan")}
+                          className={cn(
+                            "px-2 py-0.5 rounded-md text-[11px] font-bold transition-all cursor-pointer",
+                            ageFormat === "tahun_bulan"
+                              ? "bg-primary text-primary-foreground shadow-2xs"
+                              : "text-muted-foreground hover:text-foreground"
+                          )}
+                        >
+                          Tahun & Bulan
+                        </button>
+                      </div>
+                    </div>
                   </div>
 
                   {displayedChildren.length === 0 ? (
@@ -817,6 +887,7 @@ export function DataAnakClientView({
                           canEdit={!child.is_sekolah && canEdit}
                           canDelete={!child.is_sekolah && canDelete}
                           isReadOnly={isReadOnly}
+                          ageFormat={ageFormat}
                           onUpdate={(updated) => {
                             setChildrenList((prev) =>
                               prev.map((c) => (c.id === updated.id ? updated : c))
