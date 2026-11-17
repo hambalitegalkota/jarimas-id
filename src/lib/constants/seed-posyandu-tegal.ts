@@ -306,19 +306,19 @@ export const RAW_POSYANDU_TEGAL: RawPosyanduItem[] = [
   { id: "a5582b58-4c94-4bf6-885e-f371256ae4b0", nama: "Posyandu Kemuning III Utara", kecamatan: "Tegal Selatan", kelurahan: "Keturen", rw: "03", cakupan_wilayah: "RW 03 (RT 02, RT 03, RT 04)", lokasi: "Balai Posyandu / RW 03, Keturen, Tegal Selatan, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Kemuning III Utara Keturen cakupan sinkronisasi wilayah RW 03 RT 2, RT 3, dan RT 4: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
 
   // Randugunting (13 Posyandu)
-  { id: "cf5ba9e4-1424-4e35-80c7-54fd98e16120", nama: "Posyandu Ababil", kecamatan: "Tegal Selatan", kelurahan: "Randugunting", rw: "05", rt: "01", lokasi: "Balai Posyandu / RW 05, Randugunting, Tegal Selatan, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Ababil Randugunting: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "0066580b-3fc4-4256-89b4-2b55bfc32505", nama: "Posyandu Cendrawasih", kecamatan: "Tegal Selatan", kelurahan: "Randugunting", rw: "03", rt: "01", lokasi: "Balai Posyandu / RW 03, Randugunting, Tegal Selatan, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Nusa Indah 1 Randugunting: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "2115a0f8-4b28-4212-8e13-ea11dcefd710", nama: "Posyandu Garuda A", kecamatan: "Tegal Selatan", kelurahan: "Randugunting", rw: "01", rt: "01", lokasi: "Balai Posyandu / RW 01, Randugunting, Tegal Selatan, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Flamboyan 1 Randugunting: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "fbbc0e0b-4b28-4212-82a2-7ca962dba17b", nama: "Posyandu Garuda B", kecamatan: "Tegal Selatan", kelurahan: "Randugunting", rw: "01", rt: "03", lokasi: "Balai Posyandu / RW 01, Randugunting, Tegal Selatan, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Flamboyan 2 Randugunting: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "34b8b73c-09a3-4cbb-84e1-00fdd633c350", nama: "Posyandu Gelatik", kecamatan: "Tegal Selatan", kelurahan: "Randugunting", rw: "02", rt: "02", lokasi: "Balai Posyandu / RW 02, Randugunting, Tegal Selatan, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Dahlia 1 Randugunting: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "723d1035-5d24-47ed-809e-7d19265cd275", nama: "Posyandu Kasuari", kecamatan: "Tegal Selatan", kelurahan: "Randugunting", rw: "07", rt: "01", lokasi: "Balai Posyandu / RW 07, Randugunting, Tegal Selatan, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Melati Asri Randugunting: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "30d0f7b7-4012-4bd5-8c5b-3d095c23a9a3", nama: "Posyandu Ketilang", kecamatan: "Tegal Selatan", kelurahan: "Randugunting", rw: "05", rt: "03", lokasi: "Balai Posyandu / RW 05, Randugunting, Tegal Selatan, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Bougenville Randugunting: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "25bfeaf8-3fc4-4256-8525-98bd2dffc5c4", nama: "Posyandu Merak", kecamatan: "Tegal Selatan", kelurahan: "Randugunting", rw: "03", rt: "03", lokasi: "Balai Posyandu / RW 03, Randugunting, Tegal Selatan, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Nusa Indah 2 Randugunting: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "4df9c64c-7969-4e1f-8484-23098e8ca223", nama: "Posyandu Merpati", kecamatan: "Tegal Selatan", kelurahan: "Randugunting", rw: "04", rt: "02", lokasi: "Balai Posyandu / RW 04, Randugunting, Tegal Selatan, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Kenanga 1 Randugunting: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "54eae7c8-52cb-4c0a-8175-5691996e2f34", nama: "Posyandu Mliwis", kecamatan: "Tegal Selatan", kelurahan: "Randugunting", rw: "06", rt: "04", lokasi: "Balai Posyandu / RW 06, Randugunting, Tegal Selatan, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Kamboja Randugunting: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "066da239-1bfa-4042-8cb7-77a9784becf5", nama: "Posyandu Nuri", kecamatan: "Tegal Selatan", kelurahan: "Randugunting", rw: "06", rt: "02", lokasi: "Balai Posyandu / RW 06, Randugunting, Tegal Selatan, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Cempaka Randugunting: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "28a0335f-7969-4e1f-8ff5-907108a0d7b8", nama: "Posyandu Puter", kecamatan: "Tegal Selatan", kelurahan: "Randugunting", rw: "04", rt: "04", lokasi: "Balai Posyandu / RW 04, Randugunting, Tegal Selatan, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Kenanga 2 Randugunting: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "0f5f244f-09a3-4cbb-896f-939567f72291", nama: "Posyandu Rajawali", kecamatan: "Tegal Selatan", kelurahan: "Randugunting", rw: "02", rt: "04", lokasi: "Balai Posyandu / RW 02, Randugunting, Tegal Selatan, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Dahlia 2 Randugunting: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "30d0f7b7-4012-4bd5-8c5b-3d095c23a9a3", nama: "Posyandu Ketilang", kecamatan: "Tegal Selatan", kelurahan: "Randugunting", rw: "01", rt: "01", cakupan_wilayah: "Melayani Warga RW 01 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08, RT 09 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 01, Randugunting, Tegal Selatan, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Ketilang Randugunting cakupan sinkronisasi wilayah RW 01 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08, RT 09 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "4df9c64c-7969-4e1f-8484-23098e8ca223", nama: "Posyandu Merpati", kecamatan: "Tegal Selatan", kelurahan: "Randugunting", rw: "02", rt: "01", cakupan_wilayah: "Melayani Warga RW 02 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08, RT 09 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 02, Randugunting, Tegal Selatan, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Merpati Randugunting cakupan sinkronisasi wilayah RW 02 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08, RT 09 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "28a0335f-7969-4e1f-8ff5-907108a0d7b8", nama: "Posyandu Puter", kecamatan: "Tegal Selatan", kelurahan: "Randugunting", rw: "03", rt: "01", cakupan_wilayah: "Melayani Warga RW 03 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 03, Randugunting, Tegal Selatan, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Puter Randugunting cakupan sinkronisasi wilayah RW 03 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "066da239-1bfa-4042-8cb7-77a9784becf5", nama: "Posyandu Nuri", kecamatan: "Tegal Selatan", kelurahan: "Randugunting", rw: "04", rt: "01", cakupan_wilayah: "Melayani Warga RW 04 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08, RT 09 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 04, Randugunting, Tegal Selatan, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Nuri Randugunting cakupan sinkronisasi wilayah RW 04 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08, RT 09 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "34b8b73c-09a3-4cbb-84e1-00fdd633c350", nama: "Posyandu Gelatik", kecamatan: "Tegal Selatan", kelurahan: "Randugunting", rw: "05", rt: "01", cakupan_wilayah: "Melayani Warga RW 05 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 05, Randugunting, Tegal Selatan, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Gelatik Randugunting cakupan sinkronisasi wilayah RW 05 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "cf5ba9e4-1424-4e35-80c7-54fd98e16120", nama: "Posyandu Ababil", kecamatan: "Tegal Selatan", kelurahan: "Randugunting", rw: "06", rt: "01", cakupan_wilayah: "Melayani Warga RW 06 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 06, Randugunting, Tegal Selatan, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Ababil Randugunting cakupan sinkronisasi wilayah RW 06 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "723d1035-5d24-47ed-809e-7d19265cd275", nama: "Posyandu Kasuari", kecamatan: "Tegal Selatan", kelurahan: "Randugunting", rw: "07", rt: "01", cakupan_wilayah: "Melayani Warga RW 07 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08, RT 09 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 07, Randugunting, Tegal Selatan, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Kasuari Randugunting cakupan sinkronisasi wilayah RW 07 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08, RT 09 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "0066580b-3fc4-4256-89b4-2b55bfc32505", nama: "Posyandu Cendrawasih", kecamatan: "Tegal Selatan", kelurahan: "Randugunting", rw: "08", rt: "01", cakupan_wilayah: "Melayani Warga RW 08 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 08, Randugunting, Tegal Selatan, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Cendrawasih Randugunting cakupan sinkronisasi wilayah RW 08 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "0f5f244f-09a3-4cbb-896f-939567f72291", nama: "Posyandu Rajawali", kecamatan: "Tegal Selatan", kelurahan: "Randugunting", rw: "09", rt: "01", cakupan_wilayah: "Melayani Warga RW 09 (RT 01, RT 02, RT 03 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 09, Randugunting, Tegal Selatan, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Rajawali Randugunting cakupan sinkronisasi wilayah RW 09 (RT 01, RT 02, RT 03 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "fbbc0e0b-4b28-4212-82a2-7ca962dba17b", nama: "Posyandu Garuda B", kecamatan: "Tegal Selatan", kelurahan: "Randugunting", rw: "10", rt: "01", cakupan_wilayah: "Melayani Warga RW 10 (RT 01, RT 02 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 10, Randugunting, Tegal Selatan, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Garuda B Randugunting cakupan sinkronisasi wilayah RW 10 (RT 01, RT 02 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "2115a0f8-4b28-4212-8e13-ea11dcefd710", nama: "Posyandu Garuda A", kecamatan: "Tegal Selatan", kelurahan: "Randugunting", rw: "10", rt: "03", cakupan_wilayah: "Melayani Warga RW 10 (RT 03, RT 04, RT 05, RT 06, RT 07, RT 08, RT 09, RT 10 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 10, Randugunting, Tegal Selatan, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Garuda A Randugunting cakupan sinkronisasi wilayah RW 10 (RT 03, RT 04, RT 05, RT 06, RT 07, RT 08, RT 09, RT 10 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "54eae7c8-52cb-4c0a-8175-5691996e2f34", nama: "Posyandu Meliwis", kecamatan: "Tegal Selatan", kelurahan: "Randugunting", rw: "11", rt: "01", cakupan_wilayah: "Melayani Warga RW 11 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 11, Randugunting, Tegal Selatan, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Meliwis Randugunting cakupan sinkronisasi wilayah RW 11 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "25bfeaf8-3fc4-4256-8525-98bd2dffc5c4", nama: "Posyandu Merak", kecamatan: "Tegal Selatan", kelurahan: "Randugunting", rw: "12", rt: "01", cakupan_wilayah: "Melayani Warga RW 12 (RT 01, RT 02, RT 03, RT 04 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 12, Randugunting, Tegal Selatan, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Merak Randugunting cakupan sinkronisasi wilayah RW 12 (RT 01, RT 02, RT 03, RT 04 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
 
   // Tunon (4 Posyandu)
   { id: "f73b16ab-c16e-4572-8423-6a3d5cec3d4a", nama: "Posyandu Mawar I", kecamatan: "Tegal Selatan", kelurahan: "Tunon", rw: "01", rt: "01", cakupan_wilayah: "RW 01 (RT 01 s/d RT 06)", lokasi: "Balai Posyandu / RW 01, Tunon, Tegal Selatan, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Mawar I Tunon cakupan sinkronisasi wilayah RW 01 (RT 01 s/d RT 06): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
@@ -1048,6 +1048,142 @@ export const TEGALSARI_POSYANDU_MAP: Record<
     lokasi: "Balai Posyandu / RW 12, Tegalsari, Tegal Barat, Kota Tegal",
     deskripsi: "Layanan terpadu Posyandu Anggrek Ungu Tegalsari cakupan sinkronisasi wilayah RW 12 (RT 01 s/d RT 05): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
     allowedRts: ["01", "02", "03", "04", "05"],
+  },
+};
+
+export const RANDUGUNTING_POSYANDU_MAP: Record<
+  string,
+  { nama: string; rw: string; rt: string; cakupan_wilayah: string; lokasi?: string; deskripsi?: string; allowedRts?: string[] }
+> = {
+  // 1. Posyandu Ketilang: RW 1 RT 1 s/d 9
+  "30d0f7b7-4012-4bd5-8c5b-3d095c23a9a3": {
+    nama: "Posyandu Ketilang",
+    rw: "01",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 01 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08, RT 09 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 01, Randugunting, Tegal Selatan, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Ketilang Randugunting cakupan sinkronisasi wilayah RW 01 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08, RT 09 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["01", "02", "03", "04", "05", "06", "07", "08", "09"],
+  },
+  // 2. Posyandu Merpati: RW 2 RT 1 s/d 9
+  "4df9c64c-7969-4e1f-8484-23098e8ca223": {
+    nama: "Posyandu Merpati",
+    rw: "02",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 02 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08, RT 09 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 02, Randugunting, Tegal Selatan, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Merpati Randugunting cakupan sinkronisasi wilayah RW 02 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08, RT 09 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["01", "02", "03", "04", "05", "06", "07", "08", "09"],
+  },
+  // 3. Posyandu Puter: RW 3 RT 1 s/d 7
+  "28a0335f-7969-4e1f-8ff5-907108a0d7b8": {
+    nama: "Posyandu Puter",
+    rw: "03",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 03 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 03, Randugunting, Tegal Selatan, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Puter Randugunting cakupan sinkronisasi wilayah RW 03 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["01", "02", "03", "04", "05", "06", "07"],
+  },
+  // 4. Posyandu Nuri: RW 4 RT 1 s/d 9
+  "066da239-1bfa-4042-8cb7-77a9784becf5": {
+    nama: "Posyandu Nuri",
+    rw: "04",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 04 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08, RT 09 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 04, Randugunting, Tegal Selatan, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Nuri Randugunting cakupan sinkronisasi wilayah RW 04 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08, RT 09 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["01", "02", "03", "04", "05", "06", "07", "08", "09"],
+  },
+  // 5. Posyandu Gelatik: RW 5 RT 1 s/d 8
+  "34b8b73c-09a3-4cbb-84e1-00fdd633c350": {
+    nama: "Posyandu Gelatik",
+    rw: "05",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 05 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 05, Randugunting, Tegal Selatan, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Gelatik Randugunting cakupan sinkronisasi wilayah RW 05 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["01", "02", "03", "04", "05", "06", "07", "08"],
+  },
+  // 6. Posyandu Ababil: RW 6 RT 1 s/d 8
+  "cf5ba9e4-1424-4e35-80c7-54fd98e16120": {
+    nama: "Posyandu Ababil",
+    rw: "06",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 06 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 06, Randugunting, Tegal Selatan, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Ababil Randugunting cakupan sinkronisasi wilayah RW 06 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["01", "02", "03", "04", "05", "06", "07", "08"],
+  },
+  // 7. Posyandu Kasuari: RW 7 RT 1 s/d 9
+  "723d1035-5d24-47ed-809e-7d19265cd275": {
+    nama: "Posyandu Kasuari",
+    rw: "07",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 07 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08, RT 09 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 07, Randugunting, Tegal Selatan, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Kasuari Randugunting cakupan sinkronisasi wilayah RW 07 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08, RT 09 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["01", "02", "03", "04", "05", "06", "07", "08", "09"],
+  },
+  // 8. Posyandu Cendrawasih: RW 8 RT 1 s/d 7
+  "0066580b-3fc4-4256-89b4-2b55bfc32505": {
+    nama: "Posyandu Cendrawasih",
+    rw: "08",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 08 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 08, Randugunting, Tegal Selatan, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Cendrawasih Randugunting cakupan sinkronisasi wilayah RW 08 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["01", "02", "03", "04", "05", "06", "07"],
+  },
+  // 9. Posyandu Rajawali: RW 9 RT 1 s/d 3
+  "0f5f244f-09a3-4cbb-896f-939567f72291": {
+    nama: "Posyandu Rajawali",
+    rw: "09",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 09 (RT 01, RT 02, RT 03 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 09, Randugunting, Tegal Selatan, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Rajawali Randugunting cakupan sinkronisasi wilayah RW 09 (RT 01, RT 02, RT 03 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["01", "02", "03"],
+  },
+  // 10. Posyandu Garuda B: RW 10 RT 1, 2
+  "fbbc0e0b-4b28-4212-82a2-7ca962dba17b": {
+    nama: "Posyandu Garuda B",
+    rw: "10",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 10 (RT 01, RT 02 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 10, Randugunting, Tegal Selatan, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Garuda B Randugunting cakupan sinkronisasi wilayah RW 10 (RT 01, RT 02 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["01", "02"],
+  },
+  // 11. Posyandu Garuda A: RW 10 RT 3, 4, 5, 6, 7, 8, 9, 10
+  "2115a0f8-4b28-4212-8e13-ea11dcefd710": {
+    nama: "Posyandu Garuda A",
+    rw: "10",
+    rt: "03",
+    cakupan_wilayah: "Melayani Warga RW 10 (RT 03, RT 04, RT 05, RT 06, RT 07, RT 08, RT 09, RT 10 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 10, Randugunting, Tegal Selatan, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Garuda A Randugunting cakupan sinkronisasi wilayah RW 10 (RT 03, RT 04, RT 05, RT 06, RT 07, RT 08, RT 09, RT 10 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["03", "04", "05", "06", "07", "08", "09", "10"],
+  },
+  // 12. Posyandu Meliwis: RW 11 RT 1 s/d 6
+  "54eae7c8-52cb-4c0a-8175-5691996e2f34": {
+    nama: "Posyandu Meliwis",
+    rw: "11",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 11 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 11, Randugunting, Tegal Selatan, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Meliwis Randugunting cakupan sinkronisasi wilayah RW 11 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["01", "02", "03", "04", "05", "06"],
+  },
+  // 13. Posyandu Merak: RW 12 RT 1 s/d 4
+  "25bfeaf8-3fc4-4256-8525-98bd2dffc5c4": {
+    nama: "Posyandu Merak",
+    rw: "12",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 12 (RT 01, RT 02, RT 03, RT 04 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 12, Randugunting, Tegal Selatan, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Merak Randugunting cakupan sinkronisasi wilayah RW 12 (RT 01, RT 02, RT 03, RT 04 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["01", "02", "03", "04"],
   },
 };
 

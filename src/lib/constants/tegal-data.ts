@@ -497,7 +497,7 @@ export const KOTA_TEGAL_DATA: Record<string, KecamatanData> = {
           "Posyandu Ketilang",
           "Posyandu Merak",
           "Posyandu Merpati",
-          "Posyandu Mliwis",
+          "Posyandu Meliwis",
           "Posyandu Nuri",
           "Posyandu Puter",
           "Posyandu Rajawali"
@@ -704,6 +704,7 @@ export const DATA_RW_PER_KELURAHAN: Record<string, number> = {
   "Krandon": 4,
   "Debong Tengah": 6,
   "Slerok": 6,
+  "Randugunting": 12,
 };
 
 export const RT_PER_RW_DEFAULT = 15;
@@ -751,6 +752,47 @@ export const DATA_RT_PER_RW_TEGALSARI: Record<string, number> = {
   "12": 5,
   "13": 5,
   "31": 9,
+};
+
+/**
+ * Ketentuan Khusus RT per RW di Kelurahan Randugunting, Kecamatan Tegal Selatan:
+ * - RW 1: Jumlah RT 9 (Posyandu Ketilang [RT 1-9])
+ * - RW 2: Jumlah RT 9 (Posyandu Merpati [RT 1-9])
+ * - RW 3: Jumlah RT 7 (Posyandu Puter [RT 1-7])
+ * - RW 4: Jumlah RT 9 (Posyandu Nuri [RT 1-9])
+ * - RW 5: Jumlah RT 8 (Posyandu Gelatik [RT 1-8])
+ * - RW 6: Jumlah RT 8 (Posyandu Ababil [RT 1-8])
+ * - RW 7: Jumlah RT 9 (Posyandu Kasuari [RT 1-9])
+ * - RW 8: Jumlah RT 7 (Posyandu Cendrawasih [RT 1-7])
+ * - RW 9: Jumlah RT 3 (Posyandu Rajawali [RT 1-3])
+ * - RW 10: Jumlah RT 10 (Posyandu Garuda B [RT 1-2] & Posyandu Garuda A [RT 3-10])
+ * - RW 11: Jumlah RT 6 (Posyandu Meliwis [RT 1-6])
+ * - RW 12: Jumlah RT 4 (Posyandu Merak [RT 1-4])
+ * Total RW resmi: 12 RW, Total RT: 89 RT (9 + 9 + 7 + 9 + 8 + 8 + 9 + 7 + 3 + 10 + 6 + 4)
+ * Tetap pertahankan pilihan "Belum Tahu" untuk RW dan RT
+ */
+export const DATA_RT_PER_RW_RANDUGUNTING: Record<string, number> = {
+  "01": 9,
+  "1": 9,
+  "02": 9,
+  "2": 9,
+  "03": 7,
+  "3": 7,
+  "04": 9,
+  "4": 9,
+  "05": 8,
+  "5": 8,
+  "06": 8,
+  "6": 8,
+  "07": 9,
+  "7": 9,
+  "08": 7,
+  "8": 7,
+  "09": 3,
+  "9": 3,
+  "10": 10,
+  "11": 6,
+  "12": 4,
 };
 
 /**
@@ -1259,6 +1301,9 @@ export const TOTAL_KOMUNITAS_RT_KOTA_TEGAL = 1712;
 export function getJumlahRwByKelurahan(kelurahan?: string | null): number {
   if (!kelurahan) return 15;
   const clean = kelurahan.replace(/^(kelurahan|kel\.)\s+/i, "").trim().toLowerCase();
+  if (clean === "randugunting") {
+    return 12;
+  }
   if (clean === "slerok") {
     return 6;
   }
@@ -1318,6 +1363,16 @@ export function getJumlahRwByKelurahan(kelurahan?: string | null): number {
 export function getJumlahRtPerRwByKelurahan(kelurahan?: string | null, rw?: string | null): number {
   if (!kelurahan) return RT_PER_RW_DEFAULT;
   const clean = kelurahan.replace(/^(kelurahan|kel\.)\s+/i, "").trim().toLowerCase();
+  if (clean === "randugunting") {
+    if (rw && rw !== "Belum Tahu") {
+      const cleanRw = rw.replace(/^(rw|rt)\s*/i, "").trim();
+      const normRw = String(parseInt(cleanRw, 10)).padStart(2, "0");
+      if (DATA_RT_PER_RW_RANDUGUNTING[normRw] || DATA_RT_PER_RW_RANDUGUNTING[cleanRw]) {
+        return DATA_RT_PER_RW_RANDUGUNTING[normRw] || DATA_RT_PER_RW_RANDUGUNTING[cleanRw];
+      }
+    }
+    return 10; // Max RT di RW 10 Randugunting (10 RT)
+  }
   if (clean === "slerok") {
     if (rw && rw !== "Belum Tahu") {
       const cleanRw = rw.replace(/^(rw|rt)\s*/i, "").trim();
@@ -1503,6 +1558,10 @@ export function getJumlahRtPerRwByKelurahan(kelurahan?: string | null, rw?: stri
 export function getTotalRtByKelurahan(kelurahan?: string | null): number {
   if (!kelurahan) return 15 * RT_PER_RW_DEFAULT;
   const clean = kelurahan.replace(/^(kelurahan|kel\.)\s+/i, "").trim().toLowerCase();
+  if (clean === "randugunting") {
+    // RW 1: 9, RW 2: 9, RW 3: 7, RW 4: 9, RW 5: 8, RW 6: 8, RW 7: 9, RW 8: 7, RW 9: 3, RW 10: 10, RW 11: 6, RW 12: 4 -> Total 89 RT
+    return 9 + 9 + 7 + 9 + 8 + 8 + 9 + 7 + 3 + 10 + 6 + 4;
+  }
   if (clean === "slerok") {
     // RW 1: 4, RW 2: 12, RW 3: 9, RW 4: 6, RW 5: 6, RW 6: 9 -> Total 46 RT
     return 4 + 12 + 9 + 6 + 6 + 9;
@@ -1594,6 +1653,10 @@ export function getRwListByKelurahan(kelurahan?: string | null): string[] {
     return [...list, "Belum Tahu"];
   }
   const clean = kelurahan.replace(/^(kelurahan|kel\.)\s+/i, "").trim().toLowerCase();
+  if (clean === "randugunting") {
+    const list = Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, "0"));
+    return [...list, "Belum Tahu"];
+  }
   if (clean === "slerok") {
     const list = Array.from({ length: 6 }, (_, i) => String(i + 1).padStart(2, "0"));
     return [...list, "Belum Tahu"];
@@ -1683,6 +1746,17 @@ export function getRtListByKelurahan(kelurahan?: string | null, rw?: string | nu
     return [...list, "Belum Tahu"];
   }
   const clean = kelurahan.replace(/^(kelurahan|kel\.)\s+/i, "").trim().toLowerCase();
+  if (clean === "randugunting") {
+    if (rw && rw !== "Belum Tahu") {
+      const cleanRw = rw.replace(/^(rw|rt)\s*/i, "").trim();
+      const normRw = String(parseInt(cleanRw, 10)).padStart(2, "0");
+      const count = DATA_RT_PER_RW_RANDUGUNTING[normRw] || DATA_RT_PER_RW_RANDUGUNTING[cleanRw] || 10;
+      const list = Array.from({ length: count }, (_, i) => String(i + 1).padStart(2, "0"));
+      return [...list, "Belum Tahu"];
+    }
+    const list = Array.from({ length: 10 }, (_, i) => String(i + 1).padStart(2, "0"));
+    return [...list, "Belum Tahu"];
+  }
   if (clean === "slerok") {
     if (rw && rw !== "Belum Tahu") {
       const cleanRw = rw.replace(/^(rw|rt)\s*/i, "").trim();

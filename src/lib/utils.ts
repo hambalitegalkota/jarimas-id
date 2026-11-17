@@ -911,6 +911,49 @@ export function parseCakupanWilayah(komunitas?: {
     }
   }
 
+  // Khusus Kelurahan Randugunting (Kecamatan Tegal Selatan)
+  if (kelClean.includes("randugunting") || namaClean.includes("randugunting")) {
+    if (namaClean.includes("ketilang")) {
+      return "Melayani Warga RW 01 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08, RT 09 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("merpati")) {
+      return "Melayani Warga RW 02 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08, RT 09 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("puter")) {
+      return "Melayani Warga RW 03 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("nuri")) {
+      return "Melayani Warga RW 04 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08, RT 09 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("gelatik")) {
+      return "Melayani Warga RW 05 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("ababil")) {
+      return "Melayani Warga RW 06 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("kasuari")) {
+      return "Melayani Warga RW 07 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08, RT 09 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("cendrawasih")) {
+      return "Melayani Warga RW 08 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("rajawali")) {
+      return "Melayani Warga RW 09 (RT 01, RT 02, RT 03 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("garuda b") || namaClean.includes("garuda 2") || namaClean.includes("garuda ii")) {
+      return "Melayani Warga RW 10 (RT 01, RT 02 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("garuda a") || namaClean.includes("garuda 1") || namaClean.includes("garuda i") || namaClean.includes("garuda")) {
+      return "Melayani Warga RW 10 (RT 03, RT 04, RT 05, RT 06, RT 07, RT 08, RT 09, RT 10 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("meliwis") || namaClean.includes("mliwis")) {
+      return "Melayani Warga RW 11 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("merak")) {
+      return "Melayani Warga RW 12 (RT 01, RT 02, RT 03, RT 04 dan RW - RT Tidak Tahu)";
+    }
+  }
+
   // Khusus Kelurahan Muarareja (Kecamatan Tegal Barat)
   if (kelClean.includes("muarareja") || namaClean.includes("muarareja")) {
     if (namaClean.includes("mawar")) {

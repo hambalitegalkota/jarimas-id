@@ -1,6 +1,6 @@
 import { extractKomunitasMetadata } from "@/lib/admin-helpers";
 import { RAW_PAUD_PKBM_TEGAL } from "@/lib/constants/seed-paud-tegal";
-import { RAW_POSYANDU_TEGAL, SLEROK_POSYANDU_MAP, MARGADANA_POSYANDU_MAP, TEGALSARI_POSYANDU_MAP } from "@/lib/constants/seed-posyandu-tegal";
+import { RAW_POSYANDU_TEGAL, SLEROK_POSYANDU_MAP, MARGADANA_POSYANDU_MAP, TEGALSARI_POSYANDU_MAP, RANDUGUNTING_POSYANDU_MAP } from "@/lib/constants/seed-posyandu-tegal";
 import {
   MASTER_KOMUNITAS_SEED,
   findOrGenerateKomunitasSeed,
@@ -1430,6 +1430,120 @@ export function getPosyanduCakupanWilayah(targetKomunitas: any): PosyanduCakupan
       /\bnakula\s*(2|ii)\b/i.test(nama)
     ) {
       return { rw: "06", rtList: ["01", "02", "03", "04", "05", "1", "2", "3", "4", "5"] };
+    }
+  }
+
+  // Khusus Kelurahan Randugunting (Kecamatan Tegal Selatan)
+  // - Posyandu Ketilang: RW 1 (RT 1 s/d 9)
+  // - Posyandu Merpati: RW 2 (RT 1 s/d 9)
+  // - Posyandu Puter: RW 3 (RT 1 s/d 7)
+  // - Posyandu Nuri: RW 4 (RT 1 s/d 9)
+  // - Posyandu Gelatik: RW 5 (RT 1 s/d 8)
+  // - Posyandu Ababil: RW 6 (RT 1 s/d 8)
+  // - Posyandu Kasuari: RW 7 (RT 1 s/d 9)
+  // - Posyandu Cendrawasih: RW 8 (RT 1 s/d 7)
+  // - Posyandu Rajawali: RW 9 (RT 1 s/d 3)
+  // - Posyandu Garuda B: RW 10 (RT 1, 2)
+  // - Posyandu Garuda A: RW 10 (RT 3, 4, 5, 6, 7, 8, 9, 10)
+  // - Posyandu Meliwis: RW 11 (RT 1 s/d 6)
+  // - Posyandu Merak: RW 12 (RT 1 s/d 4)
+  const isRanduguntingPosyandu =
+    kel.includes("randugunting") ||
+    nama.includes("randugunting") ||
+    Boolean(targetKomunitas?.id && RANDUGUNTING_POSYANDU_MAP[targetKomunitas.id]) ||
+    targetKomunitas?.id === "30d0f7b7-4012-4bd5-8c5b-3d095c23a9a3" ||
+    targetKomunitas?.id === "4df9c64c-7969-4e1f-8484-23098e8ca223" ||
+    targetKomunitas?.id === "28a0335f-7969-4e1f-8ff5-907108a0d7b8" ||
+    targetKomunitas?.id === "066da239-1bfa-4042-8cb7-77a9784becf5" ||
+    targetKomunitas?.id === "34b8b73c-09a3-4cbb-84e1-00fdd633c350" ||
+    targetKomunitas?.id === "cf5ba9e4-1424-4e35-80c7-54fd98e16120" ||
+    targetKomunitas?.id === "723d1035-5d24-47ed-809e-7d19265cd275" ||
+    targetKomunitas?.id === "0066580b-3fc4-4256-89b4-2b55bfc32505" ||
+    targetKomunitas?.id === "0f5f244f-09a3-4cbb-896f-939567f72291" ||
+    targetKomunitas?.id === "fbbc0e0b-4b28-4212-82a2-7ca962dba17b" ||
+    targetKomunitas?.id === "2115a0f8-4b28-4212-8e13-ea11dcefd710" ||
+    targetKomunitas?.id === "54eae7c8-52cb-4c0a-8175-5691996e2f34" ||
+    targetKomunitas?.id === "25bfeaf8-3fc4-4256-8525-98bd2dffc5c4";
+
+  if (isRanduguntingPosyandu) {
+    if (
+      targetKomunitas?.id === "30d0f7b7-4012-4bd5-8c5b-3d095c23a9a3" ||
+      nama.includes("ketilang")
+    ) {
+      return { rw: "01", rtList: ["01", "02", "03", "04", "05", "06", "07", "08", "09", "1", "2", "3", "4", "5", "6", "7", "8", "9"] };
+    }
+    if (
+      targetKomunitas?.id === "4df9c64c-7969-4e1f-8484-23098e8ca223" ||
+      nama.includes("merpati")
+    ) {
+      return { rw: "02", rtList: ["01", "02", "03", "04", "05", "06", "07", "08", "09", "1", "2", "3", "4", "5", "6", "7", "8", "9"] };
+    }
+    if (
+      targetKomunitas?.id === "28a0335f-7969-4e1f-8ff5-907108a0d7b8" ||
+      nama.includes("puter")
+    ) {
+      return { rw: "03", rtList: ["01", "02", "03", "04", "05", "06", "07", "1", "2", "3", "4", "5", "6", "7"] };
+    }
+    if (
+      targetKomunitas?.id === "066da239-1bfa-4042-8cb7-77a9784becf5" ||
+      nama.includes("nuri")
+    ) {
+      return { rw: "04", rtList: ["01", "02", "03", "04", "05", "06", "07", "08", "09", "1", "2", "3", "4", "5", "6", "7", "8", "9"] };
+    }
+    if (
+      targetKomunitas?.id === "34b8b73c-09a3-4cbb-84e1-00fdd633c350" ||
+      nama.includes("gelatik")
+    ) {
+      return { rw: "05", rtList: ["01", "02", "03", "04", "05", "06", "07", "08", "1", "2", "3", "4", "5", "6", "7", "8"] };
+    }
+    if (
+      targetKomunitas?.id === "cf5ba9e4-1424-4e35-80c7-54fd98e16120" ||
+      nama.includes("ababil")
+    ) {
+      return { rw: "06", rtList: ["01", "02", "03", "04", "05", "06", "07", "08", "1", "2", "3", "4", "5", "6", "7", "8"] };
+    }
+    if (
+      targetKomunitas?.id === "723d1035-5d24-47ed-809e-7d19265cd275" ||
+      nama.includes("kasuari")
+    ) {
+      return { rw: "07", rtList: ["01", "02", "03", "04", "05", "06", "07", "08", "09", "1", "2", "3", "4", "5", "6", "7", "8", "9"] };
+    }
+    if (
+      targetKomunitas?.id === "0066580b-3fc4-4256-89b4-2b55bfc32505" ||
+      nama.includes("cendrawasih")
+    ) {
+      return { rw: "08", rtList: ["01", "02", "03", "04", "05", "06", "07", "1", "2", "3", "4", "5", "6", "7"] };
+    }
+    if (
+      targetKomunitas?.id === "0f5f244f-09a3-4cbb-896f-939567f72291" ||
+      nama.includes("rajawali")
+    ) {
+      return { rw: "09", rtList: ["01", "02", "03", "1", "2", "3"] };
+    }
+    if (
+      targetKomunitas?.id === "fbbc0e0b-4b28-4212-82a2-7ca962dba17b" ||
+      (/\bgaruda\s*(b|2|ii)\b/i.test(nama))
+    ) {
+      return { rw: "10", rtList: ["01", "02", "1", "2"] };
+    }
+    if (
+      targetKomunitas?.id === "2115a0f8-4b28-4212-8e13-ea11dcefd710" ||
+      (/\bgaruda\s*(a|1|i)\b/i.test(nama) || nama.includes("garuda"))
+    ) {
+      return { rw: "10", rtList: ["03", "04", "05", "06", "07", "08", "09", "10", "3", "4", "5", "6", "7", "8", "9", "10"] };
+    }
+    if (
+      targetKomunitas?.id === "54eae7c8-52cb-4c0a-8175-5691996e2f34" ||
+      nama.includes("meliwis") ||
+      nama.includes("mliwis")
+    ) {
+      return { rw: "11", rtList: ["01", "02", "03", "04", "05", "06", "1", "2", "3", "4", "5", "6"] };
+    }
+    if (
+      targetKomunitas?.id === "25bfeaf8-3fc4-4256-8525-98bd2dffc5c4" ||
+      nama.includes("merak")
+    ) {
+      return { rw: "12", rtList: ["01", "02", "03", "04", "1", "2", "3", "4"] };
     }
   }
 
@@ -3030,6 +3144,36 @@ export function getPosyanduCoverageDisplay(komunitas: any): PosyanduCoverageResu
     }
   }
 
+  // Khusus Kelurahan Randugunting (Kecamatan Tegal Selatan)
+  const randuguntingSeedItem = komunitas.id ? RAW_POSYANDU_TEGAL.find((s) => s.id === komunitas.id) : null;
+  const isRanduguntingPosyandu =
+    kelCleanForCoverage.includes("randugunting") ||
+    (randuguntingSeedItem?.kelurahan || "").toLowerCase().includes("randugunting") ||
+    rawNama.includes("randugunting") ||
+    Boolean(komunitas.id && RANDUGUNTING_POSYANDU_MAP[komunitas.id]);
+
+  if (isRanduguntingPosyandu) {
+    const randuguntingEntry =
+      (komunitas.id && RANDUGUNTING_POSYANDU_MAP[komunitas.id]) ||
+      Object.values(RANDUGUNTING_POSYANDU_MAP).find((rg) => {
+        const rgNorm = rg.nama.toLowerCase().replace("posyandu ", "").trim();
+        return rawNama.includes(rgNorm);
+      });
+
+    if (randuguntingEntry) {
+      const rwLabel = `RW ${randuguntingEntry.rw.padStart(2, "0")}`;
+      const rtListFormatted = (randuguntingEntry.allowedRts || []).map((r: string) => `RT ${r.padStart(2, "0")}`).join(", ");
+      const rtLabel = `${rtListFormatted} dan RW - RT Tidak Tahu`;
+      const fullLabel = `${rwLabel} (${rtLabel})`;
+      return {
+        isMapped: true,
+        label: fullLabel,
+        rwLabel,
+        rtLabel,
+      };
+    }
+  }
+
   // Khusus Posyandu Cempaka 1 & 2 di Kelurahan Margadana
   const margadanaEntry =
     (komunitas.id && MARGADANA_POSYANDU_MAP[komunitas.id]) ||
@@ -3157,6 +3301,7 @@ export function getPosyanduCoverageDisplay(komunitas: any): PosyanduCoverageResu
       "muarareja",
       "krandon",
       "debong tengah",
+      "randugunting",
     ]);
 
     if (MAPPED_KELURAHAN_SET.has(kel)) {
@@ -4172,6 +4317,78 @@ export function isValidSlerokRtRw(
 }
 
 /**
+ * Validasi ketentuan khusus RW & RT di Kelurahan Randugunting, Kecamatan Tegal Selatan:
+ * - Jumlah RW ada 12 (RW 1 s/d 12)
+ * - RW 1 Jumlah RT 9 (RT 1 s/d 9)
+ * - RW 2 Jumlah RT 9 (RT 1 s/d 9)
+ * - RW 3 Jumlah RT 7 (RT 1 s/d 7)
+ * - RW 4 Jumlah RT 9 (RT 1 s/d 9)
+ * - RW 5 Jumlah RT 8 (RT 1 s/d 8)
+ * - RW 6 Jumlah RT 8 (RT 1 s/d 8)
+ * - RW 7 Jumlah RT 9 (RT 1 s/d 9)
+ * - RW 8 Jumlah RT 7 (RT 1 s/d 7)
+ * - RW 9 Jumlah RT 3 (RT 1 s/d 3)
+ * - RW 10 Jumlah RT 10 (RT 1 s/d 10)
+ * - RW 11 Jumlah RT 6 (RT 1 s/d 6)
+ * - RW 12 Jumlah RT 4 (RT 1 s/d 4)
+ * - Tetap mempertahankan RW "Belum Tahu" dan RT "Belum Tahu"
+ */
+export function isValidRanduguntingRtRw(
+  kel?: string | null,
+  rw?: string | null,
+  rt?: string | null
+): boolean {
+  if (!kel) return true;
+  const cleanKel = normalizeWilayah(kel);
+  if (!cleanKel.includes("randugunting")) return true;
+
+  const rawRw = (rw || "").trim().toLowerCase();
+  const rawRt = (rt || "").trim().toLowerCase();
+
+  const isRwBelumTahu =
+    !rawRw ||
+    rawRw.includes("belum") ||
+    rawRw.includes("tidak") ||
+    rawRw === "-" ||
+    rawRw === "0" ||
+    rawRw === "00";
+  if (isRwBelumTahu) return true;
+
+  const rwNum = parseInt(rawRw.replace(/\D/g, ""), 10);
+  if (isNaN(rwNum) || rwNum < 1 || rwNum > 12) return false;
+
+  const isRtBelumTahu =
+    !rawRt ||
+    rawRt.includes("belum") ||
+    rawRt.includes("tidak") ||
+    rawRt === "-" ||
+    rawRt === "0" ||
+    rawRt === "00";
+  if (isRtBelumTahu) return true;
+
+  const rtNum = parseInt(rawRt.replace(/\D/g, ""), 10);
+  if (isNaN(rtNum)) return false;
+
+  const maxRtMap: Record<number, number> = {
+    1: 9,
+    2: 9,
+    3: 7,
+    4: 9,
+    5: 8,
+    6: 8,
+    7: 9,
+    8: 7,
+    9: 3,
+    10: 10,
+    11: 6,
+    12: 4,
+  };
+
+  const maxRt = maxRtMap[rwNum] || 10;
+  return rtNum >= 1 && rtNum <= maxRt;
+}
+
+/**
  * Filter logika hierarkis: Apakah data anak sesuai dan harus muncul di komunitas target?
  * Mencakup Komunitas PAUD, Posyandu, RT, RW, Kelurahan, Kecamatan, dan Kabupaten/Kota.
  */
@@ -4339,6 +4556,22 @@ export function isDataAnakMatchingKomunitas(
   if (
     !isValidSlerokRtRw(item.domisili_kelurahan, item.domisili_rw, item.domisili_rt) &&
     !isValidSlerokRtRw(item.kk_kelurahan, item.kk_rw, item.kk_rt)
+  ) {
+    return false;
+  }
+
+  // Ketentuan Khusus Kelurahan Randugunting: Hapus/abaikan data yang tidak sesuai ketentuan resmi RW & RT Randugunting
+  const isDomRandugunting = (item.domisili_kelurahan || "").toLowerCase().includes("randugunting");
+  const isKkRandugunting = (item.kk_kelurahan || "").toLowerCase().includes("randugunting");
+  if (isDomRandugunting && !isValidRanduguntingRtRw(item.domisili_kelurahan, item.domisili_rw, item.domisili_rt)) {
+    return false;
+  }
+  if (isKkRandugunting && !isValidRanduguntingRtRw(item.kk_kelurahan, item.kk_rw, item.kk_rt)) {
+    return false;
+  }
+  if (
+    !isValidRanduguntingRtRw(item.domisili_kelurahan, item.domisili_rw, item.domisili_rt) &&
+    !isValidRanduguntingRtRw(item.kk_kelurahan, item.kk_rw, item.kk_rt)
   ) {
     return false;
   }
