@@ -17,6 +17,8 @@ import {
   generateChildIdentityKey,
   extractSchoolNumberToken,
   isKomunitasLayananPaud,
+  findPosyanduForChild,
+  findPaudForChild,
 } from "@/lib/data-anak-helpers";
 import type {
   DataAnakItem,
@@ -800,6 +802,9 @@ export async function getDataAnakByKomunitas(
         alasan_sekolah,
         komunitas_id,
         status_approval,
+        is_updated_by_paud,
+        terakhir_diperbarui_at,
+        diperbarui_oleh,
         created_at
       `
       : `
@@ -818,6 +823,9 @@ export async function getDataAnakByKomunitas(
         status_approval,
         validated_by,
         validated_at,
+        is_updated_by_paud,
+        terakhir_diperbarui_at,
+        diperbarui_oleh,
         created_by,
         created_at
       `;
@@ -1198,6 +1206,10 @@ export async function getDataAnakByKomunitas(
             is_updated_by_paud: Boolean(row.is_updated_by_paud),
             terakhir_diperbarui_at: row.terakhir_diperbarui_at,
             diperbarui_oleh: row.diperbarui_oleh,
+            terakhir_diperbarui_oleh_nama: null,
+            terakhir_diperbarui_oleh_role: null,
+            terakhir_diperbarui_oleh_komunitas: null,
+            edit_history: parsed.editHistory || [],
             created_by: row.created_by,
             created_at: row.created_at,
             latest_ddks: null,
@@ -1262,6 +1274,13 @@ export async function getDataAnakByKomunitas(
       : { data: [] };
     const dbKomMap = new Map((missingDbKoms || []).map((k: any) => [k.id, k]));
 
+    // Ambil profil seluruh editor yang pernah memperbarui data anak
+    const editorUserIds = [...new Set(nonAtsChildren.map((c: any) => c.diperbarui_oleh).filter(Boolean))];
+    const { data: editorProfiles } = editorUserIds.length > 0
+      ? await supabase.from("profiles").select("id, nama_lengkap, email, avatar_url").in("id", editorUserIds)
+      : { data: [] };
+    const editorProfileMap = new Map((editorProfiles || []).map((p: any) => [p.id, p]));
+
     const items: DataAnakItem[] = nonAtsChildren
       .map((row: any) => {
         const records: DdksRecord[] = (row.ddks_records || []).map((r: any) => ({
@@ -1278,6 +1297,23 @@ export async function getDataAnakByKomunitas(
             id: row.komunitas_id,
           };
         const parsed = parseDataAnakDetails(row.alasan_sekolah, childKomObj);
+
+        const editorProf = row.diperbarui_oleh ? editorProfileMap.get(row.diperbarui_oleh) : null;
+        const editorName = editorProf?.nama_lengkap || (row.is_updated_by_paud ? "Admin Satuan PAUD" : "Kader Posyandu");
+
+        const editHistoryList = parsed.editHistory && parsed.editHistory.length > 0
+          ? parsed.editHistory
+          : (row.terakhir_diperbarui_at ? [
+              {
+                waktu: row.terakhir_diperbarui_at,
+                nama: editorName,
+                role: row.is_updated_by_paud ? "Admin Satuan PAUD" : "Kader Posyandu",
+                komunitas: childKomObj?.nama || "Komunitas",
+                jenisKomunitas: row.is_updated_by_paud ? "satuan_paud" : "posyandu",
+              }
+            ] : []);
+
+        const latestHistory = editHistoryList[editHistoryList.length - 1];
 
         return {
           id: row.id,
@@ -1308,8 +1344,12 @@ export async function getDataAnakByKomunitas(
           validated_by: canViewDetail ? row.validated_by : null,
           validated_at: canViewDetail ? row.validated_at : null,
           is_updated_by_paud: Boolean(row.is_updated_by_paud),
-          terakhir_diperbarui_at: canViewDetail ? row.terakhir_diperbarui_at : null,
+          terakhir_diperbarui_at: canViewDetail ? (row.terakhir_diperbarui_at || latestHistory?.waktu || null) : null,
           diperbarui_oleh: canViewDetail ? row.diperbarui_oleh : null,
+          terakhir_diperbarui_oleh_nama: canViewDetail ? (latestHistory?.nama || editorName || null) : null,
+          terakhir_diperbarui_oleh_role: canViewDetail ? (latestHistory?.role || null) : null,
+          terakhir_diperbarui_oleh_komunitas: canViewDetail ? (latestHistory?.komunitas || null) : null,
+          edit_history: canViewDetail ? editHistoryList : [],
           created_by: canViewDetail ? row.created_by : null,
           created_at: row.created_at,
           latest_ddks: canViewDetail ? (records[0] || null) : null,
@@ -1425,7 +1465,7 @@ export async function updateDataAnak(
     // Ambil data anak target
     const { data: existingChild, error: fetchError } = await supabase
       .from("data_anak")
-      .select("id, created_by, komunitas_id, alasan_sekolah")
+      .select("id, created_by, komunitas_id, alasan_sekolah, nama_sekolah, is_sekolah, is_updated_by_paud")
       .eq("id", dataAnakId)
       .maybeSingle();
 
@@ -1450,6 +1490,8 @@ export async function updateDataAnak(
       nama_lengkap: profile?.nama_lengkap || user.user_metadata?.nama_lengkap,
     });
     const isCreator = existingChild.created_by === user.id;
+
+    let userRoleTitle = isSuperOrPusat ? "Super Admin" : "Anggota";
 
     if (!isSuperOrPusat && !isCreator) {
       const { data: membership } = await supabase
@@ -1476,9 +1518,11 @@ export async function updateDataAnak(
         return {
           success: false,
           message:
-            "Akses ditolak: Hanya Admin, Kepala Sekolah, Guru/Pendidik PAUD, atau penginput data yang dapat mengubah data anak.",
+            "Akses ditolak: Hanya Admin/Kader Posyandu, Kepala Sekolah/Guru PAUD, atau penginput data yang dapat mengubah data anak.",
         };
       }
+
+      userRoleTitle = membership?.peran || (roleLower.includes("kader") ? "Kader Posyandu" : "Admin");
     }
 
     const namaLengkap = formData.get("namaLengkap")?.toString() || "";
@@ -1520,13 +1564,34 @@ export async function updateDataAnak(
 
     const isPaudKomunitas = isKomunitasLayananPaud(dbKom, komunitasNama, jenisKomunitas);
 
-    const isSekolah = isPaudKomunitas;
-    const namaSekolah = isPaudKomunitas
-      ? (dbKom?.nama || komunitasNama || "Satuan PAUD")
+    // Resolusi Status Bersekolah & Nama Sekolah:
+    // Kolaborasi PAUD & Posyandu: Jangan menimpa nama sekolah anak menjadi "Belum Sekolah" jika Posyandu mengedit anak yang sudah PAUD!
+    const isSekolahForm = formData.get("isSekolah")?.toString();
+    const namaSekolahForm = formData.get("namaSekolah")?.toString()?.trim();
+
+    let isSekolah = isPaudKomunitas;
+    let namaSekolah = isPaudKomunitas
+      ? (namaSekolahForm || dbKom?.nama || komunitasNama || "Satuan PAUD")
       : "Belum Sekolah";
+
+    if (isSekolahForm !== undefined) {
+      isSekolah = isSekolahForm === "true";
+      if (isSekolah) {
+        namaSekolah =
+          namaSekolahForm ||
+          existingChild.nama_sekolah ||
+          (isPaudKomunitas ? dbKom?.nama || komunitasNama : "Satuan PAUD");
+      } else {
+        namaSekolah = "Belum Sekolah";
+      }
+    } else if (existingChild.is_sekolah) {
+      isSekolah = true;
+      namaSekolah = existingChild.nama_sekolah || "Satuan PAUD";
+    }
+
     let rawAlasanSekolah = formData.get("alasanSekolah")?.toString()?.trim() || "";
 
-    if (isPaudKomunitas) {
+    if (isSekolah) {
       if (!rawAlasanSekolah) {
         rawAlasanSekolah = "Sudah Usia PAUD";
       }
@@ -1536,7 +1601,27 @@ export async function updateDataAnak(
       }
     }
 
-    // Serialisasi Alamat KK & Domisili ke dalam alasan_sekolah
+    // Catat riwayat audit pengeditan kolaboratif (PAUD & Posyandu)
+    const existingParsed = parseDataAnakDetails(existingChild.alasan_sekolah, dbKom);
+    const editHistoryList = Array.isArray(existingParsed.editHistory) ? [...existingParsed.editHistory] : [];
+
+    const editorRoleTitle = isSuperOrPusat
+      ? "Super Admin"
+      : isPaudKomunitas
+      ? (userRoleTitle || "Admin / Guru PAUD")
+      : (userRoleTitle || "Kader / Admin Posyandu");
+
+    const editorKomunitasNama = dbKom?.nama || komunitasNama || (isPaudKomunitas ? "Satuan PAUD" : "Posyandu");
+
+    editHistoryList.push({
+      waktu: new Date().toISOString(),
+      nama: profile?.nama_lengkap || user.user_metadata?.nama_lengkap || user.email || "Petugas",
+      role: editorRoleTitle,
+      komunitas: editorKomunitasNama,
+      jenisKomunitas: isPaudKomunitas ? "satuan_paud" : (dbKom?.jenis || jenisKomunitas),
+    });
+
+    // Serialisasi Alamat KK, Domisili, dan Riwayat Pengeditan ke dalam alasan_sekolah
     const formattedAlasan = serializeDataAnakAlasan({
       alasanSekolah: rawAlasanSekolah,
       kkKabupaten,
@@ -1551,6 +1636,7 @@ export async function updateDataAnak(
       domisiliRw,
       domisiliRt,
       domisiliJalan,
+      editHistory: editHistoryList,
     });
 
     // Validasi Zod Data Anak
@@ -1592,6 +1678,7 @@ export async function updateDataAnak(
       formData.get("validasiSekarang")?.toString() === "true" ||
       formData.get("validasiSekarang")?.toString() === "1";
 
+    const nowIso = new Date().toISOString();
     const updatePayload: Record<string, any> = {
       nama_lengkap: namaLengkap,
       tanggal_lahir: tanggalLahir,
@@ -1603,20 +1690,23 @@ export async function updateDataAnak(
       is_sekolah: isSekolah,
       nama_sekolah: namaSekolah,
       alasan_sekolah: formattedAlasan,
-      updated_at: new Date().toISOString(),
-      is_updated_by_paud: true,
-      terakhir_diperbarui_at: new Date().toISOString(),
+      updated_at: nowIso,
+      is_updated_by_paud: isPaudKomunitas ? true : Boolean(existingChild.is_updated_by_paud),
+      terakhir_diperbarui_at: nowIso,
       diperbarui_oleh: user.id,
       ...(validasiSekarang
         ? {
             status_approval: "approved",
             validated_by: user.id,
-            validated_at: new Date().toISOString(),
+            validated_at: nowIso,
           }
         : {}),
     };
 
-    const { data: updatedChild, error: updateError } = await supabase
+    const adminClient = createAdminClient();
+    const clientToUse = adminClient || supabase;
+
+    const { data: updatedChild, error: updateError } = await clientToUse
       .from("data_anak")
       .update(updatePayload)
       .eq("id", dataAnakId)
@@ -1662,6 +1752,7 @@ export async function updateDataAnak(
     await triggerDataAnakCacheInvalidation();
 
     const parsedUpdated = parseDataAnakDetails(updatedChild.alasan_sekolah);
+    const latestHistory = editHistoryList[editHistoryList.length - 1];
 
     return {
       success: true,
@@ -1699,6 +1790,10 @@ export async function updateDataAnak(
         is_updated_by_paud: Boolean(updatedChild.is_updated_by_paud),
         terakhir_diperbarui_at: updatedChild.terakhir_diperbarui_at,
         diperbarui_oleh: updatedChild.diperbarui_oleh,
+        terakhir_diperbarui_oleh_nama: latestHistory?.nama || profile?.nama_lengkap || null,
+        terakhir_diperbarui_oleh_role: latestHistory?.role || editorRoleTitle || null,
+        terakhir_diperbarui_oleh_komunitas: latestHistory?.komunitas || editorKomunitasNama || null,
+        edit_history: editHistoryList,
         created_by: updatedChild.created_by,
         created_at: updatedChild.created_at,
       },
@@ -1951,6 +2046,239 @@ export async function deleteDataAnak(
     };
   }
 }
+
+/**
+ * Server Action: Mencari kontak lembaga dan akun Admin/Kader mitra untuk koordinasi chat langsung antar Posyandu & PAUD
+ */
+export async function getCrossCommunityAdminForChatAction(params: {
+  targetType: "paud" | "posyandu";
+  namaSekolah?: string | null;
+  kelurahan?: string | null;
+  rw?: string | null;
+  rt?: string | null;
+  childId?: string | null;
+  komunitasId?: string | null;
+}): Promise<{
+  success: boolean;
+  message?: string;
+  targetKomunitas: {
+    id: string;
+    nama: string;
+    jenis: string;
+    kontak?: string | null;
+    lokasi?: string | null;
+    kecamatan?: string | null;
+    kelurahan?: string | null;
+  } | null;
+  adminUser: {
+    id: string;
+    nama_lengkap: string;
+    email?: string | null;
+    avatar_url?: string | null;
+    peran?: string | null;
+  } | null;
+  allAdminsCount: number;
+}> {
+  try {
+    const supabase = await createClient();
+
+    let targetKom: any = null;
+
+    if (params.targetType === "paud") {
+      let nama = (params.namaSekolah || "").trim();
+      if (!nama || nama.toLowerCase().includes("belum")) {
+        // Coba cari PAUD di kelurahan anak jika sekolah belum diisi spesifik
+        if (params.kelurahan) {
+          const { data: paudNearby } = await supabase
+            .from("komunitas")
+            .select("id, nama, jenis, kontak, lokasi, kecamatan, kelurahan")
+            .in("jenis", ["satuan_paud", "pkbm_skb"])
+            .ilike("kelurahan", `%${params.kelurahan}%`)
+            .limit(1)
+            .maybeSingle();
+
+          if (paudNearby) {
+            targetKom = paudNearby;
+          }
+        }
+
+        if (!targetKom) {
+          return {
+            success: false,
+            message: "Data sekolah PAUD anak belum terdata. Pilih atau lengkapi nama sekolah di Edit Data terlebih dahulu.",
+            targetKomunitas: null,
+            adminUser: null,
+            allAdminsCount: 0,
+          };
+        }
+      }
+
+      if (!targetKom) {
+        // Cari di RAW_PAUD_PKBM_TEGAL
+        const paudSeed = findPaudForChild(nama);
+        if (paudSeed?.id) {
+          const { data: dbKom } = await supabase
+            .from("komunitas")
+            .select("id, nama, jenis, kontak, lokasi, kecamatan, kelurahan")
+            .eq("id", paudSeed.id)
+            .maybeSingle();
+
+          targetKom = dbKom || {
+            id: paudSeed.id,
+            nama: paudSeed.nama,
+            jenis: "satuan_paud",
+            kontak: paudSeed.kontak || null,
+            lokasi: paudSeed.lokasi || null,
+            kecamatan: paudSeed.kecamatan,
+            kelurahan: paudSeed.kelurahan,
+          };
+        } else {
+          // Cari di database komunitas jenis satuan_paud / pkbm_skb
+          const { data: dbSearch } = await supabase
+            .from("komunitas")
+            .select("id, nama, jenis, kontak, lokasi, kecamatan, kelurahan")
+            .or(`nama.ilike.%${nama}%,nama_komunitas.ilike.%${nama}%`)
+            .in("jenis", ["satuan_paud", "pkbm_skb"])
+            .limit(1)
+            .maybeSingle();
+
+          if (dbSearch) {
+            targetKom = dbSearch;
+          } else {
+            targetKom = {
+              id: "paud-general",
+              nama: nama,
+              jenis: "satuan_paud",
+              kontak: null,
+              lokasi: null,
+              kecamatan: null,
+              kelurahan: null,
+            };
+          }
+        }
+      }
+    } else {
+      // targetType === "posyandu"
+      const match = findPosyanduForChild({
+        domisili_kelurahan: params.kelurahan,
+        domisili_rw: params.rw,
+        domisili_rt: params.rt,
+      });
+
+      if (match.id) {
+        const { data: dbKom } = await supabase
+          .from("komunitas")
+          .select("id, nama, jenis, kontak, lokasi, kecamatan, kelurahan")
+          .eq("id", match.id)
+          .maybeSingle();
+
+        targetKom = dbKom || {
+          id: match.id,
+          nama: match.nama,
+          jenis: "posyandu",
+          kontak: match.kontak || null,
+          lokasi: null,
+          kecamatan: match.kecamatan,
+          kelurahan: match.kelurahan,
+        };
+      } else {
+        // Cari posyandu di kelurahan tersebut
+        const { data: posDb } = await supabase
+          .from("komunitas")
+          .select("id, nama, jenis, kontak, lokasi, kecamatan, kelurahan")
+          .eq("jenis", "posyandu")
+          .ilike("kelurahan", `%${params.kelurahan || ""}%`)
+          .limit(1)
+          .maybeSingle();
+
+        if (posDb) {
+          targetKom = posDb;
+        } else {
+          targetKom = {
+            id: "posyandu-general",
+            nama: match.nama || `Posyandu Kel. ${params.kelurahan || "Wilayah"}`,
+            jenis: "posyandu",
+            kontak: match.kontak || null,
+            lokasi: null,
+            kecamatan: match.kecamatan,
+            kelurahan: match.kelurahan,
+          };
+        }
+      }
+    }
+
+    // Jika targetKomunitas memiliki ID valid di database, cari anggota admin/kader
+    let adminUser: any = null;
+    let allAdminsCount = 0;
+
+    if (targetKom?.id && targetKom.id !== "paud-general" && targetKom.id !== "posyandu-general") {
+      const validKomId = toValidKomunitasUUID(targetKom.id);
+      const { data: members } = await supabase
+        .from("anggota_komunitas")
+        .select(`
+          user_id,
+          peran,
+          profiles:user_id (
+            id,
+            nama_lengkap,
+            email,
+            avatar_url
+          )
+        `)
+        .eq("komunitas_id", validKomId)
+        .eq("status", "approved")
+        .order("created_at", { ascending: true });
+
+      if (members && members.length > 0) {
+        // Prioritaskan peran Admin, Kepala Sekolah, Kader, Pengurus, Guru, Pendidik
+        const adminMembers = members.filter((m: any) => {
+          const p = (m.peran || "").toLowerCase();
+          return (
+            p.includes("admin") ||
+            p.includes("kepala") ||
+            p.includes("kader") ||
+            p.includes("guru") ||
+            p.includes("pengurus") ||
+            p.includes("bidan") ||
+            p.includes("pendidik") ||
+            p.includes("tutor")
+          );
+        });
+
+        allAdminsCount = adminMembers.length > 0 ? adminMembers.length : members.length;
+        const chosen = adminMembers[0] || members[0];
+        const prof = (chosen as any).profiles;
+
+        if (prof) {
+          adminUser = {
+            id: prof.id,
+            nama_lengkap: prof.nama_lengkap || "Pengurus Komunitas",
+            email: prof.email,
+            avatar_url: prof.avatar_url,
+            peran: chosen.peran,
+          };
+        }
+      }
+    }
+
+    return {
+      success: true,
+      targetKomunitas: targetKom,
+      adminUser,
+      allAdminsCount,
+    };
+  } catch (err: any) {
+    console.error("Error getCrossCommunityAdminForChatAction:", err);
+    return {
+      success: false,
+      message: err.message || "Gagal mencari data admin komunitas mitra.",
+      targetKomunitas: null,
+      adminUser: null,
+      allAdminsCount: 0,
+    };
+  }
+}
+
 
 
 

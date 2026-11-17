@@ -2412,13 +2412,10 @@ export function KomunitasDetailClientView({
                               !child.nama_sekolah.toLowerCase().includes("belum")
                           );
 
-                        const isReadOnlyForThisChild =
-                          (isWargaKitaCheck && isChildFromPaudSchool) || Boolean(isReadOnlyDataAnak);
+                        const isReadOnlyForThisChild = Boolean(isReadOnlyDataAnak);
 
-                        const canEditForThisChild =
-                          (isWargaKitaCheck && isChildFromPaudSchool)
-                            ? false
-                            : Boolean(canEditDataAnak);
+                        // Hak akses edit data anak setara untuk Admin/Kader Posyandu maupun Satuan PAUD
+                        const canEditForThisChild = Boolean(canEditDataAnak);
 
                         const canDeleteForThisChild =
                           (isWargaKitaCheck && isChildFromPaudSchool)

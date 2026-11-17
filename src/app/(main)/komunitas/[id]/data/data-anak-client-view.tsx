@@ -883,9 +883,9 @@ export function DataAnakClientView({
                           komunitas={komunitas}
                           canViewDetail={Boolean(canViewDetail && isAuthenticated)}
                           currentUserId={isAuthenticated ? "user" : null}
-                          canValidate={false}
-                          canEdit={!child.is_sekolah && canEdit}
-                          canDelete={!child.is_sekolah && canDelete}
+                          canValidate={canValidate}
+                          canEdit={canEdit}
+                          canDelete={canDelete}
                           isReadOnly={isReadOnly}
                           ageFormat={ageFormat}
                           onUpdate={(updated) => {

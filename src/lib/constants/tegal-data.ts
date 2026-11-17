@@ -262,6 +262,7 @@ export const KOTA_TEGAL_DATA: Record<string, KecamatanData> = {
           "Posyandu Layangsari A",
           "Posyandu Layangsari B",
           "Posyandu Mawar Merah",
+          "Posyandu Mekarsari",
           "Posyandu Melatisari 1",
           "Posyandu Melatisari 2",
           "Posyandu Mina Bahari",
@@ -709,7 +710,7 @@ export const RT_PER_RW_DEFAULT = 15;
 
 /**
  * Ketentuan Khusus RT per RW di Kelurahan Tegalsari, Kecamatan Tegal Barat:
- * - RW 1: Jumlah RT 6 (Posyandu Tunas Bahari)
+ * - RW 1: Jumlah RT 10 (Posyandu Tunas Bahari [RT 1-10])
  * - RW 2: Jumlah RT 10 (Posyandu Minasari [RT 1-7] & Posyandu Mina Bahari [RT 8-10])
  * - RW 3: Jumlah RT 10 (Posyandu Melatisari 1 [RT 1-6] & Posyandu Melatisari 2 [RT 7-10])
  * - RW 4: Jumlah RT 10 (Posyandu Sejahtera 1 [RT 1, 6-10] & Posyandu Sejahtera 2 [RT 2-5])
@@ -720,14 +721,15 @@ export const RT_PER_RW_DEFAULT = 15;
  * - RW 9: Jumlah RT 10 (Posyandu Layangsari A [RT 1-4] & Posyandu Layangsari B [RT 5-10])
  * - RW 10: Jumlah RT 10 (Posyandu Wijayakusuma 1 [RT 3-9] & Posyandu Wijayakusuma 2 [RT 1, 2, 10])
  * - RW 11: Jumlah RT 5 (Posyandu Kenanga A [RT 3-5] & Posyandu Kenanga B [RT 1-2])
- * - RW 12: Jumlah RT 5 (Posyandu Anggrek Ungu)
- * - RW 13 / RW 31: Jumlah RT 5 (Posyandu Anggrek Ungu)
- * Total RW resmi: 13 RW, Total RT: 92 RT (6 + 10 + 10 + 10 + 6 + 6 + 4 + 5 + 10 + 10 + 5 + 5 + 5)
+ * - RW 12: Jumlah RT 5 (Posyandu Anggrek Ungu [RT 1-5])
+ * - RW 13: Jumlah RT 5
+ * - RW 31: Jumlah RT 9 (Posyandu Mekarsari [RT 1-9])
+ * Total RT: 100 RT (10 + 10 + 10 + 10 + 6 + 6 + 4 + 5 + 10 + 10 + 5 + 5 + 9)
  * Tetap pertahankan pilihan "Belum Tahu" untuk RW dan RT
  */
 export const DATA_RT_PER_RW_TEGALSARI: Record<string, number> = {
-  "01": 6,
-  "1": 6,
+  "01": 10,
+  "1": 10,
   "02": 10,
   "2": 10,
   "03": 10,
@@ -748,7 +750,7 @@ export const DATA_RT_PER_RW_TEGALSARI: Record<string, number> = {
   "11": 5,
   "12": 5,
   "13": 5,
-  "31": 5,
+  "31": 9,
 };
 
 /**
@@ -1562,8 +1564,8 @@ export function getTotalRtByKelurahan(kelurahan?: string | null): number {
     return 143;
   }
   if (clean === "tegalsari") {
-    // RW 1: 6, RW 2: 10, RW 3: 10, RW 4: 10, RW 5: 6, RW 6: 6, RW 7: 4, RW 8: 5, RW 9: 10, RW 10: 10, RW 11: 5, RW 12: 5, RW 13/31: 5 = 92 RT
-    return 92;
+    // RW 1: 10, RW 2: 10, RW 3: 10, RW 4: 10, RW 5: 6, RW 6: 6, RW 7: 4, RW 8: 5, RW 9: 10, RW 10: 10, RW 11: 5, RW 12: 5, RW 31: 9 = 100 RT
+    return 100;
   }
   if (clean === "kalinyamat kulon") {
     // RW 1: 8 RT, RW 2: 8 RT, RW 3: 7 RT, RW 4: 4 RT -> Total 27 RT

@@ -382,6 +382,16 @@ export interface DataAnakItem {
   is_updated_by_paud?: boolean;
   terakhir_diperbarui_at?: string | null;
   diperbarui_oleh?: string | null;
+  terakhir_diperbarui_oleh_nama?: string | null;
+  terakhir_diperbarui_oleh_role?: string | null;
+  terakhir_diperbarui_oleh_komunitas?: string | null;
+  edit_history?: Array<{
+    waktu: string;
+    nama: string;
+    role: string;
+    komunitas: string;
+    jenisKomunitas?: string;
+  }>;
   created_by?: string;
   created_at: string;
   updated_at?: string;

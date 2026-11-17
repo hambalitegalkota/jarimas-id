@@ -54,7 +54,6 @@ export const INVALID_POSYANDU_IDS = [
   "cd1c0055-44d7-49d1-8124-24a12ac7f2da", // Posyandu Kenanga Kulon
   "d5bfb20a-f504-407e-8427-5c594defd111", // Posyandu Teratai Sehat
 
-  "491d1393-f6af-4440-823f-394dd302750a", // Posyandu Mekarsari Tegalsari (duplikasi/tidak terdaftar di Tegalsari)
   "cedf7f85-c8c9-4e41-8c3a-3bf50f4807d7",
   "21520ed0-ed1e-440c-8a36-e83d1b33fef0",
   "6b531276-344f-4b91-855a-326df73a7b96",
@@ -233,8 +232,8 @@ export const RAW_POSYANDU_TEGAL: RawPosyanduItem[] = [
   { id: "5128e73f-508b-4787-8667-a691c6d133ac", nama: "Posyandu Melati 5", kecamatan: "Tegal Barat", kelurahan: "Pesurungan Kidul", rw: "06", rt: "01", lokasi: "Balai Posyandu / RW 06, Pesurungan Kidul, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Melati 5 Pesurungan Kidul cakupan sinkronisasi wilayah RW 06 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", cakupan_wilayah: "Melayani Warga RW 06 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu)", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
   { id: "76827a2c-508b-4787-8af6-39294cbcfe17", nama: "Posyandu Melati 6", kecamatan: "Tegal Barat", kelurahan: "Pesurungan Kidul", rw: "06", rt: "01", lokasi: "Balai Posyandu / RW 06, Pesurungan Kidul, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Melati 6 Pesurungan Kidul: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
 
-  // Tegalsari (18 Posyandu)
-  { id: "cd1adf7b-5be1-4c26-8f3f-99b1c2242d80", nama: "Posyandu Tunas Bahari", kecamatan: "Tegal Barat", kelurahan: "Tegalsari", rw: "01", rt: "01", lokasi: "Balai Posyandu / RW 01, Tegalsari, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Tunas Bahari Tegalsari cakupan sinkronisasi wilayah RW 01 (RT 01 s/d RT 06): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  // Tegalsari (19 Posyandu)
+  { id: "cd1adf7b-5be1-4c26-8f3f-99b1c2242d80", nama: "Posyandu Tunas Bahari", kecamatan: "Tegal Barat", kelurahan: "Tegalsari", rw: "01", rt: "01", cakupan_wilayah: "RW 01 (RT 01 s/d RT 10)", lokasi: "Balai Posyandu / RW 01, Tegalsari, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Tunas Bahari Tegalsari cakupan sinkronisasi wilayah RW 01 (RT 01 s/d RT 10): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
   { id: "f6013505-8603-4059-803c-04855b1a6e07", nama: "Posyandu Minasari", kecamatan: "Tegal Barat", kelurahan: "Tegalsari", rw: "02", rt: "01", lokasi: "Balai Posyandu / RW 02, Tegalsari, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Minasari Tegalsari cakupan sinkronisasi wilayah RW 02 (RT 1, 2, 3, 4, 5, 6, 7): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
   { id: "9438aeb6-8603-4059-8de7-bc4de1063872", nama: "Posyandu Mina Bahari", kecamatan: "Tegal Barat", kelurahan: "Tegalsari", rw: "02", rt: "08", lokasi: "Balai Posyandu / RW 02, Tegalsari, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Mina Bahari Tegalsari cakupan sinkronisasi wilayah RW 02 (RT 8, 9, 10): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
   { id: "376225ad-69fc-44af-82dc-5f21b6ea2f72", nama: "Posyandu Melatisari 1", kecamatan: "Tegal Barat", kelurahan: "Tegalsari", rw: "03", rt: "01", lokasi: "Balai Posyandu / RW 03, Tegalsari, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Melatisari 1 Tegalsari cakupan sinkronisasi wilayah RW 03 (RT 1, 2, 3, 4, 5, 6): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
@@ -251,7 +250,8 @@ export const RAW_POSYANDU_TEGAL: RawPosyanduItem[] = [
   { id: "040db058-8448-4ca2-8010-569131f57218", nama: "Posyandu Wijayakusuma 2", kecamatan: "Tegal Barat", kelurahan: "Tegalsari", rw: "10", rt: "01", lokasi: "Balai Posyandu / RW 10, Tegalsari, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Wijayakusuma 2 Tegalsari cakupan sinkronisasi wilayah RW 10 (RT 1, 2, 10): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
   { id: "88b855cf-e73c-4cf7-8d6c-6751c1702e6c", nama: "Posyandu Kenanga A", kecamatan: "Tegal Barat", kelurahan: "Tegalsari", rw: "11", rt: "03", lokasi: "Balai Posyandu / RW 11, Tegalsari, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Kenanga A Tegalsari cakupan sinkronisasi wilayah RW 11 (RT 3, 4, 5): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
   { id: "ae11e8bc-e73c-4cf7-81fa-f9e9475bf8d7", nama: "Posyandu Kenanga B", kecamatan: "Tegal Barat", kelurahan: "Tegalsari", rw: "11", rt: "01", lokasi: "Balai Posyandu / RW 11, Tegalsari, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Kenanga B Tegalsari cakupan sinkronisasi wilayah RW 11 (RT 1, 2): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "b9eb4b9f-b56b-4b87-8640-ed815ace953c", nama: "Posyandu Anggrek Ungu", kecamatan: "Tegal Barat", kelurahan: "Tegalsari", rw: "12", rt: "01", lokasi: "Balai Posyandu / RW 12, Tegalsari, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Anggrek Ungu Tegalsari cakupan sinkronisasi wilayah RW 12 (RT 01 s/d RT 05) dan RW 31: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "b9eb4b9f-b56b-4b87-8640-ed815ace953c", nama: "Posyandu Anggrek Ungu", kecamatan: "Tegal Barat", kelurahan: "Tegalsari", rw: "12", rt: "01", cakupan_wilayah: "RW 12 (RT 01 s/d RT 05)", lokasi: "Balai Posyandu / RW 12, Tegalsari, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Anggrek Ungu Tegalsari cakupan sinkronisasi wilayah RW 12 (RT 01 s/d RT 05): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "491d1393-f6af-4440-823f-394dd302750a", nama: "Posyandu Mekarsari", kecamatan: "Tegal Barat", kelurahan: "Tegalsari", rw: "31", rt: "01", cakupan_wilayah: "RW 31 (RT 01 s/d RT 09)", lokasi: "Balai Posyandu / RW 31, Tegalsari, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Mekarsari Tegalsari cakupan sinkronisasi wilayah RW 31 (RT 01 s/d RT 09): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
 
   // ==========================================
   // 3. KECAMATAN TEGAL SELATAN (8 Kelurahan)
@@ -1012,6 +1012,42 @@ export const MARGADANA_POSYANDU_MAP: Record<
     lokasi: "Balai Posyandu / RW 05, Margadana, Margadana, Kota Tegal",
     deskripsi: "Layanan terpadu Posyandu Cempaka 2 Margadana cakupan sinkronisasi wilayah RW 05 (RT 06 s/d RT 08): layanan kesehatan balita, penimbangan, imunisasi, dan PMT balita serta ibu hamil.",
     allowedRts: ["06", "07", "08"],
+  },
+};
+
+export const TEGALSARI_POSYANDU_MAP: Record<
+  string,
+  { nama: string; rw: string; rt: string; cakupan_wilayah: string; lokasi?: string; deskripsi?: string; allowedRts?: string[] }
+> = {
+  // Posyandu Tunas Bahari: RW 01 (RT 01 s/d RT 10)
+  "cd1adf7b-5be1-4c26-8f3f-99b1c2242d80": {
+    nama: "Posyandu Tunas Bahari",
+    rw: "01",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 01 (RT 01 s/d RT 10)",
+    lokasi: "Balai Posyandu / RW 01, Tegalsari, Tegal Barat, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Tunas Bahari Tegalsari cakupan sinkronisasi wilayah RW 01 (RT 01 s/d RT 10): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10"],
+  },
+  // Posyandu Mekarsari: RW 31 (RT 01 s/d RT 09)
+  "491d1393-f6af-4440-823f-394dd302750a": {
+    nama: "Posyandu Mekarsari",
+    rw: "31",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 31 (RT 01 s/d RT 09)",
+    lokasi: "Balai Posyandu / RW 31, Tegalsari, Tegal Barat, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Mekarsari Tegalsari cakupan sinkronisasi wilayah RW 31 (RT 01 s/d RT 09): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["01", "02", "03", "04", "05", "06", "07", "08", "09"],
+  },
+  // Posyandu Anggrek Ungu: RW 12 (RT 01 s/d RT 05)
+  "b9eb4b9f-b56b-4b87-8640-ed815ace953c": {
+    nama: "Posyandu Anggrek Ungu",
+    rw: "12",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 12 (RT 01 s/d RT 05)",
+    lokasi: "Balai Posyandu / RW 12, Tegalsari, Tegal Barat, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Anggrek Ungu Tegalsari cakupan sinkronisasi wilayah RW 12 (RT 01 s/d RT 05): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["01", "02", "03", "04", "05"],
   },
 };
 

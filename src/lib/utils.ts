@@ -1155,6 +1155,29 @@ export function parseCakupanWilayah(komunitas?: {
     }
   }
 
+  // 7c. Kelurahan Tegalsari (Kecamatan Tegal Barat)
+  if (kelClean.includes("tegalsari") || namaClean.includes("tegalsari")) {
+    if (
+      komunitas.id === "cd1adf7b-5be1-4c26-8f3f-99b1c2242d80" ||
+      namaClean.includes("tunas bahari")
+    ) {
+      return "Melayani Warga RW 01 (RT 01 s/d RT 10)";
+    }
+    if (
+      komunitas.id === "491d1393-f6af-4440-823f-394dd302750a" ||
+      namaClean.includes("mekarsari")
+    ) {
+      return "Melayani Warga RW 31 (RT 01 s/d RT 09)";
+    }
+    if (
+      komunitas.id === "b9eb4b9f-b56b-4b87-8640-ed815ace953c" ||
+      namaClean.includes("anggrek ungu") ||
+      namaClean.includes("anggrek unggu")
+    ) {
+      return "Melayani Warga RW 12 (RT 01 s/d RT 05)";
+    }
+  }
+
   // 8. Kelurahan Umum / Default Fallback
   if (rw && rt) {
     return `Melayani Warga RW ${rw} (RT ${rt})`;

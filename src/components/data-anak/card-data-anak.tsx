@@ -22,13 +22,21 @@ import {
   Home,
   FileText,
   MapPin,
+  History,
+  MessageSquare,
+  Phone,
+  ExternalLink,
+  Send,
+  X,
+  Users,
 } from "lucide-react";
-import { validateDataAnak } from "@/app/actions/data-anak";
+import { validateDataAnak, getCrossCommunityAdminForChatAction } from "@/app/actions/data-anak";
 import { formatNamaSekolahDisplay, isKomunitasLayananPaud } from "@/lib/data-anak-helpers";
 import { ModalEditDataAnak } from "./modal-edit-data-anak";
 import { ModalKeluarDataAnak } from "./modal-keluar-data-anak";
 import type { DataAnakItem, KomunitasWithMembership } from "@/types/database";
-import { cn, maskNama, formatAgeDisplay } from "@/lib/utils";
+import { cn, maskNama, formatAgeDisplay, formatWhatsAppUrl } from "@/lib/utils";
+import { useGlobalMessageNotification } from "@/components/notifications/global-message-notification-provider";
 
 interface CardDataAnakProps {
   anak: DataAnakItem;
@@ -108,6 +116,26 @@ function cleanAlasanString(raw?: string | null): string {
   return cleaned || raw;
 }
 
+function formatWibDateTime(dateStr?: string | null): string {
+  if (!dateStr) return "-";
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    return (
+      new Intl.DateTimeFormat("id-ID", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        timeZone: "Asia/Jakarta",
+      }).format(d) + " WIB"
+    );
+  } catch {
+    return dateStr;
+  }
+}
+
 export function CardDataAnak({
   anak,
   komunitas,
@@ -129,6 +157,63 @@ export function CardDataAnak({
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isKeluarModalOpen, setIsKeluarModalOpen] = useState(false);
   const [isPendingValidate, startValidateTransition] = useTransition();
+
+  const { openChatWithUser } = useGlobalMessageNotification();
+  const [isChatLoading, setIsChatLoading] = useState(false);
+  const [showAllHistory, setShowAllHistory] = useState(false);
+  const [chatModalData, setChatModalData] = useState<{
+    isOpen: boolean;
+    targetKomunitas: any;
+    adminUser: any;
+    allAdminsCount: number;
+    waUrl: string | null;
+    targetType: "paud" | "posyandu";
+  } | null>(null);
+
+  const handleOpenCrossChat = async () => {
+    try {
+      setIsChatLoading(true);
+      const targetType = isKomunitasPaud ? "posyandu" : "paud";
+      const res = await getCrossCommunityAdminForChatAction({
+        targetType,
+        namaSekolah: currentChild.nama_sekolah,
+        kelurahan: currentChild.domisili_kelurahan || currentChild.kk_kelurahan,
+        rw: currentChild.domisili_rw || currentChild.kk_rw,
+        rt: currentChild.domisili_rt || currentChild.kk_rt,
+        childId: currentChild.id,
+        komunitasId: komunitas?.id,
+      });
+
+      if (!res.success && !res.targetKomunitas) {
+        alert(res.message || "Komunitas mitra belum ditemukan.");
+        return;
+      }
+
+      const targetKom = res.targetKomunitas;
+      const adminUser = res.adminUser;
+
+      const waMessage =
+        targetType === "paud"
+          ? `Halo Pengurus / Admin ${targetKom?.nama || "Satuan PAUD"}, saya pengurus/kader dari ${komunitas?.nama || "Posyandu"}. Ingin koordinasi terkait pembaruan & verifikasi data anak: *${currentChild.nama_lengkap}* (Sekolah: ${currentChild.nama_sekolah || "-"}). Terima kasih.`
+          : `Halo Kader ${targetKom?.nama || "Posyandu"}, saya pengurus dari ${komunitas?.nama || "Satuan PAUD"}. Ingin koordinasi terkait pembaruan & verifikasi data anak: *${currentChild.nama_lengkap}* (Domisili: RT ${currentChild.domisili_rt || "-"} / RW ${currentChild.domisili_rw || "-"}, Kel. ${currentChild.domisili_kelurahan || "-"}). Terima kasih.`;
+
+      const waUrl = formatWhatsAppUrl(targetKom?.kontak, waMessage);
+
+      setChatModalData({
+        isOpen: true,
+        targetKomunitas: targetKom,
+        adminUser,
+        allAdminsCount: res.allAdminsCount,
+        waUrl,
+        targetType,
+      });
+    } catch (err: any) {
+      console.error("Error cross chat:", err);
+      alert("Gagal membuka komunikasi antar-komunitas: " + (err?.message || "Kesalahan sistem"));
+    } finally {
+      setIsChatLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (ageFormat) {
@@ -377,83 +462,153 @@ export function CardDataAnak({
               </div>
             )}
 
-            {/* Action Buttons Bar: Edit Data, Keluar / Hapus, dan Validasi */}
-            {isKomunitasPaud ? (
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-1.5 pt-2 border-t border-border/60">
-                {(canEditAllowed || canDeleteAllowed) ? (
-                  <div className="flex items-center gap-1.5">
-                    {canEditAllowed && (
-                      <button
-                        type="button"
-                        onClick={() => setIsEditModalOpen(true)}
-                        className="flex h-8 sm:h-8.5 items-center justify-center gap-1 rounded-lg bg-secondary/15 hover:bg-secondary/25 active:scale-98 border border-secondary/30 px-2.5 text-xs font-semibold text-amber-900 dark:text-amber-200 transition-all cursor-pointer"
-                      >
-                        <Pencil className="h-3.5 w-3.5 text-secondary" />
-                        <span>Edit Data</span>
-                      </button>
-                    )}
-
-                    {canDeleteAllowed && (
-                      <button
-                        type="button"
-                        onClick={() => setIsKeluarModalOpen(true)}
-                        className="flex h-8 sm:h-8.5 items-center justify-center gap-1 rounded-lg bg-rose-50 hover:bg-rose-100 active:scale-98 border border-rose-200 px-2.5 text-xs font-semibold text-rose-700 transition-all cursor-pointer dark:bg-rose-950/20 dark:hover:bg-rose-950/40 dark:border-rose-900/40 dark:text-rose-400"
-                      >
-                        <Trash2 className="h-3.5 w-3.5 text-rose-700 dark:text-rose-400" />
-                        <span>Keluar / Hapus</span>
-                      </button>
-                    )}
-                  </div>
-                ) : <div />}
-
-                {/* Badge Indikator Status Jika Sudah Pernah Diedit namun Belum Divalidasi */}
-                {!isApproved && currentChild.is_updated_by_paud && (
-                  <div className="flex items-center gap-1.5 ml-auto">
-                    <span className="inline-flex items-center gap-1 rounded-md bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 text-2xs font-semibold text-amber-700 dark:text-amber-300">
-                      <CheckCircle2 className="h-3 w-3 text-amber-600 shrink-0" />
-                      <span>Sudah Diedit (Belum Valid)</span>
-                    </span>
-                  </div>
+            {/* Riwayat Pengeditan Data (Waktu & Identitas Pengedit dari PAUD maupun Posyandu) */}
+            <div className="rounded-lg bg-muted/40 border border-border/70 p-2.5 text-xs space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5 font-bold text-foreground">
+                  <History className="h-3.5 w-3.5 text-primary shrink-0" />
+                  <span>Riwayat Pengeditan Data</span>
+                </div>
+                {currentChild.edit_history && currentChild.edit_history.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => setShowAllHistory((prev) => !prev)}
+                    className="text-[11px] font-semibold text-primary hover:underline cursor-pointer"
+                  >
+                    {showAllHistory
+                      ? "Sembunyikan Riwayat Lama"
+                      : `Lihat Semua (${currentChild.edit_history.length})`}
+                  </button>
                 )}
               </div>
-            ) : currentChild.is_sekolah ? (
-              /* Di Komunitas Lain untuk Data Anak Bersekolah: Tidak Bisa Diedit (Read-Only) */
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 pt-2 border-t border-border/60">
-                <div className="inline-flex items-center gap-1.5 text-2xs font-bold text-teal-800 dark:text-teal-300 bg-teal-500/10 px-2.5 py-1 rounded-md border border-teal-500/20">
-                  <ShieldCheck className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400 shrink-0" />
-                  <span>Sumber Data: Satuan PAUD / PKBM / SKB (Data Terverifikasi Sekolah, Terkunci &amp; Tidak Dapat Diedit)</span>
-                </div>
-              </div>
-            ) : (
-              /* Di Komunitas Lain untuk Data Anak Belum Bersekolah: Hanya Admin/Kader yang memiliki wewenang edit/hapus */
-              (canEditAllowed || canDeleteAllowed) && (
-                <div className="flex items-center justify-between gap-1.5 pt-2 border-t border-border/60">
-                  <div className="flex items-center gap-1.5">
-                    {canEditAllowed && (
-                      <button
-                        type="button"
-                        onClick={() => setIsEditModalOpen(true)}
-                        className="flex h-8 items-center justify-center gap-1 rounded-lg bg-secondary/15 hover:bg-secondary/25 active:scale-98 border border-secondary/30 px-2.5 text-xs font-semibold text-amber-900 dark:text-amber-200 transition-all cursor-pointer"
-                      >
-                        <Pencil className="h-3.5 w-3.5 text-secondary" />
-                        <span>Edit Data Belum Sekolah</span>
-                      </button>
-                    )}
 
-                    {canDeleteAllowed && (
-                      <button
-                        type="button"
-                        onClick={() => setIsKeluarModalOpen(true)}
-                        className="flex h-8 items-center justify-center gap-1 rounded-lg bg-rose-50 hover:bg-rose-100 active:scale-98 border border-rose-200 px-2.5 text-xs font-semibold text-rose-700 transition-all cursor-pointer dark:bg-rose-950/20 dark:hover:bg-rose-950/40 dark:border-rose-900/40 dark:text-rose-400"
+              {/* Isi Riwayat */}
+              {currentChild.edit_history && currentChild.edit_history.length > 0 ? (
+                <div className="space-y-1.5">
+                  {(showAllHistory
+                    ? currentChild.edit_history
+                    : [currentChild.edit_history[currentChild.edit_history.length - 1]]
+                  )
+                    .slice()
+                    .reverse()
+                    .map((hist, idx) => (
+                      <div
+                        key={idx}
+                        className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-[11px] bg-background/90 rounded-md p-1.5 border border-border/60"
                       >
-                        <Trash2 className="h-3.5 w-3.5 text-rose-700 dark:text-rose-400" />
-                        <span>Hapus Data</span>
-                      </button>
-                    )}
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <span className="h-1.5 w-1.5 rounded-full bg-teal-500 shrink-0" />
+                          <span className="font-semibold text-foreground truncate">
+                            {hist.nama || "Pengurus"}
+                          </span>
+                          <span className="text-muted-foreground/60">•</span>
+                          <span className="text-muted-foreground truncate">
+                            {hist.role ? `${hist.role} ` : ""}
+                            {hist.komunitas ? `(${hist.komunitas})` : ""}
+                          </span>
+                        </div>
+                        <div className="text-muted-foreground font-mono text-[10px] shrink-0 self-end sm:self-auto">
+                          {formatWibDateTime(hist.waktu)}
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              ) : currentChild.terakhir_diperbarui_at ? (
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-[11px] bg-background/90 rounded-md p-1.5 border border-border/60">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <span className="h-1.5 w-1.5 rounded-full bg-teal-500 shrink-0" />
+                    <span className="font-semibold text-foreground truncate">
+                      {currentChild.terakhir_diperbarui_oleh_nama || "Pengurus Komunitas"}
+                    </span>
+                    <span className="text-muted-foreground/60">•</span>
+                    <span className="text-muted-foreground truncate">
+                      {currentChild.terakhir_diperbarui_oleh_role
+                        ? `${currentChild.terakhir_diperbarui_oleh_role} `
+                        : ""}
+                      {currentChild.terakhir_diperbarui_oleh_komunitas
+                        ? `(${currentChild.terakhir_diperbarui_oleh_komunitas})`
+                        : ""}
+                    </span>
+                  </div>
+                  <div className="text-muted-foreground font-mono text-[10px] shrink-0 self-end sm:self-auto">
+                    {formatWibDateTime(currentChild.terakhir_diperbarui_at)}
                   </div>
                 </div>
-              )
-            )}
+              ) : (
+                <p className="text-[11px] text-muted-foreground italic">
+                  Belum ada riwayat pengeditan (Data awal terdaftar).
+                </p>
+              )}
+            </div>
+
+            {/* Action Buttons Bar: Edit Data, Chat Koordinasi Lintas Komunitas, Keluar / Hapus */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 pt-2.5 border-t border-border/60">
+              <div className="flex flex-wrap items-center gap-1.5">
+                {/* Tombol Edit Data - Berhak diakses baik oleh Admin/Kader Posyandu maupun PAUD */}
+                {canEditAllowed && (
+                  <button
+                    type="button"
+                    onClick={() => setIsEditModalOpen(true)}
+                    className="flex h-8 sm:h-8.5 items-center justify-center gap-1.5 rounded-lg bg-secondary/15 hover:bg-secondary/25 active:scale-98 border border-secondary/30 px-2.5 text-xs font-semibold text-amber-900 dark:text-amber-200 transition-all cursor-pointer"
+                    title="Edit data anak (terbuka setara bagi Posyandu dan Satuan PAUD)"
+                  >
+                    <Pencil className="h-3.5 w-3.5 text-secondary" />
+                    <span>Edit Data</span>
+                  </button>
+                )}
+
+                {/* Tombol Chat Koordinasi Lintas Komunitas (PAUD <-> Posyandu) */}
+                <button
+                  type="button"
+                  onClick={handleOpenCrossChat}
+                  disabled={isChatLoading}
+                  className="flex h-8 sm:h-8.5 items-center justify-center gap-1.5 rounded-lg bg-teal-50 hover:bg-teal-100 active:scale-98 border border-teal-200 px-2.5 text-xs font-semibold text-teal-800 transition-all cursor-pointer dark:bg-teal-950/20 dark:hover:bg-teal-950/40 dark:border-teal-900/40 dark:text-teal-300"
+                  title={
+                    isKomunitasPaud
+                      ? "Buka koordinasi chat langsung dengan Kader/Admin Posyandu wilayah anak"
+                      : "Buka koordinasi chat langsung dengan Admin Satuan PAUD sekolah anak"
+                  }
+                >
+                  {isChatLoading ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin text-teal-600" />
+                  ) : (
+                    <MessageSquare className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400" />
+                  )}
+                  <span>
+                    {isKomunitasPaud ? "Chat Kader Posyandu" : "Chat Admin PAUD"}
+                  </span>
+                </button>
+
+                {/* Tombol Keluar / Hapus (Jika berhak) */}
+                {canDeleteAllowed && (
+                  <button
+                    type="button"
+                    onClick={() => setIsKeluarModalOpen(true)}
+                    className="flex h-8 sm:h-8.5 items-center justify-center gap-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 active:scale-98 border border-rose-200 px-2.5 text-xs font-semibold text-rose-700 transition-all cursor-pointer dark:bg-rose-950/20 dark:hover:bg-rose-950/40 dark:border-rose-900/40 dark:text-rose-400"
+                  >
+                    <Trash2 className="h-3.5 w-3.5 text-rose-700 dark:text-rose-400" />
+                    <span>{isKomunitasPaud ? "Keluar / Hapus" : "Hapus Data"}</span>
+                  </button>
+                )}
+              </div>
+
+              {/* Status & Badge Sinkronisasi */}
+              <div className="flex flex-wrap items-center gap-1.5 sm:ml-auto">
+                {currentChild.is_sekolah ? (
+                  <span className="inline-flex items-center gap-1 rounded-md bg-teal-500/10 border border-teal-500/20 px-2 py-0.5 text-2xs font-semibold text-teal-800 dark:text-teal-300">
+                    <ShieldCheck className="h-3 w-3 text-teal-600 shrink-0" />
+                    <span>Sinkronisasi PAUD &amp; Posyandu</span>
+                  </span>
+                ) : null}
+
+                {!isApproved && currentChild.is_updated_by_paud && (
+                  <span className="inline-flex items-center gap-1 rounded-md bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 text-2xs font-semibold text-amber-700 dark:text-amber-300">
+                    <CheckCircle2 className="h-3 w-3 text-amber-600 shrink-0" />
+                    <span>Sudah Diedit (Belum Valid)</span>
+                  </span>
+                )}
+              </div>
+            </div>
           </div>
         )}
       </div>
@@ -482,6 +637,142 @@ export function CardDataAnak({
           onClose={() => setIsKeluarModalOpen(false)}
           onSuccess={handleChildDeleted}
         />
+      )}
+
+      {/* Modal Koordinasi Chat Antar Komunitas (PAUD & Posyandu) */}
+      {chatModalData?.isOpen && (
+        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto animate-in fade-in duration-200">
+          <div
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity"
+            onClick={() => setChatModalData(null)}
+          />
+
+          <div className="relative w-full max-w-lg rounded-t-3xl sm:rounded-3xl border border-border bg-card shadow-2xl z-10 animate-in slide-in-from-bottom-5 sm:zoom-in-95 duration-200 overflow-hidden my-0 sm:my-auto">
+            {/* Header */}
+            <div className="flex items-start justify-between p-4 sm:p-5 border-b border-border bg-muted/30">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20">
+                  <MessageSquare className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm sm:text-base font-bold text-foreground leading-tight">
+                    Koordinasi {chatModalData.targetType === "paud" ? "Satuan PAUD" : "Kader Posyandu"}
+                  </h3>
+                  <p className="text-xs text-muted-foreground line-clamp-1">
+                    Komunikasi sinkronisasi data anak: <span className="font-semibold text-foreground">{currentChild.nama_lengkap}</span>
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setChatModalData(null)}
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-border text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-4 sm:p-5 space-y-4">
+              {/* Info Komunitas Target */}
+              <div className="rounded-xl border border-border bg-muted/20 p-3 space-y-1.5">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                  Lembaga / Komunitas Mitra
+                </div>
+                <div className="text-sm font-bold text-foreground">
+                  {chatModalData.targetKomunitas?.nama || (chatModalData.targetType === "paud" ? "Satuan PAUD" : "Posyandu Wilayah")}
+                </div>
+                <div className="text-xs text-muted-foreground flex flex-wrap gap-2">
+                  {chatModalData.targetKomunitas?.kelurahan && (
+                    <span>Kel. {chatModalData.targetKomunitas.kelurahan}</span>
+                  )}
+                  {chatModalData.targetKomunitas?.kecamatan && (
+                    <span>• Kec. {chatModalData.targetKomunitas.kecamatan}</span>
+                  )}
+                </div>
+              </div>
+
+              {/* Opsi 1: Chat Langsung di JARIMAS-ID */}
+              {chatModalData.adminUser ? (
+                <div className="rounded-xl border border-primary/20 bg-primary/5 p-3.5 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-primary flex items-center gap-1.5">
+                      <Send className="h-3.5 w-3.5" /> Chat Aplikasi JARIMAS (Direkomendasikan)
+                    </span>
+                    <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-teal-500/10 text-teal-700 dark:text-teal-300 border border-teal-500/20">
+                      Akun Aktif
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Terhubung langsung dengan akun pengurus: <strong className="text-foreground">{chatModalData.adminUser.nama_lengkap}</strong> ({chatModalData.adminUser.peran || "Admin / Pengurus"}).
+                  </p>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      const uid = chatModalData.adminUser.id;
+                      setChatModalData(null);
+                      await openChatWithUser(uid);
+                    }}
+                    className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-primary text-primary-foreground font-bold text-xs hover:bg-primary/90 transition-all cursor-pointer shadow-xs active:scale-98"
+                  >
+                    <MessageSquare className="h-4 w-4" />
+                    <span>Mulai Percakapan Langsung</span>
+                  </button>
+                </div>
+              ) : (
+                <div className="rounded-xl border border-border bg-muted/40 p-3 space-y-1 text-xs text-muted-foreground">
+                  <p className="font-semibold text-foreground">
+                    Belum ada akun pengurus aktif yang terdaftar di aplikasi untuk {chatModalData.targetKomunitas?.nama}.
+                  </p>
+                  <p>
+                    Anda tetap dapat berkoordinasi secara langsung menggunakan saluran WhatsApp resmi lembaga di bawah ini.
+                  </p>
+                </div>
+              )}
+
+              {/* Opsi 2: WhatsApp Resmi Lembaga */}
+              {chatModalData.waUrl ? (
+                <div className="rounded-xl border border-emerald-500/20 bg-emerald-50/50 dark:bg-emerald-950/20 p-3.5 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
+                      <Phone className="h-3.5 w-3.5 text-emerald-600" /> WhatsApp Resmi
+                    </span>
+                    <span className="text-[11px] font-mono text-muted-foreground">
+                      {chatModalData.targetKomunitas?.kontak}
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Hubungi via WhatsApp resmi lembaga dengan pesan pembuka otomatis terkait data anak {currentChild.nama_lengkap}.
+                  </p>
+                  <a
+                    href={chatModalData.waUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition-all cursor-pointer shadow-xs active:scale-98"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    <span>Buka Chat WhatsApp</span>
+                  </a>
+                </div>
+              ) : (
+                <div className="rounded-xl border border-dashed border-border p-3 text-center text-xs text-muted-foreground">
+                  Nomor WhatsApp resmi belum dicantumkan di profil lembaga ini.
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="p-3 border-t border-border bg-muted/20 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setChatModalData(null)}
+                className="px-4 py-2 text-xs font-semibold rounded-lg bg-muted hover:bg-muted/80 text-foreground transition-all cursor-pointer"
+              >
+                Tutup
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </>
   );

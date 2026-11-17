@@ -135,6 +135,19 @@ export function ModalEditDataAnak({
   };
 
   const [alasanSekolah, setAlasanSekolah] = useState(cleanInitialAlasan());
+
+  const [isSekolahStatus, setIsSekolahStatus] = useState<boolean>(() => {
+    if (anak.is_sekolah !== undefined && anak.is_sekolah !== null) return anak.is_sekolah;
+    if (anak.nama_sekolah && !anak.nama_sekolah.toLowerCase().includes("belum")) return true;
+    return isPaud;
+  });
+
+  const [namaSekolahValue, setNamaSekolahValue] = useState<string>(() => {
+    if (anak.nama_sekolah && !anak.nama_sekolah.toLowerCase().includes("belum")) {
+      return anak.nama_sekolah;
+    }
+    return isPaud ? komunitasNama || "Satuan PAUD" : "";
+  });
   // Ceklis konfirmasi bahwa data sudah benar & valid.
   // Default false jika anak belum approved, agar admin wajib mencentang secara sadar sebelum memvalidasi.
   const [isCheckedValid, setIsCheckedValid] = useState(
@@ -277,11 +290,16 @@ export function ModalEditDataAnak({
     }
 
     const isPaudKomunitas = isKomunitasLayananPaud(null, komunitasNama, String(jenisKomunitas));
-    formData.append("isSekolah", isPaudKomunitas ? "true" : "false");
-    formData.append("namaSekolah", isPaudKomunitas ? (komunitasNama || "Satuan PAUD") : "Belum Sekolah");
+    formData.append("isSekolah", isSekolahStatus ? "true" : "false");
+    formData.append(
+      "namaSekolah",
+      isSekolahStatus
+        ? (namaSekolahValue || (isPaudKomunitas ? komunitasNama : anak.nama_sekolah || "Satuan PAUD"))
+        : "Belum Sekolah"
+    );
     formData.append(
       "alasanSekolah",
-      alasanSekolah || (isPaudKomunitas ? ALASAN_SEKOLAH_PAUD[0] : ALASAN_BELUM_SEKOLAH[0])
+      alasanSekolah || (isSekolahStatus ? ALASAN_SEKOLAH_PAUD[0] : ALASAN_BELUM_SEKOLAH[0])
     );
 
     // Parameter validasiSekarang dikirim true hanya jika tombol Validasi yang ditekan
@@ -1038,42 +1056,118 @@ export function ModalEditDataAnak({
               </>
             ) : (
               <>
-                {/* Status Belum Bersekolah Terkunci untuk Non-PAUD */}
+                {/* Pilihan Status Bersekolah untuk Posyandu / Komunitas Wilayah */}
                 <div className="space-y-1.5">
                   <label className="text-sm font-bold text-slate-900">
                     Apakah Anak Sudah Bersekolah? <span className="text-rose-600">*</span>
                   </label>
-                  <div className="flex min-h-[46px] items-center justify-between rounded-xl border-2 border-amber-600 bg-amber-50 text-amber-950 px-3.5 py-2 shadow-xs">
-                    <div className="flex items-center gap-2">
-                      <Baby className="h-4 w-4 text-amber-700 shrink-0" />
-                      <span className="text-sm font-bold">Belum Bersekolah</span>
-                    </div>
-                    <span className="rounded-md bg-amber-100 px-2 py-0.5 text-xs font-bold text-amber-900 border border-amber-300">
-                      Terkunci
-                    </span>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsSekolahStatus(true);
+                        if (!alasanSekolah || ALASAN_BELUM_SEKOLAH.includes(alasanSekolah as any)) {
+                          setAlasanSekolah(ALASAN_SEKOLAH_PAUD[0]);
+                        }
+                      }}
+                      className={cn(
+                        "flex items-center justify-center gap-2 p-2.5 rounded-xl border-2 text-xs font-bold transition-all cursor-pointer",
+                        isSekolahStatus
+                          ? "border-emerald-600 bg-emerald-50 text-emerald-950 shadow-xs"
+                          : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+                      )}
+                    >
+                      <GraduationCap className="h-4 w-4 text-emerald-600" />
+                      <span>Sudah Bersekolah</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsSekolahStatus(false);
+                        if (!alasanSekolah || ALASAN_SEKOLAH_PAUD.includes(alasanSekolah as any)) {
+                          setAlasanSekolah(ALASAN_BELUM_SEKOLAH[0]);
+                        }
+                      }}
+                      className={cn(
+                        "flex items-center justify-center gap-2 p-2.5 rounded-xl border-2 text-xs font-bold transition-all cursor-pointer",
+                        !isSekolahStatus
+                          ? "border-amber-600 bg-amber-50 text-amber-950 shadow-xs"
+                          : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+                      )}
+                    >
+                      <Baby className="h-4 w-4 text-amber-600" />
+                      <span>Belum Bersekolah</span>
+                    </button>
                   </div>
-                  <p className="text-xs text-slate-500 font-medium">
-                    Pembaruan data anak di komunitas wilayah/posyandu hanya diperuntukkan bagi anak yang belum bersekolah.
+                  <p className="text-2xs text-slate-500 font-medium">
+                    Kader/Admin Posyandu dan Satuan PAUD memiliki hak akses setara untuk mengelola dan memverifikasi data anak.
                   </p>
                 </div>
 
-                {/* Alasan Belum Bersekolah */}
-                <div className="space-y-1.5">
-                  <label className="text-sm font-bold text-slate-900">
-                    Alasan Belum Bersekolah PAUD <span className="text-rose-600">*</span>
-                  </label>
-                  <select
-                    value={alasanSekolah}
-                    onChange={(e) => setAlasanSekolah(e.target.value)}
-                    className="w-full min-h-[46px] h-11 rounded-xl border-2 border-slate-300 bg-white px-3.5 text-sm font-bold text-slate-900 focus:border-blue-600 focus:outline-hidden cursor-pointer"
-                  >
-                    {ALASAN_BELUM_SEKOLAH.map((alasan) => (
-                      <option key={alasan} value={alasan}>
-                        {alasan}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                {isSekolahStatus ? (
+                  <>
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-bold text-slate-900">
+                        Nama Satuan PAUD / TK <span className="text-rose-600">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={namaSekolahValue}
+                        onChange={(e) => setNamaSekolahValue(e.target.value)}
+                        placeholder="Contoh: RA Baitush Shobirin / TK Pertiwi"
+                        className="w-full min-h-[46px] h-11 rounded-xl border-2 border-slate-300 bg-white px-3.5 text-sm font-bold text-slate-900 focus:border-blue-600 focus:outline-hidden"
+                      />
+                      <p className="text-2xs text-slate-500">
+                        Tuliskan nama lembaga PAUD tempat anak terdaftar agar data tersinkronisasi otomatis.
+                      </p>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-bold text-slate-900">
+                        Alasan Mengikuti PAUD <span className="text-rose-600">*</span>
+                      </label>
+                      <select
+                        value={alasanSekolah}
+                        onChange={(e) => setAlasanSekolah(e.target.value)}
+                        className="w-full min-h-[46px] h-11 rounded-xl border-2 border-slate-300 bg-white px-3.5 text-sm font-bold text-slate-900 focus:border-blue-600 focus:outline-hidden cursor-pointer"
+                      >
+                        {ALASAN_SEKOLAH_PAUD.map((alasan) => (
+                          <option key={alasan} value={alasan}>
+                            {alasan}
+                          </option>
+                        ))}
+                        {alasanSekolah && !ALASAN_SEKOLAH_PAUD.includes(alasanSekolah as any) && (
+                          <option value={alasanSekolah}>
+                            {alasanSekolah}
+                          </option>
+                        )}
+                      </select>
+                    </div>
+                  </>
+                ) : (
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-bold text-slate-900">
+                      Alasan Belum Bersekolah PAUD <span className="text-rose-600">*</span>
+                    </label>
+                    <select
+                      value={alasanSekolah}
+                      onChange={(e) => setAlasanSekolah(e.target.value)}
+                      className="w-full min-h-[46px] h-11 rounded-xl border-2 border-slate-300 bg-white px-3.5 text-sm font-bold text-slate-900 focus:border-blue-600 focus:outline-hidden cursor-pointer"
+                    >
+                      {ALASAN_BELUM_SEKOLAH.map((alasan) => (
+                        <option key={alasan} value={alasan}>
+                          {alasan}
+                        </option>
+                      ))}
+                      {alasanSekolah && !ALASAN_BELUM_SEKOLAH.includes(alasanSekolah as any) && (
+                        <option value={alasanSekolah}>
+                          {alasanSekolah}
+                        </option>
+                      )}
+                    </select>
+                  </div>
+                )}
               </>
             )}
 

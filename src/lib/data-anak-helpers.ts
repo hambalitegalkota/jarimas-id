@@ -1,6 +1,6 @@
 import { extractKomunitasMetadata } from "@/lib/admin-helpers";
 import { RAW_PAUD_PKBM_TEGAL } from "@/lib/constants/seed-paud-tegal";
-import { RAW_POSYANDU_TEGAL, SLEROK_POSYANDU_MAP, MARGADANA_POSYANDU_MAP } from "@/lib/constants/seed-posyandu-tegal";
+import { RAW_POSYANDU_TEGAL, SLEROK_POSYANDU_MAP, MARGADANA_POSYANDU_MAP, TEGALSARI_POSYANDU_MAP } from "@/lib/constants/seed-posyandu-tegal";
 import {
   MASTER_KOMUNITAS_SEED,
   findOrGenerateKomunitasSeed,
@@ -469,6 +469,13 @@ export interface DataAnakAlasanParams {
   domisiliRw?: string | null;
   domisiliRt?: string | null;
   domisiliJalan?: string | null;
+  editHistory?: Array<{
+    waktu: string;
+    nama: string;
+    role: string;
+    komunitas: string;
+    jenisKomunitas?: string;
+  }>;
 }
 
 /**
@@ -512,6 +519,14 @@ export function serializeDataAnakAlasan(params: DataAnakAlasanParams): string {
   if (domRt) parts.push(`[DOM_RT:${domRt}]`);
   if (domJalan) parts.push(`[DOM_JALAN:${domJalan}]`);
 
+  // Riwayat Pengeditan Kolaboratif (PAUD & Posyandu)
+  if (params.editHistory && params.editHistory.length > 0) {
+    try {
+      const sanitized = params.editHistory.slice(-15);
+      parts.push(`[EDIT_HISTORY:${encodeURIComponent(JSON.stringify(sanitized))}]`);
+    } catch {}
+  }
+
   return parts.join(" ").trim();
 }
 
@@ -529,6 +544,13 @@ export interface ParsedDataAnakDetails {
   domisiliRw: string;
   domisiliRt: string;
   domisiliJalan: string;
+  editHistory: Array<{
+    waktu: string;
+    nama: string;
+    role: string;
+    komunitas: string;
+    jenisKomunitas?: string;
+  }>;
 }
 
 /**
@@ -643,6 +665,33 @@ export function parseDataAnakDetails(
     }
   }
 
+  // 5. Ekstraksi Riwayat Pengeditan Kolaboratif [EDIT_HISTORY:...]
+  let editHistory: Array<{
+    waktu: string;
+    nama: string;
+    role: string;
+    komunitas: string;
+    jenisKomunitas?: string;
+  }> = [];
+
+  const matchHistory = raw.match(/\[EDIT_HISTORY\s*:\s*([^\]]+)\]/i);
+  if (matchHistory && matchHistory[1]) {
+    try {
+      const decoded = decodeURIComponent(matchHistory[1].trim());
+      const parsed = JSON.parse(decoded);
+      if (Array.isArray(parsed)) {
+        editHistory = parsed;
+      }
+    } catch {
+      try {
+        const parsed = JSON.parse(matchHistory[1].trim());
+        if (Array.isArray(parsed)) {
+          editHistory = parsed;
+        }
+      } catch {}
+    }
+  }
+
   // Format default alasan jika masih kosong
   if (!alasan) {
     alasan = "Sudah Usia PAUD";
@@ -680,7 +729,111 @@ export function parseDataAnakDetails(
     domisiliRw,
     domisiliRt,
     domisiliJalan,
+    editHistory,
   };
+}
+
+export interface ChildPosyanduMatchResult {
+  id: string | null;
+  nama: string;
+  kecamatan: string;
+  kelurahan: string;
+  rw?: string;
+  kontak?: string;
+  isMapped: boolean;
+}
+
+/**
+ * Mencari lembaga Posyandu resmi Kota Tegal yang menaungi wilayah anak berdasarkan Kelurahan, RW, dan RT.
+ */
+export function findPosyanduForChild(child: Partial<DataAnakItem>): ChildPosyanduMatchResult {
+  const kel = normalizeWilayah(child.domisili_kelurahan || child.kk_kelurahan || "");
+  const rw = normalizeRtRwNum(child.domisili_rw || child.kk_rw || "");
+  const rt = normalizeRtRwNum(child.domisili_rt || child.kk_rt || "");
+
+  for (const pos of RAW_POSYANDU_TEGAL) {
+    const posKel = normalizeWilayah(pos.kelurahan);
+    if (!posKel || !kel || (!posKel.includes(kel) && !kel.includes(posKel))) continue;
+
+    const cakupan = getPosyanduCakupanWilayah(pos);
+    if (cakupan?.rw) {
+      const matchRw = normalizeRtRwNum(cakupan.rw) === rw;
+      if (matchRw) {
+        if (cakupan.rtList && cakupan.rtList.length > 0) {
+          const matchRt = cakupan.rtList.some((r) => normalizeRtRwNum(r) === rt);
+          if (matchRt) {
+            return {
+              id: pos.id || null,
+              nama: pos.nama,
+              kecamatan: pos.kecamatan,
+              kelurahan: pos.kelurahan,
+              rw: cakupan.rw,
+              kontak: pos.kontak,
+              isMapped: true,
+            };
+          }
+        } else {
+          return {
+            id: pos.id || null,
+            nama: pos.nama,
+            kecamatan: pos.kecamatan,
+            kelurahan: pos.kelurahan,
+            rw: cakupan.rw,
+            kontak: pos.kontak,
+            isMapped: true,
+          };
+        }
+      }
+    }
+  }
+
+  // Fallback kelurahan
+  const firstInKel = RAW_POSYANDU_TEGAL.find(
+    (p) => normalizeWilayah(p.kelurahan) === kel || normalizeWilayah(p.kelurahan).includes(kel)
+  );
+  if (firstInKel) {
+    return {
+      id: firstInKel.id || null,
+      nama: firstInKel.nama,
+      kecamatan: firstInKel.kecamatan,
+      kelurahan: firstInKel.kelurahan,
+      kontak: firstInKel.kontak,
+      isMapped: false,
+    };
+  }
+
+  return {
+    id: null,
+    nama: kel ? `Posyandu di Kel. ${child.domisili_kelurahan || child.kk_kelurahan}` : "Posyandu Wilayah",
+    kecamatan: child.domisili_kecamatan || child.kk_kecamatan || "Kota Tegal",
+    kelurahan: child.domisili_kelurahan || child.kk_kelurahan || "",
+    isMapped: false,
+  };
+}
+
+/**
+ * Mencari data lembaga Satuan PAUD / PKBM / SKB terdaftar berdasarkan nama sekolah.
+ */
+export function findPaudForChild(namaSekolah?: string | null): any | null {
+  if (!namaSekolah || namaSekolah.toLowerCase().includes("belum")) return null;
+  const clean = namaSekolah.toLowerCase().trim();
+
+  // 1. Exact match / isSchoolNameMatching
+  for (const paud of RAW_PAUD_PKBM_TEGAL) {
+    if (isSchoolNameMatching(clean, paud.nama)) {
+      return paud;
+    }
+  }
+
+  // 2. Substring match
+  for (const paud of RAW_PAUD_PKBM_TEGAL) {
+    const pNama = paud.nama.toLowerCase();
+    if (clean.includes(pNama) || pNama.includes(clean)) {
+      return paud;
+    }
+  }
+
+  return null;
 }
 
 /**
@@ -2308,6 +2461,7 @@ export function getPosyanduCakupanWilayah(targetKomunitas: any): PosyanduCakupan
     kel.includes("tegalsari") ||
     nama.includes("tegalsari") ||
     targetKomunitas?.id === "cd1adf7b-5be1-4c26-8f3f-99b1c2242d80" ||
+    targetKomunitas?.id === "491d1393-f6af-4440-823f-394dd302750a" ||
     targetKomunitas?.id === "f6013505-8603-4059-803c-04855b1a6e07" ||
     targetKomunitas?.id === "9438aeb6-8603-4059-8de7-bc4de1063872" ||
     targetKomunitas?.id === "376225ad-69fc-44af-82dc-5f21b6ea2f72" ||
@@ -2333,7 +2487,7 @@ export function getPosyanduCakupanWilayah(targetKomunitas: any): PosyanduCakupan
     ) {
       return {
         rw: "01",
-        rtList: ["01", "02", "03", "04", "05", "06", "1", "2", "3", "4", "5", "6"],
+        rtList: ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
       };
     }
     if (
@@ -2491,8 +2645,20 @@ export function getPosyanduCakupanWilayah(targetKomunitas: any): PosyanduCakupan
     ) {
       return {
         rw: "12",
-        rwList: ["12", "13", "31", "02"],
+        rwList: ["12", "02"],
         rtList: ["01", "02", "03", "04", "05", "1", "2", "3", "4", "5"],
+      };
+    }
+    if (
+      targetKomunitas?.id === "491d1393-f6af-4440-823f-394dd302750a" ||
+      (nama.includes("mekarsari") && (kel.includes("tegalsari") || targetKomunitas?.id === "491d1393-f6af-4440-823f-394dd302750a"))
+    ) {
+      return {
+        rw: "31",
+        rtList: [
+          "01", "02", "03", "04", "05", "06", "07", "08", "09",
+          "1", "2", "3", "4", "5", "6", "7", "8", "9"
+        ],
       };
     }
   }
@@ -2875,6 +3041,26 @@ export function getPosyanduCoverageDisplay(komunitas: any): PosyanduCoverageResu
   if (margadanaEntry) {
     const rwLabel = `RW ${margadanaEntry.rw.padStart(2, "0")}`;
     const rtLabel = formatRtList(margadanaEntry.allowedRts);
+    const fullLabel = `${rwLabel} (${rtLabel})`;
+    return {
+      isMapped: true,
+      label: fullLabel,
+      rwLabel,
+      rtLabel,
+    };
+  }
+
+  // Khusus Posyandu Tegalsari (Tunas Bahari, Mekarsari, Anggrek Ungu)
+  const tegalsariEntry =
+    (komunitas.id && TEGALSARI_POSYANDU_MAP[komunitas.id]) ||
+    Object.values(TEGALSARI_POSYANDU_MAP).find((t) => {
+      const tNorm = t.nama.toLowerCase().replace("posyandu ", "").trim();
+      return rawNama.includes(tNorm) && (kelCleanForCoverage.includes("tegalsari") || !kelCleanForCoverage);
+    });
+
+  if (tegalsariEntry) {
+    const rwLabel = `RW ${tegalsariEntry.rw.padStart(2, "0")}`;
+    const rtLabel = formatRtList(tegalsariEntry.allowedRts);
     const fullLabel = `${rwLabel} (${rtLabel})`;
     return {
       isMapped: true,
@@ -3756,7 +3942,7 @@ export function isValidTegalsariRtRw(
   const rtNum = parseInt(rawRt.replace(/\D/g, ""), 10);
   if (isNaN(rtNum)) return false;
 
-  if (rwNum === 1 && (rtNum < 1 || rtNum > 6)) return false;
+  if (rwNum === 1 && (rtNum < 1 || rtNum > 10)) return false;
   if (rwNum === 2 && (rtNum < 1 || rtNum > 10)) return false;
   if (rwNum === 3 && (rtNum < 1 || rtNum > 10)) return false;
   if (rwNum === 4 && (rtNum < 1 || rtNum > 10)) return false;
@@ -3768,7 +3954,8 @@ export function isValidTegalsariRtRw(
   if (rwNum === 10 && (rtNum < 1 || rtNum > 10)) return false;
   if (rwNum === 11 && (rtNum < 1 || rtNum > 5)) return false;
   if (rwNum === 12 && (rtNum < 1 || rtNum > 5)) return false;
-  if ((rwNum === 13 || rwNum === 31) && (rtNum < 1 || rtNum > 5)) return false;
+  if (rwNum === 13 && (rtNum < 1 || rtNum > 5)) return false;
+  if (rwNum === 31 && (rtNum < 1 || rtNum > 9)) return false;
 
   return true;
 }
