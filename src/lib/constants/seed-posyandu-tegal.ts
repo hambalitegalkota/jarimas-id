@@ -120,19 +120,19 @@ export const RAW_POSYANDU_TEGAL: RawPosyanduItem[] = [
   { id: "eba39233-1cd5-47f4-8c44-30b15ba67820", nama: "Posyandu Melati", kecamatan: "Tegal Timur", kelurahan: "Mangkukusuman", rw: "02", rt: "01", cakupan_wilayah: "Melayani Warga RW 02 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08, RT 09, RT 10 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 02, Mangkukusuman, Tegal Timur, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Melati Mangkukusuman cakupan sinkronisasi wilayah RW 02 (RT 01 s/d RT 10): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
   { id: "6f3d79cf-9ab4-436b-8cfe-59751a6b3a6d", nama: "Posyandu Fatmawati", kecamatan: "Tegal Timur", kelurahan: "Mangkukusuman", rw: "03", rt: "01", cakupan_wilayah: "Melayani Warga RW 03 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08, RT 09, RT 10, RT 11 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 03, Mangkukusuman, Tegal Timur, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Fatmawati Mangkukusuman cakupan sinkronisasi wilayah RW 03 (RT 01 s/d RT 11): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
 
-  // Mintaragen (12 Posyandu)
-  { id: "72fbce59-f4d9-42e2-8b65-60b955e603fd", nama: "Posyandu Anggrek", kecamatan: "Tegal Timur", kelurahan: "Mintaragen", rw: "04", rt: "02", lokasi: "Balai Posyandu / RW 04, Mintaragen, Tegal Timur, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Anggrek Mintaragen: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "a50d50de-8ec0-45b7-8e3b-a04104b598ee", nama: "Posyandu Anyelir", kecamatan: "Tegal Timur", kelurahan: "Mintaragen", rw: "01", rt: "01", lokasi: "Balai Posyandu / RW 01, Mintaragen, Tegal Timur, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Anyelir Mintaragen: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "50ba2d04-f81e-4c45-877b-3661c72d15e8", nama: "Posyandu Bougenville", kecamatan: "Tegal Timur", kelurahan: "Mintaragen", rw: "03", rt: "01", lokasi: "Balai Posyandu / RW 03, Mintaragen, Tegal Timur, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Bougenville Mintaragen: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "c556ba87-6129-4955-8333-e86197ae6594", nama: "Posyandu Flamboyan", kecamatan: "Tegal Timur", kelurahan: "Mintaragen", rw: "03", rt: "03", lokasi: "Balai Posyandu / RW 03, Mintaragen, Tegal Timur, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Flamboyan Mintaragen: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "f07d4413-a6b7-4368-8d47-e65940b02033", nama: "Posyandu Kenanga", kecamatan: "Tegal Timur", kelurahan: "Mintaragen", rw: "02", rt: "04", lokasi: "Balai Posyandu / RW 02, Mintaragen, Tegal Timur, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Kenanga Mintaragen: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "ea213472-a773-4618-82a4-d739ea1c73c1", nama: "Posyandu Mawar", kecamatan: "Tegal Timur", kelurahan: "Mintaragen", rw: "06", rt: "04", lokasi: "Balai Posyandu / RW 06, Mintaragen, Tegal Timur, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Mawar Mintaragen: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "0b4eebf2-d27f-4808-800a-ecb5de8538e9", nama: "Posyandu Melati", kecamatan: "Tegal Timur", kelurahan: "Mintaragen", rw: "02", rt: "02", lokasi: "Balai Posyandu / RW 02, Mintaragen, Tegal Timur, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Melati Mintaragen: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "4cf472a8-7227-43c6-882b-1b0d492617f8", nama: "Posyandu Nusa Indah 1", kecamatan: "Tegal Timur", kelurahan: "Mintaragen", rw: "05", rt: "03", lokasi: "Balai Posyandu / RW 05, Mintaragen, Tegal Timur, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Nusa Indah 1 Mintaragen: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "279adfbb-7227-43c6-8a7f-6345dae97739", nama: "Posyandu Nusa Indah 2", kecamatan: "Tegal Timur", kelurahan: "Mintaragen", rw: "06", rt: "02", lokasi: "Balai Posyandu / RW 06, Mintaragen, Tegal Timur, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Nusa Indah 2 Mintaragen: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "472add48-73fd-40aa-8ced-3c21c1ee2db0", nama: "Posyandu Sedap Malam", kecamatan: "Tegal Timur", kelurahan: "Mintaragen", rw: "04", rt: "04", lokasi: "Balai Posyandu / RW 04, Mintaragen, Tegal Timur, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Sedap Malam Mintaragen: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "85d706fc-a010-4cbf-8e5b-df4572ec4077", nama: "Posyandu Seruni", kecamatan: "Tegal Timur", kelurahan: "Mintaragen", rw: "05", rt: "01", lokasi: "Balai Posyandu / RW 05, Mintaragen, Tegal Timur, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Seruni Mintaragen: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "39e79c74-a5db-47d5-8f11-ead1c46042b4", nama: "Posyandu Teratai", kecamatan: "Tegal Timur", kelurahan: "Mintaragen", rw: "01", rt: "03", lokasi: "Balai Posyandu / RW 01, Mintaragen, Tegal Timur, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Teratai Mintaragen: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  // Mintaragen (12 Posyandu) - Sesuai RW dan cakupan wilayah resmi Mintaragen
+  { id: "a50d50de-8ec0-45b7-8e3b-a04104b598ee", nama: "Posyandu Anyelir", kecamatan: "Tegal Timur", kelurahan: "Mintaragen", rw: "01", rt: "01", cakupan_wilayah: "Melayani Warga RW 01 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08, RT 09 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 01, Mintaragen, Tegal Timur, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Anyelir Mintaragen cakupan sinkronisasi wilayah RW 01 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08, RT 09 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "ea213472-a773-4618-82a4-d739ea1c73c1", nama: "Posyandu Mawar", kecamatan: "Tegal Timur", kelurahan: "Mintaragen", rw: "02", rt: "01", cakupan_wilayah: "Melayani Warga RW 02 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 02, Mintaragen, Tegal Timur, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Mawar Mintaragen cakupan sinkronisasi wilayah RW 02 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "39e79c74-a5db-47d5-8f11-ead1c46042b4", nama: "Posyandu Teratai", kecamatan: "Tegal Timur", kelurahan: "Mintaragen", rw: "03", rt: "01", cakupan_wilayah: "Melayani Warga RW 03 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 03, Mintaragen, Tegal Timur, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Teratai Mintaragen cakupan sinkronisasi wilayah RW 03 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "0b4eebf2-d27f-4808-800a-ecb5de8538e9", nama: "Posyandu Melati", kecamatan: "Tegal Timur", kelurahan: "Mintaragen", rw: "04", rt: "01", cakupan_wilayah: "Melayani Warga RW 04 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 04, Mintaragen, Tegal Timur, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Melati Mintaragen cakupan sinkronisasi wilayah RW 04 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "f07d4413-a6b7-4368-8d47-e65940b02033", nama: "Posyandu Kenanga", kecamatan: "Tegal Timur", kelurahan: "Mintaragen", rw: "05", rt: "01", cakupan_wilayah: "Melayani Warga RW 05 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 05, Mintaragen, Tegal Timur, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Kenanga Mintaragen cakupan sinkronisasi wilayah RW 05 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "50ba2d04-f81e-4c45-877b-3661c72d15e8", nama: "Posyandu Bougenville", kecamatan: "Tegal Timur", kelurahan: "Mintaragen", rw: "06", rt: "01", cakupan_wilayah: "Melayani Warga RW 06 (RT 01, RT 02, RT 03, RT 04 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 06, Mintaragen, Tegal Timur, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Bougenville Mintaragen cakupan sinkronisasi wilayah RW 06 (RT 01, RT 02, RT 03, RT 04 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "c556ba87-6129-4955-8333-e86197ae6594", nama: "Posyandu Flamboyan", kecamatan: "Tegal Timur", kelurahan: "Mintaragen", rw: "07", rt: "01", cakupan_wilayah: "Melayani Warga RW 07 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 07, Mintaragen, Tegal Timur, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Flamboyan Mintaragen cakupan sinkronisasi wilayah RW 07 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "72fbce59-f4d9-42e2-8b65-60b955e603fd", nama: "Posyandu Anggrek", kecamatan: "Tegal Timur", kelurahan: "Mintaragen", rw: "08", rt: "01", cakupan_wilayah: "Melayani Warga RW 08 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08, RT 09, RT 10 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 08, Mintaragen, Tegal Timur, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Anggrek Mintaragen cakupan sinkronisasi wilayah RW 08 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08, RT 09, RT 10 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "472add48-73fd-40aa-8ced-3c21c1ee2db0", nama: "Posyandu Sedap Malam", kecamatan: "Tegal Timur", kelurahan: "Mintaragen", rw: "09", rt: "01", cakupan_wilayah: "Melayani Warga RW 09 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 09, Mintaragen, Tegal Timur, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Sedap Malam Mintaragen cakupan sinkronisasi wilayah RW 09 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "85d706fc-a010-4cbf-8e5b-df4572ec4077", nama: "Posyandu Seruni", kecamatan: "Tegal Timur", kelurahan: "Mintaragen", rw: "10", rt: "01", cakupan_wilayah: "Melayani Warga RW 10 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08, RT 09, RT 10, RT 11, RT 12, RT 13, RT 14 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 10, Mintaragen, Tegal Timur, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Seruni Mintaragen cakupan sinkronisasi wilayah RW 10 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08, RT 09, RT 10, RT 11, RT 12, RT 13, RT 14 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "4cf472a8-7227-43c6-882b-1b0d492617f8", nama: "Posyandu Nusa Indah A", kecamatan: "Tegal Timur", kelurahan: "Mintaragen", rw: "11", rt: "01", cakupan_wilayah: "Melayani Warga RW 11 (RT 01, RT 02, RT 03, RT 06, RT 07, RT 08, RT 09, RT 11, RT 12, RT 13 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 11, Mintaragen, Tegal Timur, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Nusa Indah A Mintaragen cakupan sinkronisasi wilayah RW 11 (RT 01, RT 02, RT 03, RT 06, RT 07, RT 08, RT 09, RT 11, RT 12, RT 13 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "279adfbb-7227-43c6-8a7f-6345dae97739", nama: "Posyandu Nusa Indah B", kecamatan: "Tegal Timur", kelurahan: "Mintaragen", rw: "11", rt: "04", cakupan_wilayah: "Melayani Warga RW 11 (RT 04, RT 05, RT 07, RT 10, RT 14, RT 15 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 11, Mintaragen, Tegal Timur, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Nusa Indah B Mintaragen cakupan sinkronisasi wilayah RW 11 (RT 04, RT 05, RT 07, RT 10, RT 14, RT 15 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
 
   // Panggung (18 Posyandu)
   { id: "2fc50ff0-9d53-42bc-8b1b-e4ad73e274a8", nama: "Posyandu Dahlia", kecamatan: "Tegal Timur", kelurahan: "Panggung", rw: "01", rt: "01", lokasi: "Balai Posyandu / RW 01, Panggung, Tegal Timur, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Dahlia Panggung cakupan sinkronisasi wilayah RW 01 (RT 01 s/d RT 09): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
@@ -184,10 +184,10 @@ export const RAW_POSYANDU_TEGAL: RawPosyanduItem[] = [
   { id: "f0a76189-575c-488e-8361-739911df887d", nama: "Posyandu Sartika", kecamatan: "Tegal Barat", kelurahan: "Debong Lor", rw: "02", rt: "01", cakupan_wilayah: "Melayani Warga RW 02 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 02, Debong Lor, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Sartika Debong Lor cakupan sinkronisasi wilayah RW 02 (RT 01 s/d RT 05): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
   { id: "8a3e27d7-c6b0-4cf9-8b2b-6425e1f79f59", nama: "Posyandu Mawar", kecamatan: "Tegal Barat", kelurahan: "Debong Lor", rw: "03", rt: "01", cakupan_wilayah: "Melayani Warga RW 03 (RT 01, RT 02, RT 03, RT 04 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 03, Debong Lor, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Mawar Debong Lor cakupan sinkronisasi wilayah RW 03 (RT 01 s/d RT 04): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
 
-  // Kemandungan (3 Posyandu)
-  { id: "9d57da39-7e2f-436a-802e-0a9d384eafc4", nama: "Posyandu Cempaka", kecamatan: "Tegal Barat", kelurahan: "Kemandungan", rw: "03", rt: "03", lokasi: "Balai Posyandu / RW 03, Kemandungan, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Cempaka Wangi Kemandungan: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "7e5bcfd3-2220-4c28-8c88-5b01930049fc", nama: "Posyandu Melati", kecamatan: "Tegal Barat", kelurahan: "Kemandungan", rw: "01", rt: "03", lokasi: "Balai Posyandu / RW 01, Kemandungan, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Melati Kemandungan 2 Kemandungan: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "0c52a3df-6317-42cb-8cd4-d5d1abaf3f0c", nama: "Posyandu Seruni", kecamatan: "Tegal Barat", kelurahan: "Kemandungan", rw: "03", rt: "01", lokasi: "Balai Posyandu / RW 03, Kemandungan, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Kenanga Asri Kemandungan: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  // Kemandungan (3 Posyandu) - Sesuai RW dan cakupan wilayah resmi Kemandungan
+  { id: "0c52a3df-6317-42cb-8cd4-d5d1abaf3f0c", nama: "Posyandu Seruni", kecamatan: "Tegal Barat", kelurahan: "Kemandungan", rw: "01", rt: "01", cakupan_wilayah: "Melayani Warga RW 01 (RT 01, RT 02, RT 03, RT 04 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 01, Kemandungan, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Seruni Kemandungan cakupan sinkronisasi wilayah RW 01 (RT 01, RT 02, RT 03, RT 04 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "7e5bcfd3-2220-4c28-8c88-5b01930049fc", nama: "Posyandu Melati", kecamatan: "Tegal Barat", kelurahan: "Kemandungan", rw: "02", rt: "01", cakupan_wilayah: "Melayani Warga RW 02 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 02, Kemandungan, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Melati Kemandungan cakupan sinkronisasi wilayah RW 02 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "9d57da39-7e2f-436a-802e-0a9d384eafc4", nama: "Posyandu Cempaka", kecamatan: "Tegal Barat", kelurahan: "Kemandungan", rw: "03", rt: "01", cakupan_wilayah: "Melayani Warga RW 03 (RT 01, RT 02, RT 03 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 03, Kemandungan, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Cempaka Kemandungan cakupan sinkronisasi wilayah RW 03 (RT 01, RT 02, RT 03 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
 
   // Kraton (15 Posyandu)
   { id: "174b9b13-3385-42b8-8ab9-7f654ce7ba09", nama: "Posyandu Nusa Indah", kecamatan: "Tegal Barat", kelurahan: "Kraton", rw: "01", rt: "01", lokasi: "Balai Posyandu / RW 01, Kraton, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Nusa Indah Kraton cakupan sinkronisasi wilayah RW 01 (RT 01 s/d RT 09): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
@@ -224,13 +224,13 @@ export const RAW_POSYANDU_TEGAL: RawPosyanduItem[] = [
   { id: "869cb9e3-4dca-4a68-8f5a-7d4996e58a7b", nama: "Posyandu Jalak", kecamatan: "Tegal Barat", kelurahan: "Pekauman", rw: "06", rt: "01", lokasi: "Balai Posyandu / RW 06, Pekauman, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Jalak Pekauman cakupan sinkronisasi wilayah RW 06 (RT 01 s/d RT 09): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
   { id: "76ea213c-362e-4073-87cb-aacd851ab8bc", nama: "Posyandu Belimbing", kecamatan: "Tegal Barat", kelurahan: "Pekauman", rw: "07", rt: "01", lokasi: "Balai Posyandu / RW 07, Pekauman, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Belimbing Pekauman cakupan sinkronisasi wilayah RW 07 (RT 01 s/d RT 06): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
 
-  // Pesurungan Kidul (6 Posyandu)
-  { id: "d84b007b-f156-42f2-88a1-f0f1af220a00", nama: "Posyandu Melati 1", kecamatan: "Tegal Barat", kelurahan: "Pesurungan Kidul", rw: "01", rt: "01", lokasi: "Balai Posyandu / RW 01, Pesurungan Kidul, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Melati 1 Pesurungan Kidul: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "fda49368-f156-42f2-8d30-8389350dd46b", nama: "Posyandu Melati 2", kecamatan: "Tegal Barat", kelurahan: "Pesurungan Kidul", rw: "02", rt: "01", lokasi: "Balai Posyandu / RW 02, Pesurungan Kidul, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Melati 2 Pesurungan Kidul: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "9bdc0d19-f156-42f2-81bf-1621d2a8c882", nama: "Posyandu Melati 3", kecamatan: "Tegal Barat", kelurahan: "Pesurungan Kidul", rw: "03", rt: "01", lokasi: "Balai Posyandu / RW 03, Pesurungan Kidul, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Melati 3 Pesurungan Kidul: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "b2f16d8e-508b-4787-81d9-13f9589492ed", nama: "Posyandu Melati 4", kecamatan: "Tegal Barat", kelurahan: "Pesurungan Kidul", rw: "04", rt: "01", lokasi: "Balai Posyandu / RW 04, Pesurungan Kidul, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Melati 4 Pesurungan Kidul: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "5128e73f-508b-4787-8667-a691c6d133ac", nama: "Posyandu Melati 5", kecamatan: "Tegal Barat", kelurahan: "Pesurungan Kidul", rw: "06", rt: "01", lokasi: "Balai Posyandu / RW 06, Pesurungan Kidul, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Melati 5 Pesurungan Kidul cakupan sinkronisasi wilayah RW 06 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", cakupan_wilayah: "Melayani Warga RW 06 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu)", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "76827a2c-508b-4787-8af6-39294cbcfe17", nama: "Posyandu Melati 6", kecamatan: "Tegal Barat", kelurahan: "Pesurungan Kidul", rw: "06", rt: "01", lokasi: "Balai Posyandu / RW 06, Pesurungan Kidul, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Melati 6 Pesurungan Kidul: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  // Pesurungan Kidul (6 Posyandu) - Sesuai RW dan cakupan wilayah resmi Pesurungan Kidul
+  { id: "9bdc0d19-f156-42f2-81bf-1621d2a8c882", nama: "Posyandu Melati 3", kecamatan: "Tegal Barat", kelurahan: "Pesurungan Kidul", rw: "01", rt: "01", cakupan_wilayah: "Melayani Warga RW 01 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 01, Pesurungan Kidul, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Melati 3 Pesurungan Kidul cakupan sinkronisasi wilayah RW 01 (RT 01 s/d RT 05 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "76827a2c-508b-4787-8af6-39294cbcfe17", nama: "Posyandu Melati 6", kecamatan: "Tegal Barat", kelurahan: "Pesurungan Kidul", rw: "02", rt: "01", cakupan_wilayah: "Melayani Warga RW 02 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 02, Pesurungan Kidul, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Melati 6 Pesurungan Kidul cakupan sinkronisasi wilayah RW 02 (RT 01 s/d RT 06 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "d84b007b-f156-42f2-88a1-f0f1af220a00", nama: "Posyandu Melati 1", kecamatan: "Tegal Barat", kelurahan: "Pesurungan Kidul", rw: "03", rt: "01", cakupan_wilayah: "Melayani Warga RW 03 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 03, Pesurungan Kidul, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Melati 1 Pesurungan Kidul cakupan sinkronisasi wilayah RW 03 (RT 01 s/d RT 05 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "fda49368-f156-42f2-8d30-8389350dd46b", nama: "Posyandu Melati 2", kecamatan: "Tegal Barat", kelurahan: "Pesurungan Kidul", rw: "04", rt: "01", cakupan_wilayah: "Melayani Warga RW 04 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 04, Pesurungan Kidul, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Melati 2 Pesurungan Kidul cakupan sinkronisasi wilayah RW 04 (RT 01 s/d RT 05 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "b2f16d8e-508b-4787-81d9-13f9589492ed", nama: "Posyandu Melati 4", kecamatan: "Tegal Barat", kelurahan: "Pesurungan Kidul", rw: "05", rt: "01", cakupan_wilayah: "Melayani Warga RW 05 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 05, Pesurungan Kidul, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Melati 4 Pesurungan Kidul cakupan sinkronisasi wilayah RW 05 (RT 01 s/d RT 05 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "5128e73f-508b-4787-8667-a691c6d133ac", nama: "Posyandu Melati 5", kecamatan: "Tegal Barat", kelurahan: "Pesurungan Kidul", rw: "06", rt: "01", cakupan_wilayah: "Melayani Warga RW 06 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 06, Pesurungan Kidul, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Melati 5 Pesurungan Kidul cakupan sinkronisasi wilayah RW 06 (RT 01 s/d RT 06 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
 
   // Tegalsari (19 Posyandu)
   { id: "cd1adf7b-5be1-4c26-8f3f-99b1c2242d80", nama: "Posyandu Tunas Bahari", kecamatan: "Tegal Barat", kelurahan: "Tegalsari", rw: "01", rt: "01", cakupan_wilayah: "RW 01 (RT 01 s/d RT 10)", lokasi: "Balai Posyandu / RW 01, Tegalsari, Tegal Barat, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Tunas Bahari Tegalsari cakupan sinkronisasi wilayah RW 01 (RT 01 s/d RT 10): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
@@ -329,11 +329,12 @@ export const RAW_POSYANDU_TEGAL: RawPosyanduItem[] = [
   // ==========================================
   // 4. KECAMATAN MARGADANA (7 Kelurahan)
   // ==========================================
-  // Cabawan (4 Posyandu)
-  { id: "a501a319-5406-494e-8f7d-11e59de07353", nama: "Posyandu Anggerk RW 1", kecamatan: "Margadana", kelurahan: "Cabawan", rw: "01", rt: "01", lokasi: "Balai Posyandu / RW 01, Cabawan, Margadana, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Kamboja Cabawan 1 Cabawan: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "43391cca-5406-494e-8d28-c9ad23cc3dbe", nama: "Posyandu Bougenville RW 2", kecamatan: "Margadana", kelurahan: "Cabawan", rw: "01", rt: "03", lokasi: "Balai Posyandu / RW 01, Cabawan, Margadana, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Kamboja Cabawan 2 Cabawan: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "959b88ad-0f63-4283-8c49-c699cf1d0d35", nama: "Posyandu Cempaka RW 3", kecamatan: "Margadana", kelurahan: "Cabawan", rw: "04", rt: "02", lokasi: "Balai Posyandu / RW 04, Cabawan, Margadana, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Kenanga Asri Cabawan: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "8668159c-8f20-498b-89ea-877d8f0d7958", nama: "Posyandu Dahlia RW 4", kecamatan: "Margadana", kelurahan: "Cabawan", rw: "03", rt: "01", lokasi: "Balai Posyandu / RW 03, Cabawan, Margadana, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Mawar Cabawan Cabawan: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  // Cabawan (5 Posyandu) - Sesuai RW dan cakupan wilayah resmi Cabawan
+  { id: "a501a319-5406-494e-8f7d-11e59de07353", nama: "Posyandu Anggrek", kecamatan: "Margadana", kelurahan: "Cabawan", rw: "01", rt: "01", cakupan_wilayah: "Melayani Warga RW 01 (RT 01, RT 02, RT 03, RT 04 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 01, Cabawan, Margadana, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Anggrek Cabawan cakupan sinkronisasi wilayah RW 01 (RT 01 s/d RT 04 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "43391cca-5406-494e-8d28-c9ad23cc3dbe", nama: "Posyandu Bougenville", kecamatan: "Margadana", kelurahan: "Cabawan", rw: "02", rt: "01", cakupan_wilayah: "Melayani Warga RW 02 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 02, Cabawan, Margadana, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Bougenville Cabawan cakupan sinkronisasi wilayah RW 02 (RT 01 s/d RT 05 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "959b88ad-0f63-4283-8c49-c699cf1d0d35", nama: "Posyandu Cempaka", kecamatan: "Margadana", kelurahan: "Cabawan", rw: "03", rt: "01", cakupan_wilayah: "Melayani Warga RW 03 (RT 01, RT 02, RT 03, RT 04 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 03, Cabawan, Margadana, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Cempaka Cabawan cakupan sinkronisasi wilayah RW 03 (RT 01 s/d RT 04 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "8668159c-8f20-498b-89ea-877d8f0d7958", nama: "Posyandu Dahlia", kecamatan: "Margadana", kelurahan: "Cabawan", rw: "04", rt: "01", cakupan_wilayah: "Melayani Warga RW 04 (RT 01, RT 02, RT 03, RT 04 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 04, Cabawan, Margadana, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Dahlia Cabawan cakupan sinkronisasi wilayah RW 04 (RT 01 s/d RT 04 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "16342bf6-c2aa-49bd-a366-38150ab169ad", nama: "Posyandu Edelweis", kecamatan: "Margadana", kelurahan: "Cabawan", rw: "05", rt: "01", cakupan_wilayah: "Melayani Warga RW 05 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 05, Cabawan, Margadana, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Edelweis Cabawan cakupan sinkronisasi wilayah RW 05 (RT 01 s/d RT 05 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
 
   // Kalinyamat Kulon (4 Posyandu) - Sesuai RW resmi Kalinyamat Kulon
   { id: "6b8c16bf-12b3-4073-8114-cf6d630d025a", nama: "Posyandu Melati 1", kecamatan: "Margadana", kelurahan: "Kalinyamat Kulon", rw: "01", rt: "01", lokasi: "Balai Posyandu / RW 01, Kalinyamat Kulon, Margadana, Kota Tegal", cakupan_wilayah: "Melayani Warga RW 01 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08, RW Belum Tahu dan RT Belum Tahu)", deskripsi: "Layanan terpadu Posyandu Melati 1 Kalinyamat Kulon cakupan sinkronisasi wilayah RW 01 (RT 01 s/d RT 08): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
@@ -753,15 +754,67 @@ export const KRANDON_POSYANDU_MAP: Record<
 
 export const PESURUNGAN_KIDUL_POSYANDU_MAP: Record<
   string,
-  { nama: string; rw: string; rt: string; cakupan_wilayah: string; lokasi?: string; deskripsi?: string }
+  { nama: string; rw: string; rt: string; cakupan_wilayah: string; lokasi?: string; deskripsi?: string; allowedRts?: string[] }
 > = {
+  // RW 1: Jumlah RT 5 -> Posyandu Melati 3
+  "9bdc0d19-f156-42f2-81bf-1621d2a8c882": {
+    nama: "Posyandu Melati 3",
+    rw: "01",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 01 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 01, Pesurungan Kidul, Tegal Barat, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Melati 3 Pesurungan Kidul cakupan sinkronisasi wilayah RW 01 (RT 01 s/d RT 05 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["01", "02", "03", "04", "05"],
+  },
+  // RW 2: Jumlah RT 6 -> Posyandu Melati 6
+  "76827a2c-508b-4787-8af6-39294cbcfe17": {
+    nama: "Posyandu Melati 6",
+    rw: "02",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 02 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 02, Pesurungan Kidul, Tegal Barat, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Melati 6 Pesurungan Kidul cakupan sinkronisasi wilayah RW 02 (RT 01 s/d RT 06 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["01", "02", "03", "04", "05", "06"],
+  },
+  // RW 3: Jumlah RT 5 -> Posyandu Melati 1
+  "d84b007b-f156-42f2-88a1-f0f1af220a00": {
+    nama: "Posyandu Melati 1",
+    rw: "03",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 03 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 03, Pesurungan Kidul, Tegal Barat, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Melati 1 Pesurungan Kidul cakupan sinkronisasi wilayah RW 03 (RT 01 s/d RT 05 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["01", "02", "03", "04", "05"],
+  },
+  // RW 4: Jumlah RT 5 -> Posyandu Melati 2
+  "fda49368-f156-42f2-8d30-8389350dd46b": {
+    nama: "Posyandu Melati 2",
+    rw: "04",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 04 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 04, Pesurungan Kidul, Tegal Barat, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Melati 2 Pesurungan Kidul cakupan sinkronisasi wilayah RW 04 (RT 01 s/d RT 05 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["01", "02", "03", "04", "05"],
+  },
+  // RW 5: Jumlah RT 5 -> Posyandu Melati 4
+  "b2f16d8e-508b-4787-81d9-13f9589492ed": {
+    nama: "Posyandu Melati 4",
+    rw: "05",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 05 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 05, Pesurungan Kidul, Tegal Barat, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Melati 4 Pesurungan Kidul cakupan sinkronisasi wilayah RW 05 (RT 01 s/d RT 05 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["01", "02", "03", "04", "05"],
+  },
+  // RW 6: Jumlah RT 6 -> Posyandu Melati 5
   "5128e73f-508b-4787-8667-a691c6d133ac": {
     nama: "Posyandu Melati 5",
     rw: "06",
     rt: "01",
-    cakupan_wilayah: "Melayani Warga RW 06 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu)",
+    cakupan_wilayah: "Melayani Warga RW 06 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06 dan RW - RT Tidak Tahu)",
     lokasi: "Balai Posyandu / RW 06, Pesurungan Kidul, Tegal Barat, Kota Tegal",
-    deskripsi: "Layanan terpadu Posyandu Melati 5 Pesurungan Kidul cakupan sinkronisasi wilayah RW 06 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    deskripsi: "Layanan terpadu Posyandu Melati 5 Pesurungan Kidul cakupan sinkronisasi wilayah RW 06 (RT 01 s/d RT 06 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["01", "02", "03", "04", "05", "06"],
   },
 };
 
@@ -1184,6 +1237,224 @@ export const RANDUGUNTING_POSYANDU_MAP: Record<
     lokasi: "Balai Posyandu / RW 12, Randugunting, Tegal Selatan, Kota Tegal",
     deskripsi: "Layanan terpadu Posyandu Merak Randugunting cakupan sinkronisasi wilayah RW 12 (RT 01, RT 02, RT 03, RT 04 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
     allowedRts: ["01", "02", "03", "04"],
+  },
+};
+
+export const MINTARAGEN_POSYANDU_MAP: Record<
+  string,
+  { nama: string; rw: string; rt: string; cakupan_wilayah: string; lokasi?: string; deskripsi?: string; allowedRts?: string[] }
+> = {
+  // RW 1: Jumlah RT 9 -> Posyandu Anyelir (RT 1 s/d 9)
+  "a50d50de-8ec0-45b7-8e3b-a04104b598ee": {
+    nama: "Posyandu Anyelir",
+    rw: "01",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 01 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08, RT 09 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 01, Mintaragen, Tegal Timur, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Anyelir Mintaragen cakupan sinkronisasi wilayah RW 01 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08, RT 09 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["01", "02", "03", "04", "05", "06", "07", "08", "09"],
+  },
+  // RW 2: Jumlah RT 7 -> Posyandu Mawar (RT 1 s/d 7)
+  "ea213472-a773-4618-82a4-d739ea1c73c1": {
+    nama: "Posyandu Mawar",
+    rw: "02",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 02 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 02, Mintaragen, Tegal Timur, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Mawar Mintaragen cakupan sinkronisasi wilayah RW 02 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["01", "02", "03", "04", "05", "06", "07"],
+  },
+  // RW 3: Jumlah RT 5 -> Posyandu Teratai (RT 1 s/d 5)
+  "39e79c74-a5db-47d5-8f11-ead1c46042b4": {
+    nama: "Posyandu Teratai",
+    rw: "03",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 03 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 03, Mintaragen, Tegal Timur, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Teratai Mintaragen cakupan sinkronisasi wilayah RW 03 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["01", "02", "03", "04", "05"],
+  },
+  // RW 4: Jumlah RT 8 -> Posyandu Melati (RT 1 s/d 8)
+  "0b4eebf2-d27f-4808-800a-ecb5de8538e9": {
+    nama: "Posyandu Melati",
+    rw: "04",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 04 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 04, Mintaragen, Tegal Timur, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Melati Mintaragen cakupan sinkronisasi wilayah RW 04 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["01", "02", "03", "04", "05", "06", "07", "08"],
+  },
+  // RW 5: Jumlah RT 6 -> Posyandu Kenanga (RT 1 s/d 6)
+  "f07d4413-a6b7-4368-8d47-e65940b02033": {
+    nama: "Posyandu Kenanga",
+    rw: "05",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 05 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 05, Mintaragen, Tegal Timur, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Kenanga Mintaragen cakupan sinkronisasi wilayah RW 05 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["01", "02", "03", "04", "05", "06"],
+  },
+  // RW 6: Jumlah RT 4 -> Posyandu Bougenville (RT 1 s/d 4)
+  "50ba2d04-f81e-4c45-877b-3661c72d15e8": {
+    nama: "Posyandu Bougenville",
+    rw: "06",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 06 (RT 01, RT 02, RT 03, RT 04 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 06, Mintaragen, Tegal Timur, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Bougenville Mintaragen cakupan sinkronisasi wilayah RW 06 (RT 01, RT 02, RT 03, RT 04 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["01", "02", "03", "04"],
+  },
+  // RW 7: Jumlah RT 8 -> Posyandu Flamboyan (RT 1 s/d 8)
+  "c556ba87-6129-4955-8333-e86197ae6594": {
+    nama: "Posyandu Flamboyan",
+    rw: "07",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 07 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 07, Mintaragen, Tegal Timur, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Flamboyan Mintaragen cakupan sinkronisasi wilayah RW 07 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["01", "02", "03", "04", "05", "06", "07", "08"],
+  },
+  // RW 8: Jumlah RT 10 -> Posyandu Anggrek (RT 1 s/d 10)
+  "72fbce59-f4d9-42e2-8b65-60b955e603fd": {
+    nama: "Posyandu Anggrek",
+    rw: "08",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 08 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08, RT 09, RT 10 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 08, Mintaragen, Tegal Timur, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Anggrek Mintaragen cakupan sinkronisasi wilayah RW 08 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08, RT 09, RT 10 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10"],
+  },
+  // RW 9: Jumlah RT 8 -> Posyandu Sedap Malam (RT 1 s/d 8)
+  "472add48-73fd-40aa-8ced-3c21c1ee2db0": {
+    nama: "Posyandu Sedap Malam",
+    rw: "09",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 09 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 09, Mintaragen, Tegal Timur, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Sedap Malam Mintaragen cakupan sinkronisasi wilayah RW 09 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["01", "02", "03", "04", "05", "06", "07", "08"],
+  },
+  // RW 10: Jumlah RT 14 -> Posyandu Seruni (RT 1 s/d 14)
+  "85d706fc-a010-4cbf-8e5b-df4572ec4077": {
+    nama: "Posyandu Seruni",
+    rw: "10",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 10 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08, RT 09, RT 10, RT 11, RT 12, RT 13, RT 14 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 10, Mintaragen, Tegal Timur, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Seruni Mintaragen cakupan sinkronisasi wilayah RW 10 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08, RT 09, RT 10, RT 11, RT 12, RT 13, RT 14 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14"],
+  },
+  // RW 11 RT 1, 2, 3, 6, 7, 8, 9, 11, 12, 13 -> Posyandu Nusa Indah A
+  "4cf472a8-7227-43c6-882b-1b0d492617f8": {
+    nama: "Posyandu Nusa Indah A",
+    rw: "11",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 11 (RT 01, RT 02, RT 03, RT 06, RT 07, RT 08, RT 09, RT 11, RT 12, RT 13 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 11, Mintaragen, Tegal Timur, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Nusa Indah A Mintaragen cakupan sinkronisasi wilayah RW 11 (RT 01, RT 02, RT 03, RT 06, RT 07, RT 08, RT 09, RT 11, RT 12, RT 13 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["01", "02", "03", "06", "07", "08", "09", "11", "12", "13"],
+  },
+  // RW 11 RT 4, 5, 7, 10, 14, 15 -> Posyandu Nusa Indah B
+  "279adfbb-7227-43c6-8a7f-6345dae97739": {
+    nama: "Posyandu Nusa Indah B",
+    rw: "11",
+    rt: "04",
+    cakupan_wilayah: "Melayani Warga RW 11 (RT 04, RT 05, RT 07, RT 10, RT 14, RT 15 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 11, Mintaragen, Tegal Timur, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Nusa Indah B Mintaragen cakupan sinkronisasi wilayah RW 11 (RT 04, RT 05, RT 07, RT 10, RT 14, RT 15 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["04", "05", "07", "10", "14", "15"],
+  },
+};
+
+export const KEMANDUNGAN_POSYANDU_MAP: Record<
+  string,
+  { nama: string; rw: string; rt: string; cakupan_wilayah: string; lokasi?: string; deskripsi?: string; allowedRts?: string[] }
+> = {
+  // RW 1: Jumlah RT 4 -> Posyandu Seruni (RT 1 s/d 4)
+  "0c52a3df-6317-42cb-8cd4-d5d1abaf3f0c": {
+    nama: "Posyandu Seruni",
+    rw: "01",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 01 (RT 01, RT 02, RT 03, RT 04 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 01, Kemandungan, Tegal Barat, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Seruni Kemandungan cakupan sinkronisasi wilayah RW 01 (RT 01, RT 02, RT 03, RT 04 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["01", "02", "03", "04"],
+  },
+  // RW 2: Jumlah RT 6 -> Posyandu Melati (RT 1 s/d 6)
+  "7e5bcfd3-2220-4c28-8c88-5b01930049fc": {
+    nama: "Posyandu Melati",
+    rw: "02",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 02 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 02, Kemandungan, Tegal Barat, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Melati Kemandungan cakupan sinkronisasi wilayah RW 02 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["01", "02", "03", "04", "05", "06"],
+  },
+  // RW 3: Jumlah RT 3 -> Posyandu Cempaka (RT 1 s/d 3)
+  "9d57da39-7e2f-436a-802e-0a9d384eafc4": {
+    nama: "Posyandu Cempaka",
+    rw: "03",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 03 (RT 01, RT 02, RT 03 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 03, Kemandungan, Tegal Barat, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Cempaka Kemandungan cakupan sinkronisasi wilayah RW 03 (RT 01, RT 02, RT 03 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["01", "02", "03"],
+  },
+};
+
+export const CABAWAN_POSYANDU_MAP: Record<
+  string,
+  { nama: string; rw: string; rt: string; cakupan_wilayah: string; lokasi?: string; deskripsi?: string; allowedRts?: string[] }
+> = {
+  // RW 1: Jumlah RT 4 -> Posyandu Anggrek (RT 1 s/d 4)
+  "a501a319-5406-494e-8f7d-11e59de07353": {
+    nama: "Posyandu Anggrek",
+    rw: "01",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 01 (RT 01, RT 02, RT 03, RT 04 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 01, Cabawan, Margadana, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Anggrek Cabawan cakupan sinkronisasi wilayah RW 01 (RT 01, RT 02, RT 03, RT 04 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["01", "02", "03", "04"],
+  },
+  // RW 2: Jumlah RT 5 -> Posyandu Bougenville (RT 1 s/d 5)
+  "43391cca-5406-494e-8d28-c9ad23cc3dbe": {
+    nama: "Posyandu Bougenville",
+    rw: "02",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 02 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 02, Cabawan, Margadana, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Bougenville Cabawan cakupan sinkronisasi wilayah RW 02 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["01", "02", "03", "04", "05"],
+  },
+  // RW 3: Jumlah RT 4 -> Posyandu Cempaka (RT 1 s/d 4)
+  "959b88ad-0f63-4283-8c49-c699cf1d0d35": {
+    nama: "Posyandu Cempaka",
+    rw: "03",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 03 (RT 01, RT 02, RT 03, RT 04 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 03, Cabawan, Margadana, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Cempaka Cabawan cakupan sinkronisasi wilayah RW 03 (RT 01, RT 02, RT 03, RT 04 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["01", "02", "03", "04"],
+  },
+  // RW 4: Jumlah RT 4 -> Posyandu Dahlia (RT 1 s/d 4)
+  "8668159c-8f20-498b-89ea-877d8f0d7958": {
+    nama: "Posyandu Dahlia",
+    rw: "04",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 04 (RT 01, RT 02, RT 03, RT 04 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 04, Cabawan, Margadana, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Dahlia Cabawan cakupan sinkronisasi wilayah RW 04 (RT 01, RT 02, RT 03, RT 04 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["01", "02", "03", "04"],
+  },
+  // RW 5: Jumlah RT 5 -> Posyandu Edelweis (RT 1 s/d 5)
+  "16342bf6-c2aa-49bd-a366-38150ab169ad": {
+    nama: "Posyandu Edelweis",
+    rw: "05",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 05 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 05, Cabawan, Margadana, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Edelweis Cabawan cakupan sinkronisasi wilayah RW 05 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["01", "02", "03", "04", "05"],
   },
 };
 

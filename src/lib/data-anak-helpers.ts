@@ -1,6 +1,16 @@
 import { extractKomunitasMetadata } from "@/lib/admin-helpers";
 import { RAW_PAUD_PKBM_TEGAL } from "@/lib/constants/seed-paud-tegal";
-import { RAW_POSYANDU_TEGAL, SLEROK_POSYANDU_MAP, MARGADANA_POSYANDU_MAP, TEGALSARI_POSYANDU_MAP, RANDUGUNTING_POSYANDU_MAP } from "@/lib/constants/seed-posyandu-tegal";
+import {
+  RAW_POSYANDU_TEGAL,
+  SLEROK_POSYANDU_MAP,
+  MARGADANA_POSYANDU_MAP,
+  TEGALSARI_POSYANDU_MAP,
+  RANDUGUNTING_POSYANDU_MAP,
+  MINTARAGEN_POSYANDU_MAP,
+  KEMANDUNGAN_POSYANDU_MAP,
+  PESURUNGAN_KIDUL_POSYANDU_MAP,
+  CABAWAN_POSYANDU_MAP,
+} from "@/lib/constants/seed-posyandu-tegal";
 import {
   MASTER_KOMUNITAS_SEED,
   findOrGenerateKomunitasSeed,
@@ -1544,6 +1554,90 @@ export function getPosyanduCakupanWilayah(targetKomunitas: any): PosyanduCakupan
       nama.includes("merak")
     ) {
       return { rw: "12", rtList: ["01", "02", "03", "04", "1", "2", "3", "4"] };
+    }
+  }
+
+  // Khusus Kelurahan Mintaragen (Kecamatan Tegal Timur)
+  const isMintaragenPosyandu =
+    kel.includes("mintaragen") ||
+    nama.includes("mintaragen") ||
+    Boolean(targetKomunitas?.id && MINTARAGEN_POSYANDU_MAP[targetKomunitas.id]);
+
+  if (isMintaragenPosyandu) {
+    const entry =
+      (targetKomunitas?.id && MINTARAGEN_POSYANDU_MAP[targetKomunitas.id]) ||
+      Object.values(MINTARAGEN_POSYANDU_MAP).find((m) => {
+        const norm = m.nama.toLowerCase().replace("posyandu ", "").trim();
+        return nama.includes(norm);
+      });
+    if (entry && entry.allowedRts) {
+      const rtListWithUnpadded = Array.from(
+        new Set([...entry.allowedRts, ...entry.allowedRts.map((r: string) => String(parseInt(r, 10)))])
+      );
+      return { rw: entry.rw, rtList: rtListWithUnpadded };
+    }
+  }
+
+  // Khusus Kelurahan Kemandungan (Kecamatan Tegal Barat)
+  const isKemandunganPosyandu =
+    kel.includes("kemandungan") ||
+    nama.includes("kemandungan") ||
+    Boolean(targetKomunitas?.id && KEMANDUNGAN_POSYANDU_MAP[targetKomunitas.id]);
+
+  if (isKemandunganPosyandu) {
+    const entry =
+      (targetKomunitas?.id && KEMANDUNGAN_POSYANDU_MAP[targetKomunitas.id]) ||
+      Object.values(KEMANDUNGAN_POSYANDU_MAP).find((k) => {
+        const norm = k.nama.toLowerCase().replace("posyandu ", "").trim();
+        return nama.includes(norm);
+      });
+    if (entry && entry.allowedRts) {
+      const rtListWithUnpadded = Array.from(
+        new Set([...entry.allowedRts, ...entry.allowedRts.map((r: string) => String(parseInt(r, 10)))])
+      );
+      return { rw: entry.rw, rtList: rtListWithUnpadded };
+    }
+  }
+
+  // Khusus Kelurahan Pesurungan Kidul (Kecamatan Tegal Barat)
+  const isPesurunganKidulPosyandu =
+    kel.includes("pesurungan kidul") ||
+    nama.includes("pesurungan kidul") ||
+    Boolean(targetKomunitas?.id && PESURUNGAN_KIDUL_POSYANDU_MAP[targetKomunitas.id]);
+
+  if (isPesurunganKidulPosyandu) {
+    const entry =
+      (targetKomunitas?.id && PESURUNGAN_KIDUL_POSYANDU_MAP[targetKomunitas.id]) ||
+      Object.values(PESURUNGAN_KIDUL_POSYANDU_MAP).find((p) => {
+        const norm = p.nama.toLowerCase().replace("posyandu ", "").trim();
+        return nama.includes(norm);
+      });
+    if (entry && entry.allowedRts) {
+      const rtListWithUnpadded = Array.from(
+        new Set([...entry.allowedRts, ...entry.allowedRts.map((r: string) => String(parseInt(r, 10)))])
+      );
+      return { rw: entry.rw, rtList: rtListWithUnpadded };
+    }
+  }
+
+  // Khusus Kelurahan Cabawan (Kecamatan Margadana)
+  const isCabawanPosyandu =
+    kel.includes("cabawan") ||
+    nama.includes("cabawan") ||
+    Boolean(targetKomunitas?.id && CABAWAN_POSYANDU_MAP[targetKomunitas.id]);
+
+  if (isCabawanPosyandu) {
+    const entry =
+      (targetKomunitas?.id && CABAWAN_POSYANDU_MAP[targetKomunitas.id]) ||
+      Object.values(CABAWAN_POSYANDU_MAP).find((c) => {
+        const norm = c.nama.toLowerCase().replace("posyandu ", "").trim();
+        return nama.includes(norm);
+      });
+    if (entry && entry.allowedRts) {
+      const rtListWithUnpadded = Array.from(
+        new Set([...entry.allowedRts, ...entry.allowedRts.map((r: string) => String(parseInt(r, 10)))])
+      );
+      return { rw: entry.rw, rtList: rtListWithUnpadded };
     }
   }
 
@@ -3214,6 +3308,126 @@ export function getPosyanduCoverageDisplay(komunitas: any): PosyanduCoverageResu
     };
   }
 
+  // Khusus Kelurahan Mintaragen (Kecamatan Tegal Timur)
+  const mintaragenSeedItem = komunitas.id ? RAW_POSYANDU_TEGAL.find((s) => s.id === komunitas.id) : null;
+  const isMintaragenCoverage =
+    kelCleanForCoverage.includes("mintaragen") ||
+    (mintaragenSeedItem?.kelurahan || "").toLowerCase().includes("mintaragen") ||
+    rawNama.includes("mintaragen") ||
+    Boolean(komunitas.id && MINTARAGEN_POSYANDU_MAP[komunitas.id]);
+
+  if (isMintaragenCoverage) {
+    const entry =
+      (komunitas.id && MINTARAGEN_POSYANDU_MAP[komunitas.id]) ||
+      Object.values(MINTARAGEN_POSYANDU_MAP).find((m) => {
+        const mNorm = m.nama.toLowerCase().replace("posyandu ", "").trim();
+        return rawNama.includes(mNorm);
+      });
+
+    if (entry) {
+      const rwLabel = `RW ${entry.rw.padStart(2, "0")}`;
+      const rtListFormatted = (entry.allowedRts || []).map((r: string) => `RT ${r.padStart(2, "0")}`).join(", ");
+      const rtLabel = `${rtListFormatted} dan RW - RT Tidak Tahu`;
+      const fullLabel = `${rwLabel} (${rtLabel})`;
+      return {
+        isMapped: true,
+        label: fullLabel,
+        rwLabel,
+        rtLabel,
+      };
+    }
+  }
+
+  // Khusus Kelurahan Kemandungan (Kecamatan Tegal Barat)
+  const kemandunganSeedItem = komunitas.id ? RAW_POSYANDU_TEGAL.find((s) => s.id === komunitas.id) : null;
+  const isKemandunganCoverage =
+    kelCleanForCoverage.includes("kemandungan") ||
+    (kemandunganSeedItem?.kelurahan || "").toLowerCase().includes("kemandungan") ||
+    rawNama.includes("kemandungan") ||
+    Boolean(komunitas.id && KEMANDUNGAN_POSYANDU_MAP[komunitas.id]);
+
+  if (isKemandunganCoverage) {
+    const entry =
+      (komunitas.id && KEMANDUNGAN_POSYANDU_MAP[komunitas.id]) ||
+      Object.values(KEMANDUNGAN_POSYANDU_MAP).find((k) => {
+        const kNorm = k.nama.toLowerCase().replace("posyandu ", "").trim();
+        return rawNama.includes(kNorm);
+      });
+
+    if (entry) {
+      const rwLabel = `RW ${entry.rw.padStart(2, "0")}`;
+      const rtListFormatted = (entry.allowedRts || []).map((r: string) => `RT ${r.padStart(2, "0")}`).join(", ");
+      const rtLabel = `${rtListFormatted} dan RW - RT Tidak Tahu`;
+      const fullLabel = `${rwLabel} (${rtLabel})`;
+      return {
+        isMapped: true,
+        label: fullLabel,
+        rwLabel,
+        rtLabel,
+      };
+    }
+  }
+
+  // Khusus Kelurahan Pesurungan Kidul (Kecamatan Tegal Barat)
+  const pesurunganKidulSeedItem = komunitas.id ? RAW_POSYANDU_TEGAL.find((s) => s.id === komunitas.id) : null;
+  const isPesurunganKidulCoverage =
+    kelCleanForCoverage.includes("pesurungan kidul") ||
+    (pesurunganKidulSeedItem?.kelurahan || "").toLowerCase().includes("pesurungan kidul") ||
+    rawNama.includes("pesurungan kidul") ||
+    Boolean(komunitas.id && PESURUNGAN_KIDUL_POSYANDU_MAP[komunitas.id]);
+
+  if (isPesurunganKidulCoverage) {
+    const entry =
+      (komunitas.id && PESURUNGAN_KIDUL_POSYANDU_MAP[komunitas.id]) ||
+      Object.values(PESURUNGAN_KIDUL_POSYANDU_MAP).find((p) => {
+        const pNorm = p.nama.toLowerCase().replace("posyandu ", "").trim();
+        return rawNama.includes(pNorm);
+      });
+
+    if (entry) {
+      const rwLabel = `RW ${entry.rw.padStart(2, "0")}`;
+      const rtListFormatted = (entry.allowedRts || []).map((r: string) => `RT ${r.padStart(2, "0")}`).join(", ");
+      const rtLabel = `${rtListFormatted} dan RW - RT Tidak Tahu`;
+      const fullLabel = `${rwLabel} (${rtLabel})`;
+      return {
+        isMapped: true,
+        label: fullLabel,
+        rwLabel,
+        rtLabel,
+      };
+    }
+  }
+
+  // Khusus Kelurahan Cabawan (Kecamatan Margadana)
+  const cabawanSeedItem = komunitas.id ? RAW_POSYANDU_TEGAL.find((s) => s.id === komunitas.id) : null;
+  const isCabawanCoverage =
+    kelCleanForCoverage.includes("cabawan") ||
+    (cabawanSeedItem?.kelurahan || "").toLowerCase().includes("cabawan") ||
+    rawNama.includes("cabawan") ||
+    Boolean(komunitas.id && CABAWAN_POSYANDU_MAP[komunitas.id]);
+
+  if (isCabawanCoverage) {
+    const entry =
+      (komunitas.id && CABAWAN_POSYANDU_MAP[komunitas.id]) ||
+      Object.values(CABAWAN_POSYANDU_MAP).find((c) => {
+        const cNorm = c.nama.toLowerCase().replace("posyandu ", "").trim();
+        return rawNama.includes(cNorm);
+      });
+
+    if (entry) {
+      const rwLabel = `RW ${entry.rw.padStart(2, "0")}`;
+      const rtListFormatted = (entry.allowedRts || []).map((r: string) => `RT ${r.padStart(2, "0")}`).join(", ");
+      const rtLabel = `${rtListFormatted} dan RW - RT Tidak Tahu`;
+      const fullLabel = `${rwLabel} (${rtLabel})`;
+      return {
+        isMapped: true,
+        label: fullLabel,
+        rwLabel,
+        rtLabel,
+      };
+    }
+  }
+
   // 1. Ambil dari canonical rule di data-anak-helpers
   const canon = getPosyanduCakupanWilayah(komunitas);
 
@@ -3302,6 +3516,10 @@ export function getPosyanduCoverageDisplay(komunitas: any): PosyanduCoverageResu
       "krandon",
       "debong tengah",
       "randugunting",
+      "mintaragen",
+      "kemandungan",
+      "pesurungan kidul",
+      "cabawan",
     ]);
 
     if (MAPPED_KELURAHAN_SET.has(kel)) {
@@ -4389,6 +4607,229 @@ export function isValidRanduguntingRtRw(
 }
 
 /**
+ * Validasi ketentuan khusus RW & RT di Kelurahan Mintaragen, Kecamatan Tegal Timur:
+ * - Jumlah RW ada 11 (RW 1 s/d 11)
+ * - RW 1 Jumlah RT 9, RW 2 Jumlah RT 7, RW 3 Jumlah RT 5, RW 4 Jumlah RT 8
+ * - RW 5 Jumlah RT 6, RW 6 Jumlah RT 4, RW 7 Jumlah RT 8, RW 8 Jumlah RT 10
+ * - RW 9 Jumlah RT 8, RW 10 Jumlah RT 14, RW 11 Jumlah RT 15
+ * - Tetap mempertahankan RW "Belum Tahu" dan RT "Belum Tahu"
+ */
+export function isValidMintaragenRtRw(
+  kel?: string | null,
+  rw?: string | null,
+  rt?: string | null
+): boolean {
+  if (!kel) return true;
+  const cleanKel = normalizeWilayah(kel);
+  if (!cleanKel.includes("mintaragen")) return true;
+
+  const rawRw = (rw || "").trim().toLowerCase();
+  const rawRt = (rt || "").trim().toLowerCase();
+
+  const isRwBelumTahu =
+    !rawRw ||
+    rawRw.includes("belum") ||
+    rawRw.includes("tidak") ||
+    rawRw === "-" ||
+    rawRw === "0" ||
+    rawRw === "00";
+  if (isRwBelumTahu) return true;
+
+  const rwNum = parseInt(rawRw.replace(/\D/g, ""), 10);
+  if (isNaN(rwNum) || rwNum < 1 || rwNum > 11) return false;
+
+  const isRtBelumTahu =
+    !rawRt ||
+    rawRt.includes("belum") ||
+    rawRt.includes("tidak") ||
+    rawRt === "-" ||
+    rawRt === "0" ||
+    rawRt === "00";
+  if (isRtBelumTahu) return true;
+
+  const rtNum = parseInt(rawRt.replace(/\D/g, ""), 10);
+  if (isNaN(rtNum)) return false;
+
+  const maxRtMap: Record<number, number> = {
+    1: 9,
+    2: 7,
+    3: 5,
+    4: 8,
+    5: 6,
+    6: 4,
+    7: 8,
+    8: 10,
+    9: 8,
+    10: 14,
+    11: 15,
+  };
+
+  const maxRt = maxRtMap[rwNum] || 15;
+  return rtNum >= 1 && rtNum <= maxRt;
+}
+
+/**
+ * Validasi ketentuan khusus RW & RT di Kelurahan Kemandungan, Kecamatan Tegal Barat:
+ * - Jumlah RW ada 3 (RW 1 s/d 3)
+ * - RW 1 Jumlah RT 4, RW 2 Jumlah RT 6, RW 3 Jumlah RT 3
+ * - Tetap mempertahankan RW "Belum Tahu" dan RT "Belum Tahu"
+ */
+export function isValidKemandunganRtRw(
+  kel?: string | null,
+  rw?: string | null,
+  rt?: string | null
+): boolean {
+  if (!kel) return true;
+  const cleanKel = normalizeWilayah(kel);
+  if (!cleanKel.includes("kemandungan")) return true;
+
+  const rawRw = (rw || "").trim().toLowerCase();
+  const rawRt = (rt || "").trim().toLowerCase();
+
+  const isRwBelumTahu =
+    !rawRw ||
+    rawRw.includes("belum") ||
+    rawRw.includes("tidak") ||
+    rawRw === "-" ||
+    rawRw === "0" ||
+    rawRw === "00";
+  if (isRwBelumTahu) return true;
+
+  const rwNum = parseInt(rawRw.replace(/\D/g, ""), 10);
+  if (isNaN(rwNum) || rwNum < 1 || rwNum > 3) return false;
+
+  const isRtBelumTahu =
+    !rawRt ||
+    rawRt.includes("belum") ||
+    rawRt.includes("tidak") ||
+    rawRt === "-" ||
+    rawRt === "0" ||
+    rawRt === "00";
+  if (isRtBelumTahu) return true;
+
+  const rtNum = parseInt(rawRt.replace(/\D/g, ""), 10);
+  if (isNaN(rtNum)) return false;
+
+  const maxRtMap: Record<number, number> = {
+    1: 4,
+    2: 6,
+    3: 3,
+  };
+
+  const maxRt = maxRtMap[rwNum] || 6;
+  return rtNum >= 1 && rtNum <= maxRt;
+}
+
+/**
+ * Validasi ketentuan khusus RW & RT di Kelurahan Pesurungan Kidul, Kecamatan Tegal Barat:
+ * - Jumlah RW ada 6 (RW 1 s/d 6)
+ * - RW 1 Jumlah RT 5, RW 2 Jumlah RT 6, RW 3 Jumlah RT 5, RW 4 Jumlah RT 5, RW 5 Jumlah RT 5, RW 6 Jumlah RT 6
+ * - Tetap mempertahankan RW "Belum Tahu" dan RT "Belum Tahu"
+ */
+export function isValidPesurunganKidulRtRw(
+  kel?: string | null,
+  rw?: string | null,
+  rt?: string | null
+): boolean {
+  if (!kel) return true;
+  const cleanKel = normalizeWilayah(kel);
+  if (!cleanKel.includes("pesurungan kidul")) return true;
+
+  const rawRw = (rw || "").trim().toLowerCase();
+  const rawRt = (rt || "").trim().toLowerCase();
+
+  const isRwBelumTahu =
+    !rawRw ||
+    rawRw.includes("belum") ||
+    rawRw.includes("tidak") ||
+    rawRw === "-" ||
+    rawRw === "0" ||
+    rawRw === "00";
+  if (isRwBelumTahu) return true;
+
+  const rwNum = parseInt(rawRw.replace(/\D/g, ""), 10);
+  if (isNaN(rwNum) || rwNum < 1 || rwNum > 6) return false;
+
+  const isRtBelumTahu =
+    !rawRt ||
+    rawRt.includes("belum") ||
+    rawRt.includes("tidak") ||
+    rawRt === "-" ||
+    rawRt === "0" ||
+    rawRt === "00";
+  if (isRtBelumTahu) return true;
+
+  const rtNum = parseInt(rawRt.replace(/\D/g, ""), 10);
+  if (isNaN(rtNum)) return false;
+
+  const maxRtMap: Record<number, number> = {
+    1: 5,
+    2: 6,
+    3: 5,
+    4: 5,
+    5: 5,
+    6: 6,
+  };
+
+  const maxRt = maxRtMap[rwNum] || 6;
+  return rtNum >= 1 && rtNum <= maxRt;
+}
+
+/**
+ * Validasi ketentuan khusus RW & RT di Kelurahan Cabawan, Kecamatan Margadana:
+ * - Jumlah RW ada 5 (RW 1 s/d 5)
+ * - RW 1 Jumlah RT 4, RW 2 Jumlah RT 5, RW 3 Jumlah RT 4, RW 4 Jumlah RT 4, RW 5 Jumlah RT 5
+ * - Tetap mempertahankan RW "Belum Tahu" dan RT "Belum Tahu"
+ */
+export function isValidCabawanRtRw(
+  kel?: string | null,
+  rw?: string | null,
+  rt?: string | null
+): boolean {
+  if (!kel) return true;
+  const cleanKel = normalizeWilayah(kel);
+  if (!cleanKel.includes("cabawan")) return true;
+
+  const rawRw = (rw || "").trim().toLowerCase();
+  const rawRt = (rt || "").trim().toLowerCase();
+
+  const isRwBelumTahu =
+    !rawRw ||
+    rawRw.includes("belum") ||
+    rawRw.includes("tidak") ||
+    rawRw === "-" ||
+    rawRw === "0" ||
+    rawRw === "00";
+  if (isRwBelumTahu) return true;
+
+  const rwNum = parseInt(rawRw.replace(/\D/g, ""), 10);
+  if (isNaN(rwNum) || rwNum < 1 || rwNum > 5) return false;
+
+  const isRtBelumTahu =
+    !rawRt ||
+    rawRt.includes("belum") ||
+    rawRt.includes("tidak") ||
+    rawRt === "-" ||
+    rawRt === "0" ||
+    rawRt === "00";
+  if (isRtBelumTahu) return true;
+
+  const rtNum = parseInt(rawRt.replace(/\D/g, ""), 10);
+  if (isNaN(rtNum)) return false;
+
+  const maxRtMap: Record<number, number> = {
+    1: 4,
+    2: 5,
+    3: 4,
+    4: 4,
+    5: 5,
+  };
+
+  const maxRt = maxRtMap[rwNum] || 5;
+  return rtNum >= 1 && rtNum <= maxRt;
+}
+
+/**
  * Filter logika hierarkis: Apakah data anak sesuai dan harus muncul di komunitas target?
  * Mencakup Komunitas PAUD, Posyandu, RT, RW, Kelurahan, Kecamatan, dan Kabupaten/Kota.
  */
@@ -4572,6 +5013,70 @@ export function isDataAnakMatchingKomunitas(
   if (
     !isValidRanduguntingRtRw(item.domisili_kelurahan, item.domisili_rw, item.domisili_rt) &&
     !isValidRanduguntingRtRw(item.kk_kelurahan, item.kk_rw, item.kk_rt)
+  ) {
+    return false;
+  }
+
+  // Ketentuan Khusus Kelurahan Mintaragen: Hapus/abaikan data yang tidak sesuai ketentuan resmi RW & RT Mintaragen
+  const isDomMintaragen = (item.domisili_kelurahan || "").toLowerCase().includes("mintaragen");
+  const isKkMintaragen = (item.kk_kelurahan || "").toLowerCase().includes("mintaragen");
+  if (isDomMintaragen && !isValidMintaragenRtRw(item.domisili_kelurahan, item.domisili_rw, item.domisili_rt)) {
+    return false;
+  }
+  if (isKkMintaragen && !isValidMintaragenRtRw(item.kk_kelurahan, item.kk_rw, item.kk_rt)) {
+    return false;
+  }
+  if (
+    !isValidMintaragenRtRw(item.domisili_kelurahan, item.domisili_rw, item.domisili_rt) &&
+    !isValidMintaragenRtRw(item.kk_kelurahan, item.kk_rw, item.kk_rt)
+  ) {
+    return false;
+  }
+
+  // Ketentuan Khusus Kelurahan Kemandungan: Hapus/abaikan data yang tidak sesuai ketentuan resmi RW & RT Kemandungan
+  const isDomKemandungan = (item.domisili_kelurahan || "").toLowerCase().includes("kemandungan");
+  const isKkKemandungan = (item.kk_kelurahan || "").toLowerCase().includes("kemandungan");
+  if (isDomKemandungan && !isValidKemandunganRtRw(item.domisili_kelurahan, item.domisili_rw, item.domisili_rt)) {
+    return false;
+  }
+  if (isKkKemandungan && !isValidKemandunganRtRw(item.kk_kelurahan, item.kk_rw, item.kk_rt)) {
+    return false;
+  }
+  if (
+    !isValidKemandunganRtRw(item.domisili_kelurahan, item.domisili_rw, item.domisili_rt) &&
+    !isValidKemandunganRtRw(item.kk_kelurahan, item.kk_rw, item.kk_rt)
+  ) {
+    return false;
+  }
+
+  // Ketentuan Khusus Kelurahan Pesurungan Kidul: Hapus/abaikan data yang tidak sesuai ketentuan resmi RW & RT Pesurungan Kidul
+  const isDomPesurunganKidul = (item.domisili_kelurahan || "").toLowerCase().includes("pesurungan kidul");
+  const isKkPesurunganKidul = (item.kk_kelurahan || "").toLowerCase().includes("pesurungan kidul");
+  if (isDomPesurunganKidul && !isValidPesurunganKidulRtRw(item.domisili_kelurahan, item.domisili_rw, item.domisili_rt)) {
+    return false;
+  }
+  if (isKkPesurunganKidul && !isValidPesurunganKidulRtRw(item.kk_kelurahan, item.kk_rw, item.kk_rt)) {
+    return false;
+  }
+  if (
+    !isValidPesurunganKidulRtRw(item.domisili_kelurahan, item.domisili_rw, item.domisili_rt) &&
+    !isValidPesurunganKidulRtRw(item.kk_kelurahan, item.kk_rw, item.kk_rt)
+  ) {
+    return false;
+  }
+
+  // Ketentuan Khusus Kelurahan Cabawan: Hapus/abaikan data yang tidak sesuai ketentuan resmi RW & RT Cabawan
+  const isDomCabawan = (item.domisili_kelurahan || "").toLowerCase().includes("cabawan");
+  const isKkCabawan = (item.kk_kelurahan || "").toLowerCase().includes("cabawan");
+  if (isDomCabawan && !isValidCabawanRtRw(item.domisili_kelurahan, item.domisili_rw, item.domisili_rt)) {
+    return false;
+  }
+  if (isKkCabawan && !isValidCabawanRtRw(item.kk_kelurahan, item.kk_rw, item.kk_rt)) {
+    return false;
+  }
+  if (
+    !isValidCabawanRtRw(item.domisili_kelurahan, item.domisili_rw, item.domisili_rt) &&
+    !isValidCabawanRtRw(item.kk_kelurahan, item.kk_rw, item.kk_rt)
   ) {
     return false;
   }

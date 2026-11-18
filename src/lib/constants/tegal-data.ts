@@ -178,8 +178,8 @@ export const KOTA_TEGAL_DATA: Record<string, KecamatanData> = {
           "Posyandu Kenanga",
           "Posyandu Mawar",
           "Posyandu Melati",
-          "Posyandu Nusa Indah 1",
-          "Posyandu Nusa Indah 2",
+          "Posyandu Nusa Indah A",
+          "Posyandu Nusa Indah B",
           "Posyandu Sedap Malam",
           "Posyandu Seruni",
           "Posyandu Teratai"
@@ -575,10 +575,11 @@ export const KOTA_TEGAL_DATA: Record<string, KecamatanData> = {
       "Cabawan": {
         "nama": "Cabawan",
         "posyandu": [
-          "Posyandu Anggerk RW 1",
-          "Posyandu Bougenville RW 2",
-          "Posyandu Cempaka RW 3",
-          "Posyandu Dahlia RW 4"
+          "Posyandu Anggrek",
+          "Posyandu Bougenville",
+          "Posyandu Cempaka",
+          "Posyandu Dahlia",
+          "Posyandu Edelweis"
         ],
         "paud": [
           "PAUD TPQ At Taqwa Cabawan",
@@ -705,6 +706,10 @@ export const DATA_RW_PER_KELURAHAN: Record<string, number> = {
   "Debong Tengah": 6,
   "Slerok": 6,
   "Randugunting": 12,
+  "Mintaragen": 11,
+  "Kemandungan": 3,
+  "Pesurungan Kidul": 6,
+  "Cabawan": 5,
 };
 
 export const RT_PER_RW_DEFAULT = 15;
@@ -793,6 +798,111 @@ export const DATA_RT_PER_RW_RANDUGUNTING: Record<string, number> = {
   "10": 10,
   "11": 6,
   "12": 4,
+};
+
+/**
+ * Ketentuan Khusus RT per RW di Kelurahan Mintaragen, Kecamatan Tegal Timur:
+ * - RW 1: Jumlah RT 9 (Posyandu Anyelir [RT 1-9])
+ * - RW 2: Jumlah RT 7 (Posyandu Mawar [RT 1-7])
+ * - RW 3: Jumlah RT 5 (Posyandu Teratai [RT 1-5])
+ * - RW 4: Jumlah RT 8 (Posyandu Melati [RT 1-8])
+ * - RW 5: Jumlah RT 6 (Posyandu Kenanga [RT 1-6])
+ * - RW 6: Jumlah RT 4 (Posyandu Bougenville [RT 1-4])
+ * - RW 7: Jumlah RT 8 (Posyandu Flamboyan [RT 1-8])
+ * - RW 8: Jumlah RT 10 (Posyandu Anggrek [RT 1-10])
+ * - RW 9: Jumlah RT 8 (Posyandu Sedap Malam [RT 1-8])
+ * - RW 10: Jumlah RT 14 (Posyandu Seruni [RT 1-14])
+ * - RW 11: Jumlah RT 15 (Posyandu Nusa Indah A [RT 1-3, 6-9, 11-13] & Posyandu Nusa Indah B [RT 4-5, 7, 10, 14-15])
+ * Total RW resmi: 11 RW, Total RT: 94 RT (9 + 7 + 5 + 8 + 6 + 4 + 8 + 10 + 8 + 14 + 15)
+ * Tetap pertahankan pilihan "Belum Tahu" untuk RW dan RT
+ */
+export const DATA_RT_PER_RW_MINTARAGEN: Record<string, number> = {
+  "01": 9,
+  "1": 9,
+  "02": 7,
+  "2": 7,
+  "03": 5,
+  "3": 5,
+  "04": 8,
+  "4": 8,
+  "05": 6,
+  "5": 6,
+  "06": 4,
+  "6": 4,
+  "07": 8,
+  "7": 8,
+  "08": 10,
+  "8": 10,
+  "09": 8,
+  "9": 8,
+  "10": 14,
+  "11": 15,
+};
+
+/**
+ * Ketentuan Khusus RT per RW di Kelurahan Kemandungan, Kecamatan Tegal Barat:
+ * - RW 1: Jumlah RT 4 (Posyandu Seruni [RT 1-4])
+ * - RW 2: Jumlah RT 6 (Posyandu Melati [RT 1-6])
+ * - RW 3: Jumlah RT 3 (Posyandu Cempaka [RT 1-3])
+ * Total RW resmi: 3 RW, Total RT: 13 RT (4 + 6 + 3)
+ * Tetap pertahankan pilihan "Belum Tahu" untuk RW dan RT
+ */
+export const DATA_RT_PER_RW_KEMANDUNGAN: Record<string, number> = {
+  "01": 4,
+  "1": 4,
+  "02": 6,
+  "2": 6,
+  "03": 3,
+  "3": 3,
+};
+
+/**
+ * Ketentuan Khusus RT per RW di Kelurahan Pesurungan Kidul, Kecamatan Tegal Barat:
+ * - RW 1: Jumlah RT 5 (Posyandu Melati 3 [RT 1-5])
+ * - RW 2: Jumlah RT 6 (Posyandu Melati 6 [RT 1-6])
+ * - RW 3: Jumlah RT 5 (Posyandu Melati 1 [RT 1-5])
+ * - RW 4: Jumlah RT 5 (Posyandu Melati 2 [RT 1-5])
+ * - RW 5: Jumlah RT 5 (Posyandu Melati 4 [RT 1-5])
+ * - RW 6: Jumlah RT 6 (Posyandu Melati 5 [RT 1-6])
+ * Total RW resmi: 6 RW, Total RT: 32 RT (5 + 6 + 5 + 5 + 5 + 6)
+ * Tetap pertahankan pilihan "Belum Tahu" untuk RW dan RT
+ */
+export const DATA_RT_PER_RW_PESURUNGAN_KIDUL: Record<string, number> = {
+  "01": 5,
+  "1": 5,
+  "02": 6,
+  "2": 6,
+  "03": 5,
+  "3": 5,
+  "04": 5,
+  "4": 5,
+  "05": 5,
+  "5": 5,
+  "06": 6,
+  "6": 6,
+};
+
+/**
+ * Ketentuan Khusus RT per RW di Kelurahan Cabawan, Kecamatan Margadana:
+ * - RW 1: Jumlah RT 4 (Posyandu Anggrek [RT 1-4])
+ * - RW 2: Jumlah RT 5 (Posyandu Bougenville [RT 1-5])
+ * - RW 3: Jumlah RT 4 (Posyandu Cempaka [RT 1-4])
+ * - RW 4: Jumlah RT 4 (Posyandu Dahlia [RT 1-4])
+ * - RW 5: Jumlah RT 5 (Posyandu Edelweis [RT 1-5])
+ * Total RW resmi: 5 RW, Total RT: 22 RT (4 + 5 + 4 + 4 + 5)
+ * Tetap pertahankan pilihan "Belum Tahu" untuk RW dan RT
+ */
+export const DATA_RT_PER_RW_CABAWAN: Record<string, number> = {
+  "01": 4,
+  "1": 4,
+  "02": 5,
+  "2": 5,
+  "03": 4,
+  "3": 4,
+  "04": 4,
+  "4": 4,
+  "05": 5,
+  "5": 5,
 };
 
 /**
@@ -1304,6 +1414,18 @@ export function getJumlahRwByKelurahan(kelurahan?: string | null): number {
   if (clean === "randugunting") {
     return 12;
   }
+  if (clean === "mintaragen") {
+    return 11;
+  }
+  if (clean === "kemandungan") {
+    return 3;
+  }
+  if (clean === "pesurungan kidul") {
+    return 6;
+  }
+  if (clean === "cabawan") {
+    return 5;
+  }
   if (clean === "slerok") {
     return 6;
   }
@@ -1372,6 +1494,46 @@ export function getJumlahRtPerRwByKelurahan(kelurahan?: string | null, rw?: stri
       }
     }
     return 10; // Max RT di RW 10 Randugunting (10 RT)
+  }
+  if (clean === "mintaragen") {
+    if (rw && rw !== "Belum Tahu") {
+      const cleanRw = rw.replace(/^(rw|rt)\s*/i, "").trim();
+      const normRw = String(parseInt(cleanRw, 10)).padStart(2, "0");
+      if (DATA_RT_PER_RW_MINTARAGEN[normRw] || DATA_RT_PER_RW_MINTARAGEN[cleanRw]) {
+        return DATA_RT_PER_RW_MINTARAGEN[normRw] || DATA_RT_PER_RW_MINTARAGEN[cleanRw];
+      }
+    }
+    return 15; // Max RT di RW 11 Mintaragen (15 RT)
+  }
+  if (clean === "kemandungan") {
+    if (rw && rw !== "Belum Tahu") {
+      const cleanRw = rw.replace(/^(rw|rt)\s*/i, "").trim();
+      const normRw = String(parseInt(cleanRw, 10)).padStart(2, "0");
+      if (DATA_RT_PER_RW_KEMANDUNGAN[normRw] || DATA_RT_PER_RW_KEMANDUNGAN[cleanRw]) {
+        return DATA_RT_PER_RW_KEMANDUNGAN[normRw] || DATA_RT_PER_RW_KEMANDUNGAN[cleanRw];
+      }
+    }
+    return 6; // Max RT di RW 2 Kemandungan (6 RT)
+  }
+  if (clean === "pesurungan kidul") {
+    if (rw && rw !== "Belum Tahu") {
+      const cleanRw = rw.replace(/^(rw|rt)\s*/i, "").trim();
+      const normRw = String(parseInt(cleanRw, 10)).padStart(2, "0");
+      if (DATA_RT_PER_RW_PESURUNGAN_KIDUL[normRw] || DATA_RT_PER_RW_PESURUNGAN_KIDUL[cleanRw]) {
+        return DATA_RT_PER_RW_PESURUNGAN_KIDUL[normRw] || DATA_RT_PER_RW_PESURUNGAN_KIDUL[cleanRw];
+      }
+    }
+    return 6; // Max RT di RW 2 & 6 Pesurungan Kidul (6 RT)
+  }
+  if (clean === "cabawan") {
+    if (rw && rw !== "Belum Tahu") {
+      const cleanRw = rw.replace(/^(rw|rt)\s*/i, "").trim();
+      const normRw = String(parseInt(cleanRw, 10)).padStart(2, "0");
+      if (DATA_RT_PER_RW_CABAWAN[normRw] || DATA_RT_PER_RW_CABAWAN[cleanRw]) {
+        return DATA_RT_PER_RW_CABAWAN[normRw] || DATA_RT_PER_RW_CABAWAN[cleanRw];
+      }
+    }
+    return 5; // Max RT di RW 2 & 5 Cabawan (5 RT)
   }
   if (clean === "slerok") {
     if (rw && rw !== "Belum Tahu") {
@@ -1562,6 +1724,22 @@ export function getTotalRtByKelurahan(kelurahan?: string | null): number {
     // RW 1: 9, RW 2: 9, RW 3: 7, RW 4: 9, RW 5: 8, RW 6: 8, RW 7: 9, RW 8: 7, RW 9: 3, RW 10: 10, RW 11: 6, RW 12: 4 -> Total 89 RT
     return 9 + 9 + 7 + 9 + 8 + 8 + 9 + 7 + 3 + 10 + 6 + 4;
   }
+  if (clean === "mintaragen") {
+    // RW 1: 9, RW 2: 7, RW 3: 5, RW 4: 8, RW 5: 6, RW 6: 4, RW 7: 8, RW 8: 10, RW 9: 8, RW 10: 14, RW 11: 15 -> Total 94 RT
+    return 9 + 7 + 5 + 8 + 6 + 4 + 8 + 10 + 8 + 14 + 15;
+  }
+  if (clean === "kemandungan") {
+    // RW 1: 4, RW 2: 6, RW 3: 3 -> Total 13 RT
+    return 4 + 6 + 3;
+  }
+  if (clean === "pesurungan kidul") {
+    // RW 1: 5, RW 2: 6, RW 3: 5, RW 4: 5, RW 5: 5, RW 6: 6 -> Total 32 RT
+    return 5 + 6 + 5 + 5 + 5 + 6;
+  }
+  if (clean === "cabawan") {
+    // RW 1: 4, RW 2: 5, RW 3: 4, RW 4: 4, RW 5: 5 -> Total 22 RT
+    return 4 + 5 + 4 + 4 + 5;
+  }
   if (clean === "slerok") {
     // RW 1: 4, RW 2: 12, RW 3: 9, RW 4: 6, RW 5: 6, RW 6: 9 -> Total 46 RT
     return 4 + 12 + 9 + 6 + 6 + 9;
@@ -1655,6 +1833,22 @@ export function getRwListByKelurahan(kelurahan?: string | null): string[] {
   const clean = kelurahan.replace(/^(kelurahan|kel\.)\s+/i, "").trim().toLowerCase();
   if (clean === "randugunting") {
     const list = Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, "0"));
+    return [...list, "Belum Tahu"];
+  }
+  if (clean === "mintaragen") {
+    const list = Array.from({ length: 11 }, (_, i) => String(i + 1).padStart(2, "0"));
+    return [...list, "Belum Tahu"];
+  }
+  if (clean === "kemandungan") {
+    const list = Array.from({ length: 3 }, (_, i) => String(i + 1).padStart(2, "0"));
+    return [...list, "Belum Tahu"];
+  }
+  if (clean === "pesurungan kidul") {
+    const list = Array.from({ length: 6 }, (_, i) => String(i + 1).padStart(2, "0"));
+    return [...list, "Belum Tahu"];
+  }
+  if (clean === "cabawan") {
+    const list = Array.from({ length: 5 }, (_, i) => String(i + 1).padStart(2, "0"));
     return [...list, "Belum Tahu"];
   }
   if (clean === "slerok") {
@@ -1755,6 +1949,50 @@ export function getRtListByKelurahan(kelurahan?: string | null, rw?: string | nu
       return [...list, "Belum Tahu"];
     }
     const list = Array.from({ length: 10 }, (_, i) => String(i + 1).padStart(2, "0"));
+    return [...list, "Belum Tahu"];
+  }
+  if (clean === "mintaragen") {
+    if (rw && rw !== "Belum Tahu") {
+      const cleanRw = rw.replace(/^(rw|rt)\s*/i, "").trim();
+      const normRw = String(parseInt(cleanRw, 10)).padStart(2, "0");
+      const count = DATA_RT_PER_RW_MINTARAGEN[normRw] || DATA_RT_PER_RW_MINTARAGEN[cleanRw] || 15;
+      const list = Array.from({ length: count }, (_, i) => String(i + 1).padStart(2, "0"));
+      return [...list, "Belum Tahu"];
+    }
+    const list = Array.from({ length: 15 }, (_, i) => String(i + 1).padStart(2, "0"));
+    return [...list, "Belum Tahu"];
+  }
+  if (clean === "kemandungan") {
+    if (rw && rw !== "Belum Tahu") {
+      const cleanRw = rw.replace(/^(rw|rt)\s*/i, "").trim();
+      const normRw = String(parseInt(cleanRw, 10)).padStart(2, "0");
+      const count = DATA_RT_PER_RW_KEMANDUNGAN[normRw] || DATA_RT_PER_RW_KEMANDUNGAN[cleanRw] || 6;
+      const list = Array.from({ length: count }, (_, i) => String(i + 1).padStart(2, "0"));
+      return [...list, "Belum Tahu"];
+    }
+    const list = Array.from({ length: 6 }, (_, i) => String(i + 1).padStart(2, "0"));
+    return [...list, "Belum Tahu"];
+  }
+  if (clean === "pesurungan kidul") {
+    if (rw && rw !== "Belum Tahu") {
+      const cleanRw = rw.replace(/^(rw|rt)\s*/i, "").trim();
+      const normRw = String(parseInt(cleanRw, 10)).padStart(2, "0");
+      const count = DATA_RT_PER_RW_PESURUNGAN_KIDUL[normRw] || DATA_RT_PER_RW_PESURUNGAN_KIDUL[cleanRw] || 6;
+      const list = Array.from({ length: count }, (_, i) => String(i + 1).padStart(2, "0"));
+      return [...list, "Belum Tahu"];
+    }
+    const list = Array.from({ length: 6 }, (_, i) => String(i + 1).padStart(2, "0"));
+    return [...list, "Belum Tahu"];
+  }
+  if (clean === "cabawan") {
+    if (rw && rw !== "Belum Tahu") {
+      const cleanRw = rw.replace(/^(rw|rt)\s*/i, "").trim();
+      const normRw = String(parseInt(cleanRw, 10)).padStart(2, "0");
+      const count = DATA_RT_PER_RW_CABAWAN[normRw] || DATA_RT_PER_RW_CABAWAN[cleanRw] || 5;
+      const list = Array.from({ length: count }, (_, i) => String(i + 1).padStart(2, "0"));
+      return [...list, "Belum Tahu"];
+    }
+    const list = Array.from({ length: 5 }, (_, i) => String(i + 1).padStart(2, "0"));
     return [...list, "Belum Tahu"];
   }
   if (clean === "slerok") {

@@ -954,6 +954,100 @@ export function parseCakupanWilayah(komunitas?: {
     }
   }
 
+  // Khusus Kelurahan Mintaragen (Kecamatan Tegal Timur)
+  if (kelClean.includes("mintaragen") || namaClean.includes("mintaragen")) {
+    if (namaClean.includes("anyelir")) {
+      return "Melayani Warga RW 01 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08, RT 09 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("mawar")) {
+      return "Melayani Warga RW 02 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("teratai")) {
+      return "Melayani Warga RW 03 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("melati")) {
+      return "Melayani Warga RW 04 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("kenanga")) {
+      return "Melayani Warga RW 05 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("bougenville")) {
+      return "Melayani Warga RW 06 (RT 01, RT 02, RT 03, RT 04 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("flamboyan")) {
+      return "Melayani Warga RW 07 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("anggrek")) {
+      return "Melayani Warga RW 08 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08, RT 09, RT 10 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("sedap malam")) {
+      return "Melayani Warga RW 09 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("seruni")) {
+      return "Melayani Warga RW 10 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06, RT 07, RT 08, RT 09, RT 10, RT 11, RT 12, RT 13, RT 14 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("nusa indah a") || namaClean.includes("nusa indah 1") || namaClean.includes("nusa indah i")) {
+      return "Melayani Warga RW 11 (RT 01, RT 02, RT 03, RT 06, RT 07, RT 08, RT 09, RT 11, RT 12, RT 13 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("nusa indah b") || namaClean.includes("nusa indah 2") || namaClean.includes("nusa indah ii")) {
+      return "Melayani Warga RW 11 (RT 04, RT 05, RT 07, RT 10, RT 14, RT 15 dan RW - RT Tidak Tahu)";
+    }
+  }
+
+  // Khusus Kelurahan Kemandungan (Kecamatan Tegal Barat)
+  if (kelClean.includes("kemandungan") || namaClean.includes("kemandungan")) {
+    if (namaClean.includes("seruni")) {
+      return "Melayani Warga RW 01 (RT 01, RT 02, RT 03, RT 04 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("melati")) {
+      return "Melayani Warga RW 02 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("cempaka")) {
+      return "Melayani Warga RW 03 (RT 01, RT 02, RT 03 dan RW - RT Tidak Tahu)";
+    }
+  }
+
+  // Khusus Kelurahan Pesurungan Kidul (Kecamatan Tegal Barat)
+  if (kelClean.includes("pesurungan kidul") || namaClean.includes("pesurungan kidul")) {
+    if (namaClean.includes("melati 3") || namaClean.includes("melati iii")) {
+      return "Melayani Warga RW 01 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("melati 6") || namaClean.includes("melati vi")) {
+      return "Melayani Warga RW 02 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("melati 1") || namaClean.includes("melati i\b") || namaClean.includes("melati i ")) {
+      return "Melayani Warga RW 03 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("melati 2") || namaClean.includes("melati ii")) {
+      return "Melayani Warga RW 04 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("melati 4") || namaClean.includes("melati iv")) {
+      return "Melayani Warga RW 05 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("melati 5") || namaClean.includes("melati v")) {
+      return "Melayani Warga RW 06 (RT 01, RT 02, RT 03, RT 04, RT 05, RT 06 dan RW - RT Tidak Tahu)";
+    }
+  }
+
+  // Khusus Kelurahan Cabawan (Kecamatan Margadana)
+  if (kelClean.includes("cabawan") || namaClean.includes("cabawan")) {
+    if (namaClean.includes("anggrek") || namaClean.includes("anggerk")) {
+      return "Melayani Warga RW 01 (RT 01, RT 02, RT 03, RT 04 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("bougenville")) {
+      return "Melayani Warga RW 02 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("cempaka")) {
+      return "Melayani Warga RW 03 (RT 01, RT 02, RT 03, RT 04 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("dahlia")) {
+      return "Melayani Warga RW 04 (RT 01, RT 02, RT 03, RT 04 dan RW - RT Tidak Tahu)";
+    }
+    if (namaClean.includes("edelweis")) {
+      return "Melayani Warga RW 05 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu)";
+    }
+  }
+
   // Khusus Kelurahan Muarareja (Kecamatan Tegal Barat)
   if (kelClean.includes("muarareja") || namaClean.includes("muarareja")) {
     if (namaClean.includes("mawar")) {
