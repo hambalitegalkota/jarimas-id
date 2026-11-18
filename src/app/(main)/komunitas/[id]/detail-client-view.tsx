@@ -1607,41 +1607,6 @@ export function KomunitasDetailClientView({
                   ? `Layanan terpadu ${komunitasData.nama} mengintegrasikan pemenuhan 6 Bidang Standar Pelayanan Minimal (SPM) sesuai Permendagri No. 13 Tahun 2024: SPM Pendidikan (pemantauan kesiapan PAUD & penanganan ATS), SPM Kesehatan (layanan kesehatan balita, ibu hamil & seluruh siklus hidup), Pekerjaan Umum, Perumahan Rakyat, Trantibum Linmas, dan Sosial.`
                   : cleanDeskripsiDisplay(komunitasData.deskripsi)}
               </p>
-
-              {/* Rincian 6 Bidang SPM Pill List khusus Posyandu */}
-              {isPosyandu && (
-                <div className="pt-2 border-t border-border/60 space-y-1.5">
-                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">
-                    Cakupan 6 Bidang Standar Pelayanan Minimal:
-                  </span>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 text-2xs">
-                    <div className="flex items-center gap-1.5 p-1.5 rounded-md bg-blue-500/10 text-blue-900 dark:text-blue-200 border border-blue-500/20 font-medium">
-                      <GraduationCap className="h-3.5 w-3.5 text-blue-600 shrink-0" />
-                      <span className="truncate">1. Pendidikan (PAUD &amp; ATS)</span>
-                    </div>
-                    <div className="flex items-center gap-1.5 p-1.5 rounded-md bg-emerald-500/10 text-emerald-900 dark:text-emerald-200 border border-emerald-500/20 font-medium">
-                      <HeartPulse className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
-                      <span className="truncate">2. Kesehatan (Siklus Hidup)</span>
-                    </div>
-                    <div className="flex items-center gap-1.5 p-1.5 rounded-md bg-amber-500/10 text-amber-900 dark:text-amber-200 border border-amber-500/20 font-medium">
-                      <Wrench className="h-3.5 w-3.5 text-amber-600 shrink-0" />
-                      <span className="truncate">3. Pekerjaan Umum (Air/Sanitasi)</span>
-                    </div>
-                    <div className="flex items-center gap-1.5 p-1.5 rounded-md bg-cyan-500/10 text-cyan-900 dark:text-cyan-200 border border-cyan-500/20 font-medium">
-                      <Home className="h-3.5 w-3.5 text-cyan-600 shrink-0" />
-                      <span className="truncate">4. Perumahan Rakyat (RTLH)</span>
-                    </div>
-                    <div className="flex items-center gap-1.5 p-1.5 rounded-md bg-indigo-500/10 text-indigo-900 dark:text-indigo-200 border border-indigo-500/20 font-medium">
-                      <ShieldCheck className="h-3.5 w-3.5 text-indigo-600 shrink-0" />
-                      <span className="truncate">5. Trantibum Linmas</span>
-                    </div>
-                    <div className="flex items-center gap-1.5 p-1.5 rounded-md bg-rose-500/10 text-rose-900 dark:text-rose-200 border border-rose-500/20 font-medium">
-                      <Users className="h-3.5 w-3.5 text-rose-600 shrink-0" />
-                      <span className="truncate">6. Sosial (Bansos &amp; Rentan)</span>
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
           )}
         </div>
@@ -2212,23 +2177,6 @@ export function KomunitasDetailClientView({
                   </h4>
                   <p className="text-xs text-muted-foreground leading-relaxed">
                     Data anak usia 0–6 tahun yang bersekolah bersumber resmi dari Komunitas PAUD (TK/KB/SPS/TPA/RA, PKBM &amp; SKB) dan bersifat terpadu (read-only bagi warga). Warga dan Kader RT dapat mendaftarkan Data Anak Usia 0–6 Tahun yang belum bersekolah melalui tombol <strong>TAMBAH DATA ANAK</strong>.
-                  </p>
-                </div>
-              </div>
-            ) : isPosyandu ? (
-              <div className="rounded-lg border border-teal-500/20 bg-teal-500/5 p-3.5 sm:p-4 flex items-start gap-3 text-foreground shadow-2xs">
-                <HeartPulse className="h-5 w-5 text-teal-600 shrink-0 mt-0.5" />
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h4 className="text-sm font-bold text-teal-950 dark:text-teal-200">
-                      Posyandu 6 SPM: Layanan Terpadu Bidang Kesehatan &amp; Pendidikan Anak
-                    </h4>
-                    <span className="rounded-full bg-teal-600 text-white text-[10px] font-black px-2 py-0.5 shadow-2xs">
-                      Permendagri No. 13/2024
-                    </span>
-                  </div>
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    Sesuai transformasi <strong>Posyandu 6 SPM</strong> berdasarkan <strong>Permendagri No. 13 Tahun 2024</strong>, pemantauan status gizi, imunisasi, dan deteksi dini tumbuh kembang (DDTK) balita terintegrasi sebagai pemenuhan <strong>SPM Bidang Kesehatan</strong>, bersinergi dengan pencegahan Anak Tidak Sekolah (ATS) dan stimulasi kesiapan belajar di PAUD pada <strong>SPM Bidang Pendidikan</strong>. Kader Posyandu memvalidasi status tumbuh kembang dan mendampingi pemenuhan hak layanan dasar anak di wilayah ini.
                   </p>
                 </div>
               </div>
