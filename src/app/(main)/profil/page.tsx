@@ -159,6 +159,25 @@ export default async function ProfilePage() {
     } catch {}
   }
 
+  // Pembersihan otomatis anomali keterkaitan RA Permata Hati Kejambon pada profil Jarimas Indonesia
+  const isJarimasIndonesiaUser =
+    isAdminPusatUser ||
+    user.id === "1e729af1-f5b8-4a4d-983a-13a0253c6838" ||
+    (userEmail || "").toLowerCase().includes("jarimas.id") ||
+    namaLengkap.toLowerCase().includes("jarimas");
+
+  if (isJarimasIndonesiaUser) {
+    try {
+      await supabase
+        .from("anggota_komunitas")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("komunitas_id", "37270cc5-beae-446d-8317-4db53bcc295b");
+    } catch (cleanPermataErr) {
+      console.warn("Gagal membersihkan keanggotaan RA Permata Hati:", cleanPermataErr);
+    }
+  }
+
   // 3. Ambil data permohonan pending, komunitas user, daftar pengguna terdaftar, dan komunitas buatan admin
   const [
     pendingApprovalsResult,
@@ -182,7 +201,13 @@ export default async function ProfilePage() {
   const pendingApprovals: PendingApprovalItem[] = pendingApprovalsResult.data || [];
   const allHierarchyPendingApprovals: PendingApprovalItem[] =
     pendingApprovalsResult.allHierarchyItems || [];
-  const rawUserCommunities = [...(userJoinedResult.data || [])];
+  const rawUserCommunities = [...(userJoinedResult.data || [])].filter((r: any) => {
+    // Pastikan RA Permata Hati Kejambon tidak pernah tampil di profil Admin Pusat (Jarimas Indonesia)
+    if (isJarimasIndonesiaUser && r.komunitas_id === "37270cc5-beae-446d-8317-4db53bcc295b") {
+      return false;
+    }
+    return true;
+  });
 
   // Pastikan komunitas yang dibuat oleh user tercakup
   const existingKomIdSet = new Set(rawUserCommunities.map((r: any) => r.komunitas_id));

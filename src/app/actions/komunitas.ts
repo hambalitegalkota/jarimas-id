@@ -1375,13 +1375,43 @@ export async function getUserJoinedKomunitas(): Promise<{
     }
 
     // Ambil record anggota_komunitas milik user
-    const { data: memberships, error: memberError } = await supabase
+    const { data: rawMemberships, error: memberError } = await supabase
       .from("anggota_komunitas")
       .select("id, komunitas_id, status, peran, peran_diajukan, berdomisili, kk_terdaftar, created_at")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false });
 
-    if (memberError || !memberships || memberships.length === 0) {
+    if (memberError || !rawMemberships || rawMemberships.length === 0) {
+      return {
+        success: true,
+        data: [],
+        currentUserId: user.id,
+      };
+    }
+
+    // Pembersihan anomali keanggotaan RA Permata Hati Kejambon untuk Jarimas Indonesia
+    const isJarimasUser =
+      user.id === "1e729af1-f5b8-4a4d-983a-13a0253c6838" ||
+      (user.email || "").toLowerCase().includes("jarimas.id");
+
+    if (isJarimasUser) {
+      try {
+        await supabase
+          .from("anggota_komunitas")
+          .delete()
+          .eq("user_id", user.id)
+          .eq("komunitas_id", "37270cc5-beae-446d-8317-4db53bcc295b");
+      } catch {}
+    }
+
+    const memberships = rawMemberships.filter((m) => {
+      if (isJarimasUser && m.komunitas_id === "37270cc5-beae-446d-8317-4db53bcc295b") {
+        return false;
+      }
+      return true;
+    });
+
+    if (memberships.length === 0) {
       return {
         success: true,
         data: [],
