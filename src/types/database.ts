@@ -122,6 +122,7 @@ export interface JadwalPosyanduDetail {
 export interface KontakKomunitasDetail {
   utama: string;
   cakupan_wilayah?: string;
+  google_maps_url?: string;
   kader_pendidikan: KaderBidangItem;
   kader_kesehatan: KaderBidangItem;
   kader_pekerjaan_umum: KaderBidangItem;

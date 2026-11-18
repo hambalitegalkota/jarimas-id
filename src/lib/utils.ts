@@ -571,6 +571,9 @@ export function parseKontakKomunitas(rawKontak?: string | null): KontakKomunitas
       if (parsed.cakupan_wilayah) {
         result.cakupan_wilayah = parsed.cakupan_wilayah;
       }
+      if (parsed.google_maps_url) {
+        result.google_maps_url = parsed.google_maps_url;
+      }
       if (parsed.kader_pendidikan) {
         result.kader_pendidikan = {
           nama: parsed.kader_pendidikan.nama || "",

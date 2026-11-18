@@ -18,6 +18,8 @@ import {
   CheckCircle2,
   AlertCircle,
   Sparkles,
+  Globe,
+  ExternalLink,
 } from "lucide-react";
 import { updateKomunitasInformasiOperasional } from "@/app/actions/komunitas";
 import {
@@ -56,6 +58,7 @@ export function EditInformasiOperasionalModal({
   const initialJadwalPosyandu = parseJadwalPosyandu(komunitas.jadwal);
 
   const [lokasi, setLokasi] = useState(komunitas.lokasi || "");
+  const [googleMapsUrl, setGoogleMapsUrl] = useState(initialKontak.google_maps_url || "");
   const [cakupanWilayah, setCakupanWilayah] = useState(
     komunitas.cakupan_wilayah || initialKontak.cakupan_wilayah || initialCakupan || ""
   );
@@ -104,6 +107,7 @@ export function EditInformasiOperasionalModal({
     const fullKontakDetail: KontakKomunitasDetail = {
       utama: kontakUtama.trim(),
       cakupan_wilayah: cakupanWilayah.trim(),
+      google_maps_url: googleMapsUrl.trim(),
       kader_pendidikan: {
         nama: kaderPendidikan.nama.trim(),
         wa: kaderPendidikan.wa.trim(),
@@ -277,6 +281,39 @@ export function EditInformasiOperasionalModal({
                     placeholder="Contoh: Balai Posyandu / RW 05, Randugunting, Tegal Selatan, Kota Tegal"
                     className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm font-semibold focus:border-primary focus:outline-none"
                   />
+                </div>
+
+                {/* Tautan / Link Google Maps Khusus (Opsional) */}
+                <div className="space-y-1.5 p-3 rounded-lg border border-border bg-card">
+                  <div className="flex items-center justify-between">
+                    <label className="flex items-center gap-1.5 font-bold text-foreground text-xs">
+                      <Globe className="h-4 w-4 text-emerald-600" />
+                      <span>Link Google Maps Khusus</span>
+                      <span className="text-[10px] font-normal text-muted-foreground">(Opsional)</span>
+                    </label>
+                    {googleMapsUrl && (
+                      <a
+                        href={googleMapsUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-2xs font-bold text-primary hover:underline flex items-center gap-1"
+                        title="Buka link untuk memastikan alamat peta benar"
+                      >
+                        <span>Uji Link</span>
+                        <ExternalLink className="h-2.5 w-2.5" />
+                      </a>
+                    )}
+                  </div>
+                  <input
+                    type="url"
+                    value={googleMapsUrl}
+                    onChange={(e) => setGoogleMapsUrl(e.target.value)}
+                    placeholder="Contoh: https://maps.app.goo.gl/... atau kosongkan untuk otomatis"
+                    className="w-full px-3 py-1.5 rounded-lg border border-border bg-background text-foreground text-xs font-semibold focus:border-primary focus:outline-none placeholder:text-muted-foreground/60"
+                  />
+                  <p className="text-2xs text-muted-foreground">
+                    Jika dikosongkan, tombol <strong>Buka di Google Maps</strong> akan otomatis mencari berdasarkan Nama dan Alamat di atas.
+                  </p>
                 </div>
 
                 {/* Jadwal Layanan: Posyandu vs Non-Posyandu */}
