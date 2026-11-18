@@ -239,7 +239,7 @@ export function KomunitasFilter({
   const searchPlaceholder = isWargaKita
     ? "Cari nama komunitas wilayah, kelurahan, atau jalan..."
     : activeTab === "posyandu"
-    ? "Cari nama posyandu atau kelurahan..."
+    ? "Cari nama Posyandu 6 SPM atau kelurahan..."
     : isPkbmTab
     ? "Cari nama PKBM, SKB, atau kelurahan..."
     : "Cari nama PAUD, KB, TK, SPS, RA, TPA...";
@@ -263,14 +263,14 @@ export function KomunitasFilter({
         };
       case "posyandu":
         return {
-          title: "Selamat Datang Di Komunitas Posyandu",
-          tag: "STRUKTUR KOMUNITAS POSYANDU BERJENJANG KOTA TEGAL",
+          title: "Selamat Datang Di Komunitas Posyandu 6 SPM",
+          tag: "ERA BARU POSYANDU 6 SPM • PERMENDAGRI NO. 13 TAHUN 2024",
           desc: (
             <>
-              Menghimpun kader posyandu secara berjenjang dari <strong className="text-foreground">Tingkat Kota Tegal</strong>, <strong className="text-foreground">4 Komunitas Kecamatan</strong>, <strong className="text-foreground">27 Komunitas Kelurahan</strong>, hingga <strong className="text-foreground">209 Posyandu</strong> se-Kota Tegal.
+              Menghimpun kader posyandu secara berjenjang dari <strong className="text-foreground">Tingkat Kota Tegal</strong>, <strong className="text-foreground">4 Komunitas Kecamatan</strong>, <strong className="text-foreground">27 Komunitas Kelurahan</strong>, hingga <strong className="text-foreground">209 Posyandu</strong> se-Kota Tegal yang mengintegrasikan pemenuhan 6 Bidang Standar Pelayanan Minimal (Pendidikan, Kesehatan, Pekerjaan Umum, Perumahan Rakyat, Trantibum Linmas, dan Sosial).
             </>
           ),
-          prompt: "Komunitas posyandu berjenjang atau posyandu mana yang akan anda kunjungi, silakan cari di sini atau gunakan filter di bawah ini.",
+          prompt: "Komunitas Posyandu 6 SPM berjenjang atau Posyandu mana yang akan Anda kunjungi, silakan cari di sini atau gunakan filter di bawah ini.",
           icon: HeartPulse,
           iconBg: "bg-teal-700 text-white",
           tagColor: "text-teal-700 dark:text-teal-400",

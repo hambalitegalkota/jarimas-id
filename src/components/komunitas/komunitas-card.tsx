@@ -207,25 +207,32 @@ export function KomunitasCard({
                 </>
               )}
 
-              {isPosyandu && !isBerjenjang && coverage && (
+              {isPosyandu && !isBerjenjang && (
                 <>
                   <span className="text-muted-foreground/40 hidden xs:inline">•</span>
-                  {coverage.isMapped ? (
-                    <span
-                      title="Cakupan sinkronisasi wilayah Posyandu"
-                      className="inline-flex items-center gap-1 rounded-md bg-emerald-50 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300 font-semibold px-2 py-0.5 text-[11px] border border-emerald-200 dark:border-emerald-800 shadow-2xs"
-                    >
-                      <Home className="h-3 w-3 shrink-0 text-emerald-600 dark:text-emerald-400" />
-                      <span>{coverage.label}</span>
-                    </span>
-                  ) : (
-                    <span
-                      title="Posyandu ini belum memiliki pemetaan RW/RT resmi di sistem"
-                      className="inline-flex items-center gap-1 rounded-md bg-amber-50 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300 font-semibold px-2 py-0.5 text-[11px] border border-amber-200 dark:border-amber-800 shadow-2xs"
-                    >
-                      <AlertTriangle className="h-3 w-3 shrink-0 text-amber-600 dark:text-amber-400" />
-                      <span>Cakupan RW/RT Belum Dipetakan</span>
-                    </span>
+                  <span className="inline-flex items-center gap-1 rounded-md bg-teal-50 text-teal-800 dark:bg-teal-950/50 dark:text-teal-300 font-bold px-1.5 py-0.5 text-[10px] border border-teal-200 dark:border-teal-800 shadow-2xs">
+                    Posyandu 6 SPM
+                  </span>
+                  {coverage && (
+                    <>
+                      {coverage.isMapped ? (
+                        <span
+                          title="Cakupan sinkronisasi wilayah Posyandu"
+                          className="inline-flex items-center gap-1 rounded-md bg-emerald-50 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300 font-semibold px-2 py-0.5 text-[11px] border border-emerald-200 dark:border-emerald-800 shadow-2xs"
+                        >
+                          <Home className="h-3 w-3 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                          <span>{coverage.label}</span>
+                        </span>
+                      ) : (
+                        <span
+                          title="Posyandu ini belum memiliki pemetaan RW/RT resmi di sistem"
+                          className="inline-flex items-center gap-1 rounded-md bg-amber-50 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300 font-semibold px-2 py-0.5 text-[11px] border border-amber-200 dark:border-amber-800 shadow-2xs"
+                        >
+                          <AlertTriangle className="h-3 w-3 shrink-0 text-amber-600 dark:text-amber-400" />
+                          <span>Cakupan RW/RT Belum Dipetakan</span>
+                        </span>
+                      )}
+                    </>
                   )}
                 </>
               )}

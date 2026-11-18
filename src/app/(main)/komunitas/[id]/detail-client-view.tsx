@@ -1290,7 +1290,7 @@ export function KomunitasDetailClientView({
                 {isWargaKita
                   ? `WARGA KITA • ${tierLevelLabel.toUpperCase()}`
                   : isPosyandu
-                  ? "POSYANDU ILP (INTEGRASI LAYANAN PRIMER)"
+                  ? "POSYANDU 6 SPM (STANDAR PELAYANAN MINIMAL)"
                   : isSkb
                   ? "SKB (SANGGAR KEGIATAN BELAJAR)"
                   : isStarOfTomorrow
@@ -1371,21 +1371,33 @@ export function KomunitasDetailClientView({
                       return (
                         <span className="inline-flex items-center gap-1 rounded-md bg-teal-500/10 text-teal-800 dark:text-teal-300 font-bold px-2 py-0.5 text-xs border border-teal-500/25">
                           <Users className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400" />
-                          <span>Forum Koordinasi Kader Posyandu • {komunitas.kelurahan && komunitas.kelurahan !== "Semua Kelurahan" ? `Tingkat Kelurahan ${komunitas.kelurahan}` : komunitas.kecamatan && komunitas.kecamatan !== "Kota Tegal" ? `Tingkat Kecamatan ${komunitas.kecamatan}` : "Tingkat Kota Tegal"}</span>
+                          <span>Forum Koordinasi Posyandu 6 SPM • {komunitas.kelurahan && komunitas.kelurahan !== "Semua Kelurahan" ? `Tingkat Kelurahan ${komunitas.kelurahan}` : komunitas.kecamatan && komunitas.kecamatan !== "Kota Tegal" ? `Tingkat Kecamatan ${komunitas.kecamatan}` : "Tingkat Kota Tegal"}</span>
                         </span>
                       );
                     }
                     const cov = getPosyanduCoverageDisplay(komunitasData);
                     return cov.isMapped ? (
-                      <span className="inline-flex items-center gap-1.5 rounded-md bg-emerald-50 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300 font-bold px-2.5 py-0.5 text-xs border border-emerald-200 dark:border-emerald-800 shadow-2xs">
-                        <Home className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                        <span>{cov.label}</span>
-                      </span>
+                      <>
+                        <span className="inline-flex items-center gap-1.5 rounded-md bg-emerald-50 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300 font-bold px-2.5 py-0.5 text-xs border border-emerald-200 dark:border-emerald-800 shadow-2xs">
+                          <Home className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                          <span>{cov.label}</span>
+                        </span>
+                        <span className="inline-flex items-center gap-1 rounded-md bg-teal-50 text-teal-800 dark:bg-teal-950/50 dark:text-teal-300 font-bold px-2 py-0.5 text-xs border border-teal-200 dark:border-teal-800 shadow-2xs">
+                          <Sparkles className="h-3 w-3 text-teal-600 dark:text-teal-400 shrink-0" />
+                          <span>Posyandu 6 SPM</span>
+                        </span>
+                      </>
                     ) : (
-                      <span className="inline-flex items-center gap-1.5 rounded-md bg-amber-50 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300 font-bold px-2.5 py-0.5 text-xs border border-amber-200 dark:border-amber-800 shadow-2xs">
-                        <AlertTriangle className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
-                        <span>Cakupan RW/RT Belum Dipetakan</span>
-                      </span>
+                      <>
+                        <span className="inline-flex items-center gap-1.5 rounded-md bg-amber-50 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300 font-bold px-2.5 py-0.5 text-xs border border-amber-200 dark:border-amber-800 shadow-2xs">
+                          <AlertTriangle className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+                          <span>Cakupan RW/RT Belum Dipetakan</span>
+                        </span>
+                        <span className="inline-flex items-center gap-1 rounded-md bg-teal-50 text-teal-800 dark:bg-teal-950/50 dark:text-teal-300 font-bold px-2 py-0.5 text-xs border border-teal-200 dark:border-teal-800 shadow-2xs">
+                          <Sparkles className="h-3 w-3 text-teal-600 dark:text-teal-400 shrink-0" />
+                          <span>Posyandu 6 SPM</span>
+                        </span>
+                      </>
                     );
                   })()}
                 </div>
@@ -1462,7 +1474,7 @@ export function KomunitasDetailClientView({
               {isPaudCommunity
                 ? "Informasi Lembaga & Operasional"
                 : isPosyandu
-                ? "Informasi Posyandu & Layanan ILP"
+                ? "Informasi Posyandu 6 SPM (Permendagri No. 13/2024)"
                 : isWargaKita
                 ? "Informasi Wilayah & Layanan Warga"
                 : "Informasi Komunitas & Operasional"}
@@ -1518,11 +1530,11 @@ export function KomunitasDetailClientView({
             <div className="p-3 rounded-lg bg-card border border-border space-y-1">
               <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
                 <Clock className="h-3.5 w-3.5 text-primary" />
-                {isPosyandu ? "Jadwal Layanan Posyandu" : isWargaKita ? "Jadwal Pelayanan Warga" : "Jam Operasional / Jadwal"}
+                {isPosyandu ? "Jadwal Layanan Posyandu 6 SPM" : isWargaKita ? "Jadwal Pelayanan Warga" : "Jam Operasional / Jadwal"}
               </span>
               <p className="font-semibold text-foreground leading-relaxed">
                 {isPosyandu
-                  ? (parsedJadwalPosyandu.balita ? `Balita: ${parsedJadwalPosyandu.balita}` : komunitasData.jadwal || "Siklus Hidup Terpadu Bulanan")
+                  ? (parsedJadwalPosyandu.balita ? `Balita: ${parsedJadwalPosyandu.balita}` : komunitasData.jadwal || "Layanan Terpadu 6 SPM Bulanan")
                   : komunitasData.jadwal || (isWargaKita ? "Pelayanan Administrasi RT/RW" : "Senin - Jumat 07:30 - 11:00 WIB")}
               </p>
             </div>
@@ -1577,13 +1589,59 @@ export function KomunitasDetailClientView({
 
           {/* Profil, Visi & Deskripsi */}
           {komunitasData.deskripsi && cleanDeskripsiDisplay(komunitasData.deskripsi) && (
-            <div className="p-3 rounded-lg bg-card border border-border text-xs space-y-1">
-              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">
-                Profil &amp; Visi
-              </span>
+            <div className="p-3 rounded-lg bg-card border border-border text-xs space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">
+                  {isPosyandu ? "Profil & Komitmen 6 Bidang SPM (Permendagri No. 13/2024)" : "Profil & Visi"}
+                </span>
+                {isPosyandu && (
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-600/15 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30">
+                    Posyandu 6 SPM
+                  </span>
+                )}
+              </div>
               <p className="text-foreground leading-relaxed font-medium">
-                {cleanDeskripsiDisplay(komunitasData.deskripsi)}
+                {isPosyandu &&
+                (komunitasData.deskripsi.includes("layanan kesehatan balita, imunisasi, dan PMT") ||
+                  komunitasData.deskripsi.includes("penimbangan berat badan, tinggi badan, imunisasi, DDKS"))
+                  ? `Layanan terpadu ${komunitasData.nama} mengintegrasikan pemenuhan 6 Bidang Standar Pelayanan Minimal (SPM) sesuai Permendagri No. 13 Tahun 2024: SPM Pendidikan (pemantauan kesiapan PAUD & penanganan ATS), SPM Kesehatan (layanan kesehatan balita, ibu hamil & seluruh siklus hidup), Pekerjaan Umum, Perumahan Rakyat, Trantibum Linmas, dan Sosial.`
+                  : cleanDeskripsiDisplay(komunitasData.deskripsi)}
               </p>
+
+              {/* Rincian 6 Bidang SPM Pill List khusus Posyandu */}
+              {isPosyandu && (
+                <div className="pt-2 border-t border-border/60 space-y-1.5">
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">
+                    Cakupan 6 Bidang Standar Pelayanan Minimal:
+                  </span>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 text-2xs">
+                    <div className="flex items-center gap-1.5 p-1.5 rounded-md bg-blue-500/10 text-blue-900 dark:text-blue-200 border border-blue-500/20 font-medium">
+                      <GraduationCap className="h-3.5 w-3.5 text-blue-600 shrink-0" />
+                      <span className="truncate">1. Pendidikan (PAUD &amp; ATS)</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 p-1.5 rounded-md bg-emerald-500/10 text-emerald-900 dark:text-emerald-200 border border-emerald-500/20 font-medium">
+                      <HeartPulse className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                      <span className="truncate">2. Kesehatan (Siklus Hidup)</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 p-1.5 rounded-md bg-amber-500/10 text-amber-900 dark:text-amber-200 border border-amber-500/20 font-medium">
+                      <Wrench className="h-3.5 w-3.5 text-amber-600 shrink-0" />
+                      <span className="truncate">3. Pekerjaan Umum (Air/Sanitasi)</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 p-1.5 rounded-md bg-cyan-500/10 text-cyan-900 dark:text-cyan-200 border border-cyan-500/20 font-medium">
+                      <Home className="h-3.5 w-3.5 text-cyan-600 shrink-0" />
+                      <span className="truncate">4. Perumahan Rakyat (RTLH)</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 p-1.5 rounded-md bg-indigo-500/10 text-indigo-900 dark:text-indigo-200 border border-indigo-500/20 font-medium">
+                      <ShieldCheck className="h-3.5 w-3.5 text-indigo-600 shrink-0" />
+                      <span className="truncate">5. Trantibum Linmas</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 p-1.5 rounded-md bg-rose-500/10 text-rose-900 dark:text-rose-200 border border-rose-500/20 font-medium">
+                      <Users className="h-3.5 w-3.5 text-rose-600 shrink-0" />
+                      <span className="truncate">6. Sosial (Bansos &amp; Rentan)</span>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -2003,9 +2061,9 @@ export function KomunitasDetailClientView({
                 >
                   <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
                   <span>
-                    <span className="sm:hidden">SPM</span>
+                    <span className="sm:hidden">6 SPM</span>
                     <span className="hidden sm:inline">
-                      {isPosyandu ? "Laporan SPM" : "SPM Wilayah"}
+                      {isPosyandu ? "Laporan 6 SPM" : "6 SPM Wilayah"}
                     </span>
                   </span>
                 </button>
@@ -2161,11 +2219,16 @@ export function KomunitasDetailClientView({
               <div className="rounded-lg border border-teal-500/20 bg-teal-500/5 p-3.5 sm:p-4 flex items-start gap-3 text-foreground shadow-2xs">
                 <HeartPulse className="h-5 w-5 text-teal-600 shrink-0 mt-0.5" />
                 <div className="space-y-1">
-                  <h4 className="text-sm font-bold text-teal-950 dark:text-teal-200">
-                    Integrasi Layanan Primer (ILP) &amp; DDTK Tumbuh Kembang
-                  </h4>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h4 className="text-sm font-bold text-teal-950 dark:text-teal-200">
+                      Posyandu 6 SPM: Layanan Terpadu Bidang Kesehatan &amp; Pendidikan Anak
+                    </h4>
+                    <span className="rounded-full bg-teal-600 text-white text-[10px] font-black px-2 py-0.5 shadow-2xs">
+                      Permendagri No. 13/2024
+                    </span>
+                  </div>
                   <p className="text-xs text-muted-foreground leading-relaxed">
-                    Data pemantauan balita dan anak usia 0–6 tahun terintegrasi dengan siklus hidup Posyandu ILP. Kader Posyandu dapat memvalidasi dan memantau status gizi serta tumbuh kembang anak di wilayah ini.
+                    Sesuai transformasi <strong>Posyandu 6 SPM</strong> berdasarkan <strong>Permendagri No. 13 Tahun 2024</strong>, pemantauan status gizi, imunisasi, dan deteksi dini tumbuh kembang (DDTK) balita terintegrasi sebagai pemenuhan <strong>SPM Bidang Kesehatan</strong>, bersinergi dengan pencegahan Anak Tidak Sekolah (ATS) dan stimulasi kesiapan belajar di PAUD pada <strong>SPM Bidang Pendidikan</strong>. Kader Posyandu memvalidasi status tumbuh kembang dan mendampingi pemenuhan hak layanan dasar anak di wilayah ini.
                   </p>
                 </div>
               </div>

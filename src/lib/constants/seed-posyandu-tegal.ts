@@ -1472,7 +1472,7 @@ function buildPosyanduMasterSeed(): MasterKomunitasSeedItem[] {
     const fullLokasi = item.lokasi || `${item.kelurahan}, Kecamatan ${item.kecamatan}, Kota Tegal`;
     const fullDeskripsi =
       item.deskripsi ||
-      `Layanan kesehatan terpadu balita dan ibu hamil di Posyandu ${coreName}, Kelurahan ${item.kelurahan}, ${item.kecamatan}.`;
+      `Layanan Posyandu 6 SPM ${coreName}, Kelurahan ${item.kelurahan}, ${item.kecamatan} mengintegrasikan pemenuhan 6 Bidang Standar Pelayanan Minimal (Pendidikan, Kesehatan balita & siklus hidup, Pekerjaan Umum, Perumahan Rakyat, Trantibum Linmas, dan Sosial) sesuai Permendagri No. 13 Tahun 2024.`;
     const cleanRw = item.rw ? String(item.rw).replace(/\D/g, "").padStart(2, "0") : "";
     const cleanRt = item.rt ? String(item.rt).replace(/\D/g, "").padStart(2, "0") : "";
     const fullCakupan =

@@ -1416,10 +1416,13 @@ export async function getDataAtsByKomunitas(
     );
     const isPosyanduCommunity = Boolean(
       meta.jenis === "posyandu" ||
+      meta.jenis === "posyandu_6_spm" ||
       meta.jenis === "posyandu_ilp" ||
       targetKomunitas?.jenis === "posyandu" ||
+      targetKomunitas?.jenis === "posyandu_6_spm" ||
       targetKomunitas?.jenis === "posyandu_ilp" ||
       targetKomunitas?.jenis_komunitas === "posyandu" ||
+      targetKomunitas?.jenis_komunitas === "posyandu_6_spm" ||
       targetKomunitas?.jenis_komunitas === "posyandu_ilp" ||
       (targetKomunitas?.nama || "").toLowerCase().includes("posyandu") ||
       (targetKomunitas?.nama_komunitas || "").toLowerCase().includes("posyandu") ||
@@ -1790,8 +1793,10 @@ export async function getDataAtsByKomunitas(
         // 0. Komunitas Posyandu: Tampilkan data Anak ATS yang sesuai cakupan wilayah Posyandu
         if (
           meta.jenis === "posyandu" ||
+          meta.jenis === "posyandu_6_spm" ||
           meta.jenis === "posyandu_ilp" ||
           targetKomunitas?.jenis === "posyandu" ||
+          targetKomunitas?.jenis === "posyandu_6_spm" ||
           targetKomunitas?.jenis === "posyandu_ilp" ||
           isPosyanduCommunity
         ) {

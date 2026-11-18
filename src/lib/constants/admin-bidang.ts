@@ -21,14 +21,14 @@ export const DAFTAR_BIDANG_SPM_CONFIG: BidangSpmConfig[] = [
     nama: "Bidang Kesehatan",
     badgeLabel: "Kesehatan",
     deskripsi:
-      "Layanan Kesehatan Balita, Posyandu, dan Pertumbuhan Anak Sehat",
+      "Layanan Kesehatan Balita, Posyandu 6 SPM, dan Pertumbuhan Anak Sehat",
     hakAkses:
-      "Melihat rincian rekapitulasi balita, status gizi, dan cakupan layanan posyandu se-Kota Tegal (Read-Only).",
+      "Melihat rincian rekapitulasi balita, status gizi, dan cakupan layanan Posyandu 6 SPM se-Kota Tegal (Read-Only).",
     cakupanData: [
       "Data Pendataan Balita dan Anak Usia Dini",
-      "Data Layanan dan Kehadiran Posyandu",
+      "Data Layanan dan Kehadiran Posyandu 6 SPM",
       "Status Gizi & Kesehatan Balita",
-      "Rekapitulasi Layanan Kesehatan Anak & Kader Posyandu",
+      "Rekapitulasi Layanan Kesehatan Anak & Kader Posyandu 6 SPM",
     ],
   },
   {

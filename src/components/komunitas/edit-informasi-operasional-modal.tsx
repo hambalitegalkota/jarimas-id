@@ -66,7 +66,7 @@ export function EditInformasiOperasionalModal({
   // Jadwal Umum (Non-Posyandu)
   const [jadwal, setJadwal] = useState(komunitas.jadwal || "");
 
-  // Jadwal Posyandu Siklus Hidup (ILP)
+  // Jadwal Posyandu 6 SPM & Siklus Hidup
   const [jadwalBalita, setJadwalBalita] = useState(initialJadwalPosyandu.balita);
   const [jadwalLansia, setJadwalLansia] = useState(initialJadwalPosyandu.lansia);
   const [jadwalRemaja, setJadwalRemaja] = useState(initialJadwalPosyandu.remaja);
@@ -222,7 +222,7 @@ export function EditInformasiOperasionalModal({
                 )}
               >
                 <Info className="h-3.5 w-3.5" />
-                <span>Lokasi &amp; Profil</span>
+                <span>Lokasi &amp; Profil 6 SPM</span>
               </button>
               <button
                 type="button"
@@ -235,7 +235,7 @@ export function EditInformasiOperasionalModal({
                 )}
               >
                 <Phone className="h-3.5 w-3.5 text-primary" />
-                <span>Kontak &amp; 6 Kader Bidang</span>
+                <span>Kontak &amp; Kader 6 SPM</span>
               </button>
             </div>
           </div>
@@ -323,15 +323,15 @@ export function EditInformasiOperasionalModal({
                       <div className="flex items-center gap-1.5">
                         <Calendar className="h-4 w-4 text-blue-600" />
                         <span className="font-bold text-foreground text-xs uppercase tracking-wide">
-                          Jadwal Layanan Posyandu Terpadu
+                          Jadwal Layanan Posyandu 6 SPM
                         </span>
                       </div>
                       <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-md bg-blue-100 text-blue-800 border border-blue-200">
-                        Siklus Hidup (ILP)
+                        Posyandu 6 SPM
                       </span>
                     </div>
                     <p className="text-2xs text-muted-foreground font-medium">
-                      Atur jadwal kegiatan Posyandu Balita, Posyandu Lansia, dan Posyandu Remaja sesuai jadwal bulanan.
+                      Atur jadwal kegiatan Posyandu Balita (SPM Kesehatan &amp; Kesiapan Pendidikan), Posyandu Lansia (SPM Kesehatan &amp; Sosial), dan Posyandu Remaja sesuai jadwal bulanan.
                     </p>
 
                     <div className="space-y-2.5 pt-0.5">
@@ -339,7 +339,7 @@ export function EditInformasiOperasionalModal({
                       <div className="space-y-1 p-2.5 rounded-lg bg-card border border-border/80">
                         <label className="flex items-center gap-1.5 font-bold text-blue-900 dark:text-blue-300 text-xs">
                           <span>👶</span>
-                          <span>Jadwal Posyandu Balita, Anak &amp; Ibu Hamil</span>
+                          <span>Jadwal Posyandu Balita, Anak &amp; Ibu Hamil (SPM Kesehatan)</span>
                         </label>
                         <input
                           type="text"
@@ -354,7 +354,7 @@ export function EditInformasiOperasionalModal({
                       <div className="space-y-1 p-2.5 rounded-lg bg-card border border-border/80">
                         <label className="flex items-center gap-1.5 font-bold text-purple-900 dark:text-purple-300 text-xs">
                           <span>🧓</span>
-                          <span>Jadwal Posyandu Lansia (Lanjut Usia)</span>
+                          <span>Jadwal Posyandu Lansia (SPM Kesehatan &amp; Sosial)</span>
                         </label>
                         <input
                           type="text"
@@ -369,7 +369,7 @@ export function EditInformasiOperasionalModal({
                       <div className="space-y-1 p-2.5 rounded-lg bg-card border border-border/80">
                         <label className="flex items-center gap-1.5 font-bold text-emerald-900 dark:text-emerald-300 text-xs">
                           <span>🧑</span>
-                          <span>Jadwal Posyandu Remaja &amp; Usia Produktif Muda</span>
+                          <span>Jadwal Posyandu Remaja &amp; Usia Produktif</span>
                         </label>
                         <input
                           type="text"
