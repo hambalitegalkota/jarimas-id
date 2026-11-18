@@ -298,6 +298,12 @@ export function KomunitasDetailClientView({
     if (isBerjenjang) {
       return "anggota";
     }
+
+    // Untuk Komunitas PAUD (PKBM, SKB) dan Posyandu: default tab yang otomatis terbuka adalah Rekap & Grafik
+    if (isEducationCommunity || isPaudCommunity || isPosyandu) {
+      return "rekap";
+    }
+
     if (canShowDataAnakCard) return "anak";
     if (canShowDataAtsCard) return "ats";
     return "kabar";
@@ -1913,6 +1919,325 @@ export function KomunitasDetailClientView({
             );
           }
 
+          // A. KHUSUS KOMUNITAS PAUD, PKBM, & SKB
+          // Urutan Tab: 1. Rekap & Grafik, 2. Anggota, 3. Siswa, 4. Kabar, 5. Percakapan
+          if (isEducationCommunity) {
+            return (
+              <div className="pb-2 border-b border-border/80 flex flex-wrap items-center gap-1.5 sm:gap-2 w-full">
+                {/* 1. Rekap & Grafik */}
+                <button
+                  type="button"
+                  onClick={() => setActiveMainTab("rekap")}
+                  className={cn(
+                    "flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-2xs sm:text-xs font-semibold transition-all cursor-pointer border flex-1 sm:flex-initial min-w-[fit-content] whitespace-nowrap",
+                    activeMainTab === "rekap"
+                      ? "bg-primary text-primary-foreground border-primary shadow-xs font-bold"
+                      : "bg-card text-muted-foreground border-border hover:bg-muted hover:text-foreground"
+                  )}
+                >
+                  <BarChart3 className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+                  <span>
+                    <span className="sm:hidden">Rekap</span>
+                    <span className="hidden sm:inline">Rekap &amp; Grafik</span>
+                  </span>
+                </button>
+
+                {/* 2. Anggota */}
+                <button
+                  type="button"
+                  onClick={() => setActiveMainTab("anggota")}
+                  className={cn(
+                    "flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-2xs sm:text-xs font-semibold transition-all cursor-pointer border flex-1 sm:flex-initial min-w-[fit-content] whitespace-nowrap",
+                    activeMainTab === "anggota"
+                      ? "bg-primary text-primary-foreground border-primary shadow-xs font-bold"
+                      : "bg-card text-muted-foreground border-border hover:bg-muted hover:text-foreground"
+                  )}
+                >
+                  <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+                  <span>Anggota</span>
+                  <span
+                    className={cn(
+                      "px-1.5 py-0.5 rounded-full font-mono text-2xs font-bold leading-none shrink-0",
+                      activeMainTab === "anggota"
+                        ? "bg-white/25 text-white"
+                        : "bg-muted text-muted-foreground"
+                    )}
+                  >
+                    {approvedMembers.length}
+                  </span>
+                  {canManageMembers && pendingMembers.length > 0 && (
+                    <span
+                      className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full font-mono text-[10px] font-extrabold bg-amber-500 text-white shadow-2xs animate-pulse shrink-0"
+                      title={`${pendingMembers.length} Permohonan Anggota Baru`}
+                    >
+                      <span>+{pendingMembers.length}</span>
+                    </span>
+                  )}
+                </button>
+
+                {/* 3. Siswa */}
+                <button
+                  type="button"
+                  onClick={() => setActiveMainTab("anak")}
+                  className={cn(
+                    "flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-2xs sm:text-xs font-semibold transition-all cursor-pointer border flex-1 sm:flex-initial min-w-[fit-content] whitespace-nowrap",
+                    activeMainTab === "anak"
+                      ? "bg-primary text-primary-foreground border-primary shadow-xs font-bold"
+                      : "bg-card text-muted-foreground border-border hover:bg-muted hover:text-foreground"
+                  )}
+                >
+                  <Baby className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+                  <span>Siswa</span>
+                  <span
+                    className={cn(
+                      "px-1.5 py-0.5 rounded-full font-mono text-2xs font-bold leading-none shrink-0",
+                      activeMainTab === "anak"
+                        ? "bg-white/25 text-white"
+                        : "bg-muted text-muted-foreground"
+                    )}
+                  >
+                    {totalChildren}
+                  </span>
+                </button>
+
+                {/* 4. Kabar */}
+                <button
+                  type="button"
+                  onClick={() => setActiveMainTab("kabar")}
+                  className={cn(
+                    "flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-2xs sm:text-xs font-semibold transition-all cursor-pointer border flex-1 sm:flex-initial min-w-[fit-content] whitespace-nowrap",
+                    activeMainTab === "kabar"
+                      ? "bg-primary text-primary-foreground border-primary shadow-xs font-bold"
+                      : "bg-card text-muted-foreground border-border hover:bg-muted hover:text-foreground"
+                  )}
+                >
+                  <MessageSquare className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+                  <span>Kabar</span>
+                  <span
+                    className={cn(
+                      "px-1.5 py-0.5 rounded-full font-mono text-2xs font-bold leading-none shrink-0",
+                      activeMainTab === "kabar"
+                        ? "bg-white/25 text-white"
+                        : "bg-muted text-muted-foreground"
+                    )}
+                  >
+                    {kabarKomunitas.length}
+                  </span>
+                </button>
+
+                {/* 5. Percakapan */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveMainTab("percakapan");
+                    markGroupAsRead(komunitasData.id);
+                    const validId = toValidUUID(komunitasData.id);
+                    if (validId && validId !== komunitasData.id) {
+                      markGroupAsRead(validId);
+                    }
+                  }}
+                  className={cn(
+                    "flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-2xs sm:text-xs font-semibold transition-all cursor-pointer border flex-1 sm:flex-initial min-w-[fit-content] whitespace-nowrap",
+                    activeMainTab === "percakapan"
+                      ? "bg-primary text-primary-foreground border-primary shadow-xs font-bold"
+                      : "bg-card text-muted-foreground border-border hover:bg-muted hover:text-foreground"
+                  )}
+                >
+                  <MessageCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+                  <span>Percakapan</span>
+                  {communityUnreadCount > 0 && (
+                    <span className="px-1.5 py-0.5 rounded-full font-mono text-2xs bg-rose-500 text-white font-bold animate-pulse leading-none shrink-0">
+                      {communityUnreadCount}
+                    </span>
+                  )}
+                </button>
+              </div>
+            );
+          }
+
+          // B. KHUSUS KOMUNITAS POSYANDU
+          // Urutan Tab: 1. Rekap & Grafik, 2. Anggota, 3. Anak Usia 0-6, 4. Data ATS, 5. Lapor SPM, 6. Kabar, 7. Percakapan
+          if (isPosyandu && !isBerjenjangPos) {
+            return (
+              <div className="pb-2 border-b border-border/80 flex flex-wrap items-center gap-1.5 sm:gap-2 w-full">
+                {/* 1. Rekap & Grafik */}
+                <button
+                  type="button"
+                  onClick={() => setActiveMainTab("rekap")}
+                  className={cn(
+                    "flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-2xs sm:text-xs font-semibold transition-all cursor-pointer border flex-1 sm:flex-initial min-w-[fit-content] whitespace-nowrap",
+                    activeMainTab === "rekap"
+                      ? "bg-primary text-primary-foreground border-primary shadow-xs font-bold"
+                      : "bg-card text-muted-foreground border-border hover:bg-muted hover:text-foreground"
+                  )}
+                >
+                  <BarChart3 className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+                  <span>
+                    <span className="sm:hidden">Rekap</span>
+                    <span className="hidden sm:inline">Rekap &amp; Grafik</span>
+                  </span>
+                </button>
+
+                {/* 2. Anggota */}
+                <button
+                  type="button"
+                  onClick={() => setActiveMainTab("anggota")}
+                  className={cn(
+                    "flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-2xs sm:text-xs font-semibold transition-all cursor-pointer border flex-1 sm:flex-initial min-w-[fit-content] whitespace-nowrap",
+                    activeMainTab === "anggota"
+                      ? "bg-primary text-primary-foreground border-primary shadow-xs font-bold"
+                      : "bg-card text-muted-foreground border-border hover:bg-muted hover:text-foreground"
+                  )}
+                >
+                  <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+                  <span>Anggota</span>
+                  <span
+                    className={cn(
+                      "px-1.5 py-0.5 rounded-full font-mono text-2xs font-bold leading-none shrink-0",
+                      activeMainTab === "anggota"
+                        ? "bg-white/25 text-white"
+                        : "bg-muted text-muted-foreground"
+                    )}
+                  >
+                    {approvedMembers.length}
+                  </span>
+                  {canManageMembers && pendingMembers.length > 0 && (
+                    <span
+                      className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full font-mono text-[10px] font-extrabold bg-amber-500 text-white shadow-2xs animate-pulse shrink-0"
+                      title={`${pendingMembers.length} Permohonan Anggota Baru`}
+                    >
+                      <span>+{pendingMembers.length}</span>
+                    </span>
+                  )}
+                </button>
+
+                {/* 3. Anak Usia 0-6 */}
+                <button
+                  type="button"
+                  onClick={() => setActiveMainTab("anak")}
+                  className={cn(
+                    "flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-2xs sm:text-xs font-semibold transition-all cursor-pointer border flex-1 sm:flex-initial min-w-[fit-content] whitespace-nowrap",
+                    activeMainTab === "anak"
+                      ? "bg-primary text-primary-foreground border-primary shadow-xs font-bold"
+                      : "bg-card text-muted-foreground border-border hover:bg-muted hover:text-foreground"
+                  )}
+                >
+                  <Baby className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+                  <span>
+                    <span className="sm:hidden">0–6 Thn</span>
+                    <span className="hidden sm:inline">Anak Usia 0–6</span>
+                  </span>
+                  <span
+                    className={cn(
+                      "px-1.5 py-0.5 rounded-full font-mono text-2xs font-bold leading-none shrink-0",
+                      activeMainTab === "anak"
+                        ? "bg-white/25 text-white"
+                        : "bg-muted text-muted-foreground"
+                    )}
+                  >
+                    {totalChildren}
+                  </span>
+                </button>
+
+                {/* 4. Data ATS */}
+                <button
+                  type="button"
+                  onClick={() => setActiveMainTab("ats")}
+                  className={cn(
+                    "flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-2xs sm:text-xs font-semibold transition-all cursor-pointer border flex-1 sm:flex-initial min-w-[fit-content] whitespace-nowrap",
+                    activeMainTab === "ats"
+                      ? "bg-secondary text-secondary-foreground border-secondary shadow-xs font-bold"
+                      : "bg-card text-muted-foreground border-border hover:bg-muted hover:text-foreground"
+                  )}
+                >
+                  <GraduationCap className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+                  <span>
+                    <span className="sm:hidden">ATS</span>
+                    <span className="hidden sm:inline">Data ATS</span>
+                  </span>
+                  <span
+                    className={cn(
+                      "px-1.5 py-0.5 rounded-full font-mono text-2xs font-bold leading-none shrink-0",
+                      activeMainTab === "ats"
+                        ? "bg-white/25 text-white"
+                        : "bg-muted text-muted-foreground"
+                    )}
+                  >
+                    {dataAtsState.length.toLocaleString("id-ID")}
+                  </span>
+                </button>
+
+                {/* 5. Lapor SPM */}
+                <button
+                  type="button"
+                  onClick={() => setActiveMainTab("laporan_spm")}
+                  className={cn(
+                    "flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-2xs sm:text-xs font-semibold transition-all cursor-pointer border flex-1 sm:flex-initial min-w-[fit-content] whitespace-nowrap",
+                    activeMainTab === "laporan_spm"
+                      ? "bg-teal-600 text-white border-teal-600 shadow-xs font-bold"
+                      : "bg-card text-muted-foreground border-border hover:bg-muted hover:text-foreground"
+                  )}
+                >
+                  <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+                  <span>Lapor SPM</span>
+                </button>
+
+                {/* 6. Kabar */}
+                <button
+                  type="button"
+                  onClick={() => setActiveMainTab("kabar")}
+                  className={cn(
+                    "flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-2xs sm:text-xs font-semibold transition-all cursor-pointer border flex-1 sm:flex-initial min-w-[fit-content] whitespace-nowrap",
+                    activeMainTab === "kabar"
+                      ? "bg-primary text-primary-foreground border-primary shadow-xs font-bold"
+                      : "bg-card text-muted-foreground border-border hover:bg-muted hover:text-foreground"
+                  )}
+                >
+                  <MessageSquare className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+                  <span>Kabar</span>
+                  <span
+                    className={cn(
+                      "px-1.5 py-0.5 rounded-full font-mono text-2xs font-bold leading-none shrink-0",
+                      activeMainTab === "kabar"
+                        ? "bg-white/25 text-white"
+                        : "bg-muted text-muted-foreground"
+                    )}
+                  >
+                    {kabarKomunitas.length}
+                  </span>
+                </button>
+
+                {/* 7. Percakapan */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveMainTab("percakapan");
+                    markGroupAsRead(komunitasData.id);
+                    const validId = toValidUUID(komunitasData.id);
+                    if (validId && validId !== komunitasData.id) {
+                      markGroupAsRead(validId);
+                    }
+                  }}
+                  className={cn(
+                    "flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-2xs sm:text-xs font-semibold transition-all cursor-pointer border flex-1 sm:flex-initial min-w-[fit-content] whitespace-nowrap",
+                    activeMainTab === "percakapan"
+                      ? "bg-primary text-primary-foreground border-primary shadow-xs font-bold"
+                      : "bg-card text-muted-foreground border-border hover:bg-muted hover:text-foreground"
+                  )}
+                >
+                  <MessageCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+                  <span>Percakapan</span>
+                  {communityUnreadCount > 0 && (
+                    <span className="px-1.5 py-0.5 rounded-full font-mono text-2xs bg-rose-500 text-white font-bold animate-pulse leading-none shrink-0">
+                      {communityUnreadCount}
+                    </span>
+                  )}
+                </button>
+              </div>
+            );
+          }
+
+          // C. KOMUNITAS UMUM & WARGA KITA
           return (
             <div className="pb-2 border-b border-border/80 flex flex-wrap items-center gap-1.5 sm:gap-2 w-full">
               {/* Tab 1: Data Anak (0-6 Thn) / Balita / Siswa */}
