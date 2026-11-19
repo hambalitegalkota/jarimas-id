@@ -299,8 +299,8 @@ export function KomunitasDetailClientView({
       return "anggota";
     }
 
-    // Untuk Komunitas PAUD (PKBM, SKB) dan Posyandu: default tab yang otomatis terbuka adalah Rekap & Grafik
-    if (isEducationCommunity || isPaudCommunity || isPosyandu) {
+    // Untuk Komunitas PAUD (PKBM, SKB), Posyandu, dan Warga Kita: default tab yang otomatis terbuka adalah Rekap & Grafik
+    if (isEducationCommunity || isPaudCommunity || isPosyandu || isWargaKita) {
       return "rekap";
     }
 
@@ -645,6 +645,23 @@ export function KomunitasDetailClientView({
     () => parseJadwalPosyandu(komunitasData.jadwal),
     [komunitasData.jadwal]
   );
+
+  const googleMapsHref = useMemo(() => {
+    if (parsedKontak.google_maps_url?.trim()) {
+      return parsedKontak.google_maps_url.trim();
+    }
+    if (komunitasData.lokasi?.trim()) {
+      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+        `${komunitasData.nama} ${komunitasData.lokasi}`
+      )}`;
+    }
+    if (komunitasData.nama?.trim()) {
+      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+        komunitasData.nama
+      )}`;
+    }
+    return null;
+  }, [parsedKontak.google_maps_url, komunitasData.lokasi, komunitasData.nama]);
 
   let formattedTitle = komunitasData.nama;
   if (komunitasData.jenis === "posyandu") {
@@ -1257,6 +1274,21 @@ export function KomunitasDetailClientView({
         </button>
       )}
 
+      {/* Tombol BUKA DI GOOGLE MAPS (non-modern: tepat setelah Bagikan ke WhatsApp) */}
+      {!isModernRedesignedCommunity && googleMapsHref && (
+        <a
+          href={googleMapsHref}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 rounded-md border border-primary/30 bg-primary/10 hover:bg-primary/20 text-primary px-2.5 sm:px-3 py-1 text-xs font-bold shadow-2xs transition-all active:scale-98 cursor-pointer print:hidden"
+          title="Buka rute dan lokasi di Google Maps"
+        >
+          <MapPin className="h-3.5 w-3.5 text-primary" />
+          <span>Buka di Google Maps</span>
+          <ExternalLink className="h-2.5 w-2.5 opacity-70" />
+        </a>
+      )}
+
       {/* Tombol EDIT INFORMASI KOMUNITAS / LEMBAGA (Khusus Admin/Pengurus/Kader) */}
       {canEditOperasional && (
         <button
@@ -1460,6 +1492,21 @@ export function KomunitasDetailClientView({
                     <span>Bagikan ke WhatsApp</span>
                   </button>
                 )}
+
+                {/* Tombol BUKA DI GOOGLE MAPS (modern: tepat setelah Bagikan ke WhatsApp) */}
+                {isModernRedesignedCommunity && googleMapsHref && (
+                  <a
+                    href={googleMapsHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 rounded-md border border-primary/30 bg-primary/10 hover:bg-primary/20 text-primary px-2.5 sm:px-3 py-1 text-xs font-bold shadow-2xs transition-all active:scale-98 cursor-pointer print:hidden"
+                    title="Buka rute dan lokasi di Google Maps"
+                  >
+                    <MapPin className="h-3.5 w-3.5 text-primary" />
+                    <span>Buka di Google Maps</span>
+                    <ExternalLink className="h-2.5 w-2.5 opacity-70" />
+                  </a>
+                )}
               </div>
             </div>
           </div>
@@ -1499,37 +1546,14 @@ export function KomunitasDetailClientView({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 text-xs">
             {/* 1. Alamat */}
-            <div className="p-3 rounded-lg bg-card border border-border space-y-1 flex flex-col justify-between">
-              <div className="space-y-1">
-                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
-                  <MapPin className="h-3.5 w-3.5 text-primary" />
-                  {isPosyandu && !isBerjenjang ? "Alamat / Lokasi Posyandu" : isWargaKita ? "Alamat / Sekretariat" : isPosyandu && isBerjenjang ? "Wilayah Koordinasi" : "Alamat Lembaga"}
-                </span>
-                <p className="font-semibold text-foreground leading-relaxed">
-                  {komunitasData.lokasi || "Alamat belum dicantumkan"}
-                </p>
-              </div>
-
-              {komunitasData.lokasi && (
-                <div className="pt-2">
-                  <a
-                    href={
-                      parsedKontak.google_maps_url?.trim() ||
-                      `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                        `${komunitasData.nama} ${komunitasData.lokasi}`
-                      )}`
-                    }
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 rounded-md border border-primary/30 bg-primary/10 hover:bg-primary/20 text-primary font-bold text-2xs px-2.5 py-1 transition-all active:scale-95 cursor-pointer w-fit"
-                    title="Buka rute dan lokasi di Google Maps"
-                  >
-                    <MapPin className="h-3 w-3 shrink-0 text-primary" />
-                    <span>Buka di Google Maps</span>
-                    <ExternalLink className="h-2.5 w-2.5 opacity-70" />
-                  </a>
-                </div>
-              )}
+            <div className="p-3 rounded-lg bg-card border border-border space-y-1">
+              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+                <MapPin className="h-3.5 w-3.5 text-primary" />
+                {isPosyandu && !isBerjenjang ? "Alamat / Lokasi Posyandu" : isWargaKita ? "Alamat / Sekretariat" : isPosyandu && isBerjenjang ? "Wilayah Koordinasi" : "Alamat Lembaga"}
+              </span>
+              <p className="font-semibold text-foreground leading-relaxed">
+                {komunitasData.lokasi || "Alamat belum dicantumkan"}
+              </p>
             </div>
 
             {/* 2. Jam Operasional / Jadwal Layanan */}
@@ -2237,7 +2261,177 @@ export function KomunitasDetailClientView({
             );
           }
 
-          // C. KOMUNITAS UMUM & WARGA KITA
+          // C. KHUSUS KOMUNITAS WARGA KITA
+          // Urutan Tab: 1. Rekap & Grafik, 2. Daftar Warga, 3. Data Anak (0-6), 4. Data ATS, 5. Kabar, 6. Percakapan
+          if (isWargaKita) {
+            return (
+              <div className="pb-2 border-b border-border/80 flex flex-wrap items-center gap-1.5 sm:gap-2 w-full">
+                {/* 1. Rekap & Grafik */}
+                <button
+                  type="button"
+                  onClick={() => setActiveMainTab("rekap")}
+                  className={cn(
+                    "flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-2xs sm:text-xs font-semibold transition-all cursor-pointer border flex-1 sm:flex-initial min-w-[fit-content] whitespace-nowrap",
+                    activeMainTab === "rekap"
+                      ? "bg-primary text-primary-foreground border-primary shadow-xs font-bold"
+                      : "bg-card text-muted-foreground border-border hover:bg-muted hover:text-foreground"
+                  )}
+                >
+                  <BarChart3 className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+                  <span>
+                    <span className="sm:hidden">Rekap</span>
+                    <span className="hidden sm:inline">Rekap &amp; Grafik</span>
+                  </span>
+                </button>
+
+                {/* 2. Daftar Warga */}
+                <button
+                  type="button"
+                  onClick={() => setActiveMainTab("anggota")}
+                  className={cn(
+                    "flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-2xs sm:text-xs font-semibold transition-all cursor-pointer border flex-1 sm:flex-initial min-w-[fit-content] whitespace-nowrap",
+                    activeMainTab === "anggota"
+                      ? "bg-primary text-primary-foreground border-primary shadow-xs font-bold"
+                      : "bg-card text-muted-foreground border-border hover:bg-muted hover:text-foreground"
+                  )}
+                >
+                  <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+                  <span>
+                    <span className="sm:hidden">Warga</span>
+                    <span className="hidden sm:inline">Daftar Warga</span>
+                  </span>
+                  <span
+                    className={cn(
+                      "px-1.5 py-0.5 rounded-full font-mono text-2xs font-bold leading-none shrink-0",
+                      activeMainTab === "anggota"
+                        ? "bg-white/25 text-white"
+                        : "bg-muted text-muted-foreground"
+                    )}
+                  >
+                    {approvedMembers.length}
+                  </span>
+                  {canManageMembers && pendingMembers.length > 0 && (
+                    <span
+                      className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full font-mono text-[10px] font-extrabold bg-amber-500 text-white shadow-2xs animate-pulse shrink-0"
+                      title={`${pendingMembers.length} Permohonan Anggota Baru`}
+                    >
+                      <span>+{pendingMembers.length}</span>
+                    </span>
+                  )}
+                </button>
+
+                {/* 3. Data Anak (0-6) */}
+                <button
+                  type="button"
+                  onClick={() => setActiveMainTab("anak")}
+                  className={cn(
+                    "flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-2xs sm:text-xs font-semibold transition-all cursor-pointer border flex-1 sm:flex-initial min-w-[fit-content] whitespace-nowrap",
+                    activeMainTab === "anak"
+                      ? "bg-primary text-primary-foreground border-primary shadow-xs font-bold"
+                      : "bg-card text-muted-foreground border-border hover:bg-muted hover:text-foreground"
+                  )}
+                >
+                  <Baby className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+                  <span>
+                    <span className="sm:hidden">Anak (0–6)</span>
+                    <span className="hidden sm:inline">Data Anak (0–6)</span>
+                  </span>
+                  <span
+                    className={cn(
+                      "px-1.5 py-0.5 rounded-full font-mono text-2xs font-bold leading-none shrink-0",
+                      activeMainTab === "anak"
+                        ? "bg-white/25 text-white"
+                        : "bg-muted text-muted-foreground"
+                    )}
+                  >
+                    {totalChildren}
+                  </span>
+                </button>
+
+                {/* 4. Data ATS */}
+                <button
+                  type="button"
+                  onClick={() => setActiveMainTab("ats")}
+                  className={cn(
+                    "flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-2xs sm:text-xs font-semibold transition-all cursor-pointer border flex-1 sm:flex-initial min-w-[fit-content] whitespace-nowrap",
+                    activeMainTab === "ats"
+                      ? "bg-secondary text-secondary-foreground border-secondary shadow-xs font-bold"
+                      : "bg-card text-muted-foreground border-border hover:bg-muted hover:text-foreground"
+                  )}
+                >
+                  <GraduationCap className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+                  <span>
+                    <span className="sm:hidden">ATS</span>
+                    <span className="hidden sm:inline">Data ATS</span>
+                  </span>
+                  <span
+                    className={cn(
+                      "px-1.5 py-0.5 rounded-full font-mono text-2xs font-bold leading-none shrink-0",
+                      activeMainTab === "ats"
+                        ? "bg-white/25 text-white"
+                        : "bg-muted text-muted-foreground"
+                    )}
+                  >
+                    {dataAtsState.length.toLocaleString("id-ID")}
+                  </span>
+                </button>
+
+                {/* 5. Kabar */}
+                <button
+                  type="button"
+                  onClick={() => setActiveMainTab("kabar")}
+                  className={cn(
+                    "flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-2xs sm:text-xs font-semibold transition-all cursor-pointer border flex-1 sm:flex-initial min-w-[fit-content] whitespace-nowrap",
+                    activeMainTab === "kabar"
+                      ? "bg-primary text-primary-foreground border-primary shadow-xs font-bold"
+                      : "bg-card text-muted-foreground border-border hover:bg-muted hover:text-foreground"
+                  )}
+                >
+                  <MessageSquare className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+                  <span>Kabar</span>
+                  <span
+                    className={cn(
+                      "px-1.5 py-0.5 rounded-full font-mono text-2xs font-bold leading-none shrink-0",
+                      activeMainTab === "kabar"
+                        ? "bg-white/25 text-white"
+                        : "bg-muted text-muted-foreground"
+                    )}
+                  >
+                    {kabarKomunitas.length}
+                  </span>
+                </button>
+
+                {/* 6. Percakapan */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveMainTab("percakapan");
+                    markGroupAsRead(komunitasData.id);
+                    const validId = toValidUUID(komunitasData.id);
+                    if (validId && validId !== komunitasData.id) {
+                      markGroupAsRead(validId);
+                    }
+                  }}
+                  className={cn(
+                    "flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-2xs sm:text-xs font-semibold transition-all cursor-pointer border flex-1 sm:flex-initial min-w-[fit-content] whitespace-nowrap",
+                    activeMainTab === "percakapan"
+                      ? "bg-primary text-primary-foreground border-primary shadow-xs font-bold"
+                      : "bg-card text-muted-foreground border-border hover:bg-muted hover:text-foreground"
+                  )}
+                >
+                  <MessageCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+                  <span>Percakapan</span>
+                  {communityUnreadCount > 0 && (
+                    <span className="px-1.5 py-0.5 rounded-full font-mono text-2xs bg-rose-500 text-white font-bold animate-pulse leading-none shrink-0">
+                      {communityUnreadCount}
+                    </span>
+                  )}
+                </button>
+              </div>
+            );
+          }
+
+          // D. KOMUNITAS UMUM LAINNYA
           return (
             <div className="pb-2 border-b border-border/80 flex flex-wrap items-center gap-1.5 sm:gap-2 w-full">
               {/* Tab 1: Data Anak (0-6 Thn) / Balita / Siswa */}
