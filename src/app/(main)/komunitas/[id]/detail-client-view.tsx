@@ -218,6 +218,10 @@ export function KomunitasDetailClientView({
     komunitasData.jenis === "posyandu" ||
     (komunitasData.nama || "").toLowerCase().includes("posyandu");
 
+  const isWargaKita = komunitasData.jenis === "warga_kita";
+  const isWargaKitaCheck = isWargaKita;
+  const isPaud = komunitasData.jenis === "satuan_paud";
+
   const isBerjenjangPos =
     isPosyandu &&
     (Boolean(berjenjangSummary?.isBerjenjang) ||
@@ -381,13 +385,11 @@ export function KomunitasDetailClientView({
     return dataAnakStats?.pending ?? 0;
   }, [dataAnakState, dataAnakList.length, dataAnakStats?.pending]);
 
-  const isWargaKitaCheck = komunitasData.jenis === "warga_kita";
-
   const displayedChildren = useMemo(() => {
     let list = dataAnakState;
 
     // Filter sub-kategori bersekolah / belum bersekolah jika di Warga Kita
-    if (isWargaKitaCheck) {
+    if (isWargaKita) {
       if (dataAnakFilterSubTab === "bersekolah") {
         list = bersekolahChildren;
       } else if (dataAnakFilterSubTab === "belum_bersekolah") {
@@ -557,10 +559,7 @@ export function KomunitasDetailClientView({
     (!isActualSuperAdmin && (roleLower === "admin pusat" || roleLower === "admin_pusat"))
   );
 
-  const isWargaKita = komunitasData.jenis === "warga_kita";
-  const isPaud = komunitasData.jenis === "satuan_paud";
-  // isPosyandu sudah dideklarasikan di bagian atas komponen
-
+  // isWargaKita, isPaud, & isPosyandu sudah dideklarasikan di bagian atas komponen
   const meta = useMemo(() => extractKomunitasMetadata(komunitasData), [komunitasData]);
   const isRt = isWargaKita && Boolean(komunitasData.rt && komunitasData.rt.trim() !== "" && komunitasData.rt !== "semua" && komunitasData.rt !== "00");
   const isRekapOnlyTier = isWargaKita && !isRt;
