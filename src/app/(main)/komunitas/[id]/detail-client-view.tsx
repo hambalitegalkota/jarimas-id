@@ -1414,27 +1414,15 @@ export function KomunitasDetailClientView({
                     }
                     const cov = getPosyanduCoverageDisplay(komunitasData);
                     return cov.isMapped ? (
-                      <>
-                        <span className="inline-flex items-center gap-1.5 rounded-md bg-emerald-50 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300 font-bold px-2.5 py-0.5 text-xs border border-emerald-200 dark:border-emerald-800 shadow-2xs">
-                          <Home className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                          <span>{cov.label}</span>
-                        </span>
-                        <span className="inline-flex items-center gap-1 rounded-md bg-teal-50 text-teal-800 dark:bg-teal-950/50 dark:text-teal-300 font-bold px-2 py-0.5 text-xs border border-teal-200 dark:border-teal-800 shadow-2xs">
-                          <Sparkles className="h-3 w-3 text-teal-600 dark:text-teal-400 shrink-0" />
-                          <span>Posyandu 6 SPM</span>
-                        </span>
-                      </>
+                      <span className="inline-flex items-center gap-1.5 rounded-md bg-emerald-50 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300 font-bold px-2.5 py-0.5 text-xs border border-emerald-200 dark:border-emerald-800 shadow-2xs">
+                        <Home className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                        <span>{cov.label}</span>
+                      </span>
                     ) : (
-                      <>
-                        <span className="inline-flex items-center gap-1.5 rounded-md bg-amber-50 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300 font-bold px-2.5 py-0.5 text-xs border border-amber-200 dark:border-amber-800 shadow-2xs">
-                          <AlertTriangle className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
-                          <span>Cakupan RW/RT Belum Dipetakan</span>
-                        </span>
-                        <span className="inline-flex items-center gap-1 rounded-md bg-teal-50 text-teal-800 dark:bg-teal-950/50 dark:text-teal-300 font-bold px-2 py-0.5 text-xs border border-teal-200 dark:border-teal-800 shadow-2xs">
-                          <Sparkles className="h-3 w-3 text-teal-600 dark:text-teal-400 shrink-0" />
-                          <span>Posyandu 6 SPM</span>
-                        </span>
-                      </>
+                      <span className="inline-flex items-center gap-1.5 rounded-md bg-amber-50 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300 font-bold px-2.5 py-0.5 text-xs border border-amber-200 dark:border-amber-800 shadow-2xs">
+                        <AlertTriangle className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+                        <span>Cakupan RW/RT Belum Dipetakan</span>
+                      </span>
                     );
                   })()}
                 </div>
