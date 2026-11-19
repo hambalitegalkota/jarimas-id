@@ -1051,6 +1051,39 @@ export function parseCakupanWilayah(komunitas?: {
     }
   }
 
+  // Khusus Kelurahan Sumurpanggang (Kecamatan Margadana)
+  if (
+    kelClean.includes("sumurpanggang") ||
+    namaClean.includes("sumurpanggang") ||
+    (komunitas && (
+      komunitas.id === "f64f79b1-d0c0-47a0-839b-d4a1d3af81ca" ||
+      komunitas.id === "3cb9dc88-a8c9-4ca6-8853-034d18c2758c" ||
+      komunitas.id === "a8320fd1-50f9-4fa4-8424-66251b05c43b" ||
+      komunitas.id === "5b56f9df-bd53-4737-8d60-63d1deed57bc" ||
+      komunitas.id === "9fc4a2ac-7f04-49cf-81ae-2e550df9fb53" ||
+      komunitas.id === "80b08ccc-bd53-4737-81ee-f66964d92227"
+    ))
+  ) {
+    if (komunitas?.id === "f64f79b1-d0c0-47a0-839b-d4a1d3af81ca" || namaClean.includes("mawar")) {
+      return "Melayani Warga RW 01 (RT 01, RT 02, RT 03, RT 04 dan RW - RT Tidak Tahu)";
+    }
+    if (komunitas?.id === "3cb9dc88-a8c9-4ca6-8853-034d18c2758c" || namaClean.includes("cempaka")) {
+      return "Melayani Warga RW 01 (RT 05, RT 06, RT 07 dan RW - RT Tidak Tahu)";
+    }
+    if (komunitas?.id === "a8320fd1-50f9-4fa4-8424-66251b05c43b" || namaClean.includes("manggis")) {
+      return "Melayani Warga RW 01 (RT 08, RT 09 dan RW - RT Tidak Tahu)";
+    }
+    if (komunitas?.id === "5b56f9df-bd53-4737-8d60-63d1deed57bc" || namaClean.includes("ragasela")) {
+      return "Melayani Warga RW 02 (RT 01, RT 02, RT 03 dan RW - RT Tidak Tahu)";
+    }
+    if (komunitas?.id === "9fc4a2ac-7f04-49cf-81ae-2e550df9fb53" || namaClean.includes("melati")) {
+      return "Melayani Warga RW 02 (RT 04, RT 05, RT 06 dan RW - RT Tidak Tahu)";
+    }
+    if (komunitas?.id === "80b08ccc-bd53-4737-81ee-f66964d92227" || namaClean.includes("nur hikmah") || namaClean.includes("nurhikmah")) {
+      return "Melayani Warga RW 02 (RT 07, RT 08, RT 09 dan RW - RT Tidak Tahu)";
+    }
+  }
+
   // Khusus Kelurahan Muarareja (Kecamatan Tegal Barat)
   if (kelClean.includes("muarareja") || namaClean.includes("muarareja")) {
     if (namaClean.includes("mawar")) {

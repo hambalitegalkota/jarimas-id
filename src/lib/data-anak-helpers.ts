@@ -10,6 +10,7 @@ import {
   KEMANDUNGAN_POSYANDU_MAP,
   PESURUNGAN_KIDUL_POSYANDU_MAP,
   CABAWAN_POSYANDU_MAP,
+  SUMURPANGGANG_POSYANDU_MAP,
 } from "@/lib/constants/seed-posyandu-tegal";
 import {
   MASTER_KOMUNITAS_SEED,
@@ -1641,6 +1642,26 @@ export function getPosyanduCakupanWilayah(targetKomunitas: any): PosyanduCakupan
     }
   }
 
+  // Khusus Kelurahan Sumurpanggang (Kecamatan Margadana)
+  const isSumurpanggangPosyandu =
+    kel.includes("sumurpanggang") ||
+    nama.includes("sumurpanggang") ||
+    Boolean(targetKomunitas?.id && SUMURPANGGANG_POSYANDU_MAP[targetKomunitas.id]);
+
+  if (isSumurpanggangPosyandu) {
+    const entry =
+      (targetKomunitas?.id && SUMURPANGGANG_POSYANDU_MAP[targetKomunitas.id]) ||
+      Object.values(SUMURPANGGANG_POSYANDU_MAP).find((c) => {
+        const norm = c.nama.toLowerCase().replace("posyandu ", "").trim();
+        return nama.includes(norm);
+      });
+    if (entry && entry.allowedRts) {
+      const rtListWithUnpadded = Array.from(
+        new Set([...entry.allowedRts, ...entry.allowedRts.map((r: string) => String(parseInt(r, 10)))])
+      );
+      return { rw: entry.rw, rtList: rtListWithUnpadded };
+    }
+  }
 
   // Khusus Kelurahan Mangkukusuman (Kecamatan Tegal Timur)
   // - Posyandu Kenanga: RW 1 (RT 01 s/d RT 05)
@@ -3428,6 +3449,36 @@ export function getPosyanduCoverageDisplay(komunitas: any): PosyanduCoverageResu
     }
   }
 
+  // Khusus Kelurahan Sumurpanggang (Kecamatan Margadana)
+  const sumurpanggangSeedItem = komunitas.id ? RAW_POSYANDU_TEGAL.find((s) => s.id === komunitas.id) : null;
+  const isSumurpanggangCoverage =
+    kelCleanForCoverage.includes("sumurpanggang") ||
+    (sumurpanggangSeedItem?.kelurahan || "").toLowerCase().includes("sumurpanggang") ||
+    rawNama.includes("sumurpanggang") ||
+    Boolean(komunitas.id && SUMURPANGGANG_POSYANDU_MAP[komunitas.id]);
+
+  if (isSumurpanggangCoverage) {
+    const entry =
+      (komunitas.id && SUMURPANGGANG_POSYANDU_MAP[komunitas.id]) ||
+      Object.values(SUMURPANGGANG_POSYANDU_MAP).find((c) => {
+        const cNorm = c.nama.toLowerCase().replace("posyandu ", "").trim();
+        return rawNama.includes(cNorm);
+      });
+
+    if (entry) {
+      const rwLabel = `RW ${entry.rw.padStart(2, "0")}`;
+      const rtListFormatted = (entry.allowedRts || []).map((r: string) => `RT ${r.padStart(2, "0")}`).join(", ");
+      const rtLabel = `${rtListFormatted} dan RW - RT Tidak Tahu`;
+      const fullLabel = `${rwLabel} (${rtLabel})`;
+      return {
+        isMapped: true,
+        label: fullLabel,
+        rwLabel,
+        rtLabel,
+      };
+    }
+  }
+
   // 1. Ambil dari canonical rule di data-anak-helpers
   const canon = getPosyanduCakupanWilayah(komunitas);
 
@@ -4830,6 +4881,57 @@ export function isValidCabawanRtRw(
 }
 
 /**
+ * Validasi ketentuan khusus RW & RT di Kelurahan Sumurpanggang, Kecamatan Margadana:
+ * - Jumlah RW ada 2 (RW 1 s/d 2)
+ * - RW 1 Jumlah RT 9, RW 2 Jumlah RT 9
+ * - Tetap mempertahankan RW "Belum Tahu" dan RT "Belum Tahu"
+ */
+export function isValidSumurpanggangRtRw(
+  kel?: string | null,
+  rw?: string | null,
+  rt?: string | null
+): boolean {
+  if (!kel) return true;
+  const cleanKel = normalizeWilayah(kel);
+  if (!cleanKel.includes("sumurpanggang")) return true;
+
+  const rawRw = (rw || "").trim().toLowerCase();
+  const rawRt = (rt || "").trim().toLowerCase();
+
+  const isRwBelumTahu =
+    !rawRw ||
+    rawRw.includes("belum") ||
+    rawRw.includes("tidak") ||
+    rawRw === "-" ||
+    rawRw === "0" ||
+    rawRw === "00";
+  if (isRwBelumTahu) return true;
+
+  const rwNum = parseInt(rawRw.replace(/\D/g, ""), 10);
+  if (isNaN(rwNum) || rwNum < 1 || rwNum > 2) return false;
+
+  const isRtBelumTahu =
+    !rawRt ||
+    rawRt.includes("belum") ||
+    rawRt.includes("tidak") ||
+    rawRt === "-" ||
+    rawRt === "0" ||
+    rawRt === "00";
+  if (isRtBelumTahu) return true;
+
+  const rtNum = parseInt(rawRt.replace(/\D/g, ""), 10);
+  if (isNaN(rtNum)) return false;
+
+  const maxRtMap: Record<number, number> = {
+    1: 9,
+    2: 9,
+  };
+
+  const maxRt = maxRtMap[rwNum] || 9;
+  return rtNum >= 1 && rtNum <= maxRt;
+}
+
+/**
  * Filter logika hierarkis: Apakah data anak sesuai dan harus muncul di komunitas target?
  * Mencakup Komunitas PAUD, Posyandu, RT, RW, Kelurahan, Kecamatan, dan Kabupaten/Kota.
  */
@@ -5077,6 +5179,22 @@ export function isDataAnakMatchingKomunitas(
   if (
     !isValidCabawanRtRw(item.domisili_kelurahan, item.domisili_rw, item.domisili_rt) &&
     !isValidCabawanRtRw(item.kk_kelurahan, item.kk_rw, item.kk_rt)
+  ) {
+    return false;
+  }
+
+  // Ketentuan Khusus Kelurahan Sumurpanggang: Hapus/abaikan data yang tidak sesuai ketentuan resmi RW & RT Sumurpanggang
+  const isDomSumurpanggang = (item.domisili_kelurahan || "").toLowerCase().includes("sumurpanggang");
+  const isKkSumurpanggang = (item.kk_kelurahan || "").toLowerCase().includes("sumurpanggang");
+  if (isDomSumurpanggang && !isValidSumurpanggangRtRw(item.domisili_kelurahan, item.domisili_rw, item.domisili_rt)) {
+    return false;
+  }
+  if (isKkSumurpanggang && !isValidSumurpanggangRtRw(item.kk_kelurahan, item.kk_rw, item.kk_rt)) {
+    return false;
+  }
+  if (
+    !isValidSumurpanggangRtRw(item.domisili_kelurahan, item.domisili_rw, item.domisili_rt) &&
+    !isValidSumurpanggangRtRw(item.kk_kelurahan, item.kk_rw, item.kk_rt)
   ) {
     return false;
   }

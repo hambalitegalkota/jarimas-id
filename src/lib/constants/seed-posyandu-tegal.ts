@@ -380,12 +380,12 @@ export const RAW_POSYANDU_TEGAL: RawPosyanduItem[] = [
   { id: "486ab1b3-1a93-4994-8a68-764910c5bca7", nama: "Posyandu Jaya Samudra", kecamatan: "Margadana", kelurahan: "Pesurungan Lor", rw: "04", rt: "01", lokasi: "Balai Posyandu / RW 04, Pesurungan Lor, Margadana, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Jaya Samudra Pesurungan Lor: layanan kesehatan balita, penimbangan, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
 
   // Sumurpanggang (6 Posyandu)
-  { id: "3cb9dc88-a8c9-4ca6-8853-034d18c2758c", nama: "Posyandu Cempaka", kecamatan: "Margadana", kelurahan: "Sumurpanggang", rw: "01", rt: "01", lokasi: "Balai Posyandu / RW 01, Sumurpanggang, Margadana, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Cempaka 1 Sumurpanggang Sumurpanggang: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "a8320fd1-50f9-4fa4-8424-66251b05c43b", nama: "Posyandu Manggis", kecamatan: "Margadana", kelurahan: "Sumurpanggang", rw: "04", rt: "02", lokasi: "Balai Posyandu / RW 04, Sumurpanggang, Margadana, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Dahlia Panggang Sumurpanggang: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "f64f79b1-d0c0-47a0-839b-d4a1d3af81ca", nama: "Posyandu Mawar", kecamatan: "Margadana", kelurahan: "Sumurpanggang", rw: "05", rt: "01", lokasi: "Balai Posyandu / RW 05, Sumurpanggang, Margadana, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Kenanga Panggang Sumurpanggang: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "9fc4a2ac-7f04-49cf-81ae-2e550df9fb53", nama: "Posyandu Melati", kecamatan: "Margadana", kelurahan: "Sumurpanggang", rw: "02", rt: "02", lokasi: "Balai Posyandu / RW 02, Sumurpanggang, Margadana, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Melati Panggang 1 Sumurpanggang: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "80b08ccc-bd53-4737-81ee-f66964d92227", nama: "Posyandu Nur Hikmah", kecamatan: "Margadana", kelurahan: "Sumurpanggang", rw: "03", rt: "01", lokasi: "Balai Posyandu / RW 03, Sumurpanggang, Margadana, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Mawar Panggang 1 Sumurpanggang: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
-  { id: "5b56f9df-bd53-4737-8d60-63d1deed57bc", nama: "Posyandu Ragasela", kecamatan: "Margadana", kelurahan: "Sumurpanggang", rw: "03", rt: "03", lokasi: "Balai Posyandu / RW 03, Sumurpanggang, Margadana, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Mawar Panggang 2 Sumurpanggang: layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "3cb9dc88-a8c9-4ca6-8853-034d18c2758c", nama: "Posyandu Cempaka", kecamatan: "Margadana", kelurahan: "Sumurpanggang", rw: "01", rt: "05", cakupan_wilayah: "Melayani Warga RW 01 (RT 05, RT 06, RT 07 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 01, Sumurpanggang, Margadana, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Cempaka Sumurpanggang cakupan sinkronisasi wilayah RW 01 (RT 05, RT 06, RT 07 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "a8320fd1-50f9-4fa4-8424-66251b05c43b", nama: "Posyandu Manggis", kecamatan: "Margadana", kelurahan: "Sumurpanggang", rw: "01", rt: "08", cakupan_wilayah: "Melayani Warga RW 01 (RT 08, RT 09 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 01, Sumurpanggang, Margadana, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Manggis Sumurpanggang cakupan sinkronisasi wilayah RW 01 (RT 08, RT 09 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "f64f79b1-d0c0-47a0-839b-d4a1d3af81ca", nama: "Posyandu Mawar", kecamatan: "Margadana", kelurahan: "Sumurpanggang", rw: "01", rt: "01", cakupan_wilayah: "Melayani Warga RW 01 (RT 01, RT 02, RT 03, RT 04 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 01, Sumurpanggang, Margadana, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Mawar Sumurpanggang cakupan sinkronisasi wilayah RW 01 (RT 01, RT 02, RT 03, RT 04 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "9fc4a2ac-7f04-49cf-81ae-2e550df9fb53", nama: "Posyandu Melati", kecamatan: "Margadana", kelurahan: "Sumurpanggang", rw: "02", rt: "04", cakupan_wilayah: "Melayani Warga RW 02 (RT 04, RT 05, RT 06 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 02, Sumurpanggang, Margadana, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Melati Sumurpanggang cakupan sinkronisasi wilayah RW 02 (RT 04, RT 05, RT 06 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "80b08ccc-bd53-4737-81ee-f66964d92227", nama: "Posyandu Nur Hikmah", kecamatan: "Margadana", kelurahan: "Sumurpanggang", rw: "02", rt: "07", cakupan_wilayah: "Melayani Warga RW 02 (RT 07, RT 08, RT 09 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 02, Sumurpanggang, Margadana, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Nur Hikmah Sumurpanggang cakupan sinkronisasi wilayah RW 02 (RT 07, RT 08, RT 09 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
+  { id: "5b56f9df-bd53-4737-8d60-63d1deed57bc", nama: "Posyandu Ragasela", kecamatan: "Margadana", kelurahan: "Sumurpanggang", rw: "02", rt: "01", cakupan_wilayah: "Melayani Warga RW 02 (RT 01, RT 02, RT 03 dan RW - RT Tidak Tahu)", lokasi: "Balai Posyandu / RW 02, Sumurpanggang, Margadana, Kota Tegal", deskripsi: "Layanan terpadu Posyandu Ragasela Sumurpanggang cakupan sinkronisasi wilayah RW 02 (RT 01, RT 02, RT 03 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.", kontak: "0813-2233-4455", jadwal: "Setiap Hari Rabu Minggu ke-2 Pukul 08.30 - 11.30 WIB" },
 
 ];
 
@@ -1455,6 +1455,75 @@ export const CABAWAN_POSYANDU_MAP: Record<
     lokasi: "Balai Posyandu / RW 05, Cabawan, Margadana, Kota Tegal",
     deskripsi: "Layanan terpadu Posyandu Edelweis Cabawan cakupan sinkronisasi wilayah RW 05 (RT 01, RT 02, RT 03, RT 04, RT 05 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
     allowedRts: ["01", "02", "03", "04", "05"],
+  },
+};
+
+export const SUMURPANGGANG_POSYANDU_MAP: Record<
+  string,
+  { nama: string; rw: string; rt: string; cakupan_wilayah: string; lokasi?: string; deskripsi?: string; allowedRts: string[] }
+> = {
+  // RW 1:
+  // - Posyandu Mawar (RT 1, 2, 3, 4)
+  "f64f79b1-d0c0-47a0-839b-d4a1d3af81ca": {
+    nama: "Posyandu Mawar",
+    rw: "01",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 01 (RT 01, RT 02, RT 03, RT 04 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 01, Sumurpanggang, Margadana, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Mawar Sumurpanggang cakupan sinkronisasi wilayah RW 01 (RT 01, RT 02, RT 03, RT 04 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["01", "02", "03", "04"],
+  },
+  // - Posyandu Cempaka (RT 5, 6, 7)
+  "3cb9dc88-a8c9-4ca6-8853-034d18c2758c": {
+    nama: "Posyandu Cempaka",
+    rw: "01",
+    rt: "05",
+    cakupan_wilayah: "Melayani Warga RW 01 (RT 05, RT 06, RT 07 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 01, Sumurpanggang, Margadana, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Cempaka Sumurpanggang cakupan sinkronisasi wilayah RW 01 (RT 05, RT 06, RT 07 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["05", "06", "07"],
+  },
+  // - Posyandu Manggis (RT 8, 9)
+  "a8320fd1-50f9-4fa4-8424-66251b05c43b": {
+    nama: "Posyandu Manggis",
+    rw: "01",
+    rt: "08",
+    cakupan_wilayah: "Melayani Warga RW 01 (RT 08, RT 09 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 01, Sumurpanggang, Margadana, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Manggis Sumurpanggang cakupan sinkronisasi wilayah RW 01 (RT 08, RT 09 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["08", "09"],
+  },
+
+  // RW 2:
+  // - Posyandu Ragasela (RT 1, 2, 3)
+  "5b56f9df-bd53-4737-8d60-63d1deed57bc": {
+    nama: "Posyandu Ragasela",
+    rw: "02",
+    rt: "01",
+    cakupan_wilayah: "Melayani Warga RW 02 (RT 01, RT 02, RT 03 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 02, Sumurpanggang, Margadana, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Ragasela Sumurpanggang cakupan sinkronisasi wilayah RW 02 (RT 01, RT 02, RT 03 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["01", "02", "03"],
+  },
+  // - Posyandu Melati (RT 4, 5, 6)
+  "9fc4a2ac-7f04-49cf-81ae-2e550df9fb53": {
+    nama: "Posyandu Melati",
+    rw: "02",
+    rt: "04",
+    cakupan_wilayah: "Melayani Warga RW 02 (RT 04, RT 05, RT 06 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 02, Sumurpanggang, Margadana, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Melati Sumurpanggang cakupan sinkronisasi wilayah RW 02 (RT 04, RT 05, RT 06 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["04", "05", "06"],
+  },
+  // - Posyandu Nur Hikmah (RT 7, 8, 9)
+  "80b08ccc-bd53-4737-81ee-f66964d92227": {
+    nama: "Posyandu Nur Hikmah",
+    rw: "02",
+    rt: "07",
+    cakupan_wilayah: "Melayani Warga RW 02 (RT 07, RT 08, RT 09 dan RW - RT Tidak Tahu)",
+    lokasi: "Balai Posyandu / RW 02, Sumurpanggang, Margadana, Kota Tegal",
+    deskripsi: "Layanan terpadu Posyandu Nur Hikmah Sumurpanggang cakupan sinkronisasi wilayah RW 02 (RT 07, RT 08, RT 09 dan RW - RT Tidak Tahu): layanan kesehatan balita, imunisasi, dan PMT balita serta ibu hamil.",
+    allowedRts: ["07", "08", "09"],
   },
 };
 
