@@ -265,7 +265,7 @@ export function KomunitasDetailClientView({
   );
 
   const isEducationCommunity = isPaudCommunity || isPkbmOrSkb || isSkb || isPureSatuanPaud;
-  const isModernRedesignedCommunity = isEducationCommunity || isPosyandu;
+  const isModernRedesignedCommunity = isEducationCommunity || isPosyandu || isWargaKita;
 
   type KomunitasMainTab =
     | "anak"
@@ -1426,6 +1426,13 @@ export function KomunitasDetailClientView({
                     );
                   })()}
                 </div>
+              ) : isWargaKita ? (
+                <div className="flex flex-wrap items-center gap-1.5 py-0.5">
+                  <span className="inline-flex items-center gap-1.5 rounded-md bg-emerald-50 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300 font-bold px-2.5 py-0.5 text-xs border border-emerald-200 dark:border-emerald-800 shadow-2xs">
+                    <Home className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                    <span>Lingkungan Warga Kita • {tierLevelLabel}</span>
+                  </span>
+                </div>
               ) : !isModernRedesignedCommunity ? (
                 <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground font-medium">
                   <span className="flex items-center gap-1 truncate max-w-xl">
@@ -1434,9 +1441,7 @@ export function KomunitasDetailClientView({
                   </span>
                   <span className="text-muted-foreground/40">•</span>
                   <span className="font-semibold text-foreground">
-                    {isWargaKita
-                      ? `Lingkungan Warga Kita • ${tierLevelLabel}`
-                      : "Komunitas Terdaftar"}
+                    Komunitas Terdaftar
                   </span>
                 </div>
               ) : null}
