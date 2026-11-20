@@ -90,10 +90,10 @@ export function WargaRekapitulasiSection({
 
           <div className="pt-2.5 border-t border-border flex items-center justify-between text-xs font-semibold text-primary">
             <Link
-              href="/kabar?tab=warga"
+              href="/kabar?tab=percakapan"
               className="inline-flex items-center gap-1 hover:underline group-hover:translate-x-0.5 transition-transform"
             >
-              <span>Daftar Warga</span>
+              <span>Percakapan Warga</span>
               <ArrowRight className="h-3 w-3" />
             </Link>
           </div>
@@ -269,17 +269,17 @@ export function WargaRekapitulasiSection({
               Ingin Terhubung dengan Warga Satu Komunitas Anda?
             </h5>
             <p className="text-muted-foreground">
-              Gunakan menu Percakapan dan Daftar Warga di Kabar untuk berinteraksi langsung dengan tetangga &amp; kader.
+              Gunakan menu Percakapan di Kabar untuk berinteraksi langsung dengan tetangga &amp; kader.
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-2 w-full sm:w-auto">
           <Link
-            href="/kabar?tab=warga"
+            href="/kabar?tab=percakapan"
             className="flex-1 sm:flex-initial inline-flex min-h-[36px] items-center justify-center gap-1.5 rounded-lg border border-border bg-card hover:bg-accent px-3 py-1.5 font-bold text-foreground transition-all cursor-pointer shadow-2xs text-center"
           >
-            <span>Daftar Warga</span>
+            <span>Percakapan Warga</span>
           </Link>
           <Link
             href="/komunitas"

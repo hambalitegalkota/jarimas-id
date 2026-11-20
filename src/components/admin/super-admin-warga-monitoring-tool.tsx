@@ -1100,15 +1100,6 @@ export function SuperAdminWargaMonitoringTool({
             <span>
               Menampilkan {filteredUsers.length} dari {totalCount} pengguna terdaftar.
             </span>
-            <div className="flex items-center gap-3">
-              <Link
-                href="/kabar?tab=warga"
-                className="font-bold text-primary hover:underline inline-flex items-center gap-1"
-              >
-                <span>Buka Direktori Lengkap di Kabar</span>
-                <ExternalLink className="h-3 w-3" />
-              </Link>
-            </div>
           </div>
         </div>
       )}

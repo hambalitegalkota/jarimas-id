@@ -2,22 +2,20 @@
 
 import { useTransition } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { MessageSquare, Users, MessageCircle, Sparkles, HeartHandshake } from "lucide-react";
+import { Megaphone, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useGlobalMessageNotification } from "@/components/notifications/global-message-notification-provider";
 
 interface KabarMainTabsProps {
-  currentTab: "kabar" | "percakapan" | "warga";
+  currentTab: "kabar" | "percakapan";
   totalFeedCount?: number;
   totalUnreadChat?: number;
-  totalCitizensCount?: number;
 }
 
 export function KabarMainTabs({
   currentTab = "kabar",
   totalFeedCount = 0,
   totalUnreadChat = 0,
-  totalCitizensCount = 0,
 }: KabarMainTabsProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -27,7 +25,7 @@ export function KabarMainTabs({
 
   const effectiveUnread = totalUnreadCount > 0 ? totalUnreadCount : totalUnreadChat;
 
-  const handleTabChange = (newTab: "kabar" | "percakapan" | "warga") => {
+  const handleTabChange = (newTab: "kabar" | "percakapan") => {
     const params = new URLSearchParams(searchParams.toString());
     if (newTab === "kabar") {
       params.delete("tab");
@@ -44,28 +42,28 @@ export function KabarMainTabs({
   };
 
   return (
-    <div className="flex rounded-lg bg-card p-1 border border-border shadow-xs gap-1">
-      {/* Tab 1: Kabar Warga */}
+    <div className="grid grid-cols-2 gap-2 p-1.5 rounded-xl bg-card border border-border shadow-xs">
+      {/* Tab 1: Kabar */}
       <button
         type="button"
         onClick={() => handleTabChange("kabar")}
         disabled={isPending}
         className={cn(
-          "flex-1 inline-flex min-h-[40px] items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer active:scale-98 text-center",
+          "flex items-center justify-center gap-2 py-3 px-3 sm:px-4 rounded-lg font-bold text-xs sm:text-sm transition-all cursor-pointer text-center",
           currentTab === "kabar"
-            ? "bg-primary text-primary-foreground shadow-xs font-bold"
-            : "text-muted-foreground hover:text-foreground hover:bg-muted"
+            ? "bg-primary text-primary-foreground shadow-xs font-black"
+            : "text-muted-foreground hover:text-foreground hover:bg-muted font-semibold"
         )}
       >
-        <MessageSquare className="h-3.5 w-3.5 shrink-0" />
-        <span>Kabar Warga</span>
+        <Megaphone className="h-4 w-4 shrink-0" />
+        <span>Kabar</span>
         {totalFeedCount > 0 && (
           <span
             className={cn(
-              "hidden sm:inline-flex rounded-full px-1.5 py-0.2 text-[10px] font-mono",
+              "px-2 py-0.5 rounded-full text-2xs font-mono font-bold",
               currentTab === "kabar"
-                ? "bg-primary-foreground/20 text-primary-foreground"
-                : "bg-muted text-muted-foreground"
+                ? "bg-white/20 text-white"
+                : "bg-muted-foreground/10 text-muted-foreground"
             )}
           >
             {totalFeedCount}
@@ -73,64 +71,34 @@ export function KabarMainTabs({
         )}
       </button>
 
-      {/* Tab 2 (Tengah): Percakapan */}
+      {/* Tab 2: Percakapan */}
       <button
         type="button"
         onClick={() => handleTabChange("percakapan")}
         disabled={isPending}
         className={cn(
-          "flex-1 inline-flex min-h-[40px] items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer active:scale-98 text-center relative",
+          "flex items-center justify-center gap-2 py-3 px-3 sm:px-4 rounded-lg font-bold text-xs sm:text-sm transition-all cursor-pointer text-center relative",
           currentTab === "percakapan"
-            ? "bg-primary text-primary-foreground shadow-xs font-bold"
-            : "text-muted-foreground hover:text-foreground hover:bg-muted"
+            ? "bg-primary text-primary-foreground shadow-xs font-black"
+            : "text-muted-foreground hover:text-foreground hover:bg-muted font-semibold"
         )}
       >
-        <MessageCircle className="h-3.5 w-3.5 shrink-0" />
+        <MessageCircle className="h-4 w-4 shrink-0" />
         <span>Percakapan</span>
         {effectiveUnread > 0 ? (
-          <span className="relative flex items-center justify-center">
-            <span className="rounded-full bg-secondary text-secondary-foreground px-1.5 py-0.2 text-[10px] font-mono font-bold shadow-xs animate-pulse">
-              {effectiveUnread > 99 ? "99+" : effectiveUnread}
-            </span>
+          <span className="px-2 py-0.5 rounded-full text-2xs font-mono font-bold bg-amber-500 text-white shadow-xs animate-pulse">
+            {effectiveUnread > 99 ? "99+" : effectiveUnread} Pesan
           </span>
         ) : (
           <span
             className={cn(
-              "hidden sm:inline-flex rounded-full px-1.5 py-0.2 text-[9px] font-bold uppercase",
+              "hidden sm:inline-flex px-2 py-0.5 rounded-full text-2xs font-mono font-bold",
               currentTab === "percakapan"
-                ? "bg-primary-foreground/20 text-primary-foreground"
-                : "bg-primary/10 text-primary border border-primary/20"
+                ? "bg-white/20 text-white"
+                : "bg-muted-foreground/10 text-muted-foreground"
             )}
           >
-            Chat
-          </span>
-        )}
-      </button>
-
-      {/* Tab 3: Daftar Warga */}
-      <button
-        type="button"
-        onClick={() => handleTabChange("warga")}
-        disabled={isPending}
-        className={cn(
-          "flex-1 inline-flex min-h-[40px] items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer active:scale-98 text-center",
-          currentTab === "warga"
-            ? "bg-primary text-primary-foreground shadow-xs font-bold"
-            : "text-muted-foreground hover:text-foreground hover:bg-muted"
-        )}
-      >
-        <Users className="h-3.5 w-3.5 shrink-0" />
-        <span>Daftar Warga</span>
-        {totalCitizensCount > 0 && (
-          <span
-            className={cn(
-              "hidden sm:inline-flex rounded-full px-1.5 py-0.2 text-[10px] font-mono",
-              currentTab === "warga"
-                ? "bg-primary-foreground/20 text-primary-foreground"
-                : "bg-muted text-muted-foreground"
-            )}
-          >
-            {totalCitizensCount}
+            Aktif
           </span>
         )}
       </button>
