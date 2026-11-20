@@ -60,7 +60,7 @@ export interface SuperAdminWargaMonitoringToolProps {
 }
 
 // Helpers untuk klasifikasi komunitas
-const isPkbmOrSkbComm = (c: any) => {
+export const isPkbmOrSkbComm = (c: any): boolean => {
   if (!c) return false;
   const jenis = (c.jenis || "").toLowerCase();
   const nama = (c.nama || "").toLowerCase();
@@ -74,9 +74,78 @@ const isPkbmOrSkbComm = (c: any) => {
   );
 };
 
-const isPosyanduComm = (c: any) => (c?.jenis || "").toLowerCase() === "posyandu";
-const isWargaComm = (c: any) => (c?.jenis || "").toLowerCase() === "warga_kita";
-const isPaudComm = (c: any) => (c?.jenis || "").toLowerCase() === "satuan_paud" && !isPkbmOrSkbComm(c);
+export const isPosyanduComm = (c: any): boolean => (c?.jenis || "").toLowerCase() === "posyandu";
+export const isWargaComm = (c: any): boolean => (c?.jenis || "").toLowerCase() === "warga_kita";
+export const isPaudComm = (c: any): boolean => (c?.jenis || "").toLowerCase() === "satuan_paud" && !isPkbmOrSkbComm(c);
+
+/**
+ * Mendeteksi apakah suatu komunitas merupakan komunitas berjenjang / hirarkis wrapper
+ * yang otomatis dihubungkan oleh sistem (Posyandu Kel/Kec/Kota & Warga RW/Kel/Kec/Kota).
+ */
+export const isBerjenjangKomunitas = (comm: UserKomunitasAffiliation | any): boolean => {
+  if (!comm) return false;
+  const nama = (comm.nama || "").toLowerCase();
+  const id = (comm.id || "").toLowerCase();
+
+  // 1. Posyandu Berjenjang (Kelurahan, Kecamatan, Kota Tegal)
+  if (
+    nama.includes("komunitas posyandu kelurahan") ||
+    nama.includes("komunitas posyandu kecamatan") ||
+    nama.includes("komunitas posyandu kota") ||
+    id.startsWith("kom-posyandu-")
+  ) {
+    return true;
+  }
+
+  // 2. Warga Kita Berjenjang (RW, Kelurahan, Kecamatan, Kota Tegal)
+  if (
+    nama.startsWith("warga rw:") ||
+    nama.startsWith("warga kelurahan:") ||
+    nama.startsWith("warga kecamatan:") ||
+    nama.includes("komunitas warga kota tegal") ||
+    id.startsWith("kom-warga-kota") ||
+    id === "cb45f6c3-efbf-404c-8fba-4a39299b710f"
+  ) {
+    return true;
+  }
+
+  return false;
+};
+
+/**
+ * Mengambil hanya Komunitas Awal (Primer) milik pengguna:
+ * - Komunitas Posyandu (Unit Posyandu awal tempat bergabung)
+ * - Komunitas RT (Unit Warga RT awal tempat bergabung)
+ * - Komunitas PAUD (Satuan PAUD awal tempat bergabung)
+ * - Komunitas SKB & PKBM (Lembaga SKB & PKBM awal tempat bergabung)
+ *
+ * Seluruh komunitas berjenjang wrapper (Posyandu Kel/Kec/Kota dan Warga RW/Kel/Kec/Kota)
+ * serta auto-sync default RT dari posyandu tidak ditampilkan agar kartu tertata bersih dan rapi.
+ */
+export const getUserInitialCommunities = (userItem: RegisteredUserItem): UserKomunitasAffiliation[] => {
+  const allComms = userItem.komunitas_list || [];
+  if (allComms.length === 0) return [];
+
+  // Filter 1: Buang seluruh wrapper berjenjang
+  const nonBerjenjang = allComms.filter((c) => !isBerjenjangKomunitas(c));
+
+  // Cek apakah pengguna memiliki komunitas Posyandu unit awal
+  const hasUnitPosyandu = nonBerjenjang.some((c) => isPosyanduComm(c));
+
+  if (hasUnitPosyandu) {
+    // Jika pengguna terdaftar di Posyandu unit, maka Warga RT default "Penduduk"
+    // merupakan hasil sinkronisasi wilayah cakupan Posyandu, bukan komunitas awalnya.
+    // Tampilkan RT hanya jika pengguna memiliki peran Pengurus/Admin di RT tersebut.
+    return nonBerjenjang.filter((c) => {
+      if (isWargaComm(c)) {
+        return isRoleAdmin(c.peran);
+      }
+      return true;
+    });
+  }
+
+  return nonBerjenjang;
+};
 
 export function SuperAdminWargaMonitoringTool({
   initialUsers,
@@ -211,7 +280,7 @@ export function SuperAdminWargaMonitoringTool({
     community: UserKomunitasAffiliation
   ) => {
     const targetName = userItem.nama_lengkap || userItem.email || "Pengguna";
-    const confirmMsg = `Keluarkan ${targetName} dari komunitas ${community.nama}? Tindakan ini akan mencabut seluruh akses dan keanggotaannya di komunitas tersebut.`;
+    const confirmMsg = `Keluarkan ${targetName} dari komunitas ${community.nama}? Tindakan ini akan mencabut akses dan keanggotaannya di komunitas tersebut.`;
 
     if (!window.confirm(confirmMsg)) return;
 
@@ -318,38 +387,38 @@ export function SuperAdminWargaMonitoringTool({
     }
   };
 
-  // Hitung jumlah anggota untuk 6 kategori kartu
+  // Hitung jumlah anggota untuk 6 kategori kartu berdasarkan Komunitas Awal (Primer)
   const totalCount = useMemo(() => {
     return usersList.filter((u) => u.id !== currentUserId).length;
   }, [usersList, currentUserId]);
 
   const belumKomunitasCount = useMemo(() => {
     return usersList.filter(
-      (u) => u.id !== currentUserId && (!u.komunitas_list || u.komunitas_list.length === 0)
+      (u) => u.id !== currentUserId && getUserInitialCommunities(u).length === 0
     ).length;
   }, [usersList, currentUserId]);
 
   const wargaCount = useMemo(() => {
     return usersList.filter(
-      (u) => u.id !== currentUserId && u.komunitas_list?.some(isWargaComm)
+      (u) => u.id !== currentUserId && getUserInitialCommunities(u).some(isWargaComm)
     ).length;
   }, [usersList, currentUserId]);
 
   const posyanduCount = useMemo(() => {
     return usersList.filter(
-      (u) => u.id !== currentUserId && u.komunitas_list?.some(isPosyanduComm)
+      (u) => u.id !== currentUserId && getUserInitialCommunities(u).some(isPosyanduComm)
     ).length;
   }, [usersList, currentUserId]);
 
   const paudCount = useMemo(() => {
     return usersList.filter(
-      (u) => u.id !== currentUserId && u.komunitas_list?.some(isPaudComm)
+      (u) => u.id !== currentUserId && getUserInitialCommunities(u).some(isPaudComm)
     ).length;
   }, [usersList, currentUserId]);
 
   const pkbmCount = useMemo(() => {
     return usersList.filter(
-      (u) => u.id !== currentUserId && u.komunitas_list?.some(isPkbmOrSkbComm)
+      (u) => u.id !== currentUserId && getUserInitialCommunities(u).some(isPkbmOrSkbComm)
     ).length;
   }, [usersList, currentUserId]);
 
@@ -357,17 +426,17 @@ export function SuperAdminWargaMonitoringTool({
   const filteredUsers = useMemo(() => {
     let result = usersList.filter((u) => u.id !== currentUserId);
 
-    // Filter kategori aktif
+    // Filter kategori aktif berdasarkan Komunitas Awal
     if (selectedFilter === "belum_komunitas") {
-      result = result.filter((u) => !u.komunitas_list || u.komunitas_list.length === 0);
+      result = result.filter((u) => getUserInitialCommunities(u).length === 0);
     } else if (selectedFilter === "warga_kita") {
-      result = result.filter((u) => u.komunitas_list?.some(isWargaComm));
+      result = result.filter((u) => getUserInitialCommunities(u).some(isWargaComm));
     } else if (selectedFilter === "posyandu") {
-      result = result.filter((u) => u.komunitas_list?.some(isPosyanduComm));
+      result = result.filter((u) => getUserInitialCommunities(u).some(isPosyanduComm));
     } else if (selectedFilter === "paud") {
-      result = result.filter((u) => u.komunitas_list?.some(isPaudComm));
+      result = result.filter((u) => getUserInitialCommunities(u).some(isPaudComm));
     } else if (selectedFilter === "pkbm_skb") {
-      result = result.filter((u) => u.komunitas_list?.some(isPkbmOrSkbComm));
+      result = result.filter((u) => getUserInitialCommunities(u).some(isPkbmOrSkbComm));
     }
 
     // Filter pencarian
@@ -377,7 +446,8 @@ export function SuperAdminWargaMonitoringTool({
         const matchName = u.nama_lengkap.toLowerCase().includes(q);
         const matchEmail = u.email?.toLowerCase().includes(q);
         const matchPhone = u.nomor_hp?.includes(q);
-        const matchComm = u.komunitas_list?.some(
+        const initialComms = getUserInitialCommunities(u);
+        const matchComm = initialComms.some(
           (c) =>
             c.nama.toLowerCase().includes(q) ||
             c.peran.toLowerCase().includes(q) ||
@@ -679,7 +749,7 @@ export function SuperAdminWargaMonitoringTool({
             </button>
           </div>
 
-          {/* Search Bar & Tautan ke Percakapan Hub (Tombol filter duplikat di bawah sudah dihapus & dialihkan ke kartu di atas) */}
+          {/* Search Bar & Tautan ke Percakapan Hub */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-1">
             <div className="relative flex-1">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -721,7 +791,10 @@ export function SuperAdminWargaMonitoringTool({
                   userItem.nomor_hp,
                   "Halo, kami dari Jarimas Indonesia."
                 );
-                const hasNoCommunity = !userItem.komunitas_list || userItem.komunitas_list.length === 0;
+
+                // Ambil HANYA komunitas awal/primer pengguna (tanpa wrapper berjenjang & auto-sync default)
+                const initialComms = getUserInitialCommunities(userItem);
+                const hasNoCommunity = initialComms.length === 0;
 
                 return (
                   <div
@@ -804,11 +877,13 @@ export function SuperAdminWargaMonitoringTool({
                         </span>
                       </div>
 
-                      {/* Affiliation / Komunitas yang Diikuti */}
+                      {/* Affiliation / Komunitas Awal yang Diikuti */}
                       <div className="space-y-1.5 pt-1">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
-                          Komunitas yang Diikuti ({userItem.komunitas_list?.length || 0}):
-                        </span>
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block truncate">
+                            Komunitas yang Diikuti ({initialComms.length}):
+                          </span>
+                        </div>
 
                         {hasNoCommunity ? (
                           <div className="p-2.5 rounded-lg border border-amber-300 bg-amber-50/70 dark:bg-amber-950/40 dark:border-amber-800 flex items-start gap-2">
@@ -818,13 +893,13 @@ export function SuperAdminWargaMonitoringTool({
                                 Belum Bergabung di Komunitas Manapun
                               </p>
                               <p className="text-amber-700/80 dark:text-amber-400/80">
-                                Pengguna baru terdaftar dan belum ditempatkan ke RT/RW, Posyandu, PAUD, atau SKB &amp; PKBM.
+                                Pengguna baru terdaftar dan belum ditempatkan ke Posyandu, RT, PAUD, atau SKB &amp; PKBM.
                               </p>
                             </div>
                           </div>
                         ) : (
                           <div className="flex flex-col gap-1.5">
-                            {userItem.komunitas_list!.map((comm) => {
+                            {initialComms.map((comm) => {
                               const isPaud = isPaudComm(comm);
                               const isPosyandu = isPosyanduComm(comm);
                               const isPkbm = isPkbmOrSkbComm(comm);
@@ -844,7 +919,7 @@ export function SuperAdminWargaMonitoringTool({
                                       ? "bg-rose-50/60 border-rose-200 text-rose-900 dark:bg-rose-950/40 dark:border-rose-800 dark:text-rose-200"
                                       : isKegiatan
                                       ? "bg-amber-50/60 border-amber-200 text-amber-900 dark:bg-amber-950/40 dark:border-amber-800 dark:text-amber-200"
-                                      : "bg-muted/60 border-border text-foreground"
+                                      : "bg-emerald-50/60 border-emerald-200 text-emerald-900 dark:bg-emerald-950/40 dark:border-emerald-800 dark:text-emerald-200"
                                   )}
                                 >
                                   <div className="flex items-center gap-1.5 min-w-0 flex-1">
@@ -857,7 +932,7 @@ export function SuperAdminWargaMonitoringTool({
                                     ) : isKegiatan ? (
                                       <Sparkles className="h-3.5 w-3.5 text-amber-500 shrink-0" />
                                     ) : (
-                                      <Building2 className="h-3.5 w-3.5 text-primary shrink-0" />
+                                      <Building2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
                                     )}
 
                                     <div className="truncate">
