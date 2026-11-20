@@ -27,6 +27,7 @@ import { KecamatanMonitoringAccordion } from "@/components/admin/kecamatan-monit
 import { AdminBidangManagementCard } from "@/components/admin/admin-bidang-management-card";
 import { KomunitasManagementTools } from "@/components/admin/komunitas-management-tools";
 import { AdminUserManagementCard } from "@/components/admin/super-admin-warga-monitoring-tool";
+import { AdminPanelControlSection } from "@/components/admin/admin-panel-control-section";
 import {
   formatPeranDisplay,
   isRoleAdmin,
@@ -616,96 +617,173 @@ export default async function ProfilePage() {
       />
 
       {/* SECTION: Panel Kendali Berjenjang Sesuai Tingkat Kewenangan Admin */}
-      {/* Aturan Mutlak: Selain Admin TIDAK BOLEH ada Panel Kendali di profilnya */}
+      {/* Diatur ulang menjadi barisan tombol responsif agar tidak perlu banyak scroll ke bawah */}
       {userAdminInfo.isAdmin && userAdminInfo.panelTitle && (
-        <section className="space-y-6">
-          <div className="flex items-center justify-between px-1">
-            <div className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-secondary" />
-              <h2 className="text-base sm:text-lg font-bold uppercase tracking-wider text-foreground">
-                {userAdminInfo.panelTitle}
-              </h2>
-            </div>
-            <span className="inline-flex items-center gap-1 rounded-full border border-secondary/30 bg-secondary/10 px-2.5 py-0.5 text-[10px] font-bold text-secondary uppercase tracking-wider">
-              {userAdminInfo.tierBadgeLabel}
-            </span>
-          </div>
+        <AdminPanelControlSection
+          panelTitle={userAdminInfo.panelTitle}
+          tierBadgeLabel={userAdminInfo.tierBadgeLabel}
+          defaultSectionId={
+            (userAdminInfo.tierLevel === "super_admin" ||
+             userAdminInfo.tierLevel === "admin_pusat" ||
+             isAdminPusatUser ||
+             isSuperAdmin)
+              ? "kelola_pengguna"
+              : undefined
+          }
+          sections={[
+            // 1. Kelola Seluruh Pengguna & Penempatan Komunitas (Super Admin & Admin Pusat)
+            ...((userAdminInfo.tierLevel === "super_admin" ||
+              userAdminInfo.tierLevel === "admin_pusat" ||
+              isAdminPusatUser ||
+              isSuperAdmin)
+              ? [
+                  {
+                    id: "kelola_pengguna",
+                    label: "Kelola Pengguna",
+                    description: "Penempatan & status komunitas warga",
+                    badgeText: `${registeredUsersResult.users?.length || 0} Pengguna`,
+                    iconName: "users" as const,
+                    content: (
+                      <AdminUserManagementCard
+                        initialUsers={registeredUsersResult.users || []}
+                        currentUserId={user.id}
+                        viewerTier={userAdminInfo.tierLevel}
+                      />
+                    ),
+                  },
+                ]
+              : []),
 
-          {/* Monitoring Hierarki Wilayah (Kecamatan Accordion) untuk Super Admin, Admin Pusat, dan Admin Kota - PALING ATAS */}
-          {(userAdminInfo.tierLevel === "super_admin" ||
-            userAdminInfo.tierLevel === "admin_pusat" ||
-            userAdminInfo.tierLevel === "admin_kota") && (
-            <KecamatanMonitoringAccordion
-              initialItems={allHierarchyPendingApprovals}
-              viewerTier={userAdminInfo.tierLevel}
-            />
-          )}
+            // 2. Monitoring Wilayah (Hierarki Kecamatan & Kelurahan)
+            ...((userAdminInfo.tierLevel === "super_admin" ||
+              userAdminInfo.tierLevel === "admin_pusat" ||
+              userAdminInfo.tierLevel === "admin_kota")
+              ? [
+                  {
+                    id: "monitoring_wilayah",
+                    label: "Monitoring Wilayah",
+                    description: "Pantau permohonan berjenjang 4 kecamatan",
+                    badgeText: `${allHierarchyPendingApprovals.length} Permohonan`,
+                    iconName: "layers" as const,
+                    content: (
+                      <KecamatanMonitoringAccordion
+                        initialItems={allHierarchyPendingApprovals}
+                        viewerTier={userAdminInfo.tierLevel}
+                      />
+                    ),
+                  },
+                ]
+              : []),
 
-          {/* Kelola Seluruh Pengguna & Penempatan Komunitas: Khusus Super Admin & Admin Pusat */}
-          {(userAdminInfo.tierLevel === "super_admin" ||
-            userAdminInfo.tierLevel === "admin_pusat" ||
-            isAdminPusatUser ||
-            isSuperAdmin) && (
-            <AdminUserManagementCard
-              initialUsers={registeredUsersResult.users || []}
-              currentUserId={user.id}
-              viewerTier={userAdminInfo.tierLevel}
-            />
-          )}
+            // 3. Pengangkatan & Manajemen Admin Bidang (SPM 6 Bidang)
+            ...((userAdminInfo.tierLevel === "super_admin" ||
+              userAdminInfo.tierLevel === "admin_pusat" ||
+              userAdminInfo.tierLevel === "admin_kota")
+              ? [
+                  {
+                    id: "admin_bidang",
+                    label: "Admin Bidang",
+                    description: "Kelola Admin SPM 6 Bidang Layanan",
+                    badgeText: "6 Bidang",
+                    iconName: "shield" as const,
+                    content: (
+                      <AdminBidangManagementCard
+                        registeredUsers={registeredUsersResult.users || []}
+                        currentUserId={user.id}
+                        viewerTier={userAdminInfo.tierLevel}
+                      />
+                    ),
+                  },
+                ]
+              : []),
 
-          {/* Pengangkatan & Manajemen Admin Bidang (SPM 6 Bidang): Super Admin, Admin Pusat, Admin Kota */}
-          {(userAdminInfo.tierLevel === "super_admin" ||
-            userAdminInfo.tierLevel === "admin_pusat" ||
-            userAdminInfo.tierLevel === "admin_kota") && (
-            <AdminBidangManagementCard
-              registeredUsers={registeredUsersResult.users || []}
-              currentUserId={user.id}
-              viewerTier={userAdminInfo.tierLevel}
-            />
-          )}
+            // 4. Manajemen Komunitas (Tambah, Cari, Edit, Delete Komunitas)
+            ...((userAdminInfo.tierLevel === "super_admin" ||
+              userAdminInfo.tierLevel === "admin_pusat" ||
+              userAdminInfo.tierLevel === "admin_kota")
+              ? [
+                  {
+                    id: "kelola_komunitas",
+                    label: "Kelola Komunitas",
+                    description: "Pencarian, penambahan & kelola data komunitas",
+                    badgeText: "Komunitas",
+                    iconName: "building" as const,
+                    content: (
+                      <KomunitasManagementTools
+                        registeredUsers={registeredUsersResult.users || []}
+                      />
+                    ),
+                  },
+                ]
+              : []),
 
-          {/* Manajemen Komunitas (Tambah, Cari, Edit, Delete): Super Admin, Admin Pusat, Admin Kota */}
-          {(userAdminInfo.tierLevel === "super_admin" ||
-            userAdminInfo.tierLevel === "admin_pusat" ||
-            userAdminInfo.tierLevel === "admin_kota") && (
-            <KomunitasManagementTools registeredUsers={registeredUsersResult.users || []} />
-          )}
+            // 5. Permohonan Warga (Approval List)
+            ...(pendingApprovals.length > 0
+              ? [
+                  {
+                    id: "permohonan_warga",
+                    label: "Permohonan Warga",
+                    description: "Persetujuan peran & verifikasi warga",
+                    badgeText: `${pendingApprovals.length} Pending`,
+                    iconName: "user-check" as const,
+                    content: (
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2 px-1">
+                          <UserCheck className="h-4 w-4 text-primary" />
+                          <h3 className="text-sm font-bold uppercase tracking-wider text-foreground">
+                            Daftar Permohonan Warga ({pendingApprovals.length})
+                          </h3>
+                        </div>
+                        <ApprovalList
+                          initialApprovals={pendingApprovals}
+                          isSuperAdmin={userAdminInfo.tierLevel === "super_admin"}
+                        />
+                      </div>
+                    ),
+                  },
+                ]
+              : (userAdminInfo.tierLevel !== "super_admin" &&
+                 userAdminInfo.tierLevel !== "admin_pusat" &&
+                 userAdminInfo.tierLevel !== "admin_kota")
+              ? [
+                  {
+                    id: "permohonan_warga",
+                    label: "Permohonan Warga",
+                    description: "Tidak ada permohonan tertunda",
+                    badgeText: "0 Pending",
+                    iconName: "user-check" as const,
+                    content: (
+                      <div className="rounded-lg border border-border bg-card p-6 text-center space-y-2 shadow-xs">
+                        <div className="flex h-10 w-10 mx-auto items-center justify-center rounded-lg bg-primary/10 text-primary">
+                          <CheckCircle2 className="h-5 w-5" />
+                        </div>
+                        <h3 className="text-sm font-bold text-foreground">
+                          Tidak Ada Permohonan Tertunda
+                        </h3>
+                        <p className="text-xs text-muted-foreground max-w-md mx-auto">
+                          Semua permohonan warga dan peran di wilayah kewenangan Anda telah diproses. Anda dapat mengelola anggota aktif langsung melalui kartu komunitas di atas.
+                        </p>
+                      </div>
+                    ),
+                  },
+                ]
+              : []),
 
-          {/* Pembersih Data Uji Coba: HANYA untuk Super Admin */}
-          {userAdminInfo.tierLevel === "super_admin" && <CleanupTestDataTool />}
-
-          {/* Daftar Permohonan Persetujuan Peran Berjenjang yang Sesuai Wewenang */}
-          {pendingApprovals.length > 0 ? (
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 px-1">
-                <UserCheck className="h-4 w-4 text-primary" />
-                <h3 className="text-sm font-bold uppercase tracking-wider text-foreground">
-                  Daftar Permohonan Warga ({pendingApprovals.length})
-                </h3>
-              </div>
-              <ApprovalList
-                initialApprovals={pendingApprovals}
-                isSuperAdmin={userAdminInfo.tierLevel === "super_admin"}
-              />
-            </div>
-          ) : (
-            userAdminInfo.tierLevel !== "super_admin" &&
-            userAdminInfo.tierLevel !== "admin_pusat" &&
-            userAdminInfo.tierLevel !== "admin_kota" && (
-              <div className="rounded-lg border border-border bg-card p-6 text-center space-y-2 shadow-xs">
-                <div className="flex h-10 w-10 mx-auto items-center justify-center rounded-lg bg-primary/10 text-primary">
-                  <CheckCircle2 className="h-5 w-5" />
-                </div>
-                <h3 className="text-sm font-bold text-foreground">
-                  Tidak Ada Permohonan Tertunda
-                </h3>
-                <p className="text-xs text-muted-foreground max-w-md mx-auto">
-                  Semua permohonan warga dan peran di wilayah kewenangan Anda telah diproses. Anda dapat mengelola anggota aktif langsung melalui kartu komunitas di atas.
-                </p>
-              </div>
-            )
-          )}
-        </section>
+            // 6. Pembersih Data Uji Coba: HANYA untuk Super Admin
+            ...(userAdminInfo.tierLevel === "super_admin"
+              ? [
+                  {
+                    id: "pembersih_data",
+                    label: "Pembersih Data",
+                    description: "Bersihkan data test & dummy sistem",
+                    badgeText: "Super Admin",
+                    iconName: "trash" as const,
+                    content: <CleanupTestDataTool />,
+                  },
+                ]
+              : []),
+          ]}
+        />
       )}
     </div>
   );
