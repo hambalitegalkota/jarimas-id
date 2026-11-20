@@ -1695,5 +1695,323 @@ export async function checkCanManageKomunitasAdminsAction(
   }
 }
 
+export interface KomunitasOptionItem {
+  id: string;
+  nama: string;
+  jenis: string;
+  kecamatan?: string | null;
+  kelurahan?: string | null;
+  rw?: string | null;
+  rt?: string | null;
+}
+
+/**
+ * Server Action: Mengambil seluruh daftar komunitas aktif untuk modal penempatan pengguna (Admin Pusat / Super Admin)
+ */
+export async function getAllKomunitasOptionsAction(): Promise<{
+  success: boolean;
+  komunitas: KomunitasOptionItem[];
+}> {
+  try {
+    const supabase = await createClient();
+    const adminClient = createAdminClient() || supabase;
+
+    const { data, error } = await adminClient
+      .from("komunitas")
+      .select("id, nama, jenis, kecamatan, kelurahan, rw, rt")
+      .order("jenis", { ascending: true })
+      .order("nama", { ascending: true });
+
+    if (error) {
+      console.error("Error fetching all komunitas options:", error);
+      return { success: false, komunitas: [] };
+    }
+
+    return {
+      success: true,
+      komunitas: (data || []) as KomunitasOptionItem[],
+    };
+  } catch (err) {
+    console.error("Error getAllKomunitasOptionsAction:", err);
+    return { success: false, komunitas: [] };
+  }
+}
+
+/**
+ * Server Action: Menempatkan pengguna ke dalam suatu komunitas dengan peran tertentu
+ * dan status langsung 'approved' (Khusus Admin Pusat & Super Admin atau Admin berwenang)
+ */
+export async function assignUserToKomunitasAction({
+  userId,
+  komunitasId,
+  peran = "Anggota",
+}: {
+  userId: string;
+  komunitasId: string;
+  peran?: string;
+}): Promise<{
+  success: boolean;
+  message: string;
+  membership?: any;
+}> {
+  try {
+    const { supabase, isSuperAdmin, isAdminPusat, isAdminKota, userAdminKomunitas, user } =
+      await getAuthenticatedUserContext();
+    const currentUserId = user.id;
+
+    if (!userId || !komunitasId) {
+      return {
+        success: false,
+        message: "ID Pengguna dan ID Komunitas wajib diisi.",
+      };
+    }
+
+    const adminClient = createAdminClient() || supabase;
+    const validKomId = toValidUUID(komunitasId);
+
+    // Ambil data komunitas target
+    const { data: komDb } = await adminClient
+      .from("komunitas")
+      .select("id, nama, jenis, kecamatan, kelurahan, rw, rt")
+      .eq("id", validKomId)
+      .maybeSingle();
+
+    const targetKomunitas = komDb || findOrGenerateKomunitasSeed(komunitasId);
+
+    // Periksa wewenang: Super Admin & Admin Pusat memiliki akses penuh, atau hierarki
+    const isSuperOrAdminPusat = isSuperAdmin || isAdminPusat;
+    const canAssign =
+      isSuperOrAdminPusat ||
+      checkUserCanAssignAdminRole({
+        isSuperAdmin,
+        isAdminPusat,
+        isAdminKota,
+        userAdminKomunitas,
+        targetKomunitas,
+      });
+
+    if (!canAssign) {
+      return {
+        success: false,
+        message: "Akses ditolak: Anda tidak memiliki wewenang untuk menempatkan pengguna ke komunitas ini.",
+      };
+    }
+
+    // Ambil data profil target
+    const { data: targetProfile } = await adminClient
+      .from("profiles")
+      .select("id, nama_lengkap, email")
+      .eq("id", userId)
+      .maybeSingle();
+
+    const userName = targetProfile?.nama_lengkap || targetProfile?.email || "Pengguna";
+    const komName = targetKomunitas?.nama || "Komunitas";
+
+    // Cek apakah sudah pernah tergabung di komunitas ini
+    const { data: existingMember } = await adminClient
+      .from("anggota_komunitas")
+      .select("id, status, peran")
+      .eq("user_id", userId)
+      .eq("komunitas_id", validKomId)
+      .maybeSingle();
+
+    let resultMembership: any = null;
+
+    if (existingMember) {
+      const { data: updated, error: updErr } = await adminClient
+        .from("anggota_komunitas")
+        .update({
+          peran: peran,
+          peran_diajukan: null,
+          status: "approved",
+          approved_by: currentUserId,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", existingMember.id)
+        .select()
+        .single();
+
+      if (updErr) throw updErr;
+      resultMembership = updated;
+    } else {
+      const { data: inserted, error: insErr } = await adminClient
+        .from("anggota_komunitas")
+        .insert({
+          user_id: userId,
+          komunitas_id: validKomId,
+          peran: peran,
+          status: "approved",
+          approved_by: currentUserId,
+          created_at: new Date().toISOString(),
+        })
+        .select()
+        .single();
+
+      if (insErr) throw insErr;
+      resultMembership = inserted;
+    }
+
+    // Jika targetKomunitas adalah posyandu, sinkronkan ke Warga RT/RW & berjenjang
+    if (targetKomunitas && targetKomunitas.jenis === "posyandu") {
+      try {
+        await syncPosyanduMemberToWargaAndBerjenjang({
+          userId,
+          posyanduId: validKomId,
+          role: peran,
+          client: adminClient,
+        });
+      } catch (syncErr) {
+        console.warn("Gagal sinkronisasi posyandu berjenjang:", syncErr);
+      }
+    }
+
+    revalidatePath("/profil");
+    revalidatePath("/komunitas");
+    revalidatePath(`/komunitas/${komunitasId}`);
+    if (validKomId !== komunitasId) {
+      revalidatePath(`/komunitas/${validKomId}`);
+    }
+
+    return {
+      success: true,
+      message: `Berhasil menempatkan ${userName} ke dalam ${komName} sebagai ${peran}!`,
+      membership: resultMembership,
+    };
+  } catch (err: any) {
+    console.error("Error assignUserToKomunitasAction:", err);
+    return {
+      success: false,
+      message: err.message || "Gagal menempatkan pengguna ke komunitas.",
+    };
+  }
+}
+
+/**
+ * Server Action: Mengeluarkan pengguna dari komunitas (Khusus Admin Pusat & Super Admin atau Admin berwenang)
+ */
+export async function removeUserFromKomunitasAction({
+  userId,
+  komunitasId,
+  anggotaId,
+}: {
+  userId: string;
+  komunitasId?: string;
+  anggotaId?: string;
+}): Promise<{
+  success: boolean;
+  message: string;
+}> {
+  try {
+    const { supabase, isSuperAdmin, isAdminPusat, isAdminKota, userAdminKomunitas, user } =
+      await getAuthenticatedUserContext();
+
+    if (!userId && !anggotaId) {
+      return {
+        success: false,
+        message: "ID Pengguna atau ID Keanggotaan wajib diisi.",
+      };
+    }
+
+    const adminClient = createAdminClient() || supabase;
+
+    // Ambil data keanggotaan
+    let memberTarget: any = null;
+    if (anggotaId) {
+      const { data: byId } = await adminClient
+        .from("anggota_komunitas")
+        .select("id, user_id, komunitas_id, peran, status")
+        .eq("id", anggotaId)
+        .maybeSingle();
+      memberTarget = byId;
+    }
+
+    if (!memberTarget && userId && komunitasId) {
+      const validKomId = toValidUUID(komunitasId);
+      const { data: byUserKom } = await adminClient
+        .from("anggota_komunitas")
+        .select("id, user_id, komunitas_id, peran, status")
+        .eq("user_id", userId)
+        .eq("komunitas_id", validKomId)
+        .maybeSingle();
+      memberTarget = byUserKom;
+    }
+
+    if (!memberTarget) {
+      return {
+        success: false,
+        message: "Data keanggotaan tidak ditemukan.",
+      };
+    }
+
+    // Proteksi Imunitas: Target Super Admin tidak boleh dikeluarkan
+    const { data: targetProfile } = await adminClient
+      .from("profiles")
+      .select("id, nama_lengkap, email, is_super_admin")
+      .eq("id", memberTarget.user_id)
+      .maybeSingle();
+
+    if (isProtectedSuperAdmin(targetProfile)) {
+      return {
+        success: false,
+        message: "Tindakan ditolak: Akun Super Admin memiliki imunitas mutlak dan tidak dapat dikeluarkan dari komunitas.",
+      };
+    }
+
+    // Ambil komunitas
+    const { data: targetKomunitas } = await adminClient
+      .from("komunitas")
+      .select("id, nama, jenis, kecamatan, kelurahan, rw, rt")
+      .eq("id", memberTarget.komunitas_id)
+      .maybeSingle();
+
+    const isSuperOrAdminPusat = isSuperAdmin || isAdminPusat;
+    const canRemove =
+      isSuperOrAdminPusat ||
+      checkUserCanAssignAdminRole({
+        isSuperAdmin,
+        isAdminPusat,
+        isAdminKota,
+        userAdminKomunitas,
+        targetKomunitas,
+      });
+
+    if (!canRemove) {
+      return {
+        success: false,
+        message: "Akses ditolak: Anda tidak memiliki wewenang untuk mengeluarkan anggota dari komunitas ini.",
+      };
+    }
+
+    // Eksekusi hapus keanggotaan
+    const { error: delErr } = await adminClient
+      .from("anggota_komunitas")
+      .delete()
+      .eq("id", memberTarget.id);
+
+    if (delErr) throw delErr;
+
+    const userName = targetProfile?.nama_lengkap || targetProfile?.email || "Pengguna";
+    const komName = targetKomunitas?.nama || "Komunitas";
+
+    revalidatePath("/profil");
+    revalidatePath("/komunitas");
+    if (memberTarget.komunitas_id) {
+      revalidatePath(`/komunitas/${memberTarget.komunitas_id}`);
+    }
+
+    return {
+      success: true,
+      message: `Berhasil mengeluarkan ${userName} dari ${komName}.`,
+    };
+  } catch (err: any) {
+    console.error("Error removeUserFromKomunitasAction:", err);
+    return {
+      success: false,
+      message: err.message || "Gagal mengeluarkan pengguna dari komunitas.",
+    };
+  }
+}
+
+
 
 

@@ -26,6 +26,7 @@ import { CleanupTestDataTool } from "@/components/admin/cleanup-test-data-tool";
 import { KecamatanMonitoringAccordion } from "@/components/admin/kecamatan-monitoring-accordion";
 import { AdminBidangManagementCard } from "@/components/admin/admin-bidang-management-card";
 import { KomunitasManagementTools } from "@/components/admin/komunitas-management-tools";
+import { AdminUserManagementCard } from "@/components/admin/super-admin-warga-monitoring-tool";
 import {
   formatPeranDisplay,
   isRoleAdmin,
@@ -636,6 +637,18 @@ export default async function ProfilePage() {
             userAdminInfo.tierLevel === "admin_kota") && (
             <KecamatanMonitoringAccordion
               initialItems={allHierarchyPendingApprovals}
+              viewerTier={userAdminInfo.tierLevel}
+            />
+          )}
+
+          {/* Kelola Seluruh Pengguna & Penempatan Komunitas: Khusus Super Admin & Admin Pusat */}
+          {(userAdminInfo.tierLevel === "super_admin" ||
+            userAdminInfo.tierLevel === "admin_pusat" ||
+            isAdminPusatUser ||
+            isSuperAdmin) && (
+            <AdminUserManagementCard
+              initialUsers={registeredUsersResult.users || []}
+              currentUserId={user.id}
               viewerTier={userAdminInfo.tierLevel}
             />
           )}

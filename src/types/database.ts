@@ -670,9 +670,11 @@ export interface PesanPribadi {
 
 export interface UserKomunitasAffiliation {
   id: string;
+  anggota_id?: string;
   nama: string;
   jenis: string;
   peran: string;
+  status?: string;
   kecamatan?: string;
   kelurahan?: string;
   rw?: string | null;

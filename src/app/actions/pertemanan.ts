@@ -133,6 +133,7 @@ export async function getRegisteredUsers(params?: {
       const { data: memberships } = await supabase
         .from("anggota_komunitas")
         .select(`
+          id,
           user_id,
           komunitas_id,
           peran,
@@ -147,7 +148,7 @@ export async function getRegisteredUsers(params?: {
             rt
           )
         `)
-        .eq("status", "approved")
+        .in("status", ["approved", "pending"])
         .limit(5000);
 
       if (memberships) {
@@ -159,9 +160,11 @@ export async function getRegisteredUsers(params?: {
           }
           communityMap[m.user_id].push({
             id: m.komunitas.id,
+            anggota_id: m.id,
             nama: m.komunitas.nama || "Komunitas Warga",
             jenis: m.komunitas.jenis || "warga_kita",
             peran: m.peran || "Anggota",
+            status: m.status || "approved",
             kecamatan: m.komunitas.kecamatan,
             kelurahan: m.komunitas.kelurahan,
             rw: m.komunitas.rw,
