@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Link from "next/link";
 import {
   Check,
   X,
@@ -18,6 +19,7 @@ import {
   Layers,
   Sparkles,
   Users,
+  ExternalLink,
 } from "lucide-react";
 import { approveMemberRole, rejectMemberRole } from "@/app/actions/admin";
 import type { PendingApprovalItem } from "@/types/database";
@@ -523,15 +525,26 @@ export function ApprovalList({
                 )}
 
                 {/* Komunitas Info Box & Hierarchical Approver Target */}
-                <div className="rounded-lg border border-border/70 bg-muted/30 p-3 text-xs space-y-1 font-mono">
-                  <div className="flex items-center gap-2 text-foreground font-semibold">
-                    <Building2 className="h-3.5 w-3.5 text-primary shrink-0" />
-                    <span className="truncate">
-                      {komunitasNama}{" "}
-                      <span className="text-muted-foreground font-normal">
-                        ({komunitasJenis.replace("_", " ")})
+                <div className="rounded-lg border border-border/70 bg-muted/30 p-3 text-xs space-y-1.5 font-mono">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 text-foreground font-semibold min-w-0 flex-1">
+                      <Building2 className="h-3.5 w-3.5 text-primary shrink-0" />
+                      <span className="truncate">
+                        {komunitasNama}{" "}
+                        <span className="text-muted-foreground font-normal">
+                          ({komunitasJenis.replace("_", " ")})
+                        </span>
                       </span>
-                    </span>
+                    </div>
+
+                    <Link
+                      href={`/komunitas/${item.komunitas_id}?tab=anggota`}
+                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 transition-all shrink-0"
+                      title="Buka komunitas ini untuk memeriksa apakah sudah ada admin atau belum"
+                    >
+                      <ExternalLink className="h-3 w-3 shrink-0" />
+                      <span>Buka Komunitas</span>
+                    </Link>
                   </div>
                   <div className="flex items-center gap-2 text-muted-foreground text-2xs">
                     <MapPin className="h-3 w-3 shrink-0" />

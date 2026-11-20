@@ -1716,20 +1716,31 @@ export async function getAllKomunitasOptionsAction(): Promise<{
     const supabase = await createClient();
     const adminClient = createAdminClient() || supabase;
 
-    const { data, error } = await adminClient
-      .from("komunitas")
-      .select("id, nama, jenis, kecamatan, kelurahan, rw, rt")
-      .order("jenis", { ascending: true })
-      .order("nama", { ascending: true });
+    // Ambil seluruh komunitas dengan batching range (karena data > 1.000 baris)
+    let allKom: KomunitasOptionItem[] = [];
+    let from = 0;
+    const step = 1000;
+    while (true) {
+      const { data, error } = await adminClient
+        .from("komunitas")
+        .select("id, nama, jenis, kecamatan, kelurahan, rw, rt")
+        .order("jenis", { ascending: true })
+        .order("nama", { ascending: true })
+        .range(from, from + step - 1);
 
-    if (error) {
-      console.error("Error fetching all komunitas options:", error);
-      return { success: false, komunitas: [] };
+      if (error) {
+        console.error("Error fetching all komunitas options batch:", error);
+        break;
+      }
+      if (!data || data.length === 0) break;
+      allKom = allKom.concat(data as KomunitasOptionItem[]);
+      if (data.length < step) break;
+      from += step;
     }
 
     return {
       success: true,
-      komunitas: (data || []) as KomunitasOptionItem[],
+      komunitas: allKom,
     };
   } catch (err) {
     console.error("Error getAllKomunitasOptionsAction:", err);
@@ -1753,6 +1764,7 @@ export async function assignUserToKomunitasAction({
   success: boolean;
   message: string;
   membership?: any;
+  community?: any;
 }> {
   try {
     const { supabase, isSuperAdmin, isAdminPusat, isAdminKota, userAdminKomunitas, user } =
@@ -1867,6 +1879,7 @@ export async function assignUserToKomunitasAction({
 
     revalidatePath("/profil");
     revalidatePath("/komunitas");
+    revalidatePath("/kabar");
     revalidatePath(`/komunitas/${komunitasId}`);
     if (validKomId !== komunitasId) {
       revalidatePath(`/komunitas/${validKomId}`);
@@ -1876,6 +1889,17 @@ export async function assignUserToKomunitasAction({
       success: true,
       message: `Berhasil menempatkan ${userName} ke dalam ${komName} sebagai ${peran}!`,
       membership: resultMembership,
+      community: {
+        id: validKomId,
+        nama: targetKomunitas?.nama || komName,
+        jenis: targetKomunitas?.jenis || "posyandu",
+        kecamatan: targetKomunitas?.kecamatan,
+        kelurahan: targetKomunitas?.kelurahan,
+        rw: targetKomunitas?.rw,
+        rt: targetKomunitas?.rt,
+        peran: peran,
+        status: "approved",
+      },
     };
   } catch (err: any) {
     console.error("Error assignUserToKomunitasAction:", err);

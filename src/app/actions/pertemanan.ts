@@ -130,26 +130,42 @@ export async function getRegisteredUsers(params?: {
     const sameCommunityUserIds = new Set<string>();
 
     try {
-      const { data: memberships } = await supabase
-        .from("anggota_komunitas")
-        .select(`
-          id,
-          user_id,
-          komunitas_id,
-          peran,
-          status,
-          komunitas (
+      // Supabase PostgREST membatasi maksimal 1000 baris per query,
+      // lakukan batching bertahap (range) agar seluruh keanggotaan (2.900+ baris) terambil lengkap.
+      let memberships: any[] = [];
+      let from = 0;
+      const step = 1000;
+      while (true) {
+        const { data: batch, error: batchErr } = await supabase
+          .from("anggota_komunitas")
+          .select(`
             id,
-            nama,
-            jenis,
-            kecamatan,
-            kelurahan,
-            rw,
-            rt
-          )
-        `)
-        .in("status", ["approved", "pending"])
-        .limit(5000);
+            user_id,
+            komunitas_id,
+            peran,
+            status,
+            komunitas (
+              id,
+              nama,
+              jenis,
+              kecamatan,
+              kelurahan,
+              rw,
+              rt
+            )
+          `)
+          .in("status", ["approved", "pending"])
+          .range(from, from + step - 1);
+
+        if (batchErr) {
+          console.warn("Gagal mengambil batch anggota_komunitas:", batchErr);
+          break;
+        }
+        if (!batch || batch.length === 0) break;
+        memberships = memberships.concat(batch);
+        if (batch.length < step) break;
+        from += step;
+      }
 
       if (memberships) {
         // Petakan keanggotaan per user & catat komunitas user saat ini

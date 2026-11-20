@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Users,
   Search,
@@ -152,9 +153,15 @@ export function SuperAdminWargaMonitoringTool({
   currentUserId,
   viewerTier: propViewerTier,
 }: SuperAdminWargaMonitoringToolProps) {
+  const router = useRouter();
   const viewerTier = propViewerTier || "super_admin";
   const [isOpen, setIsOpen] = useState(true);
   const [usersList, setUsersList] = useState<RegisteredUserItem[]>(initialUsers);
+
+  // Sinkronkan state lokal setiap kali initialUsers dari server component diperbarui
+  useEffect(() => {
+    setUsersList(initialUsers);
+  }, [initialUsers]);
   const [processingUserId, setProcessingUserId] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<{ text: string; isError?: boolean } | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -230,32 +237,32 @@ export function SuperAdminWargaMonitoringTool({
       });
 
       if (res.success) {
-        // Update local state secara realtime
+        // Bentuk objek keanggotaan komunitas yang baru ditambahkan
+        const newCommAffiliation: UserKomunitasAffiliation = {
+          id: res.community?.id || selectedKomunitasId,
+          nama: res.community?.nama || selectedKom?.nama || "Komunitas",
+          jenis: res.community?.jenis || selectedKom?.jenis || "posyandu",
+          peran: res.community?.peran || selectedRole || "Anggota",
+          status: "approved",
+          kecamatan: res.community?.kecamatan ?? selectedKom?.kecamatan,
+          kelurahan: res.community?.kelurahan ?? selectedKom?.kelurahan,
+          rw: res.community?.rw ?? selectedKom?.rw,
+          rt: res.community?.rt ?? selectedKom?.rt,
+        };
+
+        // Update local state secara realtime seketika agar langsung tampil di kartu pengguna
         setUsersList((prev) =>
           prev.map((u) => {
             if (u.id !== assignTargetUser.id) return u;
             const existingList = u.komunitas_list || [];
-            const alreadyIdx = existingList.findIndex((c) => c.id === selectedKomunitasId);
+            const alreadyIdx = existingList.findIndex((c) => c.id === newCommAffiliation.id);
             let updatedList: UserKomunitasAffiliation[];
             if (alreadyIdx >= 0) {
               updatedList = existingList.map((c, idx) =>
-                idx === alreadyIdx ? { ...c, peran: selectedRole || "Anggota", status: "approved" } : c
+                idx === alreadyIdx ? { ...c, ...newCommAffiliation } : c
               );
             } else {
-              updatedList = [
-                ...existingList,
-                {
-                  id: selectedKomunitasId,
-                  nama: selectedKom?.nama || "Komunitas",
-                  jenis: selectedKom?.jenis || "warga_kita",
-                  peran: selectedRole || "Anggota",
-                  status: "approved",
-                  kecamatan: selectedKom?.kecamatan || undefined,
-                  kelurahan: selectedKom?.kelurahan || undefined,
-                  rw: selectedKom?.rw,
-                  rt: selectedKom?.rt,
-                },
-              ];
+              updatedList = [...existingList, newCommAffiliation];
             }
             return { ...u, komunitas_list: updatedList };
           })
@@ -263,6 +270,7 @@ export function SuperAdminWargaMonitoringTool({
 
         setToastMessage({ text: res.message });
         setAssignTargetUser(null);
+        router.refresh();
       } else {
         setToastMessage({ text: res.message, isError: true });
       }
@@ -301,6 +309,7 @@ export function SuperAdminWargaMonitoringTool({
           })
         );
         setToastMessage({ text: res.message });
+        router.refresh();
       } else {
         setToastMessage({ text: res.message, isError: true });
       }
@@ -345,6 +354,7 @@ export function SuperAdminWargaMonitoringTool({
         );
         setToastMessage({ text: res.message });
         setRoleChangeTarget(null);
+        router.refresh();
       } else {
         setToastMessage({ text: res.message, isError: true });
       }
@@ -376,6 +386,7 @@ export function SuperAdminWargaMonitoringTool({
           )
         );
         setToastMessage({ text: res.message });
+        router.refresh();
       } else {
         setToastMessage({ text: res.message, isError: true });
       }
@@ -955,8 +966,17 @@ export function SuperAdminWargaMonitoringTool({
                                     </div>
                                   </div>
 
-                                  {/* Quick Action Per Komunitas: Ubah Peran & Keluarkan */}
-                                  <div className="flex items-center gap-1 shrink-0">
+                                  {/* Quick Action Per Komunitas: Buka Komunitas, Ubah Peran & Keluarkan */}
+                                  <div className="flex items-center gap-1.5 shrink-0 flex-wrap">
+                                    <Link
+                                      href={`/komunitas/${comm.id}?tab=anggota`}
+                                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 transition-all shadow-2xs"
+                                      title="Buka komunitas ini untuk memastikan apakah sudah ada admin atau belum"
+                                    >
+                                      <ExternalLink className="h-3 w-3 shrink-0" />
+                                      <span>Buka Komunitas</span>
+                                    </Link>
+
                                     <button
                                       type="button"
                                       onClick={() => handleOpenRoleModal(userItem, comm)}
