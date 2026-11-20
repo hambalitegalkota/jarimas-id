@@ -18,23 +18,18 @@ import {
   Mail,
   ExternalLink,
   Crown,
-  Radio,
   UserCheck,
   CheckCircle2,
   Shield,
   ShieldAlert,
   Loader2,
   UserPlus,
-  UserMinus,
   Plus,
   X,
   AlertTriangle,
   AlertCircle,
   Check,
-  MoreVertical,
-  Settings,
-  ArrowRight,
-  Filter,
+  BookOpen,
 } from "lucide-react";
 import { useGlobalMessageNotification } from "@/components/notifications/global-message-notification-provider";
 import {
@@ -64,6 +59,25 @@ export interface SuperAdminWargaMonitoringToolProps {
   viewerTier?: AdminTierLevel | null;
 }
 
+// Helpers untuk klasifikasi komunitas
+const isPkbmOrSkbComm = (c: any) => {
+  if (!c) return false;
+  const jenis = (c.jenis || "").toLowerCase();
+  const nama = (c.nama || "").toLowerCase();
+  return (
+    jenis === "pkbm_skb" ||
+    c.jenis_institusi === "PKBM" ||
+    c.jenis_institusi === "SKB" ||
+    nama.includes("pkbm") ||
+    nama.includes("skb") ||
+    nama.includes("sanggar kegiatan belajar")
+  );
+};
+
+const isPosyanduComm = (c: any) => (c?.jenis || "").toLowerCase() === "posyandu";
+const isWargaComm = (c: any) => (c?.jenis || "").toLowerCase() === "warga_kita";
+const isPaudComm = (c: any) => (c?.jenis || "").toLowerCase() === "satuan_paud" && !isPkbmOrSkbComm(c);
+
 export function SuperAdminWargaMonitoringTool({
   initialUsers,
   currentUserId,
@@ -76,14 +90,16 @@ export function SuperAdminWargaMonitoringTool({
   const [toastMessage, setToastMessage] = useState<{ text: string; isError?: boolean } | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedFilter, setSelectedFilter] = useState<
-    "semua" | "online" | "belum_komunitas" | "posyandu" | "paud" | "warga_kita"
+    "semua" | "belum_komunitas" | "warga_kita" | "posyandu" | "paud" | "pkbm_skb"
   >("semua");
 
   // State untuk Modal Penempatan Komunitas
   const [assignTargetUser, setAssignTargetUser] = useState<RegisteredUserItem | null>(null);
   const [allKomunitasOptions, setAllKomunitasOptions] = useState<KomunitasOptionItem[]>([]);
   const [isLoadingKomunitas, setIsLoadingKomunitas] = useState(false);
-  const [modalKomFilter, setModalKomFilter] = useState<"semua" | "posyandu" | "satuan_paud" | "warga_kita" | "kegiatan">("semua");
+  const [modalKomFilter, setModalKomFilter] = useState<
+    "semua" | "warga_kita" | "posyandu" | "satuan_paud" | "pkbm_skb" | "kegiatan"
+  >("semua");
   const [modalKomSearch, setModalKomSearch] = useState("");
   const [selectedKomunitasId, setSelectedKomunitasId] = useState<string>("");
   const [selectedRole, setSelectedRole] = useState<string>("Anggota");
@@ -97,8 +113,8 @@ export function SuperAdminWargaMonitoringTool({
   const [newKomRole, setNewKomRole] = useState<string>("");
   const [isSubmittingRoleChange, setIsSubmittingRoleChange] = useState(false);
 
-  const { onlineUserIds, isUserOnline, openChatWithUser } =
-    useGlobalMessageNotification();
+  // Fungsi chat langsung (tanpa tracking onlinePresence untuk menghemat resource)
+  const { openChatWithUser } = useGlobalMessageNotification();
 
   // Sinkronisasi data awal jika props initialUsers diperbarui
   useEffect(() => {
@@ -302,64 +318,10 @@ export function SuperAdminWargaMonitoringTool({
     }
   };
 
-  // Toggle Admin Kota
-  const handleToggleAdminKota = async (userItem: RegisteredUserItem) => {
-    const isCurrentlyAdminKota = userItem.komunitas_list?.some(
-      (c) =>
-        (c.nama.toLowerCase().includes("warga kota tegal") ||
-          (c.jenis === "warga_kita" && (c.kecamatan === "Kota Tegal" || !c.kecamatan))) &&
-        isRoleAdmin(c.peran)
-    );
-    const targetName = userItem.nama_lengkap || userItem.email || "Pengguna";
-    const confirmMsg = isCurrentlyAdminKota
-      ? `Cabut peran Admin Kota Tegal dari ${targetName}?`
-      : `Angkat ${targetName} sebagai Admin Kota Tegal? Pengguna ini akan memiliki wewenang mengelola wilayah Kota Tegal berjenjang.`;
-
-    if (!window.confirm(confirmMsg)) return;
-
-    setProcessingUserId(userItem.id);
-    try {
-      const res = await toggleAdminKotaRoleAction(userItem.id, !isCurrentlyAdminKota);
-      if (res.success) {
-        setUsersList((prev) =>
-          prev.map((u) => {
-            if (u.id !== userItem.id) return u;
-            const existingKomList = u.komunitas_list || [];
-            let updatedKomList = [...existingKomList];
-            if (!isCurrentlyAdminKota) {
-              updatedKomList.push({
-                id: "cb45f6c3-efbf-404c-8fba-4a39299b710f",
-                nama: "Komunitas Warga Kota Tegal",
-                peran: "Admin Kota Tegal",
-                jenis: "warga_kita",
-                kecamatan: "Kota Tegal",
-              });
-            } else {
-              updatedKomList = updatedKomList.filter(
-                (c) => !c.nama.toLowerCase().includes("warga kota tegal")
-              );
-            }
-            return { ...u, komunitas_list: updatedKomList };
-          })
-        );
-        setToastMessage({ text: res.message });
-      } else {
-        setToastMessage({ text: res.message, isError: true });
-      }
-    } catch (err: any) {
-      setToastMessage({ text: err.message || "Gagal memproses peran.", isError: true });
-    } finally {
-      setProcessingUserId(null);
-      setTimeout(() => setToastMessage(null), 5000);
-    }
-  };
-
-  // Hitung jumlah online & belum masuk komunitas
-  const onlineCount = useMemo(() => {
-    return usersList.filter(
-      (u) => u.id !== currentUserId && onlineUserIds.has(u.id)
-    ).length;
-  }, [usersList, currentUserId, onlineUserIds]);
+  // Hitung jumlah anggota untuk 6 kategori kartu
+  const totalCount = useMemo(() => {
+    return usersList.filter((u) => u.id !== currentUserId).length;
+  }, [usersList, currentUserId]);
 
   const belumKomunitasCount = useMemo(() => {
     return usersList.filter(
@@ -367,27 +329,45 @@ export function SuperAdminWargaMonitoringTool({
     ).length;
   }, [usersList, currentUserId]);
 
-  // Filter daftar pengguna berdasarkan pencarian dan tab filter
+  const wargaCount = useMemo(() => {
+    return usersList.filter(
+      (u) => u.id !== currentUserId && u.komunitas_list?.some(isWargaComm)
+    ).length;
+  }, [usersList, currentUserId]);
+
+  const posyanduCount = useMemo(() => {
+    return usersList.filter(
+      (u) => u.id !== currentUserId && u.komunitas_list?.some(isPosyanduComm)
+    ).length;
+  }, [usersList, currentUserId]);
+
+  const paudCount = useMemo(() => {
+    return usersList.filter(
+      (u) => u.id !== currentUserId && u.komunitas_list?.some(isPaudComm)
+    ).length;
+  }, [usersList, currentUserId]);
+
+  const pkbmCount = useMemo(() => {
+    return usersList.filter(
+      (u) => u.id !== currentUserId && u.komunitas_list?.some(isPkbmOrSkbComm)
+    ).length;
+  }, [usersList, currentUserId]);
+
+  // Filter daftar pengguna berdasarkan tab aktif dan input pencarian
   const filteredUsers = useMemo(() => {
     let result = usersList.filter((u) => u.id !== currentUserId);
 
-    // Filter tab
-    if (selectedFilter === "online") {
-      result = result.filter((u) => onlineUserIds.has(u.id));
-    } else if (selectedFilter === "belum_komunitas") {
+    // Filter kategori aktif
+    if (selectedFilter === "belum_komunitas") {
       result = result.filter((u) => !u.komunitas_list || u.komunitas_list.length === 0);
-    } else if (selectedFilter === "posyandu") {
-      result = result.filter((u) =>
-        u.komunitas_list?.some((c) => c.jenis === "posyandu")
-      );
-    } else if (selectedFilter === "paud") {
-      result = result.filter((u) =>
-        u.komunitas_list?.some((c) => c.jenis === "satuan_paud")
-      );
     } else if (selectedFilter === "warga_kita") {
-      result = result.filter((u) =>
-        u.komunitas_list?.some((c) => c.jenis === "warga_kita")
-      );
+      result = result.filter((u) => u.komunitas_list?.some(isWargaComm));
+    } else if (selectedFilter === "posyandu") {
+      result = result.filter((u) => u.komunitas_list?.some(isPosyanduComm));
+    } else if (selectedFilter === "paud") {
+      result = result.filter((u) => u.komunitas_list?.some(isPaudComm));
+    } else if (selectedFilter === "pkbm_skb") {
+      result = result.filter((u) => u.komunitas_list?.some(isPkbmOrSkbComm));
     }
 
     // Filter pencarian
@@ -408,25 +388,25 @@ export function SuperAdminWargaMonitoringTool({
       });
     }
 
-    // Urutkan: Warga yang sedang online diposisikan di paling atas
+    // Urutkan: Pengguna yang baru terdaftar tampil di paling atas
     return [...result].sort((a, b) => {
-      const aOnline = onlineUserIds.has(a.id) ? 1 : 0;
-      const bOnline = onlineUserIds.has(b.id) ? 1 : 0;
-      if (aOnline !== bOnline) {
-        return bOnline - aOnline;
-      }
       return (
         new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       );
     });
-  }, [usersList, currentUserId, selectedFilter, searchQuery, onlineUserIds]);
+  }, [usersList, currentUserId, selectedFilter, searchQuery]);
 
   // Filter daftar komunitas untuk Modal Penempatan
   const filteredModalKomunitas = useMemo(() => {
     let list = allKomunitasOptions;
-    if (modalKomFilter !== "semua") {
+    if (modalKomFilter === "pkbm_skb") {
+      list = list.filter(isPkbmOrSkbComm);
+    } else if (modalKomFilter === "satuan_paud") {
+      list = list.filter(isPaudComm);
+    } else if (modalKomFilter !== "semua") {
       list = list.filter((k) => k.jenis === modalKomFilter);
     }
+
     if (modalKomSearch.trim()) {
       const q = modalKomSearch.toLowerCase().trim();
       list = list.filter(
@@ -478,7 +458,7 @@ export function SuperAdminWargaMonitoringTool({
       >
         <div className="flex items-center gap-3 sm:gap-4 min-w-0">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/15 text-white backdrop-blur-xs">
-            <Radio className="h-5 w-5 animate-pulse" />
+            <Users className="h-5 w-5" />
           </div>
           <div className="space-y-0.5 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
@@ -502,7 +482,7 @@ export function SuperAdminWargaMonitoringTool({
               </span>
             </div>
             <p className="text-xs text-white/85 font-medium line-clamp-1">
-              Tempatkan warga ke komunitas, kelola admin, pantau status online, dan mulai percakapan langsung
+              Tempatkan warga ke komunitas, kelola admin, pantau keanggotaan wilayah, dan mulai percakapan langsung
             </p>
           </div>
         </div>
@@ -510,18 +490,12 @@ export function SuperAdminWargaMonitoringTool({
         <div className="flex items-center gap-2 shrink-0">
           <div className="hidden sm:flex items-center gap-2">
             <span className="rounded-lg bg-white/20 border border-white/30 px-2.5 py-1 text-xs font-bold text-white">
-              {initialUsers.length} Pengguna
+              {totalCount} Pengguna
             </span>
             {belumKomunitasCount > 0 && (
               <span className="inline-flex items-center gap-1.5 rounded-lg bg-amber-400 text-amber-950 px-2.5 py-1 text-xs font-bold shadow-xs">
                 <AlertCircle className="h-3 w-3" />
                 {belumKomunitasCount} Belum Masuk Komunitas
-              </span>
-            )}
-            {onlineCount > 0 && (
-              <span className="inline-flex items-center gap-1.5 rounded-lg bg-secondary text-secondary-foreground px-2.5 py-1 text-xs font-bold shadow-xs">
-                <span className="h-2 w-2 rounded-full bg-secondary-foreground animate-ping" />
-                {onlineCount} Online
               </span>
             )}
           </div>
@@ -537,209 +511,195 @@ export function SuperAdminWargaMonitoringTool({
 
       {/* Accordion Content Body */}
       {isOpen && (
-        <div className="p-4 sm:p-5 space-y-5">
-          {/* Summary Stat Boxes */}
+        <div className="p-4 sm:p-5 space-y-4">
+          {/* ============================================================================== */}
+          {/* 6 KARTU STATISTIK & FILTER AKTIF (TOTAL PENGGUNA, BELUM MASUK, WARGA KITA, POSYANDU, PAUD, SKB & PKBM) */}
+          {/* ============================================================================== */}
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
-            <div className="p-3 rounded-lg bg-muted/40 border border-border space-y-1">
-              <span className="text-[10px] font-semibold text-muted-foreground uppercase block">
-                Total Pengguna
-              </span>
-              <div className="flex items-baseline gap-1.5">
-                <span className="text-xl sm:text-2xl font-bold font-mono text-foreground">
-                  {initialUsers.length}
+            {/* 1. TOTAL PENGGUNA */}
+            <button
+              type="button"
+              onClick={() => setSelectedFilter("semua")}
+              className={cn(
+                "p-3 rounded-xl border text-left transition-all cursor-pointer relative flex flex-col justify-between group",
+                selectedFilter === "semua"
+                  ? "border-primary bg-primary/10 ring-2 ring-primary shadow-xs"
+                  : "border-border bg-card hover:bg-muted/60 hover:border-primary/40"
+              )}
+            >
+              <div className="flex items-center justify-between w-full">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block truncate">
+                  Total Pengguna
+                </span>
+                {selectedFilter === "semua" && (
+                  <span className="h-2 w-2 rounded-full bg-primary" />
+                )}
+              </div>
+              <div className="flex items-baseline gap-1.5 mt-1">
+                <span className="text-xl sm:text-2xl font-bold font-mono text-foreground group-hover:text-primary transition-colors">
+                  {totalCount}
                 </span>
                 <span className="text-xs text-muted-foreground font-medium">Akun</span>
               </div>
-            </div>
+            </button>
 
-            <div
-              onClick={() => setSelectedFilter("online")}
-              className="p-3 rounded-lg bg-secondary/10 border border-secondary/25 space-y-1 cursor-pointer hover:bg-secondary/15 transition-all"
-            >
-              <span className="text-[10px] font-semibold text-secondary uppercase block">
-                Sedang Online
-              </span>
-              <div className="flex items-baseline gap-1.5">
-                <span className="text-xl sm:text-2xl font-bold font-mono text-secondary">
-                  {onlineCount}
-                </span>
-                <span className="text-xs text-secondary/80 font-medium">Aktif</span>
-              </div>
-            </div>
-
-            <div
+            {/* 2. BELUM MASUK */}
+            <button
+              type="button"
               onClick={() => setSelectedFilter("belum_komunitas")}
-              className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/25 space-y-1 cursor-pointer hover:bg-amber-500/15 transition-all"
+              className={cn(
+                "p-3 rounded-xl border text-left transition-all cursor-pointer relative flex flex-col justify-between group",
+                selectedFilter === "belum_komunitas"
+                  ? "border-amber-500 bg-amber-500/20 ring-2 ring-amber-500 shadow-xs"
+                  : "border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/15"
+              )}
             >
-              <span className="text-[10px] font-semibold text-amber-700 dark:text-amber-400 uppercase block">
-                Belum Masuk
-              </span>
-              <div className="flex items-baseline gap-1.5">
+              <div className="flex items-center justify-between w-full">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-amber-800 dark:text-amber-300 block truncate">
+                  Belum Masuk
+                </span>
+                {selectedFilter === "belum_komunitas" && (
+                  <span className="h-2 w-2 rounded-full bg-amber-500" />
+                )}
+              </div>
+              <div className="flex items-baseline gap-1.5 mt-1">
                 <span className="text-xl sm:text-2xl font-bold font-mono text-amber-700 dark:text-amber-400">
                   {belumKomunitasCount}
                 </span>
                 <span className="text-xs text-amber-600 dark:text-amber-500 font-medium">Perlu Tempat</span>
               </div>
-            </div>
+            </button>
 
-            <div
-              onClick={() => setSelectedFilter("posyandu")}
-              className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/25 space-y-1 cursor-pointer hover:bg-rose-500/15 transition-all"
+            {/* 3. WARGA KITA */}
+            <button
+              type="button"
+              onClick={() => setSelectedFilter("warga_kita")}
+              className={cn(
+                "p-3 rounded-xl border text-left transition-all cursor-pointer relative flex flex-col justify-between group",
+                selectedFilter === "warga_kita"
+                  ? "border-emerald-500 bg-emerald-500/20 ring-2 ring-emerald-500 shadow-xs"
+                  : "border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/15"
+              )}
             >
-              <span className="text-[10px] font-semibold text-rose-700 dark:text-rose-400 uppercase block">
-                Posyandu
-              </span>
-              <div className="flex items-baseline gap-1.5">
+              <div className="flex items-center justify-between w-full">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300 block truncate">
+                  Warga Kita
+                </span>
+                {selectedFilter === "warga_kita" && (
+                  <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                )}
+              </div>
+              <div className="flex items-baseline gap-1.5 mt-1">
+                <span className="text-xl sm:text-2xl font-bold font-mono text-emerald-700 dark:text-emerald-400">
+                  {wargaCount}
+                </span>
+                <span className="text-xs text-emerald-600 dark:text-emerald-500 font-medium">RT/RW</span>
+              </div>
+            </button>
+
+            {/* 4. POSYANDU */}
+            <button
+              type="button"
+              onClick={() => setSelectedFilter("posyandu")}
+              className={cn(
+                "p-3 rounded-xl border text-left transition-all cursor-pointer relative flex flex-col justify-between group",
+                selectedFilter === "posyandu"
+                  ? "border-rose-500 bg-rose-500/20 ring-2 ring-rose-500 shadow-xs"
+                  : "border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/15"
+              )}
+            >
+              <div className="flex items-center justify-between w-full">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-rose-800 dark:text-rose-300 block truncate">
+                  Posyandu
+                </span>
+                {selectedFilter === "posyandu" && (
+                  <span className="h-2 w-2 rounded-full bg-rose-500" />
+                )}
+              </div>
+              <div className="flex items-baseline gap-1.5 mt-1">
                 <span className="text-xl sm:text-2xl font-bold font-mono text-rose-700 dark:text-rose-400">
-                  {
-                    initialUsers.filter((u) =>
-                      u.komunitas_list?.some((c) => c.jenis === "posyandu")
-                    ).length
-                  }
+                  {posyanduCount}
                 </span>
                 <span className="text-xs text-rose-600 dark:text-rose-500 font-medium">Kader/Warga</span>
               </div>
-            </div>
+            </button>
 
-            <div
+            {/* 5. PAUD */}
+            <button
+              type="button"
               onClick={() => setSelectedFilter("paud")}
-              className="p-3 rounded-lg bg-indigo-500/10 border border-indigo-500/25 space-y-1 cursor-pointer hover:bg-indigo-500/15 transition-all"
+              className={cn(
+                "p-3 rounded-xl border text-left transition-all cursor-pointer relative flex flex-col justify-between group",
+                selectedFilter === "paud"
+                  ? "border-indigo-500 bg-indigo-500/20 ring-2 ring-indigo-500 shadow-xs"
+                  : "border-indigo-500/30 bg-indigo-500/10 hover:bg-indigo-500/15"
+              )}
             >
-              <span className="text-[10px] font-semibold text-indigo-700 dark:text-indigo-400 uppercase block">
-                PAUD
-              </span>
-              <div className="flex items-baseline gap-1.5">
+              <div className="flex items-center justify-between w-full">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-800 dark:text-indigo-300 block truncate">
+                  PAUD
+                </span>
+                {selectedFilter === "paud" && (
+                  <span className="h-2 w-2 rounded-full bg-indigo-500" />
+                )}
+              </div>
+              <div className="flex items-baseline gap-1.5 mt-1">
                 <span className="text-xl sm:text-2xl font-bold font-mono text-indigo-700 dark:text-indigo-400">
-                  {
-                    initialUsers.filter((u) =>
-                      u.komunitas_list?.some((c) => c.jenis === "satuan_paud")
-                    ).length
-                  }
+                  {paudCount}
                 </span>
                 <span className="text-xs text-indigo-600 dark:text-indigo-500 font-medium">Guru/Wali</span>
               </div>
-            </div>
+            </button>
 
-            <div
-              onClick={() => setSelectedFilter("warga_kita")}
-              className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/25 space-y-1 cursor-pointer hover:bg-emerald-500/15 transition-all"
+            {/* 6. SKB & PKBM */}
+            <button
+              type="button"
+              onClick={() => setSelectedFilter("pkbm_skb")}
+              className={cn(
+                "p-3 rounded-xl border text-left transition-all cursor-pointer relative flex flex-col justify-between group",
+                selectedFilter === "pkbm_skb"
+                  ? "border-cyan-500 bg-cyan-500/20 ring-2 ring-cyan-500 shadow-xs"
+                  : "border-cyan-500/30 bg-cyan-500/10 hover:bg-cyan-500/15"
+              )}
             >
-              <span className="text-[10px] font-semibold text-emerald-700 dark:text-emerald-400 uppercase block">
-                Warga RT/RW
-              </span>
-              <div className="flex items-baseline gap-1.5">
-                <span className="text-xl sm:text-2xl font-bold font-mono text-emerald-700 dark:text-emerald-400">
-                  {
-                    initialUsers.filter((u) =>
-                      u.komunitas_list?.some((c) => c.jenis === "warga_kita")
-                    ).length
-                  }
+              <div className="flex items-center justify-between w-full">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-800 dark:text-cyan-300 block truncate">
+                  SKB &amp; PKBM
                 </span>
-                <span className="text-xs text-emerald-600 dark:text-emerald-500 font-medium">Pengurus/Warga</span>
+                {selectedFilter === "pkbm_skb" && (
+                  <span className="h-2 w-2 rounded-full bg-cyan-500" />
+                )}
               </div>
-            </div>
+              <div className="flex items-baseline gap-1.5 mt-1">
+                <span className="text-xl sm:text-2xl font-bold font-mono text-cyan-700 dark:text-cyan-400">
+                  {pkbmCount}
+                </span>
+                <span className="text-xs text-cyan-600 dark:text-cyan-500 font-medium">Pamong/Warga</span>
+              </div>
+            </button>
           </div>
 
-          {/* Search Bar & Filter Tabs */}
-          <div className="space-y-3">
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-              <div className="relative flex-1">
-                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Cari nama warga, email, WhatsApp, komunitas terdaftar..."
-                  className="w-full min-h-[44px] h-11 rounded-lg border border-border bg-background pl-10 pr-3 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                />
-              </div>
-
-              {/* Tautan ke Percakapan Hub */}
-              <Link
-                href="/kabar?tab=percakapan"
-                className="inline-flex min-h-[44px] h-11 items-center justify-center gap-1.5 rounded-lg bg-primary hover:bg-primary-hover px-4 py-2 text-xs font-bold text-primary-foreground transition-all shadow-xs shrink-0 cursor-pointer active:scale-98"
-              >
-                <MessageSquare className="h-4 w-4" />
-                <span>Buka Pusat Percakapan</span>
-              </Link>
+          {/* Search Bar & Tautan ke Percakapan Hub (Tombol filter duplikat di bawah sudah dihapus & dialihkan ke kartu di atas) */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-1">
+            <div className="relative flex-1">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Cari nama warga, email, WhatsApp, komunitas terdaftar..."
+                className="w-full min-h-[44px] h-11 rounded-lg border border-border bg-background pl-10 pr-3 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+              />
             </div>
 
-            {/* Filter Pills */}
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <button
-                type="button"
-                onClick={() => setSelectedFilter("semua")}
-                className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer min-h-[38px] ${
-                  selectedFilter === "semua"
-                    ? "bg-primary text-primary-foreground shadow-xs"
-                    : "bg-card border border-border text-foreground hover:bg-muted"
-                }`}
-              >
-                Semua ({initialUsers.length - (currentUserId ? 1 : 0)})
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setSelectedFilter("online")}
-                className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer min-h-[38px] ${
-                  selectedFilter === "online"
-                    ? "bg-primary text-primary-foreground shadow-xs"
-                    : "bg-secondary/15 text-secondary border border-secondary/30 hover:bg-secondary/20"
-                }`}
-              >
-                <span className="h-2 w-2 rounded-full bg-secondary animate-pulse" />
-                <span>Sedang Online ({onlineCount})</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setSelectedFilter("belum_komunitas")}
-                className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer min-h-[38px] ${
-                  selectedFilter === "belum_komunitas"
-                    ? "bg-amber-600 text-white shadow-xs"
-                    : "bg-amber-500/10 text-amber-800 dark:text-amber-300 border border-amber-500/30 hover:bg-amber-500/20"
-                }`}
-              >
-                <AlertCircle className="h-3.5 w-3.5" />
-                <span>Belum Masuk Komunitas ({belumKomunitasCount})</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setSelectedFilter("posyandu")}
-                className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer min-h-[38px] ${
-                  selectedFilter === "posyandu"
-                    ? "bg-primary text-primary-foreground shadow-xs"
-                    : "bg-card border border-border text-foreground hover:bg-muted"
-                }`}
-              >
-                Posyandu
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setSelectedFilter("paud")}
-                className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer min-h-[38px] ${
-                  selectedFilter === "paud"
-                    ? "bg-primary text-primary-foreground shadow-xs"
-                    : "bg-card border border-border text-foreground hover:bg-muted"
-                }`}
-              >
-                PAUD
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setSelectedFilter("warga_kita")}
-                className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer min-h-[38px] ${
-                  selectedFilter === "warga_kita"
-                    ? "bg-primary text-primary-foreground shadow-xs"
-                    : "bg-card border border-border text-foreground hover:bg-muted"
-                }`}
-              >
-                Warga RT/RW
-              </button>
-            </div>
+            {/* Tautan ke Percakapan Hub */}
+            <Link
+              href="/kabar?tab=percakapan"
+              className="inline-flex min-h-[44px] h-11 items-center justify-center gap-1.5 rounded-lg bg-primary hover:bg-primary-hover px-4 py-2 text-xs font-bold text-primary-foreground transition-all shadow-xs shrink-0 cursor-pointer active:scale-98"
+            >
+              <MessageSquare className="h-4 w-4" />
+              <span>Buka Pusat Percakapan</span>
+            </Link>
           </div>
 
           {/* User Cards Grid */}
@@ -750,13 +710,12 @@ export function SuperAdminWargaMonitoringTool({
                 Tidak ada pengguna ditemukan
               </p>
               <p className="text-xs text-muted-foreground">
-                Coba sesuaikan kata kunci pencarian atau pilih filter lain.
+                Coba sesuaikan kata kunci pencarian atau klik salah satu kartu kategori di atas.
               </p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[640px] overflow-y-auto pr-1">
               {filteredUsers.map((userItem) => {
-                const isOnline = onlineUserIds.has(userItem.id);
                 const initial = userItem.nama_lengkap.charAt(0).toUpperCase();
                 const waUrl = formatWhatsAppUrl(
                   userItem.nomor_hp,
@@ -771,8 +730,6 @@ export function SuperAdminWargaMonitoringTool({
                       "flex flex-col justify-between p-4 sm:p-4.5 rounded-xl border transition-all shadow-xs",
                       hasNoCommunity
                         ? "border-amber-400/50 bg-amber-50/30 dark:bg-amber-950/20"
-                        : isOnline
-                        ? "border-primary/50 bg-primary/5"
                         : "border-border bg-card hover:border-primary/30"
                     )}
                   >
@@ -792,16 +749,6 @@ export function SuperAdminWargaMonitoringTool({
                               <span>{initial}</span>
                             )}
                           </div>
-
-                          {/* Realtime Glowing Presence Indicator */}
-                          {isOnline ? (
-                            <span className="absolute -bottom-1 -right-1 flex h-3.5 w-3.5">
-                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                              <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500 border-2 border-background" />
-                            </span>
-                          ) : (
-                            <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-muted-foreground/40 border-2 border-background" />
-                          )}
                         </div>
 
                         <div className="min-w-0 flex-1 space-y-0.5">
@@ -809,11 +756,6 @@ export function SuperAdminWargaMonitoringTool({
                             <h4 className="text-sm font-bold text-foreground truncate">
                               {userItem.nama_lengkap}
                             </h4>
-                            {isOnline && (
-                              <span className="rounded-md bg-secondary/15 border border-secondary/30 px-1.5 py-0.5 text-[8px] font-bold text-secondary uppercase shrink-0">
-                                Online
-                              </span>
-                            )}
                             {isSuperAdmin(userItem) ? (
                               <span className="rounded-md bg-amber-500/10 text-amber-700 dark:text-amber-400 px-1.5 py-0.5 text-[9px] font-bold border border-amber-500/30">
                                 Super Admin
@@ -847,26 +789,19 @@ export function SuperAdminWargaMonitoringTool({
                         </div>
                       </div>
 
-                      {/* Status Presence & Bergabung */}
-                      <div className="text-[10px] flex items-center justify-between">
-                        {isOnline ? (
-                          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-primary/10 text-primary font-bold">
-                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                            Sedang Aktif di Website
-                          </span>
-                        ) : (
-                          <span className="text-muted-foreground">
-                            Terdaftar:{" "}
-                            {new Date(userItem.created_at).toLocaleDateString(
-                              "id-ID",
-                              {
-                                day: "numeric",
-                                month: "short",
-                                year: "numeric",
-                              }
-                            )}
-                          </span>
-                        )}
+                      {/* Status Bergabung */}
+                      <div className="text-[10px] text-muted-foreground flex items-center justify-between">
+                        <span>
+                          Terdaftar:{" "}
+                          {new Date(userItem.created_at).toLocaleDateString(
+                            "id-ID",
+                            {
+                              day: "numeric",
+                              month: "short",
+                              year: "numeric",
+                            }
+                          )}
+                        </span>
                       </div>
 
                       {/* Affiliation / Komunitas yang Diikuti */}
@@ -883,16 +818,17 @@ export function SuperAdminWargaMonitoringTool({
                                 Belum Bergabung di Komunitas Manapun
                               </p>
                               <p className="text-amber-700/80 dark:text-amber-400/80">
-                                Pengguna baru terdaftar dan belum ditempatkan ke RT/RW, Posyandu, atau PAUD.
+                                Pengguna baru terdaftar dan belum ditempatkan ke RT/RW, Posyandu, PAUD, atau SKB &amp; PKBM.
                               </p>
                             </div>
                           </div>
                         ) : (
                           <div className="flex flex-col gap-1.5">
                             {userItem.komunitas_list!.map((comm) => {
-                              const isPaud = comm.jenis === "satuan_paud";
-                              const isPosyandu = comm.jenis === "posyandu";
-                              const isKegiatan = comm.jenis === "kegiatan";
+                              const isPaud = isPaudComm(comm);
+                              const isPosyandu = isPosyanduComm(comm);
+                              const isPkbm = isPkbmOrSkbComm(comm);
+                              const isKegiatan = (comm.jenis || "").toLowerCase() === "kegiatan";
                               const isPending = comm.status === "pending";
 
                               return (
@@ -900,7 +836,9 @@ export function SuperAdminWargaMonitoringTool({
                                   key={comm.id}
                                   className={cn(
                                     "flex items-center justify-between gap-2 p-1.5 px-2.5 rounded-lg border text-[11px] transition-all",
-                                    isPaud
+                                    isPkbm
+                                      ? "bg-cyan-50/60 border-cyan-200 text-cyan-900 dark:bg-cyan-950/40 dark:border-cyan-800 dark:text-cyan-200"
+                                      : isPaud
                                       ? "bg-indigo-50/60 border-indigo-200 text-indigo-900 dark:bg-indigo-950/40 dark:border-indigo-800 dark:text-indigo-200"
                                       : isPosyandu
                                       ? "bg-rose-50/60 border-rose-200 text-rose-900 dark:bg-rose-950/40 dark:border-rose-800 dark:text-rose-200"
@@ -910,7 +848,9 @@ export function SuperAdminWargaMonitoringTool({
                                   )}
                                 >
                                   <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                                    {isPosyandu ? (
+                                    {isPkbm ? (
+                                      <BookOpen className="h-3.5 w-3.5 text-cyan-600 dark:text-cyan-400 shrink-0" />
+                                    ) : isPosyandu ? (
                                       <HeartPulse className="h-3.5 w-3.5 text-rose-500 shrink-0" />
                                     ) : isPaud ? (
                                       <GraduationCap className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" />
@@ -940,7 +880,7 @@ export function SuperAdminWargaMonitoringTool({
                                     </div>
                                   </div>
 
-                                  {/* Quick Action Per Komunitas: Jadikan Admin & Keluarkan */}
+                                  {/* Quick Action Per Komunitas: Ubah Peran & Keluarkan */}
                                   <div className="flex items-center gap-1 shrink-0">
                                     <button
                                       type="button"
@@ -977,7 +917,7 @@ export function SuperAdminWargaMonitoringTool({
                           type="button"
                           onClick={() => handleOpenAssignModal(userItem)}
                           className="inline-flex min-h-[34px] items-center gap-1.5 rounded-lg bg-teal-600 hover:bg-teal-700 text-white px-3 py-1 text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-95"
-                          title="Tempatkan pengguna ini ke komunitas (Posyandu, PAUD, RT/RW, Kegiatan)"
+                          title="Tempatkan pengguna ini ke komunitas (Posyandu, PAUD, RT/RW, SKB & PKBM, Kegiatan)"
                         >
                           <Plus className="h-3.5 w-3.5" />
                           <span>Tempatkan ke Komunitas</span>
@@ -993,7 +933,7 @@ export function SuperAdminWargaMonitoringTool({
                             Super Admin (Permanen)
                           </span>
                         ) : viewerTier === "super_admin" ? (
-                          /* Super Admin: Toggle Admin Pusat & Admin Kota */
+                          /* Super Admin: Toggle Admin Pusat */
                           isAdminPusat(userItem) ? (
                             <button
                               type="button"
@@ -1063,7 +1003,7 @@ export function SuperAdminWargaMonitoringTool({
           {/* Footer Quick Links */}
           <div className="pt-3 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-muted-foreground">
             <span>
-              Menampilkan {filteredUsers.length} dari {initialUsers.length} pengguna terdaftar.
+              Menampilkan {filteredUsers.length} dari {totalCount} pengguna terdaftar.
             </span>
             <div className="flex items-center gap-3">
               <Link
@@ -1115,9 +1055,10 @@ export function SuperAdminWargaMonitoringTool({
                 {(
                   [
                     { id: "semua", label: "Semua" },
+                    { id: "warga_kita", label: "Warga RT/RW" },
                     { id: "posyandu", label: "Posyandu" },
                     { id: "satuan_paud", label: "PAUD" },
-                    { id: "warga_kita", label: "Warga RT/RW" },
+                    { id: "pkbm_skb", label: "SKB & PKBM" },
                     { id: "kegiatan", label: "Kegiatan" },
                   ] as const
                 ).map((tab) => (
@@ -1168,8 +1109,9 @@ export function SuperAdminWargaMonitoringTool({
                   <div className="max-h-48 overflow-y-auto space-y-1.5 border border-border rounded-lg p-2 bg-muted/20">
                     {filteredModalKomunitas.map((kom) => {
                       const isSelected = selectedKomunitasId === kom.id;
-                      const isPosyandu = kom.jenis === "posyandu";
-                      const isPaud = kom.jenis === "satuan_paud";
+                      const isPosyandu = isPosyanduComm(kom);
+                      const isPaud = isPaudComm(kom);
+                      const isPkbm = isPkbmOrSkbComm(kom);
 
                       return (
                         <div
@@ -1181,6 +1123,8 @@ export function SuperAdminWargaMonitoringTool({
                               setSelectedRole("Kader Posyandu");
                             } else if (isPaud && selectedRole === "Anggota") {
                               setSelectedRole("Guru / Tenaga Pendidik");
+                            } else if (isPkbm && selectedRole === "Anggota") {
+                              setSelectedRole("Pamong Belajar");
                             } else if (kom.jenis === "warga_kita" && selectedRole === "Anggota") {
                               setSelectedRole("Penduduk");
                             }
@@ -1193,7 +1137,9 @@ export function SuperAdminWargaMonitoringTool({
                           )}
                         >
                           <div className="flex items-center gap-2 truncate">
-                            {isPosyandu ? (
+                            {isPkbm ? (
+                              <BookOpen className="h-4 w-4 text-cyan-500 shrink-0" />
+                            ) : isPosyandu ? (
                               <HeartPulse className="h-4 w-4 text-rose-500 shrink-0" />
                             ) : isPaud ? (
                               <GraduationCap className="h-4 w-4 text-indigo-500 shrink-0" />
@@ -1203,7 +1149,7 @@ export function SuperAdminWargaMonitoringTool({
                             <div className="truncate">
                               <span className="truncate block font-semibold">{kom.nama}</span>
                               <span className="text-[10px] text-muted-foreground truncate block">
-                                {kom.jenis.toUpperCase()} • {kom.kelurahan ? `Kel. ${kom.kelurahan}` : ""}{" "}
+                                {isPkbm ? "SKB & PKBM" : kom.jenis.toUpperCase()} • {kom.kelurahan ? `Kel. ${kom.kelurahan}` : ""}{" "}
                                 {kom.kecamatan ? `Kec. ${kom.kecamatan}` : ""}
                               </span>
                             </div>
@@ -1229,9 +1175,9 @@ export function SuperAdminWargaMonitoringTool({
                     "Pengurus",
                     "Kader",
                     "Guru / Tenaga Pendidik",
+                    "Pamong Belajar",
                     "Anggota",
                     "Penduduk",
-                    "Wali / Orang Tua",
                   ].map((roleOption) => (
                     <button
                       key={roleOption}
@@ -1342,6 +1288,7 @@ export function SuperAdminWargaMonitoringTool({
                     "Pengurus",
                     "Kader",
                     "Guru / Tenaga Pendidik",
+                    "Pamong Belajar",
                     "Anggota",
                     "Penduduk",
                   ].map((role) => (
