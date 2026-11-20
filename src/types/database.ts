@@ -377,10 +377,17 @@ export interface DataAnakItem {
 
   komunitas_id: string;
   komunitas_nama?: string;
-  status_approval: "pending" | "approved" | "rejected" | "deleted" | "keluar";
+  status_approval: "pending" | "approved" | "rejected" | "deleted" | "keluar" | "mutasi" | "bersekolah";
   validated_by?: string | null;
   validated_at?: string | null;
   is_updated_by_paud?: boolean;
+  is_manual_added?: boolean;
+  deleted_at?: string | null;
+  deleted_by?: string | null;
+  mutasi_at?: string | null;
+  mutasi_oleh?: string | null;
+  mutasi_asal?: string | null;
+  mutasi_tujuan?: string | null;
   terakhir_diperbarui_at?: string | null;
   diperbarui_oleh?: string | null;
   terakhir_diperbarui_oleh_nama?: string | null;
@@ -392,6 +399,8 @@ export interface DataAnakItem {
     role: string;
     komunitas: string;
     jenisKomunitas?: string;
+    aksi?: "tambah" | "edit" | "validasi" | "bersekolah" | "mutasi" | "hapus" | string;
+    catatan?: string;
   }>;
   created_by?: string;
   created_at: string;
@@ -444,15 +453,32 @@ export interface DataAtsItem {
   kelas_terakhir?: string | null;
   keinginan_sekolah: "Masih Ada" | "Tidak Ada";
   alasan_tidak_sekolah: AlasanTidakSekolah;
+  alasan_sekolah?: string | null;
   keterangan?: string | null;
   komunitas_id: string;
   komunitas_nama?: string;
-  status_approval: "pending" | "approved" | "rejected" | "deleted" | "keluar";
+  status_approval: "pending" | "approved" | "rejected" | "deleted" | "keluar" | "mutasi" | "bersekolah";
+  is_sekolah?: boolean;
+  nama_sekolah?: string | null;
+  is_manual_added?: boolean;
+  deleted_at?: string | null;
+  deleted_by?: string | null;
+  bersekolah_at?: string | null;
+  bersekolah_oleh?: string | null;
   validated_by?: string | null;
   validated_at?: string | null;
   created_by?: string;
   created_at: string;
   updated_at?: string;
+  edit_history?: Array<{
+    waktu: string;
+    nama: string;
+    role: string;
+    komunitas?: string;
+    jenisKomunitas?: string;
+    aksi?: "tambah" | "edit" | "validasi" | "bersekolah" | "mutasi" | "hapus" | string;
+    catatan?: string;
+  }>;
   latest_ddtk?: DdtkRecord | null;
   ddtk_history?: DdtkRecord[];
 }

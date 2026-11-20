@@ -20,6 +20,8 @@ import {
   BookOpen,
   GraduationCap,
   ArrowRight,
+  ArrowRightLeft,
+  Trash2,
   LogIn,
   Loader2,
   X,
@@ -323,7 +325,9 @@ export function KomunitasDetailClientView({
     }
   }, [activeMainTab, komunitasData.id, markGroupAsRead]);
 
-  const [paudStatusFilter, setPaudStatusFilter] = useState<"semua" | "approved" | "pending">("semua");
+  const [paudStatusFilter, setPaudStatusFilter] = useState<
+    "semua" | "approved" | "pending" | "ditambahkan" | "mutasi" | "deleted"
+  >("semua");
   const [dataAnakFilterSubTab, setDataAnakFilterSubTab] = useState<
     "semua" | "bersekolah" | "belum_bersekolah"
   >("semua");
@@ -363,10 +367,10 @@ export function KomunitasDetailClientView({
 
   const totalChildren = useMemo(() => {
     if (dataAnakList.length > 0 || dataAnakState.length > 0) {
-      return dataAnakState.length;
+      return dataAnakState.filter((c) => c.status_approval !== "deleted").length;
     }
     return dataAnakStats?.total ?? 0;
-  }, [dataAnakState.length, dataAnakList.length, dataAnakStats?.total]);
+  }, [dataAnakState, dataAnakList.length, dataAnakStats?.total]);
 
   const totalBersekolahCount = bersekolahChildren.length;
   const totalBelumBersekolahCount = belumBersekolahChildren.length;
@@ -380,10 +384,39 @@ export function KomunitasDetailClientView({
 
   const totalPending = useMemo(() => {
     if (dataAnakList.length > 0 || dataAnakState.length > 0) {
-      return dataAnakState.filter((c) => c.status_approval === "pending").length;
+      return dataAnakState.filter((c) => c.status_approval === "pending" || !c.status_approval).length;
     }
     return dataAnakStats?.pending ?? 0;
   }, [dataAnakState, dataAnakList.length, dataAnakStats?.pending]);
+
+  const totalDitambahkan = useMemo(() => {
+    return dataAnakState.filter(
+      (c) =>
+        (c.is_manual_added ||
+          Boolean(c.created_by) ||
+          (c.alasan_sekolah && c.alasan_sekolah.includes("[DITAMBAHKAN"))) &&
+        c.status_approval !== "deleted"
+    ).length;
+  }, [dataAnakState]);
+
+  const totalMutasi = useMemo(() => {
+    return dataAnakState.filter(
+      (c) =>
+        (c.status_approval === "mutasi" ||
+          Boolean(c.mutasi_at) ||
+          (c.alasan_sekolah && c.alasan_sekolah.includes("[MUTASI"))) &&
+        c.status_approval !== "deleted"
+    ).length;
+  }, [dataAnakState]);
+
+  const totalDeleted = useMemo(() => {
+    return dataAnakState.filter(
+      (c) =>
+        c.status_approval === "deleted" ||
+        Boolean(c.deleted_at) ||
+        (c.alasan_sekolah && c.alasan_sekolah.includes("[DIHAPUS"))
+    ).length;
+  }, [dataAnakState]);
 
   const displayedChildren = useMemo(() => {
     let list = dataAnakState;
@@ -397,11 +430,36 @@ export function KomunitasDetailClientView({
       }
     }
 
-    // Filter status verifikasi
-    if (paudStatusFilter === "approved") {
+    // Filter status verifikasi & aksi
+    if (paudStatusFilter === "semua") {
+      list = list.filter((c) => c.status_approval !== "deleted");
+    } else if (paudStatusFilter === "approved") {
       list = list.filter((c) => c.status_approval === "approved");
     } else if (paudStatusFilter === "pending") {
-      list = list.filter((c) => c.status_approval !== "approved");
+      list = list.filter((c) => c.status_approval === "pending" || !c.status_approval);
+    } else if (paudStatusFilter === "ditambahkan") {
+      list = list.filter(
+        (c) =>
+          (c.is_manual_added ||
+            Boolean(c.created_by) ||
+            (c.alasan_sekolah && c.alasan_sekolah.includes("[DITAMBAHKAN"))) &&
+          c.status_approval !== "deleted"
+      );
+    } else if (paudStatusFilter === "mutasi") {
+      list = list.filter(
+        (c) =>
+          (c.status_approval === "mutasi" ||
+            Boolean(c.mutasi_at) ||
+            (c.alasan_sekolah && c.alasan_sekolah.includes("[MUTASI"))) &&
+          c.status_approval !== "deleted"
+      );
+    } else if (paudStatusFilter === "deleted") {
+      list = list.filter(
+        (c) =>
+          c.status_approval === "deleted" ||
+          Boolean(c.deleted_at) ||
+          (c.alasan_sekolah && c.alasan_sekolah.includes("[DIHAPUS"))
+      );
     }
 
     // Pencarian
@@ -2932,6 +2990,56 @@ export function KomunitasDetailClientView({
                       {totalPending}
                     </span>
                   </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setPaudStatusFilter("ditambahkan")}
+                    className={cn(
+                      "px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer border flex-1 sm:flex-initial justify-center min-w-[fit-content] flex items-center gap-1.5",
+                      paudStatusFilter === "ditambahkan"
+                        ? "bg-sky-600 text-white border-sky-600 shadow-xs"
+                        : "bg-card text-muted-foreground border-border hover:bg-sky-500/10 hover:text-sky-700"
+                    )}
+                  >
+                    <span>Ditambahkan</span>
+                    <span className="px-1.5 py-0.2 rounded-md bg-background/20 font-mono text-2xs">
+                      {totalDitambahkan}
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setPaudStatusFilter("mutasi")}
+                    className={cn(
+                      "px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer border flex-1 sm:flex-initial justify-center min-w-[fit-content] flex items-center gap-1.5",
+                      paudStatusFilter === "mutasi"
+                        ? "bg-purple-600 text-white border-purple-600 shadow-xs"
+                        : "bg-card text-muted-foreground border-border hover:bg-purple-500/10 hover:text-purple-700"
+                    )}
+                  >
+                    <ArrowRightLeft className="h-3.5 w-3.5" />
+                    <span>Mutasi</span>
+                    <span className="px-1.5 py-0.2 rounded-md bg-background/20 font-mono text-2xs">
+                      {totalMutasi}
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setPaudStatusFilter("deleted")}
+                    className={cn(
+                      "px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer border flex-1 sm:flex-initial justify-center min-w-[fit-content] flex items-center gap-1.5",
+                      paudStatusFilter === "deleted"
+                        ? "bg-rose-600 text-white border-rose-600 shadow-xs"
+                        : "bg-card text-muted-foreground border-border hover:bg-rose-500/10 hover:text-rose-700"
+                    )}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                    <span>Dihapus</span>
+                    <span className="px-1.5 py-0.2 rounded-md bg-background/20 font-mono text-2xs">
+                      {totalDeleted}
+                    </span>
+                  </button>
                 </div>
 
                 {/* LIST KARTU DATA ANAK */}
@@ -3018,8 +3126,18 @@ export function KomunitasDetailClientView({
                               );
                             }}
                             onDelete={(deletedId) => {
+                              const timestamp = new Date().toISOString();
                               setDataAnakState((prev) =>
-                                prev.filter((c) => c.id !== deletedId)
+                                prev.map((c) =>
+                                  c.id === deletedId
+                                    ? {
+                                        ...c,
+                                        status_approval: "deleted",
+                                        deleted_at: timestamp,
+                                        alasan_sekolah: `${c.alasan_sekolah || ""} [DIHAPUS_PADA: ${timestamp}]`.trim(),
+                                      }
+                                    : c
+                                )
                               );
                             }}
                           />

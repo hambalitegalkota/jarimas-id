@@ -244,6 +244,14 @@ export async function createDataAts(formData: FormData): Promise<{
     }
 
     // Format alasan_sekolah string untuk interoperabilitas database
+    const nowIso = new Date().toISOString();
+    const creatorName =
+      user.user_metadata?.nama_lengkap ||
+      user.user_metadata?.name ||
+      user.email?.split("@")[0] ||
+      "Pengurus";
+    const keteranganWithActionTags = `${keterangan ? `${keterangan} ` : ""}[SUMBER: TAMBAH_ATS] [DITAMBAHKAN_PADA: ${nowIso}] [DITAMBAHKAN_OLEH: ${creatorName}]`.trim();
+
     const formattedAlasan = serializeDataAtsAlasan({
       keinginanSekolah,
       alasanTidakSekolah,
@@ -255,7 +263,7 @@ export async function createDataAts(formData: FormData): Promise<{
       jenjangAsal,
       sekolahSebelumnya,
       kelasTerakhir,
-      keterangan,
+      keterangan: keteranganWithActionTags,
     });
 
     // Simpan ke Supabase Data Anak
@@ -273,7 +281,7 @@ export async function createDataAts(formData: FormData): Promise<{
       komunitas_id: validKomId,
       status_approval: "pending",
       created_by: user.id,
-      created_at: new Date().toISOString(),
+      created_at: nowIso,
     };
 
     const { data: insertedChild, error: insertError } = await supabase
@@ -428,13 +436,30 @@ export async function validateDataAts(dataAtsId: string): Promise<{
       }
     }
 
+    const nowIso = new Date().toISOString();
+    const validatorName =
+      profile?.nama_lengkap ||
+      user.user_metadata?.nama_lengkap ||
+      user.email?.split("@")[0] ||
+      "Verifikator";
+
+    // Ambil data ATS eksisting untuk menyisipkan tag riwayat verifikasi
+    const { data: exAts } = await supabase
+      .from("data_anak")
+      .select("alasan_sekolah")
+      .eq("id", dataAtsId)
+      .maybeSingle();
+
+    const updatedAlasan = `${exAts?.alasan_sekolah || ""} [DIVERIFIKASI_PADA: ${nowIso}] [DIVERIFIKASI_OLEH: ${validatorName}]`.trim();
+
     const { error: updateError } = await supabase
       .from("data_anak")
       .update({
         status_approval: "approved",
+        alasan_sekolah: updatedAlasan,
         validated_by: user.id,
-        validated_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+        validated_at: nowIso,
+        updated_at: nowIso,
       })
       .eq("id", dataAtsId);
 
@@ -1067,14 +1092,21 @@ export async function kembaliBersekolah(
       }
     }
 
+    const nowIso = new Date().toISOString();
+    const actorName =
+      user.user_metadata?.nama_lengkap ||
+      user.user_metadata?.name ||
+      user.email?.split("@")[0] ||
+      "Pengurus";
+
     const updateFields: any = {
       is_sekolah: true,
       nama_sekolah: payload.namaSekolah.trim(),
-      alasan_sekolah: schoolNote,
-      status_approval: "approved",
+      alasan_sekolah: `${schoolNote} [BERSEKOLAH_PADA: ${nowIso}] [BERSEKOLAH_OLEH: ${actorName}]`,
+      status_approval: "bersekolah",
       validated_by: user.id,
-      validated_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
+      validated_at: nowIso,
+      updated_at: nowIso,
     };
 
     if (destinationKomunitasId) {
@@ -1156,7 +1188,7 @@ export async function deleteDataAts(
     // Ambil data ATS eksisting
     const { data: existingChild, error: fetchError } = await supabase
       .from("data_anak")
-      .select("id, nama_lengkap, created_by, komunitas_id")
+      .select("id, nama_lengkap, created_by, komunitas_id, alasan_sekolah")
       .eq("id", dataAtsId)
       .maybeSingle();
 
@@ -1209,20 +1241,18 @@ export async function deleteDataAts(
       }
     }
 
-    // Hapus relasi riwayat DDTK jika ada
-    try {
-      await supabase
-        .from("ddks_records")
-        .delete()
-        .eq("data_anak_id", dataAtsId);
-    } catch (e) {
-      console.warn("Hapus ddks_records warning:", e);
-    }
+    const nowIso = new Date().toISOString();
+    const deleterName = userProfileCtx.nama_lengkap || user.email || "Pengurus";
+    const updatedAlasan = `${existingChild.alasan_sekolah || ""} [DIHAPUS_PADA: ${nowIso}] [DIHAPUS_OLEH: ${deleterName}]`.trim();
 
-    // Hapus record data_anak
+    // Soft delete record data_anak agar masuk dalam kelompok filter Dihapus
     const { error: deleteError } = await supabase
       .from("data_anak")
-      .delete()
+      .update({
+        status_approval: "deleted",
+        alasan_sekolah: updatedAlasan,
+        updated_at: nowIso,
+      })
       .eq("id", dataAtsId);
 
     if (deleteError) {
@@ -1245,13 +1275,93 @@ export async function deleteDataAts(
 
     return {
       success: true,
-      message: `Data ATS ${existingChild.nama_lengkap} berhasil dihapus dari sistem.`,
+      message: `Data ATS ${existingChild.nama_lengkap} berhasil dihapus dari daftar aktif.`,
     };
   } catch (err: any) {
     console.error("Error deleteDataAts:", err);
     return {
       success: false,
       message: err.message || "Terjadi kendala saat menghapus data ATS.",
+    };
+  }
+}
+
+/**
+ * Server Action: Memulihkan Data ATS yang sebelumnya Dihapus
+ */
+export async function restoreDataAts(
+  dataAtsId: string,
+  komunitasId?: string
+): Promise<{
+  success: boolean;
+  message: string;
+}> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return {
+        success: false,
+        message: "Silakan masuk terlebih dahulu untuk memulihkan data ATS.",
+      };
+    }
+
+    const { data: existingChild, error: fetchError } = await supabase
+      .from("data_anak")
+      .select("id, nama_lengkap, created_by, komunitas_id, alasan_sekolah")
+      .eq("id", dataAtsId)
+      .maybeSingle();
+
+    if (fetchError || !existingChild) {
+      return {
+        success: false,
+        message: "Data ATS tidak ditemukan.",
+      };
+    }
+
+    const nowIso = new Date().toISOString();
+    const cleanedAlasan = (existingChild.alasan_sekolah || "")
+      .replace(/\[DIHAPUS_PADA\s*:\s*[^\]]+\]/gi, "")
+      .replace(/\[DIHAPUS_OLEH\s*:\s*([^\]]+)\]/gi, "")
+      .trim();
+
+    const { error: restoreError } = await supabase
+      .from("data_anak")
+      .update({
+        status_approval: "pending",
+        alasan_sekolah: `${cleanedAlasan} [DIPULIHKAN_PADA: ${nowIso}]`.trim(),
+        updated_at: nowIso,
+      })
+      .eq("id", dataAtsId);
+
+    if (restoreError) {
+      return {
+        success: false,
+        message: "Gagal memulihkan data ATS: " + restoreError.message,
+      };
+    }
+
+    const targetKomunitasId = komunitasId || existingChild.komunitas_id;
+    revalidatePath(`/komunitas/${targetKomunitasId}/ats`);
+    revalidatePath(`/komunitas/${targetKomunitasId}/data`);
+    revalidatePath(`/komunitas/${targetKomunitasId}`);
+    revalidatePath("/komunitas");
+    revalidatePath("/data-ats");
+    revalidatePath("/data-anak");
+    await triggerAtsCacheInvalidation();
+
+    return {
+      success: true,
+      message: `Data ATS ${existingChild.nama_lengkap} berhasil dipulihkan ke status Menunggu Validasi.`,
+    };
+  } catch (err: any) {
+    return {
+      success: false,
+      message: err.message || "Gagal memulihkan data ATS.",
     };
   }
 }
@@ -1612,9 +1722,7 @@ export async function getDataAtsByKomunitas(
     }
 
     const rows = (dbChildren || []).filter(
-      (row: any) =>
-        isDataAtsRecord(row) &&
-        (row.is_sekolah !== true || (isPkbmOrSkb && row.komunitas_id === validKomId))
+      (row: any) => isDataAtsRecord(row)
     );
 
     const atsKomIds = [...new Set(rows.map((c: any) => c.komunitas_id).filter(Boolean))];
@@ -1634,6 +1742,26 @@ export async function getDataAtsByKomunitas(
         const ageNum = getNumericAgeAts(row.tanggal_lahir);
         const kategoriAts = classifyAtsCategory(parsed.jenjangAsal, parsed.alasan, row.nama_sekolah);
         const shouldMask = !isRegisteredUser || !canAccessDaftarNama;
+
+        const rawAlasanStr = String(row.alasan_sekolah || "");
+        const isBersekolah =
+          row.status_approval === "bersekolah" ||
+          row.is_sekolah === true ||
+          rawAlasanStr.includes("[KEMBALI BERSEKOLAH]") ||
+          rawAlasanStr.includes("[BERSEKOLAH_PADA:");
+        const isDeleted =
+          row.status_approval === "deleted" ||
+          rawAlasanStr.includes("[DIHAPUS_PADA:") ||
+          rawAlasanStr.includes("[DIHAPUS");
+        const isManualAdded =
+          Boolean(row.created_by) ||
+          rawAlasanStr.includes("[SUMBER: TAMBAH_ATS]") ||
+          rawAlasanStr.includes("[DITAMBAHKAN");
+
+        const matchBersekolahWaktu = rawAlasanStr.match(/\[BERSEKOLAH_PADA\s*:\s*([^\]]+)\]/i);
+        const matchBersekolahOleh = rawAlasanStr.match(/\[BERSEKOLAH_OLEH\s*:\s*([^\]]+)\]/i);
+        const matchHapusWaktu = rawAlasanStr.match(/\[DIHAPUS_PADA\s*:\s*([^\]]+)\]/i);
+        const matchHapusOleh = rawAlasanStr.match(/\[DIHAPUS_OLEH\s*:\s*([^\]]+)\]/i);
 
         return {
           id: row.id,
@@ -1657,11 +1785,23 @@ export async function getDataAtsByKomunitas(
           alasan_tidak_sekolah: parsed.alasan,
           keterangan: parsed.keterangan,
           komunitas_id: row.komunitas_id,
-          status_approval: row.status_approval || "pending",
+          is_sekolah: isBersekolah,
+          nama_sekolah: row.nama_sekolah,
+          status_approval: isDeleted
+            ? "deleted"
+            : isBersekolah
+            ? "bersekolah"
+            : (row.status_approval || "pending"),
+          is_manual_added: isManualAdded,
+          deleted_at: matchHapusWaktu?.[1]?.trim() || (isDeleted ? row.updated_at : null),
+          deleted_by: matchHapusOleh?.[1]?.trim() || null,
+          bersekolah_at: matchBersekolahWaktu?.[1]?.trim() || (isBersekolah ? row.updated_at : null),
+          bersekolah_oleh: matchBersekolahOleh?.[1]?.trim() || null,
           validated_by: row.validated_by,
           validated_at: row.validated_at,
           created_by: row.created_by,
           created_at: row.created_at,
+          updated_at: row.updated_at,
           latest_ddtk: null,
           ddtk_history: [],
         };

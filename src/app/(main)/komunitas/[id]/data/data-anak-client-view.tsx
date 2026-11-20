@@ -24,6 +24,8 @@ import {
   Sparkles,
   School,
   ChevronDown,
+  ArrowRightLeft,
+  Trash2,
 } from "lucide-react";
 import { CardDataAnak } from "@/components/data-anak/card-data-anak";
 import { FormDataAnak } from "@/components/data-anak/form-data-anak";
@@ -97,8 +99,10 @@ export function DataAnakClientView({
     isPaud ? "rincian" : "rekap"
   );
 
-  // Filter Status Khusus Komunitas PAUD (Kondisi 2 commit sebelum ini): Semua | Terverifikasi | Menunggu Validasi
-  const [paudStatusFilter, setPaudStatusFilter] = useState<"semua" | "approved" | "pending">("semua");
+  // Filter Status Khusus Komunitas PAUD & Wilayah: Semua | Terverifikasi | Menunggu Validasi | Ditambahkan | Mutasi | Dihapus
+  const [paudStatusFilter, setPaudStatusFilter] = useState<
+    "semua" | "approved" | "pending" | "ditambahkan" | "mutasi" | "deleted"
+  >("semua");
 
   // Sub-Tab Pemisah Jenis Data untuk Wilayah / Warga Kita: Semua Anak | Bersekolah | Belum Bersekolah
   const [dataFilterTab, setDataFilterTab] = useState<
@@ -157,10 +161,10 @@ export function DataAnakClientView({
 
   const totalChildren = useMemo(() => {
     if (initialChildren.length > 0 || childrenList.length > 0) {
-      return childrenList.length;
+      return childrenList.filter((c) => c.status_approval !== "deleted").length;
     }
     return stats?.total ?? 0;
-  }, [childrenList.length, initialChildren.length, stats?.total]);
+  }, [childrenList, initialChildren.length, stats?.total]);
 
   const totalBersekolahCount = bersekolahChildren.length;
   const totalBelumBersekolahCount = belumBersekolahChildren.length;
@@ -174,18 +178,72 @@ export function DataAnakClientView({
 
   const totalPending = useMemo(() => {
     if (initialChildren.length > 0 || childrenList.length > 0) {
-      return childrenList.filter((c) => c.status_approval === "pending").length;
+      return childrenList.filter((c) => c.status_approval === "pending" || !c.status_approval).length;
     }
     return stats?.pending ?? 0;
   }, [childrenList, initialChildren.length, stats?.pending]);
 
-  // Filter daftar khusus Komunitas PAUD (Kondisi 2 commit sebelum ini): Berdasarkan status verifikasi & pencarian
+  const totalDitambahkan = useMemo(() => {
+    return childrenList.filter(
+      (c) =>
+        (c.is_manual_added ||
+          Boolean(c.created_by) ||
+          (c.alasan_sekolah && c.alasan_sekolah.includes("[DITAMBAHKAN"))) &&
+        c.status_approval !== "deleted"
+    ).length;
+  }, [childrenList]);
+
+  const totalMutasi = useMemo(() => {
+    return childrenList.filter(
+      (c) =>
+        (c.status_approval === "mutasi" ||
+          Boolean(c.mutasi_at) ||
+          (c.alasan_sekolah && c.alasan_sekolah.includes("[MUTASI"))) &&
+        c.status_approval !== "deleted"
+    ).length;
+  }, [childrenList]);
+
+  const totalDeleted = useMemo(() => {
+    return childrenList.filter(
+      (c) =>
+        c.status_approval === "deleted" ||
+        Boolean(c.deleted_at) ||
+        (c.alasan_sekolah && c.alasan_sekolah.includes("[DIHAPUS"))
+    ).length;
+  }, [childrenList]);
+
+  // Filter daftar khusus Komunitas PAUD: Berdasarkan status verifikasi & pencarian
   const paudDisplayedChildren = useMemo(() => {
     let list = childrenList;
-    if (paudStatusFilter === "approved") {
+    if (paudStatusFilter === "semua") {
+      list = list.filter((c) => c.status_approval !== "deleted");
+    } else if (paudStatusFilter === "approved") {
       list = list.filter((c) => c.status_approval === "approved");
     } else if (paudStatusFilter === "pending") {
-      list = list.filter((c) => c.status_approval !== "approved");
+      list = list.filter((c) => c.status_approval === "pending" || !c.status_approval);
+    } else if (paudStatusFilter === "ditambahkan") {
+      list = list.filter(
+        (c) =>
+          (c.is_manual_added ||
+            Boolean(c.created_by) ||
+            (c.alasan_sekolah && c.alasan_sekolah.includes("[DITAMBAHKAN"))) &&
+          c.status_approval !== "deleted"
+      );
+    } else if (paudStatusFilter === "mutasi") {
+      list = list.filter(
+        (c) =>
+          (c.status_approval === "mutasi" ||
+            Boolean(c.mutasi_at) ||
+            (c.alasan_sekolah && c.alasan_sekolah.includes("[MUTASI"))) &&
+          c.status_approval !== "deleted"
+      );
+    } else if (paudStatusFilter === "deleted") {
+      list = list.filter(
+        (c) =>
+          c.status_approval === "deleted" ||
+          Boolean(c.deleted_at) ||
+          (c.alasan_sekolah && c.alasan_sekolah.includes("[DIHAPUS"))
+      );
     }
 
     if (!searchQuery.trim()) return list;
@@ -194,13 +252,14 @@ export function DataAnakClientView({
       (c) =>
         c.nama_lengkap.toLowerCase().includes(q) ||
         c.nama_orangtua.toLowerCase().includes(q) ||
+        (c.nama_sekolah && c.nama_sekolah.toLowerCase().includes(q)) ||
         (c.alasan_sekolah && c.alasan_sekolah.toLowerCase().includes(q))
     );
   }, [childrenList, paudStatusFilter, searchQuery]);
 
   // Filter daftar berdasarkan sub-tab & search (untuk Wilayah / Warga Kita)
   const displayedChildren = useMemo(() => {
-    let baseList = childrenList;
+    let baseList = childrenList.filter((c) => c.status_approval !== "deleted");
     if (dataFilterTab === "bersekolah") {
       baseList = bersekolahChildren;
     } else if (dataFilterTab === "belum_bersekolah") {
@@ -464,7 +523,7 @@ export function DataAnakClientView({
                 </div>
 
                 {/* 3. FILTER CHIPS STATUS */}
-                <div className="flex items-center gap-2 overflow-x-auto pb-1">
+                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 pb-1">
                   <button
                     type="button"
                     onClick={() => setPaudStatusFilter("semua")}
@@ -512,6 +571,56 @@ export function DataAnakClientView({
                     <span>Menunggu Validasi</span>
                     <span className="px-1.5 py-0.2 rounded-md bg-background/20 font-mono text-2xs">
                       {totalPending}
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setPaudStatusFilter("ditambahkan")}
+                    className={cn(
+                      "px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer border shrink-0 flex items-center gap-1.5",
+                      paudStatusFilter === "ditambahkan"
+                        ? "bg-sky-600 text-white border-sky-600 shadow-xs"
+                        : "bg-card text-muted-foreground border-border hover:bg-sky-500/10 hover:text-sky-700"
+                    )}
+                  >
+                    <span>Ditambahkan</span>
+                    <span className="px-1.5 py-0.2 rounded-md bg-background/20 font-mono text-2xs">
+                      {totalDitambahkan}
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setPaudStatusFilter("mutasi")}
+                    className={cn(
+                      "px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer border shrink-0 flex items-center gap-1.5",
+                      paudStatusFilter === "mutasi"
+                        ? "bg-purple-600 text-white border-purple-600 shadow-xs"
+                        : "bg-card text-muted-foreground border-border hover:bg-purple-500/10 hover:text-purple-700"
+                    )}
+                  >
+                    <ArrowRightLeft className="h-3.5 w-3.5" />
+                    <span>Mutasi</span>
+                    <span className="px-1.5 py-0.2 rounded-md bg-background/20 font-mono text-2xs">
+                      {totalMutasi}
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setPaudStatusFilter("deleted")}
+                    className={cn(
+                      "px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer border shrink-0 flex items-center gap-1.5",
+                      paudStatusFilter === "deleted"
+                        ? "bg-rose-600 text-white border-rose-600 shadow-xs"
+                        : "bg-card text-muted-foreground border-border hover:bg-rose-500/10 hover:text-rose-700"
+                    )}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                    <span>Dihapus</span>
+                    <span className="px-1.5 py-0.2 rounded-md bg-background/20 font-mono text-2xs">
+                      {totalDeleted}
                     </span>
                   </button>
                 </div>
@@ -609,8 +718,18 @@ export function DataAnakClientView({
                             );
                           }}
                           onDelete={(deletedId) => {
+                            const timestamp = new Date().toISOString();
                             setChildrenList((prev) =>
-                              prev.filter((c) => c.id !== deletedId)
+                              prev.map((c) =>
+                                c.id === deletedId
+                                  ? {
+                                      ...c,
+                                      status_approval: "deleted",
+                                      deleted_at: timestamp,
+                                      alasan_sekolah: `${c.alasan_sekolah || ""} [DIHAPUS_PADA: ${timestamp}]`.trim(),
+                                    }
+                                  : c
+                              )
                             );
                           }}
                         />
@@ -894,8 +1013,18 @@ export function DataAnakClientView({
                             );
                           }}
                           onDelete={(deletedId) => {
+                            const timestamp = new Date().toISOString();
                             setChildrenList((prev) =>
-                              prev.filter((c) => c.id !== deletedId)
+                              prev.map((c) =>
+                                c.id === deletedId
+                                  ? {
+                                      ...c,
+                                      status_approval: "deleted",
+                                      deleted_at: timestamp,
+                                      alasan_sekolah: `${c.alasan_sekolah || ""} [DIHAPUS_PADA: ${timestamp}]`.trim(),
+                                    }
+                                  : c
+                              )
                             );
                           }}
                         />

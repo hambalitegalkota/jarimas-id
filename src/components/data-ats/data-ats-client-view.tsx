@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import {
   GraduationCap,
@@ -80,7 +80,9 @@ export function DataAtsClientView({
   const [selectedAge, setSelectedAge] = useState<number | null>(null);
   const [selectedKelasAts, setSelectedKelasAts] = useState<string | null>(null);
   const [selectedGender, setSelectedGender] = useState<"semua" | "L" | "P">("semua");
-  const [statusFilter, setStatusFilter] = useState<"semua" | "approved" | "pending">("semua");
+  const [statusFilter, setStatusFilter] = useState<
+    "semua" | "approved" | "pending" | "ditambahkan" | "bersekolah" | "deleted"
+  >("semua");
 
   // Filter Wilayah Berjenjang Kota Tegal (Khusus PKBM & SKB)
   const [filterWilayahTingkat, setFilterWilayahTingkat] = useState<"kota" | "kecamatan" | "kelurahan">("kota");
@@ -168,8 +170,44 @@ export function DataAtsClientView({
     const matchesKategori =
       selectedKategori === "semua" || childKategori === selectedKategori;
 
-    const matchesStatus =
-      statusFilter === "semua" || c.status_approval === statusFilter;
+    const matchesStatus = (() => {
+      if (statusFilter === "semua") return c.status_approval !== "deleted";
+      if (statusFilter === "approved") {
+        return c.status_approval === "approved" && !c.is_sekolah;
+      }
+      if (statusFilter === "pending") {
+        return c.status_approval === "pending" && !c.is_sekolah;
+      }
+      if (statusFilter === "ditambahkan") {
+        const isAdded =
+          c.is_manual_added ||
+          Boolean(c.created_by) ||
+          (c.keterangan && c.keterangan.includes("[DITAMBAHKAN")) ||
+          (c.alasan_sekolah && c.alasan_sekolah.includes("[DITAMBAHKAN")) ||
+          (c.alasan_tidak_sekolah && String(c.alasan_tidak_sekolah).includes("[DITAMBAHKAN"));
+        return Boolean(isAdded && c.status_approval !== "deleted");
+      }
+      if (statusFilter === "bersekolah") {
+        return (
+          c.status_approval === "bersekolah" ||
+          c.is_sekolah === true ||
+          Boolean(c.bersekolah_at) ||
+          Boolean(c.keterangan && (c.keterangan.includes("[BERSEKOLAH") || c.keterangan.includes("[KEMBALI BERSEKOLAH]"))) ||
+          Boolean(c.alasan_sekolah && c.alasan_sekolah.includes("[BERSEKOLAH")) ||
+          Boolean(c.alasan_tidak_sekolah && String(c.alasan_tidak_sekolah).includes("[KEMBALI BERSEKOLAH]"))
+        );
+      }
+      if (statusFilter === "deleted") {
+        return (
+          c.status_approval === "deleted" ||
+          Boolean(c.deleted_at) ||
+          Boolean(c.keterangan && c.keterangan.includes("[DIHAPUS")) ||
+          Boolean(c.alasan_sekolah && c.alasan_sekolah.includes("[DIHAPUS")) ||
+          Boolean(c.alasan_tidak_sekolah && String(c.alasan_tidak_sekolah).includes("[DIHAPUS"))
+        );
+      }
+      return true;
+    })();
 
     const matchesWilayah = (() => {
       if (filterWilayahTingkat === "kota") return true;
@@ -201,6 +239,48 @@ export function DataAtsClientView({
       matchesStatus
     );
   });
+
+  const countSemua = useMemo(() => atsList.filter((c) => c.status_approval !== "deleted").length, [atsList]);
+  const countApproved = useMemo(() => atsList.filter((c) => c.status_approval === "approved" && !c.is_sekolah).length, [atsList]);
+  const countPending = useMemo(() => atsList.filter((c) => c.status_approval === "pending" && !c.is_sekolah).length, [atsList]);
+  const countDitambahkan = useMemo(
+    () =>
+      atsList.filter(
+        (c) =>
+          (c.is_manual_added ||
+            Boolean(c.created_by) ||
+            (c.keterangan && c.keterangan.includes("[DITAMBAHKAN")) ||
+            (c.alasan_sekolah && c.alasan_sekolah.includes("[DITAMBAHKAN")) ||
+            (c.alasan_tidak_sekolah && String(c.alasan_tidak_sekolah).includes("[DITAMBAHKAN"))) &&
+          c.status_approval !== "deleted"
+      ).length,
+    [atsList]
+  );
+  const countBersekolah = useMemo(
+    () =>
+      atsList.filter(
+        (c) =>
+          c.status_approval === "bersekolah" ||
+          c.is_sekolah === true ||
+          Boolean(c.bersekolah_at) ||
+          Boolean(c.keterangan && (c.keterangan.includes("[BERSEKOLAH") || c.keterangan.includes("[KEMBALI BERSEKOLAH]"))) ||
+          Boolean(c.alasan_sekolah && c.alasan_sekolah.includes("[BERSEKOLAH")) ||
+          Boolean(c.alasan_tidak_sekolah && String(c.alasan_tidak_sekolah).includes("[KEMBALI BERSEKOLAH]"))
+      ).length,
+    [atsList]
+  );
+  const countDeleted = useMemo(
+    () =>
+      atsList.filter(
+        (c) =>
+          c.status_approval === "deleted" ||
+          Boolean(c.deleted_at) ||
+          Boolean(c.keterangan && c.keterangan.includes("[DIHAPUS")) ||
+          Boolean(c.alasan_sekolah && c.alasan_sekolah.includes("[DIHAPUS")) ||
+          Boolean(c.alasan_tidak_sekolah && String(c.alasan_tidak_sekolah).includes("[DIHAPUS"))
+      ).length,
+    [atsList]
+  );
 
   const showToast = (message: string, type: "success" | "info" | "error" = "success") => {
     setFeedbackToast({ type, message });
@@ -258,15 +338,41 @@ export function DataAtsClientView({
   };
 
   const handleDeleteItem = (deletedId: string) => {
-    setAtsList((prev) => prev.filter((item) => item.id !== deletedId));
-    showToast(`Data ATS berhasil dihapus dari sistem.`);
+    const timestamp = new Date().toISOString();
+    setAtsList((prev) =>
+      prev.map((item) =>
+        item.id === deletedId
+          ? {
+              ...item,
+              status_approval: "deleted",
+              deleted_at: timestamp,
+              alasan_sekolah: `${item.alasan_sekolah || ""} [DIHAPUS_PADA: ${timestamp}]`.trim(),
+            }
+          : item
+      )
+    );
+    showToast(`Data ATS berhasil dihapus dari daftar aktif.`);
   };
 
   const handleKembaliSekolah = (atsId: string, namaSekolah: string) => {
     const target = atsList.find((item) => item.id === atsId);
-    setAtsList((prev) => prev.filter((item) => item.id !== atsId));
+    const timestamp = new Date().toISOString();
+    setAtsList((prev) =>
+      prev.map((item) =>
+        item.id === atsId
+          ? {
+              ...item,
+              status_approval: "bersekolah",
+              is_sekolah: true,
+              nama_sekolah: namaSekolah,
+              bersekolah_at: timestamp,
+              alasan_sekolah: `${item.alasan_sekolah || ""} [BERSEKOLAH_PADA: ${timestamp}]`.trim(),
+            }
+          : item
+      )
+    );
     showToast(
-      `🎉 Selamat! ${target?.nama_lengkap || "Anak"} telah berhasil difasilitasi kembali bersekolah di ${namaSekolah} dan dialihkan ke Data Anak aktif.`,
+      `🎉 Selamat! ${target?.nama_lengkap || "Anak"} telah berhasil difasilitasi kembali bersekolah di ${namaSekolah}.`,
       "success"
     );
   };
@@ -316,7 +422,9 @@ export function DataAtsClientView({
     }
   };
 
-  const handleSelectStatus = (status: "semua" | "approved" | "pending") => {
+  const handleSelectStatus = (
+    status: "semua" | "approved" | "pending" | "ditambahkan" | "bersekolah" | "deleted"
+  ) => {
     setStatusFilter((prev) => (prev === status ? "semua" : status));
     if (canAccessDaftarNama) {
       setIsListExpanded(true);
@@ -361,7 +469,19 @@ export function DataAtsClientView({
     selectedKeinginan !== "semua" ? `Keinginan: ${selectedKeinginan}` : null,
     selectedAlasan !== "semua" ? `Alasan: ${selectedAlasan}` : null,
     selectedGender !== "semua" ? `Gender: ${selectedGender === "L" ? "Laki-laki" : "Perempuan"}` : null,
-    statusFilter !== "semua" ? `Status: ${statusFilter === "approved" ? "Terverifikasi" : "Menunggu"}` : null,
+    statusFilter !== "semua"
+      ? `Status: ${
+          statusFilter === "approved"
+            ? "Terverifikasi"
+            : statusFilter === "pending"
+            ? "Menunggu"
+            : statusFilter === "ditambahkan"
+            ? "Ditambahkan"
+            : statusFilter === "bersekolah"
+            ? "Bersekolah"
+            : "Dihapus"
+        }`
+      : null,
     searchQuery.trim() ? `Pencarian: "${searchQuery}"` : null,
   ]
     .filter(Boolean)
@@ -763,43 +883,97 @@ export function DataAtsClientView({
             />
           </div>
 
-          {/* Status Filter Buttons */}
-          <div className="flex items-center gap-1.5 bg-white border-2 border-slate-200 p-1.5 rounded-2xl shrink-0">
+          {/* Status Filter Buttons: Semua, Terverifikasi, Menunggu, Ditambahkan, Bersekolah, Dihapus */}
+          <div className="flex flex-wrap items-center gap-1.5 bg-white border-2 border-slate-200 p-1.5 rounded-2xl shrink-0">
             <button
               type="button"
               onClick={() => handleSelectStatus("semua")}
               className={cn(
-                "px-3.5 py-2 rounded-xl text-sm font-bold transition-all cursor-pointer",
+                "px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center gap-1.5",
                 statusFilter === "semua"
                   ? "bg-blue-700 text-white shadow-xs"
                   : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
               )}
             >
-              Semua
+              <span>Semua</span>
+              <span className={cn("px-1.5 py-0.2 rounded-full text-2xs font-mono", statusFilter === "semua" ? "bg-white/20 text-white" : "bg-slate-200 text-slate-700")}>
+                {countSemua}
+              </span>
             </button>
             <button
               type="button"
               onClick={() => handleSelectStatus("approved")}
               className={cn(
-                "px-3.5 py-2 rounded-xl text-sm font-bold transition-all cursor-pointer",
+                "px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center gap-1.5",
                 statusFilter === "approved"
                   ? "bg-emerald-600 text-white shadow-xs"
                   : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
               )}
             >
-              Terverifikasi
+              <span>Terverifikasi</span>
+              <span className={cn("px-1.5 py-0.2 rounded-full text-2xs font-mono", statusFilter === "approved" ? "bg-white/20 text-white" : "bg-emerald-100 text-emerald-800")}>
+                {countApproved}
+              </span>
             </button>
             <button
               type="button"
               onClick={() => handleSelectStatus("pending")}
               className={cn(
-                "px-3.5 py-2 rounded-xl text-sm font-bold transition-all cursor-pointer",
+                "px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center gap-1.5",
                 statusFilter === "pending"
                   ? "bg-amber-600 text-white shadow-xs"
                   : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
               )}
             >
-              Menunggu
+              <span>Menunggu</span>
+              <span className={cn("px-1.5 py-0.2 rounded-full text-2xs font-mono", statusFilter === "pending" ? "bg-white/20 text-white" : "bg-amber-100 text-amber-800")}>
+                {countPending}
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleSelectStatus("ditambahkan")}
+              className={cn(
+                "px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center gap-1.5",
+                statusFilter === "ditambahkan"
+                  ? "bg-sky-600 text-white shadow-xs"
+                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+              )}
+            >
+              <span>Ditambahkan</span>
+              <span className={cn("px-1.5 py-0.2 rounded-full text-2xs font-mono", statusFilter === "ditambahkan" ? "bg-white/20 text-white" : "bg-sky-100 text-sky-800")}>
+                {countDitambahkan}
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleSelectStatus("bersekolah")}
+              className={cn(
+                "px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center gap-1.5",
+                statusFilter === "bersekolah"
+                  ? "bg-teal-600 text-white shadow-xs"
+                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+              )}
+            >
+              <span>Bersekolah</span>
+              <span className={cn("px-1.5 py-0.2 rounded-full text-2xs font-mono", statusFilter === "bersekolah" ? "bg-white/20 text-white" : "bg-teal-100 text-teal-800")}>
+                {countBersekolah}
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleSelectStatus("deleted")}
+              className={cn(
+                "px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center gap-1.5",
+                statusFilter === "deleted"
+                  ? "bg-rose-600 text-white shadow-xs"
+                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+              )}
+            >
+              <span>Dihapus</span>
+              <span className={cn("px-1.5 py-0.2 rounded-full text-2xs font-mono", statusFilter === "deleted" ? "bg-white/20 text-white" : "bg-rose-100 text-rose-800")}>
+                {countDeleted}
+              </span>
             </button>
           </div>
 

@@ -47,7 +47,7 @@ interface GrafikFilterAtsProps {
   onSelectKeinginan?: (keinginan: "semua" | "Masih Ada" | "Tidak Ada") => void;
   onSelectAlasan?: (alasan: string) => void;
   onSelectGender?: (gender: "semua" | "L" | "P") => void;
-  onSelectStatus?: (status: "semua" | "approved" | "pending") => void;
+  onSelectStatus?: (status: "semua" | "approved" | "pending" | "ditambahkan" | "bersekolah" | "deleted") => void;
   onResetFilters?: () => void;
 }
 

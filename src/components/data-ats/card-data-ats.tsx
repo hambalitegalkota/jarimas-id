@@ -17,8 +17,10 @@ import {
   BookOpen,
   ChevronDown,
   ChevronUp,
+  RotateCcw,
 } from "lucide-react";
-import { validateDataAts } from "@/app/actions/data-ats";
+import { validateDataAts, restoreDataAts } from "@/app/actions/data-ats";
+import { extractActionHistoryFromAts } from "@/lib/action-history-helpers";
 import { ModalKembaliBersekolah } from "./modal-kembali-bersekolah";
 import { ModalEditAts } from "./modal-edit-ats";
 import { ModalHapusAts } from "./modal-hapus-ats";
@@ -72,6 +74,7 @@ export function CardDataAts({
     ageFormat || "tahun"
   );
   const [isPendingValidate, startValidateTransition] = useTransition();
+  const [isPendingRestore, startRestoreTransition] = useTransition();
 
   useEffect(() => {
     if (ageFormat) {
@@ -85,6 +88,18 @@ export function CardDataAts({
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
   const isApproved = currentAts.status_approval === "approved";
+  const isDeleted = currentAts.status_approval === "deleted" || Boolean(currentAts.deleted_at);
+  const isBersekolah = currentAts.status_approval === "bersekolah" || Boolean(currentAts.is_sekolah);
+  const isManualAdded = Boolean(
+    currentAts.is_manual_added ||
+      currentAts.created_by ||
+      (currentAts.alasan_sekolah && currentAts.alasan_sekolah.includes("[DITAMBAHKAN")) ||
+      (currentAts.keterangan && currentAts.keterangan.includes("[DITAMBAHKAN")) ||
+      (currentAts.alasan_tidak_sekolah && String(currentAts.alasan_tidak_sekolah).includes("[DITAMBAHKAN"))
+  );
+
+  const actionHistory = extractActionHistoryFromAts(currentAts);
+
   const ageString = formatAgeDisplay(currentAts.tanggal_lahir, {
     mode: localAgeFormat,
     rawUsia: currentAts.usia,
@@ -100,6 +115,24 @@ export function CardDataAts({
   // Cek hak izin user untuk Edit & Hapus
   const isCreator = Boolean(currentUserId && currentAts.created_by === currentUserId);
   const canPerformActions = Boolean(canManage || isSuperAdmin || isCreator || canValidate);
+
+  const handleRestore = () => {
+    startRestoreTransition(async () => {
+      const res = await restoreDataAts(currentAts.id);
+      if (res.success) {
+        const updated: DataAtsItem = {
+          ...currentAts,
+          status_approval: "approved",
+          deleted_at: null,
+          deleted_by: null,
+        };
+        setCurrentAts(updated);
+        onUpdate?.(updated);
+      } else {
+        alert(res.message);
+      }
+    });
+  };
 
   const handleValidate = () => {
     startValidateTransition(async () => {
@@ -231,9 +264,19 @@ export function CardDataAts({
             </div>
           </div>
 
-          {/* Status Badge & Toggle Button */}
-          <div className="flex items-center gap-1.5 self-start sm:self-center shrink-0">
-            {isApproved ? (
+          {/* Status Badges & Toggle Button */}
+          <div className="flex flex-wrap items-center gap-1.5 self-start sm:self-center shrink-0">
+            {isDeleted ? (
+              <span className="inline-flex items-center gap-1 rounded-md bg-rose-500/15 text-rose-700 dark:text-rose-300 px-2 py-0.5 text-[10px] sm:text-2xs font-bold border border-rose-500/30">
+                <Trash2 className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-rose-600" />
+                <span>DIHAPUS</span>
+              </span>
+            ) : isBersekolah ? (
+              <span className="inline-flex items-center gap-1 rounded-md bg-teal-500/15 text-teal-700 dark:text-teal-300 px-2 py-0.5 text-[10px] sm:text-2xs font-bold border border-teal-500/30">
+                <GraduationCap className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-teal-600" />
+                <span>BERSEKOLAH</span>
+              </span>
+            ) : isApproved ? (
               <span className="inline-flex items-center gap-1 rounded-md bg-teal-500/10 text-teal-700 dark:text-teal-300 px-2 py-0.5 text-[10px] sm:text-2xs font-bold border border-teal-500/20">
                 <CheckCircle2 className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-primary" />
                 <span>TERVERIFIKASI</span>
@@ -242,6 +285,12 @@ export function CardDataAts({
               <span className="inline-flex items-center gap-1 rounded-md bg-secondary/15 text-amber-900 dark:text-amber-200 px-2 py-0.5 text-[10px] sm:text-2xs font-bold border border-secondary/30">
                 <Clock className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-secondary" />
                 <span>MENUNGGU</span>
+              </span>
+            )}
+
+            {isManualAdded && !isDeleted && (
+              <span className="inline-flex items-center gap-1 rounded-md bg-sky-500/15 text-sky-800 dark:text-sky-300 px-1.5 py-0.5 text-[9px] sm:text-2xs font-bold border border-sky-500/30">
+                <span>DITAMBAHKAN</span>
               </span>
             )}
 
@@ -367,68 +416,138 @@ export function CardDataAts({
               )}
             </div>
           )}
+
+          {/* Riwayat Aksi Data ATS */}
+          <div className="rounded-lg bg-muted/30 border border-border/70 p-2.5 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold text-foreground flex items-center gap-1.5">
+                <Clock className="h-3.5 w-3.5 text-primary" />
+                <span>Riwayat Aksi Data ATS</span>
+              </span>
+              <span className="text-2xs text-muted-foreground">{actionHistory.length} Riwayat</span>
+            </div>
+            {actionHistory.length > 0 ? (
+              <div className="space-y-1.5 divide-y divide-border/40">
+                {actionHistory.map((item, idx) => (
+                  <div key={idx} className="pt-1.5 first:pt-0 flex items-start justify-between gap-2 text-2xs">
+                    <div className="flex items-start gap-1.5 min-w-0">
+                      <span className={cn("mt-1 h-2 w-2 rounded-full shrink-0", item.badgeDotColor)} />
+                      <div className="space-y-0.5 min-w-0">
+                        <div className="flex flex-wrap items-center gap-1">
+                          <span className="font-bold text-foreground">{item.label}</span>
+                          {item.pelaku && (
+                            <span className="text-muted-foreground truncate">• {item.pelaku}</span>
+                          )}
+                        </div>
+                        {item.keterangan && (
+                          <p className="text-muted-foreground text-[10px] leading-tight">{item.keterangan}</p>
+                        )}
+                      </div>
+                    </div>
+                    <span className="text-muted-foreground font-mono shrink-0 text-right">{item.waktuFormatted}</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-2xs text-muted-foreground italic">Belum ada riwayat aktivitas tercatat.</p>
+            )}
+          </div>
         </div>
 
-        {/* Action Buttons Bar: VALIDASI, KEMBALI BERSEKOLAH, EDIT, HAPUS (Selalu Tampil Jelas di Kartu) */}
+        {/* Action Buttons Bar: VALIDASI, KEMBALI BERSEKOLAH, EDIT, HAPUS (atau PULIHKAN jika Dihapus) */}
         {((!isApproved && canValidate) || canPerformActions) && (
           <div className="grid grid-cols-1 sm:flex sm:items-center gap-2 pt-2 border-t border-border/60 w-full print:hidden">
-            {/* 1. Tombol Validasi (jika status masih pending) */}
-            {!isApproved && canValidate && (
-              <button
-                type="button"
-                onClick={handleValidate}
-                disabled={isPendingValidate}
-                className="flex-1 min-h-[38px] h-9 flex items-center justify-center gap-1.5 rounded-lg bg-secondary hover:bg-secondary-hover active:scale-[0.98] px-3 text-xs font-bold text-secondary-foreground transition-all shadow-xs disabled:opacity-50 cursor-pointer"
-                title="Validasi Data ATS"
-              >
-                {isPendingValidate ? (
-                  <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin" />
-                ) : (
-                  <>
-                    <ShieldCheck className="h-3.5 w-3.5 shrink-0" />
-                    <span>VALIDASI ATS</span>
-                  </>
-                )}
-              </button>
-            )}
-
-            {/* 2. KEMBALI BERSEKOLAH, EDIT, HAPUS */}
-            {canPerformActions && (
-              <>
-                {/* 2. KEMBALI BERSEKOLAH (Tombol Utama) */}
-                <button
-                  type="button"
-                  onClick={() => setIsKembaliSekolahOpen(true)}
-                  className="flex-1 min-h-[38px] h-9 flex items-center justify-center gap-1.5 rounded-lg bg-primary hover:bg-primary-hover active:scale-[0.98] px-3 text-xs font-bold text-primary-foreground transition-all shadow-xs cursor-pointer"
-                  title="Catat Kembali Bersekolah ke PKBM / SKB / Sekolah"
-                >
-                  <GraduationCap className="h-3.5 w-3.5 shrink-0" />
-                  <span>BERSEKOLAH</span>
-                </button>
-
-                <div className="flex items-center gap-1.5">
-                  {/* 3. EDIT ATS */}
+            {isDeleted ? (
+              canPerformActions && (
+                <div className="flex items-center justify-between gap-2 w-full">
+                  <span className="text-xs text-rose-600 dark:text-rose-400 font-semibold flex items-center gap-1.5">
+                    <Trash2 className="h-3.5 w-3.5" />
+                    <span>Data ATS ini berada di folder Dihapus</span>
+                  </span>
                   <button
                     type="button"
-                    onClick={() => setIsEditOpen(true)}
-                    className="flex-1 min-h-[38px] h-9 flex items-center justify-center gap-1.5 rounded-lg border border-border bg-muted hover:bg-muted/80 text-foreground px-3 text-xs font-bold transition-all cursor-pointer"
-                    title="Edit Data ATS"
+                    onClick={handleRestore}
+                    disabled={isPendingRestore}
+                    className="min-h-[36px] h-8 px-3.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white text-xs font-bold transition-all flex items-center gap-1.5 shadow-xs cursor-pointer disabled:opacity-50"
+                    title="Pulihkan Data ATS ke Daftar Aktif"
                   >
-                    <Pencil className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                    <span>EDIT</span>
-                  </button>
-
-                  {/* 4. HAPUS ATS */}
-                  <button
-                    type="button"
-                    onClick={() => setIsDeleteOpen(true)}
-                    className="min-h-[38px] h-9 flex items-center justify-center gap-1.5 rounded-lg border border-rose-200 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 text-rose-700 dark:text-rose-300 px-3 text-xs font-bold transition-all cursor-pointer"
-                    title="Hapus Data ATS"
-                  >
-                    <Trash2 className="h-3.5 w-3.5 shrink-0 text-rose-600" />
-                    <span>HAPUS</span>
+                    {isPendingRestore ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <>
+                        <RotateCcw className="h-3.5 w-3.5" />
+                        <span>PULIHKAN DATA</span>
+                      </>
+                    )}
                   </button>
                 </div>
+              )
+            ) : (
+              <>
+                {/* 1. Tombol Validasi (jika status masih pending) */}
+                {!isApproved && canValidate && (
+                  <button
+                    type="button"
+                    onClick={handleValidate}
+                    disabled={isPendingValidate}
+                    className="flex-1 min-h-[38px] h-9 flex items-center justify-center gap-1.5 rounded-lg bg-secondary hover:bg-secondary-hover active:scale-[0.98] px-3 text-xs font-bold text-secondary-foreground transition-all shadow-xs disabled:opacity-50 cursor-pointer"
+                    title="Validasi Data ATS"
+                  >
+                    {isPendingValidate ? (
+                      <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin" />
+                    ) : (
+                      <>
+                        <ShieldCheck className="h-3.5 w-3.5 shrink-0" />
+                        <span>VALIDASI ATS</span>
+                      </>
+                    )}
+                  </button>
+                )}
+
+                {/* 2. KEMBALI BERSEKOLAH, EDIT, HAPUS */}
+                {canPerformActions && (
+                  <>
+                    {/* 2. KEMBALI BERSEKOLAH (Tombol Utama) */}
+                    <button
+                      type="button"
+                      onClick={() => setIsKembaliSekolahOpen(true)}
+                      className={cn(
+                        "flex-1 min-h-[38px] h-9 flex items-center justify-center gap-1.5 rounded-lg px-3 text-xs font-bold transition-all shadow-xs cursor-pointer",
+                        isBersekolah
+                          ? "bg-teal-700 hover:bg-teal-800 text-white"
+                          : "bg-primary hover:bg-primary-hover text-primary-foreground"
+                      )}
+                      title={isBersekolah ? "Perbarui Catatan Kembali Bersekolah" : "Catat Kembali Bersekolah ke PKBM / SKB / Sekolah"}
+                    >
+                      <GraduationCap className="h-3.5 w-3.5 shrink-0" />
+                      <span>{isBersekolah ? "SUDAH BERSEKOLAH" : "BERSEKOLAH"}</span>
+                    </button>
+
+                    <div className="flex items-center gap-1.5">
+                      {/* 3. EDIT ATS */}
+                      <button
+                        type="button"
+                        onClick={() => setIsEditOpen(true)}
+                        className="flex-1 min-h-[38px] h-9 flex items-center justify-center gap-1.5 rounded-lg border border-border bg-muted hover:bg-muted/80 text-foreground px-3 text-xs font-bold transition-all cursor-pointer"
+                        title="Edit Data ATS"
+                      >
+                        <Pencil className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                        <span>EDIT</span>
+                      </button>
+
+                      {/* 4. HAPUS ATS */}
+                      <button
+                        type="button"
+                        onClick={() => setIsDeleteOpen(true)}
+                        className="min-h-[38px] h-9 flex items-center justify-center gap-1.5 rounded-lg border border-rose-200 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 text-rose-700 dark:text-rose-300 px-3 text-xs font-bold transition-all cursor-pointer"
+                        title="Hapus Data ATS"
+                      >
+                        <Trash2 className="h-3.5 w-3.5 shrink-0 text-rose-600" />
+                        <span>HAPUS</span>
+                      </button>
+                    </div>
+                  </>
+                )}
               </>
             )}
           </div>

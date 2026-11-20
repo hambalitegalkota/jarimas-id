@@ -281,6 +281,14 @@ export async function createDataAnak(formData: FormData): Promise<{
     }
 
     // Simpan ke Supabase Data Anak
+    const nowIso = new Date().toISOString();
+    const creatorName =
+      user.user_metadata?.nama_lengkap ||
+      user.user_metadata?.name ||
+      user.email?.split("@")[0] ||
+      "Pengurus";
+    const alasanWithActionTags = `${formattedAlasan ? `${formattedAlasan} ` : ""}[SUMBER: TAMBAH_DATA_ANAK] [DITAMBAHKAN_PADA: ${nowIso}] [DITAMBAHKAN_OLEH: ${creatorName}]`.trim();
+
     const childPayload = {
       nama_lengkap: namaLengkap,
       tanggal_lahir: tanggalLahir,
@@ -291,11 +299,11 @@ export async function createDataAnak(formData: FormData): Promise<{
       jarak_rumah_km: jarakRumahKm,
       is_sekolah: isSekolah,
       nama_sekolah: namaSekolah,
-      alasan_sekolah: formattedAlasan,
+      alasan_sekolah: alasanWithActionTags,
       komunitas_id: toValidKomunitasUUID(komunitasId),
       status_approval: "pending",
       created_by: user.id,
-      created_at: new Date().toISOString(),
+      created_at: nowIso,
     };
 
     const { data: insertedChild, error: insertChildError } = await supabase
@@ -424,15 +432,43 @@ export async function validateDataAnak(dataAnakId: string): Promise<{
     }
 
     // Perbarui status approval di database
+    const nowIso = new Date().toISOString();
+    const validatorName =
+      user.user_metadata?.nama_lengkap ||
+      user.user_metadata?.name ||
+      user.email?.split("@")[0] ||
+      "Verifikator";
+
+    // Ambil data anak eksisting
+    const { data: exChild } = await supabase
+      .from("data_anak")
+      .select("alasan_sekolah, edit_history")
+      .eq("id", dataAnakId)
+      .maybeSingle();
+
+    const updatedAlasan = `${exChild?.alasan_sekolah || ""} [DIVERIFIKASI_PADA: ${nowIso}] [DIVERIFIKASI_OLEH: ${validatorName}]`.trim();
+    let currentHistory = Array.isArray(exChild?.edit_history) ? [...exChild.edit_history] : [];
+    currentHistory.push({
+      waktu: nowIso,
+      nama: validatorName,
+      role: "Verifikator",
+      komunitas: "",
+      aksi: "validasi",
+      catatan: "Data anak diverifikasi valid",
+    });
+
     const { data: updatedChildData, error: updateError } = await supabase
       .from("data_anak")
       .update({
         status_approval: "approved",
+        alasan_sekolah: updatedAlasan,
+        edit_history: currentHistory,
         validated_by: user.id,
-        validated_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+        validated_at: nowIso,
+        updated_at: nowIso,
         is_updated_by_paud: true,
-        terakhir_diperbarui_at: new Date().toISOString(),
+        terakhir_diperbarui_at: nowIso,
+        terakhir_diperbarui_oleh_nama: validatorName,
         diperbarui_oleh: user.id,
       })
       .eq("id", dataAnakId)
@@ -1011,7 +1047,6 @@ export async function getDataAnakByKomunitas(
       let query = supabase
         .from("data_anak")
         .select(selectFields)
-        .neq("status_approval", "deleted")
         .order("created_at", { ascending: false });
 
       if (orConditions.length > 0) {
@@ -1058,7 +1093,6 @@ export async function getDataAnakByKomunitas(
               supabase
                 .from("data_anak")
                 .select(selectFields)
-                .neq("status_approval", "deleted")
                 .order("created_at", { ascending: false })
                 .range(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE - 1)
             );
@@ -1083,7 +1117,6 @@ export async function getDataAnakByKomunitas(
             supabase
               .from("data_anak")
               .select(selectFields)
-              .neq("status_approval", "deleted")
               .or(`komunitas_id.eq.${validKomId},alasan_sekolah.ilike.%${targetKec}%`)
               .order("created_at", { ascending: false })
               .range(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE - 1)
@@ -1098,7 +1131,6 @@ export async function getDataAnakByKomunitas(
         let directQuery = supabase
           .from("data_anak")
           .select(selectFields)
-          .neq("status_approval", "deleted")
           .order("created_at", { ascending: false });
 
         if (targetKel) {
@@ -1315,6 +1347,25 @@ export async function getDataAnakByKomunitas(
 
         const latestHistory = editHistoryList[editHistoryList.length - 1];
 
+        const rawAlasanStr = String(row.alasan_sekolah || "");
+        const isDeleted =
+          row.status_approval === "deleted" ||
+          rawAlasanStr.includes("[DIHAPUS_PADA:") ||
+          rawAlasanStr.includes("[DIHAPUS");
+        const isMutasi =
+          row.status_approval === "mutasi" ||
+          row.status_approval === "keluar" ||
+          rawAlasanStr.includes("[MUTASI");
+        const isManualAdded =
+          Boolean(row.created_by) ||
+          rawAlasanStr.includes("[SUMBER: TAMBAH_DATA_ANAK]") ||
+          rawAlasanStr.includes("[DITAMBAHKAN");
+
+        const matchMutasiWaktu = rawAlasanStr.match(/\[MUTASI_PADA\s*:\s*([^\]]+)\]/i);
+        const matchMutasiOleh = rawAlasanStr.match(/\[MUTASI_OLEH\s*:\s*([^\]]+)\]/i);
+        const matchHapusWaktu = rawAlasanStr.match(/\[DIHAPUS_PADA\s*:\s*([^\]]+)\]/i);
+        const matchHapusOleh = rawAlasanStr.match(/\[DIHAPUS_OLEH\s*:\s*([^\]]+)\]/i);
+
         return {
           id: row.id,
           nama_lengkap: canViewDetail ? row.nama_lengkap : maskNama(row.nama_lengkap, "Anak"),
@@ -1340,7 +1391,16 @@ export async function getDataAnakByKomunitas(
           domisili_rt: canViewDetail ? parsed.domisiliRt : null,
           domisili_jalan: canViewDetail ? parsed.domisiliJalan : null,
           komunitas_id: row.komunitas_id,
-          status_approval: row.status_approval || "pending",
+          status_approval: isDeleted
+            ? "deleted"
+            : isMutasi
+            ? "mutasi"
+            : (row.status_approval || "pending"),
+          is_manual_added: isManualAdded,
+          mutasi_at: matchMutasiWaktu?.[1]?.trim() || (isMutasi ? row.updated_at : null),
+          mutasi_oleh: matchMutasiOleh?.[1]?.trim() || null,
+          deleted_at: matchHapusWaktu?.[1]?.trim() || (isDeleted ? row.updated_at : null),
+          deleted_by: matchHapusOleh?.[1]?.trim() || null,
           validated_by: canViewDetail ? row.validated_by : null,
           validated_at: canViewDetail ? row.validated_at : null,
           is_updated_by_paud: Boolean(row.is_updated_by_paud),
@@ -1383,9 +1443,10 @@ export async function getDataAnakByKomunitas(
     });
     const finalItems = Array.from(dedupedItemMap.values());
 
-    const totalCount = finalItems.length;
-    const approvedCount = finalItems.filter((c) => c.status_approval === "approved").length;
-    const pendingCount = totalCount - approvedCount;
+    const activeItems = finalItems.filter((c) => c.status_approval !== "deleted");
+    const totalCount = activeItems.length;
+    const approvedCount = activeItems.filter((c) => c.status_approval === "approved").length;
+    const pendingCount = activeItems.filter((c) => c.status_approval === "pending").length;
 
     return {
       success: true,
@@ -1808,8 +1869,131 @@ export async function updateDataAnak(
 }
 
 /**
+ * Server Action: Mencatat Mutasi Siswa / Pindah Sekolah Asal
+ */
+export async function mutasiDataAnak(
+  dataAnakId: string,
+  payload: {
+    sekolahAsal: string;
+    sekolahTujuan: string;
+    jenisMutasi?: string;
+    tanggalMutasi?: string;
+    catatan?: string;
+    komunitasId?: string;
+  }
+): Promise<{
+  success: boolean;
+  message: string;
+  data?: any;
+}> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return {
+        success: false,
+        message: "Silakan masuk terlebih dahulu untuk memproses mutasi siswa.",
+      };
+    }
+
+    if (!payload.sekolahTujuan || payload.sekolahTujuan.trim().length < 2) {
+      return {
+        success: false,
+        message: "Nama sekolah / satuan PAUD tujuan mutasi wajib diisi.",
+      };
+    }
+
+    const { data: existingChild, error: fetchError } = await supabase
+      .from("data_anak")
+      .select("id, nama_lengkap, created_by, komunitas_id, alasan_sekolah, edit_history")
+      .eq("id", dataAnakId)
+      .maybeSingle();
+
+    if (fetchError || !existingChild) {
+      return {
+        success: false,
+        message: "Data anak tidak ditemukan atau sudah dihapus.",
+      };
+    }
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("id, is_super_admin, is_admin_pusat, nama_lengkap, email")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    const nowIso = new Date().toISOString();
+    const actorName =
+      profile?.nama_lengkap ||
+      user.user_metadata?.nama_lengkap ||
+      user.email?.split("@")[0] ||
+      "Pengurus";
+    const actorRole = profile?.is_super_admin ? "Admin Pusat" : "Pengurus Satuan PAUD";
+
+    const mutasiTag = `[MUTASI: Asal: ${payload.sekolahAsal || "-"} | Tujuan: ${payload.sekolahTujuan} | Jenis: ${payload.jenisMutasi || "Pindah Sekolah"} | Catatan: ${payload.catatan || "-"}] [MUTASI_PADA: ${nowIso}] [MUTASI_OLEH: ${actorName}]`;
+    const updatedAlasan = `${existingChild.alasan_sekolah || ""} ${mutasiTag}`.trim();
+
+    let newHistory = Array.isArray(existingChild.edit_history) ? [...existingChild.edit_history] : [];
+    newHistory.push({
+      waktu: nowIso,
+      nama: actorName,
+      role: actorRole,
+      komunitas: payload.komunitasId || existingChild.komunitas_id || "",
+      aksi: "mutasi",
+      catatan: `Mutasi dari ${payload.sekolahAsal || "PAUD asal"} ke ${payload.sekolahTujuan}`,
+    });
+
+    const updateFields: any = {
+      status_approval: "mutasi",
+      alasan_sekolah: updatedAlasan,
+      edit_history: newHistory,
+      updated_at: nowIso,
+      terakhir_diperbarui_at: nowIso,
+      terakhir_diperbarui_oleh_nama: actorName,
+      terakhir_diperbarui_oleh_role: actorRole,
+      diperbarui_oleh: user.id,
+    };
+
+    const { error: updateError } = await supabase
+      .from("data_anak")
+      .update(updateFields)
+      .eq("id", dataAnakId);
+
+    if (updateError) {
+      return {
+        success: false,
+        message: "Gagal mencatat mutasi siswa: " + updateError.message,
+      };
+    }
+
+    const targetKom = payload.komunitasId || existingChild.komunitas_id;
+    if (targetKom) {
+      revalidatePath(`/komunitas/${targetKom}/data`);
+      revalidatePath(`/komunitas/${targetKom}`);
+    }
+    revalidatePath("/komunitas");
+    revalidatePath("/data-anak");
+    revalidatePath("/data-ats");
+    await triggerDataAnakCacheInvalidation();
+
+    return {
+      success: true,
+      message: `Mutasi siswa atas nama ${existingChild.nama_lengkap} ke ${payload.sekolahTujuan} berhasil dicatat.`,
+    };
+  } catch (err: any) {
+    return {
+      success: false,
+      message: err.message || "Gagal memproses mutasi siswa.",
+    };
+  }
+}
+
+/**
  * Server Action: Mencatat Status Keluar Anak dari Satuan PAUD
- * Sekarang langsung menghapus data anak dari sistem secara permanen sesuai alur bisnis baru.
  */
 export async function keluarDataAnak(
   dataAnakId: string,
@@ -1826,7 +2010,7 @@ export async function keluarDataAnak(
 }
 
 /**
- * Server Action: Menghapus Data Anak secara permanen dari sistem
+ * Server Action: Menghapus Data Anak dari daftar aktif (Soft Delete)
  */
 export async function deleteDataAnak(
   dataAnakId: string,
@@ -1851,7 +2035,7 @@ export async function deleteDataAnak(
 
     const { data: existingChild, error: fetchError } = await supabase
       .from("data_anak")
-      .select("id, nama_lengkap, created_by, komunitas_id")
+      .select("id, nama_lengkap, created_by, komunitas_id, alasan_sekolah, edit_history")
       .eq("id", dataAnakId)
       .maybeSingle();
 
@@ -1935,95 +2119,52 @@ export async function deleteDataAnak(
       }
     }
 
-    let isHardDeleted = false;
+    const nowIso = new Date().toISOString();
+    const deleterName =
+      profile?.nama_lengkap ||
+      user.user_metadata?.nama_lengkap ||
+      user.email?.split("@")[0] ||
+      "Pengurus";
+    const deleterRole = isSuperOrPusat ? "Admin Pusat" : "Pengurus / Kader";
 
-    // 1. Coba hapus via createAdminClient (service role) jika tersedia
-    const adminClient = createAdminClient();
-    if (adminClient) {
-      try {
-        await adminClient.from("ddks_records").delete().eq("data_anak_id", dataAnakId);
-        const { data: delRows, error: delErr } = await adminClient
-          .from("data_anak")
-          .delete()
-          .eq("id", dataAnakId)
-          .select("id");
-        if (!delErr && delRows && delRows.length > 0) {
-          isHardDeleted = true;
-        }
-      } catch (e) {
-        console.warn("adminClient deleteDataAnak error:", e);
-      }
+    const updatedAlasan = `${existingChild.alasan_sekolah || ""} [DIHAPUS_PADA: ${nowIso}] [DIHAPUS_OLEH: ${deleterName}]`.trim();
+
+    let currentHistory = Array.isArray(existingChild.edit_history) ? [...existingChild.edit_history] : [];
+    currentHistory.push({
+      waktu: nowIso,
+      nama: deleterName,
+      role: deleterRole,
+      komunitas: komunitasId || existingChild.komunitas_id || "",
+      aksi: "hapus",
+      catatan: "Data anak dinonaktifkan / dihapus dari daftar aktif",
+    });
+
+    const { error: softDeleteError } = await supabase
+      .from("data_anak")
+      .update({
+        status_approval: "deleted",
+        alasan_sekolah: updatedAlasan,
+        edit_history: currentHistory,
+        updated_at: nowIso,
+        terakhir_diperbarui_at: nowIso,
+        terakhir_diperbarui_oleh_nama: deleterName,
+        terakhir_diperbarui_oleh_role: deleterRole,
+        diperbarui_oleh: user.id,
+      })
+      .eq("id", dataAnakId);
+
+    if (softDeleteError) {
+      console.error("Gagal soft delete data anak:", softDeleteError);
+      return {
+        success: false,
+        message: "Gagal menghapus data anak: " + softDeleteError.message,
+      };
     }
 
-    // 2. Coba via RPC hierarkis / SECURITY DEFINER
-    if (!isHardDeleted) {
-      try {
-        const { data: rpcRes, error: rpcErr } = await supabase.rpc(
-          "hapus_data_anak_oleh_admin",
-          { p_data_anak_id: dataAnakId }
-        );
-        if (!rpcErr && rpcRes) {
-          const resObj = typeof rpcRes === "string" ? JSON.parse(rpcRes) : rpcRes;
-          if (resObj && resObj.success) {
-            isHardDeleted = true;
-          }
-        }
-      } catch (e) {
-        console.warn("RPC hapus_data_anak_oleh_admin error:", e);
-      }
-    }
-
-    // 3. Coba direct delete via authenticated supabase client
-    if (!isHardDeleted) {
-      try {
-        await supabase
-          .from("ddks_records")
-          .delete()
-          .eq("data_anak_id", dataAnakId);
-      } catch (e) {
-        console.warn("Hapus ddks_records warning:", e);
-      }
-
-      const { data: directDeletedRows, error: deleteError } = await supabase
-        .from("data_anak")
-        .delete()
-        .eq("id", dataAnakId)
-        .select("id");
-
-      if (!deleteError && directDeletedRows && directDeletedRows.length > 0) {
-        isHardDeleted = true;
-      }
-    }
-
-    // 4. Jika direct hard delete tidak berhasil menghapus baris (misal karena RLS Supabase memblokir),
-    // lakukan pembersihan status/flag deleted agar anak langsung hilang seketika dari komunitas, sistem, dan rekap
-    if (!isHardDeleted) {
-      const { error: softDeleteError } = await supabase
-        .from("data_anak")
-        .update({
-          status_approval: "deleted",
-          is_sekolah: false,
-          nama_sekolah: "",
-          alasan_sekolah: "[DIHAPUS_OLEH_ADMIN]",
-          updated_at: new Date().toISOString(),
-          terakhir_diperbarui_at: new Date().toISOString(),
-          diperbarui_oleh: user.id,
-        })
-        .eq("id", dataAnakId);
-
-      if (softDeleteError) {
-        console.error("Gagal update pembersihan data anak:", softDeleteError);
-        return {
-          success: false,
-          message: "Gagal menghapus data anak: " + softDeleteError.message,
-        };
-      }
-    }
-
-    const targetKomunitasId = komunitasId || existingChild.komunitas_id;
-    if (targetKomunitasId) {
-      revalidatePath(`/komunitas/${targetKomunitasId}/data`);
-      revalidatePath(`/komunitas/${targetKomunitasId}`);
+    const targetKomId = komunitasId || existingChild.komunitas_id;
+    if (targetKomId) {
+      revalidatePath(`/komunitas/${targetKomId}/data`);
+      revalidatePath(`/komunitas/${targetKomId}`);
     }
     revalidatePath("/komunitas");
     revalidatePath("/data-anak");
@@ -2036,13 +2177,95 @@ export async function deleteDataAnak(
 
     return {
       success: true,
-      message: `Data anak ${existingChild.nama_lengkap} berhasil dihapus dari sistem.`,
+      message: `Data anak ${existingChild.nama_lengkap} berhasil dihapus dari daftar aktif.`,
     };
   } catch (err: any) {
     console.error("Error deleteDataAnak:", err);
     return {
       success: false,
-      message: err.message || "Terjadi kendala saat menghapus data anak.",
+      message: err.message || "Gagal menghapus data anak.",
+    };
+  }
+}
+
+/**
+ * Server Action: Memulihkan Data Anak yang sebelumnya Dihapus
+ */
+export async function restoreDataAnak(
+  dataAnakId: string,
+  komunitasId?: string
+): Promise<{
+  success: boolean;
+  message: string;
+}> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return {
+        success: false,
+        message: "Silakan masuk terlebih dahulu untuk memulihkan data anak.",
+      };
+    }
+
+    const { data: existingChild, error: fetchError } = await supabase
+      .from("data_anak")
+      .select("id, nama_lengkap, created_by, komunitas_id, alasan_sekolah, edit_history")
+      .eq("id", dataAnakId)
+      .maybeSingle();
+
+    if (fetchError || !existingChild) {
+      return {
+        success: false,
+        message: "Data anak tidak ditemukan.",
+      };
+    }
+
+    const nowIso = new Date().toISOString();
+    const cleanedAlasan = (existingChild.alasan_sekolah || "")
+      .replace(/\[DIHAPUS_PADA\s*:\s*[^\]]+\]/gi, "")
+      .replace(/\[DIHAPUS_OLEH\s*:\s*([^\]]+)\]/gi, "")
+      .trim();
+
+    const { error: restoreError } = await supabase
+      .from("data_anak")
+      .update({
+        status_approval: "pending",
+        alasan_sekolah: `${cleanedAlasan} [DIPULIHKAN_PADA: ${nowIso}]`.trim(),
+        updated_at: nowIso,
+        terakhir_diperbarui_at: nowIso,
+        diperbarui_oleh: user.id,
+      })
+      .eq("id", dataAnakId);
+
+    if (restoreError) {
+      return {
+        success: false,
+        message: "Gagal memulihkan data anak: " + restoreError.message,
+      };
+    }
+
+    const targetKom = komunitasId || existingChild.komunitas_id;
+    if (targetKom) {
+      revalidatePath(`/komunitas/${targetKom}/data`);
+      revalidatePath(`/komunitas/${targetKom}`);
+    }
+    revalidatePath("/komunitas");
+    revalidatePath("/data-anak");
+    await triggerDataAnakCacheInvalidation();
+
+    return {
+      success: true,
+      message: `Data anak ${existingChild.nama_lengkap} berhasil dipulihkan ke status Menunggu Validasi.`,
+    };
+  } catch (err: any) {
+    return {
+      success: false,
+      message: err.message || "Gagal memulihkan data anak.",
     };
   }
 }
