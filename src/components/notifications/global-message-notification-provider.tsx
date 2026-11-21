@@ -8,6 +8,7 @@ import React, {
   useCallback,
   useRef,
 } from "react";
+import { usePathname } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import { toValidUUID } from "@/lib/utils";
 import {
@@ -109,6 +110,9 @@ export function GlobalMessageNotificationProvider({
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = usePathname();
+  const isMaintenancePage = pathname?.startsWith("/maintenance");
+
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [totalUnreadCount, setTotalUnreadCount] = useState<number>(0);
   const [totalUnreadDirect, setTotalUnreadDirect] = useState<number>(0);
@@ -365,6 +369,7 @@ export function GlobalMessageNotificationProvider({
 
   // Inisialisasi Auth & Supabase Realtime Listener
   useEffect(() => {
+    if (isMaintenancePage) return;
     let channel: any = null;
     let presenceChannel: any = null;
     let authSub: any = null;
@@ -775,7 +780,7 @@ export function GlobalMessageNotificationProvider({
       {children}
 
       {/* 1. Global Floating Incoming Message Banner (Direct or Group) */}
-      {activeNotification && (
+      {!isMaintenancePage && activeNotification && (
         <FloatingMessageNotificationBanner
           notification={activeNotification}
           isMuted={isMuted}
@@ -795,7 +800,7 @@ export function GlobalMessageNotificationProvider({
       )}
 
       {/* 2. Floating Unread Dock Pill (Untuk Direct Message maupun Percakapan Komunitas yang belum dibaca) */}
-      {!activeNotification && totalUnreadCount > 0 && !isPillDismissed && (
+      {!isMaintenancePage && !activeNotification && totalUnreadCount > 0 && !isPillDismissed && (
         <FloatingUnreadDock
           unreadCount={totalUnreadCount}
           latestUnread={unreadList[0]}
@@ -817,7 +822,7 @@ export function GlobalMessageNotificationProvider({
       )}
 
       {/* 3. Global Integrated Chat Modal (Direct 1-on-1, Accessible from any page!) */}
-      {isChatDrawerOpen && activeChatTarget && (
+      {!isMaintenancePage && isChatDrawerOpen && activeChatTarget && (
         <ChatDrawerModal
           isOpen={isChatDrawerOpen}
           onClose={closeChatDrawer}
@@ -827,7 +832,7 @@ export function GlobalMessageNotificationProvider({
       )}
 
       {/* 4. Global Integrated Group Chat Modal (Accessible from any page!) */}
-      {isGroupChatOpen && activeGroupRoom && (
+      {!isMaintenancePage && isGroupChatOpen && activeGroupRoom && (
         <GroupChatModal
           isOpen={isGroupChatOpen}
           onClose={closeGroupChat}
@@ -837,16 +842,18 @@ export function GlobalMessageNotificationProvider({
       )}
 
       {/* 5. Global Integrated Unread Messages Modal (Buka pesan via notifikasi navigasi) */}
-      <UnreadMessagesModal
-        isOpen={isUnreadModalOpen}
-        onClose={closeUnreadModal}
-        unreadCount={totalUnreadCount}
-        unreadList={unreadList}
-        isUserOnline={isUserOnline}
-        onOpenDirectChat={openChatWithUser}
-        onOpenGroupChat={openGroupChat}
-        onMarkAllRead={markAllMessagesAsRead}
-      />
+      {!isMaintenancePage && (
+        <UnreadMessagesModal
+          isOpen={isUnreadModalOpen}
+          onClose={closeUnreadModal}
+          unreadCount={totalUnreadCount}
+          unreadList={unreadList}
+          isUserOnline={isUserOnline}
+          onOpenDirectChat={openChatWithUser}
+          onOpenGroupChat={openGroupChat}
+          onMarkAllRead={markAllMessagesAsRead}
+        />
+      )}
     </GlobalMessageNotificationContext.Provider>
   );
 }
