@@ -497,6 +497,171 @@ export async function loginUser(
 }
 
 /**
+ * Server Action: Login / Registrasi Instan Menggunakan Google One Tap Credential (JWT)
+ */
+export async function loginWithGoogleOneTap(
+  credential: string
+): Promise<AuthActionState> {
+  try {
+    if (!credential) {
+      return { success: false, message: "Kredensial Google tidak ditemukan." };
+    }
+
+    const parts = credential.split(".");
+    if (parts.length !== 3) {
+      return { success: false, message: "Format token Google tidak valid." };
+    }
+
+    let payload: any;
+    try {
+      payload = JSON.parse(
+        Buffer.from(parts[1], "base64url").toString("utf8")
+      );
+    } catch {
+      return { success: false, message: "Gagal memproses token autentikasi Google." };
+    }
+
+    const googleEmail = (payload.email as string)?.trim().toLowerCase();
+    const isEmailVerified = Boolean(payload.email_verified);
+    const googleName =
+      (payload.name as string)?.trim() ||
+      googleEmail.split("@")[0].replace(/[._-]/g, " ");
+    const googlePicture = (payload.picture as string)?.trim() || null;
+
+    if (!googleEmail || !isEmailVerified) {
+      return {
+        success: false,
+        message: "Email Google tidak terverifikasi atau tidak valid.",
+      };
+    }
+
+    let supabase;
+    try {
+      supabase = await createClient();
+    } catch {
+      return { success: false, message: NETWORK_ERROR_MESSAGE };
+    }
+
+    const adminClient = createAdminClient() || supabase;
+
+    // 1. Cek apakah pengguna sudah ada di auth.users
+    const { data: userList } = await adminClient.auth.admin.listUsers();
+    let authUser = userList?.users?.find(
+      (u) => u.email?.toLowerCase() === googleEmail
+    );
+
+    // 2. Cek apakah ada profil lama
+    const { data: existingProfile } = await adminClient
+      .from("profiles")
+      .select("id, nama_lengkap, email, avatar_url, is_super_admin")
+      .ilike("email", googleEmail)
+      .maybeSingle();
+
+    if (!authUser) {
+      const createPayload: any = {
+        email: googleEmail,
+        email_confirm: true,
+        user_metadata: {
+          nama_lengkap: googleName,
+          avatar_url: googlePicture,
+        },
+      };
+
+      if (existingProfile?.id) {
+        createPayload.id = existingProfile.id;
+      }
+
+      const { data: createdRes, error: createErr } =
+        await adminClient.auth.admin.createUser(createPayload);
+
+      if (createErr || !createdRes?.user) {
+        const { data: fallbackRes, error: fbErr } =
+          await adminClient.auth.admin.createUser({
+            email: googleEmail,
+            email_confirm: true,
+            user_metadata: {
+              nama_lengkap: googleName,
+              avatar_url: googlePicture,
+            },
+          });
+
+        if (fbErr || !fallbackRes?.user) {
+          return {
+            success: false,
+            message: "Gagal membuat akun dengan Google: " + (fbErr?.message || ""),
+          };
+        }
+        authUser = fallbackRes.user;
+      } else {
+        authUser = createdRes.user;
+      }
+    }
+
+    // 3. Sinkronkan profil pengguna di public.profiles
+    const isSuper = checkIsSuperAdmin({
+      email: googleEmail,
+      nama_lengkap: googleName,
+      id: authUser.id,
+    });
+
+    await adminClient.from("profiles").upsert(
+      {
+        id: authUser.id,
+        nama_lengkap: existingProfile?.nama_lengkap || googleName,
+        email: googleEmail,
+        avatar_url: existingProfile?.avatar_url || googlePicture,
+        is_super_admin: isSuper,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "id" }
+    );
+
+    // 4. Generate Magic Link Token & Verifikasi di Server Next.js
+    const { data: linkData, error: linkErr } =
+      await adminClient.auth.admin.generateLink({
+        type: "magiclink",
+        email: googleEmail,
+      });
+
+    if (linkErr || !linkData?.properties?.hashed_token) {
+      return {
+        success: false,
+        message: "Gagal membuat sesi login instan Google.",
+      };
+    }
+
+    const { error: verifyErr } = await supabase.auth.verifyOtp({
+      token_hash: linkData.properties.hashed_token,
+      type: "magiclink",
+    });
+
+    if (verifyErr) {
+      return {
+        success: false,
+        message: "Gagal memverifikasi sesi login Google.",
+      };
+    }
+
+    // Kirim salam pembuka Jarimas
+    try {
+      await sendJarimasWelcomeGreeting(authUser.id, googleName);
+    } catch {}
+
+    revalidatePath("/", "layout");
+    return {
+      success: true,
+      message: "Berhasil masuk dengan akun Google!",
+    };
+  } catch (err: any) {
+    console.error("Error pada loginWithGoogleOneTap:", err);
+    return {
+      success: false,
+      message: err?.message || "Terjadi kesalahan saat masuk dengan Google.",
+    };
+  }
+}
+
+/**
  * Server Action: Logout Pengguna
  */
 export async function logoutUser(): Promise<void> {

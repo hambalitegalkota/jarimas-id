@@ -5,6 +5,7 @@ import { BottomNav } from "@/components/layout/bottom-nav";
 import { ThemeProvider } from "@/components/theme-provider";
 import { GlobalMessageNotificationProvider } from "@/components/notifications/global-message-notification-provider";
 import { ChunkErrorRecovery } from "@/components/chunk-error-recovery";
+import { GoogleOneTapPrompt } from "@/components/auth/google-one-tap";
 
 const inter = Inter({
   variable: "--font-sans",
@@ -84,6 +85,7 @@ export default function RootLayout({
               {children}
             </main>
             <BottomNav />
+            <GoogleOneTapPrompt />
           </GlobalMessageNotificationProvider>
         </ThemeProvider>
       </body>
