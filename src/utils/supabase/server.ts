@@ -2,11 +2,8 @@ import { createServerClient } from "@supabase/ssr";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 
-const DEFAULT_SUPABASE_URL = "http://103.193.176.111:8000";
-const DEFAULT_SUPABASE_ANON_KEY =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyAgCiAgICAicm9sZSI6ICJhbm9uIiwKICAgICJpc3MiOiAic3VwYWJhc2UtZGVtbyIsCiAgICAiaWF0IjogMTY0MTc2OTIwMCwKICAgICJleHAiOiAxNzk5NTM1NjAwCn0.dc_X5iR_VP_qT0zsiyj_I_OZ2T9FtRU2BBNWN8Bu4GE";
-const DEFAULT_SUPABASE_SERVICE_ROLE_KEY =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyAgCiAgICAicm9sZSI6ICJzZXJ2aWNlX3JvbGUiLAogICAgImlzcyI6ICJzdXBhYmFzZS1kZW1vIiwKICAgICJpYXQiOiAxNjQxNzY5MjAwLAogICAgImV4cCI6IDE3OTk1MzU2MDAKfQ.DaYlNEoUrrEn2Ig7tqibS-PHK5vgusbcbo7X36XVt4Q";
+const DEFAULT_SUPABASE_URL = "https://jsrvxvdajgfylpokdhmo.supabase.co";
+const DEFAULT_SUPABASE_ANON_KEY = "sb_publishable_zAwSDQAa1RKYNRf7lF5fGw_Z0CdTXn2";
 
 /**
  * Dapatkan URL Supabase yang optimal untuk koneksi internal backend di server
@@ -100,7 +97,7 @@ export function createAdminClient() {
     rawKey === "undefined" ||
     rawKey === "null"
   ) {
-    rawKey = DEFAULT_SUPABASE_SERVICE_ROLE_KEY;
+    return null;
   }
 
   // Bersihkan kutip pembungkus, whitespace, dan karakter escape baris baru
