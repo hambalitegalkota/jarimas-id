@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import {
   User,
   AtSign,
@@ -15,6 +16,7 @@ import {
   Edit3,
   X,
   Save,
+  Check,
 } from "lucide-react";
 import { updateUserProfile, type ProfilActionState } from "@/app/actions/profil";
 import type { Profile } from "@/types/database";
@@ -49,8 +51,11 @@ const initialState: ProfilActionState = {
 };
 
 export function EditProfilDialog({ profile }: EditProfilDialogProps) {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
   const [state, formAction, isPending] = useActionState(updateUserProfile, initialState);
+  const prevPendingRef = useRef(false);
 
   const [namaLengkap, setNamaLengkap] = useState(profile?.nama_lengkap || "");
   const [username, setUsername] = useState(profile?.username || "");
@@ -61,8 +66,49 @@ export function EditProfilDialog({ profile }: EditProfilDialogProps) {
   const [showKomunitas, setShowKomunitas] = useState(profile?.tampilkan_komunitas !== false);
   const [showKontak, setShowKontak] = useState(profile?.tampilkan_kontak !== false);
 
-  const handleOpen = () => setIsOpen(true);
-  const handleClose = () => setIsOpen(false);
+  // Sinkronkan input state jika prop profile berubah
+  useEffect(() => {
+    if (profile) {
+      setNamaLengkap(profile.nama_lengkap || "");
+      setUsername(profile.username || "");
+      setBio(profile.bio || "");
+      setNomorWa(profile.nomor_wa || profile.nomor_hp || "");
+      setInstagram(profile.instagram_username || "");
+      setIsPublic(profile.is_profil_publik !== false);
+      setShowKomunitas(profile.tampilkan_komunitas !== false);
+      setShowKontak(profile.tampilkan_kontak !== false);
+    }
+  }, [profile]);
+
+  // Munculkan popup sukses saat proses simpan berhasil
+  useEffect(() => {
+    if (prevPendingRef.current && !isPending) {
+      if (state.success) {
+        setShowSuccessPopup(true);
+      }
+    }
+    prevPendingRef.current = isPending;
+  }, [isPending, state.success]);
+
+  const handleOpen = () => {
+    setShowSuccessPopup(false);
+    setIsOpen(true);
+  };
+
+  const handleClose = () => {
+    setShowSuccessPopup(false);
+    setIsOpen(false);
+  };
+
+  const handleSelesai = () => {
+    setShowSuccessPopup(false);
+    setIsOpen(false);
+    router.refresh();
+  };
+
+  const handleEditLagi = () => {
+    setShowSuccessPopup(false);
+  };
 
   return (
     <>
@@ -370,6 +416,50 @@ export function EditProfilDialog({ profile }: EditProfilDialogProps) {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Popup Konfirmasi Sukses: Pilihan Selesai atau Edit Lagi */}
+      {showSuccessPopup && (
+        <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-background/80 backdrop-blur-xs animate-in fade-in">
+          <div
+            className="fixed inset-0"
+            onClick={handleEditLagi}
+            aria-hidden="true"
+          />
+          <div className="relative w-full max-w-sm rounded-2xl border border-border bg-card p-6 shadow-2xl z-10 text-center space-y-4 animate-in zoom-in-95">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+              <CheckCircle2 className="h-8 w-8" />
+            </div>
+
+            <div className="space-y-1.5">
+              <h3 className="text-base sm:text-lg font-bold text-foreground">
+                Perubahan Berhasil Disimpan
+              </h3>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                {state.message || "Profil Anda telah berhasil diperbarui."}
+              </p>
+            </div>
+
+            <div className="pt-2 flex flex-col-reverse sm:flex-row gap-2.5">
+              <button
+                type="button"
+                onClick={handleEditLagi}
+                className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg border border-border bg-background px-3.5 py-2.5 text-xs font-semibold text-foreground hover:bg-muted transition-colors cursor-pointer"
+              >
+                <Edit3 className="h-4 w-4" />
+                <span>Edit Lagi</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleSelesai}
+                className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg bg-primary hover:bg-primary-hover px-3.5 py-2.5 text-xs font-semibold text-primary-foreground shadow-xs transition-all active:scale-98 cursor-pointer"
+              >
+                <Check className="h-4 w-4" />
+                <span>Selesai</span>
+              </button>
+            </div>
           </div>
         </div>
       )}
