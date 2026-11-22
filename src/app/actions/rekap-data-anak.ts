@@ -79,7 +79,7 @@ async function fetchAndComputeRekapDataAnak(): Promise<RekapDataAnakUsiaDiniResu
   const CHUNK_SIZE = 1000;
   const numChunks = Math.max(1, Math.ceil(totalToFetch / CHUNK_SIZE));
 
-  // Ambil hanya data anak sekolah (PAUD) secara paralel chunk per 1.000 baris
+  // Ambil data anak sekolah (PAUD) secara paralel chunk per 1.000 baris
   const chunkPromises = [];
   for (let i = 0; i < numChunks; i++) {
     const from = i * CHUNK_SIZE;
@@ -106,8 +106,33 @@ async function fetchAndComputeRekapDataAnak(): Promise<RekapDataAnakUsiaDiniResu
     );
   }
 
-  const chunkResults = await Promise.all(chunkPromises);
-  const dbChildren: any[] = chunkResults.flatMap((res) => res.data || []);
+  // Ambil juga data anak balita usia 0-6 tahun belum sekolah (is_sekolah = false yang didata oleh kader)
+  const nonSekolahPromise = supabase
+    .from("data_anak")
+    .select(`
+      id,
+      nama_lengkap,
+      tanggal_lahir,
+      jenis_kelamin,
+      is_sekolah,
+      nama_sekolah,
+      alasan_sekolah,
+      komunitas_id,
+      status_approval,
+      created_at
+    `)
+    .eq("is_sekolah", false)
+    .ilike("alasan_sekolah", "%[KK_KAB:%")
+    .neq("status_approval", "deleted");
+
+  const [chunkResults, nonSekolahResult] = await Promise.all([
+    Promise.all(chunkPromises),
+    nonSekolahPromise,
+  ]);
+  const dbChildren: any[] = [
+    ...chunkResults.flatMap((res) => res.data || []),
+    ...(nonSekolahResult.data || []),
+  ];
 
     // Filter ketat: Hanya data anak balita / PAUD riil (BUKAN data ATS, BUKAN data dummy, dan memenuhi ketentuan wilayah Keturen)
     const validLiveChildren = (dbChildren || []).filter((c) => {
@@ -650,7 +675,13 @@ export async function getDaftarNamaAnakRekapAction(params: {
     let countQuery = supabase
       .from("data_anak")
       .select("*", { count: "exact", head: true })
-      .eq("is_sekolah", true);
+      .neq("status_approval", "deleted");
+
+    if (params.kategori === "tidak_sekolah") {
+      countQuery = countQuery.eq("is_sekolah", false).ilike("alasan_sekolah", "%[KK_KAB:%");
+    } else {
+      countQuery = countQuery.eq("is_sekolah", true);
+    }
 
     if (targetKel) {
       countQuery = countQuery.ilike("alasan_sekolah", `%${targetKel}%`);
@@ -669,8 +700,44 @@ export async function getDaftarNamaAnakRekapAction(params: {
 
     // Ambil data secara paralel menggunakan range chunk agar tidak terpotong oleh batasan 1.000 baris PostgREST
     const chunkPromises = [];
-    for (let i = 0; i < numChunks; i++) {
-      let q = supabase
+    if (params.kategori !== "tidak_sekolah") {
+      for (let i = 0; i < numChunks; i++) {
+        let q = supabase
+          .from("data_anak")
+          .select(`
+            id,
+            nama_lengkap,
+            tanggal_lahir,
+            jenis_kelamin,
+            nama_orangtua,
+            nomor_hp,
+            tinggal_bersama,
+            is_sekolah,
+            nama_sekolah,
+            alasan_sekolah,
+            komunitas_id,
+            status_approval,
+            created_at
+          `)
+          .eq("is_sekolah", true)
+          .neq("status_approval", "deleted")
+          .order("created_at", { ascending: false })
+          .range(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE - 1);
+
+        if (targetKel) {
+          q = q.ilike("alasan_sekolah", `%${targetKel}%`);
+        } else if (targetKec) {
+          q = q.ilike("alasan_sekolah", `%${targetKec}%`);
+        }
+
+        chunkPromises.push(q);
+      }
+    }
+
+    // Jika kategori tidak_sekolah atau semua, ambil juga data anak balita belum sekolah
+    let nonSekolahData: any[] = [];
+    if (params.kategori !== "bersekolah") {
+      let nq = supabase
         .from("data_anak")
         .select(`
           id,
@@ -687,21 +754,26 @@ export async function getDaftarNamaAnakRekapAction(params: {
           status_approval,
           created_at
         `)
-        .eq("is_sekolah", true)
-        .order("created_at", { ascending: false })
-        .range(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE - 1);
+        .eq("is_sekolah", false)
+        .ilike("alasan_sekolah", "%[KK_KAB:%")
+        .neq("status_approval", "deleted")
+        .order("created_at", { ascending: false });
 
       if (targetKel) {
-        q = q.ilike("alasan_sekolah", `%${targetKel}%`);
+        nq = nq.ilike("alasan_sekolah", `%${targetKel}%`);
       } else if (targetKec) {
-        q = q.ilike("alasan_sekolah", `%${targetKec}%`);
+        nq = nq.ilike("alasan_sekolah", `%${targetKec}%`);
       }
 
-      chunkPromises.push(q);
+      const { data: nRes } = await nq;
+      nonSekolahData = nRes || [];
     }
 
     const chunkResults = await Promise.all(chunkPromises);
-    const dbChildren: any[] = chunkResults.flatMap((res) => res.data || []);
+    const dbChildren: any[] = [
+      ...chunkResults.flatMap((res) => res.data || []),
+      ...nonSekolahData,
+    ];
 
     // Filter ketat: Bukan data ATS dan Bukan data dummy
     const validLiveChildren: any[] = (dbChildren || []).filter(
