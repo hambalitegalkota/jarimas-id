@@ -65,6 +65,7 @@ import { KabarCard } from "@/components/kabar/kabar-card";
 import { CreateKabarModal } from "@/components/kabar/create-kabar-modal";
 import { LaporanKaderSpmFormCard } from "@/components/komunitas/laporan-kader-spm-form-card";
 import { RekapLaporanKaderWilayahCard } from "@/components/komunitas/rekap-laporan-kader-wilayah-card";
+import { TanyaAdminButton } from "@/components/warga/tanya-admin-button";
 import { KomunitasPercakapanTab } from "@/components/komunitas/komunitas-percakapan-tab";
 import {
   KomunitasBerjenjangAnggotaTab,
@@ -333,6 +334,7 @@ export function KomunitasDetailClientView({
   >("semua");
   const [searchQueryAnak, setSearchQueryAnak] = useState("");
   const [isAddChildModalOpen, setIsAddChildModalOpen] = useState(false);
+  const [showSpmLockedModal, setShowSpmLockedModal] = useState(false);
 
   const rekapPaudCalc = useMemo(() => {
     if (scopedRekapResult) {
@@ -2244,7 +2246,13 @@ export function KomunitasDetailClientView({
                 {/* 5. Lapor SPM */}
                 <button
                   type="button"
-                  onClick={() => setActiveMainTab("laporan_spm")}
+                  onClick={() => {
+                    if (!isSuperOrPusat) {
+                      setShowSpmLockedModal(true);
+                    } else {
+                      setActiveMainTab("laporan_spm");
+                    }
+                  }}
                   className={cn(
                     "flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-2xs sm:text-xs font-semibold transition-all cursor-pointer border flex-1 sm:flex-initial min-w-[fit-content] whitespace-nowrap",
                     activeMainTab === "laporan_spm"
@@ -2585,7 +2593,13 @@ export function KomunitasDetailClientView({
               {canShowSpmTab && (
                 <button
                   type="button"
-                  onClick={() => setActiveMainTab("laporan_spm")}
+                  onClick={() => {
+                    if (!isSuperOrPusat) {
+                      setShowSpmLockedModal(true);
+                    } else {
+                      setActiveMainTab("laporan_spm");
+                    }
+                  }}
                   className={cn(
                     "flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-2xs sm:text-xs font-semibold transition-all cursor-pointer border flex-1 sm:flex-initial min-w-[fit-content] whitespace-nowrap",
                     activeMainTab === "laporan_spm"
@@ -3341,24 +3355,55 @@ export function KomunitasDetailClientView({
 
         {/* TAB 4: LAPORAN KADER SPM */}
         {activeMainTab === "laporan_spm" && (
-          <div className="space-y-4 animate-in fade-in duration-150 pb-8">
-            {isPosyandu && (
-              <LaporanKaderSpmFormCard
-                komunitas={komunitasData}
-                currentUserId={currentUserId}
-                userName={myProfileName}
-                isAdminOrKader={canAccessLaporanPosyandu}
-              />
-            )}
+          isSuperOrPusat ? (
+            <div className="space-y-4 animate-in fade-in duration-150 pb-8">
+              {isPosyandu && (
+                <LaporanKaderSpmFormCard
+                  komunitas={komunitasData}
+                  currentUserId={currentUserId}
+                  userName={myProfileName}
+                  isAdminOrKader={canAccessLaporanPosyandu}
+                />
+              )}
 
-            {isWargaKita && (
-              <RekapLaporanKaderWilayahCard
-                komunitas={komunitasData}
-                isAdminOrKader={isAdminOrKader}
-                currentUserId={currentUserId}
-              />
-            )}
-          </div>
+              {isWargaKita && (
+                <RekapLaporanKaderWilayahCard
+                  komunitas={komunitasData}
+                  isAdminOrKader={isAdminOrKader}
+                  currentUserId={currentUserId}
+                />
+              )}
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-amber-300 dark:border-amber-700/60 bg-amber-50/70 dark:bg-amber-950/30 p-6 sm:p-8 text-center max-w-xl mx-auto space-y-4 my-6 shadow-xs animate-in fade-in">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30 shadow-xs">
+                <Lock className="h-7 w-7" />
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-base sm:text-lg font-bold text-foreground">
+                  Informasi Lapor SPM
+                </h3>
+                <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed max-w-md mx-auto">
+                  Anda belum bisa Lapor SPM. Selesaikan dulu Tambah Data Anak 0-6, Verifikasi dan Tambah Data ATS jika ada. Klik Tanya Admin untuk info lebih lanjut
+                </p>
+              </div>
+              <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-2">
+                <TanyaAdminButton
+                  currentUserId={currentUserId}
+                  variant="header"
+                  className="w-full sm:w-auto px-5 py-2.5 font-bold shadow-xs"
+                  showTextOnMobile={true}
+                />
+                <button
+                  type="button"
+                  onClick={() => setActiveMainTab("rekap")}
+                  className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2.5 rounded-lg border border-border bg-card text-xs font-semibold text-foreground hover:bg-muted transition-colors cursor-pointer"
+                >
+                  Kembali ke Rekap
+                </button>
+              </div>
+            </div>
+          )
         )}
 
         {/* TAB 5: DAFTAR ANGGOTA */}
@@ -4646,6 +4691,54 @@ export function KomunitasDetailClientView({
         komunitasNama={komunitasData.nama}
         onOpenChat={openChatWithUser}
       />
+
+      {/* 14. Modal Informasi Lapor SPM Sementara Dinonaktifkan (Selain Admin Pusat) */}
+      {showSpmLockedModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
+          <div className="relative w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-xl space-y-5 animate-in zoom-in-95 duration-200">
+            <button
+              type="button"
+              onClick={() => setShowSpmLockedModal(false)}
+              className="absolute top-4 right-4 rounded-lg p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
+              aria-label="Tutup"
+            >
+              <X className="h-5 w-5" />
+            </button>
+
+            <div className="flex flex-col items-center text-center space-y-3 pt-2">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20 shadow-xs">
+                <Lock className="h-7 w-7" />
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-base sm:text-lg font-bold text-foreground">
+                  Informasi Lapor SPM
+                </h3>
+                <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                  Anda belum bisa Lapor SPM. Selesaikan dulu Tambah Data Anak 0-6, Verifikasi dan Tambah Data ATS jika ada. Klik Tanya Admin untuk info lebih lanjut
+                </p>
+              </div>
+            </div>
+
+            <div className="pt-2 flex flex-col sm:flex-row items-center gap-2">
+              <div className="w-full">
+                <TanyaAdminButton
+                  currentUserId={currentUserId}
+                  variant="header"
+                  className="w-full justify-center py-2.5 text-xs font-bold shadow-xs"
+                  showTextOnMobile={true}
+                />
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowSpmLockedModal(false)}
+                className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2.5 rounded-lg border border-border bg-muted/60 text-xs font-semibold text-foreground hover:bg-muted transition-colors cursor-pointer shrink-0"
+              >
+                Tutup
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
