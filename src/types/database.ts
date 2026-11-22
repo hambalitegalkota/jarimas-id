@@ -18,6 +18,13 @@ export interface Profile {
   role_level?: "root_super_admin" | "admin_pusat" | "admin_kota" | "user";
   avatar_url?: string | null;
   nomor_hp?: string | null;
+  username?: string | null;
+  bio?: string | null;
+  nomor_wa?: string | null;
+  instagram_username?: string | null;
+  is_profil_publik?: boolean;
+  tampilkan_komunitas?: boolean;
+  tampilkan_kontak?: boolean;
   created_at?: string;
   updated_at?: string;
 }

@@ -36,7 +36,8 @@ export const LoginSchema = z.object({
     .email("Format email tidak valid"),
   password: z
     .string()
-    .min(1, "Password wajib diisi"),
+    .optional()
+    .default(""),
 });
 
 export type LoginInput = z.infer<typeof LoginSchema>;

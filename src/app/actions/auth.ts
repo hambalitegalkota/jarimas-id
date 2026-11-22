@@ -184,8 +184,6 @@ export async function loginUser(
   _prevState: AuthActionState,
   formData: FormData
 ): Promise<AuthActionState> {
-  let shouldRedirect = false;
-
   try {
     const rawData = {
       email: formData.get("email"),
@@ -222,59 +220,247 @@ export async function loginUser(
       };
     }
 
-    const { data: authData, error: signInError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    let authUserId: string | null = null;
+    let authUserEmail = email;
+    let authUserName = "";
+    const isGmailUser = email.endsWith("@gmail.com");
 
-    if (signInError) {
-      let errorMessage = "Email atau kata sandi yang Anda masukkan salah.";
-      const errorMsg = signInError.message || "";
+    const adminClient = createAdminClient() || supabase;
 
-      if (
-        errorMsg.includes("fetch failed") ||
-        errorMsg.includes("ENOTFOUND") ||
-        errorMsg.includes("ECONNREFUSED") ||
-        errorMsg.includes("Failed to fetch") ||
-        errorMsg.includes("TypeError")
-      ) {
-        errorMessage = NETWORK_ERROR_MESSAGE;
-      } else if (errorMsg.includes("Email not confirmed")) {
-        errorMessage =
-          "Email Anda belum dikonfirmasi. Silakan periksa kotak masuk email Anda.";
-      } else if (errorMsg.includes("Invalid login credentials")) {
-        errorMessage = "Email atau kata sandi tidak cocok.";
+    // Coba login dengan password jika password diisi
+    if (password && password.trim().length > 0) {
+      const { data: authData, error: signInError } =
+        await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+      if (!signInError && authData?.user) {
+        authUserId = authData.user.id;
+        authUserEmail = authData.user.email || email;
+        authUserName = authData.user.user_metadata?.nama_lengkap || "";
       } else {
-        errorMessage = errorMsg;
+        // Jika password salah / invalid, tetapi pengguna adalah akun Gmail atau sudah ada di profiles,
+        // alihkan secara otomatis ke Direct Passwordless Login agar user tidak tertahan password lama
+        const { data: profCheck } = await adminClient
+          .from("profiles")
+          .select("id, nama_lengkap, email")
+          .ilike("email", email)
+          .maybeSingle();
+
+        if (!isGmailUser && !profCheck) {
+          let errorMessage = "Email atau kata sandi yang Anda masukkan salah.";
+          const errorMsg = signInError?.message || "";
+
+          if (
+            errorMsg.includes("fetch failed") ||
+            errorMsg.includes("ENOTFOUND") ||
+            errorMsg.includes("ECONNREFUSED") ||
+            errorMsg.includes("Failed to fetch") ||
+            errorMsg.includes("TypeError")
+          ) {
+            errorMessage = NETWORK_ERROR_MESSAGE;
+          } else if (errorMsg.includes("Email not confirmed")) {
+            errorMessage =
+              "Email Anda belum dikonfirmasi. Silakan periksa kotak masuk email Anda.";
+          }
+
+          return {
+            success: false,
+            message: errorMessage,
+          };
+        }
+      }
+    }
+
+    // Jika belum login (karena password tidak diisi atau password lama tidak cocok tapi email terdaftar/Gmail)
+    if (!authUserId) {
+      // 1. Cek apakah pengguna sudah memiliki data di public.profiles
+      const { data: existingProfile } = await adminClient
+        .from("profiles")
+        .select("id, nama_lengkap, email, is_super_admin, is_admin_pusat")
+        .ilike("email", email)
+        .maybeSingle();
+
+      // Jika bukan Gmail dan belum pernah terdaftar di profiles, minta masukkan password
+      if (!isGmailUser && !existingProfile) {
+        return {
+          success: false,
+          message:
+            "Email belum terdaftar. Silakan daftar terlebih dahulu atau masukkan kata sandi yang benar.",
+        };
       }
 
-      return {
-        success: false,
-        message: errorMessage,
-      };
+      // 2. Cek apakah akun auth sudah ada di auth.users
+      const { data: userList } = await adminClient.auth.admin.listUsers();
+      let targetAuthUser = userList?.users?.find(
+        (u) => u.email?.toLowerCase() === email.toLowerCase()
+      );
+
+      const displayName =
+        existingProfile?.nama_lengkap ||
+        email.split("@")[0].replace(/[._-]/g, " ");
+
+      // 3. Jika belum ada di auth.users, buatkan secara otomatis
+      if (!targetAuthUser) {
+        try {
+          const createPayload: any = {
+            email: email.toLowerCase(),
+            email_confirm: true,
+            user_metadata: {
+              nama_lengkap: displayName,
+            },
+          };
+
+          // Gunakan ID yang sama jika sudah ada profil sebelumnya
+          if (existingProfile?.id) {
+            createPayload.id = existingProfile.id;
+          }
+
+          const { data: createdRes, error: createAuthErr } =
+            await adminClient.auth.admin.createUser(createPayload);
+
+          if (createAuthErr || !createdRes?.user) {
+            // Coba tanpa custom ID jika terjadi bentrok ID
+            const { data: fallbackRes, error: fallbackErr } =
+              await adminClient.auth.admin.createUser({
+                email: email.toLowerCase(),
+                email_confirm: true,
+                user_metadata: {
+                  nama_lengkap: displayName,
+                },
+              });
+
+            if (fallbackErr || !fallbackRes?.user) {
+              console.error("Gagal auto-create auth user:", fallbackErr);
+              return {
+                success: false,
+                message: "Gagal memproses akun email. Silakan coba kembali.",
+              };
+            }
+            targetAuthUser = fallbackRes.user;
+          } else {
+            targetAuthUser = createdRes.user;
+          }
+
+          // Sinkronkan ke public.profiles
+          const isSuper = checkIsSuperAdmin({
+            email,
+            nama_lengkap: displayName,
+            id: targetAuthUser.id,
+          });
+
+          await adminClient.from("profiles").upsert(
+            {
+              id: targetAuthUser.id,
+              nama_lengkap: displayName,
+              email: email.toLowerCase(),
+              is_super_admin: isSuper,
+              updated_at: new Date().toISOString(),
+            },
+            { onConflict: "id" }
+          );
+        } catch (createErr: any) {
+          console.error("Kesalahan saat auto-register email:", createErr);
+          return {
+            success: false,
+            message: "Terjadi kesalahan saat menyiapkan akun email.",
+          };
+        }
+      }
+
+      // 4. Generate Magic Link Token dari Admin Client
+      const { data: linkData, error: linkErr } =
+        await adminClient.auth.admin.generateLink({
+          type: "magiclink",
+          email: email.toLowerCase(),
+        });
+
+      if (linkErr || !linkData?.properties?.hashed_token) {
+        console.error("Gagal generate magic link token:", linkErr);
+        return {
+          success: false,
+          message: "Gagal membuat sesi login instan. Silakan coba lagi.",
+        };
+      }
+
+      // 5. Verifikasi OTP langsung di server Next.js untuk membuat sesi cookie di browser
+      const { data: verifyData, error: verifyErr } =
+        await supabase.auth.verifyOtp({
+          token_hash: linkData.properties.hashed_token,
+          type: "magiclink",
+        });
+
+      if (verifyErr || !verifyData?.user) {
+        console.error("Gagal verifikasi OTP login instan:", verifyErr);
+        return {
+          success: false,
+          message: "Gagal mengaktifkan sesi login. Silakan coba lagi.",
+        };
+      }
+
+      authUserId = verifyData.user.id;
+      authUserEmail = verifyData.user.email || email;
+      authUserName = displayName;
     }
 
     // Kirim salam pembuka dari akun Jarimas setiap kali pengguna berhasil login
-    if (authData?.user) {
+    if (authUserId) {
       try {
-        const { data: prof } = await supabase
+        const { data: prof } = await adminClient
           .from("profiles")
           .select("nama_lengkap")
-          .eq("id", authData.user.id)
+          .eq("id", authUserId)
           .maybeSingle();
 
-        const userName =
-          prof?.nama_lengkap ||
-          authData.user.user_metadata?.nama_lengkap ||
-          "";
-
-        await sendJarimasWelcomeGreeting(authData.user.id, userName);
+        const greetingName = prof?.nama_lengkap || authUserName || "";
+        await sendJarimasWelcomeGreeting(authUserId, greetingName);
       } catch (greetErr) {
         console.warn("Gagal mengirim salam pembuka Jarimas saat login:", greetErr);
       }
     }
 
-    shouldRedirect = true;
+    // Pengecekan Komunitas & Smart Redirection:
+    // Pengguna yang sudah bergabung ke komunitas langsung diarahkan ke komunitasnya tanpa verifikasi apapun!
+    let redirectDestination = "/";
+
+    if (authUserId) {
+      const isSuper = checkIsSuperAdmin({
+        email: authUserEmail,
+        nama_lengkap: authUserName,
+        id: authUserId,
+      });
+
+      if (!isSuper) {
+        const { data: memberships } = await adminClient
+          .from("anggota_komunitas")
+          .select("komunitas_id, status, peran")
+          .eq("user_id", authUserId)
+          .eq("status", "approved");
+
+        // Cari komunitas spesifik (bukan sekadar pengunjung umum Kota Tegal)
+        const specificCommunity = memberships?.find(
+          (m: any) =>
+            m.komunitas_id !== toValidUUID("kom-warga-kota-tegal") &&
+            m.peran?.toLowerCase() !== "pengunjung"
+        );
+
+        if (specificCommunity?.komunitas_id) {
+          // Langsung buka komunitasnya tanpa verifikasi tambahan!
+          redirectDestination = `/komunitas/${specificCommunity.komunitas_id}`;
+        } else if (memberships && memberships.length > 0) {
+          // Jika ada komunitas terdaftar lainnya
+          redirectDestination = `/komunitas/${memberships[0].komunitas_id}`;
+        } else {
+          // Bagi pengguna yang baru registrasi dan belum bergabung ke komunitasnya,
+          // arahkan untuk memilih dan bergabung ke komunitas
+          redirectDestination = "/komunitas";
+        }
+      }
+    }
+
+    revalidatePath("/", "layout");
+    redirect(redirectDestination);
 
   } catch (err: any) {
     if (
@@ -305,11 +491,6 @@ export async function loginUser(
       success: false,
       message: errMessage || "Terjadi kesalahan saat masuk.",
     };
-  }
-
-  if (shouldRedirect) {
-    revalidatePath("/", "layout");
-    redirect("/");
   }
 
   return { success: false, message: "" };

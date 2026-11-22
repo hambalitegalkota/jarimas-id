@@ -39,6 +39,8 @@ import { extractKomunitasMetadata, getUserAdminInfo } from "@/lib/admin-helpers"
 import { getWargaHierarchyChain, findKecamatanByKelurahan, slugify, findOrGenerateKomunitasSeed } from "@/lib/constants/tegal-data";
 import { type WargaTierItem } from "@/components/komunitas/unified-warga-card";
 import { ProfilKomunitasSection } from "@/components/profil/profil-komunitas-section";
+import { EditProfilDialog } from "@/components/profil/edit-profil-dialog";
+import { ShareProfileCard } from "@/components/profil/share-profile-card";
 import { PrintButton } from "@/components/ui/print-button";
 import type { PendingApprovalItem, AnggotaKomunitas } from "@/types/database";
 
@@ -532,8 +534,9 @@ export default async function ProfilePage() {
     <div className="flex flex-col flex-1 px-4 sm:px-6 md:px-8 py-4 sm:py-6 gap-5 sm:gap-6 max-w-5xl xl:max-w-6xl mx-auto w-full pb-24 bg-background">
       {/* Header Profil Card - Super App Clean Card */}
       <section className="relative rounded-lg border border-border bg-card p-4 sm:p-6 shadow-sm">
-        {/* Tombol Cetak & Keluar dari Akun di Pojok Kanan Atas */}
-        <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-10 flex items-center gap-2">
+        {/* Tombol Cetak, Edit Profil & Keluar dari Akun di Pojok Kanan Atas */}
+        <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-10 flex flex-wrap items-center justify-end gap-2">
+          <EditProfilDialog profile={profile} />
           <PrintButton variant="outline" size="sm" hideTextOnMobile={true} className="min-h-[36px] h-9" />
           <form action={logoutUser}>
             <button
@@ -599,11 +602,29 @@ export default async function ProfilePage() {
               <div className="flex items-center justify-center sm:justify-start gap-2 text-xs sm:text-sm text-muted-foreground font-mono">
                 <Mail className="h-4 w-4 shrink-0 text-muted-foreground" />
                 <span>{userEmail}</span>
+                {profile?.username && (
+                  <span className="text-primary font-semibold">(@{profile.username})</span>
+                )}
               </div>
+
+              {/* Bio Pengguna */}
+              {profile?.bio && (
+                <p className="text-xs text-foreground/80 pt-1 leading-relaxed line-clamp-2 max-w-xl">
+                  {profile.bio}
+                </p>
+              )}
             </div>
           </div>
         </div>
       </section>
+
+      {/* Shareable Public Profile Card (Media Sosial Style) */}
+      <ShareProfileCard
+        userId={user.id}
+        username={profile?.username}
+        namaLengkap={namaLengkap}
+        isPublic={profile?.is_profil_publik !== false}
+      />
 
       {/* SECTION: Komunitas Binaan & Dikelola Admin / Komunitas Saya */}
       <ProfilKomunitasSection

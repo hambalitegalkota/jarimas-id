@@ -29,6 +29,14 @@ ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS is_super_admin BOOLEAN NOT 
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS is_admin_pusat BOOLEAN NOT NULL DEFAULT FALSE;
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT now();
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT now();
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS username TEXT;
+CREATE UNIQUE INDEX IF NOT EXISTS profiles_username_unique_idx ON public.profiles(LOWER(username)) WHERE username IS NOT NULL;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS bio TEXT DEFAULT '';
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS nomor_wa TEXT DEFAULT '';
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS instagram_username TEXT DEFAULT '';
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS is_profil_publik BOOLEAN DEFAULT TRUE;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS tampilkan_komunitas BOOLEAN DEFAULT TRUE;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS tampilkan_kontak BOOLEAN DEFAULT TRUE;
 
 -- Trigger otomatis sinkronisasi dari auth.users ke profiles
 CREATE OR REPLACE FUNCTION public.handle_new_user()
