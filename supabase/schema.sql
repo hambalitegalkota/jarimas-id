@@ -546,22 +546,7 @@ CREATE POLICY "Super Admin dapat mengelola komunitas" ON public.komunitas FOR AL
   EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND is_super_admin = true)
 );
 
--- 8.3 Anggota Komunitas Policies (dengan safe ::text cast)
-DROP POLICY IF EXISTS "Anggota komunitas dapat dibaca oleh semua pengguna" ON public.anggota_komunitas;
-CREATE POLICY "Anggota komunitas dapat dibaca oleh semua pengguna" ON public.anggota_komunitas FOR SELECT USING (true);
-
-DROP POLICY IF EXISTS "Pengguna dapat mendaftar ke komunitas" ON public.anggota_komunitas;
-DROP POLICY IF EXISTS "Pengguna dapat mendaftar atau didaftarkan admin ke komunitas" ON public.anggota_komunitas;
-CREATE POLICY "Pengguna dapat mendaftar atau didaftarkan admin ke komunitas" ON public.anggota_komunitas FOR INSERT WITH CHECK (
-  auth.uid() = user_id OR
-  EXISTS (
-    SELECT 1 FROM public.profiles
-    WHERE id = auth.uid() AND (is_super_admin = true OR is_admin_pusat = true)
-  ) OR
-  public.check_user_can_manage_community(auth.uid(), komunitas_id)
-);
-
--- Helper function: Cek wewenang hierarkis admin komunitas
+-- Helper function: Cek wewenang hierarkis admin komunitas (Didefinisikan sebelum dipanggil oleh Policy)
 CREATE OR REPLACE FUNCTION public.check_user_can_manage_community(
   p_user_id UUID,
   p_target_komunitas_id UUID
@@ -663,6 +648,21 @@ BEGIN
   RETURN false;
 END;
 $$;
+
+-- 8.3 Anggota Komunitas Policies (dengan safe ::text cast)
+DROP POLICY IF EXISTS "Anggota komunitas dapat dibaca oleh semua pengguna" ON public.anggota_komunitas;
+CREATE POLICY "Anggota komunitas dapat dibaca oleh semua pengguna" ON public.anggota_komunitas FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Pengguna dapat mendaftar ke komunitas" ON public.anggota_komunitas;
+DROP POLICY IF EXISTS "Pengguna dapat mendaftar atau didaftarkan admin ke komunitas" ON public.anggota_komunitas;
+CREATE POLICY "Pengguna dapat mendaftar atau didaftarkan admin ke komunitas" ON public.anggota_komunitas FOR INSERT WITH CHECK (
+  auth.uid() = user_id OR
+  EXISTS (
+    SELECT 1 FROM public.profiles
+    WHERE id = auth.uid() AND (is_super_admin = true OR is_admin_pusat = true)
+  ) OR
+  public.check_user_can_manage_community(auth.uid(), komunitas_id)
+);
 
 DROP POLICY IF EXISTS "Pengguna/Admin dapat mengelola keanggotaan" ON public.anggota_komunitas;
 CREATE POLICY "Pengguna/Admin dapat mengelola keanggotaan" ON public.anggota_komunitas FOR UPDATE USING (

@@ -16,7 +16,7 @@ import { updateSession } from "@/utils/supabase/middleware";
 // - Buka URL: https://jarimas.id/?bypass=off untuk kembali melihat tampilan perbaikan.
 // ============================================================================
 export const IS_MAINTENANCE_ACTIVE =
-  process.env.NEXT_PUBLIC_MAINTENANCE_MODE === "false" ? false : true;
+  process.env.NEXT_PUBLIC_MAINTENANCE_MODE === "true" ? true : false;
 
 export async function middleware(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl;
