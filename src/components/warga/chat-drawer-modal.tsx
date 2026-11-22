@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
+import Link from "next/link";
 import {
   X,
   Send,
@@ -503,37 +504,65 @@ export function ChatDrawerModal({
         <div className="flex items-center justify-between px-3.5 sm:px-4 py-3 border-b-2 border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/90 shrink-0">
           <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
             {/* User Avatar */}
-            <div className="relative shrink-0">
-              <div className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-2xl bg-gradient-to-tr from-teal-600 via-emerald-600 to-teal-800 text-white font-black text-sm sm:text-base shadow-xs border border-white dark:border-slate-800">
-                {isJarimasBot ? (
+            {isJarimasBot ? (
+              <div className="relative shrink-0">
+                <div className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-2xl bg-gradient-to-tr from-teal-600 via-emerald-600 to-teal-800 text-white font-black text-sm sm:text-base shadow-xs border border-white dark:border-slate-800">
                   <Sparkles className="h-5 w-5 text-amber-300 animate-pulse" />
-                ) : targetUser.avatar_url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={targetUser.avatar_url}
-                    alt={targetUser.nama_lengkap}
-                    className="h-full w-full object-cover rounded-2xl"
-                  />
-                ) : (
-                  <span>{initial}</span>
-                )}
+                </div>
+                <span
+                  className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-white dark:border-slate-900 shadow-xs bg-emerald-500 animate-pulse"
+                  title="Sedang Online"
+                />
               </div>
-              {/* Online Indicator */}
-              <span
-                className={cn(
-                  "absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-white dark:border-slate-900 shadow-xs",
-                  isOnline || isJarimasBot ? "bg-emerald-500 animate-pulse" : "bg-slate-300 dark:bg-slate-600"
-                )}
-                title={isOnline || isJarimasBot ? "Sedang Online" : "Sedang Offline"}
-              />
-            </div>
+            ) : (
+              <Link
+                href={targetUser.username ? `/u/${targetUser.username}` : `/u/${targetUser.id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="relative shrink-0 group block"
+                title={`Buka profil ${targetUser.nama_lengkap}`}
+              >
+                <div className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-2xl bg-gradient-to-tr from-teal-600 via-emerald-600 to-teal-800 text-white font-black text-sm sm:text-base shadow-xs border border-white dark:border-slate-800 group-hover:ring-2 group-hover:ring-teal-500 transition-all">
+                  {targetUser.avatar_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={targetUser.avatar_url}
+                      alt={targetUser.nama_lengkap}
+                      className="h-full w-full object-cover rounded-2xl"
+                    />
+                  ) : (
+                    <span>{initial}</span>
+                  )}
+                </div>
+                {/* Online Indicator */}
+                <span
+                  className={cn(
+                    "absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-white dark:border-slate-900 shadow-xs",
+                    isOnline ? "bg-emerald-500 animate-pulse" : "bg-slate-300 dark:bg-slate-600"
+                  )}
+                  title={isOnline ? "Sedang Online" : "Sedang Offline"}
+                />
+              </Link>
+            )}
 
             {/* User Info */}
             <div className="min-w-0">
               <div className="flex items-center gap-1.5 flex-wrap">
-                <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 truncate">
-                  {targetUser.nama_lengkap}
-                </h3>
+                {isJarimasBot ? (
+                  <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 truncate">
+                    {targetUser.nama_lengkap}
+                  </h3>
+                ) : (
+                  <Link
+                    href={targetUser.username ? `/u/${targetUser.username}` : `/u/${targetUser.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 truncate hover:text-teal-600 dark:hover:text-teal-400 hover:underline transition-colors flex items-center gap-1"
+                    title={`Buka profil ${targetUser.nama_lengkap}`}
+                  >
+                    <span className="truncate">{targetUser.nama_lengkap}</span>
+                  </Link>
+                )}
                 {isTargetSuperAdmin ? (
                   <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-100 dark:bg-amber-950/80 text-amber-900 dark:text-amber-200 text-[10px] font-extrabold border border-amber-300 dark:border-amber-700">
                     <Crown className="h-2.5 w-2.5 text-amber-600 dark:text-amber-400" />

@@ -806,6 +806,7 @@ export function SuperAdminWargaMonitoringTool({
                 // Ambil HANYA komunitas awal/primer pengguna (tanpa wrapper berjenjang & auto-sync default)
                 const initialComms = getUserInitialCommunities(userItem);
                 const hasNoCommunity = initialComms.length === 0;
+                const profileHref = userItem.username ? `/u/${userItem.username}` : `/u/${userItem.id}`;
 
                 return (
                   <div
@@ -820,8 +821,12 @@ export function SuperAdminWargaMonitoringTool({
                     <div className="space-y-3">
                       {/* User Header Info */}
                       <div className="flex items-start gap-3">
-                        <div className="relative shrink-0">
-                          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-primary-foreground font-black text-base shadow-xs border border-border">
+                        <Link
+                          href={profileHref}
+                          className="relative shrink-0 group block"
+                          title={`Buka profil ${userItem.nama_lengkap}`}
+                        >
+                          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-primary-foreground font-black text-base shadow-xs border border-border group-hover:ring-2 group-hover:ring-primary/60 transition-all">
                             {userItem.avatar_url ? (
                               // eslint-disable-next-line @next/next/no-img-element
                               <img
@@ -833,13 +838,18 @@ export function SuperAdminWargaMonitoringTool({
                               <span>{initial}</span>
                             )}
                           </div>
-                        </div>
+                        </Link>
 
                         <div className="min-w-0 flex-1 space-y-0.5">
                           <div className="flex items-center gap-1.5 flex-wrap">
-                            <h4 className="text-sm font-bold text-foreground truncate">
-                              {userItem.nama_lengkap}
-                            </h4>
+                            <Link
+                              href={profileHref}
+                              className="text-sm font-bold text-foreground truncate hover:text-primary hover:underline transition-colors flex items-center gap-1 group"
+                              title={`Buka profil ${userItem.nama_lengkap}`}
+                            >
+                              <span className="truncate">{userItem.nama_lengkap}</span>
+                              <ExternalLink className="h-3 w-3 shrink-0 text-muted-foreground/60 group-hover:text-primary transition-colors" />
+                            </Link>
                             {isSuperAdmin(userItem) ? (
                               <span className="rounded-md bg-amber-500/10 text-amber-700 dark:text-amber-400 px-1.5 py-0.5 text-[9px] font-bold border border-amber-500/30">
                                 Super Admin

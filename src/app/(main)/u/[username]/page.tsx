@@ -10,6 +10,7 @@ import {
   MapPin,
   Share2,
   Phone,
+  Mail,
   ArrowLeft,
   Lock,
   Globe,
@@ -17,6 +18,8 @@ import {
   CheckCircle2,
   Calendar,
 } from "lucide-react";
+import { createClient } from "@/utils/supabase/server";
+import { isSuperOrAdminPusatOrKota } from "@/lib/utils";
 import { getPublicProfileData } from "@/app/actions/profil";
 import { PublicProfileShareButtons } from "@/components/profil/public-profile-share-buttons";
 
@@ -80,7 +83,55 @@ export default async function PublicProfilePage({
   params,
 }: PublicProfilePageProps) {
   const { username } = await params;
-  const result = await getPublicProfileData(username);
+
+  // 1. Cek sesi pengunjung saat ini untuk hak akses Super Admin / Admin Pusat
+  const supabase = await createClient();
+  const {
+    data: { user: currentUser },
+  } = await supabase.auth.getUser();
+
+  let viewerIsAdmin = false;
+  if (currentUser) {
+    const { data: viewerProfile } = await supabase
+      .from("profiles")
+      .select("id, email, is_super_admin, is_admin_pusat, is_admin_kota, peran, nama_lengkap")
+      .eq("id", currentUser.id)
+      .maybeSingle();
+
+    const userCtx = {
+      ...viewerProfile,
+      id: currentUser.id,
+      email: viewerProfile?.email || currentUser.email,
+      nama_lengkap: viewerProfile?.nama_lengkap || currentUser.user_metadata?.nama_lengkap,
+    };
+
+    viewerIsAdmin = isSuperOrAdminPusatOrKota(userCtx);
+
+    // Jika belum terdeteksi dari profil langsung, cek apakah terdaftar sebagai admin di komunitas tingkat kota
+    if (!viewerIsAdmin) {
+      const { data: kotaMemberships } = await supabase
+        .from("anggota_komunitas")
+        .select(`
+          peran,
+          komunitas:komunitas_id(nama, jenis)
+        `)
+        .eq("user_id", currentUser.id)
+        .eq("status", "approved");
+
+      viewerIsAdmin = (kotaMemberships || []).some((m: any) => {
+        const p = (m.peran || "").toLowerCase();
+        const kName = (m.komunitas?.nama || "").toLowerCase();
+        return (
+          p.includes("admin kota") ||
+          p.includes("admin_kota") ||
+          (kName.includes("kota tegal") && (p.includes("admin") || p.includes("pengurus")))
+        );
+      });
+    }
+  }
+
+  // Ambil data profil (jika admin/pemilik, muat seluruh data termasuk yang diset privat)
+  const result = await getPublicProfileData(username, viewerIsAdmin);
 
   if (!result || !result.profile) {
     return (
@@ -110,7 +161,10 @@ export default async function PublicProfilePage({
   }
 
   const { profile, communities } = result;
+  const isOwner = currentUser?.id === profile.id;
   const isPrivate = profile.is_profil_publik === false;
+  // Super Admin, Admin Kota, dan pemilik akun dapat melihat seluruh profil baik publik maupun privat
+  const canViewFullProfile = !isPrivate || viewerIsAdmin || isOwner;
 
   const joinDate = profile.created_at
     ? new Date(profile.created_at).toLocaleDateString("id-ID", {
@@ -147,7 +201,7 @@ export default async function PublicProfilePage({
             <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px]" />
             <div className="absolute top-3 right-3 flex items-center gap-1.5 rounded-full bg-black/30 backdrop-blur-md px-3 py-1 text-2xs text-white/90 border border-white/20">
               <Globe className="h-3 w-3" />
-              <span>Profil Publik</span>
+              <span>{isPrivate ? "Profil Privat" : "Profil Publik"}</span>
             </div>
           </div>
 
@@ -192,8 +246,8 @@ export default async function PublicProfilePage({
               </div>
             </div>
 
-            {/* If profile is set to private */}
-            {isPrivate ? (
+            {/* If profile is set to private and viewer is NOT authorized */}
+            {!canViewFullProfile ? (
               <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-5 text-center space-y-2 mt-4">
                 <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-amber-500/20 text-amber-600">
                   <Lock className="h-5 w-5" />
@@ -204,8 +258,23 @@ export default async function PublicProfilePage({
                 </p>
               </div>
             ) : (
-              /* Public Info Content */
+              /* Public / Admin Info Content */
               <div className="space-y-5">
+                {/* Banner Akses Khusus jika Profil Privat dibuka oleh Admin / Pemilik */}
+                {isPrivate && (
+                  <div className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-3.5 flex items-center justify-between gap-3 text-xs text-amber-900 dark:text-amber-200 mt-2">
+                    <div className="flex items-center gap-2">
+                      <Lock className="h-4 w-4 text-amber-600 shrink-0" />
+                      <span>
+                        <strong>Mode Akses Khusus:</strong> Profil ini disetel privat oleh pengguna, namun terbuka penuh untuk Anda sebagai <strong>{viewerIsAdmin ? "Super Admin / Admin Kota" : "Pemilik Akun"}</strong>.
+                      </span>
+                    </div>
+                    <span className="shrink-0 px-2 py-0.5 rounded-md bg-amber-500/20 text-[10px] font-extrabold border border-amber-500/30">
+                      PRIVAT
+                    </span>
+                  </div>
+                )}
+
                 {/* Name & Badges */}
                 <div className="space-y-1">
                   <div className="flex flex-wrap items-center gap-2">
@@ -247,7 +316,7 @@ export default async function PublicProfilePage({
                   </div>
                 )}
 
-                {/* Meta details (Joined date, location) */}
+                {/* Meta details (Joined date, location, email for admin) */}
                 <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
                   {joinDate && (
                     <div className="flex items-center gap-1.5">
@@ -259,20 +328,29 @@ export default async function PublicProfilePage({
                     <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
                     <span>Kota Tegal, Jawa Tengah</span>
                   </div>
+                  {(viewerIsAdmin || isOwner) && profile.email && (
+                    <div className="flex items-center gap-1.5 text-primary">
+                      <Mail className="h-3.5 w-3.5 text-primary" />
+                      <span className="font-mono text-xs font-medium">{profile.email}</span>
+                      <span className="rounded bg-primary/10 border border-primary/20 px-1.5 py-0.2 text-[9px] font-bold text-primary">
+                        Terverifikasi
+                      </span>
+                    </div>
+                  )}
                 </div>
 
-                {/* Social Media & Contact Links */}
-                {(profile.tampilkan_kontak !== false && profile.nomor_wa || profile.instagram_username) && (
+                {/* Social Media & Contact Links (Terbuka untuk publik jika diizinkan, atau selalu untuk Admin) */}
+                {(profile.tampilkan_kontak !== false || viewerIsAdmin || isOwner) && (profile.nomor_wa || profile.instagram_username) && (
                   <div className="flex flex-wrap items-center gap-2.5 pt-1">
-                    {profile.tampilkan_kontak !== false && profile.nomor_wa && (
+                    {profile.nomor_wa && (
                       <a
-                        href={`https://wa.me/${profile.nomor_wa}`}
+                        href={`https://wa.me/${profile.nomor_wa.replace(/\D/g, '')}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex min-h-[36px] items-center gap-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-1.5 text-xs font-semibold transition-all shadow-xs active:scale-98"
                       >
                         <Phone className="h-3.5 w-3.5" />
-                        <span>Kirim Pesan WhatsApp</span>
+                        <span>Kirim Pesan WhatsApp ({profile.nomor_wa})</span>
                       </a>
                     )}
 
@@ -290,8 +368,8 @@ export default async function PublicProfilePage({
                   </div>
                 )}
 
-                {/* Joined Communities Section */}
-                {profile.tampilkan_komunitas !== false && communities && communities.length > 0 && (
+                {/* Joined Communities Section (Terbuka untuk publik jika diizinkan, atau selalu untuk Admin) */}
+                {(profile.tampilkan_komunitas !== false || viewerIsAdmin || isOwner) && communities && communities.length > 0 && (
                   <div className="space-y-3 pt-3 border-t border-border">
                     <div className="flex items-center justify-between">
                       <h2 className="text-xs sm:text-sm font-bold text-foreground flex items-center gap-1.5">

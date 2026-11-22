@@ -286,7 +286,7 @@ export async function getRegisteredUsers(params?: {
     if (isSuperAdmin || isAdminPusatUser || isAdminKotaUser || isCurrentAdminBidang) {
       const { data: profiles, error: profileErr } = await supabase
         .from("profiles")
-        .select("id, nama_lengkap, email, nomor_hp, avatar_url, is_super_admin, created_at")
+        .select("id, nama_lengkap, email, nomor_hp, avatar_url, is_super_admin, username, created_at")
         .order("created_at", { ascending: false })
         .limit(5000);
 
@@ -321,7 +321,7 @@ export async function getRegisteredUsers(params?: {
       if (userIdsToFetch.size > 0) {
         const { data: profiles, error: profileErr } = await supabase
           .from("profiles")
-          .select("id, nama_lengkap, email, nomor_hp, avatar_url, is_super_admin, created_at")
+          .select("id, nama_lengkap, email, nomor_hp, avatar_url, is_super_admin, username, created_at")
           .in("id", Array.from(userIdsToFetch))
           .order("created_at", { ascending: false })
           .limit(5000);
@@ -428,6 +428,7 @@ export async function getRegisteredUsers(params?: {
       return {
         id: p.id,
         nama_lengkap: p.nama_lengkap || "Warga Jarimas",
+        username: p.username || null,
         email: p.email,
         nomor_hp: p.nomor_hp,
         avatar_url: p.avatar_url,

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition, useEffect, useRef } from "react";
+import Link from "next/link";
 import {
   MessageCircle,
   Globe,
@@ -122,6 +123,12 @@ export function KabarCard({
   const authorName =
     kabar.profiles?.nama_lengkap || "Warga JARIMAS";
   const authorInitial = authorName.charAt(0).toUpperCase();
+  const authorProfile = kabar.profiles as any;
+  const authorUrl = authorProfile?.username
+    ? `/u/${authorProfile.username}`
+    : kabar.user_id
+    ? `/u/${kabar.user_id}`
+    : null;
 
   const visibleComments = comments;
 
@@ -326,6 +333,12 @@ export function KabarCard({
   ) => {
     const commentAuthor = comment.profiles?.nama_lengkap || "Warga";
     const commentInitial = commentAuthor.charAt(0).toUpperCase();
+    const commentProfile = comment.profiles as any;
+    const commentAuthorUrl = commentProfile?.username
+      ? `/u/${commentProfile.username}`
+      : comment.user_id
+      ? `/u/${comment.user_id}`
+      : null;
 
     const canDeleteThisComment =
       currentUserId &&
@@ -347,22 +360,47 @@ export function KabarCard({
           isReply && "pt-1"
         )}
       >
-        <div
-          className={cn(
-            "flex shrink-0 items-center justify-center rounded-lg font-bold border",
-            isReply
-              ? "h-7 w-7 text-xs bg-muted border-border text-muted-foreground"
-              : "h-8 w-8 text-xs bg-primary/10 border-primary/20 text-primary"
-          )}
-        >
-          {commentInitial}
-        </div>
+        {commentAuthorUrl ? (
+          <Link
+            href={commentAuthorUrl}
+            className={cn(
+              "flex shrink-0 items-center justify-center rounded-lg font-bold border hover:ring-2 hover:ring-primary/60 transition-all",
+              isReply
+                ? "h-7 w-7 text-xs bg-muted border-border text-muted-foreground"
+                : "h-8 w-8 text-xs bg-primary/10 border-primary/20 text-primary"
+            )}
+            title={`Buka profil ${commentAuthor}`}
+          >
+            {commentInitial}
+          </Link>
+        ) : (
+          <div
+            className={cn(
+              "flex shrink-0 items-center justify-center rounded-lg font-bold border",
+              isReply
+                ? "h-7 w-7 text-xs bg-muted border-border text-muted-foreground"
+                : "h-8 w-8 text-xs bg-primary/10 border-primary/20 text-primary"
+            )}
+          >
+            {commentInitial}
+          </div>
+        )}
         <div className="flex-1 rounded-lg border border-border bg-card p-3 text-sm space-y-1 shadow-2xs">
           <div className="flex items-center justify-between gap-1 flex-wrap">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="font-bold text-foreground text-xs sm:text-sm">
-                {commentAuthor}
-              </span>
+              {commentAuthorUrl ? (
+                <Link
+                  href={commentAuthorUrl}
+                  className="font-bold text-foreground text-xs sm:text-sm hover:text-primary hover:underline transition-colors"
+                  title={`Buka profil ${commentAuthor}`}
+                >
+                  {commentAuthor}
+                </Link>
+              ) : (
+                <span className="font-bold text-foreground text-xs sm:text-sm">
+                  {commentAuthor}
+                </span>
+              )}
 
               {repliedToAuthor && (
                 <span className="inline-flex items-center gap-1 text-2xs text-primary font-semibold">
@@ -417,15 +455,35 @@ export function KabarCard({
       <div className="flex items-start justify-between p-4 pb-2.5">
         <div className="flex items-center gap-3">
           {/* Avatar */}
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-primary/20 bg-primary/10 text-sm font-bold text-primary">
-            {authorInitial}
-          </div>
+          {authorUrl ? (
+            <Link
+              href={authorUrl}
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-primary/20 bg-primary/10 text-sm font-bold text-primary hover:ring-2 hover:ring-primary/60 transition-all"
+              title={`Buka profil ${authorName}`}
+            >
+              {authorInitial}
+            </Link>
+          ) : (
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-primary/20 bg-primary/10 text-sm font-bold text-primary">
+              {authorInitial}
+            </div>
+          )}
 
           <div className="space-y-0.5">
             <div className="flex items-center gap-2 flex-wrap">
-              <h3 className="text-sm sm:text-base font-bold text-foreground leading-tight">
-                {authorName}
-              </h3>
+              {authorUrl ? (
+                <Link
+                  href={authorUrl}
+                  className="text-sm sm:text-base font-bold text-foreground leading-tight hover:text-primary hover:underline transition-colors"
+                  title={`Buka profil ${authorName}`}
+                >
+                  {authorName}
+                </Link>
+              ) : (
+                <h3 className="text-sm sm:text-base font-bold text-foreground leading-tight">
+                  {authorName}
+                </h3>
+              )}
               {checkIsSuperAdmin(kabar.profiles) ? (
                 <span className="rounded-md bg-secondary/15 px-2 py-0.5 text-2xs font-bold text-secondary border border-secondary/30">
                   SUPER ADMIN

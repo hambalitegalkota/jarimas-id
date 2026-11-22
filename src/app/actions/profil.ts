@@ -148,16 +148,17 @@ export async function updateUserProfile(
 }
 
 /**
- * Fetch data profil publik berdasarkan username atau ID profil
+ * Fetch data profil publik berdasarkan username, ID profil, atau email.
+ * Jika forceIncludeAll = true (untuk Super Admin / Admin Kota / Pemilik), seluruh komunitas dan rincian tetap dimuat.
  */
-export async function getPublicProfileData(identifier: string) {
+export async function getPublicProfileData(identifier: string, forceIncludeAll: boolean = false) {
   try {
     const adminClient = createAdminClient();
     if (!adminClient) return null;
 
     const cleanId = identifier.trim().toLowerCase().replace(/^@/, "");
 
-    // Coba cari berdasarkan username terlebih dahulu
+    // 1. Coba cari berdasarkan username terlebih dahulu
     let query = adminClient
       .from("profiles")
       .select("id, nama_lengkap, email, avatar_url, username, bio, nomor_wa, instagram_username, is_super_admin, is_admin_pusat, is_profil_publik, tampilkan_komunitas, tampilkan_kontak, created_at")
@@ -166,7 +167,7 @@ export async function getPublicProfileData(identifier: string) {
 
     let { data: profile } = await query;
 
-    // Jika tidak ditemukan dan identifier adalah format UUID, cari berdasarkan ID
+    // 2. Jika tidak ditemukan dan identifier adalah format UUID, cari berdasarkan ID
     if (!profile) {
       const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(cleanId);
       if (isUUID) {
@@ -179,13 +180,23 @@ export async function getPublicProfileData(identifier: string) {
       }
     }
 
+    // 3. Jika tidak ditemukan dan identifier mengandung format email, cari berdasarkan email
+    if (!profile && cleanId.includes("@")) {
+      const { data: profileByEmail } = await adminClient
+        .from("profiles")
+        .select("id, nama_lengkap, email, avatar_url, username, bio, nomor_wa, instagram_username, is_super_admin, is_admin_pusat, is_profil_publik, tampilkan_komunitas, tampilkan_kontak, created_at")
+        .ilike("email", cleanId)
+        .maybeSingle();
+      profile = profileByEmail;
+    }
+
     if (!profile) {
       return null;
     }
 
-    // Ambil komunitas jika pengguna mengizinkan tampilkan komunitas
+    // Ambil komunitas jika pengguna mengizinkan tampilkan komunitas ATAU dilihat oleh Admin / Pemilik
     let communities: any[] = [];
-    if (profile.tampilkan_komunitas !== false) {
+    if (profile.tampilkan_komunitas !== false || forceIncludeAll) {
       const { data: memberships } = await adminClient
         .from("anggota_komunitas")
         .select(`

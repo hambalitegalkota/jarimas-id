@@ -350,6 +350,7 @@ export function RegisteredUsersSection({
             const initial = userItem.nama_lengkap.charAt(0).toUpperCase() || "W";
             const isLoadingThisUser = loadingActionUserId === userItem.id;
             const primaryComm = userItem.komunitas_list?.[0];
+            const profileHref = userItem.username ? `/u/${userItem.username}` : `/u/${userItem.id}`;
 
             return (
               <div
@@ -365,8 +366,12 @@ export function RegisteredUsersSection({
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3">
                       {/* Avatar */}
-                      <div className="relative shrink-0">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-tr from-emerald-600 via-teal-600 to-emerald-800 text-white font-black text-lg shadow-sm border-2 border-white dark:border-slate-800">
+                      <Link
+                        href={profileHref}
+                        className="relative shrink-0 group block"
+                        title={`Buka profil ${userItem.nama_lengkap}`}
+                      >
+                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-tr from-emerald-600 via-teal-600 to-emerald-800 text-white font-black text-lg shadow-sm border-2 border-white dark:border-slate-800 group-hover:scale-105 group-hover:ring-2 group-hover:ring-emerald-500/50 transition-all">
                           {userItem.avatar_url ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img
@@ -379,14 +384,18 @@ export function RegisteredUsersSection({
                           )}
                         </div>
                         <span className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-emerald-500 border-2 border-white dark:border-slate-900 ring-1 ring-emerald-400" />
-                      </div>
+                      </Link>
 
                       {/* Name & Subtitle */}
                       <div className="min-w-0">
                         <div className="flex items-center gap-1.5 flex-wrap">
-                          <h3 className="text-sm font-black text-slate-900 dark:text-slate-100 truncate">
-                            {userItem.nama_lengkap}
-                          </h3>
+                          <Link
+                            href={profileHref}
+                            className="text-sm font-black text-slate-900 dark:text-slate-100 truncate hover:text-emerald-600 dark:hover:text-emerald-400 hover:underline transition-colors block"
+                            title={`Buka profil ${userItem.nama_lengkap}`}
+                          >
+                            <h3 className="truncate">{userItem.nama_lengkap}</h3>
+                          </Link>
                           {isSuperAdmin(userItem) ? (
                             <span className="inline-flex items-center gap-0.5 rounded-full bg-amber-100 dark:bg-amber-950/80 px-2 py-0.5 text-[9px] font-black text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-700">
                               <ShieldCheck className="h-3 w-3 text-amber-600" />

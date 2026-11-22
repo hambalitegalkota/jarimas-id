@@ -709,6 +709,7 @@ export interface RekapWargaSatuKomunitas {
 export interface RegisteredUserItem {
   id: string;
   nama_lengkap: string;
+  username?: string | null;
   email?: string | null;
   nomor_hp?: string | null;
   avatar_url?: string | null;
