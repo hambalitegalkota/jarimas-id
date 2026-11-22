@@ -349,11 +349,24 @@ export async function loginUser(
       }
 
       // 4. Verifikasi OTP langsung di server Next.js untuk membuat sesi cookie di browser
-      const { data: verifyData, error: verifyErr } =
-        await supabase.auth.verifyOtp({
-          token_hash: linkRes.data.properties.hashed_token,
+      let verifyRes = await supabase.auth.verifyOtp({
+        token_hash: linkRes.data.properties.hashed_token,
+        type: "magiclink",
+      });
+
+      if ((verifyRes.error || !verifyRes.data?.user) && linkRes.data?.properties?.email_otp) {
+        const fallbackRes = await supabase.auth.verifyOtp({
+          email: email.toLowerCase(),
+          token: linkRes.data.properties.email_otp,
           type: "magiclink",
         });
+        if (!fallbackRes.error && fallbackRes.data?.user) {
+          verifyRes = fallbackRes;
+        }
+      }
+
+      const verifyData = verifyRes.data;
+      const verifyErr = verifyRes.error;
 
       if (verifyErr || !verifyData?.user) {
         console.error("Gagal verifikasi OTP login instan:", verifyErr);
@@ -597,11 +610,24 @@ export async function loginWithGoogleOneTap(
     }
 
     // 4. Verifikasi OTP langsung di server Next.js untuk membuat sesi cookie di browser
-    const { data: verifyData, error: verifyErr } =
-      await supabase.auth.verifyOtp({
-        token_hash: linkRes.data.properties.hashed_token,
+    let verifyRes = await supabase.auth.verifyOtp({
+      token_hash: linkRes.data.properties.hashed_token,
+      type: "magiclink",
+    });
+
+    if ((verifyRes.error || !verifyRes.data?.user) && linkRes.data?.properties?.email_otp) {
+      const fallbackRes = await supabase.auth.verifyOtp({
+        email: googleEmail,
+        token: linkRes.data.properties.email_otp,
         type: "magiclink",
       });
+      if (!fallbackRes.error && fallbackRes.data?.user) {
+        verifyRes = fallbackRes;
+      }
+    }
+
+    const verifyData = verifyRes.data;
+    const verifyErr = verifyRes.error;
 
     if (verifyErr || !verifyData?.user) {
       return {

@@ -16,9 +16,12 @@ export function getInternalSupabaseUrl(): string {
   if (envInternal && envInternal.trim()) return envInternal.trim();
 
   const publicUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || DEFAULT_SUPABASE_URL;
-  // Di server Linux (IDCloudHost), gunakan 127.0.0.1:8000 agar tidak terhalang NAT loopback publik
+  // Di server IDCloudHost, gunakan 127.0.0.1:8000 agar koneksi internal cepat dan tidak terhalang NAT loopback publik
   if (typeof window === "undefined") {
-    if (process.platform !== "win32" && (publicUrl.includes("103.193.176.111") || process.env.NODE_ENV === "production")) {
+    if (
+      (process.env.NODE_ENV === "production" && publicUrl.includes("103.193.176.111")) ||
+      (typeof process !== "undefined" && process.platform !== "win32" && publicUrl.includes("103.193.176.111"))
+    ) {
       return "http://127.0.0.1:8000";
     }
   }

@@ -5,12 +5,24 @@ const DEFAULT_SUPABASE_URL = "http://103.193.176.111:8000";
 const DEFAULT_SUPABASE_ANON_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyAgCiAgICAicm9sZSI6ICJhbm9uIiwKICAgICJpc3MiOiAic3VwYWJhc2UtZGVtbyIsCiAgICAiaWF0IjogMTY0MTc2OTIwMCwKICAgICJleHAiOiAxNzk5NTM1NjAwCn0.dc_X5iR_VP_qT0zsiyj_I_OZ2T9FtRU2BBNWN8Bu4GE";
 
+function getInternalSupabaseUrl(): string {
+  const envInternal = process.env.INTERNAL_SUPABASE_URL;
+  if (envInternal && envInternal.trim()) return envInternal.trim();
+
+  const publicUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || DEFAULT_SUPABASE_URL;
+  // Di server production (IDCloudHost), gunakan 127.0.0.1:8000 agar tidak terhalang NAT loopback publik
+  if (process.env.NODE_ENV === "production" && publicUrl.includes("103.193.176.111")) {
+    return "http://127.0.0.1:8000";
+  }
+  return publicUrl.trim();
+}
+
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
   });
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || DEFAULT_SUPABASE_URL;
+  const supabaseUrl = getInternalSupabaseUrl();
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || DEFAULT_SUPABASE_ANON_KEY;
 
   // Jika env variable belum diisi atau masih default placeholder, lewati middleware
