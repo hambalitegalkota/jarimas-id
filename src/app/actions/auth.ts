@@ -340,10 +340,11 @@ export async function loginUser(
       }
 
       if (!linkRes.data?.properties?.hashed_token) {
+        const errDetail = linkRes.error?.message || "Token tidak dapat dibuat";
         console.error("Gagal generate magic link token:", linkRes.error);
         return {
           success: false,
-          message: "Gagal membuat sesi login instan. Silakan coba lagi.",
+          message: `Gagal membuat sesi login instan: ${errDetail}. Silakan coba lagi.`,
         };
       }
 
