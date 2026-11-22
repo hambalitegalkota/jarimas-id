@@ -38,8 +38,6 @@ import {
   Info,
   MapPin,
   ChevronDown,
-  UserPlus,
-  Archive,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type {
@@ -950,93 +948,6 @@ export function RekapDataAtsClientView({
           </div>
           <div className="text-2xs sm:text-xs font-semibold text-amber-700 dark:text-amber-300 text-center">
             Perlu Verifikasi Lapangan
-          </div>
-        </div>
-      </div>
-
-      {/* 3.6 REKAPITULASI STATUS & TINDAK LANJUT ATS */}
-      <div className="rounded-lg border border-border bg-card p-4 sm:p-5 shadow-xs space-y-3.5 print-hide-on-daftar-nama print-card-item break-inside-avoid">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border pb-3">
-          <div className="flex items-center gap-2.5">
-            <div className="h-8 w-8 rounded-lg bg-teal-500/10 text-teal-600 dark:text-teal-400 flex items-center justify-center font-bold">
-              <Sparkles className="h-4 w-4" />
-            </div>
-            <div>
-              <h3 className="text-sm sm:text-base font-extrabold text-foreground">
-                Rekapitulasi Status &amp; Tindak Lanjut ATS
-              </h3>
-              <p className="text-2xs sm:text-xs text-muted-foreground font-medium">
-                Riwayat data ATS hasil input baru, penanganan anak kembali bersekolah, dan data dinonaktifkan/dihapus
-              </p>
-            </div>
-          </div>
-          <span className="text-2xs font-bold text-teal-700 dark:text-teal-300 px-2.5 py-1 rounded-md bg-teal-500/10 border border-teal-500/20 w-fit">
-            Wilayah: {currentWilayahData.nama}
-          </span>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          {/* Card Ditambahkan */}
-          <div className="rounded-lg border border-indigo-500/25 bg-indigo-50/40 dark:bg-indigo-950/20 p-3.5 sm:p-4 space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-2xs font-black uppercase tracking-wider text-indigo-700 dark:text-indigo-300">
-                ATS DITAMBAHKAN
-              </span>
-              <div className="h-7 w-7 rounded-md bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
-                <UserPlus className="h-3.5 w-3.5" />
-              </div>
-            </div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-2xl sm:text-3xl font-black font-mono text-indigo-700 dark:text-indigo-300">
-                {(currentWilayahData.statusAksi?.ditambahkan ?? 0).toLocaleString("id-ID")}
-              </span>
-              <span className="text-xs font-bold text-indigo-600/80 dark:text-indigo-400/80">Anak</span>
-            </div>
-            <div className="text-2xs font-medium text-indigo-700/80 dark:text-indigo-300/80 border-t border-indigo-500/15 pt-2">
-              Data ATS baru hasil input kader/pengurus
-            </div>
-          </div>
-
-          {/* Card Kembali Bersekolah */}
-          <div className="rounded-lg border border-teal-500/25 bg-teal-50/40 dark:bg-teal-950/20 p-3.5 sm:p-4 space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-2xs font-black uppercase tracking-wider text-teal-700 dark:text-teal-300">
-                KEMBALI BERSEKOLAH
-              </span>
-              <div className="h-7 w-7 rounded-md bg-teal-500/15 text-teal-600 dark:text-teal-400 flex items-center justify-center">
-                <GraduationCap className="h-3.5 w-3.5" />
-              </div>
-            </div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-2xl sm:text-3xl font-black font-mono text-teal-700 dark:text-teal-300">
-                {(currentWilayahData.statusAksi?.bersekolah ?? 0).toLocaleString("id-ID")}
-              </span>
-              <span className="text-xs font-bold text-teal-600/80 dark:text-teal-400/80">Anak</span>
-            </div>
-            <div className="text-2xs font-medium text-teal-700/80 dark:text-teal-300/80 border-t border-teal-500/15 pt-2">
-              Kembali sekolah formal / masuk PKBM &amp; SKB
-            </div>
-          </div>
-
-          {/* Card Data Dihapus */}
-          <div className="rounded-lg border border-rose-500/25 bg-rose-50/40 dark:bg-rose-950/20 p-3.5 sm:p-4 space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-2xs font-black uppercase tracking-wider text-rose-700 dark:text-rose-300">
-                DATA DIHAPUS
-              </span>
-              <div className="h-7 w-7 rounded-md bg-rose-500/15 text-rose-600 dark:text-rose-400 flex items-center justify-center">
-                <Archive className="h-3.5 w-3.5" />
-              </div>
-            </div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-2xl sm:text-3xl font-black font-mono text-rose-700 dark:text-rose-300">
-                {(currentWilayahData.statusAksi?.dihapus ?? 0).toLocaleString("id-ID")}
-              </span>
-              <span className="text-xs font-bold text-rose-600/80 dark:text-rose-400/80">Data</span>
-            </div>
-            <div className="text-2xs font-medium text-rose-700/80 dark:text-rose-300/80 border-t border-rose-500/15 pt-2">
-              Tercatat dinonaktifkan (Soft Delete)
-            </div>
           </div>
         </div>
       </div>
