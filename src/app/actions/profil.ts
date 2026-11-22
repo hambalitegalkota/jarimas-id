@@ -41,6 +41,9 @@ export async function updateUserProfile(
     const showKomunitas = formData.get("tampilkan_komunitas") === "true" || formData.get("tampilkan_komunitas") === "on";
     const showKontak = formData.get("tampilkan_kontak") === "true" || formData.get("tampilkan_kontak") === "on";
 
+    const avatarBase64 = (formData.get("avatar_base64") as string)?.trim() || "";
+    const removeAvatar = formData.get("remove_avatar") === "true";
+
     // Validasi dasar
     if (rawNama.length < 2) {
       return {
@@ -104,20 +107,68 @@ export async function updateUserProfile(
       cleanWa = cleanWa.slice(1);
     }
 
+    // Proses Unggah Foto Profil (Avatar) Terkompresi jika ada
+    let finalAvatarUrl: string | null | undefined = undefined;
+
+    if (removeAvatar) {
+      finalAvatarUrl = null;
+    } else if (avatarBase64 && avatarBase64.startsWith("data:image/")) {
+      try {
+        const match = avatarBase64.match(/^data:(image\/[a-zA-Z0-9+.-]+);base64,(.+)$/);
+        if (match) {
+          const mimeType = match[1];
+          const base64Data = match[2];
+          const buffer = Buffer.from(base64Data, "base64");
+
+          // Batas aman buffer maks 1 MB (hasil kompresi browser biasanya 30-50 KB)
+          if (buffer.length <= 1024 * 1024) {
+            const ext = mimeType.includes("webp") ? "webp" : mimeType.includes("png") ? "png" : "jpg";
+            const fileName = `${user.id}/avatar_${Date.now()}.${ext}`;
+
+            // Pastikan bucket avatars ada atau buat jika belum ada
+            const { error: uploadErr } = await adminClient.storage
+              .from("avatars")
+              .upload(fileName, buffer, {
+                contentType: mimeType,
+                upsert: true,
+              });
+
+            if (!uploadErr) {
+              const { data: publicUrlData } = adminClient.storage
+                .from("avatars")
+                .getPublicUrl(fileName);
+              finalAvatarUrl = publicUrlData.publicUrl;
+            } else {
+              console.warn("Gagal upload avatar ke storage:", uploadErr);
+            }
+          }
+        }
+      } catch (avatarErr) {
+        console.warn("Error processing avatar upload:", avatarErr);
+      }
+    }
+
+    // Siapkan payload pembaruan
+    const updatePayload: Record<string, any> = {
+      nama_lengkap: rawNama,
+      username: cleanUsername,
+      bio: rawBio.slice(0, 500),
+      nomor_wa: cleanWa,
+      instagram_username: rawInstagram.slice(0, 50),
+      is_profil_publik: isPublic,
+      tampilkan_komunitas: showKomunitas,
+      tampilkan_kontak: showKontak,
+      updated_at: new Date().toISOString(),
+    };
+
+    if (finalAvatarUrl !== undefined) {
+      updatePayload.avatar_url = finalAvatarUrl;
+    }
+
     // Lakukan pembaruan di tabel profiles
     const { error: updateErr } = await adminClient
       .from("profiles")
-      .update({
-        nama_lengkap: rawNama,
-        username: cleanUsername,
-        bio: rawBio.slice(0, 500),
-        nomor_wa: cleanWa,
-        instagram_username: rawInstagram.slice(0, 50),
-        is_profil_publik: isPublic,
-        tampilkan_komunitas: showKomunitas,
-        tampilkan_kontak: showKontak,
-        updated_at: new Date().toISOString(),
-      })
+      .update(updatePayload)
       .eq("id", user.id);
 
     if (updateErr) {

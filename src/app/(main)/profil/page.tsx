@@ -554,8 +554,16 @@ export default async function ProfilePage() {
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-5 text-center sm:text-left pr-0 sm:pr-48">
           {/* Avatar */}
           <div className="relative shrink-0">
-            <div className="flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-lg border border-primary/20 bg-primary/10 text-primary font-bold shadow-xs">
-              <User className="h-7 w-7 sm:h-8 sm:w-8" />
+            <div className="flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-lg border border-primary/20 bg-primary/10 text-primary font-bold shadow-xs overflow-hidden">
+              {profile?.avatar_url ? (
+                <img
+                  src={profile.avatar_url}
+                  alt={namaLengkap}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <User className="h-7 w-7 sm:h-8 sm:w-8" />
+              )}
             </div>
             {userAdminInfo.tierLevel === "super_admin" ? (
               <div className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-secondary text-white shadow-sm border border-card">

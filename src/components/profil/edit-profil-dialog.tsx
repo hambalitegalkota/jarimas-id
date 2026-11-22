@@ -17,6 +17,8 @@ import {
   X,
   Save,
   Check,
+  Camera,
+  Trash2,
 } from "lucide-react";
 import { updateUserProfile, type ProfilActionState } from "@/app/actions/profil";
 import type { Profile } from "@/types/database";
@@ -50,12 +52,78 @@ const initialState: ProfilActionState = {
   message: "",
 };
 
+/**
+ * Kompresi gambar di sisi browser menggunakan HTML5 Canvas
+ * Memotong gambar menjadi rasio persegi 1:1, ukuran maks 400x400 px, format WebP/JPEG kualitas 0.8
+ * Menghasilkan ukuran hemat (~30 - 50 KB) sehingga super cepat dan ramah kuota.
+ */
+function compressImageToSquare(
+  file: File,
+  maxDim = 400,
+  quality = 0.8
+): Promise<{ dataUrl: string; sizeKb: number }> {
+  return new Promise((resolve, reject) => {
+    if (!file.type.startsWith("image/")) {
+      reject(new Error("File yang dipilih bukan gambar yang valid."));
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        try {
+          const minSide = Math.min(img.width, img.height);
+          const startX = (img.width - minSide) / 2;
+          const startY = (img.height - minSide) / 2;
+
+          const targetSize = Math.min(minSide, maxDim);
+          const canvas = document.createElement("canvas");
+          canvas.width = targetSize;
+          canvas.height = targetSize;
+
+          const ctx = canvas.getContext("2d");
+          if (!ctx) {
+            reject(new Error("Gagal menginisialisasi canvas untuk kompresi"));
+            return;
+          }
+
+          ctx.drawImage(img, startX, startY, minSide, minSide, 0, 0, targetSize, targetSize);
+
+          let dataUrl = canvas.toDataURL("image/webp", quality);
+          if (!dataUrl.startsWith("data:image/webp")) {
+            dataUrl = canvas.toDataURL("image/jpeg", quality);
+          }
+
+          const base64Content = dataUrl.split(",")[1] || "";
+          const sizeKb = Math.round((base64Content.length * 3) / 4 / 1024);
+
+          resolve({ dataUrl, sizeKb });
+        } catch (err) {
+          reject(err);
+        }
+      };
+      img.onerror = () => reject(new Error("Gagal memuat gambar"));
+      img.src = e.target?.result as string;
+    };
+    reader.onerror = () => reject(new Error("Gagal membaca file gambar"));
+    reader.readAsDataURL(file);
+  });
+}
+
 export function EditProfilDialog({ profile }: EditProfilDialogProps) {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
   const [state, formAction, isPending] = useActionState(updateUserProfile, initialState);
   const prevPendingRef = useRef(false);
+
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(profile?.avatar_url || null);
+  const [avatarBase64, setAvatarBase64] = useState<string>("");
+  const [removeAvatar, setRemoveAvatar] = useState(false);
+  const [isCompressing, setIsCompressing] = useState(false);
+  const [compressionInfo, setCompressionInfo] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [namaLengkap, setNamaLengkap] = useState(profile?.nama_lengkap || "");
   const [username, setUsername] = useState(profile?.username || "");
@@ -77,6 +145,10 @@ export function EditProfilDialog({ profile }: EditProfilDialogProps) {
       setIsPublic(profile.is_profil_publik !== false);
       setShowKomunitas(profile.tampilkan_komunitas !== false);
       setShowKontak(profile.tampilkan_kontak !== false);
+      setAvatarPreview(profile.avatar_url || null);
+      setAvatarBase64("");
+      setRemoveAvatar(false);
+      setCompressionInfo(null);
     }
   }, [profile]);
 
@@ -108,6 +180,35 @@ export function EditProfilDialog({ profile }: EditProfilDialogProps) {
 
   const handleEditLagi = () => {
     setShowSuccessPopup(false);
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsCompressing(true);
+      setCompressionInfo("Sedang mengompresi gambar...");
+      const result = await compressImageToSquare(file, 400, 0.8);
+      setAvatarPreview(result.dataUrl);
+      setAvatarBase64(result.dataUrl);
+      setRemoveAvatar(false);
+      setCompressionInfo(`Foto terkompresi otomatis (~${result.sizeKb > 0 ? result.sizeKb : 35} KB, WebP 400x400)`);
+    } catch (err: any) {
+      alert("Gagal memproses gambar: " + (err?.message || "Format tidak didukung"));
+    } finally {
+      setIsCompressing(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
+
+  const handleRemovePhoto = () => {
+    setAvatarPreview(null);
+    setAvatarBase64("");
+    setRemoveAvatar(true);
+    setCompressionInfo("Foto profil akan dihapus saat disimpan");
   };
 
   return (
@@ -174,6 +275,90 @@ export function EditProfilDialog({ profile }: EditProfilDialogProps) {
             )}
 
             <form action={formAction} className="space-y-4">
+              {/* Foto Profil Pengguna */}
+              <div className="space-y-2 pb-3 border-b border-border/60">
+                <label className="block text-xs font-semibold text-foreground">
+                  Foto Profil Pengguna
+                </label>
+
+                <div className="flex items-center gap-4">
+                  {/* Avatar Preview Box */}
+                  <div className="relative shrink-0">
+                    <div className="flex h-18 w-18 sm:h-20 sm:w-20 items-center justify-center rounded-2xl border-2 border-primary/30 bg-primary/10 text-primary font-bold shadow-xs overflow-hidden">
+                      {avatarPreview ? (
+                        <img
+                          src={avatarPreview}
+                          alt="Preview Avatar"
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <span className="text-2xl font-bold select-none">
+                          {namaLengkap ? namaLengkap.charAt(0).toUpperCase() : <User className="h-7 w-7 text-primary/60" />}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Actions & Description */}
+                  <div className="space-y-1.5 flex-1 min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                        className="hidden"
+                        onChange={handleFileChange}
+                        disabled={isPending || isCompressing}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={isPending || isCompressing}
+                        className="inline-flex min-h-[32px] items-center gap-1.5 rounded-lg border border-primary/30 bg-primary/10 hover:bg-primary/20 text-primary px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer shadow-2xs active:scale-98 disabled:opacity-50"
+                      >
+                        {isCompressing ? (
+                          <>
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            <span>Mengompresi...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Camera className="h-3.5 w-3.5" />
+                            <span>{avatarPreview ? "Ganti Foto" : "Pilih Foto"}</span>
+                          </>
+                        )}
+                      </button>
+
+                      {avatarPreview && (
+                        <button
+                          type="button"
+                          onClick={handleRemovePhoto}
+                          disabled={isPending || isCompressing}
+                          className="inline-flex min-h-[32px] items-center gap-1.5 rounded-lg border border-destructive/30 bg-destructive/10 hover:bg-destructive/20 text-destructive px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer shadow-2xs active:scale-98 disabled:opacity-50"
+                          title="Hapus Foto Profil"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                          <span>Hapus</span>
+                        </button>
+                      )}
+                    </div>
+
+                    <p className="text-2xs text-muted-foreground leading-relaxed">
+                      {compressionInfo ? (
+                        <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                          {compressionInfo}
+                        </span>
+                      ) : (
+                        "Otomatis dipotong 1:1 & dikompresi ke WebP 400x400 (<50 KB) agar cepat & hemat kuota."
+                      )}
+                    </p>
+                  </div>
+                </div>
+
+                <input type="hidden" name="avatar_base64" value={avatarBase64} />
+                <input type="hidden" name="remove_avatar" value={removeAvatar ? "true" : "false"} />
+              </div>
+
               {/* Nama Tampilan */}
               <div className="space-y-1.5">
                 <label
@@ -399,13 +584,18 @@ export function EditProfilDialog({ profile }: EditProfilDialogProps) {
                 </button>
                 <button
                   type="submit"
-                  disabled={isPending}
+                  disabled={isPending || isCompressing}
                   className="inline-flex items-center gap-1.5 rounded-lg bg-primary hover:bg-primary-hover px-4 py-2 text-xs font-semibold text-primary-foreground shadow-xs transition-all active:scale-98 disabled:opacity-50 cursor-pointer"
                 >
                   {isPending ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin" />
                       <span>Menyimpan...</span>
+                    </>
+                  ) : isCompressing ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span>Memproses Foto...</span>
                     </>
                   ) : (
                     <>

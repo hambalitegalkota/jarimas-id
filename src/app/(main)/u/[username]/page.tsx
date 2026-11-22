@@ -196,49 +196,30 @@ export default async function PublicProfilePage({
       <main className="max-w-3xl mx-auto px-4 sm:px-6 pt-4 sm:pt-6 space-y-6">
         {/* Main Social Profile Card */}
         <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
-          {/* Header Banner */}
-          <div className="relative h-32 sm:h-44 w-full bg-gradient-to-r from-primary via-emerald-600 to-teal-700 overflow-hidden">
+          {/* Header Banner - Berfungsi sebagai Digital ID Card Header */}
+          <div className="relative w-full bg-gradient-to-br from-emerald-800 via-teal-700 to-emerald-900 text-white p-5 sm:p-7 overflow-hidden">
             <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px]" />
-            <div className="absolute top-3 right-3 flex items-center gap-1.5 rounded-full bg-black/30 backdrop-blur-md px-3 py-1 text-2xs text-white/90 border border-white/20">
-              <Globe className="h-3 w-3" />
-              <span>{isPrivate ? "Profil Privat" : "Profil Publik"}</span>
-            </div>
-          </div>
 
-          {/* Profile Details Bar */}
-          <div className="relative px-5 sm:px-8 pb-6 sm:pb-8 pt-0">
-            {/* Avatar Row */}
-            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 -mt-14 sm:-mt-16 mb-4">
-              <div className="relative inline-block">
-                <div className="flex h-24 w-24 sm:h-28 sm:w-28 items-center justify-center rounded-2xl border-4 border-card bg-primary/10 text-primary font-bold shadow-md text-3xl">
-                  {profile.nama_lengkap.charAt(0).toUpperCase()}
-                </div>
-                {profile.is_super_admin ? (
-                  <div
-                    className="absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full bg-secondary text-white shadow-sm border-2 border-card"
-                    title="Super Admin JARIMAS"
-                  >
-                    <Crown className="h-4 w-4" />
-                  </div>
-                ) : profile.is_admin_pusat ? (
-                  <div
-                    className="absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full bg-primary text-white shadow-sm border-2 border-card"
-                    title="Admin Pusat"
-                  >
-                    <ShieldCheck className="h-4 w-4" />
-                  </div>
-                ) : (
-                  <div
-                    className="absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full bg-emerald-600 text-white shadow-sm border-2 border-card"
-                    title="Warga Terverifikasi"
-                  >
-                    <CheckCircle2 className="h-4 w-4" />
-                  </div>
-                )}
+            {/* Top row: badge privat/publik & share buttons */}
+            <div className="relative z-10 flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-white/15 mb-5">
+              <div className="flex items-center gap-2">
+                <span className="flex items-center gap-1.5 rounded-full bg-black/30 backdrop-blur-md px-3 py-1 text-2xs text-white/95 border border-white/20 font-medium">
+                  {isPrivate ? (
+                    <>
+                      <Lock className="h-3 w-3 text-amber-300" />
+                      <span>Profil Privat</span>
+                    </>
+                  ) : (
+                    <>
+                      <Globe className="h-3 w-3 text-emerald-300" />
+                      <span>Profil Publik</span>
+                    </>
+                  )}
+                </span>
               </div>
 
               {/* Action / Share Buttons */}
-              <div className="flex items-center gap-2 pt-2 sm:pt-0">
+              <div className="flex items-center gap-2">
                 <PublicProfileShareButtons
                   namaLengkap={profile.nama_lengkap}
                   username={profile.username || username}
@@ -246,9 +227,101 @@ export default async function PublicProfilePage({
               </div>
             </div>
 
+            {/* Main Identity Row: Avatar + Name + Badges + Username + Metadata */}
+            <div className="relative z-10 flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 text-center sm:text-left">
+              {/* Avatar Box */}
+              <div className="relative shrink-0">
+                <div className="flex h-24 w-24 sm:h-28 sm:w-28 items-center justify-center rounded-2xl border-2 border-white/40 bg-white/10 backdrop-blur-md shadow-lg overflow-hidden">
+                  {profile.avatar_url ? (
+                    <img
+                      src={profile.avatar_url}
+                      alt={profile.nama_lengkap}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-3xl sm:text-4xl font-extrabold text-white select-none">
+                      {profile.nama_lengkap.charAt(0).toUpperCase()}
+                    </span>
+                  )}
+                </div>
+
+                {profile.is_super_admin ? (
+                  <div
+                    className="absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full bg-secondary text-white shadow-md border-2 border-emerald-900"
+                    title="Super Admin JARIMAS"
+                  >
+                    <Crown className="h-4 w-4" />
+                  </div>
+                ) : profile.is_admin_pusat ? (
+                  <div
+                    className="absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full bg-primary text-white shadow-md border-2 border-emerald-900"
+                    title="Admin Pusat"
+                  >
+                    <ShieldCheck className="h-4 w-4" />
+                  </div>
+                ) : (
+                  <div
+                    className="absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full bg-emerald-500 text-white shadow-md border-2 border-emerald-900"
+                    title="Warga Terverifikasi"
+                  >
+                    <CheckCircle2 className="h-4 w-4" />
+                  </div>
+                )}
+              </div>
+
+              {/* Text Info yang dinaikkan ke banner */}
+              <div className="space-y-1.5 flex-1 min-w-0">
+                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                  <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight drop-shadow-xs">
+                    {profile.nama_lengkap}
+                  </h1>
+
+                  {profile.is_super_admin ? (
+                    <span className="inline-flex items-center gap-1 rounded-md bg-amber-400 text-slate-950 font-bold px-2.5 py-0.5 text-2xs shadow-xs">
+                      <Crown className="h-3 w-3 text-slate-950" />
+                      SUPER ADMIN
+                    </span>
+                  ) : profile.is_admin_pusat ? (
+                    <span className="inline-flex items-center gap-1 rounded-md bg-white/20 border border-white/30 text-white font-bold px-2.5 py-0.5 text-2xs backdrop-blur-xs shadow-xs">
+                      <ShieldCheck className="h-3 w-3 text-emerald-200" />
+                      ADMIN PUSAT
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 rounded-md bg-white/15 border border-white/25 text-emerald-100 font-semibold px-2.5 py-0.5 text-2xs backdrop-blur-xs">
+                      <ShieldCheck className="h-3 w-3 text-emerald-300" />
+                      WARGA TERVERIFIKASI
+                    </span>
+                  )}
+                </div>
+
+                {profile.username && (
+                  <p className="text-xs sm:text-sm font-mono text-emerald-100/90 font-medium">
+                    @{profile.username}
+                  </p>
+                )}
+
+                {/* Quick Meta in Banner */}
+                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-4 gap-y-1 pt-1 text-2xs sm:text-xs text-white/80">
+                  {joinDate && (
+                    <div className="flex items-center gap-1.5">
+                      <Calendar className="h-3.5 w-3.5 text-emerald-200" />
+                      <span>Bergabung sejak {joinDate}</span>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-1.5">
+                    <MapPin className="h-3.5 w-3.5 text-emerald-200" />
+                    <span>Kota Tegal, Jawa Tengah</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Profile Details Content (Di Bawah Banner) */}
+          <div className="relative px-5 sm:px-8 py-6 sm:py-7">
             {/* If profile is set to private and viewer is NOT authorized */}
             {!canViewFullProfile ? (
-              <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-5 text-center space-y-2 mt-4">
+              <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-5 text-center space-y-2">
                 <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-amber-500/20 text-amber-600">
                   <Lock className="h-5 w-5" />
                 </div>
@@ -262,7 +335,7 @@ export default async function PublicProfilePage({
               <div className="space-y-5">
                 {/* Banner Akses Khusus jika Profil Privat dibuka oleh Admin / Pemilik */}
                 {isPrivate && (
-                  <div className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-3.5 flex items-center justify-between gap-3 text-xs text-amber-900 dark:text-amber-200 mt-2">
+                  <div className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-3.5 flex items-center justify-between gap-3 text-xs text-amber-900 dark:text-amber-200">
                     <div className="flex items-center gap-2">
                       <Lock className="h-4 w-4 text-amber-600 shrink-0" />
                       <span>
@@ -275,69 +348,25 @@ export default async function PublicProfilePage({
                   </div>
                 )}
 
-                {/* Name & Badges */}
-                <div className="space-y-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h1 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">
-                      {profile.nama_lengkap}
-                    </h1>
-
-                    {profile.is_super_admin ? (
-                      <span className="inline-flex items-center gap-1 rounded-md border border-secondary/30 bg-secondary/15 px-2.5 py-0.5 text-2xs font-bold text-amber-950 dark:text-amber-200">
-                        <Crown className="h-3 w-3 text-secondary" />
-                        SUPER ADMIN
-                      </span>
-                    ) : profile.is_admin_pusat ? (
-                      <span className="inline-flex items-center gap-1 rounded-md border border-primary/30 bg-primary/15 px-2.5 py-0.5 text-2xs font-bold text-primary">
-                        <ShieldCheck className="h-3 w-3 text-primary" />
-                        ADMIN PUSAT
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-2xs font-semibold text-emerald-700 dark:text-emerald-400">
-                        <ShieldCheck className="h-3 w-3 text-emerald-600" />
-                        WARGA TERVERIFIKASI
-                      </span>
-                    )}
-                  </div>
-
-                  {profile.username && (
-                    <p className="text-xs font-mono font-medium text-muted-foreground">
-                      @{profile.username}
-                    </p>
-                  )}
-                </div>
-
                 {/* Bio */}
                 {profile.bio && (
-                  <div className="rounded-xl bg-muted/40 p-3.5 border border-border/60">
+                  <div className="rounded-xl bg-muted/40 p-4 border border-border/60">
                     <p className="text-xs sm:text-sm text-foreground/90 whitespace-pre-line leading-relaxed">
                       {profile.bio}
                     </p>
                   </div>
                 )}
 
-                {/* Meta details (Joined date, location, email for admin) */}
-                <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
-                  {joinDate && (
-                    <div className="flex items-center gap-1.5">
-                      <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
-                      <span>Bergabung sejak {joinDate}</span>
-                    </div>
-                  )}
-                  <div className="flex items-center gap-1.5">
-                    <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
-                    <span>Kota Tegal, Jawa Tengah</span>
+                {/* Email (Khusus Admin / Pemilik) */}
+                {(viewerIsAdmin || isOwner) && profile.email && (
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground p-3 rounded-lg border border-border bg-card">
+                    <Mail className="h-4 w-4 text-primary shrink-0" />
+                    <span className="font-mono text-foreground font-medium">{profile.email}</span>
+                    <span className="rounded bg-primary/10 border border-primary/20 px-1.5 py-0.5 text-[10px] font-bold text-primary ml-auto">
+                      Email Terverifikasi
+                    </span>
                   </div>
-                  {(viewerIsAdmin || isOwner) && profile.email && (
-                    <div className="flex items-center gap-1.5 text-primary">
-                      <Mail className="h-3.5 w-3.5 text-primary" />
-                      <span className="font-mono text-xs font-medium">{profile.email}</span>
-                      <span className="rounded bg-primary/10 border border-primary/20 px-1.5 py-0.2 text-[9px] font-bold text-primary">
-                        Terverifikasi
-                      </span>
-                    </div>
-                  )}
-                </div>
+                )}
 
                 {/* Social Media & Contact Links (Terbuka untuk publik jika diizinkan, atau selalu untuk Admin) */}
                 {(profile.tampilkan_kontak !== false || viewerIsAdmin || isOwner) && (profile.nomor_wa || profile.instagram_username) && (
