@@ -291,18 +291,18 @@ export async function loginUser(
         };
       }
 
-      // 2. Cek apakah akun auth sudah ada di auth.users
-      const { data: userList } = await adminClient.auth.admin.listUsers();
-      let targetAuthUser = userList?.users?.find(
-        (u) => u.email?.toLowerCase() === email.toLowerCase()
-      );
-
       const displayName =
         existingProfile?.nama_lengkap ||
         email.split("@")[0].replace(/[._-]/g, " ");
 
-      // 3. Jika belum ada di auth.users, buatkan secara otomatis
-      if (!targetAuthUser) {
+      // 2. Coba generate link login terlebih dahulu
+      let linkRes = await adminClient.auth.admin.generateLink({
+        type: "magiclink",
+        email: email.toLowerCase(),
+      });
+
+      // 3. Jika belum terdaftar di auth.users, buat akun auth secara otomatis
+      if (linkRes.error || !linkRes.data?.properties?.hashed_token) {
         try {
           const createPayload: any = {
             email: email.toLowerCase(),
@@ -312,82 +312,45 @@ export async function loginUser(
             },
           };
 
-          // Gunakan ID yang sama jika sudah ada profil sebelumnya
           if (existingProfile?.id) {
             createPayload.id = existingProfile.id;
           }
 
-          const { data: createdRes, error: createAuthErr } =
+          const { error: createAuthErr } =
             await adminClient.auth.admin.createUser(createPayload);
 
-          if (createAuthErr || !createdRes?.user) {
-            // Coba tanpa custom ID jika terjadi bentrok ID
-            const { data: fallbackRes, error: fallbackErr } =
-              await adminClient.auth.admin.createUser({
-                email: email.toLowerCase(),
-                email_confirm: true,
-                user_metadata: {
-                  nama_lengkap: displayName,
-                },
-              });
-
-            if (fallbackErr || !fallbackRes?.user) {
-              console.error("Gagal auto-create auth user:", fallbackErr);
-              return {
-                success: false,
-                message: "Gagal memproses akun email. Silakan coba kembali.",
-              };
-            }
-            targetAuthUser = fallbackRes.user;
-          } else {
-            targetAuthUser = createdRes.user;
-          }
-
-          // Sinkronkan ke public.profiles
-          const isSuper = checkIsSuperAdmin({
-            email,
-            nama_lengkap: displayName,
-            id: targetAuthUser.id,
-          });
-
-          await adminClient.from("profiles").upsert(
-            {
-              id: targetAuthUser.id,
-              nama_lengkap: displayName,
+          if (createAuthErr && !createAuthErr.message?.includes("already")) {
+            await adminClient.auth.admin.createUser({
               email: email.toLowerCase(),
-              is_super_admin: isSuper,
-              updated_at: new Date().toISOString(),
-            },
-            { onConflict: "id" }
-          );
+              email_confirm: true,
+              user_metadata: {
+                nama_lengkap: displayName,
+              },
+            });
+          }
         } catch (createErr: any) {
-          console.error("Kesalahan saat auto-register email:", createErr);
-          return {
-            success: false,
-            message: "Terjadi kesalahan saat menyiapkan akun email.",
-          };
+          console.warn("Auto-create auth user note:", createErr);
         }
-      }
 
-      // 4. Generate Magic Link Token dari Admin Client
-      const { data: linkData, error: linkErr } =
-        await adminClient.auth.admin.generateLink({
+        // Generate ulang magic link token
+        linkRes = await adminClient.auth.admin.generateLink({
           type: "magiclink",
           email: email.toLowerCase(),
         });
+      }
 
-      if (linkErr || !linkData?.properties?.hashed_token) {
-        console.error("Gagal generate magic link token:", linkErr);
+      if (!linkRes.data?.properties?.hashed_token) {
+        console.error("Gagal generate magic link token:", linkRes.error);
         return {
           success: false,
           message: "Gagal membuat sesi login instan. Silakan coba lagi.",
         };
       }
 
-      // 5. Verifikasi OTP langsung di server Next.js untuk membuat sesi cookie di browser
+      // 4. Verifikasi OTP langsung di server Next.js untuk membuat sesi cookie di browser
       const { data: verifyData, error: verifyErr } =
         await supabase.auth.verifyOtp({
-          token_hash: linkData.properties.hashed_token,
+          token_hash: linkRes.data.properties.hashed_token,
           type: "magiclink",
         });
 
@@ -402,6 +365,29 @@ export async function loginUser(
       authUserId = verifyData.user.id;
       authUserEmail = verifyData.user.email || email;
       authUserName = displayName;
+
+      // Sinkronkan ke public.profiles
+      try {
+        const isSuper = checkIsSuperAdmin({
+          email,
+          nama_lengkap: displayName,
+          id: authUserId,
+        });
+
+        await adminClient.from("profiles").upsert(
+          {
+            id: authUserId,
+            nama_lengkap: displayName,
+            email: email.toLowerCase(),
+            is_super_admin: isSuper,
+            is_admin_pusat: existingProfile?.is_admin_pusat || email.toLowerCase().includes("jarimas.id"),
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "id" }
+        );
+      } catch (profSyncErr) {
+        console.warn("Sinkronisasi profil profile non-blocking error:", profSyncErr);
+      }
     }
 
     // Kirim salam pembuka dari akun Jarimas setiap kali pengguna berhasil login
@@ -553,29 +539,36 @@ export async function loginWithGoogleOneTap(
     // 2. Cek apakah ada profil lama
     const { data: existingProfile } = await adminClient
       .from("profiles")
-      .select("id, nama_lengkap, email, avatar_url, is_super_admin")
+      .select("id, nama_lengkap, email, avatar_url, is_super_admin, is_admin_pusat")
       .ilike("email", googleEmail)
       .maybeSingle();
 
-    if (!authUser) {
-      const createPayload: any = {
-        email: googleEmail,
-        email_confirm: true,
-        user_metadata: {
-          nama_lengkap: googleName,
-          avatar_url: googlePicture,
-        },
-      };
+    // 2. Generate Magic Link Token terlebih dahulu
+    let linkRes = await adminClient.auth.admin.generateLink({
+      type: "magiclink",
+      email: googleEmail,
+    });
 
-      if (existingProfile?.id) {
-        createPayload.id = existingProfile.id;
-      }
+    // 3. Jika belum terdaftar di auth.users, buat akun auth secara otomatis
+    if (linkRes.error || !linkRes.data?.properties?.hashed_token) {
+      try {
+        const createPayload: any = {
+          email: googleEmail,
+          email_confirm: true,
+          user_metadata: {
+            nama_lengkap: googleName,
+            avatar_url: googlePicture,
+          },
+        };
 
-      const { data: createdRes, error: createErr } =
-        await adminClient.auth.admin.createUser(createPayload);
+        if (existingProfile?.id) {
+          createPayload.id = existingProfile.id;
+        }
 
-      if (createErr || !createdRes?.user) {
-        const { data: fallbackRes, error: fbErr } =
+        const { error: createErr } =
+          await adminClient.auth.admin.createUser(createPayload);
+
+        if (createErr && !createErr.message?.includes("already")) {
           await adminClient.auth.admin.createUser({
             email: googleEmail,
             email_confirm: true,
@@ -584,67 +577,67 @@ export async function loginWithGoogleOneTap(
               avatar_url: googlePicture,
             },
           });
-
-        if (fbErr || !fallbackRes?.user) {
-          return {
-            success: false,
-            message: "Gagal membuat akun dengan Google: " + (fbErr?.message || ""),
-          };
         }
-        authUser = fallbackRes.user;
-      } else {
-        authUser = createdRes.user;
+      } catch (cErr) {
+        console.warn("Google auto-create note:", cErr);
       }
-    }
 
-    // 3. Sinkronkan profil pengguna di public.profiles
-    const isSuper = checkIsSuperAdmin({
-      email: googleEmail,
-      nama_lengkap: googleName,
-      id: authUser.id,
-    });
-
-    await adminClient.from("profiles").upsert(
-      {
-        id: authUser.id,
-        nama_lengkap: existingProfile?.nama_lengkap || googleName,
-        email: googleEmail,
-        avatar_url: existingProfile?.avatar_url || googlePicture,
-        is_super_admin: isSuper,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: "id" }
-    );
-
-    // 4. Generate Magic Link Token & Verifikasi di Server Next.js
-    const { data: linkData, error: linkErr } =
-      await adminClient.auth.admin.generateLink({
+      linkRes = await adminClient.auth.admin.generateLink({
         type: "magiclink",
         email: googleEmail,
       });
+    }
 
-    if (linkErr || !linkData?.properties?.hashed_token) {
+    if (!linkRes.data?.properties?.hashed_token) {
       return {
         success: false,
         message: "Gagal membuat sesi login instan Google.",
       };
     }
 
-    const { error: verifyErr } = await supabase.auth.verifyOtp({
-      token_hash: linkData.properties.hashed_token,
-      type: "magiclink",
-    });
+    // 4. Verifikasi OTP langsung di server Next.js untuk membuat sesi cookie di browser
+    const { data: verifyData, error: verifyErr } =
+      await supabase.auth.verifyOtp({
+        token_hash: linkRes.data.properties.hashed_token,
+        type: "magiclink",
+      });
 
-    if (verifyErr) {
+    if (verifyErr || !verifyData?.user) {
       return {
         success: false,
         message: "Gagal memverifikasi sesi login Google.",
       };
     }
 
+    const activeUserId = verifyData.user.id;
+
+    // 5. Sinkronkan profil pengguna di public.profiles
+    try {
+      const isSuper = checkIsSuperAdmin({
+        email: googleEmail,
+        nama_lengkap: googleName,
+        id: activeUserId,
+      });
+
+      await adminClient.from("profiles").upsert(
+        {
+          id: activeUserId,
+          nama_lengkap: existingProfile?.nama_lengkap || googleName,
+          email: googleEmail,
+          avatar_url: existingProfile?.avatar_url || googlePicture,
+          is_super_admin: isSuper,
+          is_admin_pusat: existingProfile?.is_admin_pusat || googleEmail.includes("jarimas.id"),
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "id" }
+      );
+    } catch (profSyncErr) {
+      console.warn("Google profile sync non-blocking note:", profSyncErr);
+    }
+
     // Kirim salam pembuka Jarimas
     try {
-      await sendJarimasWelcomeGreeting(authUser.id, googleName);
+      await sendJarimasWelcomeGreeting(activeUserId, googleName);
     } catch {}
 
     revalidatePath("/", "layout");
