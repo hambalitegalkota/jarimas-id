@@ -36,6 +36,9 @@ import {
   ArrowUp,
   ArrowDown,
   RotateCcw,
+  UserPlus,
+  ArrowRightLeft,
+  Archive,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type {
@@ -787,6 +790,95 @@ export function RekapDataAnakClientView({
             )}>
               {currentWilayahData.totalAnak === 0 ? "Belum Ada Data" : currentWilayahData.persenBersekolah >= 75 ? "Optimal" : "Cukup"}
             </span>
+          </div>
+        </div>
+      </div>
+
+      {/* ========================================================= */}
+      {/* 3.5 REKAPITULASI STATUS & MUTASI DATA ANAK                */}
+      {/* ========================================================= */}
+      <div className="rounded-lg border border-border bg-card p-4 sm:p-5 shadow-xs space-y-3.5 print-hide-on-daftar-nama print-card-item break-inside-avoid">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border pb-3">
+          <div className="flex items-center gap-2.5">
+            <div className="h-8 w-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold">
+              <Sparkles className="h-4 w-4" />
+            </div>
+            <div>
+              <h3 className="text-sm sm:text-base font-extrabold text-foreground">
+                Rekapitulasi Aksi &amp; Mutasi Data Anak (0–6 Tahun)
+              </h3>
+              <p className="text-2xs sm:text-xs text-muted-foreground font-medium">
+                Total riwayat penambahan baru, mutasi siswa antar satuan PAUD, dan data dinonaktifkan/dihapus
+              </p>
+            </div>
+          </div>
+          <span className="text-2xs font-bold text-primary px-2.5 py-1 rounded-md bg-primary/10 border border-primary/20 w-fit">
+            Wilayah: {currentWilayahData.nama}
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {/* Card Ditambahkan */}
+          <div className="rounded-lg border border-blue-500/25 bg-blue-50/40 dark:bg-blue-950/20 p-3.5 sm:p-4 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-2xs font-black uppercase tracking-wider text-blue-700 dark:text-blue-300">
+                ANAK DITAMBAHKAN
+              </span>
+              <div className="h-7 w-7 rounded-md bg-blue-500/15 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                <UserPlus className="h-3.5 w-3.5" />
+              </div>
+            </div>
+            <div className="flex items-baseline gap-2">
+              <span className="text-2xl sm:text-3xl font-black font-mono text-blue-700 dark:text-blue-300">
+                {(currentWilayahData.statusAksi?.ditambahkan ?? 0).toLocaleString("id-ID")}
+              </span>
+              <span className="text-xs font-bold text-blue-600/80 dark:text-blue-400/80">Anak</span>
+            </div>
+            <div className="text-2xs font-medium text-blue-700/80 dark:text-blue-300/80 border-t border-blue-500/15 pt-2">
+              Data baru hasil input kader/pengurus
+            </div>
+          </div>
+
+          {/* Card Siswa Mutasi */}
+          <div className="rounded-lg border border-amber-500/25 bg-amber-50/40 dark:bg-amber-950/20 p-3.5 sm:p-4 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-2xs font-black uppercase tracking-wider text-amber-700 dark:text-amber-300">
+                MUTASI SISWA
+              </span>
+              <div className="h-7 w-7 rounded-md bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                <ArrowRightLeft className="h-3.5 w-3.5" />
+              </div>
+            </div>
+            <div className="flex items-baseline gap-2">
+              <span className="text-2xl sm:text-3xl font-black font-mono text-amber-700 dark:text-amber-300">
+                {(currentWilayahData.statusAksi?.mutasi ?? 0).toLocaleString("id-ID")}
+              </span>
+              <span className="text-xs font-bold text-amber-600/80 dark:text-amber-400/80">Siswa</span>
+            </div>
+            <div className="text-2xs font-medium text-amber-700/80 dark:text-amber-300/80 border-t border-amber-500/15 pt-2">
+              Mutasi keluar / pindah satuan PAUD
+            </div>
+          </div>
+
+          {/* Card Data Dihapus */}
+          <div className="rounded-lg border border-rose-500/25 bg-rose-50/40 dark:bg-rose-950/20 p-3.5 sm:p-4 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-2xs font-black uppercase tracking-wider text-rose-700 dark:text-rose-300">
+                DATA DIHAPUS
+              </span>
+              <div className="h-7 w-7 rounded-md bg-rose-500/15 text-rose-600 dark:text-rose-400 flex items-center justify-center">
+                <Archive className="h-3.5 w-3.5" />
+              </div>
+            </div>
+            <div className="flex items-baseline gap-2">
+              <span className="text-2xl sm:text-3xl font-black font-mono text-rose-700 dark:text-rose-300">
+                {(currentWilayahData.statusAksi?.dihapus ?? 0).toLocaleString("id-ID")}
+              </span>
+              <span className="text-xs font-bold text-rose-600/80 dark:text-rose-400/80">Data</span>
+            </div>
+            <div className="text-2xs font-medium text-rose-700/80 dark:text-rose-300/80 border-t border-rose-500/15 pt-2">
+              Tercatat dinonaktifkan (Soft Delete)
+            </div>
           </div>
         </div>
       </div>

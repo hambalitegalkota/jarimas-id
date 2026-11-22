@@ -59,8 +59,9 @@ export function KartuDaftarNamaAnakRekap({
   }
 
   const cardRef = useRef<HTMLDivElement>(null);
-  const isBersekolah = kategori === "bersekolah";
   const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [currentKategori, setCurrentKategori] = useState<"semua" | "bersekolah" | "tidak_sekolah" | "ditambahkan" | "mutasi" | "deleted">(kategori);
+  const isBersekolah = currentKategori === "bersekolah";
   const [dataList, setDataList] = useState<DaftarNamaAnakItem[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [genderFilter, setGenderFilter] = useState<"semua" | "L" | "P">("semua");
@@ -68,7 +69,7 @@ export function KartuDaftarNamaAnakRekap({
   const [isPending, startTransition] = useTransition();
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  // Fetch data ketika dibuka atau filter wilayah berubah
+  // Fetch data ketika dibuka atau filter wilayah/kategori berubah
   useEffect(() => {
     if (!isOpen) return;
 
@@ -78,7 +79,7 @@ export function KartuDaftarNamaAnakRekap({
         tingkat,
         kecamatan: tingkat !== "kota" ? selectedKecamatan : undefined,
         kelurahan: tingkat === "kelurahan" ? selectedKelurahan : undefined,
-        kategori,
+        kategori: currentKategori,
       });
 
       if (res.success) {
@@ -87,7 +88,7 @@ export function KartuDaftarNamaAnakRekap({
         setErrorMsg(res.message || "Gagal memuat daftar nama anak.");
       }
     });
-  }, [isOpen, tingkat, selectedKecamatan, selectedKelurahan, kategori]);
+  }, [isOpen, tingkat, selectedKecamatan, selectedKelurahan, currentKategori]);
 
   // Client-side filtering untuk pencarian instan
   const filteredData = useMemo(() => {
@@ -308,6 +309,20 @@ export function KartuDaftarNamaAnakRekap({
 
             {/* Quick Filters */}
             <div className="flex flex-wrap items-center gap-2">
+              {/* Kategori Status Filter */}
+              <select
+                value={currentKategori}
+                onChange={(e) => setCurrentKategori(e.target.value as any)}
+                className="h-9 rounded-lg border border-border bg-background px-3 text-xs font-semibold text-foreground focus:outline-hidden"
+              >
+                <option value="bersekolah">Anak Bersekolah (PAUD)</option>
+                <option value="tidak_sekolah">Belum Bersekolah</option>
+                <option value="ditambahkan">Data Ditambahkan</option>
+                <option value="mutasi">Mutasi Siswa</option>
+                <option value="deleted">Data Dihapus (Soft Delete)</option>
+                <option value="semua">Semua Status Anak</option>
+              </select>
+
               {/* Gender Filter */}
               <div className="flex items-center rounded-lg border border-border bg-muted/60 p-1 text-xs">
                 <button
@@ -572,10 +587,24 @@ export function KartuDaftarNamaAnakRekap({
                               <span className="font-medium text-slate-700 dark:text-slate-300 print:text-black text-[11px] leading-tight break-words block">
                                 {item.komunitasNama}
                               </span>
-                              <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 print:bg-white print:border print:border-black print:text-black">
-                                <CheckCircle2 className="h-3 w-3 shrink-0 print:hidden" />
-                                <span>Terverifikasi</span>
-                              </span>
+                              {item.statusApproval === "deleted" || item.alasan.includes("[DIHAPUS") ? (
+                                <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-rose-100 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 print:bg-white print:border print:border-black print:text-black">
+                                  <span>Dihapus</span>
+                                </span>
+                              ) : item.statusApproval === "mutasi" || item.alasan.includes("[MUTASI") ? (
+                                <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 print:bg-white print:border print:border-black print:text-black">
+                                  <span>Mutasi Siswa</span>
+                                </span>
+                              ) : item.alasan.includes("[DITAMBAHKAN") || item.alasan.includes("[SUMBER: TAMBAH") ? (
+                                <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-950/60 text-blue-800 dark:text-blue-300 print:bg-white print:border print:border-black print:text-black">
+                                  <span>Ditambahkan</span>
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 print:bg-white print:border print:border-black print:text-black">
+                                  <CheckCircle2 className="h-3 w-3 shrink-0 print:hidden" />
+                                  <span>Terverifikasi</span>
+                                </span>
+                              )}
                             </div>
                           </td>
                         </tr>

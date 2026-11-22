@@ -84,6 +84,13 @@ export interface WilayahRekapItem {
   tidakBersekolahGender: GenderBreakdown;
   tidakBersekolahUsia: AgeGroupBreakdown;
   tidakBersekolahAlasan: ReasonCount[];
+
+  // Rekapitulasi Status & Aksi Khusus (Ditambahkan, Mutasi Siswa, Dihapus)
+  statusAksi: {
+    ditambahkan: number;
+    mutasi: number;
+    dihapus: number;
+  };
 }
 
 export interface RekapDataAnakUsiaDiniResult {
@@ -286,5 +293,6 @@ export function createEmptyRekapWilayah(
     tidakBersekolahGender: { lakiLaki: 0, perempuan: 0, total: 0 },
     tidakBersekolahUsia: { age0_1: 0, age2: 0, age3: 0, age4: 0, age5: 0, age6: 0 },
     tidakBersekolahAlasan: DAFTAR_ALASAN_TIDAK_SEKOLAH.map((alasan) => ({ alasan, jumlah: 0, persentase: 0 })),
+    statusAksi: { ditambahkan: 0, mutasi: 0, dihapus: 0 },
   };
 }

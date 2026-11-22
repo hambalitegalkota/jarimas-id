@@ -149,6 +149,13 @@ export interface WilayahRekapAtsItem {
   alasanList: AtsReasonCount[];
   rekomendasiList: AtsIntervensiRecommendation[];
   
+  // Rekapitulasi Status & Aksi Khusus ATS (Ditambahkan, Kembali Bersekolah, Dihapus)
+  statusAksi: {
+    ditambahkan: number;
+    bersekolah: number;
+    dihapus: number;
+  };
+
   persenInginSekolah: number;
   persenPutusSekolah: number;
 }
@@ -401,6 +408,7 @@ function createEmptyRekapWilayahAts(id: string, nama: string, tingkat: "kota" | 
         lembagaTujuan: "UPTD SPNF SKB Kota Tegal & Balai Latihan Kerja",
       },
     ],
+    statusAksi: { ditambahkan: 0, bersekolah: 0, dihapus: 0 },
     persenInginSekolah: 0,
     persenPutusSekolah: 0,
   };
@@ -520,6 +528,36 @@ async function fetchAndComputeRekapDataAts(): Promise<RekapDataAtsResult> {
         }
 
         if (targetKelItem) {
+          const isDeleted =
+            child.status_approval === "deleted" ||
+            Boolean(child.deleted_at) ||
+            (child.alasan_sekolah && child.alasan_sekolah.includes("[DIHAPUS"));
+          const isBersekolah =
+            child.status_approval === "bersekolah" ||
+            child.is_sekolah === true ||
+            Boolean(child.bersekolah_at) ||
+            (child.alasan_sekolah &&
+              (child.alasan_sekolah.includes("[BERSEKOLAH") ||
+                child.alasan_sekolah.includes("[KEMBALI BERSEKOLAH]")));
+          const isDitambahkan =
+            Boolean(child.is_manual_added) ||
+            Boolean(child.created_by) ||
+            (child.alasan_sekolah &&
+              (child.alasan_sekolah.includes("[DITAMBAHKAN") ||
+                child.alasan_sekolah.includes("[SUMBER: TAMBAH_DATA_ATS]")));
+
+          if (isDeleted) {
+            targetKelItem.statusAksi.dihapus += 1;
+            continue;
+          }
+
+          if (isDitambahkan) {
+            targetKelItem.statusAksi.ditambahkan += 1;
+          }
+          if (isBersekolah) {
+            targetKelItem.statusAksi.bersekolah += 1;
+          }
+
           const age = calculateAgeFromBirthDate(child.tanggal_lahir);
           const isLaki = (child.jenis_kelamin || "L").toUpperCase() === "L";
           const isIngin = normalizeKeinginanSekolah(parsed.keinginan) === "Masih Ada";
@@ -630,6 +668,11 @@ async function fetchAndComputeRekapDataAts(): Promise<RekapDataAtsResult> {
       for (const kel of kelsInKec) {
         kecItem.totalAts += kel.totalAts;
 
+        // Akumulasi Status & Aksi ATS
+        kecItem.statusAksi.ditambahkan += kel.statusAksi.ditambahkan;
+        kecItem.statusAksi.bersekolah += kel.statusAksi.bersekolah;
+        kecItem.statusAksi.dihapus += kel.statusAksi.dihapus;
+
         // Kategori
         kecItem.kategori.putusSekolah += kel.kategori.putusSekolah;
         kecItem.kategori.lulusTidakLanjut += kel.kategori.lulusTidakLanjut;
@@ -723,6 +766,11 @@ async function fetchAndComputeRekapDataAts(): Promise<RekapDataAtsResult> {
 
     for (const kec of kecamatanList) {
       kotaItem.totalAts += kec.totalAts;
+
+      // Akumulasi Status & Aksi ATS Kota
+      kotaItem.statusAksi.ditambahkan += kec.statusAksi.ditambahkan;
+      kotaItem.statusAksi.bersekolah += kec.statusAksi.bersekolah;
+      kotaItem.statusAksi.dihapus += kec.statusAksi.dihapus;
 
       kotaItem.kategori.putusSekolah += kec.kategori.putusSekolah;
       kotaItem.kategori.lulusTidakLanjut += kec.kategori.lulusTidakLanjut;
@@ -873,6 +921,7 @@ export async function getDaftarNamaAtsRekapAction(params: {
   kelurahan?: string;
   kategoriAts?: string;
   keinginan?: string;
+  statusFilter?: "semua" | "terverifikasi" | "ditambahkan" | "bersekolah" | "deleted";
   search?: string;
 }): Promise<{
   success: boolean;
@@ -915,7 +964,7 @@ export async function getDaftarNamaAtsRekapAction(params: {
         status_approval,
         created_at
       `)
-      .or("is_sekolah.eq.false,is_sekolah.is.null,nama_sekolah.ilike.%ATS%,alasan_sekolah.ilike.%KEINGINAN%")
+      .or("is_sekolah.eq.false,is_sekolah.is.null,nama_sekolah.ilike.%ATS%,alasan_sekolah.ilike.%KEINGINAN%,status_approval.eq.bersekolah,status_approval.eq.deleted,alasan_sekolah.ilike.%[BERSEKOLAH%,alasan_sekolah.ilike.%[DIHAPUS%")
       .neq("komunitas_id", "79c0e0c1-d8a9-41b8-8e0a-f9a5e581e703")
       .order("created_at", { ascending: false });
 
@@ -1000,6 +1049,39 @@ export async function getDaftarNamaAtsRekapAction(params: {
         if (params.keinginan === "tidak" && isIngin) continue;
       }
 
+      // Filter Status & Aksi
+      const isApproved = String(child.status_approval || "").toLowerCase() === "approved";
+      const isDeleted =
+        child.status_approval === "deleted" ||
+        Boolean(child.deleted_at) ||
+        (child.alasan_sekolah && child.alasan_sekolah.includes("[DIHAPUS"));
+      const isBersekolah =
+        child.status_approval === "bersekolah" ||
+        child.is_sekolah === true ||
+        Boolean(child.bersekolah_at) ||
+        (child.alasan_sekolah &&
+          (child.alasan_sekolah.includes("[BERSEKOLAH") ||
+            child.alasan_sekolah.includes("[KEMBALI BERSEKOLAH]")));
+      const isDitambahkan =
+        Boolean(child.is_manual_added) ||
+        Boolean(child.created_by) ||
+        (child.alasan_sekolah &&
+          (child.alasan_sekolah.includes("[DITAMBAHKAN") ||
+            child.alasan_sekolah.includes("[SUMBER: TAMBAH_DATA_ATS]")));
+
+      if (params.statusFilter === "deleted") {
+        if (!isDeleted) continue;
+      } else if (params.statusFilter === "bersekolah") {
+        if (!isBersekolah) continue;
+      } else if (params.statusFilter === "ditambahkan") {
+        if (!isDitambahkan || isDeleted) continue;
+      } else if (params.statusFilter === "terverifikasi") {
+        if (!isApproved || isDeleted) continue;
+      } else {
+        // Default (semua): sembunyikan soft-deleted dari daftar aktif umum
+        if (isDeleted) continue;
+      }
+
       // Filter Search
       if (params.search && params.search.trim()) {
         const q = params.search.toLowerCase().trim();
@@ -1036,7 +1118,7 @@ export async function getDaftarNamaAtsRekapAction(params: {
         rw: parsed.rw || "Belum Tahu",
         kelurahan: parsed.kelurahan || "Randugunting",
         kecamatan: parsed.kecamatan || "Tegal Selatan",
-        statusApproval: child.status_approval || "approved",
+        statusApproval: isDeleted ? "deleted" : isBersekolah ? "bersekolah" : (child.status_approval || "approved"),
         komunitasId: child.komunitas_id,
         komunitasNama: kom?.nama || "Komunitas",
         createdAt: child.created_at || new Date().toISOString(),

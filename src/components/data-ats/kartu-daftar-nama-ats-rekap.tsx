@@ -27,6 +27,7 @@ import {
   ArrowRight,
   User,
   Pencil,
+  Clock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -93,6 +94,7 @@ export function KartuDaftarNamaAtsRekap({
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [dataList, setDataList] = useState<DaftarNamaAtsItem[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [statusFilter, setStatusFilter] = useState<"semua" | "terverifikasi" | "ditambahkan" | "bersekolah" | "deleted">("semua");
   const [kategoriFilter, setKategoriFilter] = useState<"semua" | "do" | "ltm" | "bpb" | "bps">("semua");
   const [keinginanFilter, setKeinginanFilter] = useState<"semua" | "ingin" | "tidak">("semua");
   const [genderFilter, setGenderFilter] = useState<"semua" | "L" | "P">("semua");
@@ -145,6 +147,7 @@ export function KartuDaftarNamaAtsRekap({
         tingkat,
         kecamatan: tingkat !== "kota" ? selectedKecamatan : undefined,
         kelurahan: tingkat === "kelurahan" ? selectedKelurahan : undefined,
+        statusFilter,
       });
 
       if (res.success) {
@@ -153,7 +156,7 @@ export function KartuDaftarNamaAtsRekap({
         setErrorMsg(res.message || "Gagal memuat daftar anak tidak sekolah.");
       }
     });
-  }, [isOpen, tingkat, selectedKecamatan, selectedKelurahan]);
+  }, [isOpen, tingkat, selectedKecamatan, selectedKelurahan, statusFilter]);
 
   // Client-side instant filtering
   const filteredData = useMemo(() => {
@@ -357,6 +360,19 @@ export function KartuDaftarNamaAtsRekap({
 
             {/* Quick Filters */}
             <div className="flex flex-wrap items-center gap-2">
+              {/* Filter Status & Aksi ATS */}
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value as any)}
+                className="h-9 rounded-lg border border-border bg-background px-3 text-xs font-semibold text-foreground focus:outline-hidden"
+              >
+                <option value="semua">Semua Status Aksi</option>
+                <option value="terverifikasi">Terverifikasi Lapangan</option>
+                <option value="ditambahkan">Data Ditambahkan</option>
+                <option value="bersekolah">Kembali Bersekolah</option>
+                <option value="deleted">Data Dihapus (Soft Delete)</option>
+              </select>
+
               {/* Filter Kategori ATS */}
               <select
                 value={kategoriFilter}
@@ -657,10 +673,30 @@ export function KartuDaftarNamaAtsRekap({
                               <span className="font-medium text-foreground print:text-black text-[11px] leading-tight break-words block">
                                 {item.komunitasNama}
                               </span>
-                              <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-teal-500/10 text-teal-700 dark:text-teal-300 border border-teal-500/20 print:bg-white print:border print:border-black print:text-black">
-                                <CheckCircle2 className="h-3 w-3 shrink-0 print:hidden text-primary" />
-                                <span>Terdata ATS</span>
-                              </span>
+                              {item.statusApproval === "deleted" ? (
+                                <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-rose-100 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 border border-rose-300/30 print:bg-white print:border print:border-black print:text-black">
+                                  <span>Dihapus</span>
+                                </span>
+                              ) : item.statusApproval === "bersekolah" ? (
+                                <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-teal-100 dark:bg-teal-950/60 text-teal-800 dark:text-teal-300 border border-teal-300/30 print:bg-white print:border print:border-black print:text-black">
+                                  <GraduationCap className="h-3 w-3 shrink-0" />
+                                  <span>Kembali Bersekolah</span>
+                                </span>
+                              ) : item.keterangan?.includes("[DITAMBAHKAN") ? (
+                                <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-indigo-100 dark:bg-indigo-950/60 text-indigo-800 dark:text-indigo-300 border border-indigo-300/30 print:bg-white print:border print:border-black print:text-black">
+                                  <span>Ditambahkan</span>
+                                </span>
+                              ) : item.statusApproval === "approved" ? (
+                                <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300/30 print:bg-white print:border print:border-black print:text-black">
+                                  <CheckCircle2 className="h-3 w-3 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                                  <span>Terverifikasi</span>
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-300/30 print:bg-white print:border print:border-black print:text-black">
+                                  <Clock className="h-3 w-3 shrink-0 text-amber-600 dark:text-amber-400" />
+                                  <span>Menunggu Validasi</span>
+                                </span>
+                              )}
                             </div>
                           </td>
 
