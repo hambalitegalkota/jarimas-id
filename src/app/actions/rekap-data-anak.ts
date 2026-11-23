@@ -489,16 +489,39 @@ async function fetchAndComputeRekapDataAnak(): Promise<RekapDataAnakUsiaDiniResu
     return finalRekapData;
 }
 
+// In-memory module cache fallback (mencegah kegagalan load jika Supabase mengalami gangguan kuota / network)
+let inMemoryRekapCache: {
+  timestamp: number;
+  data: RekapDataAnakUsiaDiniResult;
+} | null = null;
+
 /**
  * Cache Rekapitulasi Data Anak dengan Next.js Shared Data Cache
- * Supabase hanya di-query 1 kali per jam atau saat ada data anak baru (on-demand revalidation).
+ * Revalidasi dilakukan berkala (6 jam) untuk mencegah over-limit pada Supabase.
  */
 const getCachedRekapDataAnak = unstable_cache(
-  fetchAndComputeRekapDataAnak,
+  async () => {
+    try {
+      const freshData = await fetchAndComputeRekapDataAnak();
+      if (freshData && freshData.kota && freshData.kota.totalAnak > 0) {
+        inMemoryRekapCache = {
+          timestamp: Date.now(),
+          data: freshData,
+        };
+        return freshData;
+      }
+    } catch (err) {
+      console.warn("Error revalidating fetchAndComputeRekapDataAnak, using in-memory fallback:", err);
+    }
+    if (inMemoryRekapCache && inMemoryRekapCache.data) {
+      return inMemoryRekapCache.data;
+    }
+    return fetchAndComputeRekapDataAnak();
+  },
   ["rekap-data-anak-se-kota-tegal"],
   {
     tags: ["rekap-data-anak"],
-    revalidate: 3600, // 1 Jam di Next.js Data Cache
+    revalidate: 21600, // 6 Jam di Next.js Data Cache (Pembaruan berkala hemat kuota)
   }
 );
 

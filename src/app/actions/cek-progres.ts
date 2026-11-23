@@ -26,6 +26,8 @@ import {
   generateChildIdentityKey,
   isDummyDataAnak,
   resolveJenisInstitusi,
+  extractSchoolLevel,
+  areSchoolLevelsCompatible,
 } from "@/lib/data-anak-helpers";
 import type {
   ProgresPaudItem,
@@ -260,17 +262,92 @@ export async function getCekProgresPaudAction(filters?: {
   }
 }
 
+// In-memory module cache fallback (mencegah query berulang ke Supabase jika terjadi limit / offline)
+let inMemoryProgresCache: {
+  timestamp: number;
+  data: ProgresPaudItem[];
+} | null = null;
+
+/**
+ * Cache Rekap Progres PAUD Se-Kota Tegal
+ * Revalidasi dilakukan secara berkala (6 jam) untuk mencegah pemborosan kuota Egress & Database Supabase.
+ */
 const getCachedAllProgresPaud = unstable_cache(
   async () => {
-    const supabase = createStatelessClient();
-    return await computeAllProgresPaud(supabase);
+    try {
+      const supabase = createStatelessClient();
+      const freshData = await computeAllProgresPaud(supabase);
+      if (freshData && freshData.length > 0) {
+        inMemoryProgresCache = {
+          timestamp: Date.now(),
+          data: freshData,
+        };
+        return freshData;
+      }
+    } catch (err) {
+      console.warn("Error revalidating computeAllProgresPaud, using in-memory fallback:", err);
+    }
+    if (inMemoryProgresCache && inMemoryProgresCache.data.length > 0) {
+      return inMemoryProgresCache.data;
+    }
+    return [];
   },
   ["cek-progres-paud-se-kota-tegal"],
   {
     tags: ["cek-progres-paud"],
-    revalidate: 3600, // 1 Jam di Next.js Data Cache
+    revalidate: 21600, // 6 Jam di Next.js Shared Data Cache (Pembaruan berkala hemat kuota)
   }
 );
+
+/**
+ * Mencocokkan data anak ke Satuan PAUD dengan strategi bertingkat (Tiered Matching)
+ * Tingkat 1: Kesesuaian Nama Eksak (Exact Alphanumeric Match) - 100% presisi untuk KB At-Taqwa, KB Syuhada, KBI Usamah, dll.
+ * Tingkat 2: Kesesuaian Nama Ketat dengan Jenjang yang Kompatibel (KB ke KB, RA ke RA, TK ke TK)
+ */
+function matchChildToPaud(
+  c: any,
+  paudList: any[],
+  paudById: Map<string, any>
+): any | null {
+  // 1. Cocok langsung via komunitas_id
+  let p = paudById.get(c.komunitas_id);
+  if (p) return p;
+
+  if (!c.nama_sekolah) return null;
+
+  const rawSchool = (c.nama_sekolah || "").trim();
+  const normChild = rawSchool.toLowerCase().replace(/[^a-z0-9]/g, "");
+  if (!normChild) return null;
+
+  // 2. Tingkat 1: Kesesuaian Nama Eksak (Exact Alphanumeric Match)
+  // Menjamin 100% siswa "KB At-Taqwa", "KB Syuhada", "KBI Usamah" langsung terhubung ke lembaga yang tepat
+  const exact = paudList.find(
+    (x: any) => (x.nama || "").toLowerCase().replace(/[^a-z0-9]/g, "") === normChild
+  );
+  if (exact) return exact;
+
+  // 3. Tingkat 2: Kesesuaian Nama Ketat dengan Kompatibilitas Jenjang
+  const childLvl = extractSchoolLevel(rawSchool);
+  const matchedStrict = paudList.filter((x: any) => {
+    const paudLvl = extractSchoolLevel(x.nama);
+    if (childLvl && paudLvl && !areSchoolLevelsCompatible(childLvl, paudLvl)) {
+      return false;
+    }
+    return isSchoolNameMatching(rawSchool, x.nama);
+  });
+
+  if (matchedStrict.length === 1) {
+    return matchedStrict[0];
+  } else if (matchedStrict.length > 1) {
+    const sameLvl = matchedStrict.filter((x: any) => extractSchoolLevel(x.nama) === childLvl);
+    const pool = sameLvl.length > 0 ? sameLvl : matchedStrict;
+    const m = (c.alasan_sekolah || "").match(/\[(DOM_KEL|KK_KEL|KEL):([^\]]+)\]/);
+    const childKel = m ? normalizeWilayah(m[2]) : "";
+    return pool.find((x: any) => normalizeWilayah(x.kelurahan) === childKel) || pool[0];
+  }
+
+  return null;
+}
 
 /**
  * Komputasi Murni Data Progres Satuan PAUD Se-Kota Tegal
@@ -314,6 +391,7 @@ async function computeAllProgresPaud(supabase: any): Promise<ProgresPaudItem[]> 
         .from("data_anak")
         .select("id, nama_lengkap, nama_orangtua, tanggal_lahir, nama_sekolah, alasan_sekolah, komunitas_id, status_approval, validated_at, validated_by, is_updated_by_paud, diperbarui_oleh")
         .eq("is_sekolah", true)
+        .order("id")
         .range(start, end)
     ),
   ]);
@@ -357,28 +435,22 @@ async function computeAllProgresPaud(supabase: any): Promise<ProgresPaudItem[]> 
       return;
     }
 
-    // 1. Cari PAUD yang cocok: via ID langsung atau nama sekolah
-    let p = paudById.get(c.komunitas_id);
-    const hasDirectMatch = Boolean(p);
-
-    if (!p && c.nama_sekolah) {
-      // Cari PAUD yang cocok dengan presisi jenjang dan lokasi wilayah
-      const matchedPauds = paudList.filter((x: any) => isSchoolNameMatching(c.nama_sekolah, x.nama));
-      if (matchedPauds.length === 1) {
-        p = matchedPauds[0];
-      } else if (matchedPauds.length > 1) {
-        // Disambiguasi Wilayah: Jika ada beberapa PAUD dengan nama mirip, cocokkan dengan kelurahan domisili/KK anak
-        const m = (c.alasan_sekolah || "").match(/\[(DOM_KEL|KK_KEL|KEL):([^\]]+)\]/);
-        const childKel = m ? normalizeWilayah(m[2]) : "";
-        p = matchedPauds.find((x: any) => normalizeWilayah(x.kelurahan) === childKel) || matchedPauds[0];
-      }
+    // 1. Cari PAUD yang cocok: via ID langsung atau strategi bertingkat (Tiered Match)
+    const p = matchChildToPaud(c, paudList, paudById);
+    if (!p || !paudStudentsMap.has(p.id)) {
+      return;
     }
 
-    if (p && paudStudentsMap.has(p.id)) {
-      // Disambiguasi Wilayah: Jika PAUD sudah memiliki siswa yang diinput/terdaftar langsung (komunitas_id === p.id),
-      // jangan masukkan data unlinked (komunitas_id !== p.id) yang kelurahannya berbeda
+    const hasDirectMatch = Boolean(c.komunitas_id && c.komunitas_id === p.id);
+    const normChildSchool = (c.nama_sekolah || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+    const normPaudName = (p.nama || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+    const isExactName = normChildSchool === normPaudName;
+
+    // Disambiguasi Wilayah: Hanya gunakan filter kelurahan jika nama sekolah bukan exact match (nama generik ambigu)
+    // dan PAUD sudah memiliki siswa yang terdaftar langsung
+    if (!isExactName && !hasDirectMatch) {
       const directCount = paudDirectCount.get(p.id) || 0;
-      if (directCount > 0 && !hasDirectMatch) {
+      if (directCount > 0) {
         const m = (c.alasan_sekolah || "").match(/DOM_KEL:([^\]]+)/);
         const domKel = m ? normalizeWilayah(m[1]) : "";
         const paudKel = normalizeWilayah(p.kelurahan);
@@ -386,6 +458,7 @@ async function computeAllProgresPaud(supabase: any): Promise<ProgresPaudItem[]> 
           return;
         }
       }
+    }
 
       const pMap = paudStudentsMap.get(p.id)!;
       const childKey = generateChildIdentityKey(c) || c.id;
@@ -414,7 +487,6 @@ async function computeAllProgresPaud(supabase: any): Promise<ProgresPaudItem[]> 
       if (validatorId) {
         validatorMap[p.id].add(validatorId);
       }
-    }
   });
 
   return paudList.map((p: any) => {
