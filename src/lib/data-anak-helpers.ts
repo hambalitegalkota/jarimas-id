@@ -5918,3 +5918,143 @@ export function isSameChildRecord(
 
   return true;
 }
+
+/**
+ * Menghitung tingkat prioritas hierarki komunitas (makin tinggi angka, makin spesifik / jenjang terendah)
+ */
+export function getHierarchyPriority(k: any): number {
+  if (!k) return 0;
+  if (k.jenis === "warga_kita") {
+    if (k.rt && k.rt !== "null" && k.rt !== "-") return 5; // RT (terendah)
+    if (k.rw && k.rw !== "null" && k.rw !== "-") return 4; // RW
+    if (k.kelurahan && k.kelurahan !== "null" && k.kelurahan !== "Semua Kelurahan") return 3; // Kelurahan
+    if (k.kecamatan && k.kecamatan !== "null" && k.kecamatan !== "Kota Tegal" && k.kecamatan !== "Semua") return 2; // Kecamatan
+    return 1; // Kota
+  }
+
+  if (k.jenis === "posyandu") {
+    const s = (k.nama || "").toLowerCase();
+    const isBerjenjang = s.includes("komunitas posyandu") || k.id?.startsWith("kom-posyandu-");
+    if (!isBerjenjang) return 4; // Unit Posyandu Riil (terendah)
+    if (k.kelurahan && k.kelurahan !== "null" && k.kelurahan !== "Semua Kelurahan") return 3; // Kelurahan
+    if (k.kecamatan && k.kecamatan !== "null" && k.kecamatan !== "Kota Tegal") return 2; // Kecamatan
+    return 1; // Kota
+  }
+
+  if (k.jenis === "satuan_paud") {
+    const s = (k.nama || "").toLowerCase();
+    const isBerjenjang = s.includes("komunitas satuan paud") || s.includes("komunitas paud") || k.id?.startsWith("kom-paud-");
+    if (!isBerjenjang) return 4; // Satuan PAUD Unit Riil (terendah)
+    if (k.kelurahan && k.kelurahan !== "null" && k.kelurahan !== "Semua Kelurahan") return 3; // Kelurahan
+    if (k.kecamatan && k.kecamatan !== "null" && k.kecamatan !== "Kota Tegal") return 2; // Kecamatan
+    return 1; // Kota
+  }
+
+  return 0; // Komunitas lainnya (kegiatan, pkbm, skb, dll)
+}
+
+/**
+ * Memeriksa apakah parent merupakan komunitas induk (ancestor) dari child dalam hierarki sejenis
+ */
+export function isCommunityAncestorOf(parent: any, child: any): boolean {
+  if (!parent || !child || parent.id === child.id) return false;
+  if (parent.jenis !== child.jenis) return false;
+
+  const pPri = getHierarchyPriority(parent);
+  const cPri = getHierarchyPriority(child);
+  if (pPri === 0 || cPri === 0) return false;
+  if (pPri >= cPri) return false;
+
+  // Level 1: Kota adalah induk dari semua jenjang di bawahnya
+  if (pPri === 1) return true;
+
+  // Level 2: Kecamatan adalah induk jika anak berada di kecamatan yang sama
+  if (pPri === 2) {
+    const pKec = (parent.kecamatan || "").toLowerCase().trim();
+    const cKec = (child.kecamatan || "").toLowerCase().trim();
+    return !pKec || pKec === "kota tegal" || pKec === "semua" || pKec === cKec;
+  }
+
+  // Level 3: Kelurahan adalah induk jika anak berada di kelurahan yang sama
+  if (pPri === 3) {
+    const pKel = (parent.kelurahan || "").toLowerCase().trim();
+    const cKel = (child.kelurahan || "").toLowerCase().trim();
+    return Boolean(pKel && pKel !== "semua kelurahan" && pKel === cKel);
+  }
+
+  // Level 4: RW adalah induk jika anak berada di kelurahan dan RW yang sama
+  if (pPri === 4) {
+    const pKel = (parent.kelurahan || "").toLowerCase().trim();
+    const cKel = (child.kelurahan || "").toLowerCase().trim();
+    const pRw = String(parent.rw || "").replace(/\D/g, "");
+    const cRw = String(child.rw || "").replace(/\D/g, "");
+    return Boolean(pKel && pKel === cKel && pRw && pRw === cRw);
+  }
+
+  return false;
+}
+
+/**
+ * Menyaring daftar keanggotaan komunitas berjenjang sehingga hanya menyisakan komunitas terendah
+ */
+export function filterLowestHierarchicalCommunities<T extends { komunitas?: any; id?: string; komunitas_id?: string }>(items: T[]): T[] {
+  return items.filter((item) => {
+    const k = item.komunitas || item;
+    const hasMoreSpecificChild = items.some((other) => {
+      const otherK = other.komunitas || other;
+      return isCommunityAncestorOf(k, otherK);
+    });
+    return !hasMoreSpecificChild;
+  });
+}
+
+/**
+ * Format nama komunitas lengkap sampai Kelurahan (agar tidak terpotong dan jelas)
+ */
+export function formatCommunityDisplayName(k: any): string {
+  if (!k) return "Komunitas";
+  const rawNama = (k.nama || "").trim();
+  const rawKel = (k.kelurahan || "").replace(/Semua Kelurahan/i, "").trim();
+
+  // Warga Kita
+  if (k.jenis === "warga_kita") {
+    const rt = k.rt && k.rt !== "null" && k.rt !== "-" ? String(k.rt).padStart(2, "0").replace(/^RT\s*/i, "") : null;
+    const rw = k.rw && k.rw !== "null" && k.rw !== "-" ? String(k.rw).padStart(2, "0").replace(/^RW\s*/i, "") : null;
+    if (rt && rw && rawKel) {
+      return `RT ${rt} / RW ${rw}, Kel. ${rawKel}`;
+    } else if (rt && rw) {
+      return `RT ${rt} / RW ${rw}`;
+    } else if (rw && rawKel) {
+      return `RW ${rw}, Kel. ${rawKel}`;
+    } else if (rawKel) {
+      return `Warga Kel. ${rawKel}`;
+    } else if (k.kecamatan && k.kecamatan !== "Kota Tegal") {
+      return `Warga Kec. ${k.kecamatan}`;
+    }
+    return rawNama;
+  }
+
+  // Posyandu
+  if (k.jenis === "posyandu") {
+    const s = rawNama.toLowerCase();
+    const isBerjenjang = s.includes("komunitas posyandu") || k.id?.startsWith("kom-posyandu-");
+    if (isBerjenjang) return rawNama;
+    if (rawKel && !s.includes(rawKel.toLowerCase())) {
+      return `${rawNama}, Kel. ${rawKel}`;
+    }
+    return rawNama;
+  }
+
+  // Satuan PAUD
+  if (k.jenis === "satuan_paud") {
+    const s = rawNama.toLowerCase();
+    const isBerjenjang = s.includes("komunitas satuan paud") || s.includes("komunitas paud") || k.id?.startsWith("kom-paud-");
+    if (isBerjenjang) return rawNama;
+    if (rawKel && !s.includes(rawKel.toLowerCase())) {
+      return `${rawNama}, Kel. ${rawKel}`;
+    }
+    return rawNama;
+  }
+
+  return rawNama;
+}

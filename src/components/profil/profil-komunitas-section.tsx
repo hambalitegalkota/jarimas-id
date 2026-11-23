@@ -25,7 +25,7 @@ import {
 } from "lucide-react";
 import { UnifiedWargaCard, type WargaTierItem } from "@/components/komunitas/unified-warga-card";
 import { ManageGrupMembersModal } from "@/components/kabar/manage-grup-members-modal";
-import { getPosyanduCoverageDisplay } from "@/lib/data-anak-helpers";
+import { getPosyanduCoverageDisplay, formatCommunityDisplayName } from "@/lib/data-anak-helpers";
 import { leaveKomunitas } from "@/app/actions/komunitas";
 import type { RegisteredUserItem } from "@/types/database";
 
@@ -200,18 +200,7 @@ export function ProfilKomunitasSection({
                 item.komunitas_id.startsWith("kom-paud-")
               ));
 
-            let formattedKomNama = kom.nama || "Komunitas";
-            if (kom.jenis === "posyandu") {
-              const rawNama = (kom.nama || "").trim();
-              if (rawNama.toLowerCase().includes("komunitas posyandu")) {
-                formattedKomNama = rawNama.replace(/^(posyandu\s+)+(komunitas\s+posyandu)/i, "$2");
-              } else if (rawNama.toLowerCase().startsWith("komunitas")) {
-                formattedKomNama = rawNama;
-              } else {
-                const coreName = rawNama.replace(/^(Posyandu\s*)+/gi, "").trim();
-                formattedKomNama = coreName ? `Posyandu ${coreName}` : "Posyandu";
-              }
-            }
+            let formattedKomNama = formatCommunityDisplayName(kom);
 
             return (
               <div

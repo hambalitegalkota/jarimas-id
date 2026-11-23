@@ -2,7 +2,11 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient, createAdminClient } from "@/utils/supabase/server";
-import { toValidUUID } from "@/lib/utils";
+import { toValidUUID, formatPeranDisplay } from "@/lib/utils";
+import {
+  filterLowestHierarchicalCommunities,
+  formatCommunityDisplayName,
+} from "@/lib/data-anak-helpers";
 import type { Profile } from "@/types/database";
 
 export interface ProfilActionState {
@@ -255,18 +259,32 @@ export async function getPublicProfileData(identifier: string, forceIncludeAll: 
           komunitas_id,
           peran,
           status,
-          komunitas:komunitas_id(id, nama, jenis, kecamatan, kelurahan, lokasi)
+          komunitas:komunitas_id(id, nama, jenis, kecamatan, kelurahan, rw, rt, lokasi)
         `)
         .eq("user_id", profile.id)
         .eq("status", "approved");
 
-      communities = (memberships || []).map((m: any) => ({
-        id: m.komunitas_id,
-        nama: m.komunitas?.nama || "Komunitas",
-        jenis: m.komunitas?.jenis || "posyandu",
-        peran: m.peran || "Anggota",
-        lokasi: m.komunitas?.lokasi || "Kota Tegal",
-      }));
+      // Saring komunitas berjenjang: hanya tampilkan jenjang terendah (misal: RT untuk Warga Kita, unit riil untuk Posyandu/PAUD)
+      const filteredMemberships = filterLowestHierarchicalCommunities(memberships || []);
+
+      communities = filteredMemberships.map((m: any) => {
+        const kom = m.komunitas || {};
+        return {
+          id: m.komunitas_id,
+          nama: formatCommunityDisplayName(kom),
+          raw_nama: kom.nama || "Komunitas",
+          jenis: kom.jenis || "posyandu",
+          peran: formatPeranDisplay(m.peran),
+          lokasi:
+            kom.lokasi ||
+            [kom.kelurahan, kom.kecamatan, "Kota Tegal"].filter((x) => x && x !== "Semua Kelurahan").join(", ") ||
+            "Kota Tegal",
+          kecamatan: kom.kecamatan,
+          kelurahan: kom.kelurahan,
+          rw: kom.rw,
+          rt: kom.rt,
+        };
+      });
     }
 
     return {

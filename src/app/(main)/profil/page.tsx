@@ -38,6 +38,7 @@ import {
 import { extractKomunitasMetadata, getUserAdminInfo } from "@/lib/admin-helpers";
 import { getWargaHierarchyChain, findKecamatanByKelurahan, slugify, findOrGenerateKomunitasSeed } from "@/lib/constants/tegal-data";
 import { type WargaTierItem } from "@/components/komunitas/unified-warga-card";
+import { filterLowestHierarchicalCommunities } from "@/lib/data-anak-helpers";
 import { ProfilKomunitasSection } from "@/components/profil/profil-komunitas-section";
 import { EditProfilDialog } from "@/components/profil/edit-profil-dialog";
 import { ShareProfileCard } from "@/components/profil/share-profile-card";
@@ -317,8 +318,9 @@ export default async function ProfilePage() {
   const wargaKitaMemberships = userCommunities.filter(
     (item) => item.komunitas.jenis === "warga_kita"
   );
-  const nonWargaMemberships = userCommunities.filter(
-    (item) => item.komunitas.jenis !== "warga_kita"
+  // Saring komunitas berjenjang (Posyandu & PAUD) agar hanya menyisakan jenjang terendah
+  const nonWargaMemberships = filterLowestHierarchicalCommunities(
+    userCommunities.filter((item) => item.komunitas.jenis !== "warga_kita")
   );
 
   let wargaKitaSummary: {

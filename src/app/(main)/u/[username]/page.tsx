@@ -17,6 +17,9 @@ import {
   Sparkles,
   CheckCircle2,
   Calendar,
+  Home,
+  School,
+  ArrowRight,
 } from "lucide-react";
 import { createClient } from "@/utils/supabase/server";
 import { isSuperOrAdminPusatOrKota } from "@/lib/utils";
@@ -411,25 +414,66 @@ export default async function PublicProfilePage({
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                      {communities.map((kom: any) => (
-                        <div
-                          key={kom.id}
-                          className="rounded-xl border border-border bg-card p-3 shadow-2xs space-y-1.5 hover:border-primary/40 transition-colors"
-                        >
-                          <div className="flex items-start justify-between gap-2">
-                            <h3 className="text-xs font-bold text-foreground line-clamp-1">
-                              {kom.nama}
-                            </h3>
-                            <span className="inline-flex shrink-0 rounded-md bg-primary/10 border border-primary/20 px-2 py-0.2 text-2xs font-semibold text-primary capitalize">
-                              {kom.peran}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-1.5 text-2xs text-muted-foreground">
-                            <MapPin className="h-3 w-3 shrink-0" />
-                            <span className="truncate">{kom.lokasi}</span>
-                          </div>
-                        </div>
-                      ))}
+                      {communities.map((kom: any) => {
+                        const isWarga = kom.jenis === "warga_kita";
+                        const isPosyandu = kom.jenis === "posyandu";
+                        const isPaud = kom.jenis === "satuan_paud";
+                        const isKegiatan = kom.jenis === "kegiatan";
+
+                        let typeLabel = "Komunitas";
+                        let TypeIcon = Building2;
+                        if (isWarga) {
+                          typeLabel = kom.rt ? "Komunitas RT" : kom.rw ? "Komunitas RW" : "Warga Kita";
+                          TypeIcon = Home;
+                        } else if (isPosyandu) {
+                          typeLabel = "Posyandu";
+                          TypeIcon = Sparkles;
+                        } else if (isPaud) {
+                          typeLabel = "Satuan PAUD";
+                          TypeIcon = School;
+                        } else if (isKegiatan) {
+                          typeLabel = "Grup Kegiatan";
+                          TypeIcon = Users;
+                        }
+
+                        return (
+                          <Link
+                            key={kom.id}
+                            href={`/komunitas/${kom.id}`}
+                            className="group flex flex-col justify-between rounded-xl border border-border bg-card p-3.5 shadow-2xs hover:border-primary/60 hover:bg-muted/20 transition-all space-y-2.5"
+                          >
+                            <div className="space-y-1.5">
+                              {/* Baris atas: Kategori Komunitas & Badge Peran yang rapi & tidak mendesak nama */}
+                              <div className="flex items-center justify-between gap-2">
+                                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary">
+                                  <TypeIcon className="h-3 w-3 shrink-0" />
+                                  <span>{typeLabel}</span>
+                                </span>
+                                <span className="inline-flex shrink-0 items-center rounded-full bg-emerald-500/10 border border-emerald-500/25 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 dark:text-emerald-400 capitalize">
+                                  {kom.peran}
+                                </span>
+                              </div>
+
+                              {/* Nama Komunitas: Full text tanpa truncate/line-clamp agar tidak terpotong */}
+                              <h3 className="text-xs sm:text-sm font-bold text-foreground leading-snug break-words group-hover:text-primary transition-colors">
+                                {kom.nama}
+                              </h3>
+                            </div>
+
+                            {/* Baris bawah: Lokasi & Indikator Link */}
+                            <div className="flex items-center justify-between pt-1.5 border-t border-border/40 text-[11px] text-muted-foreground">
+                              <div className="flex items-center gap-1 min-w-0">
+                                <MapPin className="h-3 w-3 shrink-0 text-muted-foreground/70" />
+                                <span className="truncate">{kom.lokasi}</span>
+                              </div>
+                              <span className="shrink-0 text-[10px] font-semibold text-primary opacity-80 group-hover:opacity-100 flex items-center gap-0.5 transition-opacity">
+                                <span>Buka</span>
+                                <ArrowRight className="h-2.5 w-2.5" />
+                              </span>
+                            </div>
+                          </Link>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
