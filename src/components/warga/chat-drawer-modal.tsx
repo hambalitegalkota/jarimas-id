@@ -47,23 +47,6 @@ interface ChatDrawerModalProps {
   currentUserId: string | null;
 }
 
-// Rekomendasi pesan cepat untuk konsultasi Admin Pusat
-const QUICK_GREETINGS = [
-  "Assalamu'alaikum wr. wb. salam hangat Admin! 🙏",
-  "Mohon panduan terkait fitur aplikasi Jarimas 💡",
-  "Bisa konsultasi terkait pendataan warga? 📋",
-  "Ada kendala saat validasi data anak usia dini 🩺",
-  "Informasi sinkronisasi Posyandu & RT/RW 🏘️",
-];
-
-// Rekomendasi pesan cepat untuk percakapan sesama warga / anggota komunitas
-const CITIZEN_GREETINGS = [
-  "Assalamu'alaikum, salam hangat! 🙏",
-  "Bisa koordinasi terkait data warga / anak? 📋",
-  "Mohon info terkait kegiatan komunitas 🤝",
-  "Terima kasih atas kerja samanya! ✨",
-];
-
 // Kategori Emoticon Lengkap (sama seperti percakapan komunitas The Orbit Sixty)
 const EMOJI_CATEGORIES = [
   {
@@ -347,32 +330,10 @@ export function ChatDrawerModal({
     }, 20);
   };
 
-  // Sisipkan baris baru (tombol Baris Baru)
-  const insertNewline = () => {
-    if (!textareaRef.current) {
-      setInputMessage((prev) => prev + "\n");
-      return;
-    }
-    const val = inputMessage;
-    const start = textareaRef.current.selectionStart;
-    const end = textareaRef.current.selectionEnd;
-    const newVal = val.substring(0, start) + "\n" + val.substring(end);
-    setInputMessage(newVal);
-
-    setTimeout(() => {
-      if (textareaRef.current) {
-        textareaRef.current.focus();
-        textareaRef.current.setSelectionRange(start + 1, start + 1);
-        adjustTextareaHeight();
-      }
-    }, 20);
-  };
-
   const isTargetSuperAdmin = isSuperAdmin(targetUser);
   const isTargetAdminPusat = isAdminPusat(targetUser);
   const primaryRole = targetUser?.komunitas_list?.[0]?.peran;
   const primaryKomunitas = targetUser?.komunitas_list?.[0]?.nama;
-  const activeGreetings = isTargetAdminPusat ? QUICK_GREETINGS : CITIZEN_GREETINGS;
 
   // Sisipkan tag nama / admin
   const insertTagTarget = () => {
@@ -477,14 +438,6 @@ export function ChatDrawerModal({
     } finally {
       setIsSending(false);
     }
-  };
-
-  const handleQuickGreeting = (greeting: string) => {
-    setInputMessage(greeting);
-    setTimeout(() => {
-      textareaRef.current?.focus();
-      adjustTextareaHeight();
-    }, 20);
   };
 
   const isJarimasBot =
@@ -766,27 +719,7 @@ export function ChatDrawerModal({
         </div>
 
         {/* ========================================================= */}
-        {/* 3. SARAN PESAN CEPAT (QUICK PRESETS)                      */}
-        {/* ========================================================= */}
-        <div className="px-3 py-1.5 border-t border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center gap-1.5 overflow-x-auto no-scrollbar shrink-0">
-          <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 shrink-0 flex items-center gap-1 pl-1">
-            <Sparkles className="h-3 w-3 text-amber-500" />
-            Saran:
-          </span>
-          {activeGreetings.map((greeting, idx) => (
-            <button
-              key={idx}
-              type="button"
-              onClick={() => handleQuickGreeting(greeting)}
-              className="shrink-0 text-2xs px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-teal-50 hover:text-teal-700 hover:border-teal-300 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer"
-            >
-              {greeting}
-            </button>
-          ))}
-        </div>
-
-        {/* ========================================================= */}
-        {/* 4. PREVIEW TANGKAPAN LAYAR TERLAMPIR                      */}
+        {/* 3. PREVIEW TANGKAPAN LAYAR TERLAMPIR                      */}
         {/* ========================================================= */}
         {attachedImage && (
           <div className="flex items-center justify-between gap-3 px-3 py-2 bg-emerald-50 dark:bg-emerald-950/50 border-t border-emerald-200 dark:border-emerald-800 shrink-0">
@@ -823,12 +756,12 @@ export function ChatDrawerModal({
         )}
 
         {/* ========================================================= */}
-        {/* 5. POPUP EMOJI PICKER (KATEGORI MODERN)                   */}
+        {/* 4. POPUP EMOJI PICKER (KATEGORI MODERN)                   */}
         {/* ========================================================= */}
         {showEmojiPicker && (
           <div
             ref={emojiPickerRef}
-            className="absolute bottom-28 left-3 right-3 sm:left-4 sm:w-80 rounded-2xl bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 shadow-2xl z-30 overflow-hidden animate-in fade-in zoom-in-95 duration-150"
+            className="absolute bottom-16 left-3 right-3 sm:left-4 sm:w-80 rounded-2xl bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 shadow-2xl z-30 overflow-hidden animate-in fade-in zoom-in-95 duration-150"
           >
             {/* Header Tabs Emoji */}
             <div className="flex items-center gap-1 p-2 bg-slate-50 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 overflow-x-auto no-scrollbar">
@@ -867,63 +800,51 @@ export function ChatDrawerModal({
         )}
 
         {/* ========================================================= */}
-        {/* 6. INPUT CHAT BAR (KOTAK PESAN DIJAMIN SELALU TERLIHAT)  */}
+        {/* 5. INPUT CHAT BAR (SINGLE-ROW COMPACT MODERN)             */}
         {/* ========================================================= */}
         <form
           onSubmit={handleSendMessage}
-          className="p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] bg-slate-50 dark:bg-slate-950/90 border-t-2 border-slate-200 dark:border-slate-800 shrink-0 space-y-2"
+          className="p-2 sm:p-2.5 pb-[max(0.6rem,env(safe-area-inset-bottom))] bg-slate-50 dark:bg-slate-950/90 border-t-2 border-slate-200 dark:border-slate-800 shrink-0"
         >
           {sendError && (
-            <p className="text-2xs text-red-600 flex items-center gap-1">
+            <p className="text-2xs text-red-600 flex items-center gap-1 mb-1.5">
               <AlertCircle className="h-3 w-3 shrink-0" />
               <span>{sendError}</span>
             </p>
           )}
 
-          {/* Toolbar Pembantu: Emoticon, Tag Admin, Tangkapan Layar, Baris Baru */}
-          <div className="flex items-center justify-between gap-1.5 flex-wrap">
-            <div className="flex items-center gap-1">
-              {/* Tombol Emoji */}
+          <div className="flex items-end gap-1.5 sm:gap-2">
+            <div className="flex items-center gap-1 pb-0.5 shrink-0">
+              {/* Tombol Sisipkan Emoticon */}
               <button
                 type="button"
                 onClick={() => setShowEmojiPicker((prev) => !prev)}
                 title="Sisipkan Emoticon"
+                aria-label="Sisipkan Emoticon"
                 className={cn(
-                  "flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold transition-colors cursor-pointer",
+                  "flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-xl transition-all cursor-pointer",
                   showEmojiPicker
-                    ? "bg-teal-600 text-white"
-                    : "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                    ? "bg-teal-600 text-white shadow-xs"
+                    : "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 shadow-2xs active:scale-95"
                 )}
               >
-                <Smile className="h-3.5 w-3.5 text-amber-500" />
-                <span className="hidden sm:inline">Emoticon</span>
+                <Smile className="h-5 w-5 text-amber-500" />
               </button>
 
-              {/* Tombol Tag */}
-              <button
-                type="button"
-                onClick={insertTagTarget}
-                title={isTargetAdminPusat ? "Tag / Sebut Admin Pusat" : `Tag / Sebut ${targetUser.nama_lengkap}`}
-                className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-bold transition-colors cursor-pointer"
-              >
-                <AtSign className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400" />
-                <span className="hidden sm:inline">{isTargetAdminPusat ? "Tag Admin" : "Tag Nama"}</span>
-              </button>
-
-              {/* Tombol Lampirkan Tangkapan Layar */}
+              {/* Tombol Sisipkan Gambar / Kamera */}
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isProcessingImage}
                 title="Kirim Gambar / Tangkapan Layar (Ctrl+V juga didukung)"
-                className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-bold transition-colors cursor-pointer disabled:opacity-50"
+                aria-label="Kirim Gambar / Tangkapan Layar"
+                className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 shadow-2xs transition-all cursor-pointer disabled:opacity-50 active:scale-95"
               >
                 {isProcessingImage ? (
-                  <Loader2 className="h-3.5 w-3.5 animate-spin text-teal-600" />
+                  <Loader2 className="h-4 w-4 animate-spin text-teal-600" />
                 ) : (
-                  <Camera className="h-3.5 w-3.5 text-emerald-600" />
+                  <Camera className="h-5 w-5 text-emerald-600" />
                 )}
-                <span className="hidden sm:inline">Tangkapan Layar</span>
               </button>
               <input
                 ref={fileInputRef}
@@ -932,25 +853,21 @@ export function ChatDrawerModal({
                 onChange={handleFileChange}
                 className="hidden"
               />
-            </div>
 
-            {/* Tombol Enter Baris Baru */}
-            <div className="flex items-center gap-1">
+              {/* Tombol Tag Nama */}
               <button
                 type="button"
-                onClick={insertNewline}
-                title="Tambahkan baris baru"
-                className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-bold transition-colors cursor-pointer"
+                onClick={insertTagTarget}
+                title={isTargetAdminPusat ? "Tag Admin Pusat" : `Tag ${targetUser.nama_lengkap}`}
+                aria-label={isTargetAdminPusat ? "Tag Admin Pusat" : `Tag ${targetUser.nama_lengkap}`}
+                className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 shadow-2xs transition-all cursor-pointer active:scale-95"
               >
-                <CornerDownLeft className="h-3 w-3 text-slate-500" />
-                <span>Baris Baru</span>
+                <AtSign className="h-4 w-4 text-teal-600 dark:text-teal-400" />
               </button>
             </div>
-          </div>
 
-          {/* Kotak Input Textarea & Tombol Kirim */}
-          <div className="flex items-end gap-2">
-            <div className="relative flex-1">
+            {/* Kotak Teks Pesan Fleksibel */}
+            <div className="relative flex-1 min-w-0">
               <textarea
                 ref={textareaRef}
                 value={inputMessage}
@@ -963,10 +880,10 @@ export function ChatDrawerModal({
                 rows={1}
                 placeholder={
                   isTargetAdminPusat
-                    ? "Ketik pesan untuk Admin Pusat Jarimas... (Enter kirim, Shift+Enter baris baru, Ctrl+V tangkapan layar)"
-                    : `Ketik pesan untuk ${targetUser.nama_lengkap}... (Enter kirim, Shift+Enter baris baru, Ctrl+V tangkapan layar)`
+                    ? "Ketik pesan untuk Admin Pusat..."
+                    : `Ketik pesan untuk ${targetUser.nama_lengkap}...`
                 }
-                className="w-full min-h-[44px] max-h-32 py-2.5 px-3.5 text-xs sm:text-sm rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none leading-relaxed shadow-2xs"
+                className="w-full min-h-[42px] max-h-28 py-2.5 px-3.5 text-xs sm:text-sm rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none leading-relaxed shadow-2xs"
                 disabled={isSending}
               />
             </div>
@@ -976,14 +893,14 @@ export function ChatDrawerModal({
               type="submit"
               disabled={(!inputMessage.trim() && !attachedImage) || isSending}
               aria-label="Kirim Pesan"
-              className="inline-flex h-11 px-4 items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 disabled:opacity-50 text-white text-xs font-bold transition-all active:scale-95 cursor-pointer disabled:cursor-not-allowed shadow-xs shrink-0"
+              className="inline-flex h-[42px] min-h-[42px] px-3.5 sm:px-4 items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 disabled:opacity-50 text-white text-xs font-bold transition-all active:scale-95 cursor-pointer disabled:cursor-not-allowed shadow-xs shrink-0"
             >
               {isSending ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
                 <>
-                  <Send className="h-3.5 w-3.5" />
-                  <span>Kirim</span>
+                  <Send className="h-4 w-4" />
+                  <span className="hidden sm:inline">Kirim</span>
                 </>
               )}
             </button>
