@@ -15,6 +15,7 @@ import {
   isDummyDataAnak,
   isSchoolNameMatching,
   cleanBaseSchoolName,
+  extractSchoolLevel,
   generateChildIdentityKey,
   extractSchoolNumberToken,
   isKomunitasLayananPaud,
@@ -893,10 +894,23 @@ export async function getDataAnakByKomunitas(
       const cleanPrefix = rawPaudName.replace(prefixRegex, "").trim();
       if (cleanPrefix && cleanPrefix.length > 2) {
         searchPhrases.add(cleanPrefix);
-        // Toleransi pencarian lintas jenjang setara (RA <-> TK dan RA <-> KB)
-        searchPhrases.add(`RA ${cleanPrefix}`);
-        searchPhrases.add(`TK ${cleanPrefix}`);
-        searchPhrases.add(`KB ${cleanPrefix}`);
+        // Tambahkan variasi prefix yang relevan hanya untuk jenjang institusi yang sama
+        const targetLvl = extractSchoolLevel(rawPaudName);
+        if (targetLvl === "kb") {
+          searchPhrases.add(`KB ${cleanPrefix}`);
+          searchPhrases.add(`KBI ${cleanPrefix}`);
+        } else if (targetLvl === "tk") {
+          searchPhrases.add(`TK ${cleanPrefix}`);
+          searchPhrases.add(`TKI ${cleanPrefix}`);
+        } else if (targetLvl === "ra") {
+          searchPhrases.add(`RA ${cleanPrefix}`);
+        } else if (targetLvl === "tpa") {
+          searchPhrases.add(`TPA ${cleanPrefix}`);
+        } else if (targetLvl === "pos_paud") {
+          searchPhrases.add(`POS PAUD ${cleanPrefix}`);
+          searchPhrases.add(`SPS ${cleanPrefix}`);
+          searchPhrases.add(`PAUD TPQ ${cleanPrefix}`);
+        }
       }
 
       // Variasi tanpa kata "Iman" (misal: "Bina Iman Anak Sholeh" vs "Bina Anak Sholeh")
@@ -1003,18 +1017,6 @@ export async function getDataAnakByKomunitas(
       const orConditions: string[] = [
         `komunitas_id.eq.${validKomId}`,
       ];
-
-      // Keterhubungan ID lembaga mitra sejenis di wilayah kelurahan yang sama (misal RA Syiarul Islam <-> TK Syiarul Islam)
-      const counterpartKoms = RAW_PAUD_PKBM_TEGAL.filter(
-        (p) =>
-          p.id !== validKomId &&
-          (p.kelurahan || "").toLowerCase().trim() === (targetKomunitas?.kelurahan || "").toLowerCase().trim() &&
-          cleanBaseSchoolName(p.nama) === cleanBaseSchoolName(rawPaudName)
-      );
-      for (const cp of counterpartKoms) {
-        orConditions.push(`komunitas_id.eq.${cp.id}`);
-        if (cp.nama) searchPhrases.add(cp.nama);
-      }
 
       if (numToken) {
         // Jika PAUD memiliki nomor cabang (contoh: "I", "II", "1", "2"):

@@ -311,7 +311,20 @@ function matchChildToPaud(
 ): any | null {
   // 1. Cocok langsung via komunitas_id
   let p = paudById.get(c.komunitas_id);
-  if (p) return p;
+  if (p) {
+    if (c.nama_sekolah) {
+      const childLvl = extractSchoolLevel(c.nama_sekolah);
+      const paudLvl = extractSchoolLevel(p.nama);
+      if (childLvl !== "other" && paudLvl !== "other" && childLvl !== paudLvl) {
+        // Jenjang sekolah eksplisit bertentangan dengan jenjang komunitas terdaftar
+        // Alihkan pencocokan ke nama sekolah di bawah
+      } else {
+        return p;
+      }
+    } else {
+      return p;
+    }
+  }
 
   if (!c.nama_sekolah) return null;
 

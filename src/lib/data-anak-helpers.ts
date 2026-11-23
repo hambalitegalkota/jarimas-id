@@ -836,8 +836,11 @@ export function findPaudForChild(namaSekolah?: string | null): any | null {
     }
   }
 
-  // 2. Substring match
+  // 2. Substring match (dengan pemeriksaan kecocokan jenjang institusi)
+  const childLvl = extractSchoolLevel(clean);
   for (const paud of RAW_PAUD_PKBM_TEGAL) {
+    const paudLvl = extractSchoolLevel(paud.nama);
+    if (!areSchoolLevelsCompatible(childLvl, paudLvl)) continue;
     const pNama = paud.nama.toLowerCase();
     if (clean.includes(pNama) || pNama.includes(clean)) {
       return paud;
@@ -1122,15 +1125,12 @@ export function extractSchoolLevel(str?: string | null): SchoolLevel {
 
 /**
  * Memeriksa apakah dua jenjang institusi cocok / kompatibel.
- * RA (Raudhatul Athfal / Kemenag) dan TK (Taman Kanak-Kanak / Kemendikbud) adalah jenjang pendidikan
- * formal setara untuk anak usia 4-6 tahun yang sering digunakan bergantian di masyarakat dan pendataan.
+ * Setiap satuan pendidikan (KB, TK, RA, TPA, Pos PAUD/SPS, PKBM, SKB) adalah lembaga
+ * terpisah dan mandiri sehingga jenjangnya harus sesuai dan tidak saling tercampur.
  */
 export function areSchoolLevelsCompatible(lvl1: SchoolLevel, lvl2: SchoolLevel): boolean {
   if (lvl1 === "other" || lvl2 === "other") return true;
-  if (lvl1 === lvl2) return true;
-  // RA dan TK setara secara jenjang formal anak usia 4-6 tahun
-  if ((lvl1 === "ra" && lvl2 === "tk") || (lvl1 === "tk" && lvl2 === "ra")) return true;
-  return false;
+  return lvl1 === lvl2;
 }
 
 /**
@@ -1168,12 +1168,7 @@ export function isSchoolNameMatching(
   const base2 = cleanBaseSchoolName(s2);
 
   if (!areSchoolLevelsCompatible(lvl1, lvl2)) {
-    // Toleransi khusus RA <-> KB: Jika salah satu adalah RA dan yang lain KB pada yayasan yang sama
-    // (nama dasar sekolah cocok persis), izinkan saling terhubung
-    const isRaKbCross = (lvl1 === "ra" && lvl2 === "kb") || (lvl1 === "kb" && lvl2 === "ra");
-    if (!isRaKbCross || base1 !== base2) {
-      return false;
-    }
+    return false;
   }
 
   // 2. Cek Kompatibilitas Kelurahan jika kedua nama mencantumkan nama kelurahan secara eksplisit
@@ -5213,21 +5208,20 @@ export function isDataAnakMatchingKomunitas(
   // 1. Cocok langsung dengan ID komunitas pembuat / tempat pendaftaran
   // Kecualikan Posyandu! Posyandu HANYA menampilkan data yang sesuai dengan cakupan wilayahnya (atau RW/RT "Belum Tahu")
   const isTargetPosyandu = targetKomunitas?.jenis === "posyandu" || targetMeta?.jenis === "posyandu";
-  if (!isTargetPosyandu && (item.komunitas_id === targetKomId || item.komunitas_id === targetKomunitas?.id)) {
-    return true;
-  }
+  const isTargetPaud =
+    targetKomunitas?.jenis === "satuan_paud" ||
+    targetMeta?.jenis === "satuan_paud" ||
+    isKomunitasLayananPaud(targetKomunitas, targetKomunitas?.nama, targetKomunitas?.jenis);
 
-  // Toleransi keterkaitan ID komunitas mitra sejenis (misal anak tercatat di ID TK Syiarul Islam namun dibuka di RA Syiarul Islam)
-  if (
-    !isTargetPosyandu &&
-    item.komunitas_id &&
-    RAW_PAUD_PKBM_TEGAL.some(
-      (p) =>
-        p.id === item.komunitas_id &&
-        (p.kelurahan || "").toLowerCase().trim() === (targetKomunitas?.kelurahan || "").toLowerCase().trim() &&
-        cleanBaseSchoolName(p.nama) === cleanBaseSchoolName(targetKomunitas?.nama)
-    )
-  ) {
+  if (!isTargetPosyandu && (item.komunitas_id === targetKomId || item.komunitas_id === targetKomunitas?.id)) {
+    // Jika target adalah Satuan PAUD, pastikan jenjang nama sekolah anak tidak bertentangan dengan jenjang target
+    if (isTargetPaud && item.nama_sekolah && targetKomunitas?.nama) {
+      const childLvl = extractSchoolLevel(item.nama_sekolah);
+      const targetLvl = extractSchoolLevel(targetKomunitas.nama);
+      if (childLvl !== "other" && targetLvl !== "other" && childLvl !== targetLvl) {
+        return false;
+      }
+    }
     return true;
   }
 
