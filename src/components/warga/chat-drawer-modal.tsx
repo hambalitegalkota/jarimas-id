@@ -761,7 +761,7 @@ export function ChatDrawerModal({
         {showEmojiPicker && (
           <div
             ref={emojiPickerRef}
-            className="absolute bottom-16 left-3 right-3 sm:left-4 sm:w-80 rounded-2xl bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 shadow-2xl z-30 overflow-hidden animate-in fade-in zoom-in-95 duration-150"
+            className="absolute bottom-24 left-3 right-3 sm:left-4 sm:w-80 rounded-2xl bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 shadow-2xl z-30 overflow-hidden animate-in fade-in zoom-in-95 duration-150"
           >
             {/* Header Tabs Emoji */}
             <div className="flex items-center gap-1 p-2 bg-slate-50 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 overflow-x-auto no-scrollbar">
@@ -800,21 +800,23 @@ export function ChatDrawerModal({
         )}
 
         {/* ========================================================= */}
-        {/* 5. INPUT CHAT BAR (SINGLE-ROW COMPACT MODERN)             */}
+        {/* 5. INPUT CHAT BAR (2-ROW: TOOLBAR DI ATAS, INPUT DI BAWAH)*/}
         {/* ========================================================= */}
         <form
           onSubmit={handleSendMessage}
-          className="p-2 sm:p-2.5 pb-[max(0.6rem,env(safe-area-inset-bottom))] bg-slate-50 dark:bg-slate-950/90 border-t-2 border-slate-200 dark:border-slate-800 shrink-0"
+          className="p-2.5 sm:p-3 pb-[max(0.65rem,env(safe-area-inset-bottom))] bg-slate-50 dark:bg-slate-950/90 border-t-2 border-slate-200 dark:border-slate-800 shrink-0 space-y-2"
         >
           {sendError && (
-            <p className="text-2xs text-red-600 flex items-center gap-1 mb-1.5">
+            <p className="text-2xs text-red-600 flex items-center gap-1 mb-1">
               <AlertCircle className="h-3 w-3 shrink-0" />
               <span>{sendError}</span>
             </p>
           )}
 
-          <div className="flex items-end gap-1.5 sm:gap-2">
-            <div className="flex items-center gap-1 pb-0.5 shrink-0">
+          {/* Baris 1: Toolbar Actions (Kiri: Emoticon, Gambar, Tag | Kanan: Kirim) */}
+          <div className="flex items-center justify-between gap-2">
+            {/* Tombol Aksi Kiri */}
+            <div className="flex items-center gap-1">
               {/* Tombol Sisipkan Emoticon */}
               <button
                 type="button"
@@ -822,13 +824,14 @@ export function ChatDrawerModal({
                 title="Sisipkan Emoticon"
                 aria-label="Sisipkan Emoticon"
                 className={cn(
-                  "flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-xl transition-all cursor-pointer",
+                  "inline-flex items-center gap-1.5 h-8 px-2.5 rounded-lg text-xs font-semibold transition-all cursor-pointer",
                   showEmojiPicker
                     ? "bg-teal-600 text-white shadow-xs"
                     : "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 shadow-2xs active:scale-95"
                 )}
               >
-                <Smile className="h-5 w-5 text-amber-500" />
+                <Smile className="h-4 w-4 text-amber-500 shrink-0" />
+                <span className="hidden sm:inline text-2xs">Emoticon</span>
               </button>
 
               {/* Tombol Sisipkan Gambar / Kamera */}
@@ -838,13 +841,14 @@ export function ChatDrawerModal({
                 disabled={isProcessingImage}
                 title="Kirim Gambar / Tangkapan Layar (Ctrl+V juga didukung)"
                 aria-label="Kirim Gambar / Tangkapan Layar"
-                className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 shadow-2xs transition-all cursor-pointer disabled:opacity-50 active:scale-95"
+                className="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 shadow-2xs text-xs font-semibold transition-all cursor-pointer disabled:opacity-50 active:scale-95"
               >
                 {isProcessingImage ? (
-                  <Loader2 className="h-4 w-4 animate-spin text-teal-600" />
+                  <Loader2 className="h-3.5 w-3.5 animate-spin text-teal-600 shrink-0" />
                 ) : (
-                  <Camera className="h-5 w-5 text-emerald-600" />
+                  <Camera className="h-4 w-4 text-emerald-600 shrink-0" />
                 )}
+                <span className="hidden sm:inline text-2xs">Gambar</span>
               </button>
               <input
                 ref={fileInputRef}
@@ -860,50 +864,51 @@ export function ChatDrawerModal({
                 onClick={insertTagTarget}
                 title={isTargetAdminPusat ? "Tag Admin Pusat" : `Tag ${targetUser.nama_lengkap}`}
                 aria-label={isTargetAdminPusat ? "Tag Admin Pusat" : `Tag ${targetUser.nama_lengkap}`}
-                className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 shadow-2xs transition-all cursor-pointer active:scale-95"
+                className="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 shadow-2xs text-xs font-semibold transition-all cursor-pointer active:scale-95"
               >
-                <AtSign className="h-4 w-4 text-teal-600 dark:text-teal-400" />
+                <AtSign className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400 shrink-0" />
+                <span className="hidden sm:inline text-2xs">{isTargetAdminPusat ? "Tag Admin" : "Tag Nama"}</span>
               </button>
             </div>
 
-            {/* Kotak Teks Pesan Fleksibel */}
-            <div className="relative flex-1 min-w-0">
-              <textarea
-                ref={textareaRef}
-                value={inputMessage}
-                onChange={(e) => {
-                  setInputMessage(e.target.value);
-                  adjustTextareaHeight();
-                }}
-                onKeyDown={handleKeyDown}
-                onPaste={handlePaste}
-                rows={1}
-                placeholder={
-                  isTargetAdminPusat
-                    ? "Ketik pesan untuk Admin Pusat..."
-                    : `Ketik pesan untuk ${targetUser.nama_lengkap}...`
-                }
-                className="w-full min-h-[42px] max-h-28 py-2.5 px-3.5 text-xs sm:text-sm rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none leading-relaxed shadow-2xs"
-                disabled={isSending}
-              />
-            </div>
-
-            {/* Tombol Kirim */}
+            {/* Tombol Kirim Rata Kanan */}
             <button
               type="submit"
               disabled={(!inputMessage.trim() && !attachedImage) || isSending}
               aria-label="Kirim Pesan"
-              className="inline-flex h-[42px] min-h-[42px] px-3.5 sm:px-4 items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 disabled:opacity-50 text-white text-xs font-bold transition-all active:scale-95 cursor-pointer disabled:cursor-not-allowed shadow-xs shrink-0"
+              className="inline-flex h-8 px-3.5 sm:px-4 items-center justify-center gap-1.5 rounded-lg bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 disabled:opacity-40 text-white text-xs font-bold transition-all active:scale-95 cursor-pointer disabled:cursor-not-allowed shadow-xs shrink-0"
             >
               {isSending ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
               ) : (
                 <>
-                  <Send className="h-4 w-4" />
-                  <span className="hidden sm:inline">Kirim</span>
+                  <Send className="h-3.5 w-3.5" />
+                  <span>Kirim</span>
                 </>
               )}
             </button>
+          </div>
+
+          {/* Baris 2: Kotak Input Pesan Full-Width */}
+          <div className="relative w-full">
+            <textarea
+              ref={textareaRef}
+              value={inputMessage}
+              onChange={(e) => {
+                setInputMessage(e.target.value);
+                adjustTextareaHeight();
+              }}
+              onKeyDown={handleKeyDown}
+              onPaste={handlePaste}
+              rows={1}
+              placeholder={
+                isTargetAdminPusat
+                  ? "Ketik pesan untuk Admin Pusat... (Enter kirim, Shift+Enter baris baru)"
+                  : `Ketik pesan untuk ${targetUser.nama_lengkap}... (Enter kirim, Shift+Enter baris baru)`
+              }
+              className="w-full min-h-[42px] max-h-32 py-2.5 px-3 text-xs sm:text-sm rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none leading-relaxed shadow-2xs"
+              disabled={isSending}
+            />
           </div>
         </form>
       </div>
