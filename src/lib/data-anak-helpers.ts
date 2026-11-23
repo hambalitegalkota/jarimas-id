@@ -946,6 +946,9 @@ export function cleanBaseSchoolName(str?: string | null): string {
   // Bersihkan prefix jenjang institusi agar RA, TK, KB, Pos PAUD, SPS dengan nama sama saling cocok
   s = s.replace(/^(pos\s+paud|paud\s+tpq|kbi|kb|tk|ra|tpa|sps|pkbm|skb)\b\s*/gi, "").trim();
 
+  // Bersihkan token SKB/SPNF/UPTD di mana pun berada agar variasi penulisan SKB saling cocok
+  s = s.replace(/\b(skb|spnf|uptd)\b/gi, " ").trim();
+
   // Kasus anomali autofill drag Excel:
   // Normalisasi penamaan KB Ihsaniyah 3..18 -> ihsaniyah 3
   s = s.replace(/\bihsaniyah\s*(?:[3-9]|1[0-8])\b/gi, "ihsaniyah 3");
