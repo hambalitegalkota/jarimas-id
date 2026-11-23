@@ -14,6 +14,11 @@ import {
   Filter,
 } from "lucide-react";
 import { getKomunitasList } from "@/app/actions/komunitas";
+import {
+  getKecamatanStatsAction,
+  getUserJoinedCommunitiesAction,
+} from "@/app/actions/komunitas-kecamatan-stats";
+import { createClient } from "@/utils/supabase/server";
 import { KomunitasFilter } from "@/components/komunitas/komunitas-filter";
 import { KomunitasCard } from "@/components/komunitas/komunitas-card";
 import { PrintButton } from "@/components/ui/print-button";
@@ -68,6 +73,24 @@ export default async function KomunitasPage({
     hasMore: false,
   };
 
+  // 1. Cek sesi user aktif untuk banner keanggotaan
+  const supabase = await createClient();
+  let user = null;
+  try {
+    const { data } = await supabase.auth.getUser();
+    user = data.user;
+  } catch {
+    // Pengunjung tamu
+  }
+  const isLoggedIn = Boolean(user);
+  currentUserId = user?.id || null;
+
+  // 2. Ambil komunitas yang diikuti user & statistik ringkasan 4 kecamatan secara paralel
+  const [userCommunities, kecamatanStats] = await Promise.all([
+    isLoggedIn && user ? getUserJoinedCommunitiesAction(user.id) : Promise.resolve([]),
+    getKecamatanStatsAction(currentTab),
+  ]);
+
   // Hanya ambil data komunitas dari database jika filter atau pencarian telah dipilih
   if (hasActiveFilter && currentTab) {
     const komunitasResult = await getKomunitasList({
@@ -82,7 +105,9 @@ export default async function KomunitasPage({
       limit: pageSize,
     });
     listKomunitas = komunitasResult.data;
-    currentUserId = komunitasResult.currentUserId || null;
+    if (komunitasResult.currentUserId) {
+      currentUserId = komunitasResult.currentUserId;
+    }
     pagination = komunitasResult.pagination;
   }
 
@@ -288,6 +313,9 @@ export default async function KomunitasPage({
             currentRw={currentRw}
             currentRt={currentRt}
             currentBentuk={currentBentuk}
+            kecamatanStats={kecamatanStats}
+            userCommunities={userCommunities}
+            isLoggedIn={isLoggedIn}
           />
         </Suspense>
 

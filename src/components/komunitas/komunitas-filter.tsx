@@ -27,6 +27,9 @@ import {
   getJumlahRtPerRwByKelurahan,
 } from "@/lib/constants/tegal-data";
 import { cn } from "@/lib/utils";
+import { UserMembershipBanner } from "@/components/komunitas/user-membership-banner";
+import { KecamatanStatsCards } from "@/components/komunitas/kecamatan-stats-cards";
+import type { KecamatanCommunityStat, UserJoinedCommunity } from "@/app/actions/komunitas-kecamatan-stats";
 
 interface KomunitasFilterProps {
   currentTab?: string;
@@ -36,6 +39,9 @@ interface KomunitasFilterProps {
   currentRw?: string;
   currentRt?: string;
   currentBentuk?: string;
+  kecamatanStats?: KecamatanCommunityStat[];
+  userCommunities?: UserJoinedCommunity[];
+  isLoggedIn?: boolean;
 }
 
 export function KomunitasFilter({
@@ -46,6 +52,9 @@ export function KomunitasFilter({
   currentRw = "semua",
   currentRt = "semua",
   currentBentuk = "semua",
+  kecamatanStats = [],
+  userCommunities = [],
+  isLoggedIn = false,
 }: KomunitasFilterProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -132,6 +141,22 @@ export function KomunitasFilter({
 
   const handleKecamatanChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const val = e.target.value;
+    updateUrlParams((params) => {
+      if (val === "semua") {
+        params.delete("kecamatan");
+        params.delete("kelurahan");
+        params.delete("rw");
+        params.delete("rt");
+      } else {
+        params.set("kecamatan", val);
+        params.delete("kelurahan");
+        params.delete("rw");
+        params.delete("rt");
+      }
+    });
+  };
+
+  const handleKecamatanSelect = (val: string) => {
     updateUrlParams((params) => {
       if (val === "semua") {
         params.delete("kecamatan");
@@ -340,7 +365,22 @@ export function KomunitasFilter({
         </div>
       )}
 
-      {/* 2. Search Bar */}
+      {/* 2. Pemberitahuan Status Keanggotaan Pengguna */}
+      <UserMembershipBanner
+        currentTab={activeTab}
+        isLoggedIn={isLoggedIn}
+        userCommunities={userCommunities}
+      />
+
+      {/* 3. Kartu Ringkasan Wilayah 4 Kecamatan */}
+      <KecamatanStatsCards
+        currentTab={activeTab}
+        currentKecamatan={currentKecamatan}
+        stats={kecamatanStats}
+        onSelectKecamatan={handleKecamatanSelect}
+      />
+
+      {/* 4. Search Bar */}
       <form onSubmit={handleSearchSubmit} className="relative">
         <div className="relative flex items-center">
           <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-muted-foreground">
