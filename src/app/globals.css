@@ -509,3 +509,56 @@ button, input, select, textarea {
     box-sizing: border-box !important;
   }
 }
+
+/* ======================================================== */
+/* STANDAR LEMBAR KERJA DOKUMEN A4 (SCREEN & PRINT COMPAT) */
+/* ======================================================== */
+.a4-document-wrapper {
+  background-color: var(--muted);
+  padding: 1.5rem 1rem;
+  min-height: 100%;
+}
+
+.a4-paper-sheet {
+  background-color: #ffffff;
+  color: #0f172a;
+  max-width: 210mm;
+  min-height: 297mm;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 18mm 16mm 16mm 16mm;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  border-radius: 0.5rem;
+  box-sizing: border-box;
+}
+
+@media (max-width: 640px) {
+  .a4-document-wrapper {
+    padding: 0.75rem 0.5rem;
+  }
+  .a4-paper-sheet {
+    max-width: 100%;
+    min-height: auto;
+    padding: 1.25rem 1rem;
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+  }
+}
+
+@media print {
+  .a4-document-wrapper {
+    background-color: #ffffff !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  .a4-paper-sheet {
+    max-width: 100% !important;
+    width: 100% !important;
+    min-height: auto !important;
+    margin: 0 !important;
+    padding: 10mm 15mm !important;
+    box-shadow: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+  }
+}

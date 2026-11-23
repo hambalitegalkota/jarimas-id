@@ -224,14 +224,19 @@ export function EditProfilDialog({ profile }: EditProfilDialogProps) {
       </button>
 
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-xs animate-in fade-in">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-background/80 backdrop-blur-xs animate-in fade-in">
           <div
             className="fixed inset-0"
             onClick={handleClose}
             aria-hidden="true"
           />
 
-          <div className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl border border-border bg-card p-5 sm:p-6 shadow-xl z-10 space-y-5 animate-in zoom-in-95">
+          <div className="relative w-full max-w-lg max-h-[92dvh] sm:max-h-[90vh] overflow-y-auto rounded-t-3xl sm:rounded-2xl border-t-2 sm:border border-border bg-card p-5 sm:p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] shadow-2xl z-10 space-y-5 animate-in slide-in-from-bottom sm:zoom-in-95">
+            {/* Mobile Drag Indicator */}
+            <div className="sm:hidden flex justify-center -mt-2 pb-1">
+              <div className="w-12 h-1.5 rounded-full bg-muted-foreground/30" />
+            </div>
+
             {/* Header Dialog */}
             <div className="flex items-center justify-between border-b border-border pb-3.5">
               <div className="space-y-0.5">
@@ -379,7 +384,7 @@ export function EditProfilDialog({ profile }: EditProfilDialogProps) {
                     value={namaLengkap}
                     onChange={(e) => setNamaLengkap(e.target.value)}
                     placeholder="Nama Lengkap Anda"
-                    className="w-full min-h-[40px] h-10 rounded-lg border border-border bg-background pl-9 pr-3 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary focus:outline-hidden"
+                    className="w-full min-h-[44px] h-11 rounded-lg border border-border bg-background pl-9 pr-3 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary focus:outline-hidden"
                   />
                 </div>
                 {state.errors?.nama_lengkap && (
@@ -413,7 +418,7 @@ export function EditProfilDialog({ profile }: EditProfilDialogProps) {
                     value={username}
                     onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_.]/g, ""))}
                     placeholder="nama_pengguna"
-                    className="w-full min-h-[40px] h-10 rounded-lg border border-border bg-background pl-9 pr-3 text-xs sm:text-sm font-mono text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary focus:outline-hidden"
+                    className="w-full min-h-[44px] h-11 rounded-lg border border-border bg-background pl-9 pr-3 text-sm font-mono text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary focus:outline-hidden"
                   />
                 </div>
                 <p className="text-2xs text-muted-foreground">
@@ -471,11 +476,12 @@ export function EditProfilDialog({ profile }: EditProfilDialogProps) {
                       <input
                         id="nomor_wa"
                         name="nomor_wa"
-                        type="text"
+                        type="tel"
+                        inputMode="numeric"
                         value={nomorWa}
                         onChange={(e) => setNomorWa(e.target.value)}
                         placeholder="08123456789"
-                        className="w-full min-h-[38px] h-9.5 rounded-lg border border-border bg-background pl-8.5 pr-3 text-xs text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary focus:outline-hidden"
+                        className="w-full min-h-[44px] h-11 rounded-lg border border-border bg-background pl-8.5 pr-3 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary focus:outline-hidden"
                       />
                     </div>
                   </div>
@@ -499,7 +505,7 @@ export function EditProfilDialog({ profile }: EditProfilDialogProps) {
                         value={instagram}
                         onChange={(e) => setInstagram(e.target.value.replace(/^@/, ""))}
                         placeholder="username_ig"
-                        className="w-full min-h-[38px] h-9.5 rounded-lg border border-border bg-background pl-8.5 pr-3 text-xs text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary focus:outline-hidden"
+                        className="w-full min-h-[44px] h-11 rounded-lg border border-border bg-background pl-8.5 pr-3 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary focus:outline-hidden"
                       />
                     </div>
                   </div>
@@ -578,14 +584,14 @@ export function EditProfilDialog({ profile }: EditProfilDialogProps) {
                 <button
                   type="button"
                   onClick={handleClose}
-                  className="rounded-lg border border-border px-3.5 py-2 text-xs font-semibold text-foreground hover:bg-muted transition-colors cursor-pointer"
+                  className="min-h-[44px] px-4 py-2.5 rounded-lg border border-border text-xs sm:text-sm font-semibold text-foreground hover:bg-muted transition-colors cursor-pointer"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
                   disabled={isPending || isCompressing}
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-primary hover:bg-primary-hover px-4 py-2 text-xs font-semibold text-primary-foreground shadow-xs transition-all active:scale-98 disabled:opacity-50 cursor-pointer"
+                  className="min-h-[44px] inline-flex items-center justify-center gap-1.5 rounded-lg bg-primary hover:bg-primary-hover px-5 py-2.5 text-xs sm:text-sm font-semibold text-primary-foreground shadow-xs transition-all active:scale-98 disabled:opacity-50 cursor-pointer"
                 >
                   {isPending ? (
                     <>

@@ -492,12 +492,17 @@ export function ChatDrawerModal({
   const initial = targetUser.nama_lengkap.charAt(0).toUpperCase() || "J";
 
   const modalContent = (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-2.5 sm:p-4 bg-slate-950/75 backdrop-blur-xs animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-950/75 backdrop-blur-xs animate-in fade-in duration-200">
       <div
-        className="relative flex flex-col w-full max-w-lg h-[92vh] sm:h-[86vh] max-h-[660px] rounded-2xl sm:rounded-3xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200"
+        className="relative flex flex-col w-full max-w-lg h-[92dvh] sm:h-[86vh] sm:max-h-[680px] rounded-t-3xl sm:rounded-3xl border-t-2 sm:border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl overflow-hidden animate-in slide-in-from-bottom sm:zoom-in-95 duration-200"
         role="dialog"
         aria-modal="true"
       >
+        {/* Mobile Pull Indicator / Drag Handle */}
+        <div className="sm:hidden flex justify-center py-2 bg-slate-50 dark:bg-slate-900/95 shrink-0 border-b border-slate-100 dark:border-slate-800">
+          <div className="w-12 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600" />
+        </div>
+
         {/* ========================================================= */}
         {/* 1. HEADER CHAT                                            */}
         {/* ========================================================= */}
@@ -866,7 +871,7 @@ export function ChatDrawerModal({
         {/* ========================================================= */}
         <form
           onSubmit={handleSendMessage}
-          className="p-3 bg-slate-50 dark:bg-slate-950/90 border-t-2 border-slate-200 dark:border-slate-800 shrink-0 space-y-2"
+          className="p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] bg-slate-50 dark:bg-slate-950/90 border-t-2 border-slate-200 dark:border-slate-800 shrink-0 space-y-2"
         >
           {sendError && (
             <p className="text-2xs text-red-600 flex items-center gap-1">
